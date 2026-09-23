@@ -1,0 +1,29 @@
+services:
+  plinthio:
+    image: plinthio:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: plinthio
+    restart: unless-stopped
+    ports:
+      # Defaults to 0.0.0.0 — reachable from any device on your LAN (phones, the PWA, other
+      # machines). To make Plinthio reachable ONLY from this machine, set BIND_ADDRESS=127.0.0.1
+      # in a .env file next to this compose file. Note that publishing a container port
+      # punches through the host firewall on most Docker setups, so 0.0.0.0 really does mean
+      # "anyone on the network", not just "anyone allowed by ufw".
+      - "${BIND_ADDRESS:-0.0.0.0}:8088:8080"
+    environment:
+      - TZ=${TZ:-UTC}
+      # Set TRUST_PROXY=1 ONLY when Plinthio sits behind a reverse proxy (nginx, Caddy,
+      # Cloudflare tunnel). Without it, per-IP rate limits see the proxy's IP for every
+      # request and collapse into one shared bucket; with it set but no proxy in front,
+      # clients can forge X-Forwarded-For and bypass rate limiting entirely.
+      # - TRUST_PROXY=1
+      # JWT_SECRET intentionally not set here — the server auto-generates a strong random
+      # secret on first boot and persists it to /config/jwt.secret. Do not hardcode a
+      # literal secret in this file: anyone who reads it (repo history, a shared screenshot,
+      # a leaked backup) could forge valid login tokens for any account.
+    volumes:
+      - ./config:/config
+      - ${MEDIA_DIR:-/media/library}:/media
