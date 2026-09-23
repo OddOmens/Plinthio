@@ -549,7 +549,7 @@
               Pass your API key in the <code class="text-foreground bg-muted px-1 rounded">X-API-Key</code> HTTP header. Create and manage keys in <strong>Settings &rarr; API Keys</strong>. Browser requests instead use a JWT Bearer token issued at login, which most media URLs also accept as a <code class="text-foreground bg-muted px-1 rounded">?token=</code> query parameter (needed for plain <code class="text-foreground bg-muted px-1 rounded">&lt;img&gt;</code>/<code class="text-foreground bg-muted px-1 rounded">&lt;video&gt;</code> tags, which can't set headers).
             </p>
             <div class="bg-background border border-border rounded-lg p-2.5 font-mono text-xs overflow-x-auto whitespace-nowrap">
-              curl -H "X-API-Key: plinthio_live_..." http://localhost:8088/api/items
+              curl -H "X-API-Key: plinthio_..." http://localhost:8088/api/items
             </div>
             <p class="text-[11px] text-muted-foreground">
               All API endpoints are rate-limited, and each request is scoped to the key's owning user — an API key
