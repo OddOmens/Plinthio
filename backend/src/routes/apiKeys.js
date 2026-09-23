@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
   try {
     const db = await getDb();
     const id = crypto.randomUUID();
-    const rawKey = `shlf_${crypto.randomBytes(24).toString('hex')}`;
+    const rawKey = `plinthio_${crypto.randomBytes(24).toString('hex')}`;
     const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
 
     await db.run(
