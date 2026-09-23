@@ -2,7 +2,7 @@
 
 > **The all-in-one open-source self-hosted media server and PWA for Audiobooks, Manga, and Books.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/License-PolyForm%20Noncommercial%201.0.0-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker/docker-compose.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-v20-green?logo=node.js)](https://nodejs.org)
 [![Vue 3](https://img.shields.io/badge/Vue.js-3.5-4FC08D?logo=vuedotjs&logoColor=white)](https://vuejs.org)
@@ -100,11 +100,11 @@ plinthio/
 │   │   ├── stores/         # Pinia auth & audio player state
 │   │   └── views/          # Home, Login/Setup, Admin Settings
 ├── docker/                 # Production multi-stage Dockerfile & Compose
-├── LICENSE                 # MIT License
+├── LICENSE                 # PolyForm Noncommercial 1.0.0
 └── README.md
 ```
 
 ---
 
 ## 📄 License
-This project is open-source and licensed under the [MIT License](LICENSE).
+Plinthio is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE). You're free to use, fork, modify, and self-host it for any noncommercial purpose. Selling it, hosting it as a paid service, or otherwise using it (or a derivative) for commercial gain is not permitted without a separate license from Odd Omens LLC.
