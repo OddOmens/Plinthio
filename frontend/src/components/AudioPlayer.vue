@@ -1,0 +1,167 @@
+<template>
+  <div v-if="player.currentItem" class="fixed bottom-0 inset-x-0 z-50 transition-all safe-bottom">
+    <div class="mx-auto max-w-4xl px-3 sm:px-6 pb-3">
+      <div class="bg-card/95 backdrop-blur-xl border border-border shadow-2xl rounded-2xl p-3 flex flex-col gap-2 transition-colors">
+        <!-- Top Track Info & Controls Row -->
+        <div class="flex items-center justify-between gap-3">
+          <!-- Left: Cover & Title (Click to open Fullscreen Now Playing) -->
+          <div @click="showNowPlaying = true" class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer group" title="Open Now Playing">
+            <div class="w-11 h-11 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border group-hover:ring-2 ring-primary/40 transition">
+              <img :src="coverUrl" class="w-full h-full object-cover" />
+            </div>
+            <div class="min-w-0">
+              <h4 class="text-xs sm:text-sm font-semibold text-foreground truncate group-hover:text-primary transition">
+                {{ player.currentItem.title }}
+              </h4>
+              <p class="text-[11px] text-muted-foreground truncate">
+                {{ player.currentItem.author || 'Unknown Author' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Center Controls -->
+          <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <button
+              @click="player.skip(-15)"
+              class="p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition active:scale-95"
+              title="Skip back 15s"
+            >
+              <RotateCcw class="w-4 h-4" />
+            </button>
+
+            <button
+              @click="player.togglePlay"
+              class="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md active:scale-95 transition"
+            >
+              <Pause v-if="player.isPlaying" class="w-4 h-4 fill-current" />
+              <Play v-else class="w-4 h-4 fill-current ml-0.5" />
+            </button>
+
+            <button
+              @click="player.skip(15)"
+              class="p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition active:scale-95"
+              title="Skip forward 15s"
+            >
+              <RotateCw class="w-4 h-4" />
+            </button>
+          </div>
+
+          <!-- Right Controls: Speed, Sleep, Expand, Close -->
+          <div class="hidden sm:flex items-center gap-1.5 flex-shrink-0">
+            <button
+              @click="showNowPlaying = true"
+              class="p-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs transition flex items-center gap-1 border border-border"
+              title="Fullscreen Now Playing"
+            >
+              <Maximize2 class="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              @click="cycleSpeed"
+              class="px-2 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-mono font-medium border border-border transition"
+              title="Playback speed"
+            >
+              {{ player.playbackRate }}x
+            </button>
+
+            <button
+              @click="cycleSleepTimer"
+              :class="[
+                'p-2 rounded-md border text-xs transition flex items-center gap-1',
+                player.sleepTimerMinutes
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border'
+              ]"
+              :title="player.sleepTimerMinutes ? `Sleep in ${player.sleepTimerMinutes}m` : 'Sleep timer'"
+            >
+              <Moon class="w-3.5 h-3.5" />
+              <span v-if="player.sleepTimerMinutes" class="text-[10px] font-bold">
+                {{ player.sleepTimerMinutes }}m
+              </span>
+            </button>
+
+            <button
+              @click="player.currentItem = null; player.togglePlay()"
+              class="p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition"
+              title="Close player"
+            >
+              <X class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrubber Bar & Timestamps -->
+        <div class="flex items-center gap-2 px-1">
+          <span class="text-[10px] text-muted-foreground tabular-nums font-mono w-10 text-right">
+            {{ formatTime(player.currentTime) }}
+          </span>
+          <div class="relative flex-1 flex items-center h-4 cursor-pointer">
+            <input
+              type="range"
+              min="0"
+              :max="player.duration || 100"
+              step="1"
+              :value="player.currentTime"
+              @input="onSeek"
+              class="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none"
+            />
+          </div>
+          <span class="text-[10px] text-muted-foreground tabular-nums font-mono w-10">
+            {{ formatTime(player.duration) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fullscreen Spotify/Apple Music Style Now Playing Modal -->
+    <NowPlayingModal
+      :isOpen="showNowPlaying"
+      @close="showNowPlaying = false"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue';
+import { usePlayerStore } from '../stores/player';
+import NowPlayingModal from './NowPlayingModal.vue';
+import { Play, Pause, RotateCcw, RotateCw, Moon, X, Maximize2 } from 'lucide-vue-next';
+
+const player = usePlayerStore();
+const token = localStorage.getItem('plinthio_token') || '';
+const showNowPlaying = ref(false);
+
+const coverUrl = computed(() => {
+  if (!player.currentItem) return '';
+  return `/api/media/cover/${player.currentItem.id}?token=${token}`;
+});
+
+function onSeek(e) {
+  player.seek(parseFloat(e.target.value));
+}
+
+function formatTime(seconds) {
+  if (!seconds || isNaN(seconds)) return '0:00';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  if (h > 0) {
+    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+const speeds = [1.0, 1.25, 1.5, 1.75, 2.0, 0.8];
+function cycleSpeed() {
+  const currentIndex = speeds.indexOf(player.playbackRate);
+  const nextIndex = (currentIndex + 1) % speeds.length;
+  player.setPlaybackRate(speeds[nextIndex]);
+}
+
+const sleepOptions = [null, 15, 30, 45, 60];
+function cycleSleepTimer() {
+  const currentIndex = sleepOptions.indexOf(player.sleepTimerMinutes);
+  const nextIndex = (currentIndex + 1) % sleepOptions.length;
+  player.setSleepTimer(sleepOptions[nextIndex]);
+}
+</script>

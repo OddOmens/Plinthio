@@ -1,0 +1,272 @@
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import { getDb } from '../config/database.js';
+import { extractAudiobookMetadata, extractMangaMetadata, extractBookMetadata, extractVideoMetadata } from './metadata.js';
+import { logger } from './logger.js';
+import { config } from '../config/env.js';
+import { getThumbnailPath } from './thumbnails.js';
+import { invalidateCoverCache } from '../routes/media.js';
+import { fetchVideoArtwork } from './artwork.js';
+
+const AUDIO_EXTS = new Set(['.m4b', '.mp3', '.m4a', '.flac', '.aac', '.ogg']);
+const MANGA_EXTS = new Set(['.cbz', '.zip']);
+const BOOK_EXTS = new Set(['.epub', '.pdf']);
+const VIDEO_EXTS = new Set(['.mp4', '.mkv', '.webm', '.avi', '.mov']);
+
+let isScanning = false;
+
+export async function scanLibrary(libraryId) {
+  if (isScanning) {
+    logger.warn('scan', 'Scanner already running, skipping trigger request');
+    return { status: 'busy' };
+  }
+
+  isScanning = true;
+  const db = await getDb();
+
+  try {
+    const library = await db.get('SELECT * FROM libraries WHERE id = ?', [libraryId]);
+    if (!library) {
+      throw new Error(`Library ${libraryId} not found`);
+    }
+
+    logger.info('scan', `Starting scan for library "${library.name}" (${library.type})`, { path: library.path });
+    if (!fs.existsSync(library.path)) {
+      throw new Error(`Library path does not exist on disk: ${library.path}`);
+    }
+
+    const files = [];
+    walkDirectory(library.path, library.type, files);
+    logger.info('scan', `Discovered ${files.length} candidate media files in "${library.name}"`);
+
+    // Snapshot what's currently in the DB for this library so we can detect renamed/moved
+    // files (same content, different path) instead of treating them as brand-new items,
+    // which previously caused duplicates whenever a folder was renamed.
+    const dbItemsBefore = await db.all('SELECT id, path, file_size FROM items WHERE library_id = ?', [libraryId]);
+    const dbItemsById = new Map(dbItemsBefore.map((i) => [i.id, i]));
+    const discoveredPathSet = new Set(files);
+
+    // Orphaned rows (path no longer exists on disk) are candidates for a rename match,
+    // keyed by filename + file size so we only re-link an exact, unambiguous match.
+    const orphanedByKey = new Map();
+    for (const item of dbItemsBefore) {
+      if (!discoveredPathSet.has(item.path)) {
+        const key = `${path.basename(item.path)}::${item.file_size}`;
+        if (!orphanedByKey.has(key)) orphanedByKey.set(key, []);
+        orphanedByKey.get(key).push(item);
+      }
+    }
+    const claimedOrphanIds = new Set();
+
+    let added = 0;
+    let updated = 0;
+    let renamed = 0;
+
+    for (const filePath of files) {
+      const ext = path.extname(filePath).toLowerCase();
+      const stats = fs.statSync(filePath);
+
+      // Deterministic ID based on file path
+      const computedId = crypto.createHash('md5').update(filePath).digest('hex');
+
+      let itemId = computedId;
+      let isRename = false;
+
+      if (!dbItemsById.has(computedId)) {
+        const key = `${path.basename(filePath)}::${stats.size}`;
+        const candidates = (orphanedByKey.get(key) || []).filter((c) => !claimedOrphanIds.has(c.id));
+        if (candidates.length === 1) {
+          itemId = candidates[0].id;
+          claimedOrphanIds.add(itemId);
+          isRename = true;
+        }
+      }
+
+      const existing = dbItemsById.get(itemId) || null;
+
+      // If existing at the same path with an unchanged size, skip heavy metadata re-extraction
+      if (existing && !isRename && existing.file_size === stats.size) {
+        continue;
+      }
+
+      let meta = null;
+      let mediaType = 'book';
+
+      if (AUDIO_EXTS.has(ext)) {
+        mediaType = 'audiobook';
+        meta = await extractAudiobookMetadata(filePath, itemId);
+      } else if (MANGA_EXTS.has(ext)) {
+        mediaType = 'manga';
+        meta = await extractMangaMetadata(filePath, itemId);
+      } else if (BOOK_EXTS.has(ext)) {
+        mediaType = 'book';
+        meta = await extractBookMetadata(filePath, itemId);
+      } else if (VIDEO_EXTS.has(ext)) {
+        if (library.type === 'shows') mediaType = 'show';
+        else if (library.type === 'anime') mediaType = 'anime';
+        else mediaType = 'movie';
+        meta = await extractVideoMetadata(filePath, itemId, mediaType);
+      }
+
+      if (!meta) continue;
+
+      // Video rarely ships a poster next to the file, so fall back to TMDB when an admin has
+      // configured a key. Best-effort: a miss or a network failure leaves the placeholder
+      // cover and never fails the scan.
+      if (!meta.coverPath && ['movie', 'show', 'anime'].includes(mediaType)) {
+        const yearMatch = path.basename(filePath).match(/\b(19|20)\d{2}\b/);
+        meta.coverPath = await fetchVideoArtwork({
+          itemId,
+          title: meta.title,
+          series: meta.series,
+          mediaType,
+          year: yearMatch ? yearMatch[0] : null
+        });
+      }
+
+      const format = ext.replace('.', '');
+
+      if (existing) {
+        await db.run(
+          `UPDATE items SET
+            title = ?, author = ?, series = ?, volume = ?, path = ?, cover_path = ?,
+            duration = ?, total_pages = ?, file_size = ?, format = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE id = ?`,
+          [
+            meta.title,
+            meta.author,
+            meta.series,
+            meta.volume,
+            filePath,
+            meta.coverPath,
+            meta.duration || 0,
+            meta.totalPages || 0,
+            stats.size,
+            format,
+            itemId
+          ]
+        );
+        updated++;
+        if (isRename) renamed++;
+
+        // The file changed (that's why we're here — see the size-unchanged skip above),
+        // so its cover may have too. Bust both the thumbnail cache and media.js's in-memory
+        // cover_path cache, or a changed cover would silently keep serving the old image.
+        for (const width of [180, 360, 720]) {
+          const thumbPath = getThumbnailPath(itemId, width);
+          if (fs.existsSync(thumbPath)) {
+            try { fs.unlinkSync(thumbPath); } catch (e) { /* ignore */ }
+          }
+        }
+        invalidateCoverCache(itemId);
+      } else {
+        await db.run(
+          `INSERT INTO items
+            (id, library_id, title, author, series, volume, path, cover_path, media_type, duration, total_pages, file_size, format)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            itemId,
+            library.id,
+            meta.title,
+            meta.author,
+            meta.series,
+            meta.volume,
+            filePath,
+            meta.coverPath,
+            mediaType,
+            meta.duration || 0,
+            meta.totalPages || 0,
+            stats.size,
+            format
+          ]
+        );
+        added++;
+      }
+    }
+
+    // Prune rows still pointing at paths that no longer exist on disk — genuine deletions
+    // (renamed/moved files were already re-linked above and excluded via discoveredPathSet).
+    let removed = 0;
+    const staleItems = await db.all('SELECT id, cover_path, path FROM items WHERE library_id = ?', [libraryId]);
+    for (const item of staleItems) {
+      if (!discoveredPathSet.has(item.path)) {
+        await db.run('DELETE FROM items WHERE id = ?', [item.id]);
+        removed++;
+        if (item.cover_path) {
+          const coverFullPath = path.join(config.coversDir, item.cover_path);
+          try { fs.unlinkSync(coverFullPath); } catch (e) { /* ignore missing cover */ }
+        }
+        for (const width of [180, 360, 720]) {
+          const thumbPath = getThumbnailPath(item.id, width);
+          try { fs.unlinkSync(thumbPath); } catch (e) { /* ignore missing thumbnail */ }
+        }
+      }
+    }
+
+    logger.info('scan', `Scan completed for "${library.name}"`, { added, updated, renamed, removed, total: files.length });
+    return { status: 'completed', added, updated, renamed, removed, total: files.length };
+  } finally {
+    isScanning = false;
+  }
+}
+
+function walkDirectory(dir, libraryType, results, visitedRealPaths = new Set()) {
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch (err) {
+    console.warn(`Error reading directory ${dir}: ${err.message}`);
+    return;
+  }
+
+  for (const entry of entries) {
+    if (entry.name.startsWith('.') || entry.name.startsWith('@') || entry.name === 'node_modules') continue;
+
+    const fullPath = path.join(dir, entry.name);
+
+    // fs.Dirent.isDirectory()/isFile() report false for symlinks even when they point at a
+    // real directory/file, so resolve the link target explicitly instead of skipping it —
+    // symlinked library/series folders (common with Docker bind mounts and NAS shares)
+    // were previously scanned as empty.
+    let isDirectory = entry.isDirectory();
+    let isFile = entry.isFile();
+
+    if (entry.isSymbolicLink()) {
+      let stats;
+      try {
+        stats = fs.statSync(fullPath);
+      } catch (err) {
+        // Broken symlink — nothing to scan
+        continue;
+      }
+      isDirectory = stats.isDirectory();
+      isFile = stats.isFile();
+
+      if (isDirectory) {
+        // Guard against symlink cycles (a symlink pointing back into an ancestor directory)
+        const realPath = fs.realpathSync(fullPath);
+        if (visitedRealPaths.has(realPath)) continue;
+        visitedRealPaths.add(realPath);
+      }
+    }
+
+    if (isDirectory) {
+      walkDirectory(fullPath, libraryType, results, visitedRealPaths);
+    } else if (isFile) {
+      const ext = path.extname(entry.name).toLowerCase();
+      if (libraryType === 'audiobooks' && AUDIO_EXTS.has(ext)) {
+        results.push(fullPath);
+      } else if (libraryType === 'manga' && MANGA_EXTS.has(ext)) {
+        results.push(fullPath);
+      } else if (libraryType === 'books' && (BOOK_EXTS.has(ext) || AUDIO_EXTS.has(ext) || MANGA_EXTS.has(ext))) {
+        results.push(fullPath);
+      } else if ((libraryType === 'shows' || libraryType === 'movies' || libraryType === 'anime') && VIDEO_EXTS.has(ext)) {
+        results.push(fullPath);
+      } else if (VIDEO_EXTS.has(ext) || BOOK_EXTS.has(ext) || AUDIO_EXTS.has(ext) || MANGA_EXTS.has(ext)) {
+        // Fallback for general custom libraries
+        results.push(fullPath);
+      }
+    }
+  }
+}

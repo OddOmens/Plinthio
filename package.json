@@ -1,0 +1,26 @@
+{
+  "name": "plinthio",
+  "version": "0.1.0",
+  "description": "All-in-one open-source self-hosted media server & PWA for Audiobooks, Manga, and eBooks",
+  "private": true,
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "docker:build": "docker build -t plinthio:latest -f docker/Dockerfile .",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d"
+  },
+  "keywords": [
+    "audiobooks",
+    "manga",
+    "comics",
+    "ebooks",
+    "self-hosted",
+    "pwa",
+    "media-server",
+    "docker"
+  ],
+  "author": "Kadyn",
+  "license": "MIT"
+}
