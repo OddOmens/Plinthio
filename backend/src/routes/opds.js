@@ -2,6 +2,7 @@ import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { escapeXml } from '../utils/xml.js';
+import { ratingSql } from '../services/visibility.js';
 
 const router = express.Router();
 
@@ -107,7 +108,7 @@ router.get('/library/:libraryId', async (req, res) => {
        FROM items
        WHERE library_id = ? AND series IS NOT NULL AND series != ''
        AND media_type IN (${COMIC_MEDIA_TYPES.map(() => '?').join(',')})
-       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)
+       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)${ratingSql(req.user, 'items')}
        GROUP BY series ORDER BY series ASC`,
       [libraryId, ...COMIC_MEDIA_TYPES, req.user.id]
     );
@@ -116,7 +117,7 @@ router.get('/library/:libraryId', async (req, res) => {
       `SELECT * FROM items
        WHERE library_id = ? AND (series IS NULL OR series = '')
        AND media_type IN (${COMIC_MEDIA_TYPES.map(() => '?').join(',')})
-       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)
+       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)${ratingSql(req.user, 'items')}
        ORDER BY title ASC`,
       [libraryId, ...COMIC_MEDIA_TYPES, req.user.id]
     );
@@ -151,7 +152,7 @@ router.get('/library/:libraryId/series/:seriesName', async (req, res) => {
     const items = await db.all(
       `SELECT * FROM items
        WHERE library_id = ? AND series = ?
-       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)
+       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)${ratingSql(req.user, 'items')}
        ORDER BY volume ASC, title ASC`,
       [libraryId, seriesName, req.user.id]
     );
@@ -172,7 +173,7 @@ router.get('/readlists', async (req, res) => {
   try {
     const db = await getDb();
     const lists = await db.all(
-      "SELECT * FROM collections WHERE user_id = ? AND COALESCE(type, 'collection') = 'readlist' ORDER BY name ASC",
+      "SELECT * FROM collections WHERE user_id = ? AND COALESCE(type, 'collection') = 'readlist' AND COALESCE(category, 'read') = 'read' ORDER BY name ASC",
       [req.user.id]
     );
 
@@ -206,7 +207,7 @@ router.get('/readlists/:id', async (req, res) => {
       SELECT i.* FROM collection_items ci
       JOIN items i ON ci.item_id = i.id
       WHERE ci.collection_id = ?
-      AND i.id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)
+      AND i.id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)${ratingSql(req.user, 'i')}
       ORDER BY ci.position ASC, ci.added_at ASC
     `, [req.params.id, req.user.id]);
 
