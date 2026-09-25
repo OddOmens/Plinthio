@@ -46,6 +46,15 @@
             </button>
           </div>
 
+          <!-- Mobile Close Button -->
+          <button aria-label="Close player"
+            @click="player.stop()"
+            class="sm:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition active:scale-95 flex-shrink-0"
+            title="Close player"
+          >
+            <X class="w-4 h-4" />
+          </button>
+
           <!-- Right Controls: Speed, Sleep, Expand, Close -->
           <div class="hidden sm:flex items-center gap-1.5 flex-shrink-0">
             <button aria-label="Fullscreen Now Playing"
@@ -72,16 +81,16 @@
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border'
               ]"
-              :title="player.sleepTimerMinutes ? `Sleep in ${player.sleepTimerMinutes}m` : 'Sleep timer'"
+              :title="player.sleepTimerMinutes ? sleepLabel : 'Sleep timer'"
             >
               <Moon class="w-3.5 h-3.5" />
-              <span v-if="player.sleepTimerMinutes" class="text-[10px] font-bold">
-                {{ player.sleepTimerMinutes }}m
+              <span v-if="player.sleepTimerMinutes" class="text-[10px] font-bold font-mono tabular-nums">
+                {{ sleepLabel }}
               </span>
             </button>
 
             <button aria-label="Close player"
-              @click="player.currentItem = null; player.togglePlay()"
+              @click="player.stop()"
               class="p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition"
               title="Close player"
             >
@@ -122,14 +131,15 @@
 </template>
 
 <script setup>
+import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
-import { usePlayerStore } from '../stores/player';
+import { usePlayerStore, PLAYBACK_SPEEDS } from '../stores/player';
 import NowPlayingModal from './NowPlayingModal.vue';
 import { Play, Pause, RotateCcw, RotateCw, Moon, X, Maximize2 } from 'lucide-vue-next';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 
 const player = usePlayerStore();
-const token = localStorage.getItem('plinthio_token') || '';
+const token = getMediaToken() || '';
 const showNowPlaying = ref(false);
 
 const coverUrl = computed(() => {
@@ -152,17 +162,22 @@ function formatTime(seconds) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-const speeds = [1.0, 1.25, 1.5, 1.75, 2.0, 0.8];
 function cycleSpeed() {
-  const currentIndex = speeds.indexOf(player.playbackRate);
-  const nextIndex = (currentIndex + 1) % speeds.length;
-  player.setPlaybackRate(speeds[nextIndex]);
+  const currentIndex = PLAYBACK_SPEEDS.indexOf(player.playbackRate);
+  const nextIndex = (currentIndex + 1) % PLAYBACK_SPEEDS.length;
+  player.setPlaybackRate(PLAYBACK_SPEEDS[nextIndex]);
 }
 
-const sleepOptions = [null, 15, 30, 45, 60];
 function cycleSleepTimer() {
-  const currentIndex = sleepOptions.indexOf(player.sleepTimerMinutes);
-  const nextIndex = (currentIndex + 1) % sleepOptions.length;
-  player.setSleepTimer(sleepOptions[nextIndex]);
+  const options = player.chapters.length ? [null, 'chapter', 15, 30, 45, 60] : [null, 15, 30, 45, 60];
+  const currentIndex = options.indexOf(player.sleepTimerMinutes);
+  const nextIndex = (currentIndex + 1) % options.length;
+  player.setSleepTimer(options[nextIndex]);
 }
+
+const sleepLabel = computed(() => {
+  if (player.sleepTimerMinutes === 'chapter') return 'Ch.';
+  const secs = player.sleepRemaining;
+  return secs >= 60 ? `${Math.ceil(secs / 60)}m` : `${secs}s`;
+});
 </script>
