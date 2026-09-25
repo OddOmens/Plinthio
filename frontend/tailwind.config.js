@@ -42,6 +42,16 @@ export default {
           foreground: "hsl(var(--card-foreground) / <alpha-value>)",
         },
       },
+      // Half-steps used across the UI (h-8.5, w-4.5, pl-8.5, h-9.5…) that Tailwind 3's
+      // default scale doesn't include — without these the classes silently generate nothing.
+      spacing: {
+        '4.5': '1.125rem',
+        '8.5': '2.125rem',
+        '9.5': '2.375rem',
+      },
+      boxShadow: {
+        xs: '0 1px 2px 0 rgb(0 0 0 / 0.04)',
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

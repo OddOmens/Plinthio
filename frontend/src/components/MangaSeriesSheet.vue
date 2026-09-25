@@ -13,9 +13,12 @@
     <Transition name="sheet-slide">
       <div
         v-if="isOpen"
-        class="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border rounded-t-2xl shadow-2xl flex flex-col"
-        style="max-height: 85dvh"
+        class="fixed bottom-0 inset-x-0 z-50 flex justify-center pointer-events-none"
       >
+        <div
+          class="w-full sm:max-w-xl bg-background border-t sm:border-x border-border rounded-t-2xl shadow-2xl flex flex-col pointer-events-auto pb-safe"
+          style="max-height: 85dvh"
+        >
         <!-- Drag handle -->
         <div class="flex justify-center pt-3 pb-1 flex-shrink-0">
           <div class="w-10 h-1 rounded-full bg-muted-foreground/30" />
@@ -175,11 +178,13 @@
           </div>
         </div>
       </div>
+      </div>
     </Transition>
   </Teleport>
 </template>
 
 <script setup>
+import { placeholderCover } from '../utils/placeholder';
 import { ref, reactive, computed, watch } from 'vue';
 import { X, Book, BookOpen, Play, BookCheck, Settings } from 'lucide-vue-next';
 import api from '../api/client';
@@ -263,7 +268,7 @@ watch(() => props.series?.name, () => {
 
 function coverUrl(vol) {
   if (vol.cover_path) return buildCoverUrl(vol, { width: 360 });
-  return `https://placehold.co/96x144/18181b/52525b?text=${encodeURIComponent(vol.title?.charAt(0) || '?')}`;
+  return placeholderCover(vol.title?.charAt(0), { width: 96, height: 144 });
 }
 
 function hasProgress(vol) {

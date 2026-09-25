@@ -8,7 +8,7 @@
     <!-- Top bar — auto-hides during playback, like a normal video app -->
     <header
       :class="[
-        'absolute top-0 inset-x-0 z-20 transition-opacity duration-300 bg-gradient-to-b from-black/85 to-transparent pt-safe px-4 pb-8 flex items-start gap-3',
+        'absolute top-0 inset-x-0 z-20 transition-opacity duration-300 bg-gradient-to-b from-black/85 to-transparent pt-safe pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-8 flex items-start gap-3',
         controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       ]"
     >
@@ -55,7 +55,7 @@
     <!-- Quality / audio / subtitle picker -->
     <div
       v-if="settingsOpen"
-      class="absolute top-20 right-4 z-30 w-60 rounded-xl bg-black/90 backdrop-blur border border-white/10 text-white p-3 space-y-3 max-h-[70vh] overflow-y-auto"
+      class="absolute top-20 right-[max(1rem,env(safe-area-inset-right))] z-30 w-60 rounded-xl bg-black/90 backdrop-blur border border-white/10 text-white p-3 space-y-3 max-h-[70dvh] overflow-y-auto"
     >
       <div v-if="qualities.length > 1">
         <p class="text-[11px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Quality</p>
@@ -149,7 +149,7 @@
     <div
       v-if="useCustomScrubber && !errorMessage"
       :class="[
-        'absolute bottom-0 inset-x-0 z-20 transition-opacity duration-300 bg-gradient-to-t from-black/90 to-transparent px-4 pt-10 pb-4',
+        'absolute bottom-0 inset-x-0 z-20 transition-opacity duration-300 bg-gradient-to-t from-black/90 to-transparent pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-10 pb-[max(1rem,env(safe-area-inset-bottom))]',
         controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       ]"
     >
@@ -282,6 +282,8 @@
 </template>
 
 <script setup>
+import { loadCastSdk } from '../utils/cast';
+import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import Hls from 'hls.js';
 import api from '../api/client';
@@ -322,7 +324,7 @@ let saveTimer = null;
 let lastSavedTime = 0;
 let hls = null;
 
-const token = localStorage.getItem('plinthio_token') || '';
+const token = getMediaToken() || '';
 const isTranscoding = computed(() => playbackMode.value !== 'direct');
 
 // Track menus
@@ -813,6 +815,7 @@ onMounted(() => {
   loadMarkers();
   if (useCustomScrubber) loadTrickplay();
   window.addEventListener('plinthio-cast-ready', onCastReady);
+  loadCastSdk().then((ok) => { if (ok) castReady.value = true; });
   // Backstop for the timeupdate throttle — covers a tab left paused mid-file.
   saveTimer = setInterval(() => saveProgress(), 15000);
   viewSession.open(props.item.id);

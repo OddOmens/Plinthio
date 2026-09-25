@@ -96,6 +96,8 @@
 </template>
 
 <script setup>
+import { placeholderCover } from '../utils/placeholder';
+import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
 import { BookImage, Layers, BookCheck } from 'lucide-vue-next';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
@@ -112,14 +114,14 @@ defineEmits(['select']);
 
 const imgLoaded = ref(false);
 
-const token = localStorage.getItem('plinthio_token') || '';
+const token = getMediaToken() || '';
 
 const coverUrl = computed(() => {
   // Use the first volume's cover (lowest volume number, already sorted)
   const first = props.series.volumes[0];
-  if (!first) return `https://placehold.co/200x300/18181b/52525b?text=${encodeURIComponent(props.series.name?.charAt(0) || '?')}`;
+  if (!first) return placeholderCover(props.series.name?.charAt(0));
   if (first.cover_path) return buildCoverUrl(first, { width: 360 });
-  return `https://placehold.co/200x300/18181b/52525b?text=${encodeURIComponent(props.series.name?.charAt(0) || '?')}`;
+  return placeholderCover(props.series.name?.charAt(0));
 });
 
 const finishedCount = computed(() => props.series.volumes.filter(v => v.is_finished).length);

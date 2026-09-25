@@ -1,6 +1,6 @@
 <template>
-  <div v-if="isOpen && item" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-card border border-border rounded-2xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+  <div v-if="isOpen && item" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-card border border-border rounded-2xl w-full max-w-md max-h-[85dvh] my-auto flex flex-col shadow-2xl overflow-hidden">
       <!-- Modal Header -->
       <div class="px-5 py-4 border-b border-border flex items-center justify-between">
         <div class="flex items-center gap-2 min-w-0">
@@ -123,6 +123,7 @@
 </template>
 
 <script setup>
+import { getMediaToken } from '../utils/mediaToken';
 import { ref, watch } from 'vue';
 import api from '../api/client';
 import { usePlayerStore } from '../stores/player';
@@ -233,7 +234,7 @@ function jumpToBookmark(bm) {
     emit('select-manga-page', { item: props.item, page: Math.floor(bm.position) });
     emit('close');
   } else {
-    const token = localStorage.getItem('plinthio_token');
+    const token = getMediaToken();
     window.open(`/api/media/book/${props.item.id}/file?token=${token}`, '_blank');
   }
 }
