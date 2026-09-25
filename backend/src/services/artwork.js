@@ -22,6 +22,7 @@ const ALLOWED_COVER_HOSTS = new Set([
 const ALLOWED_COVER_HOST_SUFFIXES = ['.archive.org'];
 const ALLOWED_COVER_EXACT_HOSTS = new Set(['archive.org']);
 const MAX_COVER_BYTES = 15 * 1024 * 1024; // 15MB
+const COVER_FETCH_TIMEOUT_MS = 15000;
 
 export function isAllowedCoverHost(hostname) {
   return ALLOWED_COVER_HOSTS.has(hostname) ||
@@ -40,7 +41,10 @@ export async function downloadCover(coverUrl, itemId) {
     throw new Error('Cover URL is not from an approved metadata provider');
   }
 
-  const res = await fetch(parsed.toString());
+  // Bounded, like every other outbound call: the scanner downloads covers one item at a
+  // time while holding the scan lock, so a CDN that accepts the connection and then stalls
+  // would hang the whole library scan rather than just losing one poster.
+  const res = await fetch(parsed.toString(), { signal: AbortSignal.timeout(COVER_FETCH_TIMEOUT_MS) });
   if (!res.ok) {
     throw new Error(`Cover download failed with status ${res.status}`);
   }
@@ -80,21 +84,20 @@ export async function downloadCover(coverUrl, itemId) {
   return coverFilename;
 }
 
-// Strips the year and any leftover scene-release noise so the title actually matches TMDB.
-function cleanSearchTitle(title) {
-  return title
-    .replace(/\b(19|20)\d{2}\b/g, ' ')
-    .replace(/\b(1080p|720p|2160p|4k|bluray|webrip|web-dl|x264|x265|hevc|aac|ddp?5\.?1|atmos|10bit)\b/gi, ' ')
-    .replace(/[._]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+export { cleanSearchTitle } from './titleCleaner.js';
+import { cleanSearchTitle } from './titleCleaner.js';
 
 /**
  * Best-effort poster art for a movie/show/anime from TMDB. Returns the cover filename, or
  * null if TMDB isn't configured or nothing matched — callers treat it as optional polish,
  * never a scan failure.
  */
+// Whether TMDB lookups can run at all — i.e. whether an admin has supplied a key. The
+// scanner uses this to decide if a provisional video-frame cover is worth retrying.
+export async function isVideoArtworkAvailable() {
+  return !!(await getTmdbApiKey());
+}
+
 export async function fetchVideoArtwork({ itemId, title, series, mediaType, year }) {
   const apiKey = await getTmdbApiKey();
   if (!apiKey) return null;
@@ -104,7 +107,7 @@ export async function fetchVideoArtwork({ itemId, title, series, mediaType, year
   if (!query) return null;
 
   try {
-    const results = await searchExternalMetadata(mediaType, query);
+    const results = await searchExternalMetadata(mediaType, query, year);
     if (!results || results.length === 0) return null;
 
     // Prefer a result whose release year matches the filename's, when we have one.

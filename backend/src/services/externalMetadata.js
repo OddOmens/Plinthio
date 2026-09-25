@@ -8,7 +8,12 @@ async function fetchJson(url, options = {}) {
   try {
     const res = await fetch(url, { ...options, signal: controller.signal });
     if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
+      // The status is attached, not just interpolated into the message, so callers can tell
+      // "your key is wrong" (401/403) apart from "the server can't get out" — advice that
+      // sends someone to debug their firewall over a rejected credential wastes their time.
+      const err = new Error(`Request failed with status ${res.status}`);
+      err.status = res.status;
+      throw err;
     }
     return await res.json();
   } finally {
@@ -125,13 +130,35 @@ async function searchOpenLibrary(query) {
 /**
  * TMDB genre id → name lookup, cached per endpoint since the list rarely changes.
  */
+// TMDB hands out two different credentials on the same settings page, and they authenticate
+// in two different ways:
+//
+//   "API Key"                (v3) 32 hex characters, sent as an ?api_key= query parameter
+//   "API Read Access Token"  (v4) a long JWT, sent as an Authorization: Bearer header
+//
+// Sending one as the other returns 401. Plinthio only ever sent Bearer, so the shorter v3
+// key — the one most people copy, since it's listed first and literally labelled "API Key"
+// — failed every request. Both are accepted now, decided by the shape of the credential.
+function isReadAccessToken(apiKey) {
+  return apiKey.startsWith('eyJ') || apiKey.split('.').length === 3;
+}
+
+function tmdbRequest(url, apiKey) {
+  const headers = { Accept: 'application/json' };
+  if (isReadAccessToken(apiKey)) {
+    headers.Authorization = `Bearer ${apiKey}`;
+    return { url, options: { headers } };
+  }
+  const separator = url.includes('?') ? '&' : '?';
+  return { url: `${url}${separator}api_key=${encodeURIComponent(apiKey)}`, options: { headers } };
+}
+
 const tmdbGenreCache = {};
 async function getTmdbGenreMap(endpoint, apiKey) {
   if (tmdbGenreCache[endpoint]) return tmdbGenreCache[endpoint];
   try {
-    const data = await fetchJson(`https://api.themoviedb.org/3/genre/${endpoint}/list`, {
-      headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' }
-    });
+    const req = tmdbRequest(`https://api.themoviedb.org/3/genre/${endpoint}/list`, apiKey);
+    const data = await fetchJson(req.url, req.options);
     const map = new Map((data.genres || []).map((g) => [g.id, g.name]));
     tmdbGenreCache[endpoint] = map;
     return map;
@@ -144,24 +171,100 @@ async function getTmdbGenreMap(endpoint, apiKey) {
  * TMDB — free tier, requires a personal API key (configured by an admin in Settings).
  * https://developer.themoviedb.org/docs
  */
-async function searchTMDB(query, mediaType, apiKey) {
+async function fetchTmdbCredits(tmdbId, endpoint, apiKey) {
+  try {
+    const creditsEndpoint = endpoint === 'movie' ? 'credits' : 'aggregate_credits';
+    const req = tmdbRequest(
+      `https://api.themoviedb.org/3/${endpoint}/${tmdbId}/${creditsEndpoint}`,
+      apiKey
+    );
+    const data = await fetchJson(req.url, req.options);
+
+    // Director(s) — movies have a flat crew array; TV aggregate_credits has the same shape.
+    const directors = (data.crew || [])
+      .filter((c) => c.job === 'Director' || c.known_for_department === 'Directing' && c.jobs?.some((j) => j.job === 'Director'))
+      .map((c) => c.name)
+      .filter(Boolean)
+      .slice(0, 3);
+
+    // Top billed cast (limit to avoid overwhelming the field)
+    const cast = (data.cast || [])
+      .slice(0, 5)
+      .map((c) => c.name)
+      .filter(Boolean);
+
+    return { directors, cast };
+  } catch (e) {
+    return { directors: [], cast: [] };
+  }
+}
+
+async function searchTMDB(query, mediaType, apiKey, year = null) {
   const endpoint = mediaType === 'movie' ? 'movie' : 'tv';
-  const url = `https://api.themoviedb.org/3/search/${endpoint}?query=${encodeURIComponent(query)}&include_adult=false`;
+  let yearParam = '';
+  if (year) {
+    yearParam = endpoint === 'movie' ? `&year=${encodeURIComponent(year)}` : `&first_air_date_year=${encodeURIComponent(year)}`;
+  }
+  const req = tmdbRequest(
+    `https://api.themoviedb.org/3/search/${endpoint}?query=${encodeURIComponent(query)}&include_adult=false${yearParam}`,
+    apiKey
+  );
   const [data, genreMap] = await Promise.all([
-    fetchJson(url, { headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' } }),
+    fetchJson(req.url, req.options),
     getTmdbGenreMap(endpoint, apiKey)
   ]);
 
-  return (data.results || []).map((r) => {
+  let results = data.results || [];
+
+  // If year-filtered search yielded no results, retry without the year constraint in case
+  // of slight release year discrepancy (e.g. film festival year vs theatrical release)
+  if (results.length === 0 && year) {
+    try {
+      const fallbackReq = tmdbRequest(
+        `https://api.themoviedb.org/3/search/${endpoint}?query=${encodeURIComponent(query)}&include_adult=false`,
+        apiKey
+      );
+      const fallbackData = await fetchJson(fallbackReq.url, fallbackReq.options);
+      results = fallbackData.results || [];
+    } catch (e) {
+      // ignore fallback failure
+    }
+  }
+
+  // If year is specified, prioritize exact year matches at the front
+  if (year && results.length > 1) {
+    results.sort((a, b) => {
+      const dateA = a.release_date || a.first_air_date || '';
+      const dateB = b.release_date || b.first_air_date || '';
+      const matchA = dateA.startsWith(String(year)) ? 1 : 0;
+      const matchB = dateB.startsWith(String(year)) ? 1 : 0;
+      return matchB - matchA;
+    });
+  }
+
+  // Fetch credits for the top 5 results in parallel — beyond that the user rarely scrolls.
+  const creditsMap = new Map();
+  await Promise.allSettled(
+    results.slice(0, 5).map(async (r) => {
+      const credits = await fetchTmdbCredits(r.id, endpoint, apiKey);
+      creditsMap.set(String(r.id), credits);
+    })
+  );
+
+  return results.map((r) => {
     const title = r.title || r.name || 'Untitled';
     const date = r.release_date || r.first_air_date || null;
     const genres = (r.genre_ids || []).map((id) => genreMap.get(id)).filter(Boolean);
+    const credits = creditsMap.get(String(r.id)) || { directors: [], cast: [] };
     return {
       source: 'tmdb',
       externalId: String(r.id),
       title,
       subtitle: null,
-      author: null,
+      // `author` maps to Director(s); `artists` maps to Cast — the frontend relabels
+      // these fields for video media types so the user sees "Director" / "Actors".
+      author: credits.directors.join(', ') || null,
+      artists: credits.cast.join(', ') || null,
       series: endpoint === 'tv' ? title : null,
       releaseDate: date || null,
       overview: r.overview || null,
@@ -171,6 +274,30 @@ async function searchTMDB(query, mediaType, apiKey) {
       coverUrl: r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : null
     };
   });
+}
+
+/**
+ * Checks a TMDB credential by actually calling TMDB with it. Returns which auth style it
+ * turned out to be, so the admin UI can confirm the key works at the moment it's saved
+ * rather than leaving the first failure to surface during a scan.
+ */
+export async function verifyTmdbApiKey(apiKey) {
+  const key = String(apiKey || '').trim();
+  if (!key) return { ok: false, reason: 'No API key provided' };
+
+  const req = tmdbRequest('https://api.themoviedb.org/3/configuration', key);
+  try {
+    await fetchJson(req.url, req.options);
+    return { ok: true, authStyle: isReadAccessToken(key) ? 'read-access-token' : 'api-key' };
+  } catch (err) {
+    if (err.status === 401 || err.status === 403) {
+      return { ok: false, reason: 'TMDB rejected this key. Copy either the "API Key" or the "API Read Access Token" from your TMDB account settings.' };
+    }
+    if (err.name === 'AbortError') {
+      return { ok: false, reason: 'Timed out reaching TMDB — check the container has outbound internet access.' };
+    }
+    return { ok: false, reason: `Could not verify the key with TMDB (${err.message}).` };
+  }
 }
 
 export async function getTmdbApiKey() {
@@ -184,7 +311,7 @@ export async function getTmdbApiKey() {
  * Providers are chosen by media type, matching only free / keyless services
  * except TMDB (movies/shows/anime), which needs an admin-configured key.
  */
-export async function searchExternalMetadata(mediaType, query) {
+export async function searchExternalMetadata(mediaType, query, year = null) {
   if (!query || !query.trim()) {
     throw new Error('A search query is required');
   }
@@ -216,7 +343,7 @@ export async function searchExternalMetadata(mediaType, query) {
         err.code = 'MISSING_API_KEY';
         throw err;
       }
-      return searchTMDB(query, mediaType, apiKey);
+      return searchTMDB(query, mediaType, apiKey, year);
     }
 
     default:

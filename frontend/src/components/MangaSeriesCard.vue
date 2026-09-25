@@ -98,6 +98,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { BookImage, Layers, BookCheck } from 'lucide-vue-next';
+import { coverUrl as buildCoverUrl } from '../utils/cover';
 
 const props = defineProps({
   series: {
@@ -117,7 +118,7 @@ const coverUrl = computed(() => {
   // Use the first volume's cover (lowest volume number, already sorted)
   const first = props.series.volumes[0];
   if (!first) return `https://placehold.co/200x300/18181b/52525b?text=${encodeURIComponent(props.series.name?.charAt(0) || '?')}`;
-  if (first.cover_path) return `/api/media/cover/${first.id}?token=${token}`;
+  if (first.cover_path) return buildCoverUrl(first, { width: 360 });
   return `https://placehold.co/200x300/18181b/52525b?text=${encodeURIComponent(props.series.name?.charAt(0) || '?')}`;
 });
 

@@ -6,6 +6,7 @@ import SettingsView from '../views/SettingsView.vue';
 import DocsView from '../views/DocsView.vue';
 import SetupView from '../views/SetupView.vue';
 import MangaView from '../views/MangaView.vue';
+import ReadListsView from '../views/ReadListsView.vue';
 import { useAuthStore } from '../stores/auth';
 
 const routes = [
@@ -41,6 +42,12 @@ const routes = [
     path: '/docs',
     name: 'docs',
     component: DocsView
+  },
+  {
+    path: '/read-lists',
+    name: 'read-lists',
+    component: ReadListsView,
+    meta: { requiresAuth: true }
   },
   {
     path: '/settings',

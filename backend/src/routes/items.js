@@ -7,6 +7,16 @@ const router = express.Router();
 
 router.use(authenticateToken);
 
+// The shelf renders a card per item, and at library scale this response is the single
+// biggest thing the app moves. `i.*` dragged the long-form metadata (description, genres,
+// themes, artists, publisher, status, release_date) into every row — roughly half the
+// payload, none of it rendered on a card. Detail sheets and the metadata editor fetch the
+// full row from GET /items/:id, so nothing on screen loses a field.
+const LIST_COLUMNS = `
+  i.id, i.library_id, i.title, i.author, i.series, i.volume, i.path, i.cover_path,
+  i.media_type, i.duration, i.total_pages, i.file_size, i.format, i.created_at, i.updated_at
+`;
+
 // List items with pagination, filtering, search, and visibility check
 router.get('/', async (req, res) => {
   const { libraryId, mediaType, author, series, search, limit = 5000, offset = 0 } = req.query;
@@ -16,7 +26,7 @@ router.get('/', async (req, res) => {
     const db = await getDb();
     let query = `
       SELECT
-        i.*,
+        ${LIST_COLUMNS},
         p.current_time,
         p.current_page,
         p.progress_percent,
@@ -25,9 +35,9 @@ router.get('/', async (req, res) => {
         p.updated_at as progress_updated_at
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
-      WHERE i.id NOT IN (
-        SELECT item_id FROM item_visibility
-        WHERE user_id = ? OR user_id IS NULL
+      WHERE NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )
     `;
     const params = [userId, userId];
@@ -84,9 +94,9 @@ router.get('/authors', async (req, res) => {
         MIN(i.id) as sample_item_id
       FROM items i
       WHERE i.author IS NOT NULL AND i.author != ''
-      AND i.id NOT IN (
-        SELECT item_id FROM item_visibility
-        WHERE user_id = ? OR user_id IS NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )
     `;
     const params = [userId];
@@ -120,9 +130,9 @@ router.get('/series', async (req, res) => {
         MIN(i.id) as sample_item_id
       FROM items i
       WHERE i.series IS NOT NULL AND i.series != ''
-      AND i.id NOT IN (
-        SELECT item_id FROM item_visibility
-        WHERE user_id = ? OR user_id IS NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )
     `;
     const params = [userId];
@@ -167,9 +177,9 @@ router.get('/series/:name', async (req, res) => {
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
       LEFT JOIN libraries l ON i.library_id = l.id
       WHERE i.series = ?
-      AND i.id NOT IN (
-        SELECT item_id FROM item_visibility
-        WHERE user_id = ? OR user_id IS NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )
       ORDER BY
         CASE WHEN i.volume IS NULL THEN 1 ELSE 0 END,
@@ -320,9 +330,9 @@ router.get('/folders', async (req, res) => {
       SELECT i.id, i.title, i.author, i.path, i.media_type, l.name as library_name, l.path as library_path
       FROM items i
       JOIN libraries l ON i.library_id = l.id
-      WHERE i.id NOT IN (
-        SELECT item_id FROM item_visibility
-        WHERE user_id = ? OR user_id IS NULL
+      WHERE NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )
       ORDER BY i.path ASC
     `, [userId]);

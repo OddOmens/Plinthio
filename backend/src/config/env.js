@@ -54,7 +54,14 @@ export const config = {
   coversDir: COVERS_DIR,
   dbPath: path.join(DATA_DIR, 'plinthio.sqlite'),
   jwtSecret,
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '30d',
+  // Shortened from 30d now that the app refreshes its token on every load (see
+  // POST /api/auth/refresh): regular users stay signed in indefinitely, while a token that
+  // leaks off a shared or lost device stops working in days rather than a month. Override
+  // with JWT_EXPIRES_IN if a different trade-off suits your setup.
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   corsOrigin: process.env.CORS_ORIGIN || '*',
-  trustProxy: parseTrustProxy(process.env.TRUST_PROXY)
+  trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
+  // How long an idle on-disk HLS segment cache entry survives before the periodic sweep
+  // deletes it (see services/hls.js sweepHlsCache).
+  hlsCacheMaxAgeHours: parseInt(process.env.HLS_CACHE_MAX_AGE_HOURS || '24', 10)
 };

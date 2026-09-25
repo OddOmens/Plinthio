@@ -13,9 +13,25 @@ export function invalidateUserCache(userId) {
   userAuthCache.delete(userId);
 }
 
+// Pulls the API key out of an HTTP Basic header. The username half is ignored for lookup
+// (the key alone identifies the account) but readers still need to send something there.
+function basicAuthApiKey(req) {
+  const header = req.headers['authorization'] || '';
+  if (!header.startsWith('Basic ')) return null;
+  try {
+    const decoded = Buffer.from(header.slice(6), 'base64').toString('utf8');
+    const separator = decoded.indexOf(':');
+    return separator === -1 ? null : decoded.slice(separator + 1).trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function authenticateToken(req, res, next) {
-  // 1. Support X-API-Key for developer/script integrations
-  const apiKey = req.headers['x-api-key'];
+  // 1. Support X-API-Key for developer/script integrations, and HTTP Basic (username +
+  // API key as the password) for OPDS reader apps, which can't do Bearer tokens and
+  // shouldn't be handed the real account password.
+  const apiKey = req.headers['x-api-key'] || basicAuthApiKey(req);
   if (apiKey) {
     try {
       const db = await getDb();

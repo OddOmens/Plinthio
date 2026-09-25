@@ -15,7 +15,7 @@
       <!-- min-w-0 is load-bearing: without it a long title grows this block and shoves the
            reading-mode controls off the edge of a phone/tablet screen entirely. -->
       <div class="flex items-center gap-3 min-w-0 flex-1">
-        <button
+        <button aria-label="Back to shelf"
           @click="closeReader"
           class="p-2 rounded-lg bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-200 active:scale-95 transition flex-shrink-0"
           title="Back to shelf"
@@ -125,13 +125,13 @@
               <div class="relative max-h-full max-w-[49.5%] flex-1 h-full flex items-center justify-center flip-cell">
                 <img :src="displayLeftUrl" :alt="`Page ${displayLeftIndex + 1}`" class="max-h-full max-w-full object-contain pointer-events-none" @load="onPageLoad" />
                 <div v-if="isFlipping" class="flip-leaf" :style="flipLeafStyle" @transitionend="onFlipTransitionEnd">
-                  <img :src="flipOldLeftUrl" class="w-full h-full object-contain pointer-events-none" />
+                  <img :src="flipOldLeftUrl" alt="" aria-hidden="true" class="w-full h-full object-contain pointer-events-none" />
                 </div>
               </div>
               <div class="relative max-h-full max-w-[49.5%] flex-1 h-full flex items-center justify-center flip-cell">
                 <img :src="displayRightUrl" :alt="`Page ${displayRightIndex + 1}`" class="max-h-full max-w-full object-contain pointer-events-none" @load="onPageLoad" />
                 <div v-if="isFlipping" class="flip-leaf" :style="flipLeafStyle" @transitionend="onFlipTransitionEnd">
-                  <img :src="flipOldRightUrl" class="w-full h-full object-contain pointer-events-none" />
+                  <img :src="flipOldRightUrl" alt="" aria-hidden="true" class="w-full h-full object-contain pointer-events-none" />
                 </div>
               </div>
             </div>
@@ -143,7 +143,7 @@
             >
               <img :src="displayCurrentUrl" :alt="`Page ${displayIndex + 1}`" class="max-h-full max-w-full object-contain pointer-events-none" @load="onPageLoad" />
               <div v-if="isFlipping" class="flip-leaf" :style="flipLeafStyle" @transitionend="onFlipTransitionEnd">
-                <img :src="flipOldFullUrl" class="w-full h-full object-contain pointer-events-none" />
+                <img :src="flipOldFullUrl" alt="" aria-hidden="true" class="w-full h-full object-contain pointer-events-none" />
               </div>
             </div>
           </transition>
@@ -223,7 +223,7 @@
       ]"
     >
       <div class="max-w-md mx-auto w-full flex items-center gap-3">
-        <button @click="prevPage" class="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 transition active:scale-95">
+        <button aria-label="Previous page" @click="prevPage" class="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 transition active:scale-95">
           <ChevronLeft class="w-4 h-4" />
         </button>
         <span class="text-xs font-mono tabular-nums text-zinc-400 w-8 text-right flex-shrink-0">
@@ -240,7 +240,7 @@
         <span class="text-xs font-mono tabular-nums text-zinc-400 w-8 flex-shrink-0">
           {{ totalPages }}
         </span>
-        <button @click="nextPage" class="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 transition active:scale-95">
+        <button aria-label="Next page" @click="nextPage" class="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 transition active:scale-95">
           <ChevronRight class="w-4 h-4" />
         </button>
       </div>
@@ -278,7 +278,7 @@
             <Bookmark class="w-3.5 h-3.5 text-zinc-300" />
             <span>Page Bookmarks</span>
           </div>
-          <button @click="showBookmarksModal = false" class="text-zinc-400 hover:text-white p-1 rounded transition">
+          <button aria-label="Close bookmarks" @click="showBookmarksModal = false" class="text-zinc-400 hover:text-white p-1 rounded transition">
             <X class="w-3.5 h-3.5" />
           </button>
         </div>
@@ -315,7 +315,7 @@
               <span class="font-mono font-bold text-zinc-200">Page {{ Math.floor(bm.position) }}</span>
               <p v-if="bm.notes" class="text-zinc-400 text-[11px] truncate">{{ bm.notes }}</p>
             </button>
-            <button @click="deleteBookmark(bm.id)" class="p-1 text-zinc-500 hover:text-destructive transition">
+            <button aria-label="Delete bookmark" @click="deleteBookmark(bm.id)" class="p-1 text-zinc-500 hover:text-destructive transition">
               <Trash2 class="w-3 h-3" />
             </button>
           </div>
@@ -903,6 +903,7 @@ watch(() => props.item?.id, async (newId) => {
     ? Math.max(0, props.item.initialPage - 1)
     : (props.item.current_page ? Math.max(0, props.item.current_page - 1) : 0);
   totalPages.value = props.item.total_pages || 0;
+  await loadSeriesSettings();
   await loadPages();
   loadBookmarks();
   viewSession.open(newId);
@@ -922,9 +923,27 @@ function applyTabletLandscapeDefault() {
   }
 }
 
+// Reading direction is a property of the series, not of this session — a Japanese manga
+// should open right-to-left every time without the reader having to flip it on each open.
+async function loadSeriesSettings() {
+  const { library_id: libraryId, series } = props.item;
+  if (!libraryId || !series) return;
+
+  try {
+    const res = await api.get(`/series/${libraryId}/${encodeURIComponent(series)}/settings`);
+    const direction = res.data?.settings?.readingDirection;
+    if (direction && modes.some((m) => m.id === direction)) {
+      mode.value = direction;
+    }
+  } catch (err) {
+    console.warn('Could not load series reading settings:', err.message);
+  }
+}
+
 // ─── Lifecycle ─────────────────────────────────────────────────────────────────
 onMounted(async () => {
   applyTabletLandscapeDefault();
+  await loadSeriesSettings();
   await loadPages();
   loadBookmarks();
   await nextTick();

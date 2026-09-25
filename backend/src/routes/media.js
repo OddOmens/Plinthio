@@ -8,6 +8,7 @@ import { authenticateToken } from '../middleware/auth.js';
 import { getMangaPagesList, extractMangaPage } from '../services/archive.js';
 import { getThumbnailPath, getOrCreateThumbnail } from '../services/thumbnails.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
+import { escapeXml } from '../utils/xml.js';
 
 const router = express.Router();
 
@@ -118,7 +119,10 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
       </svg>
     `;
     res.setHeader('Content-Type', 'image/svg+xml');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    // The placeholder means "no artwork yet", which is a temporary state — a scan may fill
+    // it in minutes later. Caching it for a day (as this used to) meant a library that
+    // rendered blank once kept rendering blank long after the real posters arrived.
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     res.send(svg);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -192,7 +196,7 @@ router.get('/manga/:id/pages', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Item not found' });
     }
 
-    const pages = getMangaPagesList(item.path);
+    const pages = await getMangaPagesList(item.path);
     res.json({
       totalPages: pages.length,
       pages: pages.map((_, index) => ({ pageIndex: index, pageNumber: index + 1 }))
@@ -219,7 +223,7 @@ router.get('/manga/:id/page/:pageIndex', authenticateToken, async (req, res) => 
     if (!Number.isInteger(pageIndex) || pageIndex < 0) {
       return res.status(400).json({ error: 'Invalid page index' });
     }
-    const page = extractMangaPage(item.path, pageIndex);
+    const page = await extractMangaPage(item.path, pageIndex);
 
     if (!page) {
       return res.status(404).json({ error: 'Page not found' });
@@ -254,17 +258,5 @@ router.get('/book/:id/file', authenticateToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-function escapeXml(unsafe) {
-  return unsafe.replace(/[<>&'"]/g, c => {
-    switch (c) {
-      case '<': return '&lt;';
-      case '>': return '&gt;';
-      case '&': return '&amp;';
-      case '\'': return '&apos;';
-      case '"': return '&quot;';
-    }
-  });
-}
 
 export default router;

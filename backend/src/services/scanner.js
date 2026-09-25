@@ -7,22 +7,34 @@ import { logger } from './logger.js';
 import { config } from '../config/env.js';
 import { getThumbnailPath } from './thumbnails.js';
 import { invalidateCoverCache } from '../routes/media.js';
-import { fetchVideoArtwork } from './artwork.js';
+import { fetchVideoArtwork, isVideoArtworkAvailable } from './artwork.js';
+import { extractVideoFrameCover } from './videoFrame.js';
+import { findCoverInFolder, looksLikeImage } from '../utils/imageFile.js';
+import { parseMediaTitle } from './titleCleaner.js';
+
+const VIDEO_MEDIA_TYPES = ['movie', 'show', 'anime'];
 
 const AUDIO_EXTS = new Set(['.m4b', '.mp3', '.m4a', '.flac', '.aac', '.ogg']);
-const MANGA_EXTS = new Set(['.cbz', '.zip']);
+const MANGA_EXTS = new Set(['.cbz', '.zip', '.cbr', '.rar', '.cb7', '.7z']);
 const BOOK_EXTS = new Set(['.epub', '.pdf']);
 const VIDEO_EXTS = new Set(['.mp4', '.mkv', '.webm', '.avi', '.mov']);
 
-let isScanning = false;
+// Per-library, not global: a slow scan of one library used to reject scans of every other
+// one with "Scanner already running". The lock still exists so the same library can't be
+// walked twice at once (double-inserting, or racing the stale-row prune).
+const scanningLibraryIds = new Set();
+
+export function isLibraryScanning(libraryId) {
+  return scanningLibraryIds.has(libraryId);
+}
 
 export async function scanLibrary(libraryId) {
-  if (isScanning) {
-    logger.warn('scan', 'Scanner already running, skipping trigger request');
+  if (scanningLibraryIds.has(libraryId)) {
+    logger.warn('scan', `Scan already running for library ${libraryId}, skipping trigger request`);
     return { status: 'busy' };
   }
 
-  isScanning = true;
+  scanningLibraryIds.add(libraryId);
   const db = await getDb();
 
   try {
@@ -115,13 +127,13 @@ export async function scanLibrary(libraryId) {
       // configured a key. Best-effort: a miss or a network failure leaves the placeholder
       // cover and never fails the scan.
       if (!meta.coverPath && ['movie', 'show', 'anime'].includes(mediaType)) {
-        const yearMatch = path.basename(filePath).match(/\b(19|20)\d{2}\b/);
+        const parsedFile = parseMediaTitle(path.basename(filePath));
         meta.coverPath = await fetchVideoArtwork({
           itemId,
           title: meta.title,
           series: meta.series,
           mediaType,
-          year: yearMatch ? yearMatch[0] : null
+          year: parsedFile.year
         });
       }
 
@@ -204,11 +216,125 @@ export async function scanLibrary(libraryId) {
       }
     }
 
-    logger.info('scan', `Scan completed for "${library.name}"`, { added, updated, renamed, removed, total: files.length });
-    return { status: 'completed', added, updated, renamed, removed, total: files.length };
+    // Artwork pass. Covers used to be resolved only while a file was being added or
+    // updated, so anything that came in without art — no poster in the folder, no TMDB key
+    // configured at the time — stayed blank forever, since later scans skip unchanged
+    // files. This re-checks every item in the library that still has no usable cover.
+    const artwork = await backfillArtwork(db, library);
+
+    await db.run('UPDATE libraries SET last_scanned_at = CURRENT_TIMESTAMP WHERE id = ?', [libraryId]);
+
+    logger.info('scan', `Scan completed for "${library.name}"`, { added, updated, renamed, removed, artwork, total: files.length });
+    return { status: 'completed', added, updated, renamed, removed, artwork, total: files.length };
   } finally {
-    isScanning = false;
+    scanningLibraryIds.delete(libraryId);
   }
+}
+
+/**
+ * Finds every item in a library whose cover is missing or unusable and tries, in order:
+ * artwork sitting next to the file, TMDB (video only, and only with a key configured), and
+ * for video a frame from the file itself. Returns how many covers it managed to fill in.
+ *
+ * Best-effort throughout: a failure here never fails the scan.
+ */
+async function backfillArtwork(db, library) {
+  const items = await db.all(
+    'SELECT id, path, title, series, media_type, duration, cover_path, cover_source FROM items WHERE library_id = ?',
+    [library.id]
+  );
+
+  let filled = 0;
+  for (const item of items) {
+    const usable = hasUsableCover(item.cover_path);
+
+    // Covers that predate the cover_source column carry no provenance, so classify them
+    // once: if the folder still holds artwork that's where the cover came from, and for a
+    // video with no folder artwork it can only have been a grabbed frame. Without this, a
+    // stand-in from before the upgrade would never be replaced by a real poster.
+    if (usable && !item.cover_source) {
+      const source = findCoverInFolder(path.dirname(item.path))
+        ? 'folder'
+        : (VIDEO_MEDIA_TYPES.includes(item.media_type) ? 'frame' : 'folder');
+      await db.run('UPDATE items SET cover_source = ? WHERE id = ?', [source, item.id]);
+      item.cover_source = source;
+    }
+    // A frame grabbed from the film is a stand-in, not artwork. If a TMDB key has been
+    // configured since, this is the moment to trade it for the real poster — otherwise
+    // adding a key would only ever affect newly-added films.
+    const provisional = usable && item.cover_source === 'frame' && await isVideoArtworkAvailable();
+    if (usable && !provisional) continue;
+
+    let coverPath = null;
+    let coverSource = null;
+
+    // 1. Art next to the file. This also re-runs for items whose stored cover turned out to
+    //    be junk (a macOS `._` sidecar, a truncated download), now that the picker validates
+    //    what it copies.
+    const folderCover = findCoverInFolder(path.dirname(item.path));
+    if (folderCover) {
+      const coverFilename = `${item.id}.jpg`;
+      try {
+        fs.copyFileSync(folderCover, path.join(config.coversDir, coverFilename));
+        coverPath = coverFilename;
+        coverSource = 'folder';
+      } catch (e) {
+        // Unreadable source — fall through to the next strategy.
+      }
+    }
+
+    // 2. TMDB, when an admin has configured a key.
+    if (!coverPath && VIDEO_MEDIA_TYPES.includes(item.media_type)) {
+      const parsed = parseMediaTitle(path.basename(item.path));
+      coverPath = await fetchVideoArtwork({
+        itemId: item.id,
+        title: parsed.cleanTitle || item.title,
+        series: item.series,
+        mediaType: item.media_type,
+        year: parsed.year
+      });
+      if (coverPath) coverSource = 'tmdb';
+    }
+
+    // 3. A frame from the film. Needs no API key, which is the point — a keyless install
+    //    would otherwise show a blank card for every movie it has.
+    // A frame is only worth grabbing if nothing better exists — and never worth re-grabbing
+    // for an item that already has one.
+    if (!coverPath && !provisional && VIDEO_MEDIA_TYPES.includes(item.media_type)) {
+      coverPath = await extractVideoFrameCover(item.path, item.id, item.duration);
+      if (coverPath) coverSource = 'frame';
+    }
+
+    if (!coverPath) continue;
+
+    await db.run(
+      'UPDATE items SET cover_path = ?, cover_source = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [coverPath, coverSource, item.id]
+    );
+    dropCachedImages(item.id);
+    filled++;
+  }
+
+  if (filled > 0) {
+    logger.info('scan', `Filled in artwork for ${filled} item(s) in "${library.name}"`);
+  }
+  return filled;
+}
+
+// A cover row is only as good as the file behind it: these libraries are full of files that
+// claim to be images and aren't, and a stored path pointing at one renders as a blank card.
+function hasUsableCover(coverPath) {
+  if (!coverPath) return false;
+  const full = path.join(config.coversDir, coverPath);
+  return fs.existsSync(full) && looksLikeImage(full);
+}
+
+function dropCachedImages(itemId) {
+  for (const width of [180, 360, 720]) {
+    const thumbPath = getThumbnailPath(itemId, width);
+    try { fs.unlinkSync(thumbPath); } catch (e) { /* nothing cached */ }
+  }
+  invalidateCoverCache(itemId);
 }
 
 function walkDirectory(dir, libraryType, results, visitedRealPaths = new Set()) {

@@ -260,7 +260,7 @@
               :key="idx"
               class="p-3 bg-muted/30 border border-border rounded-xl flex flex-col gap-2.5 relative"
             >
-              <button
+              <button aria-label="Remove"
                 type="button"
                 @click="removeLibraryRow(idx)"
                 class="absolute top-2.5 right-2.5 text-muted-foreground hover:text-destructive p-1"
@@ -325,7 +325,7 @@
               :key="idx"
               class="relative p-3 border border-border rounded-xl bg-muted/20 space-y-2.5"
             >
-              <button
+              <button aria-label="Remove"
                 type="button"
                 @click="removeMember(idx)"
                 class="absolute top-2 right-2 p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted transition"

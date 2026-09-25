@@ -3,7 +3,7 @@
     <!-- Top Bar -->
     <header class="flex items-center justify-between px-4 h-14 border-b border-border bg-background/95 backdrop-blur flex-shrink-0 pt-safe">
       <div class="flex items-center gap-3 min-w-0">
-        <button
+        <button aria-label="Back to shelf"
           @click="closeReader"
           class="w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition active:scale-95"
         >
@@ -96,7 +96,7 @@
       >
         <div class="flex items-center justify-between">
           <span class="font-semibold text-foreground">Display Settings</span>
-          <button @click="showSettings = false" class="text-muted-foreground hover:text-foreground p-1 rounded transition">
+          <button aria-label="Close reader settings" @click="showSettings = false" class="text-muted-foreground hover:text-foreground p-1 rounded transition">
             <X class="w-4 h-4" />
           </button>
         </div>
@@ -129,7 +129,7 @@
             <span class="text-xs font-mono text-foreground">{{ settings.fontSize }}px</span>
           </div>
           <div class="flex items-center gap-2">
-            <button
+            <button aria-label="Decrease font size"
               @click="settings.fontSize = Math.max(12, settings.fontSize - 2); applySettings()"
               class="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-foreground hover:bg-muted transition text-sm font-bold"
             >A</button>
@@ -139,7 +139,7 @@
               @input="applySettings()"
               class="flex-1 accent-foreground"
             />
-            <button
+            <button aria-label="Increase font size"
               @click="settings.fontSize = Math.min(28, settings.fontSize + 2); applySettings()"
               class="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-foreground hover:bg-muted transition text-base font-bold"
             >A</button>
@@ -198,7 +198,7 @@
             <Bookmark class="w-3.5 h-3.5" />
             Bookmarks
           </span>
-          <button @click="showBookmarks = false" class="text-muted-foreground hover:text-foreground p-1 rounded transition">
+          <button aria-label="Close bookmarks" @click="showBookmarks = false" class="text-muted-foreground hover:text-foreground p-1 rounded transition">
             <X class="w-4 h-4" />
           </button>
         </div>
@@ -234,7 +234,7 @@
               <span class="font-medium text-foreground">{{ bm.title || 'Bookmark' }}</span>
               <p v-if="bm.notes" class="text-[11px] truncate mt-0.5">{{ bm.notes }}</p>
             </button>
-            <button @click="deleteBookmark(bm.id)" class="p-1 text-muted-foreground hover:text-destructive transition">
+            <button aria-label="Delete bookmark" @click="deleteBookmark(bm.id)" class="p-1 text-muted-foreground hover:text-destructive transition">
               <Trash2 class="w-3 h-3" />
             </button>
           </div>

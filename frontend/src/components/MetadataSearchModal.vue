@@ -13,7 +13,7 @@
             {{ isBulk ? `Applies to all ${applyToIds.length} volumes` : item?.title }}
           </p>
         </div>
-        <button
+        <button aria-label="Close"
           type="button"
           @click="close"
           class="p-2.5 -m-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
@@ -73,18 +73,18 @@
                 />
               </div>
               <div>
-                <label class="block text-[11px] font-medium text-muted-foreground mb-1">Author(s)</label>
+                <label class="block text-[11px] font-medium text-muted-foreground mb-1">{{ authorLabel }}</label>
                 <input
                   v-model="form.author"
-                  placeholder="Unknown Author"
+                  :placeholder="isVideoType ? 'Director(s)' : 'Unknown Author'"
                   class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
               <div>
-                <label class="block text-[11px] font-medium text-muted-foreground mb-1">Artist(s)</label>
+                <label class="block text-[11px] font-medium text-muted-foreground mb-1">{{ artistsLabel }}</label>
                 <input
                   v-model="form.artists"
-                  placeholder="Comma separated"
+                  :placeholder="isVideoType ? 'Comma separated actors' : 'Comma separated'"
                   class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
@@ -186,6 +186,14 @@
                 placeholder="Search title..."
                 class="flex-1 bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
+              <input
+                v-if="isVideoType"
+                v-model="yearQuery"
+                @keyup.enter="search"
+                placeholder="Year"
+                title="Filter by release year (e.g. 2002)"
+                class="w-20 bg-background border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring text-center"
+              />
               <button
                 type="button"
                 @click="search"
@@ -210,6 +218,10 @@
                 No results found. Try a different search term.
               </div>
 
+              <div v-if="searchedAs && hasSearched && !searching" class="text-[10px] text-muted-foreground/60 text-center px-2">
+                Searched as: <span class="font-mono">{{ searchedAs }}</span>
+              </div>
+
               <div
                 v-for="result in results"
                 :key="`${result.source}-${result.externalId}`"
@@ -230,8 +242,8 @@
                   </div>
                   <div class="flex flex-col min-w-0 flex-1 gap-0.5">
                     <span class="text-xs font-semibold text-foreground truncate">{{ result.title }}</span>
-                    <span v-if="result.author" class="text-[11px] text-muted-foreground truncate">{{ result.author }}</span>
-                    <span v-if="result.artists" class="text-[11px] text-muted-foreground truncate">Art: {{ result.artists }}</span>
+                    <span v-if="result.author" class="text-[11px] text-muted-foreground truncate">{{ isVideoType ? 'Dir: ' : '' }}{{ result.author }}</span>
+                    <span v-if="result.artists" class="text-[11px] text-muted-foreground truncate">{{ isVideoType ? 'Cast: ' : 'Art: ' }}{{ result.artists }}</span>
                     <span v-if="result.releaseDate" class="text-[11px] text-muted-foreground font-mono">{{ result.releaseDate }}</span>
                     <span v-if="result.genres?.length" class="text-[11px] text-muted-foreground truncate">{{ result.genres.join(', ') }}</span>
                     <span v-if="result.themes?.length" class="text-[11px] text-muted-foreground truncate">{{ result.themes.join(', ') }}</span>
@@ -294,6 +306,7 @@ const form = reactive({
 });
 const pickedCoverUrl = ref(null);
 const saving = ref(false);
+const yearQuery = ref('');
 
 const coverFileInput = ref(null);
 const uploadingCover = ref(false);
@@ -334,22 +347,28 @@ const results = ref([]);
 const searching = ref(false);
 const hasSearched = ref(false);
 const errorMessage = ref('');
+const searchedAs = ref('');
 const expanded = ref(false);
 
 const token = localStorage.getItem('plinthio_token') || '';
+
+const isVideoType = computed(() =>
+  ['movie', 'show', 'anime'].includes(props.item?.media_type)
+);
+
+const authorLabel = computed(() => isVideoType.value ? 'Director(s)' : 'Author(s)');
+const artistsLabel = computed(() => isVideoType.value ? 'Cast / Actors' : 'Artist(s)');
 
 const previewCoverUrl = computed(() => {
   if (pickedCoverUrl.value) return pickedCoverUrl.value;
   // Series-wide edits pass a synthetic item with no id, so there's nothing to preview —
   // the upload button still works, since that path keys off the series name.
   if (!props.item?.id) return null;
-  // coverCacheBust changes after an upload so the <img> refetches instead of reusing the
-  // cached response for this item's (unchanged) cover URL.
-  if (props.item.cover_path || coverCacheBust.value) {
-    const bust = coverCacheBust.value ? `&v=${coverCacheBust.value}` : '';
-    return `/api/media/cover/${props.item.id}?token=${token}${bust}`;
-  }
-  return null;
+  // Always fetch from the server — it returns a styled placeholder SVG when no artwork
+  // exists yet, which is far better than showing the ImageOff icon. coverCacheBust forces
+  // a fresh fetch after a user upload so the old art isn't served from the browser cache.
+  const bust = coverCacheBust.value ? `&v=${coverCacheBust.value}` : '';
+  return `/api/media/cover/${props.item.id}?token=${token}${bust}`;
 });
 
 const providerLabel = computed(() => {
@@ -374,10 +393,10 @@ function sourceLabel(source) {
 
 // Fields a search result can contribute, and which form field they map to. `bulkHidden`
 // fields don't make sense to apply across every volume in a series-wide (bulk) edit.
-const PICK_FIELDS = [
+const PICK_FIELDS = computed(() => [
   { key: 'title', label: 'Title', bulkHidden: true },
-  { key: 'author', label: 'Author' },
-  { key: 'artists', label: 'Artists' },
+  { key: 'author', label: isVideoType.value ? 'Director' : 'Author' },
+  { key: 'artists', label: isVideoType.value ? 'Cast' : 'Artists' },
   { key: 'series', label: 'Series' },
   { key: 'releaseDate', label: 'Date' },
   { key: 'status', label: 'Status' },
@@ -386,14 +405,14 @@ const PICK_FIELDS = [
   { key: 'themes', label: 'Themes' },
   { key: 'overview', label: 'Description', formKey: 'description' },
   { key: 'coverUrl', label: 'Cover', bulkHidden: true }
-];
+]);
 
 function hasValue(val) {
   return Array.isArray(val) ? val.length > 0 : !!val;
 }
 
 function pickableFields(result) {
-  return PICK_FIELDS.filter((f) => (!isBulk.value || !f.bulkHidden) && hasValue(result[f.key]));
+  return PICK_FIELDS.value.filter((f) => (!isBulk.value || !f.bulkHidden) && hasValue(result[f.key]));
 }
 
 function applyField(result, field) {
@@ -421,10 +440,12 @@ watch(
       form.publisher = props.item.publisher || '';
       form.status = props.item.status || '';
       pickedCoverUrl.value = null;
-      query.value = props.item.series || props.item.title || '';
+      query.value = props.item.cleanTitle || props.item.series || props.item.title || '';
+      yearQuery.value = (props.item.release_date ? props.item.release_date.slice(0, 4) : props.item.detectedYear) || '';
       results.value = [];
       hasSearched.value = false;
       errorMessage.value = '';
+      searchedAs.value = '';
       expanded.value = false;
     }
   }
@@ -434,11 +455,17 @@ async function search() {
   if (!query.value.trim() || !props.item) return;
   searching.value = true;
   errorMessage.value = '';
+  searchedAs.value = '';
   try {
     const res = await api.get('/metadata/search', {
-      params: { mediaType: props.item.media_type, query: query.value.trim() }
+      params: {
+        mediaType: props.item.media_type,
+        query: query.value.trim(),
+        year: yearQuery.value.trim() || undefined
+      }
     });
     results.value = res.data.results || [];
+    searchedAs.value = res.data.searchedAs || '';
   } catch (err) {
     console.error('Metadata search failed:', err);
     results.value = [];

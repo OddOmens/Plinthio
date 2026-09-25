@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import AudioPlayer from './components/AudioPlayer.vue';
 import GlobalDialog from './components/GlobalDialog.vue';
@@ -23,6 +23,12 @@ const onboardingDone = ref(false);
 // user an admin adds later (who otherwise lands on a shelf configured by someone else's
 // taste). Kept off the login/setup screens so it can't cover the forms that create the
 // account in the first place.
+// One refresh per app load keeps an active session alive indefinitely under the shorter
+// token lifetime (see POST /api/auth/refresh).
+onMounted(() => {
+  authStore.refreshSession();
+});
+
 const showOnboarding = computed(() => {
   if (onboardingDone.value || !authStore.isAuthenticated) return false;
   if (['/login', '/setup'].includes(route.path)) return false;

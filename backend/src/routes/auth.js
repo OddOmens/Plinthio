@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, invalidateUserCache } from '../middleware/auth.js';
 import { scanLibrary } from '../services/scanner.js';
 import { logger } from '../services/logger.js';
 import { LIBRARY_TYPES, resolveLibraryPath, listMediaDirectories } from './libraries.js';
@@ -223,6 +223,42 @@ async function recordLoginAttempt(db, { userId, username, success, ip, userAgent
 // Get current user profile
 router.get('/me', authenticateToken, (req, res) => {
   res.json({ user: req.user });
+});
+
+// Exchange a still-valid token for a fresh one. The app calls this on load, which is what
+// makes a shorter token lifetime workable: someone who opens Plinthio regularly is never
+// signed out, while a token copied off a shared machine stops working within the window
+// rather than a month later.
+router.post('/refresh', authenticateToken, (req, res) => {
+  const token = jwt.sign(
+    {
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
+      tokenVersion: req.user.token_version || 0
+    },
+    config.jwtSecret,
+    { expiresIn: config.jwtExpiresIn }
+  );
+  res.json({ token, user: req.user });
+});
+
+// Invalidate every token issued for this account, this one included — the "signed in
+// somewhere I shouldn't be" button. Bumping token_version is the same mechanism a password
+// change uses, so it revokes instantly rather than waiting for expiry.
+router.post('/sign-out-everywhere', authenticateToken, async (req, res) => {
+  try {
+    const db = await getDb();
+    await db.run(
+      'UPDATE users SET token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [req.user.id]
+    );
+    invalidateUserCache(req.user.id);
+    logger.info('auth', `"${req.user.username}" signed out all sessions`);
+    res.json({ message: 'All sessions signed out. Please sign in again.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

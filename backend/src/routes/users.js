@@ -9,17 +9,41 @@ const VALID_ROLES = ['admin', 'editor', 'viewer'];
 
 router.use(authenticateToken);
 
-// Update current user's preferences (accessible by all users)
+// Update current user's preferences (accessible by all users).
+// Merges into the stored object rather than replacing it: callers send only the keys their
+// screen owns (the Settings page sends three), and a replace silently dropped every other
+// key — including `onboardingComplete`, which made saving Settings replay the onboarding
+// flow on the next render.
 router.patch('/preferences', async (req, res) => {
   const userId = req.user.id;
-  const preferences = req.body;
+  const patch = req.body;
+
+  if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
+    return res.status(400).json({ error: 'Preferences must be an object' });
+  }
 
   try {
     const db = await getDb();
+    const row = await db.get('SELECT preferences FROM users WHERE id = ?', [userId]);
+
+    let stored = {};
+    try {
+      const parsed = row?.preferences ? JSON.parse(row.preferences) : {};
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) stored = parsed;
+    } catch (e) {
+      // Malformed stored JSON — start clean rather than failing the save.
+    }
+
+    const preferences = { ...stored, ...patch };
+
     await db.run(
       'UPDATE users SET preferences = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [JSON.stringify(preferences), userId]
     );
+    // authenticateToken caches the user row (preferences included) for a minute, so without
+    // this every request for the next 60s — /auth/me among them — keeps answering with the
+    // preferences the user just changed away from.
+    invalidateUserCache(userId);
 
     res.json({ message: 'Preferences updated', preferences });
   } catch (err) {

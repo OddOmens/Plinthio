@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import api from '../api/client';
 import { useViewSession } from '../composables/useViewSession';
+import { coverUrl as buildCoverUrl } from '../utils/cover';
 
 let audio = null;
 let saveInterval = null;
@@ -168,15 +169,12 @@ export const usePlayerStore = defineStore('player', {
     updateMediaSession() {
       if (!('mediaSession' in navigator) || !this.currentItem) return;
 
-      const token = localStorage.getItem('plinthio_token');
-      const coverUrl = `/api/media/cover/${this.currentItem.id}?token=${token}`;
-
       navigator.mediaSession.metadata = new MediaMetadata({
         title: this.currentItem.title || 'Plinthio Audiobook',
         artist: this.currentItem.author || 'Unknown Author',
         album: this.currentItem.series || 'Plinthio',
         artwork: [
-          { src: coverUrl, sizes: '512x512', type: 'image/jpeg' }
+          { src: buildCoverUrl(this.currentItem, { width: 360, raw: true }), sizes: '512x512', type: 'image/jpeg' }
         ]
       });
     },

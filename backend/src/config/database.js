@@ -16,6 +16,10 @@ export async function getDb() {
   // Enable foreign keys & WAL mode for performance
   await dbInstance.run('PRAGMA foreign_keys = ON');
   await dbInstance.run('PRAGMA journal_mode = WAL');
+  // WAL lets readers run during a write, but a writer still blocks another writer. The
+  // driver's 1s default was short enough that a library scan writing in bulk could surface
+  // SQLITE_BUSY to someone just saving their reading position.
+  await dbInstance.run('PRAGMA busy_timeout = 5000');
 
   await initSchema(dbInstance);
 
@@ -153,6 +157,9 @@ async function initSchema(db) {
       FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
     );
     CREATE INDEX IF NOT EXISTS idx_item_vis_user ON item_visibility(user_id);
+    -- Serving a file by id checks visibility by item_id (see services/visibility.js), which
+    -- the user_id index above can't answer.
+    CREATE INDEX IF NOT EXISTS idx_item_vis_item ON item_visibility(item_id);
   `);
 
   // System logs table for Admin live viewer
@@ -176,9 +183,17 @@ async function initSchema(db) {
       path TEXT NOT NULL,
       type TEXT NOT NULL, -- 'audiobooks', 'manga', 'books'
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      last_scanned_at DATETIME
     );
   `);
+
+  // Added after the fact for libraries created before automatic scanning existed.
+  try {
+    await db.exec('ALTER TABLE libraries ADD COLUMN last_scanned_at DATETIME');
+  } catch (e) {
+    // Column already exists
+  }
 
   // Media items table
   await db.exec(`
@@ -203,6 +218,7 @@ async function initSchema(db) {
       artists TEXT, -- comma-separated, mirrors 'author' (e.g. multiple MangaDex artist credits)
       publisher TEXT,
       status TEXT, -- e.g. 'ongoing', 'completed', 'hiatus', 'cancelled'
+      cover_source TEXT, -- 'folder' | 'tmdb' | 'frame' | 'upload'
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (library_id) REFERENCES libraries(id) ON DELETE CASCADE
@@ -210,10 +226,17 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_items_library ON items(library_id);
     CREATE INDEX IF NOT EXISTS idx_items_type ON items(media_type);
     CREATE INDEX IF NOT EXISTS idx_items_author ON items(author);
+    -- Every shelf listing ends in ORDER BY title. Without this SQLite builds a temp B-tree
+    -- and sorts the whole library on each request (~370ms at 50k items, ~100ms with it).
+    CREATE INDEX IF NOT EXISTS idx_items_title ON items(title);
+    CREATE INDEX IF NOT EXISTS idx_items_series ON items(series);
   `);
 
-  // Migrate extended metadata columns onto items tables that existed previously
-  for (const col of ['description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT']) {
+  // Migrate extended metadata columns onto items tables that existed previously.
+  // cover_source records where a cover came from ('folder', 'tmdb', 'frame', 'upload') so a
+  // later scan can tell a real poster from the video still used as a stand-in, and upgrade
+  // the stand-in once a TMDB key exists.
+  for (const col of ['description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT', 'cover_source TEXT']) {
     try {
       await db.exec(`ALTER TABLE items ADD COLUMN ${col}`);
     } catch (e) {
@@ -320,6 +343,62 @@ async function initSchema(db) {
     );
     CREATE INDEX IF NOT EXISTS idx_col_items_cid ON collection_items(collection_id);
     CREATE INDEX IF NOT EXISTS idx_col_items_iid ON collection_items(item_id);
+  `);
+
+  // Read lists are collections with type='readlist': same CRUD, but their items carry an
+  // explicit order (a Komga-style reading order spanning several series) rather than being
+  // sorted by when they were added.
+  try {
+    await db.exec(`ALTER TABLE collections ADD COLUMN type TEXT DEFAULT 'collection'`);
+  } catch (e) {
+    // Column already exists
+  }
+  try {
+    await db.exec(`ALTER TABLE collection_items ADD COLUMN position INTEGER`);
+    // Existing rows have no meaningful order yet, so seed it from the order they were added.
+    await db.exec(`
+      UPDATE collection_items SET position = (
+        SELECT COUNT(*) FROM collection_items older
+        WHERE older.collection_id = collection_items.collection_id
+        AND older.added_at <= collection_items.added_at
+      ) - 1
+      WHERE position IS NULL
+    `);
+  } catch (e) {
+    // Column already exists
+  }
+
+  // Intro/credits markers, so the player can offer a skip button. item_id carries no
+  // FK/cascade for the same reason as user_progress and bookmarks — markers are worth
+  // keeping across a library wipe and re-scan, and re-attach by the path-derived item id.
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS intro_credit_markers (
+      item_id TEXT NOT NULL,
+      type TEXT NOT NULL CHECK (type IN ('intro', 'credits')),
+      start_seconds REAL NOT NULL,
+      end_seconds REAL NOT NULL,
+      PRIMARY KEY (item_id, type)
+    );
+  `);
+
+  // Per-series reader/display settings. Deliberately keyed by (library_id, series_name)
+  // rather than a foreign key to a series table: `items.series` is a free-text column with
+  // no series table behind it, and normalising that would mean touching every
+  // series-grouping query in the app. Two libraries can hold same-named series without
+  // sharing settings, which is why library_id is part of the key.
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS series_settings (
+      id TEXT PRIMARY KEY,
+      library_id TEXT NOT NULL,
+      series_name TEXT NOT NULL,
+      reading_direction TEXT, -- 'ltr' | 'rtl' | 'webtoon'
+      age_rating TEXT,
+      title_override TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE (library_id, series_name),
+      FOREIGN KEY (library_id) REFERENCES libraries(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_series_settings_lookup ON series_settings(library_id, series_name);
   `);
 
   // Bookmarks table for Audiobooks, Manga, and Books. item_id intentionally carries no
