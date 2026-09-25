@@ -10,7 +10,7 @@
           <h3 class="text-sm font-semibold text-foreground truncate">Add to Custom Folder</h3>
           <p class="text-xs text-muted-foreground truncate mt-0.5">{{ item?.title }}</p>
         </div>
-        <button
+        <button aria-label="Close"
           type="button"
           @click="close"
           class="p-2.5 -m-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
@@ -36,7 +36,8 @@
             class="flex items-center justify-between p-2.5 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition select-none"
           >
             <div class="flex items-center gap-2.5 min-w-0">
-              <Folder class="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <ListOrdered v-if="folder.type === 'readlist'" class="w-4 h-4 text-primary flex-shrink-0" />
+              <Folder v-else class="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <span class="text-xs font-medium text-foreground truncate">{{ folder.name }}</span>
             </div>
             <input
@@ -91,7 +92,7 @@
 import { ref, watch } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
-import { X, Folder, FolderPlus } from 'lucide-vue-next';
+import { X, Folder, FolderPlus, ListOrdered } from 'lucide-vue-next';
 
 const dialog = useDialogStore();
 

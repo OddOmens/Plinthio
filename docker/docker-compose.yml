@@ -24,6 +24,24 @@ services:
       # secret on first boot and persists it to /config/jwt.secret. Do not hardcode a
       # literal secret in this file: anyone who reads it (repo history, a shared screenshot,
       # a leaked backup) could forge valid login tokens for any account.
+      # Hardware transcoding is auto-detected. Force or disable it under
+      # Admin → Server Settings if detection guesses wrong for your setup.
+      # - HLS_CACHE_MAX_AGE_HOURS=24
     volumes:
       - ./config:/config
       - ${MEDIA_DIR:-/media/library}:/media
+    # Intel QuickSync / AMD VAAPI hardware transcoding: pass the GPU through.
+    # The iHD VAAPI drivers are already in the image.
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - "992"  # host 'render' group GID — grants access to /dev/dri/renderD128
+    #
+    # NVIDIA NVENC instead: install the NVIDIA Container Toolkit on the host and uncomment:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu, video]

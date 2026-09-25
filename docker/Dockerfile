@@ -16,12 +16,23 @@ RUN npm run build
 FROM node:20-slim AS runner
 WORKDIR /app
 
+# VAAPI/QSV drivers ship in the default image so Intel and AMD GPUs transcode out of the box
+# once /dev/dri is passed through (see docker-compose.yml). NVENC needs no extra packages
+# here — it needs the NVIDIA container runtime on the host instead.
+# intel-media-va-driver-non-free lives in Debian's non-free component, which the slim base
+# image doesn't enable — without this the build fails with "no installation candidate".
+RUN sed -i 's/^Components: main$/Components: main contrib non-free non-free-firmware/' /etc/apt/sources.list.d/debian.sources 2>/dev/null || \
+    sed -i 's/ main$/ main contrib non-free non-free-firmware/' /etc/apt/sources.list
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     gosu \
     tzdata \
     ffmpeg \
+    intel-media-va-driver-non-free \
+    mesa-va-drivers \
+    vainfo \
     && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 

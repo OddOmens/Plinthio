@@ -10,7 +10,7 @@
             <p class="text-[11px] text-muted-foreground truncate">{{ item.author || 'Unknown' }}</p>
           </div>
         </div>
-        <button
+        <button aria-label="Close bookmarks"
           @click="$emit('close')"
           class="p-2.5 -m-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
         >
@@ -99,7 +99,7 @@
                 <BookOpen v-else class="w-3 h-3" />
                 <span>Jump</span>
               </button>
-              <button
+              <button aria-label="Delete bookmark"
                 @click="deleteBookmark(bm.id)"
                 class="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-muted transition"
                 title="Delete bookmark"

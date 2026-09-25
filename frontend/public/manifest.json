@@ -1,7 +1,7 @@
 {
   "name": "Plinthio",
   "short_name": "Plinthio",
-  "description": "All-in-one media server for Audiobooks, Manga, and Books",
+  "description": "All-in-one self-hosted media server & PWA for Audiobooks, Manga & Comics, Books, Movies, TV Shows, and Anime",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0b0f19",

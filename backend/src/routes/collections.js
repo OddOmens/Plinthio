@@ -10,6 +10,7 @@ router.use(authenticateToken);
 // List user's custom collections / folders
 router.get('/', async (req, res) => {
   const userId = req.user.id;
+  const { type } = req.query;
   try {
     const db = await getDb();
     const collections = await db.all(`
@@ -20,9 +21,10 @@ router.get('/', async (req, res) => {
       FROM collections c
       LEFT JOIN collection_items ci ON c.id = ci.collection_id
       WHERE c.user_id = ?
+      ${type ? "AND COALESCE(c.type, 'collection') = ?" : ''}
       GROUP BY c.id
       ORDER BY c.name ASC
-    `, [userId]);
+    `, type ? [userId, type] : [userId]);
 
     res.json({ collections });
   } catch (err) {
@@ -38,41 +40,53 @@ router.get('/all-grouped', async (req, res) => {
   try {
     const db = await getDb();
 
-    // 1. Fetch user's custom collections
+    // 1. Fetch user's custom collections. Read lists are excluded — they're an explicit
+    // reading order browsed on their own, not part of the folder/Unorganized split.
     const collections = await db.all(
-      'SELECT * FROM collections WHERE user_id = ? ORDER BY name ASC',
+      "SELECT * FROM collections WHERE user_id = ? AND COALESCE(type, 'collection') = 'collection' ORDER BY name ASC",
       [userId]
     );
 
-    // 2. For each collection, fetch its items
+    // 2. Fetch the items of every collection in one query and group them here. This used
+    // to run a query per collection, so a user with 40 folders paid 40 round trips (each
+    // re-running the visibility check) every time the shelf switched to folder grouping.
     const groupedCollections = [];
-    for (const col of collections) {
+    if (collections.length > 0) {
+      const placeholders = collections.map(() => '?').join(', ');
       let itemsQuery = `
-        SELECT i.*, p.current_time, p.current_page, p.progress_percent, p.is_finished
+        SELECT ci.collection_id, i.*, p.current_time, p.current_page, p.progress_percent, p.is_finished
         FROM collection_items ci
         JOIN items i ON ci.item_id = i.id
         LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
-        WHERE ci.collection_id = ?
-        AND i.id NOT IN (
-          SELECT item_id FROM item_visibility
-          WHERE user_id = ? OR user_id IS NULL
+        WHERE ci.collection_id IN (${placeholders})
+        AND NOT EXISTS (
+          SELECT 1 FROM item_visibility v
+          WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
         )
       `;
-      const params = [userId, col.id, userId];
+      const params = [userId, ...collections.map((c) => c.id), userId];
       if (mediaType && mediaType !== 'all') {
         itemsQuery += ' AND i.media_type = ?';
         params.push(mediaType);
       }
       itemsQuery += ' ORDER BY ci.added_at DESC';
 
-      const items = await db.all(itemsQuery, params);
-      groupedCollections.push({
-        id: col.id,
-        name: col.name,
-        description: col.description,
-        isDefault: false,
-        items
-      });
+      const rows = await db.all(itemsQuery, params);
+      const itemsByCollection = new Map(collections.map((c) => [c.id, []]));
+      for (const row of rows) {
+        const { collection_id: collectionId, ...item } = row;
+        itemsByCollection.get(collectionId)?.push(item);
+      }
+
+      for (const col of collections) {
+        groupedCollections.push({
+          id: col.id,
+          name: col.name,
+          description: col.description,
+          isDefault: false,
+          items: itemsByCollection.get(col.id) || []
+        });
+      }
     }
 
     // 3. Fetch unorganized items (items visible to user not assigned to ANY collection of this user)
@@ -85,9 +99,9 @@ router.get('/all-grouped', async (req, res) => {
         JOIN collections c ON ci.collection_id = c.id
         WHERE c.user_id = ?
       )
-      AND i.id NOT IN (
-        SELECT item_id FROM item_visibility
-        WHERE user_id = ? OR user_id IS NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )
     `;
     const unorgParams = [userId, userId, userId];
@@ -117,18 +131,21 @@ router.get('/all-grouped', async (req, res) => {
 // Create a new custom collection / folder
 router.post('/', async (req, res) => {
   const userId = req.user.id;
-  const { name, description } = req.body;
+  const { name, description, type } = req.body;
 
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Folder name is required' });
+  }
+  if (type && !['collection', 'readlist'].includes(type)) {
+    return res.status(400).json({ error: 'Type must be collection or readlist' });
   }
 
   try {
     const db = await getDb();
     const id = crypto.randomUUID();
     await db.run(
-      `INSERT INTO collections (id, user_id, name, description) VALUES (?, ?, ?, ?)`,
-      [id, userId, name.trim(), (description || '').trim()]
+      `INSERT INTO collections (id, user_id, name, description, type) VALUES (?, ?, ?, ?, ?)`,
+      [id, userId, name.trim(), (description || '').trim(), type || 'collection']
     );
 
     const collection = await db.get('SELECT * FROM collections WHERE id = ?', [id]);
@@ -157,16 +174,17 @@ router.get('/:id', async (req, res) => {
         p.current_page,
         p.progress_percent,
         p.is_finished,
-        ci.added_at as collection_added_at
+        ci.added_at as collection_added_at,
+        ci.position as collection_position
       FROM collection_items ci
       JOIN items i ON ci.item_id = i.id
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
       WHERE ci.collection_id = ?
-      AND i.id NOT IN (
-        SELECT item_id FROM item_visibility
-        WHERE user_id = ? OR user_id IS NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )
-      ORDER BY ci.added_at DESC
+      ORDER BY ci.position ASC, ci.added_at ASC
     `, [userId, id, userId]);
 
     res.json({ collection, items });
@@ -215,21 +233,65 @@ router.post('/:id/items', async (req, res) => {
     const item = await db.get(`
       SELECT i.id FROM items i
       WHERE i.id = ?
-      AND i.id NOT IN (
-        SELECT item_id FROM item_visibility
-        WHERE user_id = ? OR user_id IS NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )
     `, [itemId, userId]);
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });
     }
 
+    // New items go on the end of the reading order rather than the start.
+    const next = await db.get(
+      'SELECT COALESCE(MAX(position), -1) + 1 AS position FROM collection_items WHERE collection_id = ?',
+      [id]
+    );
+
     await db.run(`
-      INSERT OR IGNORE INTO collection_items (collection_id, item_id)
-      VALUES (?, ?)
-    `, [id, itemId]);
+      INSERT OR IGNORE INTO collection_items (collection_id, item_id, position)
+      VALUES (?, ?, ?)
+    `, [id, itemId, next.position]);
 
     res.json({ message: 'Item added to folder' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Set the reading order of a folder/read list. Takes the full ordered list of item ids and
+// renumbers them, so the client can send the list it's showing rather than computing deltas.
+router.put('/:id/reorder', async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+  const { itemIds } = req.body;
+
+  if (!Array.isArray(itemIds)) {
+    return res.status(400).json({ error: 'itemIds must be an array of item ids' });
+  }
+
+  try {
+    const db = await getDb();
+    const collection = await db.get('SELECT id FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
+    if (!collection) {
+      return res.status(404).json({ error: 'Folder not found' });
+    }
+
+    await db.run('BEGIN TRANSACTION');
+    try {
+      for (const [position, itemId] of itemIds.entries()) {
+        await db.run(
+          'UPDATE collection_items SET position = ? WHERE collection_id = ? AND item_id = ?',
+          [position, id, itemId]
+        );
+      }
+      await db.run('COMMIT');
+    } catch (err) {
+      await db.run('ROLLBACK');
+      throw err;
+    }
+
+    res.json({ message: 'Reading order saved' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -262,7 +324,7 @@ router.get('/for-item/:itemId', async (req, res) => {
   try {
     const db = await getDb();
     const rows = await db.all(`
-      SELECT c.id, c.name,
+      SELECT c.id, c.name, COALESCE(c.type, 'collection') as type,
         CASE WHEN ci.item_id IS NOT NULL THEN 1 ELSE 0 END as in_collection
       FROM collections c
       LEFT JOIN collection_items ci ON c.id = ci.collection_id AND ci.item_id = ?

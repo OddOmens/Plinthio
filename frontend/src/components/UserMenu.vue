@@ -33,6 +33,11 @@
           <p class="text-xs text-muted-foreground capitalize">{{ authStore.user?.role }}</p>
         </div>
 
+        <button @click="go('/read-lists')" class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3">
+          <ListOrdered class="w-[18px] h-[18px] text-muted-foreground" />
+          <span>Read Lists</span>
+        </button>
+
         <button @click="go('/docs')" class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3">
           <HelpCircle class="w-[18px] h-[18px] text-muted-foreground" />
           <span>Documents</span>
@@ -74,7 +79,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useThemeStore } from '../stores/theme';
-import { ChevronDown, HelpCircle, Settings, ShieldCheck, Sun, Moon, LogOut } from 'lucide-vue-next';
+import { ChevronDown, HelpCircle, ListOrdered, Settings, ShieldCheck, Sun, Moon, LogOut } from 'lucide-vue-next';
 
 const props = defineProps({
   showLabel: { type: Boolean, default: true },

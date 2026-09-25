@@ -34,7 +34,19 @@
             <span class="hidden sm:inline">Libraries</span>
           </button>
           <button
-            @click="activeTab = 'users'"
+            @click="switchTab('metadata')"
+            :class="[
+              'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
+              activeTab === 'metadata'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            ]"
+          >
+            <Sparkles class="w-4 h-4 text-primary" />
+            <span class="hidden sm:inline">Metadata</span>
+          </button>
+          <button
+            @click="switchTab('users')"
             :class="[
               'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
               activeTab === 'users'
@@ -153,7 +165,7 @@
                 <RefreshCw :class="['w-3.5 h-3.5', scanningId === lib.id ? 'animate-spin' : '']" />
                 <span>{{ scanningId === lib.id ? 'Scanning...' : 'Scan Now' }}</span>
               </button>
-              <button
+              <button aria-label="Delete Library"
                 @click="deleteLibrary(lib)"
                 class="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted transition"
                 title="Delete Library"
@@ -167,6 +179,11 @@
             No media libraries configured yet. Click "Add Library" to point Plinthio at your media folders.
           </div>
         </div>
+      </section>
+
+      <!-- TAB: METADATA & TITLE CLEANUP -->
+      <section v-if="activeTab === 'metadata'">
+        <AdminMetadataManager :libraries="libraries" />
       </section>
 
       <!-- TAB 2: USERS -->
@@ -250,7 +267,7 @@
                 {{ u.role }}
               </span>
 
-              <button
+              <button aria-label="Edit user"
                 @click="openEditUserModal(u)"
                 class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition"
                 title="Edit user"
@@ -258,7 +275,7 @@
                 <Pencil class="w-4 h-4" />
               </button>
 
-              <button
+              <button aria-label="Delete user"
                 v-if="u.id !== authStore.user?.id"
                 @click="deleteUser(u)"
                 class="p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded-md transition"
@@ -294,7 +311,7 @@
               <span class="w-2 h-2 rounded-full" :class="autoRefresh ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground'"></span>
               {{ autoRefresh ? 'Auto-refreshing (3s)' : 'Paused' }}
             </button>
-            <button
+            <button aria-label="Refresh now"
               @click="loadLogs"
               class="p-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border text-xs transition"
               title="Refresh now"
@@ -503,7 +520,7 @@
               <option value="">All Users</option>
               <option v-for="u in users" :key="u.id" :value="u.id">{{ u.username }}</option>
             </select>
-            <button
+            <button aria-label="Refresh now"
               @click="loadActivity"
               class="p-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border text-xs transition"
               title="Refresh now"
@@ -804,6 +821,146 @@
           </div>
         </div>
 
+        <!-- Hardware Transcoding Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Video Transcoding & Hardware Acceleration</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Plinthio prioritizes <strong>Direct Play</strong> and <strong>Direct Stream</strong> before falling back to transcoding.
+              When video streams can be decoded by the browser, they are copied untouched (<code class="text-[11px] bg-muted px-1 rounded">-c:v copy</code>)
+              with zero server video CPU load, and only incompatible audio (e.g. EAC3 / Atmos / DTS) is converted to AAC.
+            </p>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-medium text-foreground">Detected hardware</label>
+            <span
+              :class="[
+                'text-[10px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border',
+                transcoding.detected
+                  ? 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10'
+                  : 'text-muted-foreground border-border bg-muted/40'
+              ]"
+            >
+              {{ transcoding.detected || 'None — using CPU' }}
+            </span>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-foreground">Acceleration</label>
+            <div class="flex gap-2">
+              <select
+                v-model="transcoding.preference"
+                @change="saveTranscoding"
+                class="flex-1 bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="auto">Auto — use whatever is detected (Recommended)</option>
+                <option value="none">Off — always use the CPU</option>
+                <option v-for="method in transcoding.available" :key="method" :value="method">
+                  Force {{ method.toUpperCase() }}
+                </option>
+              </select>
+              <button
+                @click="runHwaccelTest"
+                :disabled="testingHwaccel || !testableMethod"
+                class="px-3.5 py-1.5 rounded-md border border-border text-xs font-medium text-foreground hover:bg-muted transition disabled:opacity-50"
+              >
+                {{ testingHwaccel ? 'Testing...' : 'Test' }}
+              </button>
+            </div>
+            <p v-if="hwaccelTestResult" :class="[
+              'text-[11px]',
+              hwaccelTestResult.ok ? 'text-emerald-500' : 'text-destructive'
+            ]">
+              {{ hwaccelTestResult.ok
+                ? `${testableMethod.toUpperCase()} encoding verified and working on this machine.`
+                : `${testableMethod.toUpperCase()} test failed: ${hwaccelTestResult.error}` }}
+            </p>
+            <p class="text-[11px] text-muted-foreground">
+              Testing runs a short real encode — ffmpeg listing an encoder doesn't prove the driver underneath it works.
+            </p>
+          </div>
+
+          <!-- Architecture & Playback Guide -->
+          <div class="rounded-lg bg-muted/40 border border-border p-3 space-y-2 text-xs text-muted-foreground">
+            <div class="font-medium text-foreground text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+              <span>Playback Pipeline & Host Configuration</span>
+            </div>
+            <ul class="list-disc pl-4 space-y-1.5 text-[11px] leading-relaxed">
+              <li>
+                <strong class="text-foreground">Direct Stream (Remux):</strong> Files with native video (H.264, or HEVC on Vivaldi/Chrome/Edge/Safari) inside MKV containers or with Dolby/DTS audio stream-copy the video at original resolution (up to 4K) using negligible CPU, converting only the audio track to AAC.
+              </li>
+              <li>
+                <strong class="text-foreground">Browser Hardware Acceleration:</strong> For client-side decoding of 4K H.264/HEVC, ensure your browser has hardware video decoding enabled (<code class="bg-muted px-1 rounded">vivaldi://gpu</code> or <code class="bg-muted px-1 rounded">chrome://gpu</code> &rarr; <em>Video Decode: Hardware accelerated</em>).
+              </li>
+              <li>
+                <strong class="text-foreground">Intel QuickSync & VAAPI:</strong> On Intel/AMD hosts running Docker, uncomment <code class="bg-muted px-1 rounded">devices: [/dev/dri:/dev/dri]</code> and add your host's <code class="bg-muted px-1 rounded">render</code> group GID under <code class="bg-muted px-1 rounded">group_add</code> in <code class="bg-muted px-1 rounded">docker-compose.yml</code>.
+              </li>
+              <li>
+                <strong class="text-foreground">Thermal Protection:</strong> Software transcode fallbacks are throttled to 2 threads with ultrafast presets and live scrub generation is separated from video streaming to protect small micro PCs and NUCs from overheating.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Automatic Scanning Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Automatic Scanning</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Picks up media you add to your library folders without anyone having to press Scan. The periodic
+              re-scan is the dependable floor — it works on network shares and bind mounts that emit no filesystem
+              events at all. Watching reacts within seconds where the filesystem supports it.
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <label class="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                v-model="autoScanConfig.enabled"
+                class="rounded border-border text-primary focus:ring-ring"
+              />
+              <span class="text-xs font-semibold text-foreground">Scan libraries automatically</span>
+            </label>
+
+            <div v-if="autoScanConfig.enabled" class="flex flex-col gap-3 pl-0.5">
+              <div class="max-w-xs">
+                <label for="auto-scan-interval" class="block text-[11px] font-medium text-muted-foreground mb-1">Re-scan every</label>
+                <select
+                  id="auto-scan-interval"
+                  v-model.number="autoScanConfig.intervalMinutes"
+                  class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                  <option :value="15">15 minutes</option>
+                  <option :value="30">30 minutes</option>
+                  <option :value="60">Hour</option>
+                  <option :value="360">6 hours</option>
+                  <option :value="1440">Day</option>
+                </select>
+              </div>
+
+              <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  v-model="autoScanConfig.watchEnabled"
+                  class="rounded border-border text-primary focus:ring-ring"
+                />
+                <span class="text-xs text-foreground">Also watch folders for changes (scans ~30s after a file appears)</span>
+              </label>
+            </div>
+
+            <button
+              @click="saveAutoScanConfig"
+              :disabled="savingAutoScanConfig"
+              class="self-start px-3.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <CheckCircle v-if="!savingAutoScanConfig" class="w-3.5 h-3.5" />
+              <span>{{ savingAutoScanConfig ? 'Saving...' : 'Save Scanning Settings' }}</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Database Backup Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
@@ -902,14 +1059,14 @@
                   <div class="text-[11px] text-muted-foreground font-mono">{{ formatBytes(b.size) }}</div>
                 </div>
                 <div class="flex items-center gap-1 flex-shrink-0">
-                  <button
+                  <button aria-label="Download this backup"
                     @click="downloadStoredBackup(b)"
                     class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition"
                     title="Download this backup"
                   >
                     <Download class="w-3.5 h-3.5" />
                   </button>
-                  <button
+                  <button aria-label="Delete this backup"
                     @click="deleteStoredBackup(b)"
                     class="p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded-md transition"
                     title="Delete this backup"
@@ -996,7 +1153,7 @@
 
           <!-- Breadcrumb Navigation -->
           <div class="flex items-center gap-1 flex-wrap text-xs font-mono">
-            <button
+            <button aria-label="Browse to the root folder"
               type="button"
               @click="browseTo('/')"
               class="px-1.5 py-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition"
@@ -1134,6 +1291,7 @@ import { useAuthStore } from '../stores/auth';
 import { useDialogStore } from '../stores/dialog';
 import { useCustomizationStore } from '../stores/customization';
 import Sidebar from '../components/Sidebar.vue';
+import AdminMetadataManager from '../components/AdminMetadataManager.vue';
 import {
   ArrowLeft,
   Folder,
@@ -1183,7 +1341,7 @@ function goToShelf(type) {
 }
 
 
-const validTabs = ['libraries', 'users', 'logs', 'stats', 'activity', 'settings'];
+const validTabs = ['libraries', 'metadata', 'users', 'logs', 'stats', 'activity', 'settings'];
 const activeTab = ref(validTabs.includes(route.query.tab) ? route.query.tab : 'libraries');
 const libraries = ref([]);
 const users = ref([]);
@@ -1217,6 +1375,14 @@ const allServerFilterModes = [
 const tmdbConfigured = ref(false);
 const tmdbKeyInput = ref('');
 const savingTmdbKey = ref(false);
+
+const transcoding = ref({ preference: 'auto', detected: null, available: [] });
+const testingHwaccel = ref(false);
+const hwaccelTestResult = ref(null);
+// "Auto" has nothing specific to test until something is actually detected.
+const testableMethod = computed(() => transcoding.value.preference === 'auto'
+  ? transcoding.value.detected
+  : (transcoding.value.preference === 'none' ? null : transcoding.value.preference));
 
 const showAddLibraryModal = ref(false);
 const newLib = ref({ name: '', path: '', type: 'audiobooks' });
@@ -1265,9 +1431,11 @@ function switchTab(tab) {
   } else if (tab === 'settings') {
     loadServerFilters();
     loadMetadataProviders();
+    loadTranscoding();
     loadCustomization();
     loadBackupConfig();
     loadStoredBackups();
+    loadAutoScanConfig();
   }
 }
 
@@ -1405,6 +1573,38 @@ async function loadMetadataProviders() {
   }
 }
 
+async function loadTranscoding() {
+  try {
+    const res = await api.get('/settings/transcoding');
+    transcoding.value = res.data;
+  } catch (err) {
+    console.warn('Failed to load transcoding settings:', err);
+  }
+}
+
+async function saveTranscoding() {
+  hwaccelTestResult.value = null;
+  try {
+    await api.put('/settings/transcoding', { preference: transcoding.value.preference });
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Failed to save transcoding settings');
+  }
+}
+
+async function runHwaccelTest() {
+  if (!testableMethod.value) return;
+  testingHwaccel.value = true;
+  hwaccelTestResult.value = null;
+  try {
+    const res = await api.post('/settings/transcoding/test', { method: testableMethod.value });
+    hwaccelTestResult.value = res.data;
+  } catch (err) {
+    hwaccelTestResult.value = { ok: false, error: err.response?.data?.error || 'Test failed' };
+  } finally {
+    testingHwaccel.value = false;
+  }
+}
+
 async function saveTmdbKey() {
   savingTmdbKey.value = true;
   try {
@@ -1445,6 +1645,38 @@ async function downloadBackup() {
 }
 
 const backupConfig = ref({ enabled: false, intervalHours: 24, retentionCount: 7 });
+const autoScanConfig = ref({ enabled: true, intervalMinutes: 60, watchEnabled: true });
+const savingAutoScanConfig = ref(false);
+
+async function loadAutoScanConfig() {
+  try {
+    const res = await api.get('/settings/auto-scan');
+    autoScanConfig.value = {
+      enabled: !!res.data.enabled,
+      intervalMinutes: res.data.intervalMinutes || 60,
+      watchEnabled: !!res.data.watchEnabled
+    };
+  } catch (err) {
+    console.warn('Failed to load automatic scanning settings:', err);
+  }
+}
+
+async function saveAutoScanConfig() {
+  savingAutoScanConfig.value = true;
+  try {
+    const res = await api.put('/settings/auto-scan', autoScanConfig.value);
+    autoScanConfig.value = {
+      enabled: !!res.data.enabled,
+      intervalMinutes: res.data.intervalMinutes,
+      watchEnabled: !!res.data.watchEnabled
+    };
+    dialog.alert('Automatic scanning settings saved');
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Failed to save automatic scanning settings');
+  } finally {
+    savingAutoScanConfig.value = false;
+  }
+}
 const savingBackupConfig = ref(false);
 const creatingBackup = ref(false);
 const storedBackups = ref([]);

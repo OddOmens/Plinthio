@@ -1,7 +1,7 @@
 {
   "name": "plinthio",
   "version": "0.1.0",
-  "description": "All-in-one open-source self-hosted media server & PWA for Audiobooks, Manga, and eBooks",
+  "description": "All-in-one self-hosted media server & PWA for Audiobooks, Manga & Comics, Books, Movies, TV Shows, and Anime",
   "private": true,
   "scripts": {
     "dev:backend": "cd backend && npm run dev",

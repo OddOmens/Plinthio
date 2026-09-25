@@ -19,6 +19,20 @@
   <body class="bg-background text-foreground min-h-screen">
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
+    <!-- Google Cast sender SDK, loaded lazily and only in Chromium browsers that support it.
+         The player shows a cast button once cast.framework appears; elsewhere this is a
+         no-op and the button never renders. -->
+    <script>
+      window.__onGCastApiAvailable = function (isAvailable) {
+        if (!isAvailable || !window.cast?.framework) return;
+        cast.framework.CastContext.getInstance().setOptions({
+          receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+          autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+        });
+        window.dispatchEvent(new Event('plinthio-cast-ready'));
+      };
+    </script>
+    <script defer src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

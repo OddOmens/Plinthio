@@ -2,7 +2,7 @@
   <div v-if="isOpen" class="fixed inset-0 z-50 bg-background/95 backdrop-blur-2xl flex flex-col safe-top safe-bottom transition-all select-none">
     <!-- Top Header Bar -->
     <header class="px-5 py-3 flex items-center justify-between border-b border-border/40">
-      <button
+      <button aria-label="Minimize player"
         @click="close"
         class="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition"
         title="Minimize player"
@@ -86,7 +86,7 @@
               <p v-if="bm.notes" class="text-xs text-muted-foreground mt-0.5 break-words">{{ bm.notes }}</p>
             </button>
 
-            <button
+            <button aria-label="Delete bookmark"
               @click="deleteBookmark(bm.id)"
               class="p-1 text-muted-foreground hover:text-destructive transition opacity-60 group-hover:opacity-100"
               title="Delete bookmark"
@@ -105,7 +105,7 @@
       <template v-else>
         <!-- Large High-Res Cover Artwork -->
         <div class="relative w-56 h-56 sm:w-72 sm:h-72 rounded-2xl overflow-hidden shadow-2xl border border-border/80 flex-shrink-0">
-          <img :src="coverUrl" class="w-full h-full object-cover" />
+          <img :src="coverUrl" :alt="`Cover of ${player.currentItem?.title}`" class="w-full h-full object-cover" />
         </div>
 
         <!-- Title & Metadata -->
@@ -140,7 +140,7 @@
 
         <!-- Primary Playback Controls: -30s, -15s, Play/Pause, +15s, +30s -->
         <div class="flex items-center justify-center gap-3 sm:gap-5 w-full">
-          <button
+          <button aria-label="Skip back 30s"
             @click="player.skip(-30)"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 flex flex-col items-center gap-0.5"
             title="Skip back 30s"
@@ -149,7 +149,7 @@
             <span class="text-[9px] font-mono font-bold leading-none">30</span>
           </button>
 
-          <button
+          <button aria-label="Skip back 15s"
             @click="player.skip(-15)"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 flex flex-col items-center gap-0.5"
             title="Skip back 15s"
@@ -158,7 +158,7 @@
             <span class="text-[9px] font-mono font-bold leading-none">15</span>
           </button>
 
-          <button
+          <button :aria-label="player.isPlaying ? 'Pause' : 'Play'"
             @click="player.togglePlay"
             class="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl active:scale-95 hover:scale-105 transition"
           >
@@ -166,7 +166,7 @@
             <Play v-else class="w-7 h-7 fill-current ml-1" />
           </button>
 
-          <button
+          <button aria-label="Skip forward 15s"
             @click="player.skip(15)"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 flex flex-col items-center gap-0.5"
             title="Skip forward 15s"
@@ -175,7 +175,7 @@
             <span class="text-[9px] font-mono font-bold leading-none">15</span>
           </button>
 
-          <button
+          <button aria-label="Skip forward 30s"
             @click="player.skip(30)"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 flex flex-col items-center gap-0.5"
             title="Skip forward 30s"
@@ -253,6 +253,7 @@ import { ref, computed, watch } from 'vue';
 import api from '../api/client';
 import { usePlayerStore } from '../stores/player';
 import { useDialogStore } from '../stores/dialog';
+import { coverUrl as buildCoverUrl } from '../utils/cover';
 import {
   ChevronDown,
   Play,
@@ -281,7 +282,7 @@ const newBookmarkNote = ref('');
 
 const coverUrl = computed(() => {
   if (!player.currentItem?.id) return '';
-  return `/api/media/cover/${player.currentItem.id}?token=${token}`;
+  return buildCoverUrl(player.currentItem, { width: 720 });
 });
 
 const remainingSeconds = computed(() => {

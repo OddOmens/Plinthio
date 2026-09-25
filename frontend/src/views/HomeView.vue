@@ -149,10 +149,14 @@
                 <h3 class="text-xs font-semibold text-foreground tracking-wide uppercase font-mono">Singles</h3>
                 <span class="text-xs text-muted-foreground">({{ mangaSeriesGroups.standalone.length }})</span>
               </div>
-              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+              <div ref="gridEl" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+                <!-- Spacers stand in for the rows unmounted above and below the window, so
+                     the page keeps the height it would have with every card rendered. -->
+                <div v-if="padTopHeight > 0" :style="{ gridColumn: '1 / -1', height: padTopHeight + 'px' }"></div>
                 <BookCard
                   v-for="item in displayedNonSeriesGridItems"
                   :key="item.id"
+                  data-grid-card
                   :item="item"
                   @select="handleItemSelect"
                   @refresh="refreshShelf"
@@ -160,19 +164,11 @@
                   @open-bookmarks="openBookmarksModal"
                 @edit-metadata="openMetadataModal"
                 />
+                <div v-if="padBottomHeight > 0" :style="{ gridColumn: '1 / -1', height: padBottomHeight + 'px' }"></div>
               </div>
 
-              <!-- Incremental loading indicator for large libraries -->
-              <div
-                v-if="visibleGridCount < nonSeriesGridItems.length"
-                class="py-4 text-center"
-              >
-                <button
-                  @click="visibleGridCount += 48"
-                  class="px-4 py-2 rounded-xl bg-card border border-border hover:bg-muted text-xs font-medium text-foreground transition active:scale-95 shadow-sm"
-                >
-                  Showing {{ displayedNonSeriesGridItems.length }} of {{ nonSeriesGridItems.length }} items · Load more
-                </button>
+              <div v-if="hasMoreServerItems" class="py-4 text-center text-xs text-muted-foreground">
+                Loaded {{ nonSeriesGridItems.length }} items · more load as you scroll
               </div>
             </div>
           </template>
@@ -313,7 +309,7 @@
                 </span>
               </div>
 
-              <button
+              <button aria-label="Delete folder"
                 v-if="!folder.isDefault"
                 @click="deleteCustomFolder(folder)"
                 class="p-1 text-muted-foreground hover:text-destructive hover:bg-muted rounded transition"
@@ -405,7 +401,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
@@ -456,7 +452,15 @@ const activeType = ref(
 const searchQuery = ref('');
 const groupBy = ref('grid');
 
+// Items arrive a page at a time rather than in one 5000-row response: the old single fetch
+// both stalled first paint and silently truncated any library past 5000 items.
+const PAGE_SIZE = 1000;
+// Rows of cards kept mounted above and below the viewport, so a fast scroll never exposes
+// an empty gap before the next frame renders.
+const BUFFER_ROWS = 4;
+
 const items = ref([]);
+const hasMoreServerItems = ref(false);
 const continueItems = ref([]);
 const loading = ref(true);
 const activeMangaItem = ref(null);
@@ -637,23 +641,94 @@ const nonSeriesGridItems = computed(() => {
   return [...nonManga, ...standaloneManga].filter(i => enabled.includes(i.media_type));
 });
 
-// Incremental rendering for ultra-fast initial paint (scale to 1000s of items)
-const visibleGridCount = ref(48);
-const displayedNonSeriesGridItems = computed(() => {
-  return nonSeriesGridItems.value.slice(0, visibleGridCount.value);
+// Windowed rendering. The grid only ever mounts the rows near the viewport: rows scrolled
+// off the top are unmounted again and replaced by a spacer of exactly their height, so the
+// scrollbar and scroll position stay honest while the DOM stays small no matter how far
+// down a 50,000-item library you are.
+const gridEl = ref(null);
+const gridColumns = ref(6);
+const rowHeight = ref(300);
+const rowGap = ref(16);
+const windowStartRow = ref(0);
+const windowEndRow = ref(BUFFER_ROWS * 2);
+
+const totalGridRows = computed(() => Math.ceil(nonSeriesGridItems.value.length / gridColumns.value));
+
+const displayedNonSeriesGridItems = computed(() =>
+  nonSeriesGridItems.value.slice(
+    windowStartRow.value * gridColumns.value,
+    windowEndRow.value * gridColumns.value
+  )
+);
+
+// rowHeight already includes one row gap, and the grid adds another gap between a spacer
+// and the row after it — so a spacer standing in for N rows is N*rowHeight minus one gap,
+// or the page grows slightly taller every time the window moves.
+const padTopHeight = computed(() =>
+  windowStartRow.value > 0 ? windowStartRow.value * rowHeight.value - rowGap.value : 0
+);
+const padBottomHeight = computed(() => {
+  const rowsBelow = totalGridRows.value - windowEndRow.value;
+  return rowsBelow > 0 ? rowsBelow * rowHeight.value - rowGap.value : 0;
 });
 
-function onScroll() {
-  const scrollY = window.scrollY || window.pageYOffset;
-  const viewportHeight = window.innerHeight;
-  const fullHeight = document.documentElement.scrollHeight;
+function resetGridWindow() {
+  windowStartRow.value = 0;
+  windowEndRow.value = BUFFER_ROWS * 2;
+}
 
-  // When within 800px of bottom, append 48 more items
-  if (scrollY + viewportHeight >= fullHeight - 800) {
-    if (visibleGridCount.value < nonSeriesGridItems.value.length) {
-      visibleGridCount.value += 48;
-    }
+// Column count comes from the grid's own resolved template, so the responsive breakpoints
+// stay the single source of truth. Row height is measured off a real card (they're a fixed
+// aspect ratio, so every row matches) and only falls back to an estimate before first paint.
+function measureGrid() {
+  const el = gridEl.value;
+  if (!el) return;
+
+  const columns = getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length;
+  if (columns > 0) gridColumns.value = columns;
+
+  const card = el.querySelector('[data-grid-card]');
+  if (card) {
+    const gap = parseFloat(getComputedStyle(el).rowGap) || 0;
+    rowGap.value = gap;
+    const measured = card.getBoundingClientRect().height + gap;
+    // Sub-pixel jitter between measurements would re-trigger the render watcher forever;
+    // only a real change in card size counts.
+    if (measured > 0 && Math.abs(measured - rowHeight.value) > 1) rowHeight.value = measured;
   }
+}
+
+function updateGridWindow() {
+  const el = gridEl.value;
+  if (!el || rowHeight.value <= 0) return;
+
+  const gridTop = el.getBoundingClientRect().top + window.scrollY;
+  const scrolledIntoGrid = window.scrollY - gridTop;
+  const firstVisibleRow = Math.floor(scrolledIntoGrid / rowHeight.value);
+  const rowsOnScreen = Math.ceil(window.innerHeight / rowHeight.value);
+
+  windowStartRow.value = Math.max(0, firstVisibleRow - BUFFER_ROWS);
+  windowEndRow.value = Math.min(
+    totalGridRows.value,
+    Math.max(BUFFER_ROWS * 2, firstVisibleRow + rowsOnScreen + BUFFER_ROWS)
+  );
+
+  // Pull the next page in before the window reaches the end of what's loaded, so scrolling
+  // never stalls on a round trip.
+  const renderedThrough = windowEndRow.value * gridColumns.value;
+  if (renderedThrough > nonSeriesGridItems.value.length - PAGE_SIZE / 2) {
+    loadMoreItems();
+  }
+}
+
+let scrollFrame = null;
+function onScroll() {
+  if (scrollFrame) return;
+  scrollFrame = requestAnimationFrame(() => {
+    scrollFrame = null;
+    measureGrid();
+    updateGridWindow();
+  });
 }
 
 // Grouped by Author map
@@ -707,20 +782,69 @@ function setGrouping(id) {
   }
 }
 
+// Monotonic request id: a slower earlier request must never overwrite a newer result.
+let fetchSeq = 0;
+let searchDebounce = null;
+let loadingMore = false;
+
+async function fetchItemPage(offset) {
+  const params = { limit: PAGE_SIZE, offset };
+  if (activeType.value !== 'all') params.mediaType = activeType.value;
+  if (searchQuery.value) params.search = searchQuery.value;
+
+  const res = await api.get('/items', { params });
+  return res.data.items || [];
+}
+
 async function fetchLibraryItems() {
+  const seq = ++fetchSeq;
   loading.value = true;
   try {
-    const params = { limit: 5000 };
-    if (activeType.value !== 'all') params.mediaType = activeType.value;
-    if (searchQuery.value) params.search = searchQuery.value;
+    const page = await fetchItemPage(0);
+    if (seq !== fetchSeq) return; // A newer fetch already started — discard this one.
+    items.value = page;
+    hasMoreServerItems.value = page.length === PAGE_SIZE;
+    // Recompute from wherever the page is actually scrolled rather than assuming the top:
+    // a refresh after editing an item shouldn't yank the reader back to row 0, and a new
+    // search landing on a shorter list shouldn't leave the window pointing past its end.
+    resetGridWindow();
+    nextTick(() => {
+      measureGrid();
+      updateGridWindow();
+    });
 
-    const res = await api.get('/items', { params });
-    items.value = res.data.items || [];
-    visibleGridCount.value = 48;
+    // Only the grid renders a window; the grouped modes (author / series / disk folder)
+    // build their buckets from the whole set, so they need every page up front.
+    if (groupBy.value !== 'grid') loadAllRemainingItems(seq);
   } catch (err) {
     console.error('Failed to fetch items:', err);
   } finally {
-    loading.value = false;
+    if (seq === fetchSeq) loading.value = false;
+  }
+}
+
+async function loadMoreItems() {
+  if (loadingMore || !hasMoreServerItems.value) return;
+  const seq = fetchSeq;
+  loadingMore = true;
+  try {
+    const page = await fetchItemPage(items.value.length);
+    if (seq !== fetchSeq) return; // The shelf changed underneath us — this page is stale.
+    // The offset walks a stable title ordering, but a concurrent scan can shift rows, so
+    // guard against a row arriving twice rather than rendering a duplicate card.
+    const known = new Set(items.value.map((i) => i.id));
+    items.value = items.value.concat(page.filter((i) => !known.has(i.id)));
+    hasMoreServerItems.value = page.length === PAGE_SIZE;
+  } catch (err) {
+    console.error('Failed to load more items:', err);
+  } finally {
+    loadingMore = false;
+  }
+}
+
+async function loadAllRemainingItems(seq) {
+  while (hasMoreServerItems.value && seq === fetchSeq) {
+    await loadMoreItems();
   }
 }
 
@@ -855,12 +979,46 @@ function refreshShelf() {
   }
 }
 
-watch([activeType, searchQuery, groupBy], () => {
-  visibleGridCount.value = 48;
-  fetchLibraryItems();
-  if (groupBy.value === 'custom_folder') {
-    loadCustomFolders();
+// Media type changes fetch immediately; typing is debounced. Without the debounce every
+// keystroke fired a full library query (5000 rows, megabytes of JSON) — 15 in-flight
+// requests for "attack on titan", with the results racing each other into the grid.
+watch([activeType, searchQuery], ([type], [prevType]) => {
+  resetGridWindow();
+  if (type !== prevType) {
+    clearTimeout(searchDebounce);
+    fetchLibraryItems();
+  } else {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(fetchLibraryItems, 250);
   }
+});
+
+// Grouping (grid / author / series / folder) is applied client-side over the items we
+// already hold, so it doesn't need — and mustn't wait for — another round trip.
+watch(groupBy, (mode) => {
+  resetGridWindow();
+  if (mode === 'custom_folder') {
+    loadCustomFolders();
+  } else if (mode !== 'grid') {
+    // Grouped modes bucket the entire library, so make sure the rest of it is here.
+    loadAllRemainingItems(fetchSeq);
+  }
+});
+
+// A resize can change the column count and the card height at once, which moves every row
+// boundary — re-measure before recomputing the window.
+function onResize() {
+  measureGrid();
+  updateGridWindow();
+}
+
+// Cards only exist to be measured once they've rendered, so re-measure whenever the set of
+// rendered items changes (first paint, a new page, a different filter).
+watch(displayedNonSeriesGridItems, () => {
+  nextTick(() => {
+    measureGrid();
+    updateGridWindow();
+  });
 });
 
 onMounted(() => {
@@ -868,6 +1026,7 @@ onMounted(() => {
     activeType.value = authStore.user.preferences.defaultView;
   }
   window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onResize, { passive: true });
   loadFilterSettings();
   fetchLibraryItems();
   fetchContinueItems();
@@ -875,5 +1034,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll);
+  window.removeEventListener('resize', onResize);
+  if (scrollFrame) cancelAnimationFrame(scrollFrame);
+  clearTimeout(searchDebounce);
 });
 </script>

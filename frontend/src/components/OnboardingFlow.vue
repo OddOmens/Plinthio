@@ -85,7 +85,7 @@
             </header>
 
             <div class="grid grid-cols-4 sm:grid-cols-8 gap-3">
-              <button
+              <button :aria-label="acc.label"
                 v-for="acc in accentOptions"
                 :key="acc.id"
                 type="button"

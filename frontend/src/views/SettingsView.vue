@@ -425,6 +425,31 @@
           <p class="text-xs text-muted-foreground mt-0.5">Generate personal API keys to authenticate scripts, widgets, and 3rd party apps</p>
         </div>
 
+        <!-- OPDS catalog: comic/ebook reader apps authenticate with an API key, so this
+             belongs next to where keys are created rather than off in its own tab. -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
+          <div class="border-b border-border pb-2">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">OPDS Catalog</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Add this URL to a comics/ebook reader (Chunky, Panels, KyBook, Moon+ Reader) to browse and read your
+              library there. Sign in with your Plinthio username and an API key from below as the password.
+            </p>
+          </div>
+          <div class="flex gap-2">
+            <input
+              :value="opdsUrl"
+              readonly
+              class="flex-1 bg-background border border-border rounded-md px-3 py-1.5 text-xs font-mono text-foreground"
+            />
+            <button
+              @click="copyOpdsUrl"
+              class="px-3.5 py-1.5 rounded-md border border-border text-xs font-medium text-foreground hover:bg-muted transition"
+            >
+              {{ opdsCopied ? 'Copied' : 'Copy' }}
+            </button>
+          </div>
+        </div>
+
         <!-- Create Key Form Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
           <div class="border-b border-border pb-2">
@@ -484,7 +509,7 @@
                 <span class="ml-2 font-mono text-muted-foreground">••••{{ k.last4 }}</span>
                 <span class="ml-3 text-[10px] text-muted-foreground font-mono">{{ formatDate(k.created_at) }}</span>
               </div>
-              <button
+              <button aria-label="Revoke key"
                 @click="deleteKey(k)"
                 class="p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded transition"
                 title="Revoke key"
@@ -576,6 +601,25 @@
               Update Password
             </button>
           </form>
+        </div>
+
+        <!-- Active Sessions Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-2">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Sessions</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Signing in stores a token on that device. This revokes every one of them immediately — including
+              this browser — so use it if you've signed in somewhere you no longer control.
+            </p>
+          </div>
+
+          <button
+            @click="signOutEverywhere"
+            :disabled="signingOutEverywhere"
+            class="self-start px-4 py-2 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs font-medium transition shadow-sm disabled:opacity-50"
+          >
+            {{ signingOutEverywhere ? 'Signing out...' : 'Sign out of all devices' }}
+          </button>
         </div>
       </section>
 
@@ -691,6 +735,19 @@ const availableFilterModes = computed(() => {
 
 const hiddenItems = ref([]);
 const apiKeys = ref([]);
+
+const opdsUrl = `${window.location.origin}/api/opds`;
+const opdsCopied = ref(false);
+
+async function copyOpdsUrl() {
+  try {
+    await navigator.clipboard.writeText(opdsUrl);
+    opdsCopied.value = true;
+    setTimeout(() => { opdsCopied.value = false; }, 2000);
+  } catch (err) {
+    console.warn('Could not copy OPDS URL:', err);
+  }
+}
 const newKeyName = ref('');
 const newGeneratedKey = ref('');
 const copied = ref(false);
@@ -767,9 +824,12 @@ async function savePreferences() {
   }
   savingPrefs.value = true;
   try {
-    await api.patch('/users/preferences', prefs.value);
+    // Cache what the server actually stored (the merge of these three keys into the rest),
+    // not just the keys this screen owns — overwriting the local copy with `prefs.value`
+    // would drop `onboardingComplete` and pop the onboarding flow open on the spot.
+    const { data } = await api.patch('/users/preferences', prefs.value);
     if (authStore.user) {
-      authStore.user.preferences = prefs.value;
+      authStore.user.preferences = data.preferences || { ...authStore.user.preferences, ...prefs.value };
       localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
     }
     dialog.alert('Preferences saved successfully');
@@ -821,6 +881,26 @@ async function deleteKey(key) {
     apiKeys.value = apiKeys.value.filter(k => k.id !== key.id);
   } catch (err) {
     dialog.alert('Failed to delete key');
+  }
+}
+
+const signingOutEverywhere = ref(false);
+
+async function signOutEverywhere() {
+  const confirmed = await dialog.confirm({
+    title: 'Sign out everywhere',
+    message: 'Every device signed in to this account will be signed out immediately, including this one.',
+    confirmText: 'Sign out everywhere',
+    danger: true
+  });
+  if (!confirmed) return;
+
+  signingOutEverywhere.value = true;
+  try {
+    await authStore.signOutEverywhere();
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Failed to sign out of all devices');
+    signingOutEverywhere.value = false;
   }
 }
 

@@ -321,7 +321,7 @@
 
               <!-- View Layout Switcher (Grid vs List) -->
               <div class="flex items-center bg-muted/50 p-0.5 rounded-lg border border-border">
-                <button
+                <button aria-label="Grid view"
                   @click="viewLayout = 'grid'"
                   :class="[
                     'p-1 rounded-md transition',
@@ -331,7 +331,7 @@
                 >
                   <LayoutGrid class="w-3.5 h-3.5" />
                 </button>
-                <button
+                <button aria-label="List view"
                   @click="viewLayout = 'list'"
                   :class="[
                     'p-1 rounded-md transition',
@@ -472,7 +472,7 @@
                 </button>
 
                 <!-- Mark Read / Unread 1-Click Toggle -->
-                <button
+                <button :aria-label="vol.is_finished ? 'Mark as Unread' : 'Mark as Read'"
                   @click="toggleVolumeReadStatus(vol)"
                   class="w-8 h-8 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
                   :title="vol.is_finished ? 'Mark as Unread' : 'Mark as Read'"
@@ -482,7 +482,7 @@
                 </button>
 
                 <!-- Bookmarks button -->
-                <button
+                <button aria-label="Bookmarks & Notes"
                   @click="openBookmarks(vol)"
                   class="w-8 h-8 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
                   title="Bookmarks & Notes"
@@ -602,7 +602,7 @@
               </button>
 
               <!-- Bookmarks Button -->
-              <button
+              <button aria-label="Bookmarks & Notes"
                 @click="openBookmarks(vol)"
                 class="w-9 h-9 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
                 title="Bookmarks & Notes"
@@ -658,6 +658,7 @@ import Sidebar from '../components/Sidebar.vue';
 import MangaReader from '../components/MangaReader.vue';
 import BookmarksModal from '../components/BookmarksModal.vue';
 import MetadataSearchModal from '../components/MetadataSearchModal.vue';
+import { coverUrl as buildCoverUrl } from '../utils/cover';
 import {
   ArrowLeft,
   ChevronRight,
@@ -765,14 +766,14 @@ const primaryCoverUrl = computed(() => {
   // rather than always volume 1, so the hero art tracks where you actually are in the series.
   const current = series.value.nextVolume || series.value.volumes[0];
   if (current.cover_path) {
-    return `/api/media/cover/${current.id}?token=${token}`;
+    return buildCoverUrl(current, { width: 720 });
   }
   return 'https://placehold.co/400x600/18181b/52525b?text=Manga';
 });
 
 function volumeCoverUrl(vol) {
   if (vol.cover_path) {
-    return `/api/media/cover/${vol.id}?token=${token}`;
+    return buildCoverUrl(vol, { width: 360 });
   }
   return `https://placehold.co/200x300/18181b/52525b?text=${encodeURIComponent(vol.title?.charAt(0) || '?')}`;
 }

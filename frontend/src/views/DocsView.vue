@@ -214,6 +214,21 @@
               in fields that are still empty.
             </p>
           </div>
+
+          <div class="p-4 rounded-xl bg-card border border-primary/20 space-y-2">
+            <div class="text-xs font-semibold text-foreground flex items-center gap-2">
+              <Sparkles class="w-4 h-4 text-primary" />
+              <span>Title Cleanup & Batch Metadata Matching (Admin &rarr; Metadata)</span>
+            </div>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              When video files with scene-release tags (e.g., <code class="text-primary font-mono text-[11px]">Resident.Evil.2002.1080p.BluRay.x264.mkv</code>) are scanned, the Title Cleaner parses the clean movie/show title and isolates the 4-digit release year.
+            </p>
+            <ul class="text-xs text-muted-foreground list-disc list-inside space-y-1 pt-1">
+              <li><strong class="text-foreground">Title Cleanup:</strong> One-click batch cleanup updates database titles to human-readable names and preserves detected years.</li>
+              <li><strong class="text-foreground">Batch TMDB Match:</strong> Searches TMDB using the clean title and exact year to fetch official poster art, director, cast, synopses, and release dates for all selected items.</li>
+              <li><strong class="text-foreground">Manual Override & Identify:</strong> Search TMDB manually with title and optional year constraints to pick alternative posters or fix ambiguous titles.</li>
+            </ul>
+          </div>
         </section>
 
         <!-- SECTION: User Roles & Permissions -->
@@ -295,7 +310,7 @@
                 <span>Apple iOS (iPhone & iPad)</span>
               </div>
               <ol class="text-xs text-muted-foreground space-y-2.5 list-decimal list-inside leading-relaxed">
-                <li>Open <strong>Safari</strong> and navigate to your Plinthio address (e.g. <code class="text-foreground bg-muted px-1.5 py-0.5 rounded break-all">http://100.x.x.x:8088</code>).</li>
+                <li>Open <strong>Safari</strong> and navigate to your Plinthio address (e.g. <code class="text-foreground bg-muted px-1.5 py-0.5 rounded break-all">http://XXX.XXX.XXX.X:8088</code>).</li>
                 <li>Tap the <strong>Share</strong> button (the square with an arrow pointing upward) at the bottom toolbar.</li>
                 <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
                 <li>Tap <strong>Add</strong> in the top right corner.</li>
@@ -369,13 +384,13 @@
             <div class="text-xs text-foreground space-y-2">
               <p>Your Plinthio server is already accessible on the host's Tailnet at:</p>
               <div class="p-2.5 rounded-lg bg-background border border-border font-mono text-xs flex items-center justify-between gap-2 overflow-x-auto">
-                <span class="whitespace-nowrap">http://100.x.x.x:8088</span>
+                <span class="whitespace-nowrap">http://XXX.XXX.XXX.X:8088</span>
                 <span class="text-emerald-500 font-sans text-[11px] font-medium flex-shrink-0">Ready</span>
               </div>
               <div class="pt-2 text-xs text-muted-foreground space-y-1.5">
                 <div>1. Install the free <strong>Tailscale</strong> app on your iPhone or Android phone.</div>
                 <div>2. Sign in with the same account used on your host machine.</div>
-                <div>3. Open Safari or Chrome on your phone and open <code class="text-foreground bg-muted px-1.5 py-0.5 rounded break-all">http://100.x.x.x:8088</code>. You will connect instantly over 5G/LTE just like local Wi-Fi!</div>
+                <div>3. Open Safari or Chrome on your phone and open <code class="text-foreground bg-muted px-1.5 py-0.5 rounded break-all">http://XXX.XXX.XXX.X:8088</code>. You will connect instantly over 5G/LTE just like local Wi-Fi!</div>
               </div>
             </div>
           </div>
@@ -814,14 +829,28 @@ header input[type="text"] {
               </p>
             </div>
 
-            <div class="p-4 rounded-xl border border-border bg-card space-y-1.5">
-              <div class="font-semibold text-xs text-foreground">Video won't play / keeps buffering</div>
-              <p class="text-xs text-muted-foreground">
-                Some codecs and containers aren't supported natively by browsers and are transcoded on the fly, which
-                is more CPU-intensive than direct streaming — playback starts more slowly and quality may briefly step
-                down under load. This is expected for those files; a wired connection or a lower-bitrate source
-                generally helps.
+            <div class="p-4 rounded-xl border border-border bg-card space-y-2">
+              <div class="font-semibold text-xs text-foreground">Video playback: Stuttering, buffering, or "Converting for browser"</div>
+              <p class="text-xs text-muted-foreground leading-relaxed">
+                Plinthio uses a 3-tier playback engine designed to maximize performance and minimize server load:
               </p>
+              <ul class="list-disc pl-4 space-y-1 text-xs text-muted-foreground leading-relaxed">
+                <li>
+                  <strong class="text-foreground">Direct Play (0% Server Load):</strong> When files use native browser formats (e.g. H.264 or HEVC with AAC in MP4), the file is streamed straight off disk with zero transcoding.
+                </li>
+                <li>
+                  <strong class="text-foreground">Direct Stream (Remux):</strong> When video is compatible (e.g. H.264 or HEVC on Chromium/Safari) but the container is MKV or the audio is EAC3 / Dolby Atmos / DTS, Plinthio copies the video stream untouched (<code class="bg-muted px-1 rounded">-c:v copy</code>) and only converts the audio track to AAC. This uses ~0.5% CPU, starts in &lt;100ms, and preserves original 4K/1080p quality.
+                </li>
+                <li>
+                  <strong class="text-foreground">Browser Hardware Acceleration:</strong> For smooth playback and instant seeking, make sure your browser has hardware video decoding enabled. In Chrome, Edge, or Vivaldi, navigate to <code class="bg-muted px-1 rounded">vivaldi://gpu</code> or <code class="bg-muted px-1 rounded">chrome://gpu</code> and confirm <em>"Video Decode: Hardware accelerated"</em> is active.
+                </li>
+                <li>
+                  <strong class="text-foreground">Server Hardware Transcoding:</strong> When a video stream itself must be transcoded (e.g. 10-bit H.264), Plinthio offloads the encode to your GPU (Intel QuickSync, VAAPI, or NVIDIA NVENC). On Docker, pass <code class="bg-muted px-1 rounded">/dev/dri</code> and the host <code class="bg-muted px-1 rounded">render</code> group GID in <code class="bg-muted px-1 rounded">docker-compose.yml</code>.
+                </li>
+                <li>
+                  <strong class="text-foreground">Thermal Safety:</strong> Background thumbnail scrubbing passes are decoupled from video playback, and software transcode fallbacks are limited to 2 threads to prevent overheating on low-power Intel NUCs and micro PCs.
+                </li>
+              </ul>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card space-y-1.5">

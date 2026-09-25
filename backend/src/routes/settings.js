@@ -4,6 +4,7 @@ import path from 'path';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import { getDetectedHwaccel, listHwaccels, testHwaccel } from '../services/hwaccel.js';
 import {
   listBackupFiles,
   getBackupSettings,
@@ -12,6 +13,8 @@ import {
   getBackupFilePath,
   deleteBackupFile
 } from '../services/backup.js';
+import { getAutoScanSettings, saveAutoScanSettings } from '../services/autoScan.js';
+import { verifyTmdbApiKey } from '../services/externalMetadata.js';
 
 const router = express.Router();
 
@@ -67,6 +70,55 @@ router.get('/metadata-providers', authenticateToken, requireAdmin, async (req, r
   }
 });
 
+// Hardware transcoding: what this machine can do, and what the admin has chosen.
+router.get('/transcoding', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const db = await getDb();
+    const row = await db.get("SELECT value FROM settings WHERE key = 'transcode_hwaccel'");
+    res.json({
+      preference: row?.value || 'auto',
+      detected: await getDetectedHwaccel(),
+      available: listHwaccels()
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put('/transcoding', authenticateToken, requireAdmin, async (req, res) => {
+  const { preference } = req.body;
+  if (!['auto', 'none', ...listHwaccels()].includes(preference)) {
+    return res.status(400).json({ error: 'Unknown hardware acceleration preference' });
+  }
+
+  try {
+    const db = await getDb();
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('transcode_hwaccel', ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+      [preference]
+    );
+    res.json({ message: 'Transcoding settings saved', preference });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Runs a short real encode, because ffmpeg listing an encoder is no guarantee the driver
+// underneath it actually works — that usually only shows up as failed playback otherwise.
+router.post('/transcoding/test', authenticateToken, requireAdmin, async (req, res) => {
+  const { method } = req.body;
+  if (!listHwaccels().includes(method)) {
+    return res.status(400).json({ error: 'Unknown hardware acceleration method' });
+  }
+
+  try {
+    res.json(await testHwaccel(method));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Admin endpoint to set/clear the TMDB API key used for movie/show/anime metadata search
 router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, async (req, res) => {
   const { apiKey } = req.body;
@@ -78,13 +130,25 @@ router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, asyn
       return res.json({ message: 'TMDB API key cleared', tmdbConfigured: !!process.env.TMDB_API_KEY });
     }
 
+    // Verify before storing. A key that doesn't work should say so here, not silently do
+    // nothing until someone notices their posters never arrived.
+    const check = await verifyTmdbApiKey(apiKey);
+    if (!check.ok) {
+      return res.status(400).json({ error: check.reason, code: 'TMDB_KEY_REJECTED' });
+    }
+
     await db.run(
       `INSERT INTO settings (key, value, updated_at) VALUES ('tmdb_api_key', ?, CURRENT_TIMESTAMP)
        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
       [apiKey.trim()]
     );
 
-    res.json({ message: 'TMDB API key saved', tmdbConfigured: true });
+    res.json({
+      message: check.authStyle === 'read-access-token'
+        ? 'TMDB Read Access Token saved and verified'
+        : 'TMDB API key saved and verified',
+      tmdbConfigured: true
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -150,6 +214,33 @@ router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) =
       retentionCount: parsedRetention
     });
     res.json({ message: 'Backup schedule updated', ...settings });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin endpoints: automatic library scanning (periodic sweep + filesystem watcher)
+router.get('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    res.json(await getAutoScanSettings());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
+  const { enabled, intervalMinutes, watchEnabled } = req.body;
+
+  if (intervalMinutes !== undefined) {
+    const parsed = parseInt(intervalMinutes, 10);
+    if (!Number.isFinite(parsed) || parsed < 5 || parsed > 7 * 24 * 60) {
+      return res.status(400).json({ error: 'Scan interval must be between 5 minutes and 7 days' });
+    }
+  }
+
+  try {
+    const settings = await saveAutoScanSettings({ enabled, intervalMinutes, watchEnabled });
+    res.json({ message: 'Automatic scanning updated', ...settings });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

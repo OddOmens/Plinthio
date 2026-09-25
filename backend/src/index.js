@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import morgan from 'morgan';
 import path from 'path';
 import fs from 'fs';
@@ -27,8 +28,13 @@ import settingRoutes from './routes/settings.js';
 import metadataRoutes from './routes/metadata.js';
 import customizationRoutes from './routes/customization.js';
 import activityRoutes from './routes/activity.js';
+import seriesRoutes from './routes/series.js';
+import opdsRoutes from './routes/opds.js';
 import { warmThumbnailCache } from './services/thumbnails.js';
 import { initBackupScheduler } from './services/backup.js';
+import { initAutoScan } from './services/autoScan.js';
+import { sweepHlsCache } from './services/hls.js';
+import { sweepArchiveCache } from './services/archive/sevenZipBackend.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,6 +58,20 @@ app.use(helmet({
 // wildcard origin, `credentials: true` is also something browsers just reject outright for
 // an actual cross-origin credentialed request — it was a no-op, not a real permission.
 app.use(cors({ origin: config.corsOrigin }));
+
+// JSON responses compress extremely well (a 1000-item shelf page measured 386KB raw vs
+// 29KB gzipped) and that ratio is what a phone or a remote connection actually feels.
+// Media, covers and thumbnails are already-compressed binary formats where gzip burns CPU
+// for nothing, so they opt out — as does any response explicitly marked no-transform.
+app.use(compression({
+  threshold: 1024,
+  filter: (req, res) => {
+    const type = res.getHeader('Content-Type') || '';
+    if (typeof type === 'string' && /^(image|video|audio)\//.test(type)) return false;
+    return compression.filter(req, res);
+  }
+}));
+
 app.use(express.json());
 
 // Media URLs authenticate via a `?token=<JWT>` query param (needed for <img>/<video> src,
@@ -126,6 +146,10 @@ app.use('/api/settings', settingRoutes);
 app.use('/api/metadata', metadataRoutes);
 app.use('/api/customization', customizationRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/series', seriesRoutes);
+// OPDS readers poll the catalog and fetch pages one at a time, so it sits under the media
+// limiter rather than the tighter JSON API one.
+app.use('/api/opds', mediaLimiter, opdsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -158,6 +182,22 @@ async function start() {
 
     // Periodically snapshot the database per the admin-configured backup schedule
     initBackupScheduler();
+
+    // Pick up new media on its own: a periodic re-scan plus (where the filesystem supports
+    // it) a watcher, both configurable under Admin → Server Settings.
+    initAutoScan();
+
+    // Evict stale on-disk HLS segment caches (see HLS_CACHE_MAX_AGE_HOURS) — run once at
+    // boot and then hourly, mirroring the backup scheduler's own setInterval pattern.
+    // Evict stale on-disk media caches (see HLS_CACHE_MAX_AGE_HOURS): HLS segments, and the
+    // 7z archives that have to be unpacked to disk to be read page by page.
+    const cacheMaxAgeMs = config.hlsCacheMaxAgeHours * 60 * 60 * 1000;
+    const sweepCaches = () => {
+      sweepHlsCache(cacheMaxAgeMs);
+      sweepArchiveCache(cacheMaxAgeMs);
+    };
+    sweepCaches();
+    setInterval(sweepCaches, 60 * 60 * 1000).unref();
 
     app.listen(config.port, config.host, () => {
       console.log(`

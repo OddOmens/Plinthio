@@ -1,11 +1,15 @@
 import fs from 'fs';
+import { spawn } from 'child_process';
 import path from 'path';
 import * as mm from 'music-metadata';
 import AdmZip from 'adm-zip';
 import { config } from '../config/env.js';
 import { getOrCreateThumbnail } from './thumbnails.js';
+import { listArchiveEntries, readArchiveEntry } from './archive.js';
+import { IMAGE_EXTENSIONS, findCoverInFolder } from '../utils/imageFile.js';
+import { parseMediaTitle } from './titleCleaner.js';
 
-const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif']);
+const COMIC_EXTENSIONS = new Set(['.cbz', '.zip', '.cbr', '.rar', '.cb7', '.7z']);
 
 /**
  * Extract metadata and cover for an audiobook file
@@ -96,7 +100,9 @@ export async function extractMangaMetadata(filePath, itemId) {
     series: null,
     volume: null,
     totalPages: 0,
-    coverPath: null
+    coverPath: null,
+    readingDirection: null,
+    ageRating: null
   };
 
   // Extract volume/chapter number from filename before anything else
@@ -114,7 +120,7 @@ export async function extractMangaMetadata(filePath, itemId) {
     try {
       return fs.readdirSync(parentDir).filter(f => {
         const e = path.extname(f).toLowerCase();
-        return (e === '.cbz' || e === '.zip') && f !== path.basename(filePath);
+        return COMIC_EXTENSIONS.has(e) && f !== path.basename(filePath);
       });
     } catch { return []; }
   })();
@@ -127,43 +133,52 @@ export async function extractMangaMetadata(filePath, itemId) {
   }
 
   try {
-    const zip = new AdmZip(filePath);
-    const zipEntries = zip.getEntries();
+    const entries = await listArchiveEntries(filePath);
 
     // Filter image entries and sort natural alphanumerically
-    const imageEntries = zipEntries.filter(entry => {
+    const imageEntries = entries.filter(entry => {
       if (entry.isDirectory) return false;
-      const ext = path.extname(entry.entryName).toLowerCase();
-      return IMAGE_EXTENSIONS.has(ext) && !entry.entryName.startsWith('__MACOSX');
-    }).sort((a, b) => a.entryName.localeCompare(b.entryName, undefined, { numeric: true, sensitivity: 'base' }));
+      const ext = path.extname(entry.name).toLowerCase();
+      return IMAGE_EXTENSIONS.has(ext) && !entry.name.startsWith('__MACOSX');
+    }).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 
     result.totalPages = imageEntries.length;
 
     // First image is the cover
     if (imageEntries.length > 0) {
-      const coverData = imageEntries[0].getData();
-      const coverFilename = `${itemId}.jpg`;
-      const coverFullPath = path.join(config.coversDir, coverFilename);
-      fs.writeFileSync(coverFullPath, coverData);
-      result.coverPath = coverFilename;
+      const coverData = await readArchiveEntry(filePath, imageEntries[0].name);
+      if (coverData) {
+        const coverFilename = `${itemId}.jpg`;
+        const coverFullPath = path.join(config.coversDir, coverFilename);
+        fs.writeFileSync(coverFullPath, coverData);
+        result.coverPath = coverFilename;
+      }
     }
 
     // Check if ComicInfo.xml exists — this overrides our filename-derived values
-    const comicInfoEntry = zipEntries.find(entry => path.basename(entry.entryName).toLowerCase() === 'comicinfo.xml');
+    const comicInfoEntry = entries.find(entry => path.basename(entry.name).toLowerCase() === 'comicinfo.xml');
     if (comicInfoEntry) {
-      const xmlText = comicInfoEntry.getData().toString('utf8');
+      const xmlText = (await readArchiveEntry(filePath, comicInfoEntry.name))?.toString('utf8') || '';
       const titleMatch = xmlText.match(/<Title>(.*?)<\/Title>/i);
       const seriesMatch = xmlText.match(/<Series>(.*?)<\/Series>/i);
       const writerMatch = xmlText.match(/<Writer>(.*?)<\/Writer>/i);
       const numberMatch = xmlText.match(/<Number>(.*?)<\/Number>/i);
+      // ComicInfo's own reading-direction and age-rating fields seed the per-series settings
+      // (see routes/series.js) so a tagged library comes in correctly configured.
+      const mangaMatch = xmlText.match(/<Manga>(.*?)<\/Manga>/i);
+      const ageRatingMatch = xmlText.match(/<AgeRating>(.*?)<\/AgeRating>/i);
 
       if (titleMatch) result.title = titleMatch[1];
       if (seriesMatch) result.series = seriesMatch[1]; // ComicInfo always wins
       if (writerMatch) result.author = writerMatch[1];
       if (numberMatch && result.volume === null) result.volume = parseFloat(numberMatch[1]);
+      if (mangaMatch) {
+        result.readingDirection = /righttoleft/i.test(mangaMatch[1]) ? 'rtl' : 'ltr';
+      }
+      if (ageRatingMatch) result.ageRating = ageRatingMatch[1].trim();
     }
   } catch (err) {
-    console.warn(`Could not parse manga zip for ${filePath}: ${err.message}`);
+    console.warn(`Could not parse comic archive for ${filePath}: ${err.message}`);
   }
 
   // Fallback to folder cover
@@ -265,24 +280,6 @@ export async function extractBookMetadata(filePath, itemId) {
   return result;
 }
 
-function findCoverInFolder(dirPath) {
-  try {
-    const files = fs.readdirSync(dirPath);
-    const coverNames = ['cover', 'folder', 'poster', 'front'];
-    for (const name of coverNames) {
-      for (const ext of ['.jpg', '.jpeg', '.png', '.webp']) {
-        const match = files.find(f => f.toLowerCase() === `${name}${ext}`);
-        if (match) return path.join(dirPath, match);
-      }
-    }
-    // Any single image in the folder
-    const firstImg = files.find(f => IMAGE_EXTENSIONS.has(path.extname(f).toLowerCase()));
-    if (firstImg) return path.join(dirPath, firstImg);
-  } catch (err) {
-    // Ignore folder readdir errors
-  }
-  return null;
-}
 
 /**
  * Extract metadata and cover for a Video file (Shows, Movies, Anime)
@@ -300,29 +297,21 @@ export async function extractVideoMetadata(filePath, itemId, mediaType = 'movie'
     coverPath: null
   };
 
-  // Check for S01E02 or 1x02 or Ep 02 pattern
-  const tvPattern = /(?:s(\d+)\s*e(\d+)|(\d+)x(\d+)|(?:ep|episode)\.?\s*(\d+))/i;
-  const match = filename.match(tvPattern);
+  // Use parseMediaTitle to cleanly extract series, season/episode, or clean title without scene junk
+  const parsed = parseMediaTitle(filename);
 
-  if (match) {
-    const season = match[1] || match[3] || '1';
-    const episode = match[2] || match[4] || match[5] || '1';
+  if (parsed.isTv) {
+    const season = parsed.season || 1;
+    const episode = parsed.episode || 1;
     // Encode season into the integer part so S01E05 and S02E05 don't collide on the same
     // `volume` value in a series folder that isn't split into per-season subfolders — the
     // fractional part still sorts episodes within a season correctly (up to episode 999).
     result.volume = parseInt(season, 10) + parseInt(episode, 10) / 1000;
-
-    // Extract series name from before the match or from parent folder
-    const seriesPrefix = filename.slice(0, match.index).replace(/[\._\-+]/g, ' ').trim();
-    result.series = seriesPrefix || parentFolder;
+    result.series = parsed.series || parentFolder;
     result.author = result.series;
-
-    // Remaining part after match as episode title
-    const epSuffix = filename.slice(match.index + match[0].length).replace(/[\._\-+]/g, ' ').trim();
-    result.title = epSuffix ? `${match[0].toUpperCase()}: ${cleanReleaseTags(epSuffix)}` : `${result.series} - ${match[0].toUpperCase()}`;
+    result.title = parsed.cleanTitle;
   } else {
-    const cleaned = cleanReleaseTags(filename);
-    result.title = cleaned;
+    result.title = parsed.cleanTitle;
     result.author = parentFolder !== '.' && parentFolder !== 'Movies' ? parentFolder : 'Unknown';
     if (mediaType === 'show' || mediaType === 'anime') {
       result.series = parentFolder;
@@ -342,19 +331,55 @@ export async function extractVideoMetadata(filePath, itemId, mediaType = 'movie'
     }
   }
 
-  // music-metadata's container parsers (MP4/QuickTime, Matroska, AVI, ...) read the
-  // duration atom straight out of the file's own header without needing ffprobe — no new
-  // dependency, and it's already used for audiobooks above.
-  try {
-    const probe = await mm.parseFile(filePath, { duration: true, skipCovers: true });
-    if (probe.format.duration) {
-      result.duration = probe.format.duration;
-    }
-  } catch (e) {
-    // Some containers/codecs aren't parseable this way — duration just stays 0, same as before.
-  }
+  // Duration comes from ffprobe, not music-metadata: on a multi-GB MKV/MP4 music-metadata
+  // walks the entire stream to work the duration out, which took minutes per file over a
+  // network share and made a movie library scan look like it had hung. ffprobe reads the
+  // container header and answers in milliseconds.
+  result.duration = await probeVideoDuration(filePath);
 
   return result;
+}
+
+// Header-only duration probe. Best-effort: if ffprobe is missing, fails, or takes longer
+// than the timeout, duration stays 0 and the scan carries on — playback re-probes anyway.
+const DURATION_PROBE_TIMEOUT_MS = 15000;
+
+function probeVideoDuration(filePath) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = (value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(value);
+    };
+
+    let proc;
+    const timer = setTimeout(() => {
+      try { proc?.kill('SIGKILL'); } catch (e) { /* already gone */ }
+      done(0);
+    }, DURATION_PROBE_TIMEOUT_MS);
+
+    try {
+      proc = spawn('ffprobe', [
+        '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        filePath
+      ]);
+    } catch (e) {
+      return done(0);
+    }
+
+    let stdout = '';
+    proc.stdout.on('data', (d) => { stdout += d; });
+    proc.stderr.on('data', () => { /* ignore */ });
+    proc.on('error', () => done(0));
+    proc.on('close', (code) => {
+      const seconds = parseFloat(stdout.trim());
+      done(code === 0 && Number.isFinite(seconds) ? seconds : 0);
+    });
+  });
 }
 
 function cleanReleaseTags(str) {

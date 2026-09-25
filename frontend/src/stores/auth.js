@@ -1,6 +1,16 @@
 import { defineStore } from 'pinia';
 import api from '../api/client';
 
+// Asks the service worker to drop cached covers and comic pages. Cached art is keyed by
+// path with the token stripped, so it must not outlive the session that fetched it.
+function clearOfflineMediaCache() {
+  try {
+    navigator.serviceWorker?.controller?.postMessage({ type: 'clear-media-cache' });
+  } catch (e) {
+    // No service worker (unsupported browser, or a plain HTTP origin) — nothing cached.
+  }
+}
+
 function loadStoredUser() {
   try {
     return JSON.parse(localStorage.getItem('plinthio_user') || 'null');
@@ -72,11 +82,38 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    // Called once on app start. Slides the expiry forward for anyone who actually uses
+    // Plinthio, so the shortened token lifetime only ever bites an idle or stolen session.
+    // Failure is silent: an expired or revoked token is already handled by the 401
+    // interceptor, and being offline must not sign anyone out.
+    async refreshSession() {
+      if (!this.token) return;
+      try {
+        const res = await api.post('/auth/refresh');
+        if (res.data.token) {
+          this.token = res.data.token;
+          localStorage.setItem('plinthio_token', res.data.token);
+        }
+        if (res.data.user) {
+          this.user = res.data.user;
+          localStorage.setItem('plinthio_user', JSON.stringify(res.data.user));
+        }
+      } catch (err) {
+        // Nothing to do — either the network is down or the 401 path already took over.
+      }
+    },
+
+    async signOutEverywhere() {
+      await api.post('/auth/sign-out-everywhere');
+      this.logout();
+    },
+
     logout() {
       this.token = null;
       this.user = null;
       localStorage.removeItem('plinthio_token');
       localStorage.removeItem('plinthio_user');
+      clearOfflineMediaCache();
       window.location.href = '/login';
     }
   }

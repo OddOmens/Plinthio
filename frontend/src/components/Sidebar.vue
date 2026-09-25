@@ -22,7 +22,7 @@
           placeholder="Search library..."
           class="w-full h-11 bg-muted/50 border border-border rounded-xl pl-10 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:bg-background transition"
         />
-        <button
+        <button aria-label="Clear search"
           v-if="searchQuery"
           @click="$emit('update:searchQuery', '')"
           class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition"
@@ -59,7 +59,7 @@
   <!-- Mobile Top Bar + Drawer -->
   <header class="md:hidden sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border safe-top transition-colors">
     <div class="px-4 h-[68px] flex items-center justify-between gap-3">
-      <button
+      <button aria-label="Open menu"
         @click="mobileOpen = true"
         class="w-11 h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition flex-shrink-0"
         title="Open menu"
@@ -90,7 +90,7 @@
           placeholder="Search titles, authors, series..."
           class="w-full h-10 bg-muted/60 dark:bg-muted/30 border border-border/80 rounded-xl pl-10 pr-9 text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:bg-background transition shadow-xs"
         />
-        <button
+        <button aria-label="Clear search"
           v-if="searchQuery"
           @click="$emit('update:searchQuery', '')"
           type="button"
@@ -158,7 +158,7 @@
             {{ customizationStore.serverName || 'Plinthio' }}
           </span>
         </router-link>
-        <button
+        <button aria-label="Close menu"
           @click="mobileOpen = false"
           class="w-11 h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition"
         >

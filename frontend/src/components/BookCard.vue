@@ -67,7 +67,7 @@
 
         <!-- Context Menu Dropdown Trigger (Visible on touch, 34px target) -->
         <div class="relative">
-          <button
+          <button aria-label="Options"
             type="button"
             @click.stop="showMenu = !showMenu"
             class="w-9 h-9 -mr-1 -my-0.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/70 flex items-center justify-center transition opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 active:scale-95"
@@ -173,6 +173,7 @@
 import { ref, computed } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
+import { coverUrl as buildCoverUrl } from '../utils/cover';
 import {
   Headphones,
   FileImage,
@@ -222,7 +223,7 @@ function openMetadataDialog() {
 const token = localStorage.getItem('plinthio_token') || '';
 
 const coverUrl = computed(() => {
-  return `/api/media/cover/${props.item.id}?token=${token}`;
+  return buildCoverUrl(props.item, { width: 360 });
 });
 
 const hasProgress = computed(() => {
