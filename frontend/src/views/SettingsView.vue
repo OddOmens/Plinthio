@@ -531,10 +531,73 @@
           <p class="text-xs text-muted-foreground mt-0.5">Manage your credentials and view account information</p>
         </div>
 
-        <!-- Profile Details Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
-          <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2">Profile Overview</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <!-- Profile Details Card with Avatar Management -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-2">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Profile Overview</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">Customize your profile photo and view account credentials.</p>
+          </div>
+
+          <!-- Avatar Section -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-1">
+            <div class="relative flex-shrink-0">
+              <img
+                v-if="authStore.user?.avatar && !avatarLoadError"
+                :src="authStore.user.avatar"
+                :alt="authStore.user?.username || 'Avatar'"
+                class="w-20 h-20 rounded-full object-cover ring-2 ring-border shadow-sm"
+                @error="avatarLoadError = true"
+              />
+              <div
+                v-else
+                class="w-20 h-20 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xl font-bold uppercase ring-2 ring-border/50 select-none"
+              >
+                {{ (authStore.user?.username || '?').slice(0, 2) }}
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2 flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <input
+                  type="file"
+                  ref="avatarFileInput"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  class="hidden"
+                  @change="handleAvatarFileSelected"
+                />
+                <button
+                  type="button"
+                  @click="triggerAvatarUpload"
+                  :disabled="uploadingAvatar"
+                  class="px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <Upload class="w-3.5 h-3.5" />
+                  <span>{{ uploadingAvatar ? 'Uploading...' : 'Upload Avatar' }}</span>
+                </button>
+                <button
+                  v-if="authStore.user?.avatar"
+                  type="button"
+                  @click="removeAvatar"
+                  :disabled="removingAvatar"
+                  class="px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 text-xs font-medium transition disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                  <span>{{ removingAvatar ? 'Removing...' : 'Remove' }}</span>
+                </button>
+              </div>
+              <p class="text-[11px] text-muted-foreground">
+                Supports JPG, PNG, or WebP up to 5MB. Automatically cropped to a square.
+              </p>
+              <div v-if="avatarSuccess" class="text-xs text-emerald-500 font-medium flex items-center gap-1">
+                <CheckCircle class="w-3.5 h-3.5" /> {{ avatarSuccess }}
+              </div>
+              <div v-if="avatarError" class="text-xs text-destructive font-medium flex items-center gap-1">
+                <AlertCircle class="w-3.5 h-3.5" /> {{ avatarError }}
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2 border-t border-border">
             <div class="flex flex-col gap-0.5">
               <span class="text-muted-foreground">Username</span>
               <span class="font-semibold text-foreground font-mono">{{ authStore.user?.username }}</span>
@@ -629,7 +692,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
@@ -649,6 +712,7 @@ import {
   FileImage,
   Book,
   CheckCircle,
+  AlertCircle,
   Clock,
   Copy,
   Trash2,
@@ -658,7 +722,8 @@ import {
   Film,
   Sparkles,
   ExternalLink,
-  LogIn
+  LogIn,
+  Upload
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -918,6 +983,75 @@ async function changePassword() {
     authStore.logout();
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to change password');
+  }
+}
+
+// Avatar Management
+const avatarFileInput = ref(null);
+const uploadingAvatar = ref(false);
+const removingAvatar = ref(false);
+const avatarSuccess = ref('');
+const avatarError = ref('');
+const avatarLoadError = ref(false);
+
+watch(() => authStore.user?.avatar, () => {
+  avatarLoadError.value = false;
+});
+
+function triggerAvatarUpload() {
+  avatarSuccess.value = '';
+  avatarError.value = '';
+  avatarFileInput.value?.click();
+}
+
+async function handleAvatarFileSelected(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    avatarError.value = 'Please select a valid image file (PNG, JPG, WebP)';
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    avatarError.value = 'Avatar image must be smaller than 5MB';
+    return;
+  }
+
+  uploadingAvatar.value = true;
+  avatarError.value = '';
+  avatarSuccess.value = '';
+  try {
+    await authStore.uploadAvatar(file);
+    avatarSuccess.value = 'Avatar updated successfully!';
+    setTimeout(() => { avatarSuccess.value = ''; }, 4000);
+  } catch (err) {
+    avatarError.value = err.response?.data?.error || 'Failed to upload avatar';
+  } finally {
+    uploadingAvatar.value = false;
+    if (avatarFileInput.value) avatarFileInput.value.value = '';
+  }
+}
+
+async function removeAvatar() {
+  const confirmed = await dialog.confirm({
+    title: 'Remove Avatar',
+    message: 'Are you sure you want to remove your profile photo? Your account will display your initials instead.',
+    confirmText: 'Remove',
+    danger: true
+  });
+  if (!confirmed) return;
+
+  removingAvatar.value = true;
+  avatarError.value = '';
+  avatarSuccess.value = '';
+  try {
+    await authStore.removeAvatar();
+    avatarSuccess.value = 'Avatar removed';
+    setTimeout(() => { avatarSuccess.value = ''; }, 3000);
+  } catch (err) {
+    avatarError.value = err.response?.data?.error || 'Failed to remove avatar';
+  } finally {
+    removingAvatar.value = false;
   }
 }
 

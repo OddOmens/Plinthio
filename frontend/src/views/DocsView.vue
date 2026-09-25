@@ -291,6 +291,43 @@
               does require their current password.
             </p>
           </div>
+
+          <div class="space-y-3 pt-3 border-t border-border">
+            <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
+              <Hourglass class="w-4 h-4 text-primary" />
+              Temporary Guest Passes & Account Expiration Limits
+            </h2>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              Admins can assign time-boxed access limits to any user account (especially useful for house guests, friends borrowing an audiobook or comic series, or trial access).
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                <div class="font-semibold text-xs text-foreground flex items-center gap-1.5">
+                  <Clock class="w-3.5 h-3.5 text-primary" /> Duration Presets & Custom Cutoffs
+                </div>
+                <p class="text-[11px] text-muted-foreground leading-relaxed">
+                  Choose from quick presets (<strong>1 Day</strong>, <strong>3 Days</strong>, <strong>7 Days</strong>, <strong>14 Days</strong>, <strong>1 Month</strong>, <strong>3 Months</strong>, <strong>6 Months</strong>, <strong>1 Year</strong>), a custom date/time picker, or <strong>Forever / No Limit</strong>.
+                </p>
+              </div>
+
+              <div class="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                <div class="font-semibold text-xs text-foreground flex items-center gap-1.5">
+                  <Lock class="w-3.5 h-3.5 text-amber-500" /> Graceful Lockout Flow
+                </div>
+                <p class="text-[11px] text-muted-foreground leading-relaxed">
+                  When an account reaches its expiration time, all active sessions are immediately revoked. Signing in presents a dedicated lock screen notifying the user that their pass has concluded and prompting them to contact the Admin.
+                </p>
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-muted/30 border border-border text-xs text-muted-foreground space-y-1.5">
+              <div class="font-semibold text-foreground">One-Click Renewals & Extensions:</div>
+              <p class="leading-relaxed">
+                Admins can view account expiration status badges (<span class="text-emerald-500 font-medium">Active</span>, <span class="text-amber-500 font-medium">Expiring Soon</span>, or <span class="text-destructive font-medium">Expired</span>) directly from the <strong>Admin &rarr; Users</strong> table and click the <strong class="text-foreground">Hourglass</strong> icon on any user to add additional days or set the account to unlimited in one click.
+              </p>
+            </div>
+          </div>
         </section>
 
         <!-- SECTION: PWA Mobile Install -->
@@ -561,7 +598,7 @@
           <div class="p-4 rounded-xl bg-muted/30 border border-border space-y-2">
             <div class="font-semibold text-xs text-foreground">Authentication</div>
             <p class="text-xs text-muted-foreground">
-              Pass your API key in the <code class="text-foreground bg-muted px-1 rounded">X-API-Key</code> HTTP header. Create and manage keys in <strong>Settings &rarr; API Keys</strong>. Browser requests instead use a JWT Bearer token issued at login, which most media URLs also accept as a <code class="text-foreground bg-muted px-1 rounded">?token=</code> query parameter (needed for plain <code class="text-foreground bg-muted px-1 rounded">&lt;img&gt;</code>/<code class="text-foreground bg-muted px-1 rounded">&lt;video&gt;</code> tags, which can't set headers).
+              Pass your API key in the <code class="text-foreground bg-muted px-1 rounded">X-API-Key</code> HTTP header. Create and manage keys in <strong>Settings &rarr; API Keys</strong>. Browser requests instead use a JWT Bearer token issued at login, used in the <code class="text-foreground bg-muted px-1 rounded">Authorization</code> header. Media URLs under <code class="text-foreground bg-muted px-1 rounded">/api/media/*</code> instead take a short-lived, media-only token (<code class="text-foreground bg-muted px-1 rounded">POST /api/auth/media-token</code>) as a <code class="text-foreground bg-muted px-1 rounded">?token=</code> query parameter — the session token itself is refused in URLs (needed for plain <code class="text-foreground bg-muted px-1 rounded">&lt;img&gt;</code>/<code class="text-foreground bg-muted px-1 rounded">&lt;video&gt;</code> tags, which can't set headers).
             </p>
             <div class="bg-background border border-border rounded-lg p-2.5 font-mono text-xs overflow-x-auto whitespace-nowrap">
               curl -H "X-API-Key: plinthio_..." http://localhost:8088/api/items
@@ -615,7 +652,7 @@
                     <span class="bg-emerald-500/10 text-emerald-600 font-bold px-1.5 py-0.5 rounded">GET</span>
                     <span class="text-foreground break-all">/api/media/stream/:id</span>
                   </div>
-                  <p class="text-muted-foreground">Audio stream endpoint supporting HTTP 206 Partial Content range requests and query token (<code class="text-foreground bg-muted px-1">?token=...</code>).</p>
+                  <p class="text-muted-foreground">Audio stream endpoint supporting HTTP 206 Partial Content range requests and a media token (<code class="text-foreground bg-muted px-1">?token=...</code>).</p>
                 </div>
                 <div class="p-3 rounded-xl border border-border bg-card space-y-1">
                   <div class="flex items-center gap-2 font-mono flex-wrap">
@@ -904,7 +941,10 @@ import {
   Keyboard,
   Save,
   AlertTriangle,
-  LifeBuoy
+  LifeBuoy,
+  Hourglass,
+  Lock,
+  Clock
 } from 'lucide-vue-next';
 
 const customizationStore = useCustomizationStore();

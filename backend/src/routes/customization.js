@@ -2,6 +2,7 @@ import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { logger } from '../services/logger.js';
+import { serverError } from '../utils/http.js';
 
 const router = express.Router();
 
@@ -120,7 +121,7 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
 
     res.json({ message: 'Customization updated successfully', ...result });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

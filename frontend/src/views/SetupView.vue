@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 transition-colors">
-    <div class="w-full max-w-xl bg-card border border-border rounded-2xl shadow-xl overflow-hidden flex flex-col">
+  <div class="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 transition-colors overflow-y-auto safe-top safe-bottom">
+    <div class="w-full max-w-xl bg-card border border-border rounded-2xl shadow-xl overflow-hidden flex flex-col my-auto">
       
       <!-- Wizard Progress Header -->
       <div class="p-6 border-b border-border bg-muted/20">

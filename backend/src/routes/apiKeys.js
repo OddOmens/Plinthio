@@ -2,6 +2,7 @@ import express from 'express';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { serverError } from '../utils/http.js';
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ router.get('/', async (req, res) => {
     );
     res.json({ keys });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -53,7 +54,7 @@ router.post('/', async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -65,7 +66,7 @@ router.delete('/:id', async (req, res) => {
     await db.run('DELETE FROM api_keys WHERE id = ? AND user_id = ?', [req.params.id, userId]);
     res.json({ message: 'API key revoked' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

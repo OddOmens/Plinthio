@@ -15,6 +15,7 @@ import {
 } from '../services/backup.js';
 import { getAutoScanSettings, saveAutoScanSettings } from '../services/autoScan.js';
 import { verifyTmdbApiKey } from '../services/externalMetadata.js';
+import { serverError } from '../utils/http.js';
 
 const router = express.Router();
 
@@ -33,7 +34,7 @@ router.get('/filters', authenticateToken, async (req, res) => {
     }
     res.json({ allowedGroupingModes: allowed });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -55,7 +56,7 @@ router.patch('/filters', authenticateToken, requireAdmin, async (req, res) => {
 
     res.json({ message: 'Global filter settings updated', allowedGroupingModes });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -66,7 +67,7 @@ router.get('/metadata-providers', authenticateToken, requireAdmin, async (req, r
     const row = await db.get("SELECT value FROM settings WHERE key = 'tmdb_api_key'");
     res.json({ tmdbConfigured: !!(row && row.value) || !!process.env.TMDB_API_KEY });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -81,7 +82,7 @@ router.get('/transcoding', authenticateToken, requireAdmin, async (req, res) => 
       available: listHwaccels()
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -100,7 +101,7 @@ router.put('/transcoding', authenticateToken, requireAdmin, async (req, res) => 
     );
     res.json({ message: 'Transcoding settings saved', preference });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -115,7 +116,7 @@ router.post('/transcoding/test', authenticateToken, requireAdmin, async (req, re
   try {
     res.json(await testHwaccel(method));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -150,7 +151,7 @@ router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, asyn
       tmdbConfigured: true
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -189,7 +190,7 @@ router.get('/backup/config', authenticateToken, requireAdmin, async (req, res) =
     const settings = await getBackupSettings();
     res.json(settings);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -215,7 +216,7 @@ router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) =
     });
     res.json({ message: 'Backup schedule updated', ...settings });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -224,7 +225,7 @@ router.get('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
   try {
     res.json(await getAutoScanSettings());
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -242,7 +243,7 @@ router.put('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
     const settings = await saveAutoScanSettings({ enabled, intervalMinutes, watchEnabled });
     res.json({ message: 'Automatic scanning updated', ...settings });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -251,7 +252,7 @@ router.get('/backup/list', authenticateToken, requireAdmin, async (req, res) => 
   try {
     res.json({ backups: listBackupFiles() });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

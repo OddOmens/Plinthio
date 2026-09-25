@@ -6,6 +6,7 @@ import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { scanLibrary } from '../services/scanner.js';
 import { logger } from '../services/logger.js';
+import { serverError } from '../utils/http.js';
 
 const router = express.Router();
 
@@ -46,9 +47,13 @@ router.get('/', async (req, res) => {
       GROUP BY l.id
       ORDER BY l.name ASC
     `);
+    // Mount paths are server layout; only admins (who manage libraries) need them.
+    if (req.user.role !== 'admin') {
+      for (const lib of libraries) delete lib.path;
+    }
     res.json({ libraries });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -76,7 +81,7 @@ router.get('/browse', requireAdmin, async (req, res) => {
   try {
     res.json(listMediaDirectories(req.query.dir));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -122,7 +127,7 @@ router.post('/', requireAdmin, async (req, res) => {
       library: { id, name: name.trim(), path: resolvedPath, type }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -132,7 +137,7 @@ router.post('/:id/scan', requireAdmin, async (req, res) => {
     const result = await scanLibrary(req.params.id);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -156,7 +161,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
     res.json({ message: 'Library deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

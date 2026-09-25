@@ -4,14 +4,18 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
-import { authenticateToken, invalidateUserCache } from '../middleware/auth.js';
+import { authenticateToken, invalidateUserCache, signMediaToken } from '../middleware/auth.js';
 import { scanLibrary } from '../services/scanner.js';
 import { logger } from '../services/logger.js';
 import { LIBRARY_TYPES, resolveLibraryPath, listMediaDirectories } from './libraries.js';
 import { ALL_MEDIA_TYPES } from '../config/mediaTypes.js';
+import { serverError } from '../utils/http.js';
+import { normalizeUsername, USERNAME_RULE } from '../utils/username.js';
 
 const router = express.Router();
 const VALID_ROLES = ['admin', 'editor', 'viewer'];
+// A throwaway hash at the same cost factor as real ones (see the unknown-user login path).
+const DUMMY_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10);
 
 // Check if initial admin account has been set up
 router.get('/setup-status', async (req, res) => {
@@ -51,6 +55,9 @@ router.post('/setup', async (req, res) => {
 
   if (!username || !password || password.length < 8) {
     return res.status(400).json({ error: 'Admin username and password (min 8 chars) are required' });
+  }
+  if (!normalizeUsername(username)) {
+    return res.status(400).json({ error: USERNAME_RULE });
   }
 
   try {
@@ -119,7 +126,7 @@ router.post('/setup', async (req, res) => {
     // Insert any extra users created during setup
     if (Array.isArray(extraUsers)) {
       for (const u of extraUsers) {
-        if (u.username && u.password && u.password.length >= 8) {
+        if (normalizeUsername(u.username) && u.password && u.password.length >= 8) {
           const uId = crypto.randomUUID();
           const uHash = await bcrypt.hash(u.password, 10);
           const uRole = VALID_ROLES.includes(u.role) ? u.role : 'viewer';
@@ -145,7 +152,8 @@ router.post('/setup', async (req, res) => {
     res.json({
       message: 'Server initialized successfully',
       token,
-      user: { id: userId, username: username.trim(), role: 'admin', preferences: JSON.parse(adminPrefs) }
+      mediaToken: signMediaToken({ id: userId, token_version: 0 }),
+      user: { id: userId, username: username.trim(), role: 'admin', avatar: null, expires_at: null, preferences: JSON.parse(adminPrefs) }
     });
   } catch (err) {
     console.error('[auth] setup failed:', err);
@@ -159,7 +167,7 @@ router.post('/login', async (req, res) => {
   const ip = req.ip;
   const userAgent = req.headers['user-agent'] || null;
 
-  if (!username || !password) {
+  if (typeof username !== 'string' || typeof password !== 'string' || !username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
 
@@ -168,7 +176,10 @@ router.post('/login', async (req, res) => {
     const user = await db.get('SELECT * FROM users WHERE username = ?', [username.trim()]);
 
     if (!user) {
-      await recordLoginAttempt(db, { userId: null, username: username.trim(), success: false, ip, userAgent });
+      // Burn the same bcrypt time a real account would, so response timing doesn't reveal
+      // which usernames exist.
+      await bcrypt.compare(password, DUMMY_HASH);
+      await recordLoginAttempt(db, { userId: null, username: username.trim().slice(0, 64), success: false, ip, userAgent });
       logger.warn('auth', `Failed sign-in attempt for unknown username "${username.trim()}"`, { ip });
       return res.status(401).json({ error: 'Invalid username or password' });
     }
@@ -178,6 +189,15 @@ router.post('/login', async (req, res) => {
       await recordLoginAttempt(db, { userId: user.id, username: user.username, success: false, ip, userAgent });
       logger.warn('auth', `Failed sign-in attempt for "${user.username}" (wrong password)`, { ip });
       return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    if (user.expires_at && new Date(user.expires_at).getTime() <= Date.now()) {
+      await recordLoginAttempt(db, { userId: user.id, username: user.username, success: false, ip, userAgent });
+      logger.warn('auth', `Failed sign-in attempt for expired account "${user.username}"`, { ip });
+      return res.status(403).json({
+        error: 'ACCOUNT_EXPIRED',
+        message: 'Your account access has expired. Please contact your administrator.'
+      });
     }
 
     const token = jwt.sign(
@@ -200,7 +220,15 @@ router.post('/login', async (req, res) => {
 
     res.json({
       token,
-      user: { id: user.id, username: user.username, role: user.role, preferences }
+      mediaToken: signMediaToken(user),
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        avatar: user.avatar || null,
+        expires_at: user.expires_at || null,
+        preferences
+      }
     });
   } catch (err) {
     console.error('[auth] login failed:', err);
@@ -240,7 +268,15 @@ router.post('/refresh', authenticateToken, (req, res) => {
     config.jwtSecret,
     { expiresIn: config.jwtExpiresIn }
   );
-  res.json({ token, user: req.user });
+  res.json({ token, mediaToken: signMediaToken(req.user), user: req.user });
+});
+
+// Just a fresh media token, for a long-lived tab whose current one is close to expiring.
+router.post('/media-token', authenticateToken, (req, res) => {
+  if (req.isApiKey) {
+    return res.status(400).json({ error: 'API keys authenticate media requests directly' });
+  }
+  res.json({ mediaToken: signMediaToken(req.user) });
 });
 
 // Invalidate every token issued for this account, this one included — the "signed in
@@ -257,7 +293,7 @@ router.post('/sign-out-everywhere', authenticateToken, async (req, res) => {
     logger.info('auth', `"${req.user.username}" signed out all sessions`);
     res.json({ message: 'All sessions signed out. Please sign in again.' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

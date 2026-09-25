@@ -2,6 +2,7 @@ import express from 'express';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import { serverError } from '../utils/http.js';
 
 const router = express.Router();
 
@@ -29,7 +30,7 @@ router.post('/start', async (req, res) => {
 
     res.json({ sessionId: id });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -60,7 +61,7 @@ router.post('/end', async (req, res) => {
 
     res.json({ message: 'Session closed', durationSeconds });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -89,7 +90,7 @@ router.get('/me', async (req, res) => {
 
     res.json({ activity: merged });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -128,7 +129,7 @@ router.get('/admin', requireAdmin, async (req, res) => {
 
     res.json({ activity: merged });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

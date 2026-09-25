@@ -27,6 +27,26 @@ function basicAuthApiKey(req) {
   }
 }
 
+// Media URLs (<img>, <video>, <track>, OPDS page links) can't carry an Authorization
+// header, so they authenticate with `?token=`. Anything in a URL leaks — browser history,
+// proxy access logs, a copied link — so the URL never carries the session token itself: it
+// carries a separate media token that only opens /api/media/* and expires within a day.
+// Revocation still works because it's bound to the same token_version as the session.
+const MEDIA_TOKEN_TYPE = 'media';
+const MEDIA_TOKEN_TTL = process.env.MEDIA_TOKEN_EXPIRES_IN || '24h';
+
+export function signMediaToken(user) {
+  return jwt.sign(
+    { userId: user.id, tokenVersion: user.token_version || 0, typ: MEDIA_TOKEN_TYPE },
+    config.jwtSecret,
+    { expiresIn: MEDIA_TOKEN_TTL }
+  );
+}
+
+function isMediaRoute(req) {
+  return (req.baseUrl || '').startsWith('/api/media');
+}
+
 export async function authenticateToken(req, res, next) {
   // 1. Support X-API-Key for developer/script integrations, and HTTP Basic (username +
   // API key as the password) for OPDS reader apps, which can't do Bearer tokens and
@@ -37,13 +57,19 @@ export async function authenticateToken(req, res, next) {
       const db = await getDb();
       const keyHash = crypto.createHash('sha256').update(apiKey.trim()).digest('hex');
       const keyRow = await db.get(
-        `SELECT u.id, u.username, u.role, u.preferences
+        `SELECT u.id, u.username, u.role, u.avatar, u.preferences, u.expires_at, u.max_age_rating, u.allow_unrated
          FROM api_keys k
          JOIN users u ON k.user_id = u.id
          WHERE k.key = ?`,
         [keyHash]
       );
       if (keyRow) {
+        if (keyRow.expires_at && new Date(keyRow.expires_at).getTime() <= Date.now()) {
+          return res.status(403).json({
+            error: 'ACCOUNT_EXPIRED',
+            message: 'Your account access has expired. Please contact your administrator.'
+          });
+        }
         keyRow.preferences = keyRow.preferences ? JSON.parse(keyRow.preferences) : {};
         req.user = keyRow;
         req.isApiKey = true;
@@ -57,11 +83,13 @@ export async function authenticateToken(req, res, next) {
 
   // 2. Support Bearer token or URL query token
   let token = null;
+  let fromQuery = false;
   const authHeader = req.headers['authorization'];
   if (authHeader && authHeader.startsWith('Bearer ')) {
     token = authHeader.split(' ')[1];
   } else if (req.query && req.query.token) {
-    token = req.query.token;
+    token = String(req.query.token);
+    fromQuery = true;
   }
 
   if (!token) {
@@ -70,6 +98,15 @@ export async function authenticateToken(req, res, next) {
 
   try {
     const payload = jwt.verify(token, config.jwtSecret);
+
+    // A URL token must be a media token on a media route; a header token must be a full
+    // session token. So a leaked media URL can't drive the API, and a session token pasted
+    // into a URL is simply refused.
+    const isMediaToken = payload.typ === MEDIA_TOKEN_TYPE;
+    if (fromQuery ? (!isMediaToken || !isMediaRoute(req)) : isMediaToken) {
+      return res.status(401).json({ error: 'Session expired — please log in again' });
+    }
+
     const now = Date.now();
     let user = null;
 
@@ -78,7 +115,7 @@ export async function authenticateToken(req, res, next) {
       user = cached.user;
     } else {
       const db = await getDb();
-      user = await db.get('SELECT id, username, role, preferences, token_version FROM users WHERE id = ?', [payload.userId]);
+      user = await db.get('SELECT id, username, role, avatar, preferences, expires_at, token_version, max_age_rating, allow_unrated FROM users WHERE id = ?', [payload.userId]);
 
       if (!user) {
         return res.status(401).json({ error: 'User no longer exists' });
@@ -86,6 +123,14 @@ export async function authenticateToken(req, res, next) {
 
       user.preferences = user.preferences ? JSON.parse(user.preferences) : {};
       userAuthCache.set(payload.userId, { user, expiresAt: now + AUTH_CACHE_TTL });
+    }
+
+    if (user.expires_at && new Date(user.expires_at).getTime() <= now) {
+      userAuthCache.delete(payload.userId);
+      return res.status(403).json({
+        error: 'ACCOUNT_EXPIRED',
+        message: 'Your account access has expired. Please contact your administrator.'
+      });
     }
 
     // A password change bumps token_version server-side, which immediately invalidates
