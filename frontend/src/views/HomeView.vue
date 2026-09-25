@@ -17,8 +17,17 @@
 
     <div class="flex-1 flex flex-col min-w-0 pb-28">
     <main class="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 flex-1 flex flex-col gap-8">
+      <router-link
+        v-if="!isOnline"
+        to="/downloads"
+        class="rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-4 py-3 text-sm flex items-center gap-3 hover:bg-amber-500/15 transition"
+      >
+        <WifiOff class="w-4 h-4 flex-shrink-0" />
+        <span class="flex-1">You're offline. Your downloaded books, comics and audiobooks are still available.</span>
+        <span class="font-semibold whitespace-nowrap">Open Downloads →</span>
+      </router-link>
       <!-- Continue Watching (video only, shown as its own row on the "All" view) -->
-      <section v-if="continueWatchingItems.length > 0 && !searchQuery && groupBy === 'grid'" class="flex flex-col gap-3">
+      <section v-if="continueWatchingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'grid'" class="flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-semibold tracking-tight text-foreground flex items-center gap-1.5">
             <MonitorPlay class="w-4 h-4 text-muted-foreground" />
@@ -26,7 +35,7 @@
           </h2>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
           <BookCard
             v-for="item in continueWatchingItems"
             :key="item.id"
@@ -41,7 +50,7 @@
       </section>
 
       <!-- Continue Reading / Listening Section (Filtered to All or specific category) -->
-      <section v-if="continueReadingItems.length > 0 && !searchQuery && groupBy === 'grid'" class="flex flex-col gap-3">
+      <section v-if="continueReadingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'grid'" class="flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-semibold tracking-tight text-foreground flex items-center gap-1.5">
             <Clock class="w-4 h-4 text-muted-foreground" />
@@ -49,7 +58,7 @@
           </h2>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
           <BookCard
             v-for="item in continueReadingItems"
             :key="item.id"
@@ -65,9 +74,9 @@
 
       <!-- Main Shelf Header with Organization Switcher -->
       <section class="flex flex-col gap-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div class="flex items-center gap-2">
-            <h2 class="text-sm font-semibold tracking-tight text-foreground">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div class="flex items-center gap-2 min-w-0">
+            <h2 class="text-sm font-semibold tracking-tight text-foreground whitespace-nowrap">
               {{ sectionTitle }}
             </h2>
             <span class="text-xs text-muted-foreground font-mono">
@@ -76,7 +85,7 @@
           </div>
 
           <!-- Grouping Selector (Horizontal scrollable segmented pills for iOS/mobile) -->
-          <div class="w-full sm:w-auto overflow-x-auto no-scrollbar flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl border border-border flex-nowrap">
+          <div class="w-full lg:w-auto overflow-x-auto no-scrollbar flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl border border-border flex-nowrap">
             <button
               v-for="mode in groupingModes"
               :key="mode.id"
@@ -94,8 +103,46 @@
           </div>
         </div>
 
+        <!-- Filters: progress, genre, recency, sort. Wraps to two lines on a phone. -->
+        <div v-if="groupBy !== 'custom_folder'" class="flex flex-wrap items-center gap-2">
+          <label class="sr-only" for="filter-progress">Progress</label>
+          <select id="filter-progress" v-model="progressFilter" :class="filterSelectClass(progressFilter)">
+            <option value="">Status</option>
+            <option value="unread">Not started</option>
+            <option value="in_progress">In progress</option>
+            <option value="finished">Finished</option>
+          </select>
+          <label class="sr-only" for="filter-genre">Genre</label>
+          <select v-if="genres.length" id="filter-genre" v-model="genreFilter" :class="filterSelectClass(genreFilter)">
+            <option value="">Genre</option>
+            <option v-for="g in genres" :key="g.name" :value="g.name">{{ g.name }} ({{ g.count }})</option>
+          </select>
+          <label class="sr-only" for="filter-added">Added</label>
+          <select id="filter-added" v-model="addedWithin" :class="filterSelectClass(addedWithin)">
+            <option value="">Added</option>
+            <option value="7">Added this week</option>
+            <option value="30">Added this month</option>
+            <option value="90">Added in 3 months</option>
+          </select>
+          <label class="sr-only" for="filter-sort">Sort</label>
+          <select id="filter-sort" v-model="sortBy" title="Sort order" :class="filterSelectClass(sortBy === 'title' ? '' : sortBy)">
+            <option value="title">A–Z</option>
+            <option value="added">Newest</option>
+            <option value="recent">Recently opened</option>
+            <option value="release">Release date</option>
+          </select>
+          <button
+            v-if="filtersActive || sortBy !== 'title'"
+            type="button"
+            @click="clearFilters"
+            class="h-9 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition flex items-center gap-1"
+          >
+            <X class="w-3.5 h-3.5" /> Clear
+          </button>
+        </div>
+
         <!-- Loading Skeleton -->
-        <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
           <div v-for="i in 12" :key="i" class="aspect-[2/3] bg-muted/40 animate-pulse rounded-xl border border-border"></div>
         </div>
 
@@ -106,10 +153,10 @@
           </div>
           <h3 class="text-sm font-medium text-foreground">No media found</h3>
           <p class="text-xs text-muted-foreground max-w-sm mt-1 mb-4">
-            {{ searchQuery ? 'Try adjusting your search query' : 'Add a library in Server Settings and scan your folders to populate your shelf' }}
+            {{ searchQuery || filtersActive ? 'Nothing matches — try a different search or clear the filters' : 'Add a library in Server Settings and scan your folders to populate your shelf' }}
           </p>
           <router-link
-            v-if="authStore.isAdmin && !searchQuery"
+            v-if="authStore.isAdmin && !searchQuery && !filtersActive"
             to="/admin"
             class="px-3.5 py-1.5 rounded-md bg-primary hover:bg-primary/90 text-xs font-medium text-primary-foreground transition shadow-sm"
           >
@@ -127,10 +174,10 @@
                 <h3 class="text-xs font-semibold text-foreground tracking-wide uppercase font-mono">Manga Series</h3>
                 <span class="text-xs text-muted-foreground">({{ mangaSeriesGroups.series.length }})</span>
               </div>
-              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 <MangaSeriesCard
                   v-for="series in mangaSeriesGroups.series"
-                  :key="series.name"
+                  :key="series.key"
                   :series="series"
                   @select="openSeriesView"
                 />
@@ -149,7 +196,7 @@
                 <h3 class="text-xs font-semibold text-foreground tracking-wide uppercase font-mono">Singles</h3>
                 <span class="text-xs text-muted-foreground">({{ mangaSeriesGroups.standalone.length }})</span>
               </div>
-              <div ref="gridEl" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+              <div ref="gridEl" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                 <!-- Spacers stand in for the rows unmounted above and below the window, so
                      the page keeps the height it would have with every card rendered. -->
                 <div v-if="padTopHeight > 0" :style="{ gridColumn: '1 / -1', height: padTopHeight + 'px' }"></div>
@@ -180,7 +227,7 @@
             </div>
             <h3 class="text-sm font-medium text-foreground">No media found</h3>
             <p class="text-xs text-muted-foreground max-w-sm mt-1 mb-4">
-              {{ searchQuery ? 'Try adjusting your search query' : 'Add a library in Server Settings and scan your folders to populate your shelf' }}
+              {{ searchQuery || filtersActive ? 'Nothing matches — try a different search or clear the filters' : 'Add a library in Server Settings and scan your folders to populate your shelf' }}
             </p>
           </div>
         </div>
@@ -197,7 +244,7 @@
               <h3 class="text-xs font-semibold text-foreground tracking-wide uppercase font-mono">{{ authorName }}</h3>
               <span class="text-xs text-muted-foreground">({{ groupItems.length }})</span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               <BookCard
                 v-for="item in groupItems"
                 :key="item.id"
@@ -224,7 +271,7 @@
               <h3 class="text-xs font-semibold text-foreground tracking-wide uppercase font-mono">{{ seriesName }}</h3>
               <span class="text-xs text-muted-foreground">({{ groupItems.length }})</span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               <BookCard
                 v-for="item in groupItems"
                 :key="item.id"
@@ -251,7 +298,7 @@
               <h3 class="text-xs font-mono text-foreground">{{ folderName }}</h3>
               <span class="text-xs text-muted-foreground">({{ groupItems.length }})</span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               <BookCard
                 v-for="item in groupItems"
                 :key="item.id"
@@ -320,7 +367,7 @@
             </div>
 
             <!-- Folder Items Grid -->
-            <div v-if="folder.items.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div v-if="folder.items.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               <BookCard
                 v-for="item in folder.items"
                 :key="item.id"
@@ -401,7 +448,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { getMediaToken } from '../utils/mediaToken';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
@@ -412,14 +460,16 @@ import { useCustomizationStore } from '../stores/customization';
 import Navbar from '../components/Navbar.vue';
 import Sidebar from '../components/Sidebar.vue';
 import BookCard from '../components/BookCard.vue';
-import MangaReader from '../components/MangaReader.vue';
 import MangaSeriesCard from '../components/MangaSeriesCard.vue';
-import MangaSeriesSheet from '../components/MangaSeriesSheet.vue';
-import EpubReader from '../components/EpubReader.vue';
-import VideoPlayer from '../components/VideoPlayer.vue';
-import AddToFolderModal from '../components/AddToFolderModal.vue';
-import BookmarksModal from '../components/BookmarksModal.vue';
-import MetadataSearchModal from '../components/MetadataSearchModal.vue';
+// Readers, players and editors only mount once something is opened, so they load on demand
+// instead of riding in the shelf's first download (hls.js alone is ~500KB).
+const MangaReader = defineAsyncComponent(() => import('../components/MangaReader.vue'));
+const MangaSeriesSheet = defineAsyncComponent(() => import('../components/MangaSeriesSheet.vue'));
+const EpubReader = defineAsyncComponent(() => import('../components/EpubReader.vue'));
+const VideoPlayer = defineAsyncComponent(() => import('../components/VideoPlayer.vue'));
+const AddToFolderModal = defineAsyncComponent(() => import('../components/AddToFolderModal.vue'));
+const BookmarksModal = defineAsyncComponent(() => import('../components/BookmarksModal.vue'));
+const MetadataSearchModal = defineAsyncComponent(() => import('../components/MetadataSearchModal.vue'));
 import {
   Clock,
   BookX,
@@ -433,7 +483,9 @@ import {
   FolderX,
   Plus,
   Trash2,
-  MonitorPlay
+  MonitorPlay,
+  X,
+  WifiOff
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
@@ -451,6 +503,42 @@ const activeType = ref(
 );
 const searchQuery = ref('');
 const groupBy = ref('grid');
+
+const isOnline = ref(navigator.onLine);
+const updateOnline = () => { isOnline.value = navigator.onLine; };
+
+// Shelf filters, applied server-side (see GET /api/items).
+const progressFilter = ref('');
+const genreFilter = ref('');
+const addedWithin = ref('');
+const sortBy = ref('title');
+const genres = ref([]);
+const filtersActive = computed(() => !!(progressFilter.value || genreFilter.value || addedWithin.value));
+
+function filterSelectClass(value) {
+  return [
+    'h-9 pl-2.5 pr-1.5 rounded-lg border text-xs font-medium bg-background transition focus:outline-none focus:ring-2 focus:ring-ring/40 flex-1 sm:flex-none min-w-0 sm:min-w-[7rem] max-w-[11rem]',
+    value ? 'border-primary/60 text-foreground bg-primary/5' : 'border-border text-muted-foreground'
+  ];
+}
+
+function clearFilters() {
+  progressFilter.value = '';
+  genreFilter.value = '';
+  addedWithin.value = '';
+  sortBy.value = 'title';
+}
+
+async function loadGenres() {
+  try {
+    const params = activeType.value !== 'all' ? { mediaType: activeType.value } : {};
+    const res = await api.get('/items/genres', { params });
+    genres.value = res.data.genres || [];
+    if (genreFilter.value && !genres.value.some((g) => g.name === genreFilter.value)) genreFilter.value = '';
+  } catch (err) {
+    genres.value = [];
+  }
+}
 
 // Items arrive a page at a time rather than in one 5000-row response: the old single fetch
 // both stalled first paint and silently truncated any library past 5000 items.
@@ -609,10 +697,12 @@ const mangaSeriesGroups = computed(() => {
 
   for (const item of mangaItems) {
     if (item.series) {
-      if (!seriesMap[item.series]) {
-        seriesMap[item.series] = { name: item.series, author: item.author, volumes: [] };
+      // Keyed per library too: two libraries can each hold a series with the same name.
+      const key = `${item.series}::${item.library_id}`;
+      if (!seriesMap[key]) {
+        seriesMap[key] = { key, name: item.series, author: item.author, libraryId: item.library_id, volumes: [] };
       }
-      seriesMap[item.series].volumes.push(item);
+      seriesMap[key].volumes.push(item);
     } else {
       standalone.push(item);
     }
@@ -766,8 +856,9 @@ const itemsBySeries = computed(() => {
 const itemsByFolder = computed(() => {
   const map = {};
   for (const item of filteredItems.value) {
-    const parts = item.path.split('/');
-    parts.pop(); // remove file name
+    // `folder` is the item's directory relative to its library (the server no longer sends
+    // absolute paths to non-admins); the last two segments keep group names short.
+    const parts = (item.folder || '').split('/').filter(Boolean);
     const folder = parts.slice(-2).join('/') || 'Root';
     if (!map[folder]) map[folder] = [];
     map[folder].push(item);
@@ -791,6 +882,10 @@ async function fetchItemPage(offset) {
   const params = { limit: PAGE_SIZE, offset };
   if (activeType.value !== 'all') params.mediaType = activeType.value;
   if (searchQuery.value) params.search = searchQuery.value;
+  if (progressFilter.value) params.progress = progressFilter.value;
+  if (genreFilter.value) params.genre = genreFilter.value;
+  if (addedWithin.value) params.addedWithinDays = addedWithin.value;
+  if (sortBy.value !== 'title') params.sort = sortBy.value;
 
   const res = await api.get('/items', { params });
   return res.data.items || [];
@@ -929,7 +1024,10 @@ function handleItemSelect(item) {
     activeVideoItem.value = item;
   } else if (item.media_type === 'manga') {
     if (item.series) {
-      router.push(`/manga/series/${encodeURIComponent(item.series)}`);
+      router.push({
+        path: `/manga/series/${encodeURIComponent(item.series)}`,
+        query: { library: item.library_id, type: 'manga' }
+      });
     } else {
       router.push(`/manga/${item.id}`);
     }
@@ -937,7 +1035,7 @@ function handleItemSelect(item) {
     activeEpubItem.value = item;
   } else {
     // PDFs and other formats open in browser tab
-    const token = localStorage.getItem('plinthio_token');
+    const token = getMediaToken();
     window.open(`/api/media/book/${item.id}/file?token=${token}`, '_blank');
   }
 }
@@ -949,7 +1047,10 @@ function playNextVideo(nextItem) {
 }
 
 function openSeriesView(series) {
-  router.push(`/manga/series/${encodeURIComponent(series.name)}`);
+  router.push({
+    path: `/manga/series/${encodeURIComponent(series.name)}`,
+    query: { library: series.libraryId, type: 'manga' }
+  });
 }
 
 function openSeriesSheet(series) {
@@ -982,10 +1083,17 @@ function refreshShelf() {
 // Media type changes fetch immediately; typing is debounced. Without the debounce every
 // keystroke fired a full library query (5000 rows, megabytes of JSON) — 15 in-flight
 // requests for "attack on titan", with the results racing each other into the grid.
+watch([progressFilter, genreFilter, addedWithin, sortBy], () => {
+  resetGridWindow();
+  clearTimeout(searchDebounce);
+  fetchLibraryItems();
+});
+
 watch([activeType, searchQuery], ([type], [prevType]) => {
   resetGridWindow();
   if (type !== prevType) {
     clearTimeout(searchDebounce);
+    loadGenres();
     fetchLibraryItems();
   } else {
     clearTimeout(searchDebounce);
@@ -1026,6 +1134,9 @@ onMounted(() => {
     activeType.value = authStore.user.preferences.defaultView;
   }
   window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('online', updateOnline);
+  window.addEventListener('offline', updateOnline);
+  loadGenres();
   window.addEventListener('resize', onResize, { passive: true });
   loadFilterSettings();
   fetchLibraryItems();
@@ -1035,6 +1146,8 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll);
   window.removeEventListener('resize', onResize);
+  window.removeEventListener('online', updateOnline);
+  window.removeEventListener('offline', updateOnline);
   if (scrollFrame) cancelAnimationFrame(scrollFrame);
   clearTimeout(searchDebounce);
 });

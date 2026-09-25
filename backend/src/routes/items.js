@@ -2,6 +2,13 @@ import express from 'express';
 import path from 'path';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { serverError } from '../utils/http.js';
+import { shapeItems, shapeItem } from '../services/itemView.js';
+import { ratingSql, isItemHiddenForUser } from '../services/visibility.js';
+import { probeChapters } from '../services/chapters.js';
+
+// Item ids are always a 32-char hex md5 of the file path (see scanner.js).
+const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 
 const router = express.Router();
 
@@ -19,7 +26,7 @@ const LIST_COLUMNS = `
 
 // List items with pagination, filtering, search, and visibility check
 router.get('/', async (req, res) => {
-  const { libraryId, mediaType, author, series, search, limit = 5000, offset = 0 } = req.query;
+  const { libraryId, mediaType, author, series, search, progress, genre, sort, addedWithinDays, limit = 5000, offset = 0 } = req.query;
   const userId = req.user.id;
 
   try {
@@ -38,7 +45,7 @@ router.get('/', async (req, res) => {
       WHERE NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )
+      )${ratingSql(req.user, 'i')}
     `;
     const params = [userId, userId];
 
@@ -62,21 +69,107 @@ router.get('/', async (req, res) => {
       params.push(series);
     }
 
+    // Search reaches past the card fields into the long-form metadata too, so "time travel",
+    // a cast member, a genre or a publisher finds the title even when it isn't in its name.
     if (search) {
-      query += ' AND (i.title LIKE ? OR i.author LIKE ? OR i.series LIKE ?)';
-      const s = `%${search.trim()}%`;
-      params.push(s, s, s);
+      const fields = ['i.title', 'i.author', 'i.series', 'i.description', 'i.genres', 'i.themes', 'i.artists', 'i.publisher'];
+      query += ` AND (${fields.map((f) => `${f} LIKE ?`).join(' OR ')})`;
+      const s = `%${String(search).trim()}%`;
+      params.push(...fields.map(() => s));
+    }
+
+    if (progress === 'unread') {
+      query += ' AND (p.item_id IS NULL OR (COALESCE(p.progress_percent, 0) = 0 AND COALESCE(p.is_finished, 0) = 0))';
+    } else if (progress === 'in_progress') {
+      query += ' AND p.is_finished = 0 AND p.progress_percent > 0';
+    } else if (progress === 'finished') {
+      query += ' AND p.is_finished = 1';
+    }
+
+    if (genre) {
+      // genres is a comma-separated list; pad both sides so "Drama" doesn't match "Melodrama".
+      query += " AND (', ' || LOWER(COALESCE(i.genres, '')) || ',') LIKE ?";
+      params.push(`%, ${String(genre).trim().toLowerCase()},%`);
+    }
+
+    const days = parseInt(addedWithinDays, 10);
+    if (Number.isInteger(days) && days > 0 && days <= 3650) {
+      query += ` AND i.created_at >= datetime('now', '-${days} days')`;
     }
 
     const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 5000, 1), 5000);
     const safeOffset = Math.max(parseInt(offset, 10) || 0, 0);
-    query += ' ORDER BY i.title ASC LIMIT ? OFFSET ?';
+    // i.id breaks ties so paging stays stable when many rows share a sort value.
+    const ORDER_BY = {
+      title: 'i.title ASC, i.id ASC',
+      added: 'i.created_at DESC, i.id ASC',
+      release: "CASE WHEN i.release_date IS NULL OR i.release_date = '' THEN 1 ELSE 0 END, i.release_date DESC, i.id ASC",
+      recent: 'CASE WHEN p.updated_at IS NULL THEN 1 ELSE 0 END, p.updated_at DESC, i.title ASC, i.id ASC'
+    };
+    query += ` ORDER BY ${ORDER_BY[sort] || ORDER_BY.title} LIMIT ? OFFSET ?`;
     params.push(safeLimit, safeOffset);
 
     const items = await db.all(query, params);
+    await shapeItems(db, items, req.user);
     res.json({ items });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
+  }
+});
+
+// Series are identified by name, but a name alone isn't unique: a manga and an anime both
+// called "Naruto", or the same title in two libraries, used to merge into one detail page
+// (and one mark-as-read). Callers pass ?library= and/or ?type= to pin down which one they
+// mean; without them the old name-only behaviour is kept for compatibility.
+function seriesScope(query, alias = '') {
+  const col = (name) => (alias ? `${alias}.${name}` : name);
+  let sql = '';
+  const params = [];
+  if (query.library) {
+    sql += ` AND ${col('library_id')} = ?`;
+    params.push(String(query.library));
+  }
+  if (query.type) {
+    sql += ` AND ${col('media_type')} = ?`;
+    params.push(String(query.type));
+  }
+  return { sql, params };
+}
+
+// Distinct genres across what this user can see, with counts, for the shelf's genre filter.
+router.get('/genres', async (req, res) => {
+  const { mediaType } = req.query;
+  try {
+    const db = await getDb();
+    let query = `
+      SELECT i.genres FROM items i
+      WHERE i.genres IS NOT NULL AND i.genres != ''
+      AND NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
+      )${ratingSql(req.user, 'i')}
+    `;
+    const params = [req.user.id];
+    if (mediaType && mediaType !== 'all') {
+      query += ' AND i.media_type = ?';
+      params.push(mediaType);
+    }
+    const rows = await db.all(query, params);
+    const counts = new Map();
+    for (const row of rows) {
+      for (const raw of row.genres.split(',')) {
+        const name = raw.trim();
+        if (!name) continue;
+        const key = name.toLowerCase();
+        const entry = counts.get(key) || { name, count: 0 };
+        entry.count++;
+        counts.set(key, entry);
+      }
+    }
+    const genres = [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    res.json({ genres });
+  } catch (err) {
+    serverError(req, res, err);
   }
 });
 
@@ -97,7 +190,7 @@ router.get('/authors', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )
+      )${ratingSql(req.user, 'i')}
     `;
     const params = [userId];
 
@@ -111,7 +204,7 @@ router.get('/authors', async (req, res) => {
     const authors = await db.all(query, params);
     res.json({ authors });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -126,6 +219,8 @@ router.get('/series', async (req, res) => {
       SELECT
         i.series,
         i.author,
+        i.library_id,
+        i.media_type,
         COUNT(i.id) as item_count,
         MIN(i.id) as sample_item_id
       FROM items i
@@ -133,7 +228,7 @@ router.get('/series', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )
+      )${ratingSql(req.user, 'i')}
     `;
     const params = [userId];
 
@@ -142,12 +237,12 @@ router.get('/series', async (req, res) => {
       params.push(mediaType);
     }
 
-    query += ' GROUP BY i.series ORDER BY i.series ASC';
+    query += ' GROUP BY i.series, i.library_id, i.media_type ORDER BY i.series ASC';
 
     const seriesList = await db.all(query, params);
     res.json({ series: seriesList });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -161,6 +256,7 @@ router.get('/series/:name', async (req, res) => {
     // keep as is if malformed URI
   }
 
+  const scope = seriesScope(req.query, 'i');
   try {
     const db = await getDb();
     const items = await db.all(`
@@ -176,20 +272,21 @@ router.get('/series/:name', async (req, res) => {
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
       LEFT JOIN libraries l ON i.library_id = l.id
-      WHERE i.series = ?
+      WHERE i.series = ?${scope.sql}
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )
+      )${ratingSql(req.user, 'i')}
       ORDER BY
         CASE WHEN i.volume IS NULL THEN 1 ELSE 0 END,
         i.volume ASC,
         i.title ASC
-    `, [userId, seriesName, userId]);
+    `, [userId, seriesName, ...scope.params, userId]);
 
     if (!items || items.length === 0) {
       return res.status(404).json({ error: 'Series not found' });
     }
+    await shapeItems(db, items, req.user);
 
     const volumeCount = items.length;
     const author = items.find(i => i.author)?.author || 'Unknown Author';
@@ -233,6 +330,8 @@ router.get('/series/:name', async (req, res) => {
         inProgressCount,
         unreadCount,
         overallProgress,
+        libraryId: items[0].library_id || null,
+        mediaType: items[0].media_type || null,
         libraryName: items[0].library_name || null,
         format: items[0].format || null,
         nextVolume,
@@ -240,7 +339,7 @@ router.get('/series/:name', async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -252,16 +351,17 @@ router.post('/series/:name/mark-read', async (req, res) => {
     seriesName = decodeURIComponent(seriesName);
   } catch (e) {}
 
+  const scope = seriesScope(req.query);
   try {
     const db = await getDb();
     const items = await db.all(`
       SELECT id, total_pages FROM items
-      WHERE series = ?
+      WHERE series = ?${scope.sql}
       AND id NOT IN (
         SELECT item_id FROM item_visibility
         WHERE user_id = ? OR user_id IS NULL
-      )
-    `, [seriesName, userId]);
+      )${ratingSql(req.user, 'items')}
+    `, [seriesName, ...scope.params, userId]);
 
     for (const item of items) {
       await db.run(`
@@ -279,7 +379,7 @@ router.post('/series/:name/mark-read', async (req, res) => {
 
     res.json({ message: 'Marked all volumes as read', count: items.length });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -291,16 +391,17 @@ router.post('/series/:name/mark-unread', async (req, res) => {
     seriesName = decodeURIComponent(seriesName);
   } catch (e) {}
 
+  const scope = seriesScope(req.query);
   try {
     const db = await getDb();
     const items = await db.all(`
       SELECT id, total_pages FROM items
-      WHERE series = ?
+      WHERE series = ?${scope.sql}
       AND id NOT IN (
         SELECT item_id FROM item_visibility
         WHERE user_id = ? OR user_id IS NULL
-      )
-    `, [seriesName, userId]);
+      )${ratingSql(req.user, 'items')}
+    `, [seriesName, ...scope.params, userId]);
 
     for (const item of items) {
       await db.run(`
@@ -317,7 +418,7 @@ router.post('/series/:name/mark-unread', async (req, res) => {
 
     res.json({ message: 'Marked all volumes as unread', count: items.length });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -333,7 +434,7 @@ router.get('/folders', async (req, res) => {
       WHERE NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )
+      )${ratingSql(req.user, 'i')}
       ORDER BY i.path ASC
     `, [userId]);
 
@@ -358,7 +459,7 @@ router.get('/folders', async (req, res) => {
 
     res.json({ folders: Object.values(foldersMap) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -374,10 +475,11 @@ router.get('/hidden', async (req, res) => {
       WHERE v.user_id = ? OR (? = 'admin' AND v.user_id IS NULL)
       ORDER BY v.created_at DESC
     `, [userId, req.user.role]);
+    await shapeItems(db, hidden, req.user);
 
     res.json({ hiddenItems: hidden });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -398,7 +500,7 @@ router.post('/:id/hide', async (req, res) => {
 
     res.json({ message: 'Item hidden from shelf' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -417,7 +519,41 @@ router.post('/:id/unhide', async (req, res) => {
 
     res.json({ message: 'Item restored to shelf' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
+  }
+});
+
+// Embedded chapter markers (audiobooks, and any video with chapters). Probed on first
+// request and cached on the row alongside the file size it was read from, so replacing
+// the file re-probes rather than serving the old book's chapters.
+router.get('/:id/chapters', async (req, res) => {
+  if (!ITEM_ID_RE.test(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid item id' });
+  }
+  try {
+    const db = await getDb();
+    const item = await db.get('SELECT id, path, file_size, chapters_json FROM items WHERE id = ?', [req.params.id]);
+    if (!item || await isItemHiddenForUser(db, item.id, req.user)) {
+      return res.status(404).json({ error: 'Item not found' });
+    }
+
+    try {
+      const cached = item.chapters_json ? JSON.parse(item.chapters_json) : null;
+      if (cached && cached.fileSize === item.file_size && Array.isArray(cached.chapters)) {
+        return res.json({ chapters: cached.chapters });
+      }
+    } catch (e) {
+      // Corrupt cache — fall through and re-probe.
+    }
+
+    const chapters = await probeChapters(item.path);
+    await db.run('UPDATE items SET chapters_json = ? WHERE id = ?', [
+      JSON.stringify({ fileSize: item.file_size, chapters }),
+      item.id
+    ]);
+    res.json({ chapters });
+  } catch (err) {
+    serverError(req, res, err);
   }
 });
 
@@ -437,15 +573,20 @@ router.get('/:id', async (req, res) => {
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
       WHERE i.id = ?
-    `, [userId, req.params.id]);
+      AND NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
+      )${ratingSql(req.user, 'i')}
+    `, [userId, req.params.id, userId]);
 
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });
     }
 
+    await shapeItem(db, item, req.user);
     res.json({ item });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
