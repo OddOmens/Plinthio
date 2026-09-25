@@ -9,6 +9,8 @@ import { getMangaPagesList, extractMangaPage } from '../services/archive.js';
 import { getThumbnailPath, getOrCreateThumbnail } from '../services/thumbnails.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
 import { escapeXml } from '../utils/xml.js';
+import { sendRangedFile, streamFile } from '../utils/fileStream.js';
+import { serverError } from '../utils/http.js';
 
 const router = express.Router();
 
@@ -44,7 +46,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
 
   try {
     const db = await getDb();
-    if (await isItemHiddenForUser(db, itemId, req.user.id)) {
+    if (await isItemHiddenForUser(db, itemId, req.user)) {
       return res.status(404).json({ error: 'Item not found' });
     }
 
@@ -125,7 +127,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     res.send(svg);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -139,47 +141,17 @@ router.get('/stream/:id', authenticateToken, async (req, res) => {
     const item = await db.get('SELECT * FROM items WHERE id = ?', [req.params.id]);
 
     if (!item) return res.status(404).json({ error: 'Item not found' });
-    if (await isItemHiddenForUser(db, req.params.id, req.user.id)) {
+    if (await isItemHiddenForUser(db, req.params.id, req.user)) {
       return res.status(404).json({ error: 'Item not found' });
     }
     if (!fs.existsSync(item.path)) return res.status(404).json({ error: 'File missing from storage' });
 
     const filePath = item.path;
     const stat = fs.statSync(filePath);
-    const fileSize = stat.size;
-    const range = req.headers.range;
     const contentType = mime.lookup(filePath) || 'audio/mpeg';
-
-    if (range) {
-      const parts = range.replace(/bytes=/, '').split('-');
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-
-      if (start >= fileSize) {
-        res.status(416).send(`Requested range not satisfiable\n${start} >= ${fileSize}`);
-        return;
-      }
-
-      const chunkSize = end - start + 1;
-      const file = fs.createReadStream(filePath, { start, end });
-
-      res.writeHead(206, {
-        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-        'Accept-Ranges': 'bytes',
-        'Content-Length': chunkSize,
-        'Content-Type': contentType
-      });
-      file.pipe(res);
-    } else {
-      res.writeHead(200, {
-        'Content-Length': fileSize,
-        'Content-Type': contentType,
-        'Accept-Ranges': 'bytes'
-      });
-      fs.createReadStream(filePath).pipe(res);
-    }
+    sendRangedFile(req, res, filePath, stat.size, contentType);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -192,7 +164,7 @@ router.get('/manga/:id/pages', authenticateToken, async (req, res) => {
     const db = await getDb();
     const item = await db.get('SELECT path FROM items WHERE id = ?', [req.params.id]);
     if (!item) return res.status(404).json({ error: 'Item not found' });
-    if (await isItemHiddenForUser(db, req.params.id, req.user.id)) {
+    if (await isItemHiddenForUser(db, req.params.id, req.user)) {
       return res.status(404).json({ error: 'Item not found' });
     }
 
@@ -202,7 +174,7 @@ router.get('/manga/:id/pages', authenticateToken, async (req, res) => {
       pages: pages.map((_, index) => ({ pageIndex: index, pageNumber: index + 1 }))
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -215,7 +187,7 @@ router.get('/manga/:id/page/:pageIndex', authenticateToken, async (req, res) => 
     const db = await getDb();
     const item = await db.get('SELECT path FROM items WHERE id = ?', [req.params.id]);
     if (!item) return res.status(404).json({ error: 'Item not found' });
-    if (await isItemHiddenForUser(db, req.params.id, req.user.id)) {
+    if (await isItemHiddenForUser(db, req.params.id, req.user)) {
       return res.status(404).json({ error: 'Item not found' });
     }
 
@@ -233,7 +205,7 @@ router.get('/manga/:id/page/:pageIndex', authenticateToken, async (req, res) => 
     res.setHeader('Cache-Control', 'public, max-age=604800'); // Cache for 7 days
     res.send(page.data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -246,16 +218,20 @@ router.get('/book/:id/file', authenticateToken, async (req, res) => {
     const db = await getDb();
     const item = await db.get('SELECT path, title, format FROM items WHERE id = ?', [req.params.id]);
     if (!item) return res.status(404).json({ error: 'Item not found' });
-    if (await isItemHiddenForUser(db, req.params.id, req.user.id)) {
+    if (await isItemHiddenForUser(db, req.params.id, req.user)) {
       return res.status(404).json({ error: 'Item not found' });
     }
+
+    // Without this, a file removed from disk since the last scan made createReadStream emit
+    // an unhandled 'error' and crashed the server for everyone.
+    if (!fs.existsSync(item.path)) return res.status(404).json({ error: 'File missing from storage' });
 
     const contentType = mime.lookup(item.path) || 'application/octet-stream';
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(item.title)}.${item.format}"`);
-    fs.createReadStream(item.path).pipe(res);
+    streamFile(res, item.path);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

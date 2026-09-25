@@ -287,8 +287,24 @@ export async function waitForSegment(job, filename) {
   return ok ? target : null;
 }
 
-export function touchJob(job) {
-  job.lastRequestedAt = Date.now();
+// Jobs are shared per item + profile, so two people watching the same title ride the same
+// encode. Each request records who asked, which lets an explicit stop from one viewer leave
+// the job running for anyone else still pulling segments from it.
+export function touchJob(job, viewerId) {
+  const now = Date.now();
+  job.lastRequestedAt = now;
+  if (viewerId) {
+    if (!job.viewers) job.viewers = new Map();
+    job.viewers.set(viewerId, now);
+  }
+}
+
+function hasOtherActiveViewers(job, viewerId, now) {
+  if (!job.viewers) return false;
+  for (const [id, seenAt] of job.viewers) {
+    if (id !== viewerId && now - seenAt <= IDLE_REAP_MS) return true;
+  }
+  return false;
 }
 
 function killJob(job) {
@@ -299,9 +315,15 @@ function killJob(job) {
  * Immediately terminates any active ffmpeg encode/remux processes for an item.
  * Called when the client closes the player, navigates away, or switches media.
  */
-export function stopItemJobs(itemId) {
+export function stopItemJobs(itemId, viewerId = null) {
+  const now = Date.now();
   for (const [mapKey, job] of jobs.entries()) {
     if (mapKey.startsWith(`${itemId}:`)) {
+      if (viewerId) {
+        job.viewers?.delete(viewerId);
+        // Someone else is still watching this encode — leave it to the idle reaper.
+        if (hasOtherActiveViewers(job, viewerId, now)) continue;
+      }
       killJob(job);
       job.exited = true;
       job.proc = null;

@@ -56,6 +56,15 @@ export async function scanLibrary(libraryId) {
     // files (same content, different path) instead of treating them as brand-new items,
     // which previously caused duplicates whenever a folder was renamed.
     const dbItemsBefore = await db.all('SELECT id, path, file_size FROM items WHERE library_id = ?', [libraryId]);
+    // An unmounted drive usually leaves its mount point behind as an empty folder, which
+    // looks exactly like "every file was deleted" — and the prune below would then wipe the
+    // whole catalog (and its covers, reading progress links, custom art). Refuse instead.
+    if (files.length === 0 && dbItemsBefore.length > 0) {
+      throw new Error(
+        `"${library.name}" folder is empty but the catalog has ${dbItemsBefore.length} item(s) — ` +
+        'is the drive mounted? Scan skipped so nothing was removed.'
+      );
+    }
     const dbItemsById = new Map(dbItemsBefore.map((i) => [i.id, i]));
     const discoveredPathSet = new Set(files);
 
