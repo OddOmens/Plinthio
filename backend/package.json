@@ -1,6 +1,6 @@
 {
   "name": "plinthio-backend",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "Plinthio API and streaming server",
   "main": "src/index.js",

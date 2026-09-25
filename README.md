@@ -156,24 +156,67 @@ Plinthio is built for trusted-network self-hosting (home LAN, Tailscale/tunnel a
 
 ---
 
-## 🚀 Quick Start (Docker)
+## 🚀 Install (Docker)
 
-### 1. Clone the repository
+You only need Docker — no need to clone the repo. Images are published for x86-64 and ARM
+(Raspberry Pi 4/5, Apple Silicon, most NAS boxes).
+
 ```bash
-git clone https://github.com/yourusername/plinthio.git
-cd plinthio
+mkdir plinthio && cd plinthio
+curl -fsSLO https://raw.githubusercontent.com/OddOmens/Plinthio/main/docker/docker-compose.yml
+MEDIA_DIR=/path/to/your/media docker compose up -d
 ```
 
-### 2. Run with Docker Compose
+Open `http://<your-server-ip>:8088`, run the setup wizard to create your admin account and
+add your media folders. On a phone, use **Add to Home Screen** to install the app.
+
+Settings like `MEDIA_DIR`, `TZ` or the port binding can live in a `.env` file next to
+`docker-compose.yml` instead of on the command line — see the comments in that file.
+
+## ⬆️ Updating
+
+When a new version is out, admins see a banner in the app. To update:
+
 ```bash
-docker compose -f docker/docker-compose.yml up -d
+docker compose pull && docker compose up -d
 ```
 
-### 3. Open Plinthio
-Navigate to `http://<your-server-ip>:8088` in your browser.
-* Complete the quick setup wizard to create your Admin account.
-* Add your media folders in **Server Settings**.
-* On your iPhone or Android, tap **Add to Home Screen** to install the PWA.
+That's it. Before the new version first starts, Plinthio **backs up your database** to
+`config/backups/` (named `plinthio-backup-before-<new>-from-<old>-….sqlite`), so every
+upgrade can be undone.
+
+**Choosing which updates you get.** Set `PLINTHIO_TAG` in your `.env`:
+
+| `PLINTHIO_TAG` | You get |
+| --- | --- |
+| `latest` *(default)* | every release |
+| `1` | all 1.x features and fixes, never a breaking 2.0 |
+| `1.2` | bug fixes for 1.2 only |
+| `1.2.3` | exactly that version, nothing changes until you edit it |
+
+Versions follow [semantic versioning](https://semver.org): a **patch** (1.2.**3**) only fixes
+bugs, a **minor** (1.**3**.0) adds features, a **major** (**2**.0.0) may ask you to change
+something — its release notes will say what. Full history is in [CHANGELOG.md](CHANGELOG.md).
+
+**Rolling back.** Set `PLINTHIO_TAG` to the version you were on, then `docker compose up -d`.
+If the newer version had already changed the database, stop Plinthio and copy the matching
+`plinthio-backup-before-…` file over `config/plinthio.sqlite` first.
+
+**Automatic updates** (optional): tools like [Watchtower](https://containrrr.dev/watchtower/)
+can run the pull for you. Pair them with a `PLINTHIO_TAG` of `1` so a major version never
+installs itself unattended.
+
+The update check is one anonymous request to GitHub every 12 hours; set `UPDATE_CHECK=false`
+to turn it off.
+
+### Building from source
+
+To run unreleased changes from a checkout instead of a published image:
+
+```bash
+git clone https://github.com/OddOmens/Plinthio.git && cd Plinthio
+docker compose -f docker/docker-compose.yml -f docker/docker-compose.build.yml up -d --build
+```
 
 ---
 

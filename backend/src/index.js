@@ -9,6 +9,9 @@ import { fileURLToPath } from 'url';
 
 import { config } from './config/env.js';
 import { getDb } from './config/database.js';
+import { APP_VERSION } from './config/version.js';
+import { backupBeforeUpgrade, recordRunningVersion } from './services/upgrade.js';
+import { initUpdateCheck } from './services/updateCheck.js';
 
 import rateLimit from 'express-rate-limit';
 
@@ -29,7 +32,10 @@ import metadataRoutes from './routes/metadata.js';
 import customizationRoutes from './routes/customization.js';
 import activityRoutes from './routes/activity.js';
 import seriesRoutes from './routes/series.js';
+import requestRoutes from './routes/requests.js';
 import opdsRoutes from './routes/opds.js';
+import healthRoutes from './routes/health.js';
+import systemRoutes from './routes/system.js';
 import { warmThumbnailCache } from './services/thumbnails.js';
 import { initBackupScheduler } from './services/backup.js';
 import { initAutoScan } from './services/autoScan.js';
@@ -48,8 +54,43 @@ if (config.trustProxy !== false) {
 }
 
 // Security and utility middleware
+// Content-Security-Policy. The session token lives in localStorage, so any injected script
+// could lift it — the CSP is the backstop: no inline or third-party script except Google's
+// Cast SDK (loaded on demand, Chromium only), and images only from ourselves plus the
+// metadata providers whose cover art the editor previews.
+//   - style 'unsafe-inline': Vue style bindings, the admin's custom CSS and EPUB styling
+//   - blob:/data: — hls.js MediaSource URLs, epub.js resource URLs, placeholder covers
+//   - no upgrade-insecure-requests: most installs are reached over plain HTTP on a LAN,
+//     where it would rewrite every same-origin request to https and break the app
+// Set CSP=off to disable (e.g. while diagnosing a blocked resource), or CSP=report-only.
+const cspMode = (process.env.CSP || 'on').toLowerCase();
+const COVER_PROVIDER_HOSTS = [
+  'uploads.mangadex.org', 'books.google.com', 'books.googleusercontent.com',
+  'covers.openlibrary.org', '*.archive.org', 'image.tmdb.org'
+];
+const contentSecurityPolicy = cspMode === 'off' ? false : {
+  useDefaults: false,
+  reportOnly: cspMode === 'report-only',
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", 'https://www.gstatic.com'],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    imgSrc: ["'self'", 'data:', 'blob:', ...COVER_PROVIDER_HOSTS],
+    mediaSrc: ["'self'", 'blob:'],
+    fontSrc: ["'self'", 'data:', 'blob:'],
+    connectSrc: ["'self'", 'https://www.gstatic.com'],
+    workerSrc: ["'self'", 'blob:'],
+    frameSrc: ["'self'", 'blob:'],
+    manifestSrc: ["'self'"],
+    objectSrc: ["'none'"],
+    baseUri: ["'self'"],
+    formAction: ["'self'"],
+    frameAncestors: ["'self'"]
+  }
+};
+
 app.use(helmet({
-  contentSecurityPolicy: false, // Allow streaming media & blob URLs in PWA
+  contentSecurityPolicy,
   crossOriginEmbedderPolicy: false
 }));
 // `credentials: true` only matters for cookie-based auth; Plinthio authenticates via a
@@ -138,9 +179,12 @@ app.use('/api/items', itemRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin/logs', logRoutes);
+app.use('/api/admin/health', healthRoutes);
+app.use('/api/system', systemRoutes);
 app.use('/api/stats', statRoutes);
 app.use('/api/keys', apiKeyRoutes);
 app.use('/api/collections', collectionRoutes);
+app.use('/api/requests', requestRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/metadata', metadataRoutes);
@@ -153,7 +197,7 @@ app.use('/api/opds', mediaLimiter, opdsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'healthy', version: '0.2.0', app: 'Plinthio' });
+  res.json({ status: 'healthy', version: APP_VERSION, app: 'Plinthio' });
 });
 
 // Serve frontend build if present
@@ -169,13 +213,30 @@ if (fs.existsSync(frontendDist)) {
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
-  res.status(500).json({ error: err.message || 'Internal Server Error' });
+  // Body-parser rejects (malformed JSON, oversized body) are the client's fault and safe to
+  // describe; anything else stays in the server log.
+  if (err.type === 'entity.parse.failed' || err.type === 'entity.too.large') {
+    return res.status(err.status || 400).json({ error: err.message });
+  }
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
 // Bootstrap server
 async function start() {
   try {
+    // Snapshot the database before a new version's migrations touch it (no-op when the
+    // version hasn't changed or on a fresh install).
+    const upgrade = await backupBeforeUpgrade();
+
     await getDb(); // Ensure database and tables are ready
+    recordRunningVersion();
+    if (upgrade) {
+      console.log(`[upgrade] Now running Plinthio ${APP_VERSION}.`);
+    }
+
+    // Admins get a dismissible banner when a newer release is published (UPDATE_CHECK=false
+    // turns the outbound check off entirely).
+    initUpdateCheck();
 
     // Pre-warm WebP thumbnail cache in background
     warmThumbnailCache().catch(e => console.warn('Thumbnail warming warning:', e.message));
@@ -202,7 +263,7 @@ async function start() {
     app.listen(config.port, config.host, () => {
       console.log(`
 =====================================================
-  📚 Plinthio Media Server v0.2.0 is Running!
+  📚 Plinthio Media Server v${APP_VERSION} is Running!
   ---------------------------------------------------
   Local:    http://localhost:${config.port}
   Network:  http://${config.host}:${config.port}
