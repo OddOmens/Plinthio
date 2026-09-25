@@ -31,6 +31,16 @@
         </span>
       </div>
 
+      <!-- Offline badge / download progress -->
+      <div
+        v-if="isDownloaded || isDownloading"
+        class="absolute top-2 right-2 z-10 pointer-events-none w-6 h-6 rounded-full bg-background/85 backdrop-blur-md border border-border/80 flex items-center justify-center shadow-sm"
+        :title="isDownloaded ? 'Available offline' : 'Downloading…'"
+      >
+        <CheckCircle2 v-if="isDownloaded" class="w-3.5 h-3.5 text-emerald-500" />
+        <Loader2 v-else class="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+      </div>
+
       <!-- Quick Action Overlay on Hover -->
       <div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
         <div class="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
@@ -118,6 +128,15 @@
                 <span>Bookmarks & Notes...</span>
               </button>
               <button
+                v-if="downloads.canDownload(item)"
+                type="button"
+                @click="toggleDownload"
+                class="w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5"
+              >
+                <component :is="isDownloaded ? Trash2 : (isDownloading ? X : Download)" class="w-4 h-4 text-muted-foreground" />
+                <span>{{ isDownloaded ? 'Remove Download' : (isDownloading ? 'Cancel Download' : 'Download for Offline') }}</span>
+              </button>
+              <button
                 v-if="authStore.isEditor"
                 type="button"
                 @click="openMetadataDialog"
@@ -170,6 +189,7 @@
 </template>
 
 <script setup>
+import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
@@ -191,8 +211,14 @@ import {
   Tv,
   Film,
   Sparkles,
-  Search
+  Search,
+  Download,
+  Trash2,
+  X,
+  CheckCircle2,
+  Loader2
 } from 'lucide-vue-next';
+import { useDownloadsStore } from '../stores/downloads';
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -216,11 +242,22 @@ function openBookmarksDialog() {
   emit('open-bookmarks', props.item);
 }
 
+const downloads = useDownloadsStore();
+const isDownloaded = computed(() => downloads.isDownloaded(props.item.id));
+const isDownloading = computed(() => downloads.isDownloading(props.item.id));
+
+function toggleDownload() {
+  showMenu.value = false;
+  if (isDownloaded.value) downloads.remove(props.item.id);
+  else if (isDownloading.value) downloads.cancel(props.item.id);
+  else downloads.download(props.item);
+}
+
 function openMetadataDialog() {
   showMenu.value = false;
   emit('edit-metadata', props.item);
 }
-const token = localStorage.getItem('plinthio_token') || '';
+const token = getMediaToken() || '';
 
 const coverUrl = computed(() => {
   return buildCoverUrl(props.item, { width: 360 });

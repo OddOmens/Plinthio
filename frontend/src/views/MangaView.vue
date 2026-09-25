@@ -84,9 +84,9 @@
 
           <!-- Hero Content -->
           <div class="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
-            <div class="flex flex-col md:flex-row gap-4 sm:gap-6 items-center md:items-start text-center md:text-left">
+            <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start text-center sm:text-left">
               <!-- Cover Artwork (with 3D stack illusion for multi-volume series) -->
-              <div class="relative w-36 sm:w-44 md:w-52 lg:w-60 aspect-[2/3] flex-shrink-0">
+              <div class="relative w-28 sm:w-36 md:w-52 lg:w-60 aspect-[2/3] flex-shrink-0">
                 <!-- Stack Layer 2 -->
                 <div
                   v-if="series.volumes?.length > 2"
@@ -123,7 +123,7 @@
               <!-- Series Details & Metadata -->
               <div class="flex-1 flex flex-col justify-between py-0.5 max-w-3xl min-w-0">
                 <div>
-                  <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-1">
+                  <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
                     <span class="text-[10px] sm:text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
                       Manga Series
                     </span>
@@ -136,18 +136,18 @@
                     {{ series.name }}
                   </h1>
 
-                  <p v-if="series.author" class="text-xs sm:text-sm text-muted-foreground mt-0.5 flex items-center justify-center md:justify-start gap-1.5 font-medium">
+                  <p v-if="series.author" class="text-xs sm:text-sm text-muted-foreground mt-0.5 flex items-center justify-center sm:justify-start gap-1.5 font-medium">
                     <User class="w-3.5 h-3.5 text-muted-foreground/80 flex-shrink-0" />
                     <span class="font-medium text-foreground/90">{{ series.author }}</span>
                   </p>
 
-                  <p v-if="series.artists && series.artists !== series.author" class="text-xs sm:text-sm text-muted-foreground mt-0.5 flex items-center justify-center md:justify-start gap-1.5 font-medium">
+                  <p v-if="series.artists && series.artists !== series.author" class="text-xs sm:text-sm text-muted-foreground mt-0.5 flex items-center justify-center sm:justify-start gap-1.5 font-medium">
                     <Palette class="w-3.5 h-3.5 text-muted-foreground/80 flex-shrink-0" />
                     <span class="font-medium text-foreground/90">{{ series.artists }}</span>
                   </p>
 
                   <!-- Genre / Theme Tags -->
-                  <div v-if="genreTags.length || themeTags.length" class="flex flex-wrap items-center justify-center md:justify-start gap-1.5 mt-2">
+                  <div v-if="genreTags.length || themeTags.length" class="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 mt-2">
                     <span
                       v-for="g in genreTags"
                       :key="`genre-${g}`"
@@ -166,7 +166,7 @@
                   </p>
 
                   <!-- Metadata Badges Grid -->
-                  <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2">
+                  <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
                     <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-card border border-border text-[11px] font-medium text-foreground shadow-sm">
                       <Layers class="w-3 h-3 text-primary" />
                       <span>{{ series.volumeCount }} {{ series.volumeCount === 1 ? 'Volume' : 'Volumes' }}</span>
@@ -260,6 +260,16 @@
                     >
                       <RotateCcw class="w-3.5 h-3.5 text-muted-foreground" />
                       <span class="hidden sm:inline">Reset History</span>
+                    </button>
+
+                    <button
+                      v-if="downloads.supported && undownloadedUnread.length"
+                      @click="downloadUnread"
+                      class="h-8 sm:h-9 px-3 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs transition active:scale-95 flex items-center gap-1.5"
+                      :title="`Download ${undownloadedUnread.length} unread volume(s) for offline reading`"
+                    >
+                      <Download class="w-3.5 h-3.5 text-muted-foreground" />
+                      <span class="hidden sm:inline">Download Unread ({{ undownloadedUnread.length }})</span>
                     </button>
 
                     <button
@@ -489,6 +499,16 @@
                 >
                   <Bookmark class="w-3.5 h-3.5" />
                 </button>
+
+                <button v-if="downloads.canDownload(vol)" :aria-label="downloadLabel(vol)"
+                  @click="toggleVolumeDownload(vol)"
+                  class="w-8 h-8 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
+                  :title="downloadLabel(vol)"
+                >
+                  <CheckCircle2 v-if="downloads.isDownloaded(vol.id)" class="w-3.5 h-3.5 text-emerald-500" />
+                  <Loader2 v-else-if="downloads.isDownloading(vol.id)" class="w-3.5 h-3.5 animate-spin" />
+                  <Download v-else class="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           </div>
@@ -609,6 +629,16 @@
               >
                 <Bookmark class="w-4 h-4" />
               </button>
+
+              <button v-if="downloads.canDownload(vol)" :aria-label="downloadLabel(vol)"
+                @click="toggleVolumeDownload(vol)"
+                class="w-9 h-9 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
+                :title="downloadLabel(vol)"
+              >
+                <CheckCircle2 v-if="downloads.isDownloaded(vol.id)" class="w-4 h-4 text-emerald-500" />
+                <Loader2 v-else-if="downloads.isDownloading(vol.id)" class="w-4 h-4 animate-spin" />
+                <Download v-else class="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -646,7 +676,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { placeholderCover } from '../utils/placeholder';
+import { getMediaToken } from '../utils/mediaToken';
+import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../api/client';
 import { useThemeStore } from '../stores/theme';
@@ -655,9 +687,9 @@ import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
 import Navbar from '../components/Navbar.vue';
 import Sidebar from '../components/Sidebar.vue';
-import MangaReader from '../components/MangaReader.vue';
-import BookmarksModal from '../components/BookmarksModal.vue';
-import MetadataSearchModal from '../components/MetadataSearchModal.vue';
+const MangaReader = defineAsyncComponent(() => import('../components/MangaReader.vue'));
+const BookmarksModal = defineAsyncComponent(() => import('../components/BookmarksModal.vue'));
+const MetadataSearchModal = defineAsyncComponent(() => import('../components/MetadataSearchModal.vue'));
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 import {
   ArrowLeft,
@@ -682,8 +714,11 @@ import {
   Bookmark,
   AlertCircle,
   Loader2,
-  Search
+  Search,
+  Download,
+  CheckCircle2
 } from 'lucide-vue-next';
+import { useDownloadsStore } from '../stores/downloads';
 
 const route = useRoute();
 const router = useRouter();
@@ -694,7 +729,7 @@ const customizationStore = useCustomizationStore();
 
 const isSidebarLayout = computed(() => customizationStore.layoutMode === 'sidebar');
 
-const token = localStorage.getItem('plinthio_token') || '';
+const token = getMediaToken() || '';
 
 function handleNavFilter(type) {
   router.push({ path: '/', query: { type } });
@@ -760,7 +795,7 @@ const themeTags = computed(() => splitTags(series.value?.themes));
 // ─── Cover URLs ─────────────────────────────────────────────────────────────
 const primaryCoverUrl = computed(() => {
   if (!series.value || !series.value.volumes || series.value.volumes.length === 0) {
-    return 'https://placehold.co/400x600/18181b/52525b?text=Manga';
+    return placeholderCover('Manga', { width: 400, height: 600 });
   }
   // Show the cover for whichever volume is "current" (in progress, or next up to read)
   // rather than always volume 1, so the hero art tracks where you actually are in the series.
@@ -768,14 +803,14 @@ const primaryCoverUrl = computed(() => {
   if (current.cover_path) {
     return buildCoverUrl(current, { width: 720 });
   }
-  return 'https://placehold.co/400x600/18181b/52525b?text=Manga';
+  return placeholderCover('Manga', { width: 400, height: 600 });
 });
 
 function volumeCoverUrl(vol) {
   if (vol.cover_path) {
     return buildCoverUrl(vol, { width: 360 });
   }
-  return `https://placehold.co/200x300/18181b/52525b?text=${encodeURIComponent(vol.title?.charAt(0) || '?')}`;
+  return placeholderCover(vol.title?.charAt(0));
 }
 
 // ─── Filter Tabs & Counts ───────────────────────────────────────────────────
@@ -859,6 +894,38 @@ const smartCtaState = computed(() => {
   }
 });
 
+// ─── Offline downloads ──────────────────────────────────────────────────────────
+const downloads = useDownloadsStore();
+
+function downloadLabel(vol) {
+  if (downloads.isDownloaded(vol.id)) return 'Downloaded — tap to remove';
+  if (downloads.isDownloading(vol.id)) return 'Downloading — tap to cancel';
+  return 'Download for offline';
+}
+
+function toggleVolumeDownload(vol) {
+  if (downloads.isDownloaded(vol.id)) downloads.remove(vol.id);
+  else if (downloads.isDownloading(vol.id)) downloads.cancel(vol.id);
+  else downloads.download(vol);
+}
+
+const undownloadedUnread = computed(() => (series.value?.volumes || []).filter(
+  (v) => !v.is_finished && downloads.canDownload(v) && !downloads.isDownloaded(v.id) && !downloads.isDownloading(v.id)
+));
+
+// One at a time, in reading order, so the next volume is usable as soon as possible.
+async function downloadUnread() {
+  for (const vol of [...undownloadedUnread.value]) {
+    await downloads.download(vol);
+  }
+}
+
+// Same-named series can exist in several libraries / media types; bulk actions stay on
+// the one being viewed.
+function seriesScopeParams() {
+  return { library: series.value?.libraryId || undefined, type: series.value?.mediaType || undefined };
+}
+
 // ─── Data Fetching ──────────────────────────────────────────────────────────
 async function fetchSeriesData() {
   loading.value = true;
@@ -870,7 +937,9 @@ async function fetchSeriesData() {
 
     if (seriesParam) {
       const decodedName = decodeURIComponent(seriesParam);
-      const res = await api.get(`/items/series/${encodeURIComponent(decodedName)}`);
+      const res = await api.get(`/items/series/${encodeURIComponent(decodedName)}`, {
+        params: { library: route.query.library || undefined, type: route.query.type || undefined }
+      });
       series.value = res.data.series;
     } else if (itemIdParam) {
       // Fetch item first
@@ -879,7 +948,9 @@ async function fetchSeriesData() {
 
       if (item && item.series) {
         // Redirect or load series
-        const res = await api.get(`/items/series/${encodeURIComponent(item.series)}`);
+        const res = await api.get(`/items/series/${encodeURIComponent(item.series)}`, {
+          params: { library: item.library_id, type: item.media_type }
+        });
         series.value = res.data.series;
       } else if (item) {
         // Standalone manga (no series)
@@ -923,7 +994,7 @@ async function markAllAsRead() {
 
   actionLoading.value = true;
   try {
-    await api.post(`/items/series/${encodeURIComponent(series.value.name)}/mark-read`);
+    await api.post(`/items/series/${encodeURIComponent(series.value.name)}/mark-read`, null, { params: seriesScopeParams() });
     await fetchSeriesData();
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to mark all as read');
@@ -944,7 +1015,7 @@ async function markAllAsUnread() {
 
   actionLoading.value = true;
   try {
-    await api.post(`/items/series/${encodeURIComponent(series.value.name)}/mark-unread`);
+    await api.post(`/items/series/${encodeURIComponent(series.value.name)}/mark-unread`, null, { params: seriesScopeParams() });
     await fetchSeriesData();
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to reset reading history');
