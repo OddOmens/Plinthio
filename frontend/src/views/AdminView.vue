@@ -673,9 +673,9 @@
         <!-- Shelf Filter Defaults Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Global Shelf Filter Modes</h3>
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Views</h3>
             <p class="text-xs text-muted-foreground mt-0.5">
-              Control which grouping and organization views are allowed server-wide. Disabling a filter hides it across the entire server for all users.
+              Series and Creator are always available. Turning off Disk Folders or Custom Folders hides that view for everyone on this server.
             </p>
           </div>
 
@@ -683,17 +683,21 @@
             <label
               v-for="filter in allServerFilterModes"
               :key="filter.id"
-              class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none"
+              :class="[
+                'flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 transition select-none',
+                filter.always ? '' : 'hover:bg-muted/40 cursor-pointer'
+              ]"
             >
               <input
                 type="checkbox"
                 :value="filter.id"
                 v-model="allowedFilters"
+                :disabled="filter.always"
                 class="mt-0.5 rounded border-border text-primary focus:ring-ring"
               />
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground">{{ filter.label }}</span>
-                <span class="text-[11px] text-muted-foreground">{{ filter.desc }}</span>
+                <span class="text-[11px] text-muted-foreground">{{ filter.always ? 'Always on' : filter.desc }}</span>
               </div>
             </label>
           </div>
@@ -1608,15 +1612,15 @@ const activity = ref([]);
 const activityUserFilter = ref('');
 const loadingActivity = ref(false);
 
-const allowedFilters = ref(['grid', 'author', 'series', 'disk_folder', 'custom_folder']);
+const allowedFilters = ref(['series', 'creator', 'disk_folder', 'custom_folder']);
 const savingFilters = ref(false);
 
+// Series and Creator can't be turned off (the server enforces it too); the folder views can.
 const allServerFilterModes = [
-  { id: 'grid', label: 'Grid View', desc: 'Standard flat grid of items.' },
-  { id: 'author', label: 'Group by Author', desc: 'Sort and group titles by author name.' },
-  { id: 'series', label: 'Group by Series', desc: 'Cluster related titles by series.' },
-  { id: 'disk_folder', label: 'Disk Folders', desc: 'Show physical file directory structure.' },
-  { id: 'custom_folder', label: 'Custom Folders', desc: 'User-created custom in-app folders with an Unorganized catch-all.' }
+  { id: 'series', label: 'Series', desc: '', always: true },
+  { id: 'creator', label: 'Creator', desc: '', always: true },
+  { id: 'disk_folder', label: 'Disk Folders', desc: 'Browse by the folders on the server.' },
+  { id: 'custom_folder', label: 'Custom Folders', desc: 'Users’ own in-app folders, with an Unorganized catch-all.' }
 ];
 
 const tmdbConfigured = ref(false);
@@ -2051,14 +2055,11 @@ async function loadServerFilters() {
 }
 
 async function saveServerFilters() {
-  if (allowedFilters.value.length === 0) {
-    dialog.alert('At least one filter mode must remain enabled.');
-    return;
-  }
   savingFilters.value = true;
   try {
-    await api.patch('/settings/filters', { allowedGroupingModes: allowedFilters.value });
-    dialog.alert('Server filter settings updated successfully.');
+    const res = await api.patch('/settings/filters', { allowedGroupingModes: allowedFilters.value });
+    allowedFilters.value = res.data.allowedGroupingModes || allowedFilters.value;
+    dialog.alert('Shelf views updated.');
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to update filter settings');
   } finally {

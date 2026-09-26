@@ -209,8 +209,8 @@
         <!-- Shelf Filter Modes Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Grouping & Filter Modes</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">Toggle which filter buttons appear in your shelf toolbar.</p>
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Views</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">Choose which views appear above your shelf. Series is always there.</p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -219,19 +219,19 @@
               :key="mode.id"
               :class="[
                 'flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 transition select-none',
-                mode.allowed ? 'cursor-pointer hover:bg-muted/40' : 'opacity-40 cursor-not-allowed'
+                mode.allowed && !mode.always ? 'cursor-pointer hover:bg-muted/40' : (mode.allowed ? '' : 'opacity-40 cursor-not-allowed')
               ]"
             >
               <input
                 type="checkbox"
                 :value="mode.id"
                 v-model="prefs.enabledGroupingModes"
-                :disabled="!mode.allowed"
+                :disabled="!mode.allowed || mode.always"
                 class="mt-0.5 rounded border-border text-primary focus:ring-ring"
               />
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground">{{ mode.label }}</span>
-                <span v-if="!mode.allowed" class="text-[10px] text-destructive">Disabled globally by administrator</span>
+                <span v-if="!mode.allowed" class="text-[10px] text-destructive">Turned off by your administrator</span>
                 <span v-else class="text-[11px] text-muted-foreground">{{ mode.desc }}</span>
               </div>
             </label>
@@ -699,6 +699,7 @@ import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
 import Sidebar from '../components/Sidebar.vue';
 import { ALL_MEDIA_TYPES } from '../constants/media';
+import { SHELF_MODES, normalizeShelfModes, userShelfModes } from '../utils/shelfModes';
 import { useDialogStore } from '../stores/dialog';
 import {
   ArrowLeft,
@@ -776,25 +777,25 @@ const stats = ref({});
 const myActivity = ref([]);
 const prefs = ref({
   enabledMediaTypes: ALL_MEDIA_TYPES,
-  enabledGroupingModes: ['grid', 'author', 'series', 'disk_folder', 'custom_folder'],
+  enabledGroupingModes: [...SHELF_MODES],
   defaultView: 'all'
 });
 const savingPrefs = ref(false);
 
-const allowedFilters = ref(['grid', 'author', 'series', 'disk_folder', 'custom_folder']);
+const allowedFilters = ref([...SHELF_MODES]);
 
 const allFilterModes = [
-  { id: 'grid', label: 'Grid View', desc: 'Flat card layout without group headers.' },
-  { id: 'author', label: 'Group by Author', desc: 'Sort and cluster titles by creator.' },
-  { id: 'series', label: 'Group by Series', desc: 'Organize titles into narrative series.' },
-  { id: 'disk_folder', label: 'Disk Folders', desc: 'Mirror filesystem folders from storage.' },
-  { id: 'custom_folder', label: 'Custom Folders', desc: 'Custom in-app folders with an Unorganized catch-all.' }
+  { id: 'series', label: 'Series', desc: 'One card per series; open it to see every volume or episode.', always: true },
+  { id: 'creator', label: 'Creator', desc: 'Grouped by author, director or studio.' },
+  { id: 'disk_folder', label: 'Disk Folders', desc: 'Mirror the folders on the server.' },
+  { id: 'custom_folder', label: 'Custom Folders', desc: 'Your own in-app folders, with an Unorganized catch-all.' }
 ];
 
 const availableFilterModes = computed(() => {
+  const serverModes = normalizeShelfModes(allowedFilters.value);
   return allFilterModes.map(m => ({
     ...m,
-    allowed: allowedFilters.value.includes(m.id)
+    allowed: serverModes.includes(m.id)
   }));
 });
 
@@ -869,7 +870,7 @@ async function loadData() {
     if (authStore.user?.preferences) {
       prefs.value = {
         enabledMediaTypes: authStore.user.preferences.enabledMediaTypes || ALL_MEDIA_TYPES,
-        enabledGroupingModes: authStore.user.preferences.enabledGroupingModes || ['grid', 'author', 'series', 'disk_folder', 'custom_folder'],
+        enabledGroupingModes: userShelfModes(authStore.user.preferences.enabledGroupingModes),
         defaultView: authStore.user.preferences.defaultView || 'all'
       };
     }
@@ -879,10 +880,8 @@ async function loadData() {
 }
 
 async function savePreferences() {
-  if (!prefs.value.enabledGroupingModes || prefs.value.enabledGroupingModes.length === 0) {
-    dialog.alert('Please enable at least one shelf filter mode.');
-    return;
-  }
+  // Series can't be switched off (the checkbox is locked on), so there's always a view.
+  prefs.value.enabledGroupingModes = [...new Set(['series', ...(prefs.value.enabledGroupingModes || [])])];
   if (!prefs.value.enabledMediaTypes || prefs.value.enabledMediaTypes.length === 0) {
     dialog.alert('Please enable at least one media category.');
     return;

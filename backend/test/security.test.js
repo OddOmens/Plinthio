@@ -89,3 +89,22 @@ describe('media tokens, path redaction and username rules', () => {
     assert.equal(body.detail, undefined);
   });
 });
+
+describe('auth rate limiting', () => {
+  test('page-load calls (setup-status, refresh) never trip the sign-in limiter', async () => {
+    const server = await startTestServer();
+    try {
+      const admin = await setupAdmin(server.baseUrl);
+      for (let i = 0; i < 70; i++) {
+        const status = await fetch(`${server.baseUrl}/api/auth/setup-status`);
+        assert.equal(status.status, 200, `setup-status call ${i + 1} was throttled`);
+      }
+      for (let i = 0; i < 65; i++) {
+        const res = await fetch(`${server.baseUrl}/api/auth/refresh`, { method: 'POST', headers: authed(admin.token) });
+        assert.equal(res.status, 200, `refresh call ${i + 1} was throttled`);
+      }
+    } finally {
+      await server.stop();
+    }
+  });
+});

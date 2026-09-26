@@ -8,7 +8,7 @@ const AdminView = () => import('../views/AdminView.vue');
 const SettingsView = () => import('../views/SettingsView.vue');
 const DocsView = () => import('../views/DocsView.vue');
 const SetupView = () => import('../views/SetupView.vue');
-const MangaView = () => import('../views/MangaView.vue');
+const TitleView = () => import('../views/TitleView.vue');
 const ListsView = () => import('../views/ListsView.vue');
 const RequestsView = () => import('../views/RequestsView.vue');
 const DownloadsView = () => import('../views/DownloadsView.vue');
@@ -21,18 +21,23 @@ const routes = [
     component: HomeView,
     meta: { requiresAuth: true }
   },
+  // Every title opens a detail page before it plays: a series page (all its volumes or
+  // episodes), or the title's own page when it isn't part of a series.
   {
-    path: '/manga/series/:seriesName',
-    name: 'manga-series',
-    component: MangaView,
+    path: '/series/:seriesName',
+    name: 'series',
+    component: TitleView,
     meta: { requiresAuth: true }
   },
   {
-    path: '/manga/:id',
-    name: 'manga-detail',
-    component: MangaView,
+    path: '/title/:id',
+    name: 'title',
+    component: TitleView,
     meta: { requiresAuth: true }
   },
+  // Earlier links (bookmarks, history) pointed at the manga-only pages.
+  { path: '/manga/series/:seriesName', redirect: (to) => ({ path: `/series/${encodeURIComponent(to.params.seriesName)}`, query: to.query }) },
+  { path: '/manga/:id', redirect: (to) => ({ path: `/title/${to.params.id}`, query: to.query }) },
   {
     path: '/login',
     name: 'login',

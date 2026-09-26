@@ -3,13 +3,13 @@
     <!-- Standard Plinthio Navbar / Sidebar -->
     <Sidebar
       v-if="isSidebarLayout"
-      :activeType="'manga'"
+      :activeType="navType"
       @filter-type="handleNavFilter"
       @update:searchQuery="handleNavSearch"
     />
     <Navbar
       v-else
-      :activeType="'manga'"
+      :activeType="navType"
       @filter-type="handleNavFilter"
       @update:searchQuery="handleNavSearch"
     />
@@ -33,17 +33,17 @@
           <div class="flex items-center gap-1.5 text-muted-foreground truncate">
             <router-link to="/" class="hover:text-foreground transition">Shelf</router-link>
             <ChevronRight class="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
-            <span class="hover:text-foreground transition cursor-pointer" @click="goBackToManga">Manga</span>
+            <span class="hover:text-foreground transition cursor-pointer" @click="goBackToType">{{ vocab.type }}</span>
             <ChevronRight class="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
             <span class="font-semibold text-foreground truncate max-w-[200px] sm:max-w-md">
-              {{ series?.name || 'Manga Details' }}
+              {{ series?.name || 'Details' }}
             </span>
           </div>
         </div>
 
         <div class="flex items-center gap-2 text-muted-foreground flex-shrink-0">
           <span class="text-[11px] font-mono">
-            {{ series?.volumeCount || 0 }} {{ (series?.volumeCount || 0) === 1 ? 'Volume' : 'Volumes' }}
+            {{ unitsLabel(series?.volumeCount || 0) }}
           </span>
         </div>
       </div>
@@ -52,7 +52,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex-1 flex flex-col items-center justify-center py-24 gap-3 text-muted-foreground">
       <Loader2 class="w-8 h-8 animate-spin text-primary" />
-      <p class="text-xs font-mono">Loading manga details...</p>
+      <p class="text-xs font-mono">Loading…</p>
     </div>
 
     <!-- Error State -->
@@ -114,7 +114,7 @@
                   <!-- Volume Count Pill -->
                   <div class="absolute bottom-2 right-2 z-10 pointer-events-none">
                     <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/75 text-white text-[10px] font-mono font-bold backdrop-blur-sm shadow">
-                      {{ series.volumeCount }} {{ series.volumeCount === 1 ? 'vol' : 'vols' }}
+                      {{ unitsLabel(series.volumeCount).toLowerCase() }}
                     </span>
                   </div>
                 </div>
@@ -125,7 +125,7 @@
                 <div>
                   <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
                     <span class="text-[10px] sm:text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
-                      Manga Series
+                      {{ series.standalone ? vocab.type.replace(/s$/, '') : vocab.series }}
                     </span>
                     <span v-if="series.status" class="text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground capitalize">
                       {{ series.status }}
@@ -136,7 +136,7 @@
                     {{ series.name }}
                   </h1>
 
-                  <p v-if="series.author" class="text-xs sm:text-sm text-muted-foreground mt-0.5 flex items-center justify-center sm:justify-start gap-1.5 font-medium">
+                  <p v-if="series.author && series.author !== series.name" class="text-xs sm:text-sm text-muted-foreground mt-0.5 flex items-center justify-center sm:justify-start gap-1.5 font-medium">
                     <User class="w-3.5 h-3.5 text-muted-foreground/80 flex-shrink-0" />
                     <span class="font-medium text-foreground/90">{{ series.author }}</span>
                   </p>
@@ -169,12 +169,16 @@
                   <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
                     <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-card border border-border text-[11px] font-medium text-foreground shadow-sm">
                       <Layers class="w-3 h-3 text-primary" />
-                      <span>{{ series.volumeCount }} {{ series.volumeCount === 1 ? 'Volume' : 'Volumes' }}</span>
+                      <span>{{ unitsLabel(series.volumeCount) }}</span>
                     </div>
 
                     <div v-if="series.totalPages > 0" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-card border border-border text-[11px] font-medium text-foreground shadow-sm">
                       <BookOpen class="w-3 h-3 text-blue-500" />
                       <span>{{ series.totalPages.toLocaleString() }} Pages</span>
+                    </div>
+                    <div v-if="totalDuration > 0" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-card border border-border text-[11px] font-medium text-foreground shadow-sm">
+                      <Clock class="w-3 h-3 text-blue-500" />
+                      <span>{{ formatLength(totalDuration) }}</span>
                     </div>
 
                     <div v-if="series.libraryName" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-card border border-border text-[11px] font-medium text-muted-foreground shadow-sm">
@@ -187,26 +191,26 @@
                       class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-semibold text-emerald-500 shadow-sm"
                     >
                       <BookCheck class="w-3 h-3" />
-                      <span>{{ series.skippedCount ? 'Caught Up' : `All ${series.volumeCount} Read` }}</span>
+                      <span>{{ series.skippedCount ? 'Caught Up' : (series.volumeCount === 1 ? vocab.done : `All ${series.volumeCount} ${vocab.done}`) }}</span>
                     </div>
                     <div
                       v-else-if="series.readCount > 0 || series.inProgressCount > 0"
                       class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-primary/10 border border-primary/30 text-[11px] font-semibold text-primary shadow-sm"
                     >
                       <BookOpen class="w-3 h-3" />
-                      <span>In Progress ({{ series.readCount }}/{{ series.volumeCount }} Read)</span>
+                      <span>In Progress<template v-if="series.volumeCount > 1"> ({{ series.readCount }}/{{ series.volumeCount }} {{ vocab.done }})</template></span>
                     </div>
                     <div
                       v-else-if="!series.skippedCount"
                       class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-muted border border-border text-[11px] font-medium text-muted-foreground shadow-sm"
                     >
                       <Book class="w-3 h-3" />
-                      <span>Unread</span>
+                      <span>Not Started</span>
                     </div>
                     <div
                       v-if="series.skippedCount"
                       class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-sky-500/10 border border-sky-500/30 text-[11px] font-semibold text-sky-500 shadow-sm"
-                      title="Volumes you chose to skip, e.g. because you watched the anime"
+:title="`${vocab.units} you chose to skip`"
                     >
                       <FastForward class="w-3 h-3" />
                       <span>{{ series.skippedCount }} Skipped</span>
@@ -216,9 +220,9 @@
                   <!-- Overall Series Progress Bar -->
                   <div class="mt-2.5 w-full max-w-md bg-card/70 border border-border/80 rounded-xl p-2.5 shadow-sm">
                     <div class="flex items-center justify-between text-[11px] mb-1.5">
-                      <span class="text-muted-foreground font-medium">Series Read Progress</span>
+                      <span class="text-muted-foreground font-medium">Progress</span>
                       <span class="font-mono font-bold text-foreground">
-                        {{ series.readCount }}<template v-if="series.skippedCount"> + {{ series.skippedCount }} skipped</template> / {{ series.volumeCount }} volumes ({{ series.overallProgress }}%)
+                        {{ series.readCount }}<template v-if="series.skippedCount"> + {{ series.skippedCount }} skipped</template> / {{ unitsLabel(series.volumeCount).toLowerCase() }} ({{ series.overallProgress }}%)
                       </span>
                     </div>
                     <div class="h-1.5 w-full bg-muted rounded-full overflow-hidden">
@@ -239,7 +243,7 @@
                     @click="openVolumeReader(series.nextVolume)"
                     class="h-8 sm:h-9 px-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 font-semibold text-xs transition shadow-md shadow-primary/20 flex items-center gap-2 group"
                   >
-                    <Play v-if="smartCtaState.isResume" class="w-3.5 h-3.5 fill-current group-hover:scale-110 transition-transform" />
+                    <Play v-if="smartCtaState.isResume || isTimeBasedType" class="w-3.5 h-3.5 fill-current group-hover:scale-110 transition-transform" />
                     <Book v-else-if="!smartCtaState.isFinished" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                     <BookOpen v-else class="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                     <span>{{ smartCtaState.label }}</span>
@@ -254,17 +258,17 @@
                       @click="markAllAsRead"
                       :disabled="series.readCount === series.volumeCount || actionLoading"
                       class="h-8 sm:h-9 px-3 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs transition active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
-                      title="Mark all volumes as read"
+:title="`Mark everything as ${vocab.done.toLowerCase()}`"
                     >
                       <Check class="w-3.5 h-3.5 text-emerald-500" />
-                      <span class="hidden sm:inline">Mark All Read</span>
+                      <span class="hidden sm:inline">Mark {{ series.volumeCount > 1 ? 'All ' : '' }}{{ vocab.done }}</span>
                     </button>
 
                     <button
                       @click="markAllAsUnread"
                       :disabled="series.readCount === 0 && series.inProgressCount === 0 || actionLoading"
                       class="h-8 sm:h-9 px-3 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs transition active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
-                      title="Reset reading history for series"
+                      title="Reset your history for this"
                     >
                       <RotateCcw class="w-3.5 h-3.5 text-muted-foreground" />
                       <span class="hidden sm:inline">Reset History</span>
@@ -275,27 +279,27 @@
                       @click="openSkipDialog"
                       :disabled="actionLoading"
                       class="h-8 sm:h-9 px-3 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs transition active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
-                      title="Skip volumes you've already covered, e.g. by watching the anime"
+:title="`Skip ${vocab.units.toLowerCase()} you've already covered`"
                     >
                       <FastForward class="w-3.5 h-3.5 text-sky-500" />
-                      <span class="hidden sm:inline">Skip Volumes…</span>
+                      <span class="hidden sm:inline">Skip {{ vocab.units }}…</span>
                     </button>
 
                     <button
                       v-if="downloads.supported && undownloadedUnread.length"
                       @click="downloadUnread"
                       class="h-8 sm:h-9 px-3 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs transition active:scale-95 flex items-center gap-1.5"
-                      :title="`Download ${undownloadedUnread.length} unread volume(s) for offline reading`"
+                      :title="`Download ${undownloadedUnread.length} ${vocab.units.toLowerCase()} you haven't finished, for offline use`"
                     >
                       <Download class="w-3.5 h-3.5 text-muted-foreground" />
-                      <span class="hidden sm:inline">Download Unread ({{ undownloadedUnread.length }})</span>
+                      <span class="hidden sm:inline">Download Remaining ({{ undownloadedUnread.length }})</span>
                     </button>
 
                     <button
                       v-if="authStore.isEditor"
                       @click="openSeriesMetadataSearch"
                       class="h-8 sm:h-9 px-3 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs transition active:scale-95 flex items-center gap-1.5"
-                      title="Search MangaDex and apply author/series to all volumes"
+:title="`Search metadata providers and apply to ${series.volumeCount > 1 ? `all ${vocab.units.toLowerCase()}` : 'this title'}`"
                     >
                       <Search class="w-3.5 h-3.5 text-muted-foreground" />
                       <span class="hidden sm:inline">Edit Metadata</span>
@@ -311,7 +315,7 @@
         <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div class="flex items-center gap-2">
             <h2 class="text-sm font-bold tracking-tight text-foreground">
-              Volumes & Reading History
+              {{ vocab.units }} &amp; History
             </h2>
             <span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-semibold">
               {{ filteredVolumes.length }}
@@ -342,7 +346,7 @@
               <button
                 @click="sortAscending = !sortAscending"
                 class="h-7 px-2.5 rounded-lg bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition flex items-center gap-1.5"
-                :title="sortAscending ? 'Order: Vol 1 to N' : 'Order: Vol N to 1'"
+                :title="sortAscending ? 'Order: first to last' : 'Order: last to first'"
               >
                 <ArrowUpDown class="w-3 h-3 text-muted-foreground" />
                 <span class="font-mono text-xs">{{ sortAscending ? '1 → N' : 'N → 1' }}</span>
@@ -386,8 +390,8 @@
           class="py-16 text-center border border-dashed border-border rounded-2xl mt-6 bg-card/30"
         >
           <BookX class="w-10 h-10 text-muted-foreground/60 mx-auto mb-2" />
-          <h3 class="text-sm font-semibold text-foreground">No volumes in this filter</h3>
-          <p class="text-xs text-muted-foreground mt-1">Try switching to the "All" tab to see every volume in this series.</p>
+          <h3 class="text-sm font-semibold text-foreground">Nothing in this filter</h3>
+          <p class="text-xs text-muted-foreground mt-1">Switch to the "All" tab to see every {{ vocab.unit.toLowerCase() }}.</p>
         </div>
 
         <!-- Volumes View: Grid Layout -->
@@ -419,7 +423,7 @@
                   v-if="vol.volume != null"
                   class="inline-flex items-center px-2 py-0.5 rounded-md bg-background/90 text-foreground backdrop-blur-md text-[11px] font-mono font-bold border border-border/80 shadow-sm"
                 >
-                  Vol {{ vol.volume % 1 === 0 ? Math.trunc(vol.volume) : vol.volume }}
+                  {{ entryLabel(vol) }}
                 </span>
               </div>
 
@@ -429,7 +433,7 @@
                   v-if="vol.is_finished"
                   class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500 text-white text-[10px] font-bold shadow-md"
                 >
-                  <Check class="w-3 h-3 stroke-[3]" /> Read
+                  <Check class="w-3 h-3 stroke-[3]" /> {{ vocab.done }}
                 </span>
                 <span
                   v-else-if="isSkipped(vol)"
@@ -447,14 +451,14 @@
                   v-else
                   class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-black/60 text-zinc-300 text-[10px] font-medium backdrop-blur-sm"
                 >
-                  Unread
+                  New
                 </span>
               </div>
 
               <!-- Hover Read Button overlay -->
               <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <div class="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
-                  <Play v-if="vol.current_page && !vol.is_finished" class="w-5 h-5 fill-current ml-0.5" />
+                  <Play v-if="(isTimeBasedType || hasStarted(vol)) && !vol.is_finished" class="w-5 h-5 fill-current ml-0.5" />
                   <Book v-else-if="!vol.is_finished" class="w-5 h-5" />
                   <BookOpen v-else class="w-5 h-5" />
                 </div>
@@ -481,8 +485,7 @@
               </h3>
 
               <div class="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
-                <span v-if="vol.total_pages" class="font-mono">{{ vol.total_pages }} pages</span>
-                <span v-else class="font-mono uppercase">{{ vol.format }}</span>
+                <span class="font-mono" :class="lengthLabel(vol) === vol.format ? 'uppercase' : ''">{{ lengthLabel(vol) }}</span>
 
                 <!-- Read history text -->
                 <span v-if="vol.is_finished" class="text-emerald-500 font-semibold flex items-center gap-0.5">
@@ -491,11 +494,11 @@
                 <span v-else-if="isSkipped(vol)" class="text-sky-500 font-semibold flex items-center gap-0.5">
                   <FastForward class="w-3 h-3" /> Skipped
                 </span>
-                <span v-else-if="vol.current_page" class="text-primary font-mono font-medium">
-                  p. {{ vol.current_page }}
+                <span v-else-if="hasStarted(vol)" class="text-primary font-mono font-medium">
+                  {{ positionLabel(vol) }}
                 </span>
                 <span v-else class="text-muted-foreground/80">
-                  Unread
+                  New
                 </span>
               </div>
 
@@ -505,26 +508,26 @@
                   @click="openVolumeReader(vol)"
                   class="flex-1 h-8 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground text-xs font-medium transition flex items-center justify-center gap-1"
                 >
-                  <Book v-if="!vol.is_finished && !vol.current_page" class="w-3.5 h-3.5" />
+                  <Book v-if="!vol.is_finished && !hasStarted(vol)" class="w-3.5 h-3.5" />
                   <BookOpen v-else class="w-3.5 h-3.5" />
-                  <span>{{ vol.is_finished ? 'Re-read' : (vol.current_page ? 'Resume' : 'Read') }}</span>
+                  <span>{{ vol.is_finished ? 'Again' : (hasStarted(vol) ? 'Resume' : vocab.verb) }}</span>
                 </button>
 
                 <!-- Mark Read / Unread 1-Click Toggle -->
-                <button :aria-label="vol.is_finished ? 'Mark as Unread' : 'Mark as Read'"
+                <button :aria-label="vol.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}`"
                   @click="toggleVolumeReadStatus(vol)"
                   class="w-8 h-8 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
-                  :title="vol.is_finished ? 'Mark as Unread' : 'Mark as Read'"
+                  :title="vol.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}`"
                 >
                   <BookCheck v-if="vol.is_finished" class="w-4 h-4 text-emerald-500" />
                   <Book v-else class="w-4 h-4" />
                 </button>
 
-                <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? 'Unskip volume' : 'Skip volume'"
+                <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? `Unskip ${vocab.unit.toLowerCase()}` : `Skip ${vocab.unit.toLowerCase()}`"
                   @click="toggleVolumeSkipped(vol)"
                   class="w-8 h-8 rounded-lg border hover:bg-muted flex items-center justify-center transition active:scale-95"
                   :class="isSkipped(vol) ? 'border-sky-500/50 text-sky-500' : 'border-border text-muted-foreground hover:text-foreground'"
-                  :title="isSkipped(vol) ? 'Skipped — tap to unskip' : 'Skip this volume'"
+                  :title="isSkipped(vol) ? 'Skipped — tap to unskip' : `Skip this ${vocab.unit.toLowerCase()}`"
                 >
                   <FastForward class="w-3.5 h-3.5" />
                 </button>
@@ -588,7 +591,7 @@
                     v-if="vol.volume != null"
                     class="text-xs font-mono font-bold bg-primary/10 text-primary border border-primary/20 rounded-md px-2 py-0.5 flex-shrink-0"
                   >
-                    Vol {{ vol.volume % 1 === 0 ? Math.trunc(vol.volume) : vol.volume }}
+                    {{ entryLabel(vol) }}
                   </span>
                   <h3
                     @click="openVolumeReader(vol)"
@@ -601,7 +604,7 @@
 
                 <!-- Reading History Status Details -->
                 <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                  <span v-if="vol.total_pages" class="font-mono">{{ vol.total_pages }} pages</span>
+                  <span class="font-mono" :class="lengthLabel(vol) === vol.format ? 'uppercase' : ''">{{ lengthLabel(vol) }}</span>
                   <span v-if="vol.file_size" class="font-mono">{{ formatFileSize(vol.file_size) }}</span>
 
                   <!-- Status state -->
@@ -616,16 +619,16 @@
                     <FastForward class="w-3.5 h-3.5" />
                     <span>Skipped</span>
                   </span>
-                  <span v-else-if="vol.current_page" class="text-primary font-medium flex items-center gap-1">
+                  <span v-else-if="hasStarted(vol)" class="text-primary font-medium flex items-center gap-1">
                     <BookOpen class="w-3.5 h-3.5" />
-                    <span>Page {{ vol.current_page }} of {{ vol.total_pages }} ({{ Math.round(vol.progress_percent) }}%)</span>
+                    <span>{{ positionLabel(vol, true) }} ({{ Math.round(vol.progress_percent || 0) }}%)</span>
                     <span v-if="vol.progress_updated_at" class="text-muted-foreground font-normal ml-1">
-                      · Last read {{ formatDate(vol.progress_updated_at) }}
+                      · {{ formatDate(vol.progress_updated_at) }}
                     </span>
                   </span>
                   <span v-else class="text-muted-foreground/80 flex items-center gap-1">
                     <Book class="w-3.5 h-3.5" />
-                    <span>Not started yet</span>
+                    <span>Not started</span>
                   </span>
                 </div>
 
@@ -647,28 +650,28 @@
                 @click="openVolumeReader(vol)"
                 class="h-9 px-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm"
               >
-                <Play v-if="vol.current_page && !vol.is_finished" class="w-3.5 h-3.5 fill-current" />
+                <Play v-if="(isTimeBasedType || hasStarted(vol)) && !vol.is_finished" class="w-3.5 h-3.5 fill-current" />
                 <Book v-else-if="!vol.is_finished" class="w-3.5 h-3.5" />
                 <BookOpen v-else class="w-3.5 h-3.5" />
-                <span>{{ vol.is_finished ? 'Read Again' : (vol.current_page ? 'Resume' : 'Read') }}</span>
+                <span>{{ vol.is_finished ? `${vocab.verb} Again` : (hasStarted(vol) ? 'Resume' : vocab.verb) }}</span>
               </button>
 
               <!-- Mark Read / Unread Button -->
               <button
                 @click="toggleVolumeReadStatus(vol)"
                 class="h-9 px-3 rounded-xl border border-border hover:bg-muted text-foreground text-xs font-medium transition active:scale-95 flex items-center gap-1.5"
-                :title="vol.is_finished ? 'Mark as Unread' : 'Mark as Read'"
+                :title="vol.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}`"
               >
                 <BookCheck v-if="vol.is_finished" class="w-4 h-4 text-emerald-500" />
                 <Book v-else class="w-4 h-4 text-muted-foreground" />
-                <span class="hidden md:inline">{{ vol.is_finished ? 'Mark Unread' : 'Mark Read' }}</span>
+                <span class="hidden md:inline">{{ vol.is_finished ? 'Mark Not Started' : `Mark ${vocab.done}` }}</span>
               </button>
 
-              <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? 'Unskip volume' : 'Skip volume'"
+              <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? `Unskip ${vocab.unit.toLowerCase()}` : `Skip ${vocab.unit.toLowerCase()}`"
                 @click="toggleVolumeSkipped(vol)"
                 class="h-9 px-3 rounded-xl border hover:bg-muted text-xs font-medium transition active:scale-95 flex items-center gap-1.5"
                 :class="isSkipped(vol) ? 'border-sky-500/50 text-sky-500' : 'border-border text-foreground'"
-                :title="isSkipped(vol) ? 'Skipped — tap to unskip' : 'Skip this volume'"
+                :title="isSkipped(vol) ? 'Skipped — tap to unskip' : `Skip this ${vocab.unit.toLowerCase()}`"
               >
                 <FastForward class="w-4 h-4" :class="isSkipped(vol) ? '' : 'text-muted-foreground'" />
                 <span class="hidden md:inline">{{ isSkipped(vol) ? 'Unskip' : 'Skip' }}</span>
@@ -710,12 +713,12 @@
         <div>
           <h3 id="skip-dialog-title" class="text-sm font-semibold text-foreground flex items-center gap-2">
             <FastForward class="w-4 h-4 text-sky-500" />
-            Skip volumes
+            Skip {{ vocab.units.toLowerCase() }}
           </h3>
           <p class="text-xs text-muted-foreground mt-1">
-            Already know the story up to a point — say you watched the anime? Skipped volumes
-            count toward your progress and "Continue" picks up after them. Your read history
-            isn't changed, and opening a skipped volume un-skips it.
+            {{ skipHint }} Skipped {{ vocab.units.toLowerCase() }} count toward your progress and
+            "Continue" picks up after them. Your history isn't changed, and opening a skipped
+            {{ vocab.unit.toLowerCase() }} un-skips it.
           </p>
         </div>
 
@@ -731,10 +734,10 @@
 
         <p class="text-xs" :class="volumesToSkip.length ? 'text-foreground' : 'text-muted-foreground'">
           <template v-if="volumesToSkip.length">
-            Skips <strong>{{ volumesToSkip.length }}</strong> unread volume{{ volumesToSkip.length === 1 ? '' : 's' }}
+            Skips <strong>{{ volumesToSkip.length }}</strong> {{ (volumesToSkip.length === 1 ? vocab.unit : vocab.units).toLowerCase() }} you haven't finished
             ({{ volumeLabel(volumesToSkip[0]) }}{{ volumesToSkip.length > 1 ? ` – ${volumeLabel(volumesToSkip[volumesToSkip.length - 1])}` : '' }}).
           </template>
-          <template v-else>Nothing to skip — those volumes are already read or skipped.</template>
+          <template v-else>Nothing to skip — those are already {{ vocab.done.toLowerCase() }} or skipped.</template>
         </p>
 
         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
@@ -763,6 +766,20 @@
         </div>
       </div>
     </div>
+
+    <!-- EPUB reader and video player: every title opens here first, then plays from here -->
+    <EpubReader
+      v-if="activeEpubItem"
+      :item="activeEpubItem"
+      @close="activeEpubItem = null; fetchSeriesData()"
+    />
+    <VideoPlayer
+      v-if="activeVideoItem"
+      :key="activeVideoItem.id"
+      :item="activeVideoItem"
+      @close="activeVideoItem = null; fetchSeriesData()"
+      @play-next="activeVideoItem = $event"
+    />
 
     <!-- Fullscreen In-App Manga Reader -->
     <MangaReader
@@ -805,6 +822,11 @@ import { useCustomizationStore } from '../stores/customization';
 import Navbar from '../components/Navbar.vue';
 import Sidebar from '../components/Sidebar.vue';
 const MangaReader = defineAsyncComponent(() => import('../components/MangaReader.vue'));
+const EpubReader = defineAsyncComponent(() => import('../components/EpubReader.vue'));
+const VideoPlayer = defineAsyncComponent(() => import('../components/VideoPlayer.vue'));
+import { usePlayerStore } from '../stores/player';
+import { vocabFor, entryLabel, isTimeBased, isVideo } from '../utils/mediaVocab';
+import { downloadKind } from '../stores/downloads';
 const BookmarksModal = defineAsyncComponent(() => import('../components/BookmarksModal.vue'));
 const MetadataSearchModal = defineAsyncComponent(() => import('../components/MetadataSearchModal.vue'));
 import { coverUrl as buildCoverUrl } from '../utils/cover';
@@ -834,7 +856,8 @@ import {
   Search,
   Download,
   CheckCircle2,
-  FastForward
+  FastForward,
+  Clock
 } from 'lucide-vue-next';
 import { useDownloadsStore } from '../stores/downloads';
 
@@ -862,6 +885,9 @@ function handleNavSearch(query) {
 
 const loading = ref(true);
 const actionLoading = ref(false);
+const player = usePlayerStore();
+const activeEpubItem = ref(null);
+const activeVideoItem = ref(null);
 const error = ref(null);
 const series = ref(null);
 
@@ -883,7 +909,7 @@ const metadataApplyIds = ref([]);
 function openSeriesMetadataSearch() {
   if (!series.value) return;
   metadataTargetItem.value = {
-    media_type: 'manga',
+    media_type: mediaType.value,
     title: series.value.name,
     series: series.value.name,
     author: series.value.author && series.value.author !== 'Unknown Author' ? series.value.author : null,
@@ -913,7 +939,7 @@ const themeTags = computed(() => splitTags(series.value?.themes));
 // ─── Cover URLs ─────────────────────────────────────────────────────────────
 const primaryCoverUrl = computed(() => {
   if (!series.value || !series.value.volumes || series.value.volumes.length === 0) {
-    return placeholderCover('Manga', { width: 400, height: 600 });
+    return placeholderCover(vocab.value.type, { width: 400, height: 600 });
   }
   // Show the cover for whichever volume is "current" (in progress, or next up to read)
   // rather than always volume 1, so the hero art tracks where you actually are in the series.
@@ -921,7 +947,7 @@ const primaryCoverUrl = computed(() => {
   if (current.cover_path) {
     return buildCoverUrl(current, { width: 720 });
   }
-  return placeholderCover('Manga', { width: 400, height: 600 });
+  return placeholderCover(vocab.value.type, { width: 400, height: 600 });
 });
 
 function volumeCoverUrl(vol) {
@@ -941,8 +967,8 @@ const filterTabs = computed(() => {
   const unread = vols.length - completed - skipped - inProgress;
 
   const tabs = [
-    { id: 'all', label: 'All Volumes', count: vols.length },
-    { id: 'unread', label: 'Unread', count: unread },
+    { id: 'all', label: `All ${vocab.value.units}`, count: vols.length },
+    { id: 'unread', label: 'Not Started', count: unread },
     { id: 'in_progress', label: 'In Progress', count: inProgress },
     { id: 'completed', label: 'Completed', count: completed },
   ];
@@ -987,34 +1013,25 @@ const filteredVolumes = computed(() => {
 
 // ─── Smart CTA State ────────────────────────────────────────────────────────
 const smartCtaState = computed(() => {
+  const v = vocab.value;
   if (!series.value || !series.value.nextVolume) {
-    return { label: 'Start Reading', subLabel: '', isResume: false, isFinished: false };
+    return { label: `Start ${v.verbing}`, subLabel: '', isResume: false, isFinished: false };
   }
   const next = series.value.nextVolume;
-  const volNumber = next.volume != null ? `Vol ${next.volume % 1 === 0 ? Math.trunc(next.volume) : next.volume}` : next.title;
+  // A single title needs no "Vol 1" — the page is already about it.
+  const which = series.value.volumeCount > 1 ? entryLabel(next) : '';
 
-  if (!next.is_finished && next.current_page > 0) {
+  if (!next.is_finished && hasStarted(next)) {
     return {
-      label: 'Continue Reading',
-      subLabel: `${volNumber} · Page ${next.current_page}`,
+      label: `Continue ${v.verbing}`,
+      subLabel: [which, positionLabel(next, true)].filter(Boolean).join(' · '),
       isResume: true,
       isFinished: false
     };
   } else if (coveredCount.value === series.value.volumeCount && series.value.volumeCount > 0) {
-    return {
-      label: 'Read Again',
-      subLabel: `${volNumber}`,
-      isResume: false,
-      isFinished: true
-    };
-  } else {
-    return {
-      label: 'Start Reading',
-      subLabel: `${volNumber}`,
-      isResume: false,
-      isFinished: false
-    };
+    return { label: `${v.verb} Again`, subLabel: which, isResume: false, isFinished: true };
   }
+  return { label: `Start ${v.verbing}`, subLabel: which, isResume: false, isFinished: false };
 });
 
 // ─── Offline downloads ──────────────────────────────────────────────────────────
@@ -1041,6 +1058,61 @@ async function downloadUnread() {
   for (const vol of [...undownloadedUnread.value]) {
     await downloads.download(vol);
   }
+}
+
+// ─── Media-type vocabulary & helpers ────────────────────────────────────────
+// This page serves every media type; the words (Volume/Episode, Read/Watch…) and how
+// progress is shown (pages vs. time) follow the series being viewed.
+const mediaType = computed(() =>
+  series.value?.mediaType || series.value?.volumes?.[0]?.media_type || route.query.type || 'manga'
+);
+const vocab = computed(() => vocabFor(mediaType.value));
+const isTimeBasedType = computed(() => isTimeBased(mediaType.value));
+const navType = computed(() => mediaType.value);
+const totalDuration = computed(() =>
+  isTimeBasedType.value ? (series.value?.volumes || []).reduce((sum, v) => sum + (v.duration || 0), 0) : 0
+);
+const skipHint = computed(() => (mediaType.value === 'manga' || mediaType.value === 'book'
+  ? 'Already know the story up to a point — say you watched the anime?'
+  : 'Already seen or heard some of these elsewhere?'));
+
+function unitsLabel(n) {
+  return `${n} ${n === 1 ? vocab.value.unit : vocab.value.units}`;
+}
+
+function hasStarted(vol) {
+  return isTimeBased(vol.media_type) ? (vol.current_time || 0) > 1 : (vol.current_page || 0) > 0;
+}
+
+function formatClock(seconds) {
+  const s = Math.max(0, Math.floor(seconds || 0));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}` : `${m}:${String(sec).padStart(2, '0')}`;
+}
+
+function formatLength(seconds) {
+  const mins = Math.round((seconds || 0) / 60);
+  if (mins < 60) return `${mins}m`;
+  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+}
+
+// Where you are in it: "p. 42" / "Page 42 of 180" for pages, "12:05" / "12:05 of 45:00" for time.
+function positionLabel(vol, long = false) {
+  if (isTimeBased(vol.media_type)) {
+    const at = formatClock(vol.current_time);
+    return long && vol.duration ? `${at} of ${formatClock(vol.duration)}` : at;
+  }
+  if (!long) return `p. ${vol.current_page}`;
+  return vol.total_pages ? `Page ${vol.current_page} of ${vol.total_pages}` : `Page ${vol.current_page}`;
+}
+
+// How long it is: pages for books/comics, running time for audio/video, else the format.
+function lengthLabel(vol) {
+  if (isTimeBased(vol.media_type) && vol.duration) return formatLength(vol.duration);
+  if (vol.total_pages) return `${vol.total_pages} pages`;
+  return vol.format || '';
 }
 
 // Same-named series can exist in several libraries / media types; bulk actions stay on
@@ -1076,8 +1148,19 @@ async function fetchSeriesData() {
         });
         series.value = res.data.series;
       } else if (item) {
-        // Standalone manga (no series)
+        // A title with no series gets the same page, as a series of one.
         series.value = {
+          standalone: true,
+          id: item.id,
+          mediaType: item.media_type,
+          libraryId: item.library_id,
+          description: item.description || null,
+          genres: item.genres || null,
+          themes: item.themes || null,
+          artists: item.artists || null,
+          publisher: item.publisher || null,
+          status: item.status || null,
+          release_date: item.release_date || null,
           name: item.title,
           author: item.author || 'Unknown Author',
           volumeCount: 1,
@@ -1099,7 +1182,7 @@ async function fetchSeriesData() {
       error.value = 'No series specified';
     }
   } catch (err) {
-    console.error('Failed to load manga series:', err);
+    console.error('Failed to load series:', err);
     error.value = err.response?.data?.error || 'Failed to load series details';
   } finally {
     loading.value = false;
@@ -1109,10 +1192,11 @@ async function fetchSeriesData() {
 // ─── Batch Actions ──────────────────────────────────────────────────────────
 async function markAllAsRead() {
   if (!series.value || !series.value.name) return;
+  if (series.value.standalone) return toggleVolumeReadStatus(series.value.volumes[0]);
   const confirmed = await dialog.confirm({
-    title: 'Mark All As Read',
-    message: `Are you sure you want to mark all volumes of "${series.value.name}" as read?`,
-    confirmText: 'Mark All Read'
+    title: `Mark All As ${vocab.value.done}`,
+    message: `Mark every ${vocab.value.unit.toLowerCase()} of "${series.value.name}" as ${vocab.value.done.toLowerCase()}?`,
+    confirmText: `Mark All ${vocab.value.done}`
   });
   if (!confirmed) return;
 
@@ -1129,9 +1213,15 @@ async function markAllAsRead() {
 
 async function markAllAsUnread() {
   if (!series.value || !series.value.name) return;
+  if (series.value.standalone) {
+    const only = series.value.volumes[0];
+    if (only.is_finished) return toggleVolumeReadStatus(only);
+    await api.post(`/progress/${only.id}`, { isFinished: 0, progressPercent: 0, currentPage: 0, currentTime: 0, totalPages: only.total_pages || 0 });
+    return fetchSeriesData();
+  }
   const confirmed = await dialog.confirm({
-    title: 'Reset Reading Progress',
-    message: `Are you sure you want to reset all reading progress for "${series.value.name}"?`,
+    title: 'Reset Progress',
+    message: `Reset all your progress for "${series.value.name}"?`,
     confirmText: 'Reset Progress',
     danger: true
   });
@@ -1172,7 +1262,7 @@ async function setSkipped(vols, skipped) {
     await api.post('/progress/skip', { itemIds: ids, skipped });
     await fetchSeriesData();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Could not update skipped volumes');
+    dialog.alert(err.response?.data?.error || 'Could not update what\'s skipped');
     await fetchSeriesData();
   } finally {
     actionLoading.value = false;
@@ -1199,7 +1289,7 @@ const volumesToSkip = computed(() => {
 });
 
 function volumeLabel(v) {
-  return v.volume != null ? `Vol ${v.volume % 1 === 0 ? Math.trunc(v.volume) : v.volume}` : v.title;
+  return entryLabel(v);
 }
 
 function openSkipDialog() {
@@ -1252,8 +1342,21 @@ async function toggleVolumeReadStatus(vol) {
 }
 
 // ─── Reader Actions ─────────────────────────────────────────────────────────
+// One entry point for every type: comics page-by-page, EPUBs in the book reader, audio in
+// the global player, video in the player here, and anything else (PDF) in a new tab.
 function openVolumeReader(vol) {
-  activeReadingItem.value = vol;
+  const kind = downloadKind(vol);
+  if (vol.media_type === 'audiobook') {
+    player.playItem(vol);
+  } else if (isVideo(vol.media_type)) {
+    activeVideoItem.value = vol;
+  } else if (kind === 'pages') {
+    activeReadingItem.value = vol;
+  } else if ((vol.format || '').toLowerCase() === 'epub') {
+    activeEpubItem.value = vol;
+  } else {
+    window.open(`/api/media/book/${vol.id}/file?token=${getMediaToken()}`, '_blank');
+  }
 }
 
 function handleSwitchVolume(nextVol) {
@@ -1285,8 +1388,8 @@ function goBack() {
   }
 }
 
-function goBackToManga() {
-  router.push('/?type=manga');
+function goBackToType() {
+  router.push({ path: '/', query: { type: mediaType.value } });
 }
 
 function formatDate(dateStr) {
