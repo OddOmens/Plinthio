@@ -37,6 +37,7 @@ import { attachErrorCodes, errorCatalog, sendError } from './errors.js';
 import opdsRoutes from './routes/opds.js';
 import healthRoutes from './routes/health.js';
 import systemRoutes from './routes/system.js';
+import ratingRoutes from './routes/ratings.js';
 import { warmThumbnailCache } from './services/thumbnails.js';
 import { initBackupScheduler } from './services/backup.js';
 import { initAutoScan } from './services/autoScan.js';
@@ -200,6 +201,7 @@ app.use('/api/metadata', metadataRoutes);
 app.use('/api/customization', customizationRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/series', seriesRoutes);
+app.use('/api/ratings', ratingRoutes);
 // OPDS readers poll the catalog and fetch pages one at a time, so it sits under the media
 // limiter rather than the tighter JSON API one.
 app.use('/api/opds', mediaLimiter, opdsRoutes);

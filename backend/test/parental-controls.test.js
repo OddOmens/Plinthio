@@ -70,6 +70,9 @@ describe('parental controls (max age rating)', () => {
 
     const direct = await getJson(server.baseUrl, '/items/seed-00000', kid.token);
     assert.equal(direct.status, 404, 'direct fetch by id is blocked too');
+
+    const rating = await getJson(server.baseUrl, '/ratings/seed-00000', kid.token);
+    assert.equal(rating.status, 404, 'ratings don\'t reveal titles above the limit either');
   });
 
   test('blocking unrated leaves only rated-and-allowed items', async () => {

@@ -31,14 +31,23 @@
         </span>
       </div>
 
-      <!-- Offline badge / download progress -->
+      <!-- Top-right badges: your star rating (when you've given one) and offline state -->
       <div
-        v-if="isDownloaded || isDownloading"
-        class="absolute top-2 right-2 z-10 pointer-events-none w-6 h-6 rounded-full bg-background/85 backdrop-blur-md border border-border/80 flex items-center justify-center shadow-sm"
-        :title="isDownloaded ? 'Available offline' : 'Downloading…'"
+        v-if="showMyRating || isDownloaded || isDownloading"
+        class="absolute top-2 right-2 z-10 pointer-events-none flex items-center gap-1"
       >
-        <CheckCircle2 v-if="isDownloaded" class="w-3.5 h-3.5 text-emerald-500" />
-        <Loader2 v-else class="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+        <span v-if="showMyRating" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[11px] font-semibold border border-border/80 shadow-sm">
+          <Star class="w-3 h-3 text-amber-400 fill-amber-400" />
+          {{ myRating }}
+        </span>
+        <span
+          v-if="isDownloaded || isDownloading"
+          class="w-6 h-6 rounded-full bg-background/85 backdrop-blur-md border border-border/80 flex items-center justify-center shadow-sm"
+          :title="isDownloaded ? 'Available offline' : 'Downloading…'"
+        >
+          <CheckCircle2 v-if="isDownloaded" class="w-3.5 h-3.5 text-emerald-500" />
+          <Loader2 v-else class="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+        </span>
       </div>
 
       <!-- Quick Action Overlay on Hover -->
@@ -185,6 +194,7 @@
         </span>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -193,6 +203,7 @@ import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
+import { useCustomizationStore } from '../stores/customization';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 import {
   Headphones,
@@ -216,7 +227,8 @@ import {
   Trash2,
   X,
   CheckCircle2,
-  Loader2
+  Loader2,
+  Star
 } from 'lucide-vue-next';
 import { useDownloadsStore } from '../stores/downloads';
 import { realCreator, vocabFor } from '../utils/mediaVocab';
@@ -227,6 +239,7 @@ const props = defineProps({
 });
 
 const authStore = useAuthStore();
+const customizationStore = useCustomizationStore();
 
 const emit = defineEmits(['select', 'refresh', 'add-to-folder', 'remove-from-folder', 'open-bookmarks', 'edit-metadata']);
 
@@ -253,6 +266,10 @@ function toggleDownload() {
   else if (isDownloading.value) downloads.cancel(props.item.id);
   else downloads.download(props.item);
 }
+
+// Your rating is set from the header of the title page / player; the card just shows it.
+const myRating = computed(() => props.item.user_rating ?? null);
+const showMyRating = computed(() => customizationStore.ratings.showPersonal && !!myRating.value);
 
 function openMetadataDialog() {
   showMenu.value = false;

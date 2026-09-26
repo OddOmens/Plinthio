@@ -23,6 +23,7 @@
       <div class="min-w-0 flex-1 pt-1.5">
         <h2 class="text-base font-semibold text-white truncate drop-shadow">{{ item.title }}</h2>
         <p v-if="subtitleLine" class="text-sm text-white/70 truncate drop-shadow">{{ subtitleLine }}</p>
+        <RatingBar :item="item" tone="dark" compact class="mt-1.5 drop-shadow" />
       </div>
 
       <button aria-label="Cast to TV"
@@ -305,6 +306,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import Hls from 'hls.js';
 import api from '../api/client';
 import { useViewSession } from '../composables/useViewSession';
+import RatingBar from './RatingBar.vue';
 import {
   ArrowLeft, AlertCircle, Loader2, Play, Pause, Maximize,
   Settings, Cast, MonitorSpeaker

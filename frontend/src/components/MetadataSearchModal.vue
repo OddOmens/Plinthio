@@ -254,7 +254,9 @@
                     <span class="text-xs font-semibold text-foreground truncate">{{ result.title }}</span>
                     <span v-if="result.author" class="text-[11px] text-muted-foreground truncate">{{ isVideoType ? 'Dir: ' : '' }}{{ result.author }}</span>
                     <span v-if="result.artists" class="text-[11px] text-muted-foreground truncate">{{ isVideoType ? 'Cast: ' : 'Art: ' }}{{ result.artists }}</span>
-                    <span v-if="result.releaseDate" class="text-[11px] text-muted-foreground font-mono">{{ result.releaseDate }}</span>
+                    <span v-if="result.releaseDate" class="text-[11px] text-muted-foreground font-mono">
+                      {{ result.releaseDate }}<template v-if="result.rating != null"> · ★ {{ result.rating.toFixed(1) }}/10</template>
+                    </span>
                     <span v-if="result.genres?.length" class="text-[11px] text-muted-foreground truncate">{{ result.genres.join(', ') }}</span>
                     <span v-if="result.themes?.length" class="text-[11px] text-muted-foreground truncate">{{ result.themes.join(', ') }}</span>
                     <span class="text-[10px] uppercase font-mono tracking-wide text-muted-foreground/70 mt-auto">{{ sourceLabel(result.source) }}</span>
@@ -318,6 +320,9 @@ const form = reactive({ ageRating: '',
   description: '', releaseDate: '', genres: '', themes: '', publisher: '', status: ''
 });
 const pickedCoverUrl = ref(null);
+// A TMDB result's community score, carried along when "use all" picks that result so the
+// item gets its world rating saved with the rest of the metadata.
+const pickedRating = ref(null);
 const saving = ref(false);
 const yearQuery = ref('');
 
@@ -457,6 +462,7 @@ watch(
           .finally(() => { loadingFull.value = false; });
       }
       pickedCoverUrl.value = null;
+      pickedRating.value = null;
       query.value = props.item.cleanTitle || props.item.series || props.item.title || '';
       yearQuery.value = (props.item.release_date ? props.item.release_date.slice(0, 4) : props.item.detectedYear) || '';
       results.value = [];
@@ -511,6 +517,9 @@ async function search() {
 
 function fillFromResult(result) {
   pickableFields(result).forEach((field) => applyField(result, field));
+  pickedRating.value = result.source === 'tmdb' && result.rating != null
+    ? { source: result.source, rating: result.rating, ratingVotes: result.ratingVotes }
+    : null;
 }
 
 async function saveForm() {
@@ -527,7 +536,8 @@ async function saveForm() {
       themes: form.themes.trim() || null,
       publisher: form.publisher.trim() || null,
       status: form.status.trim() || null,
-      ageRating: form.ageRating || null
+      ageRating: form.ageRating || null,
+      ...(pickedRating.value || {})
     };
 
     if (isBulk.value) {

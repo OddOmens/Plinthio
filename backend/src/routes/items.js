@@ -40,15 +40,18 @@ router.get('/', async (req, res) => {
         p.is_finished,
         p.cfi as current_page_cfi,
         p.updated_at as progress_updated_at,
-        COALESCE(p.is_skipped, 0) as is_skipped
+        COALESCE(p.is_skipped, 0) as is_skipped,
+        r.rating as user_rating
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
+      LEFT JOIN user_ratings r ON i.id = r.item_id AND r.user_id = ?
       WHERE NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )${ratingSql(req.user, 'i')}
     `;
-    const params = [userId, userId];
+    // Order: progress join, ratings join, then the visibility check.
+    const params = [userId, userId, userId];
     // Extras (trailers, featurettes…) live on their film's page, not the shelf.
     query += ' AND i.extra_type IS NULL';
 
@@ -277,9 +280,11 @@ router.get('/series/:name', async (req, res) => {
         p.cfi as current_page_cfi,
         p.updated_at as progress_updated_at,
         COALESCE(p.is_skipped, 0) as is_skipped,
+        r.rating as user_rating,
         l.name as library_name
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
+      LEFT JOIN user_ratings r ON i.id = r.item_id AND r.user_id = ?
       LEFT JOIN libraries l ON i.library_id = l.id
       WHERE i.series = ?${scope.sql}
       AND NOT EXISTS (
@@ -290,7 +295,7 @@ router.get('/series/:name', async (req, res) => {
         CASE WHEN i.volume IS NULL THEN 1 ELSE 0 END,
         i.volume ASC,
         i.title ASC
-    `, [userId, seriesName, ...scope.params, userId]);
+    `, [userId, userId, seriesName, ...scope.params, userId]);
 
     // Extras are listed on the page but aren't volumes/episodes: they don't count toward
     // progress or "next up". A film's extras are fetched from its own page (/:id/extras).
@@ -617,15 +622,17 @@ router.get('/:id', async (req, res) => {
         p.current_page,
         p.progress_percent,
         p.is_finished,
-        p.cfi as current_page_cfi
+        p.cfi as current_page_cfi,
+        r.rating as user_rating
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
+      LEFT JOIN user_ratings r ON i.id = r.item_id AND r.user_id = ?
       WHERE i.id = ?
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )${ratingSql(req.user, 'i')}
-    `, [userId, req.params.id, userId]);
+    `, [userId, userId, req.params.id, userId]);
 
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });

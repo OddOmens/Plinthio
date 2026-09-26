@@ -173,6 +173,7 @@
             {{ player.currentChapter.title }}
             <span class="text-muted-foreground font-mono">· {{ player.currentChapterIndex + 1 }}/{{ player.chapters.length }}</span>
           </button>
+          <RatingBar :item="player.currentItem" align="center" class="mt-2" />
         </div>
 
         <!-- Scrubber Timeline -->
@@ -328,6 +329,7 @@ import api from '../api/client';
 import { usePlayerStore, PLAYBACK_SPEEDS } from '../stores/player';
 import { useDialogStore } from '../stores/dialog';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
+import RatingBar from './RatingBar.vue';
 import {
   ChevronDown,
   Play,

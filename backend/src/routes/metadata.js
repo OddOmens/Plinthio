@@ -34,6 +34,18 @@ const coverUpload = multer({
 
 const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 
+// Batch/single auto-match already has the TMDB result in hand; store its score as the item's
+// world rating rather than looking it up again the first time someone opens the rating.
+async function saveMatchedRating(db, itemId, result) {
+  if (result?.source !== 'tmdb' || result.rating == null) return;
+  await db.run(
+    `UPDATE items SET external_rating = ?, external_rating_votes = ?, external_rating_source = 'tmdb',
+       external_rating_checked_at = CURRENT_TIMESTAMP
+     WHERE id = ?`,
+    [result.rating, result.ratingVotes ?? null, itemId]
+  );
+}
+
 async function writeCoverJpeg(buffer, coverFilename) {
   const fullPath = path.join(config.coversDir, coverFilename);
   await sharp(buffer)
@@ -385,6 +397,7 @@ router.post('/admin/batch-match', requireEditor, async (req, res) => {
            WHERE id = ?`,
           [newTitle, newOverview, newReleaseDate, newAuthor, newArtists, newGenres, coverToSave, coverSource, id]
         );
+        await saveMatchedRating(db, id, best);
 
         matchedCount++;
         results.push({
@@ -471,6 +484,7 @@ router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
        WHERE id = ?`,
       [newTitle, newOverview, newReleaseDate, newAuthor, newArtists, newGenres, coverToSave, coverSource, itemId]
     );
+    await saveMatchedRating(db, itemId, best);
 
     const updated = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
     res.json({ message: 'Item matched and updated', item: updated, matched: best });
@@ -482,7 +496,7 @@ router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
 // Apply a chosen external metadata result to an item: updates fields and downloads the cover
 router.post('/apply/:itemId', requireEditor, async (req, res) => {
   const { itemId } = req.params;
-  const { title, author, artists, series, coverUrl, description, releaseDate, genres, themes, publisher, status, ageRating } = req.body;
+  const { title, author, artists, series, coverUrl, description, releaseDate, genres, themes, publisher, status, ageRating, source, rating } = req.body;
 
   try {
     const db = await getDb();
@@ -528,6 +542,14 @@ router.post('/apply/:itemId', requireEditor, async (req, res) => {
         return res.status(400).json({ error: `Age rating must be one of: ${AGE_RATINGS.join(', ')}` });
       }
       fields.push('age_rating = ?'); params.push(ageRating || null);
+    }
+    // A TMDB result carries its community score — keep it as the item's world rating so it
+    // shows without a separate lookup. Other providers' results don't set one.
+    if (source === 'tmdb' && typeof rating === 'number' && rating >= 0 && rating <= 10) {
+      fields.push('external_rating = ?'); params.push(rating);
+      fields.push('external_rating_votes = ?'); params.push(Number.isInteger(req.body.ratingVotes) ? req.body.ratingVotes : null);
+      fields.push("external_rating_source = 'tmdb'");
+      fields.push('external_rating_checked_at = CURRENT_TIMESTAMP');
     }
 
     if (fields.length === 0) {

@@ -68,6 +68,7 @@ Plinthio was born out of frustration with fragmented media servers: having to ru
 * **Three Roles:** `admin` (full server management), `editor` (library/metadata management), and `viewer` (read/watch/listen only) — enforced server-side on every request, not just hidden in the UI.
 * **Per-Item & Per-Library Visibility:** Admins can hide specific items or restrict libraries per user.
 * **Custom Folders:** Users can organize items into their own in-app collections, independent of the on-disk folder structure, with an automatic "Unorganized" catch-all for anything not yet sorted.
+* **Ratings:** Every signed-in user can give any item 1–5 stars. Your rating sits beside the average from everyone on the server, plus TMDB's world score for movies, shows and anime when a TMDB key is configured. Under Admin → Server Settings → Ratings, admins choose which of the three are shown. A hidden rating is left out of the API response too, not only the UI.
 * **Activity & Login History:** Per-user view/listen/read/watch session history and sign-in history, visible to admins.
 * **Live Admin Logs:** A real-time, in-app log viewer for the running server (no need to `docker logs` to debug a scan or a failed metadata match).
 * **Automatic Scanning:** New media is picked up on its own — a periodic re-scan (interval configurable under Admin → Server Settings) plus a filesystem watcher that reacts within about 30 seconds of a file appearing. The periodic sweep is the dependable floor for network shares and bind mounts that emit no filesystem events; either half can be turned off.
@@ -96,6 +97,7 @@ Plinthio's entire frontend runs on its own documented REST API, which is fully a
 | `/bookmarks` | Timestamped/paged bookmarks with notes |
 | `/collections` | Custom in-app folders and ordered read lists |
 | `/series` | Per-series settings (reading direction, age rating, title) |
+| `/ratings` | Your 1–5 star rating, the server-wide average, and TMDB's score per item |
 | `/opds` | OPDS / OPDS-PSE catalog for third-party reader apps |
 | `/users` | User management (admin) |
 | `/keys` | Personal API key management |
