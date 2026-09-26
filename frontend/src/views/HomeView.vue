@@ -210,57 +210,41 @@
           </div>
         </div>
 
-        <!-- Mode 2: Grouped by Creator (author / director / studio) -->
+        <!-- Mode 2: Grouped by Creator (author / director / studio) — series cards per creator -->
         <div v-else-if="groupBy === 'creator'" class="flex flex-col gap-6">
-          <div
-            v-for="(groupItems, authorName) in itemsByAuthor"
-            :key="authorName"
-            class="flex flex-col gap-3"
-          >
+          <div v-for="group in entriesByCreator" :key="group.heading" class="flex flex-col gap-3">
             <div class="flex items-center gap-2 border-b border-border pb-1.5">
               <User class="w-4 h-4 text-muted-foreground" />
-              <h3 class="text-xs font-semibold text-foreground tracking-wide uppercase font-mono">{{ authorName }}</h3>
-              <span class="text-xs text-muted-foreground">({{ groupItems.length }})</span>
+              <h3 class="text-xs font-semibold text-foreground tracking-wide uppercase font-mono">{{ group.heading }}</h3>
+              <span class="text-xs text-muted-foreground">({{ group.entries.length }})</span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-              <BookCard
-                v-for="item in groupItems"
-                :key="item.id"
-                :item="item"
+            <ShelfEntryGrid :entries="group.entries"
+                @open-series="openSeriesView"
                 @select="handleItemSelect"
                 @refresh="refreshShelf"
                 @add-to-folder="openAddToFolderModal"
                 @open-bookmarks="openBookmarksModal"
                 @edit-metadata="openMetadataModal"
-              />
-            </div>
+            />
           </div>
         </div>
 
-        <!-- Mode 4: Grouped by Disk Folders -->
+        <!-- Mode 4: Grouped by Disk Folders — a series sits once, under its own folder -->
         <div v-else-if="groupBy === 'disk_folder'" class="flex flex-col gap-6">
-          <div
-            v-for="(groupItems, folderName) in itemsByFolder"
-            :key="folderName"
-            class="flex flex-col gap-3"
-          >
+          <div v-for="group in entriesByFolder" :key="group.heading" class="flex flex-col gap-3">
             <div class="flex items-center gap-2 border-b border-border pb-1.5">
               <HardDrive class="w-4 h-4 text-muted-foreground" />
-              <h3 class="text-xs font-mono text-foreground">{{ folderName }}</h3>
-              <span class="text-xs text-muted-foreground">({{ groupItems.length }})</span>
+              <h3 class="text-xs font-mono text-foreground">{{ group.heading }}</h3>
+              <span class="text-xs text-muted-foreground">({{ group.entries.length }})</span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-              <BookCard
-                v-for="item in groupItems"
-                :key="item.id"
-                :item="item"
+            <ShelfEntryGrid :entries="group.entries"
+                @open-series="openSeriesView"
                 @select="handleItemSelect"
                 @refresh="refreshShelf"
                 @add-to-folder="openAddToFolderModal"
                 @open-bookmarks="openBookmarksModal"
                 @edit-metadata="openMetadataModal"
-              />
-            </div>
+            />
           </div>
         </div>
 
@@ -301,7 +285,7 @@
                 <h3 class="text-xs font-semibold text-foreground tracking-wide uppercase font-mono">
                   {{ folder.name }}
                 </h3>
-                <span class="text-xs text-muted-foreground">({{ folder.items.length }})</span>
+                <span class="text-xs text-muted-foreground">({{ folderEntries(folder).length }})</span>
                 <span v-if="folder.isDefault" class="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-muted text-muted-foreground">
                   Catch-all
                 </span>
@@ -318,20 +302,18 @@
             </div>
 
             <!-- Folder Items Grid -->
-            <div v-if="folder.items.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-              <BookCard
-                v-for="item in folder.items"
-                :key="item.id"
-                :item="item"
-                :inCustomFolder="!folder.isDefault"
-                @select="handleItemSelect"
-                @refresh="refreshShelf"
-                @add-to-folder="openAddToFolderModal"
-                @remove-from-folder="removeItemFromCustomFolder(folder.id, item.id)"
-                @open-bookmarks="openBookmarksModal"
-                @edit-metadata="openMetadataModal"
-              />
-            </div>
+            <ShelfEntryGrid
+              v-if="folder.items.length > 0"
+              :entries="folderEntries(folder)"
+              :inCustomFolder="!folder.isDefault"
+              @open-series="openSeriesView"
+              @select="handleItemSelect"
+              @refresh="refreshShelf"
+              @add-to-folder="openAddToFolderModal"
+              @open-bookmarks="openBookmarksModal"
+              @edit-metadata="openMetadataModal"
+              @remove-from-folder="removeItemsFromCustomFolder(folder.id, $event)"
+            />
             <div v-else class="py-6 text-center text-xs text-muted-foreground border border-dashed border-border/60 rounded-xl bg-card/30">
               This folder is empty. Click the three dots (<span class="font-bold">...</span>) on any title to add it here.
             </div>
@@ -388,7 +370,9 @@ import Navbar from '../components/Navbar.vue';
 import Sidebar from '../components/Sidebar.vue';
 import BookCard from '../components/BookCard.vue';
 import SeriesCard from '../components/SeriesCard.vue';
-import { detailRoute, creatorLabel } from '../utils/mediaVocab';
+import ShelfEntryGrid from '../components/ShelfEntryGrid.vue';
+import { buildShelfEntries, entryFolder, groupEntries } from '../utils/shelfEntries';
+import { detailRoute, creatorLabel, realCreator } from '../utils/mediaVocab';
 import { normalizeShelfModes, userShelfModes } from '../utils/shelfModes';
 // Readers, players and editors only mount once something is opened, so they load on demand
 // instead of riding in the shelf's first download (hls.js alone is ~500KB).
@@ -400,7 +384,7 @@ import {
   Clock,
   BookX,
   User,
-  Layers,
+  ArrowDownAZ,
   HardDrive,
   FolderHeart,
   Folder,
@@ -514,7 +498,9 @@ const groupingModes = computed(() => {
   const serverModes = normalizeShelfModes(allowedFilters.value);
   const userModes = userShelfModes(authStore.user?.preferences?.enabledGroupingModes);
   const all = [
-    { id: 'series', label: 'Series', icon: Layers },
+    // Internally still "series": every view shows series cards now, and this one is simply
+    // all of them A–Z (the stored preference name is kept so saved choices carry over).
+    { id: 'series', label: 'Alphabetical', icon: ArrowDownAZ },
     { id: 'creator', label: creatorLabel(activeType.value), icon: User },
     { id: 'disk_folder', label: 'Disk Folders', icon: HardDrive },
     { id: 'custom_folder', label: 'Custom Folders', icon: FolderHeart }
@@ -602,44 +588,7 @@ const displayItemCount = computed(() => {
  * series. With title order the entries are alphabetical; with any other sort they keep the
  * server's order (a series sits where its first-listed title would).
  */
-const shelfEntries = computed(() => {
-  const entries = [];
-  const bySeries = new Map();
-  for (const item of filteredItems.value) {
-    if (item.series) {
-      const key = `s::${item.series}::${item.library_id}::${item.media_type}`;
-      let entry = bySeries.get(key);
-      if (!entry) {
-        entry = {
-          kind: 'series',
-          key,
-          name: item.series,
-          author: item.author,
-          libraryId: item.library_id,
-          mediaType: item.media_type,
-          volumes: []
-        };
-        bySeries.set(key, entry);
-        entries.push(entry);
-      }
-      entry.volumes.push(item);
-    } else {
-      entries.push({ kind: 'item', key: `i::${item.id}`, name: item.title, item });
-    }
-  }
-  for (const entry of bySeries.values()) {
-    entry.volumes.sort((a, b) => {
-      if (a.volume == null && b.volume == null) return a.title.localeCompare(b.title, undefined, { numeric: true });
-      if (a.volume == null) return 1;
-      if (b.volume == null) return -1;
-      return a.volume - b.volume;
-    });
-  }
-  if (sortBy.value === 'title') {
-    entries.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
-  }
-  return entries;
-});
+const shelfEntries = computed(() => buildShelfEntries(filteredItems.value, { alphabetical: sortBy.value === 'title' }));
 
 // Windowed rendering. The grid only ever mounts the rows near the viewport: rows scrolled
 // off the top are unmounted again and replaced by a spacer of exactly their height, so the
@@ -731,30 +680,25 @@ function onScroll() {
   });
 }
 
-// Grouped by Creator (the `author` field: author, director or studio depending on type)
-const itemsByAuthor = computed(() => {
-  const map = {};
-  for (const item of filteredItems.value) {
-    const author = item.author || 'Unknown';
-    if (!map[author]) map[author] = [];
-    map[author].push(item);
-  }
-  return map;
-});
+// Grouped views: series cards (and standalone titles) under each heading, never loose
+// volumes or episodes. Creator uses the series' author (author, director or studio).
+const entriesByCreator = computed(() => groupEntries(shelfEntries.value, creatorHeading));
 
-// Grouped by Disk Folder path map
-const itemsByFolder = computed(() => {
-  const map = {};
-  for (const item of filteredItems.value) {
-    // `folder` is the item's directory relative to its library (the server no longer sends
-    // absolute paths to non-admins); the last two segments keep group names short.
-    const parts = (item.folder || '').split('/').filter(Boolean);
-    const folder = parts.slice(-2).join('/') || 'Root';
-    if (!map[folder]) map[folder] = [];
-    map[folder].push(item);
-  }
-  return map;
-});
+// Without online metadata the scanner fills a video's "creator" with its folder name
+// ("Quiet Harbor (2021)"), and books default to "Unknown Author". Neither is a real
+// creator, so both go under one Unknown group instead of posing as a director.
+function creatorHeading(entry) {
+  return entry.kind === 'series'
+    ? realCreator(entry.author, entry.name) || 'Unknown'
+    : realCreator(entry.item.author, entry.item.title) || 'Unknown';
+}
+
+// A series goes under the folder all its titles share (see entryFolder).
+const entriesByFolder = computed(() => groupEntries(shelfEntries.value, entryFolder));
+
+function folderEntries(folder) {
+  return buildShelfEntries(folder.items);
+}
 
 function setGrouping(id) {
   groupBy.value = id;
@@ -893,9 +837,12 @@ async function deleteCustomFolder(folder) {
   }
 }
 
-async function removeItemFromCustomFolder(folderId, itemId) {
+// A series card removes every title of that series that's in the folder.
+async function removeItemsFromCustomFolder(folderId, items) {
   try {
-    await api.delete(`/collections/${folderId}/items/${itemId}`);
+    for (const item of items) {
+      await api.delete(`/collections/${folderId}/items/${item.id}`);
+    }
     await loadCustomFolders();
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to remove item');

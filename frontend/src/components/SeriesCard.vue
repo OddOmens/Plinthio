@@ -50,6 +50,18 @@
           </span>
         </div>
 
+        <!-- Remove from a custom folder (series cards have no ⋮ menu of their own) -->
+        <button
+          v-if="removable"
+          type="button"
+          @click.stop="$emit('remove', series)"
+          class="absolute top-2 right-2 z-20 w-7 h-7 rounded-full bg-background/85 backdrop-blur-md border border-border/80 text-muted-foreground hover:text-destructive flex items-center justify-center shadow-sm transition"
+          :aria-label="`Remove ${series.name} from this folder`"
+          title="Remove from folder"
+        >
+          <FolderMinus class="w-3.5 h-3.5" />
+        </button>
+
         <!-- Entry count badge (bottom right) -->
         <div class="absolute bottom-2 right-2 z-10 pointer-events-none">
           <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-mono font-bold backdrop-blur-sm">
@@ -84,7 +96,7 @@
         {{ series.name }}
       </h3>
       <p class="text-xs text-muted-foreground truncate mt-0.5">
-        {{ series.author && series.author !== series.name ? series.author : vocab.series }}
+        {{ realCreator(series.author, series.name) || vocab.series }}
       </p>
       <div class="mt-auto pt-2 flex items-center justify-between text-xs text-muted-foreground">
         <span class="font-mono">{{ countLabel }}</span>
@@ -103,8 +115,8 @@
 import { placeholderCover } from '../utils/placeholder';
 import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
-import { BookImage, Layers, BookCheck, Headphones, Book, Tv, Film, Sparkles } from 'lucide-vue-next';
-import { vocabFor } from '../utils/mediaVocab';
+import { BookImage, Layers, BookCheck, Headphones, Book, Tv, Film, Sparkles, FolderMinus } from 'lucide-vue-next';
+import { vocabFor, realCreator } from '../utils/mediaVocab';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 
 const props = defineProps({
@@ -112,7 +124,8 @@ const props = defineProps({
     type: Object,
     required: true
     // { name, author, mediaType, libraryId, volumes: [ ...items ] } — any media type
-  }
+  },
+  removable: { type: Boolean, default: false }
 });
 
 const TYPE_ICONS = { manga: BookImage, book: Book, audiobook: Headphones, show: Tv, anime: Sparkles, movie: Film };
@@ -124,7 +137,7 @@ const countLabel = computed(() => {
   return `${n} ${(n === 1 ? vocab.value.unit : vocab.value.units).toLowerCase()}`;
 });
 
-defineEmits(['select']);
+defineEmits(['select', 'remove']);
 
 const imgLoaded = ref(false);
 

@@ -46,3 +46,13 @@ export function detailRoute(item) {
   }
   return { path: `/title/${item.id}` };
 }
+
+// The creator worth showing, or null. Without online metadata the scanner fills a video's
+// creator with its folder name ("Quiet Harbor (2021)"), and books default to "Unknown
+// Author" — neither says who made it, so neither is shown or grouped on.
+export function realCreator(author, title) {
+  const a = (author || '').trim();
+  if (!a || /^unknown( author)?$/i.test(a)) return null;
+  if (title && a.toLowerCase().startsWith(String(title).trim().toLowerCase())) return null;
+  return a;
+}

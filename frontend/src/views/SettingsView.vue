@@ -210,7 +210,7 @@
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
             <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Views</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">Choose which views appear above your shelf. Series is always there.</p>
+            <p class="text-xs text-muted-foreground mt-0.5">Choose which views appear above your shelf. Every view shows one card per series; Alphabetical is always there.</p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -785,7 +785,7 @@ const savingPrefs = ref(false);
 const allowedFilters = ref([...SHELF_MODES]);
 
 const allFilterModes = [
-  { id: 'series', label: 'Series', desc: 'One card per series; open it to see every volume or episode.', always: true },
+  { id: 'series', label: 'Alphabetical', desc: 'Every series and title A–Z; open one to see its volumes or episodes.', always: true },
   { id: 'creator', label: 'Creator', desc: 'Grouped by author, director or studio.' },
   { id: 'disk_folder', label: 'Disk Folders', desc: 'Mirror the folders on the server.' },
   { id: 'custom_folder', label: 'Custom Folders', desc: 'Your own in-app folders, with an Unorganized catch-all.' }

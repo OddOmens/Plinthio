@@ -161,7 +161,7 @@
       </div>
 
       <p class="text-xs text-muted-foreground truncate mt-1">
-        {{ item.author || 'Unknown Author' }}
+        {{ realCreator(item.author, item.title) || vocabFor(item.media_type).type.replace(/s$/, '') }}
       </p>
 
       <!-- Details footer (duration, pages, or format) -->
@@ -219,6 +219,7 @@ import {
   Loader2
 } from 'lucide-vue-next';
 import { useDownloadsStore } from '../stores/downloads';
+import { realCreator, vocabFor } from '../utils/mediaVocab';
 
 const props = defineProps({
   item: { type: Object, required: true },

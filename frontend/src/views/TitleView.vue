@@ -42,7 +42,7 @@
         </div>
 
         <div class="flex items-center gap-2 text-muted-foreground flex-shrink-0">
-          <span class="text-[11px] font-mono">
+          <span v-if="!isSingle" class="text-[11px] font-mono">
             {{ unitsLabel(series?.volumeCount || 0) }}
           </span>
         </div>
@@ -112,7 +112,7 @@
                   />
 
                   <!-- Volume Count Pill -->
-                  <div class="absolute bottom-2 right-2 z-10 pointer-events-none">
+                  <div v-if="!isSingle" class="absolute bottom-2 right-2 z-10 pointer-events-none">
                     <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/75 text-white text-[10px] font-mono font-bold backdrop-blur-sm shadow">
                       {{ unitsLabel(series.volumeCount).toLowerCase() }}
                     </span>
@@ -136,9 +136,9 @@
                     {{ series.name }}
                   </h1>
 
-                  <p v-if="series.author && series.author !== series.name" class="text-xs sm:text-sm text-muted-foreground mt-0.5 flex items-center justify-center sm:justify-start gap-1.5 font-medium">
+                  <p v-if="shownCreator" class="text-xs sm:text-sm text-muted-foreground mt-0.5 flex items-center justify-center sm:justify-start gap-1.5 font-medium">
                     <User class="w-3.5 h-3.5 text-muted-foreground/80 flex-shrink-0" />
-                    <span class="font-medium text-foreground/90">{{ series.author }}</span>
+                    <span class="font-medium text-foreground/90">{{ shownCreator }}</span>
                   </p>
 
                   <p v-if="series.artists && series.artists !== series.author" class="text-xs sm:text-sm text-muted-foreground mt-0.5 flex items-center justify-center sm:justify-start gap-1.5 font-medium">
@@ -167,7 +167,7 @@
 
                   <!-- Metadata Badges Grid -->
                   <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
-                    <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-card border border-border text-[11px] font-medium text-foreground shadow-sm">
+                    <div v-if="!isSingle" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-card border border-border text-[11px] font-medium text-foreground shadow-sm">
                       <Layers class="w-3 h-3 text-primary" />
                       <span>{{ unitsLabel(series.volumeCount) }}</span>
                     </div>
@@ -222,7 +222,8 @@
                     <div class="flex items-center justify-between text-[11px] mb-1.5">
                       <span class="text-muted-foreground font-medium">Progress</span>
                       <span class="font-mono font-bold text-foreground">
-                        {{ series.readCount }}<template v-if="series.skippedCount"> + {{ series.skippedCount }} skipped</template> / {{ unitsLabel(series.volumeCount).toLowerCase() }} ({{ series.overallProgress }}%)
+                        <template v-if="isSingle">{{ singleProgressLabel }}</template>
+                        <template v-else>{{ series.readCount }}<template v-if="series.skippedCount"> + {{ series.skippedCount }} skipped</template> / {{ unitsLabel(series.volumeCount).toLowerCase() }} ({{ series.overallProgress }}%)</template>
                       </span>
                     </div>
                     <div class="h-1.5 w-full bg-muted rounded-full overflow-hidden">
@@ -285,8 +286,32 @@
                       <span class="hidden sm:inline">Skip {{ vocab.units }}…</span>
                     </button>
 
+                    <!-- A single title: download it, and its bookmarks (a list row carries these otherwise) -->
                     <button
-                      v-if="downloads.supported && undownloadedUnread.length"
+                      v-if="isSingle && downloads.canDownload(single)"
+                      @click="toggleVolumeDownload(single)"
+                      class="h-8 sm:h-9 px-3 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs transition active:scale-95 flex items-center gap-1.5"
+                      :title="downloadLabel(single)"
+                      :aria-label="downloadLabel(single)"
+                    >
+                      <CheckCircle2 v-if="downloads.isDownloaded(single.id)" class="w-3.5 h-3.5 text-emerald-500" />
+                      <Loader2 v-else-if="downloads.isDownloading(single.id)" class="w-3.5 h-3.5 animate-spin" />
+                      <Download v-else class="w-3.5 h-3.5 text-muted-foreground" />
+                      <span class="hidden sm:inline">{{ downloads.isDownloaded(single.id) ? 'Downloaded' : (downloads.isDownloading(single.id) ? 'Downloading…' : 'Download') }}</span>
+                    </button>
+                    <button
+                      v-if="isSingle"
+                      @click="openBookmarks(single)"
+                      class="h-8 sm:h-9 px-3 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs transition active:scale-95 flex items-center gap-1.5"
+                      title="Bookmarks & Notes"
+                      aria-label="Bookmarks & Notes"
+                    >
+                      <Bookmark class="w-3.5 h-3.5 text-muted-foreground" />
+                      <span class="hidden sm:inline">Bookmarks</span>
+                    </button>
+
+                    <button
+                      v-if="!isSingle && downloads.supported && undownloadedUnread.length"
                       @click="downloadUnread"
                       class="h-8 sm:h-9 px-3 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs transition active:scale-95 flex items-center gap-1.5"
                       :title="`Download ${undownloadedUnread.length} ${vocab.units.toLowerCase()} you haven't finished, for offline use`"
@@ -311,8 +336,8 @@
           </div>
         </div>
 
-        <!-- Section Controls Bar (Pinned with top section!) -->
-        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <!-- Section Controls Bar (Pinned with top section!) — only when there's a list -->
+        <div v-if="!isSingle" class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div class="flex items-center gap-2">
             <h2 class="text-sm font-bold tracking-tight text-foreground">
               {{ vocab.units }} &amp; History
@@ -380,8 +405,8 @@
         </div>
       </div>
 
-      <!-- Volumes & Read History Scrollable Container -->
-      <div class="flex-1 lg:min-h-0 lg:overflow-y-auto py-5">
+      <!-- Volumes & Read History Scrollable Container (series with more than one title) -->
+      <div v-if="!isSingle" class="flex-1 lg:min-h-0 lg:overflow-y-auto py-5">
         <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
 
         <!-- Empty Filtered Results -->
@@ -700,6 +725,26 @@
         </div>
       </div>
     </div>
+      <!-- A single title (a movie, a standalone book or audiobook): no list, tabs or sorting —
+           just what it is and where you are in it. -->
+      <div v-else class="flex-1 lg:min-h-0 lg:overflow-y-auto py-5">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-5">
+          <section v-if="series.description" class="flex flex-col gap-1.5">
+            <h2 class="text-sm font-bold tracking-tight text-foreground">About</h2>
+            <p class="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{{ series.description }}</p>
+          </section>
+
+          <section class="rounded-xl border border-border bg-card p-4">
+            <h2 class="text-sm font-bold tracking-tight text-foreground mb-3">Details</h2>
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 text-xs">
+              <div v-for="fact in singleFacts" :key="fact.label" class="flex justify-between sm:block gap-3 min-w-0">
+                <dt class="text-muted-foreground">{{ fact.label }}</dt>
+                <dd class="text-foreground font-medium sm:mt-0.5 text-right sm:text-left break-words min-w-0">{{ fact.value }}</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+      </div>
   </main>
     </div>
 
@@ -825,7 +870,7 @@ const MangaReader = defineAsyncComponent(() => import('../components/MangaReader
 const EpubReader = defineAsyncComponent(() => import('../components/EpubReader.vue'));
 const VideoPlayer = defineAsyncComponent(() => import('../components/VideoPlayer.vue'));
 import { usePlayerStore } from '../stores/player';
-import { vocabFor, entryLabel, isTimeBased, isVideo } from '../utils/mediaVocab';
+import { vocabFor, entryLabel, isTimeBased, isVideo, realCreator } from '../utils/mediaVocab';
 import { downloadKind } from '../stores/downloads';
 const BookmarksModal = defineAsyncComponent(() => import('../components/BookmarksModal.vue'));
 const MetadataSearchModal = defineAsyncComponent(() => import('../components/MetadataSearchModal.vue'));
@@ -1059,6 +1104,43 @@ async function downloadUnread() {
     await downloads.download(vol);
   }
 }
+
+// ─── Single titles ──────────────────────────────────────────────────────────
+// A movie, a standalone book or audiobook — or a "series" the library only holds one of —
+// gets a title page rather than a one-row list with tabs and sorting. A collection with
+// more than one title (Star Wars, say) keeps the list.
+const isSingle = computed(() => (series.value?.volumes?.length || 0) === 1);
+const shownCreator = computed(() => realCreator(series.value?.author, series.value?.name));
+const single = computed(() => (isSingle.value ? series.value.volumes[0] : null));
+
+const singleProgressLabel = computed(() => {
+  const it = single.value;
+  if (!it) return '';
+  if (it.is_finished) return vocab.value.done;
+  if (isSkipped(it)) return 'Skipped';
+  if (!hasStarted(it)) return 'Not started';
+  return `${positionLabel(it, true)} (${Math.round(it.progress_percent || 0)}%)`;
+});
+
+const singleFacts = computed(() => {
+  const it = single.value;
+  if (!it) return [];
+  const facts = [];
+  const year = it.release_date || null;
+  if (year) facts.push({ label: 'Released', value: year });
+  if (isTimeBased(it.media_type) && it.duration) facts.push({ label: 'Length', value: formatLength(it.duration) });
+  if (it.total_pages) facts.push({ label: 'Pages', value: it.total_pages.toLocaleString() });
+  if (shownCreator.value) facts.push({ label: vocab.value.creator, value: shownCreator.value });
+  if (it.artists && it.artists !== it.author) facts.push({ label: isVideo(it.media_type) ? 'Cast' : 'Artists', value: it.artists });
+  if (it.genres) facts.push({ label: 'Genres', value: it.genres });
+  if (it.publisher) facts.push({ label: 'Publisher', value: it.publisher });
+  if (it.status) facts.push({ label: 'Status', value: it.status });
+  if (it.format) facts.push({ label: 'Format', value: it.format.toUpperCase() });
+  if (it.file_size) facts.push({ label: 'File size', value: formatFileSize(it.file_size) });
+  if (series.value?.libraryName) facts.push({ label: 'Library', value: series.value.libraryName });
+  if (it.progress_updated_at) facts.push({ label: 'Last opened', value: formatDate(it.progress_updated_at) });
+  return facts;
+});
 
 // ─── Media-type vocabulary & helpers ────────────────────────────────────────
 // This page serves every media type; the words (Volume/Episode, Read/Watch…) and how

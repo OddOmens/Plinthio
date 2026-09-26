@@ -675,7 +675,7 @@
           <div class="border-b border-border pb-3">
             <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Views</h3>
             <p class="text-xs text-muted-foreground mt-0.5">
-              Series and Creator are always available. Turning off Disk Folders or Custom Folders hides that view for everyone on this server.
+              Alphabetical and Creator are always available. Turning off Disk Folders or Custom Folders hides that view for everyone on this server. Every view shows one card per series, never loose volumes or episodes.
             </p>
           </div>
 
@@ -1617,7 +1617,7 @@ const savingFilters = ref(false);
 
 // Series and Creator can't be turned off (the server enforces it too); the folder views can.
 const allServerFilterModes = [
-  { id: 'series', label: 'Series', desc: '', always: true },
+  { id: 'series', label: 'Alphabetical', desc: '', always: true },
   { id: 'creator', label: 'Creator', desc: '', always: true },
   { id: 'disk_folder', label: 'Disk Folders', desc: 'Browse by the folders on the server.' },
   { id: 'custom_folder', label: 'Custom Folders', desc: 'Users’ own in-app folders, with an Unorganized catch-all.' }
