@@ -699,6 +699,36 @@
           </div>
         </div>
 
+        <!-- Ratings Display Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Ratings</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Choose which ratings appear for all users. Turning one off hides it everywhere, and the server stops returning it.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label
+              v-for="opt in ratingDisplayOptions"
+              :key="opt.id"
+              class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none"
+            >
+              <input
+                type="checkbox"
+                :checked="customizationForm.ratings[opt.id]"
+                :disabled="savingRatings"
+                @change="toggleRatingDisplay(opt.id, $event.target.checked)"
+                class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+              />
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-foreground">{{ opt.label }}</span>
+                <span class="text-[11px] text-muted-foreground">{{ opt.desc }}</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <!-- Server Branding Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
@@ -1406,8 +1436,30 @@ const customizationForm = ref({
   customCss: '',
   accentTheme: 'zinc',
   loginMessage: '',
-  layoutMode: 'topnav'
+  layoutMode: 'topnav',
+  ratings: { showPersonal: true, showCommunity: true, showExternal: true }
 });
+
+const ratingDisplayOptions = computed(() => [
+  { id: 'showPersonal', label: 'Personal ratings', desc: 'Let each signed-in user give items 1–5 stars, and show their own rating.' },
+  { id: 'showCommunity', label: `${customizationStore.serverName || 'Plinthio'} user ratings`, desc: 'Show the average star rating from everyone on this server.' },
+  { id: 'showExternal', label: 'World ratings (TMDB)', desc: 'Show TMDB\'s score for movies, shows and anime. Needs a TMDB API key.' }
+]);
+const savingRatings = ref(false);
+
+async function toggleRatingDisplay(key, value) {
+  const previous = { ...customizationForm.value.ratings };
+  customizationForm.value.ratings = { ...previous, [key]: value };
+  savingRatings.value = true;
+  try {
+    await customizationStore.updateCustomization({ ratings: { [key]: value } });
+  } catch (e) {
+    customizationForm.value.ratings = previous;
+    dialog.alert('Failed to save rating settings');
+  } finally {
+    savingRatings.value = false;
+  }
+}
 
 const accentPresets = [
   { id: 'zinc', label: 'Zinc', bg: 'bg-zinc-500' },
@@ -1447,7 +1499,8 @@ async function loadCustomization() {
       customCss: customizationStore.customCss,
       accentTheme: customizationStore.accentTheme,
       loginMessage: customizationStore.loginMessage,
-      layoutMode: customizationStore.layoutMode
+      layoutMode: customizationStore.layoutMode,
+      ratings: { ...customizationStore.ratings }
     };
   } catch (err) {
     console.warn('Failed to load customization:', err);

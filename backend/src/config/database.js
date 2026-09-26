@@ -236,7 +236,15 @@ async function initSchema(db) {
   // cover_source records where a cover came from ('folder', 'tmdb', 'frame', 'upload') so a
   // later scan can tell a real poster from the video still used as a stand-in, and upgrade
   // the stand-in once a TMDB key exists.
-  for (const col of ['description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT', 'cover_source TEXT']) {
+  //
+  // external_rating* hold a "world" score from an outside provider (TMDB's vote average,
+  // 0–10, for movies/shows/anime) shown beside Plinthio's own star ratings.
+  // external_rating_checked_at records the last lookup — hit or miss — so an item TMDB
+  // doesn't know isn't re-queried every time someone opens its rating.
+  for (const col of [
+    'description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT', 'cover_source TEXT',
+    'external_rating REAL', 'external_rating_votes INTEGER', 'external_rating_source TEXT', 'external_rating_checked_at DATETIME'
+  ]) {
     try {
       await db.exec(`ALTER TABLE items ADD COLUMN ${col}`);
     } catch (e) {
@@ -428,6 +436,23 @@ async function initSchema(db) {
     // Column already exists
   }
   await finishItemsCascadeMigration(db, 'bookmarks', 'id, user_id, item_id, type, position, title, notes, cfi, created_at');
+
+  // Internal 1–5 star ratings, one per user per item. item_id carries no FK/cascade for the
+  // same reason as user_progress and bookmarks — a rating should survive a library wipe and
+  // re-attach via the path-derived item id on re-scan. The item_id index serves the
+  // community average ("what does everyone on this server think of it").
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS user_ratings (
+      user_id TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (user_id, item_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_user_ratings_item ON user_ratings(item_id);
+  `);
 
   console.log('Database initialized successfully at:', config.dbPath);
 }

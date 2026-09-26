@@ -32,15 +32,17 @@ router.get('/', async (req, res) => {
         p.progress_percent,
         p.is_finished,
         p.cfi as current_page_cfi,
-        p.updated_at as progress_updated_at
+        p.updated_at as progress_updated_at,
+        r.rating as user_rating
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
+      LEFT JOIN user_ratings r ON i.id = r.item_id AND r.user_id = ?
       WHERE NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )
     `;
-    const params = [userId, userId];
+    const params = [userId, userId, userId];
 
     if (libraryId) {
       query += ' AND i.library_id = ?';
@@ -172,9 +174,11 @@ router.get('/series/:name', async (req, res) => {
         p.is_finished,
         p.cfi as current_page_cfi,
         p.updated_at as progress_updated_at,
+        r.rating as user_rating,
         l.name as library_name
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
+      LEFT JOIN user_ratings r ON i.id = r.item_id AND r.user_id = ?
       LEFT JOIN libraries l ON i.library_id = l.id
       WHERE i.series = ?
       AND NOT EXISTS (
@@ -185,7 +189,7 @@ router.get('/series/:name', async (req, res) => {
         CASE WHEN i.volume IS NULL THEN 1 ELSE 0 END,
         i.volume ASC,
         i.title ASC
-    `, [userId, seriesName, userId]);
+    `, [userId, userId, seriesName, userId]);
 
     if (!items || items.length === 0) {
       return res.status(404).json({ error: 'Series not found' });
@@ -433,11 +437,13 @@ router.get('/:id', async (req, res) => {
         p.current_page,
         p.progress_percent,
         p.is_finished,
-        p.cfi as current_page_cfi
+        p.cfi as current_page_cfi,
+        r.rating as user_rating
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
+      LEFT JOIN user_ratings r ON i.id = r.item_id AND r.user_id = ?
       WHERE i.id = ?
-    `, [userId, req.params.id]);
+    `, [userId, userId, req.params.id]);
 
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });

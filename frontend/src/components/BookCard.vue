@@ -31,6 +31,14 @@
         </span>
       </div>
 
+      <!-- Your own star rating, when you've given one -->
+      <div v-if="showMyRating" class="absolute top-2 right-2 z-10 pointer-events-none">
+        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[11px] font-semibold border border-border/80 shadow-sm">
+          <Star class="w-3 h-3 text-amber-400 fill-amber-400" />
+          {{ myRating }}
+        </span>
+      </div>
+
       <!-- Quick Action Overlay on Hover -->
       <div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
         <div class="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
@@ -110,6 +118,15 @@
                 <span>Remove from Folder</span>
               </button>
               <button
+                v-if="customizationStore.ratingsEnabled"
+                type="button"
+                @click="openRatingDialog"
+                class="w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5"
+              >
+                <Star class="w-4 h-4 text-muted-foreground" />
+                <span>{{ customizationStore.ratings.showPersonal ? 'Rate...' : 'Ratings...' }}</span>
+              </button>
+              <button
                 type="button"
                 @click="openBookmarksDialog"
                 class="w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5"
@@ -166,13 +183,23 @@
         </span>
       </div>
     </div>
+
+    <RatingModal
+      v-if="showRating"
+      :isOpen="showRating"
+      :item="item"
+      @close="showRating = false"
+      @rated="onRated"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
+import { useCustomizationStore } from '../stores/customization';
+import RatingModal from './RatingModal.vue';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 import {
   Headphones,
@@ -191,7 +218,8 @@ import {
   Tv,
   Film,
   Sparkles,
-  Search
+  Search,
+  Star
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -200,6 +228,7 @@ const props = defineProps({
 });
 
 const authStore = useAuthStore();
+const customizationStore = useCustomizationStore();
 
 const emit = defineEmits(['select', 'refresh', 'add-to-folder', 'remove-from-folder', 'open-bookmarks', 'edit-metadata']);
 
@@ -214,6 +243,22 @@ function openFolderDialog() {
 function openBookmarksDialog() {
   showMenu.value = false;
   emit('open-bookmarks', props.item);
+}
+
+// The card owns its rating modal (rather than bubbling an event up to every shelf that
+// renders cards), and tracks the rating locally so the badge updates without a refetch.
+const showRating = ref(false);
+const myRating = ref(props.item.user_rating ?? null);
+watch(() => props.item.user_rating, (val) => { myRating.value = val ?? null; });
+const showMyRating = computed(() => customizationStore.ratings.showPersonal && !!myRating.value);
+
+function openRatingDialog() {
+  showMenu.value = false;
+  showRating.value = true;
+}
+
+function onRated({ rating }) {
+  myRating.value = rating;
 }
 
 function openMetadataDialog() {

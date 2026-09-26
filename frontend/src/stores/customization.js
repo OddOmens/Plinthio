@@ -8,8 +8,14 @@ export const useCustomizationStore = defineStore('customization', {
     accentTheme: 'zinc',
     loginMessage: '',
     layoutMode: 'topnav',
+    // Admin display switches for the rating UI — mirrored from the server, all on by default.
+    ratings: { showPersonal: true, showCommunity: true, showExternal: true },
     loading: false
   }),
+
+  getters: {
+    ratingsEnabled: (state) => state.ratings.showPersonal || state.ratings.showCommunity || state.ratings.showExternal
+  },
 
   actions: {
     async fetchCustomization() {
@@ -21,6 +27,7 @@ export const useCustomizationStore = defineStore('customization', {
           this.accentTheme = res.data.accentTheme || 'zinc';
           this.loginMessage = res.data.loginMessage || '';
           this.layoutMode = res.data.layoutMode || 'topnav';
+          if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
           this.applyToDom();
         }
         return res.data;
@@ -39,6 +46,7 @@ export const useCustomizationStore = defineStore('customization', {
           this.accentTheme = res.data.accentTheme || this.accentTheme;
           this.loginMessage = res.data.loginMessage !== undefined ? res.data.loginMessage : this.loginMessage;
           this.layoutMode = res.data.layoutMode || this.layoutMode;
+          if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
           this.applyToDom();
         }
         return res.data;
