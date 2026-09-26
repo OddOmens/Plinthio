@@ -27,6 +27,7 @@ router.get('/continue', async (req, res) => {
       FROM user_progress p
       JOIN items i ON p.item_id = i.id
       WHERE p.user_id = ? AND p.is_finished = 0 AND p.progress_percent > 0
+      AND COALESCE(p.is_skipped, 0) = 0
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
@@ -37,6 +38,53 @@ router.get('/continue', async (req, res) => {
 
     await shapeItems(db, items, req.user);
     res.json({ items });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// Mark volumes skipped (or not). Used for "I watched the anime for these volumes".
+// Only the skip flag changes — a volume already read stays read, and partial progress is
+// kept so un-skipping restores it. Declared before /:itemId so "skip" isn't taken for an id.
+router.post('/skip', async (req, res) => {
+  const { itemIds, skipped = true } = req.body || {};
+  if (!Array.isArray(itemIds) || itemIds.length === 0 || itemIds.length > 2000) {
+    return res.status(400).json({ error: 'itemIds must be a non-empty array' });
+  }
+  const ids = [...new Set(itemIds.filter((id) => typeof id === 'string' && /^[a-f0-9]{32}$/.test(id)))];
+  if (ids.length === 0) return res.status(400).json({ error: 'No valid item ids' });
+
+  try {
+    const db = await getDb();
+    // Only items this user can actually see.
+    const visible = await db.all(`
+      SELECT i.id, i.total_pages FROM items i
+      WHERE i.id IN (${ids.map(() => '?').join(',')})
+      AND NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
+      )${ratingSql(req.user, 'i')}
+    `, [...ids, req.user.id]);
+
+    const flag = skipped ? 1 : 0;
+    await db.run('BEGIN TRANSACTION');
+    try {
+      for (const item of visible) {
+        await db.run(`
+          INSERT INTO user_progress (user_id, item_id, total_pages, is_skipped, updated_at)
+          VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ON CONFLICT(user_id, item_id) DO UPDATE SET
+            is_skipped = excluded.is_skipped,
+            updated_at = CURRENT_TIMESTAMP
+        `, [req.user.id, item.id, item.total_pages || 0, flag]);
+      }
+      await db.run('COMMIT');
+    } catch (err) {
+      await db.run('ROLLBACK');
+      throw err;
+    }
+
+    res.json({ message: skipped ? 'Marked as skipped' : 'No longer skipped', count: visible.length });
   } catch (err) {
     serverError(req, res, err);
   }
@@ -100,6 +148,8 @@ router.post('/:itemId', async (req, res) => {
         is_finished = excluded.is_finished,
         cfi = COALESCE(excluded.cfi, user_progress.cfi),
         playback_rate = COALESCE(excluded.playback_rate, user_progress.playback_rate),
+        -- Actually reading (or marking read/unread) a volume means it isn't skipped.
+        is_skipped = 0,
         updated_at = CURRENT_TIMESTAMP
     `, [
       userId,

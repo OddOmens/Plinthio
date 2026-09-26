@@ -311,8 +311,16 @@ async function initSchema(db) {
   } catch (e) {
     // Column already exists
   }
+  // "Skipped" — the reader chose to pass over this volume (e.g. they watched the anime
+  // adaptation of it). Separate from is_finished so their real read history stays honest;
+  // any actual reading progress clears it again.
+  try {
+    await db.exec(`ALTER TABLE user_progress ADD COLUMN is_skipped INTEGER DEFAULT 0`);
+  } catch (e) {
+    // Column already exists
+  }
 
-  await finishItemsCascadeMigration(db, 'user_progress', 'user_id, item_id, current_time, duration, current_page, total_pages, progress_percent, is_finished, cfi, playback_rate, updated_at');
+  await finishItemsCascadeMigration(db, 'user_progress', 'user_id, item_id, current_time, duration, current_page, total_pages, progress_percent, is_finished, cfi, playback_rate, is_skipped, updated_at');
 
   // Settings table
   await db.exec(`

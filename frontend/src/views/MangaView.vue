@@ -183,11 +183,11 @@
                     </div>
 
                     <div
-                      v-if="series.readCount === series.volumeCount && series.volumeCount > 0"
+                      v-if="coveredCount === series.volumeCount && series.volumeCount > 0"
                       class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-semibold text-emerald-500 shadow-sm"
                     >
                       <BookCheck class="w-3 h-3" />
-                      <span>All {{ series.volumeCount }} Read</span>
+                      <span>{{ series.skippedCount ? 'Caught Up' : `All ${series.volumeCount} Read` }}</span>
                     </div>
                     <div
                       v-else-if="series.readCount > 0 || series.inProgressCount > 0"
@@ -197,11 +197,19 @@
                       <span>In Progress ({{ series.readCount }}/{{ series.volumeCount }} Read)</span>
                     </div>
                     <div
-                      v-else
+                      v-else-if="!series.skippedCount"
                       class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-muted border border-border text-[11px] font-medium text-muted-foreground shadow-sm"
                     >
                       <Book class="w-3 h-3" />
                       <span>Unread</span>
+                    </div>
+                    <div
+                      v-if="series.skippedCount"
+                      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-sky-500/10 border border-sky-500/30 text-[11px] font-semibold text-sky-500 shadow-sm"
+                      title="Volumes you chose to skip, e.g. because you watched the anime"
+                    >
+                      <FastForward class="w-3 h-3" />
+                      <span>{{ series.skippedCount }} Skipped</span>
                     </div>
                   </div>
 
@@ -210,7 +218,7 @@
                     <div class="flex items-center justify-between text-[11px] mb-1.5">
                       <span class="text-muted-foreground font-medium">Series Read Progress</span>
                       <span class="font-mono font-bold text-foreground">
-                        {{ series.readCount }} / {{ series.volumeCount }} volumes ({{ series.overallProgress }}%)
+                        {{ series.readCount }}<template v-if="series.skippedCount"> + {{ series.skippedCount }} skipped</template> / {{ series.volumeCount }} volumes ({{ series.overallProgress }}%)
                       </span>
                     </div>
                     <div class="h-1.5 w-full bg-muted rounded-full overflow-hidden">
@@ -260,6 +268,17 @@
                     >
                       <RotateCcw class="w-3.5 h-3.5 text-muted-foreground" />
                       <span class="hidden sm:inline">Reset History</span>
+                    </button>
+
+                    <button
+                      v-if="series.volumeCount > 1"
+                      @click="openSkipDialog"
+                      :disabled="actionLoading"
+                      class="h-8 sm:h-9 px-3 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs transition active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
+                      title="Skip volumes you've already covered, e.g. by watching the anime"
+                    >
+                      <FastForward class="w-3.5 h-3.5 text-sky-500" />
+                      <span class="hidden sm:inline">Skip Volumes…</span>
                     </button>
 
                     <button
@@ -391,6 +410,7 @@
                 :alt="vol.title"
                 loading="lazy"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                :class="isSkipped(vol) ? 'opacity-45 grayscale' : ''"
               />
 
               <!-- Volume Pill -->
@@ -410,6 +430,12 @@
                   class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500 text-white text-[10px] font-bold shadow-md"
                 >
                   <Check class="w-3 h-3 stroke-[3]" /> Read
+                </span>
+                <span
+                  v-else-if="isSkipped(vol)"
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-500 text-white text-[10px] font-bold shadow-md"
+                >
+                  <FastForward class="w-3 h-3" /> Skipped
                 </span>
                 <span
                   v-else-if="vol.progress_percent > 0"
@@ -462,6 +488,9 @@
                 <span v-if="vol.is_finished" class="text-emerald-500 font-semibold flex items-center gap-0.5">
                   <Check class="w-3 h-3" /> Done
                 </span>
+                <span v-else-if="isSkipped(vol)" class="text-sky-500 font-semibold flex items-center gap-0.5">
+                  <FastForward class="w-3 h-3" /> Skipped
+                </span>
                 <span v-else-if="vol.current_page" class="text-primary font-mono font-medium">
                   p. {{ vol.current_page }}
                 </span>
@@ -489,6 +518,15 @@
                 >
                   <BookCheck v-if="vol.is_finished" class="w-4 h-4 text-emerald-500" />
                   <Book v-else class="w-4 h-4" />
+                </button>
+
+                <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? 'Unskip volume' : 'Skip volume'"
+                  @click="toggleVolumeSkipped(vol)"
+                  class="w-8 h-8 rounded-lg border hover:bg-muted flex items-center justify-center transition active:scale-95"
+                  :class="isSkipped(vol) ? 'border-sky-500/50 text-sky-500' : 'border-border text-muted-foreground hover:text-foreground'"
+                  :title="isSkipped(vol) ? 'Skipped — tap to unskip' : 'Skip this volume'"
+                >
+                  <FastForward class="w-3.5 h-3.5" />
                 </button>
 
                 <!-- Bookmarks button -->
@@ -533,6 +571,7 @@
                   :alt="vol.title"
                   loading="lazy"
                   class="w-full h-full object-cover"
+                  :class="isSkipped(vol) ? 'opacity-45 grayscale' : ''"
                 />
                 <div
                   v-if="vol.is_finished"
@@ -572,6 +611,10 @@
                     <span v-if="vol.progress_updated_at" class="text-muted-foreground font-normal ml-1">
                       ({{ formatDate(vol.progress_updated_at) }})
                     </span>
+                  </span>
+                  <span v-else-if="isSkipped(vol)" class="text-sky-500 font-medium flex items-center gap-1">
+                    <FastForward class="w-3.5 h-3.5" />
+                    <span>Skipped</span>
                   </span>
                   <span v-else-if="vol.current_page" class="text-primary font-medium flex items-center gap-1">
                     <BookOpen class="w-3.5 h-3.5" />
@@ -621,6 +664,16 @@
                 <span class="hidden md:inline">{{ vol.is_finished ? 'Mark Unread' : 'Mark Read' }}</span>
               </button>
 
+              <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? 'Unskip volume' : 'Skip volume'"
+                @click="toggleVolumeSkipped(vol)"
+                class="h-9 px-3 rounded-xl border hover:bg-muted text-xs font-medium transition active:scale-95 flex items-center gap-1.5"
+                :class="isSkipped(vol) ? 'border-sky-500/50 text-sky-500' : 'border-border text-foreground'"
+                :title="isSkipped(vol) ? 'Skipped — tap to unskip' : 'Skip this volume'"
+              >
+                <FastForward class="w-4 h-4" :class="isSkipped(vol) ? '' : 'text-muted-foreground'" />
+                <span class="hidden md:inline">{{ isSkipped(vol) ? 'Unskip' : 'Skip' }}</span>
+              </button>
+
               <!-- Bookmarks Button -->
               <button aria-label="Bookmarks & Notes"
                 @click="openBookmarks(vol)"
@@ -647,11 +700,75 @@
   </main>
     </div>
 
+    <!-- Skip volumes dialog -->
+    <div
+      v-if="showSkipDialog && series"
+      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      @click.self="showSkipDialog = false"
+    >
+      <div class="bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl p-5 flex flex-col gap-4" role="dialog" aria-labelledby="skip-dialog-title">
+        <div>
+          <h3 id="skip-dialog-title" class="text-sm font-semibold text-foreground flex items-center gap-2">
+            <FastForward class="w-4 h-4 text-sky-500" />
+            Skip volumes
+          </h3>
+          <p class="text-xs text-muted-foreground mt-1">
+            Already know the story up to a point — say you watched the anime? Skipped volumes
+            count toward your progress and "Continue" picks up after them. Your read history
+            isn't changed, and opening a skipped volume un-skips it.
+          </p>
+        </div>
+
+        <label class="flex flex-col gap-1.5">
+          <span class="text-xs font-medium text-foreground">I've covered everything through</span>
+          <select
+            v-model="skipThroughId"
+            class="h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+          >
+            <option v-for="v in orderedVolumes" :key="v.id" :value="v.id">{{ volumeLabel(v) }}{{ v.title && v.volume != null ? ` — ${v.title}` : '' }}</option>
+          </select>
+        </label>
+
+        <p class="text-xs" :class="volumesToSkip.length ? 'text-foreground' : 'text-muted-foreground'">
+          <template v-if="volumesToSkip.length">
+            Skips <strong>{{ volumesToSkip.length }}</strong> unread volume{{ volumesToSkip.length === 1 ? '' : 's' }}
+            ({{ volumeLabel(volumesToSkip[0]) }}{{ volumesToSkip.length > 1 ? ` – ${volumeLabel(volumesToSkip[volumesToSkip.length - 1])}` : '' }}).
+          </template>
+          <template v-else>Nothing to skip — those volumes are already read or skipped.</template>
+        </p>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <button
+            v-if="series.skippedCount"
+            type="button"
+            @click="clearAllSkips"
+            class="h-9 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition"
+          >
+            Unskip all ({{ series.skippedCount }})
+          </button>
+          <span v-else />
+          <div class="flex items-center gap-2">
+            <button type="button" @click="showSkipDialog = false" class="h-9 px-3 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:bg-secondary/80 transition">
+              Cancel
+            </button>
+            <button
+              type="button"
+              @click="confirmSkipThrough"
+              :disabled="!volumesToSkip.length"
+              class="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition disabled:opacity-50"
+            >
+              Skip {{ volumesToSkip.length || '' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Fullscreen In-App Manga Reader -->
     <MangaReader
       v-if="activeReadingItem"
       :item="activeReadingItem"
-      :volumes="series?.volumes || []"
+      :volumes="readerVolumes"
       @switch-volume="handleSwitchVolume"
       @close="handleReaderClose"
     />
@@ -716,7 +833,8 @@ import {
   Loader2,
   Search,
   Download,
-  CheckCircle2
+  CheckCircle2,
+  FastForward
 } from 'lucide-vue-next';
 import { useDownloadsStore } from '../stores/downloads';
 
@@ -818,15 +936,18 @@ const filterTabs = computed(() => {
   if (!series.value || !series.value.volumes) return [];
   const vols = series.value.volumes;
   const completed = vols.filter(v => v.is_finished).length;
-  const inProgress = vols.filter(v => !v.is_finished && v.progress_percent > 0).length;
-  const unread = vols.length - completed - inProgress;
+  const skipped = vols.filter(isSkipped).length;
+  const inProgress = vols.filter(v => !v.is_finished && !isSkipped(v) && v.progress_percent > 0).length;
+  const unread = vols.length - completed - skipped - inProgress;
 
-  return [
+  const tabs = [
     { id: 'all', label: 'All Volumes', count: vols.length },
     { id: 'unread', label: 'Unread', count: unread },
     { id: 'in_progress', label: 'In Progress', count: inProgress },
     { id: 'completed', label: 'Completed', count: completed },
   ];
+  if (skipped) tabs.push({ id: 'skipped', label: 'Skipped', count: skipped });
+  return tabs;
 });
 
 // ─── Sorted and Filtered Volumes ────────────────────────────────────────────
@@ -837,11 +958,13 @@ const filteredVolumes = computed(() => {
 
   // Apply tab filter
   if (activeFilterTab.value === 'unread') {
-    list = list.filter(v => !v.is_finished && (!v.progress_percent || v.progress_percent === 0));
+    list = list.filter(v => !v.is_finished && !isSkipped(v) && (!v.progress_percent || v.progress_percent === 0));
   } else if (activeFilterTab.value === 'in_progress') {
-    list = list.filter(v => !v.is_finished && v.progress_percent > 0);
+    list = list.filter(v => !v.is_finished && !isSkipped(v) && v.progress_percent > 0);
   } else if (activeFilterTab.value === 'completed') {
     list = list.filter(v => v.is_finished);
+  } else if (activeFilterTab.value === 'skipped') {
+    list = list.filter(isSkipped);
   }
 
   // Apply sort order
@@ -877,7 +1000,7 @@ const smartCtaState = computed(() => {
       isResume: true,
       isFinished: false
     };
-  } else if (series.value.readCount === series.value.volumeCount && series.value.volumeCount > 0) {
+  } else if (coveredCount.value === series.value.volumeCount && series.value.volumeCount > 0) {
     return {
       label: 'Read Again',
       subLabel: `${volNumber}`,
@@ -910,7 +1033,7 @@ function toggleVolumeDownload(vol) {
 }
 
 const undownloadedUnread = computed(() => (series.value?.volumes || []).filter(
-  (v) => !v.is_finished && downloads.canDownload(v) && !downloads.isDownloaded(v.id) && !downloads.isDownloading(v.id)
+  (v) => !v.is_finished && !isSkipped(v) && downloads.canDownload(v) && !downloads.isDownloaded(v.id) && !downloads.isDownloading(v.id)
 ));
 
 // One at a time, in reading order, so the next volume is usable as soon as possible.
@@ -960,6 +1083,7 @@ async function fetchSeriesData() {
           volumeCount: 1,
           totalPages: item.total_pages || 0,
           readCount: item.is_finished ? 1 : 0,
+          skippedCount: 0,
           inProgressCount: !item.is_finished && item.progress_percent > 0 ? 1 : 0,
           unreadCount: item.is_finished || item.progress_percent > 0 ? 0 : 1,
           overallProgress: item.is_finished ? 100 : (item.progress_percent || 0),
@@ -1022,6 +1146,80 @@ async function markAllAsUnread() {
   } finally {
     actionLoading.value = false;
   }
+}
+
+// ─── Skipped volumes ────────────────────────────────────────────────────────
+// "Skipped" = the reader chose to pass over a volume (usually: watched the anime for it).
+// It only applies to volumes not read; reading one clears the skip server-side.
+function isSkipped(vol) {
+  return !vol.is_finished && !!vol.is_skipped;
+}
+
+// Read + skipped: how much of the series is behind the reader.
+const coveredCount = computed(() => (series.value?.readCount || 0) + (series.value?.skippedCount || 0));
+
+// The reader's previous/next volume jumps step over skipped volumes (the one open stays).
+const readerVolumes = computed(() => (series.value?.volumes || []).filter(
+  (v) => !isSkipped(v) || v.id === activeReadingItem.value?.id
+));
+
+async function setSkipped(vols, skipped) {
+  const ids = vols.map((v) => v.id);
+  if (!ids.length) return;
+  actionLoading.value = true;
+  try {
+    for (const v of vols) v.is_skipped = skipped ? 1 : 0; // optimistic
+    await api.post('/progress/skip', { itemIds: ids, skipped });
+    await fetchSeriesData();
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not update skipped volumes');
+    await fetchSeriesData();
+  } finally {
+    actionLoading.value = false;
+  }
+}
+
+function toggleVolumeSkipped(vol) {
+  return setSkipped([vol], !isSkipped(vol));
+}
+
+// "Skip through volume N": every unread volume up to and including N, in reading order.
+const showSkipDialog = ref(false);
+const skipThroughId = ref('');
+const orderedVolumes = computed(() => [...(series.value?.volumes || [])].sort((a, b) => {
+  if (a.volume == null && b.volume == null) return a.title.localeCompare(b.title, undefined, { numeric: true });
+  if (a.volume == null) return 1;
+  if (b.volume == null) return -1;
+  return a.volume - b.volume;
+}));
+const volumesToSkip = computed(() => {
+  const idx = orderedVolumes.value.findIndex((v) => v.id === skipThroughId.value);
+  if (idx < 0) return [];
+  return orderedVolumes.value.slice(0, idx + 1).filter((v) => !v.is_finished && !isSkipped(v));
+});
+
+function volumeLabel(v) {
+  return v.volume != null ? `Vol ${v.volume % 1 === 0 ? Math.trunc(v.volume) : v.volume}` : v.title;
+}
+
+function openSkipDialog() {
+  // Default to the volume just before where they are now.
+  const next = series.value?.nextVolume;
+  const idx = next ? orderedVolumes.value.findIndex((v) => v.id === next.id) : -1;
+  skipThroughId.value = orderedVolumes.value[Math.max(0, idx)]?.id || '';
+  showSkipDialog.value = true;
+}
+
+async function confirmSkipThrough() {
+  const vols = volumesToSkip.value;
+  showSkipDialog.value = false;
+  await setSkipped(vols, true);
+}
+
+async function clearAllSkips() {
+  const vols = (series.value?.volumes || []).filter(isSkipped);
+  showSkipDialog.value = false;
+  await setSkipped(vols, false);
 }
 
 // ─── Single Volume Read/Unread Toggle ───────────────────────────────────────

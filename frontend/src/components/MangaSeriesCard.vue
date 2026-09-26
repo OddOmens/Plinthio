@@ -84,11 +84,11 @@
       </p>
       <div class="mt-auto pt-2 flex items-center justify-between text-xs text-muted-foreground">
         <span class="font-mono">{{ series.volumes.length }} volumes</span>
-        <span v-if="finishedCount === series.volumes.length" class="text-emerald-500 font-semibold flex items-center gap-1">
-          <BookCheck class="w-3 h-3" /> All read
+        <span v-if="finishedCount + skippedCount === series.volumes.length" class="text-emerald-500 font-semibold flex items-center gap-1">
+          <BookCheck class="w-3 h-3" /> {{ skippedCount ? 'Caught up' : 'All read' }}
         </span>
-        <span v-else-if="finishedCount > 0" class="font-mono">
-          {{ finishedCount }}/{{ series.volumes.length }} read
+        <span v-else-if="finishedCount + skippedCount > 0" class="font-mono" :title="skippedCount ? `${skippedCount} skipped` : undefined">
+          {{ finishedCount + skippedCount }}/{{ series.volumes.length }} {{ skippedCount ? 'done' : 'read' }}
         </span>
       </div>
     </div>
@@ -125,11 +125,13 @@ const coverUrl = computed(() => {
 });
 
 const finishedCount = computed(() => props.series.volumes.filter(v => v.is_finished).length);
+// Skipped (e.g. covered by the anime) counts toward "done" but not toward "read".
+const skippedCount = computed(() => props.series.volumes.filter(v => !v.is_finished && v.is_skipped).length);
 
 const overallProgress = computed(() => {
   const vols = props.series.volumes;
   if (!vols.length) return 0;
-  const total = vols.reduce((sum, v) => sum + (v.is_finished ? 100 : (v.progress_percent || 0)), 0);
+  const total = vols.reduce((sum, v) => sum + (v.is_finished || v.is_skipped ? 100 : (v.progress_percent || 0)), 0);
   return Math.round(total / vols.length);
 });
 </script>

@@ -39,7 +39,8 @@ router.get('/', async (req, res) => {
         p.progress_percent,
         p.is_finished,
         p.cfi as current_page_cfi,
-        p.updated_at as progress_updated_at
+        p.updated_at as progress_updated_at,
+        COALESCE(p.is_skipped, 0) as is_skipped
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
       WHERE NOT EXISTS (
@@ -79,9 +80,11 @@ router.get('/', async (req, res) => {
     }
 
     if (progress === 'unread') {
-      query += ' AND (p.item_id IS NULL OR (COALESCE(p.progress_percent, 0) = 0 AND COALESCE(p.is_finished, 0) = 0))';
+      query += ' AND (p.item_id IS NULL OR (COALESCE(p.progress_percent, 0) = 0 AND COALESCE(p.is_finished, 0) = 0 AND COALESCE(p.is_skipped, 0) = 0))';
     } else if (progress === 'in_progress') {
-      query += ' AND p.is_finished = 0 AND p.progress_percent > 0';
+      query += ' AND p.is_finished = 0 AND p.progress_percent > 0 AND COALESCE(p.is_skipped, 0) = 0';
+    } else if (progress === 'skipped') {
+      query += ' AND COALESCE(p.is_finished, 0) = 0 AND p.is_skipped = 1';
     } else if (progress === 'finished') {
       query += ' AND p.is_finished = 1';
     }
@@ -268,6 +271,7 @@ router.get('/series/:name', async (req, res) => {
         p.is_finished,
         p.cfi as current_page_cfi,
         p.updated_at as progress_updated_at,
+        COALESCE(p.is_skipped, 0) as is_skipped,
         l.name as library_name
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
@@ -298,19 +302,25 @@ router.get('/series/:name', async (req, res) => {
     const status = items.find(i => i.status)?.status || null;
     const releaseDate = items.find(i => i.release_date)?.release_date || null;
     const totalPages = items.reduce((sum, i) => sum + (i.total_pages || 0), 0);
+    // A read volume counts as read even if it was once skipped; skipped only applies to
+    // volumes not read.
+    const isSkipped = (i) => !i.is_finished && i.is_skipped;
     const readCount = items.filter(i => i.is_finished).length;
-    const inProgressCount = items.filter(i => !i.is_finished && i.progress_percent > 0).length;
-    const unreadCount = volumeCount - readCount - inProgressCount;
+    const skippedCount = items.filter(isSkipped).length;
+    const inProgressCount = items.filter(i => !i.is_finished && !isSkipped(i) && i.progress_percent > 0).length;
+    const unreadCount = volumeCount - readCount - skippedCount - inProgressCount;
 
-    const totalProgressSum = items.reduce((sum, i) => sum + (i.is_finished ? 100 : (i.progress_percent || 0)), 0);
+    // Skipped volumes count as covered: someone who watched the anime up to volume 12 and
+    // read 13 is caught up, not 8% through.
+    const totalProgressSum = items.reduce((sum, i) => sum + (i.is_finished || isSkipped(i) ? 100 : (i.progress_percent || 0)), 0);
     const overallProgress = volumeCount > 0 ? Math.round(totalProgressSum / volumeCount) : 0;
 
-    // Determine smart next volume to read:
+    // Determine smart next volume to read, stepping over skipped volumes:
     // 1. First in-progress volume
     // 2. First unread volume
     // 3. First volume in series
-    const inProgressVol = items.find(i => !i.is_finished && i.progress_percent > 0);
-    const firstUnreadVol = items.find(i => !i.is_finished);
+    const inProgressVol = items.find(i => !i.is_finished && !isSkipped(i) && i.progress_percent > 0);
+    const firstUnreadVol = items.find(i => !i.is_finished && !isSkipped(i));
     const nextVolume = inProgressVol || firstUnreadVol || items[0];
 
     res.json({
@@ -327,6 +337,7 @@ router.get('/series/:name', async (req, res) => {
         volumeCount,
         totalPages,
         readCount,
+        skippedCount,
         inProgressCount,
         unreadCount,
         overallProgress,
@@ -373,6 +384,7 @@ router.post('/series/:name/mark-read', async (req, res) => {
           total_pages = excluded.total_pages,
           progress_percent = 100,
           is_finished = 1,
+          is_skipped = 0,
           updated_at = CURRENT_TIMESTAMP
       `, [userId, item.id, item.total_pages || 1, item.total_pages || 1]);
     }
@@ -412,6 +424,7 @@ router.post('/series/:name/mark-unread', async (req, res) => {
           current_page = 0,
           progress_percent = 0,
           is_finished = 0,
+          is_skipped = 0,
           updated_at = CURRENT_TIMESTAMP
       `, [userId, item.id, item.total_pages || 0]);
     }

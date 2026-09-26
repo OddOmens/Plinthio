@@ -111,6 +111,7 @@
             <option value="unread">Not started</option>
             <option value="in_progress">In progress</option>
             <option value="finished">Finished</option>
+            <option value="skipped">Skipped</option>
           </select>
           <label class="sr-only" for="filter-genre">Genre</label>
           <select v-if="genres.length" id="filter-genre" v-model="genreFilter" :class="filterSelectClass(genreFilter)">
