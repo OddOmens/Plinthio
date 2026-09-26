@@ -16,11 +16,13 @@ export function compareNames(a, b) {
 
 // `alphabetical`: sort entries by name. Otherwise they keep the order of `items` (a series
 // sits where its first-listed title would), which is how the server's sort is honoured.
-export function buildShelfEntries(items, { alphabetical = true } = {}) {
+// `ungroup(item)`: true for titles that should stand alone even though they're in a series
+// (the shelf's "All movies" setting shows each Star Wars film rather than the collection).
+export function buildShelfEntries(items, { alphabetical = true, ungroup = null } = {}) {
   const entries = [];
   const bySeries = new Map();
   for (const item of items) {
-    if (item.series) {
+    if (item.series && !(ungroup && ungroup(item))) {
       const key = `s::${item.series}::${item.library_id}::${item.media_type}`;
       let entry = bySeries.get(key);
       if (!entry) {

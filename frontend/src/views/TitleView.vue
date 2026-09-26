@@ -402,6 +402,35 @@
               </div>
             </div>
           </div>
+
+          <!-- Extras: trailers, featurettes, behind the scenes… (never on the shelf) -->
+          <section v-if="extrasList.length" class="flex flex-col gap-3 mt-8">
+            <h2 class="text-sm font-bold tracking-tight text-foreground flex items-center gap-2">
+              <Clapperboard class="w-4 h-4 text-muted-foreground" />
+              Extras
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-semibold">{{ extrasList.length }}</span>
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <button
+                v-for="extra in extrasList"
+                :key="extra.id"
+                type="button"
+                @click="openVolumeReader(extra)"
+                class="group flex items-center gap-3 p-2 rounded-xl border border-border bg-card hover:bg-muted/40 text-left transition"
+              >
+                <div class="relative w-28 aspect-video rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                  <img :src="volumeCoverUrl(extra)" :alt="''" loading="lazy" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 flex items-center justify-center bg-black/25 opacity-80 group-hover:opacity-100 transition">
+                    <Play class="w-5 h-5 text-white fill-current" />
+                  </div>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold text-foreground line-clamp-2">{{ extra.title }}</p>
+                  <p class="text-[11px] text-muted-foreground mt-0.5">{{ extra.extra_type }}<template v-if="extra.duration"> · {{ formatLength(extra.duration) }}</template></p>
+                </div>
+              </button>
+            </div>
+          </section>
         </div>
       </div>
 
@@ -431,7 +460,7 @@
           >
             <!-- Thumbnail with interactive click to read -->
             <div
-              @click="openVolumeReader(vol)"
+              @click="openEntry(vol)"
               class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-muted/50 border border-border/60 cursor-pointer"
             >
               <img
@@ -502,7 +531,7 @@
             <!-- Volume Info & History Status -->
             <div class="mt-3 flex flex-col flex-1">
               <h3
-                @click="openVolumeReader(vol)"
+                @click="openEntry(vol)"
                 class="text-xs font-semibold text-foreground truncate cursor-pointer hover:underline"
                 :title="vol.title"
               >
@@ -591,7 +620,7 @@
             <div class="flex items-center gap-4 min-w-0">
               <!-- Thumbnail -->
               <div
-                @click="openVolumeReader(vol)"
+                @click="openEntry(vol)"
                 class="relative w-14 h-20 rounded-xl overflow-hidden bg-muted/50 border border-border/70 flex-shrink-0 cursor-pointer group-hover:shadow-md transition"
               >
                 <img
@@ -619,7 +648,7 @@
                     {{ entryLabel(vol) }}
                   </span>
                   <h3
-                    @click="openVolumeReader(vol)"
+                    @click="openEntry(vol)"
                     class="text-sm font-semibold text-foreground truncate cursor-pointer hover:underline"
                     :title="vol.title"
                   >
@@ -742,6 +771,63 @@
                 <dd class="text-foreground font-medium sm:mt-0.5 text-right sm:text-left break-words min-w-0">{{ fact.value }}</dd>
               </div>
             </dl>
+          </section>
+
+          <!-- Extras: trailers, featurettes, behind the scenes… (never on the shelf) -->
+          <section v-if="extrasList.length" class="flex flex-col gap-3 ">
+            <h2 class="text-sm font-bold tracking-tight text-foreground flex items-center gap-2">
+              <Clapperboard class="w-4 h-4 text-muted-foreground" />
+              Extras
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-semibold">{{ extrasList.length }}</span>
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <button
+                v-for="extra in extrasList"
+                :key="extra.id"
+                type="button"
+                @click="openVolumeReader(extra)"
+                class="group flex items-center gap-3 p-2 rounded-xl border border-border bg-card hover:bg-muted/40 text-left transition"
+              >
+                <div class="relative w-28 aspect-video rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                  <img :src="volumeCoverUrl(extra)" :alt="''" loading="lazy" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 flex items-center justify-center bg-black/25 opacity-80 group-hover:opacity-100 transition">
+                    <Play class="w-5 h-5 text-white fill-current" />
+                  </div>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold text-foreground line-clamp-2">{{ extra.title }}</p>
+                  <p class="text-[11px] text-muted-foreground mt-0.5">{{ extra.extra_type }}<template v-if="extra.duration"> · {{ formatLength(extra.duration) }}</template></p>
+                </div>
+              </button>
+            </div>
+          </section>
+
+          <!-- Part of a collection (Star Wars…): the rest of it, and a way to the whole list -->
+          <section v-if="collection && collectionSiblings.length" class="flex flex-col gap-3">
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="text-sm font-bold tracking-tight text-foreground">More in {{ collection.name }}</h2>
+              <router-link
+                :to="{ path: `/series/${encodeURIComponent(collection.name)}`, query: { library: collection.libraryId, type: collection.mediaType } }"
+                class="text-xs font-medium text-primary hover:underline flex items-center gap-1 flex-shrink-0"
+              >
+                View all {{ collection.volumeCount }}
+                <ChevronRight class="w-3.5 h-3.5" />
+              </router-link>
+            </div>
+            <div class="flex gap-3 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
+              <router-link
+                v-for="sib in collectionSiblings"
+                :key="sib.id"
+                :to="`/title/${sib.id}`"
+                class="w-28 sm:w-32 flex-shrink-0 group"
+              >
+                <div class="aspect-[2/3] rounded-lg overflow-hidden bg-muted border border-border group-hover:border-muted-foreground/40 transition">
+                  <img :src="volumeCoverUrl(sib)" :alt="sib.title" loading="lazy" class="w-full h-full object-cover" />
+                </div>
+                <p class="mt-1.5 text-xs font-medium text-foreground line-clamp-2">{{ sib.title }}</p>
+                <p v-if="sib.is_finished" class="text-[10px] text-emerald-500 font-semibold">{{ vocab.done }}</p>
+              </router-link>
+            </div>
           </section>
         </div>
       </div>
@@ -902,7 +988,8 @@ import {
   Download,
   CheckCircle2,
   FastForward,
-  Clock
+  Clock,
+  Clapperboard
 } from 'lucide-vue-next';
 import { useDownloadsStore } from '../stores/downloads';
 
@@ -931,6 +1018,12 @@ function handleNavSearch(query) {
 const loading = ref(true);
 const actionLoading = ref(false);
 const player = usePlayerStore();
+// A title's extras, and (for a title in a collection) the collection it belongs to.
+const extrasList = ref([]);
+const collection = ref(null);
+const collectionSiblings = computed(() =>
+  (collection.value?.volumes || []).filter((v) => v.id !== series.value?.id)
+);
 const activeEpubItem = ref(null);
 const activeVideoItem = ref(null);
 const error = ref(null);
@@ -1207,6 +1300,8 @@ function seriesScopeParams() {
 async function fetchSeriesData() {
   loading.value = true;
   error.value = null;
+  extrasList.value = [];
+  collection.value = null;
 
   try {
     const seriesParam = route.params.seriesName;
@@ -1218,18 +1313,13 @@ async function fetchSeriesData() {
         params: { library: route.query.library || undefined, type: route.query.type || undefined }
       });
       series.value = res.data.series;
+      extrasList.value = res.data.series?.extras || [];
     } else if (itemIdParam) {
       // Fetch item first
       const itemRes = await api.get(`/items/${itemIdParam}`);
       const item = itemRes.data.item;
 
-      if (item && item.series) {
-        // Redirect or load series
-        const res = await api.get(`/items/series/${encodeURIComponent(item.series)}`, {
-          params: { library: item.library_id, type: item.media_type }
-        });
-        series.value = res.data.series;
-      } else if (item) {
+      if (item) {
         // A title with no series gets the same page, as a series of one.
         series.value = {
           standalone: true,
@@ -1257,6 +1347,17 @@ async function fetchSeriesData() {
           nextVolume: item,
           volumes: [item]
         };
+        // Its extras, and the collection it's part of (if any), load alongside.
+        api.get(`/items/${item.id}/extras`)
+          .then((r) => { if (series.value?.id === item.id) extrasList.value = r.data.extras || []; })
+          .catch(() => {});
+        if (item.series) {
+          api.get(`/items/series/${encodeURIComponent(item.series)}`, { params: { library: item.library_id, type: item.media_type } })
+            .then((r) => {
+              if (series.value?.id === item.id && (r.data.series?.volumeCount || 0) > 1) collection.value = r.data.series;
+            })
+            .catch(() => {});
+        }
       } else {
         error.value = 'Item not found';
       }
@@ -1424,6 +1525,17 @@ async function toggleVolumeReadStatus(vol) {
 }
 
 // ─── Reader Actions ─────────────────────────────────────────────────────────
+// Clicking an entry's cover or title. In a movie collection that opens the film's own page
+// (details, extras, the rest of the collection); everywhere else it opens the reader/player
+// straight away, as the dedicated Watch/Read button always does.
+function openEntry(vol) {
+  if (vol.media_type === 'movie' && !isSingle.value) {
+    router.push(`/title/${vol.id}`);
+  } else {
+    openVolumeReader(vol);
+  }
+}
+
 // One entry point for every type: comics page-by-page, EPUBs in the book reader, audio in
 // the global player, video in the player here, and anything else (PDF) in a new tab.
 function openVolumeReader(vol) {

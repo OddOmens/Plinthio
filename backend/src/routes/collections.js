@@ -107,7 +107,8 @@ router.get('/all-grouped', async (req, res) => {
       SELECT i.*, p.current_time, p.current_page, p.progress_percent, p.is_finished
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
-      WHERE i.id NOT IN (
+      WHERE i.extra_type IS NULL
+      AND i.id NOT IN (
         SELECT ci.item_id FROM collection_items ci
         JOIN collections c ON ci.collection_id = c.id
         WHERE c.user_id = ?

@@ -49,6 +49,8 @@ router.get('/', async (req, res) => {
       )${ratingSql(req.user, 'i')}
     `;
     const params = [userId, userId];
+    // Extras (trailers, featurettes…) live on their film's page, not the shelf.
+    query += ' AND i.extra_type IS NULL';
 
     if (libraryId) {
       query += ' AND i.library_id = ?';
@@ -153,6 +155,7 @@ router.get('/genres', async (req, res) => {
       )${ratingSql(req.user, 'i')}
     `;
     const params = [req.user.id];
+    query += ' AND i.extra_type IS NULL';
     if (mediaType && mediaType !== 'all') {
       query += ' AND i.media_type = ?';
       params.push(mediaType);
@@ -196,6 +199,7 @@ router.get('/authors', async (req, res) => {
       )${ratingSql(req.user, 'i')}
     `;
     const params = [userId];
+    query += ' AND i.extra_type IS NULL';
 
     if (mediaType && mediaType !== 'all') {
       query += ' AND i.media_type = ?';
@@ -234,6 +238,7 @@ router.get('/series', async (req, res) => {
       )${ratingSql(req.user, 'i')}
     `;
     const params = [userId];
+    query += ' AND i.extra_type IS NULL';
 
     if (mediaType && mediaType !== 'all') {
       query += ' AND i.media_type = ?';
@@ -262,7 +267,7 @@ router.get('/series/:name', async (req, res) => {
   const scope = seriesScope(req.query, 'i');
   try {
     const db = await getDb();
-    const items = await db.all(`
+    const allRows = await db.all(`
       SELECT
         i.*,
         p.current_time,
@@ -287,10 +292,14 @@ router.get('/series/:name', async (req, res) => {
         i.title ASC
     `, [userId, seriesName, ...scope.params, userId]);
 
-    if (!items || items.length === 0) {
+    // Extras are listed on the page but aren't volumes/episodes: they don't count toward
+    // progress or "next up". A film's extras are fetched from its own page (/:id/extras).
+    const items = allRows.filter((i) => !i.extra_type);
+    const extras = allRows.filter((i) => i.extra_type);
+    if (items.length === 0) {
       return res.status(404).json({ error: 'Series not found' });
     }
-    await shapeItems(db, items, req.user);
+    await shapeItems(db, allRows, req.user);
 
     const volumeCount = items.length;
     const author = items.find(i => i.author)?.author || 'Unknown Author';
@@ -346,7 +355,8 @@ router.get('/series/:name', async (req, res) => {
         libraryName: items[0].library_name || null,
         format: items[0].format || null,
         nextVolume,
-        volumes: items
+        volumes: items,
+        extras
       }
     });
   } catch (err) {
@@ -531,6 +541,31 @@ router.post('/:id/unhide', async (req, res) => {
     }
 
     res.json({ message: 'Item restored to shelf' });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// A film's extras (trailers, featurettes…), for its title page.
+router.get('/:id/extras', async (req, res) => {
+  if (!ITEM_ID_RE.test(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid item id' });
+  }
+  try {
+    const db = await getDb();
+    const extras = await db.all(`
+      SELECT i.*, p.current_time, p.progress_percent, p.is_finished
+      FROM items i
+      LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
+      WHERE i.extra_of = ?
+      AND NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
+      )${ratingSql(req.user, 'i')}
+      ORDER BY i.extra_type ASC, i.title ASC
+    `, [req.user.id, req.params.id, req.user.id]);
+    await shapeItems(db, extras, req.user);
+    res.json({ extras });
   } catch (err) {
     serverError(req, res, err);
   }

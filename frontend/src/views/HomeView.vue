@@ -132,6 +132,26 @@
             <option value="recent">Recently opened</option>
             <option value="release">Release date</option>
           </select>
+          <!-- Movie collections: one card per collection, or every film -->
+          <div
+            v-if="hasMovieCollections && (activeType === 'movie' || activeType === 'all')"
+            class="flex items-center p-0.5 rounded-lg border border-border bg-muted/40 text-xs"
+            role="group"
+            aria-label="Movie collections"
+          >
+            <button
+              type="button"
+              @click="expandCollections = false"
+              :aria-pressed="String(!expandCollections)"
+              :class="['h-8 px-2.5 rounded-md font-medium transition', !expandCollections ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+            >Collections</button>
+            <button
+              type="button"
+              @click="expandCollections = true"
+              :aria-pressed="String(expandCollections)"
+              :class="['h-8 px-2.5 rounded-md font-medium transition', expandCollections ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+            >All movies</button>
+          </div>
           <button
             v-if="filtersActive || sortBy !== 'title'"
             type="button"
@@ -588,7 +608,18 @@ const displayItemCount = computed(() => {
  * series. With title order the entries are alphabetical; with any other sort they keep the
  * server's order (a series sits where its first-listed title would).
  */
-const shelfEntries = computed(() => buildShelfEntries(filteredItems.value, { alphabetical: sortBy.value === 'title' }));
+// Movie collections (Star Wars…) show as one card, or — with "All movies" — every film on
+// its own. Only movies: shows and manga are always one card per series.
+const EXPAND_KEY = 'plinthio_expand_collections';
+const expandCollections = ref((() => { try { return localStorage.getItem(EXPAND_KEY) === '1'; } catch (e) { return false; } })());
+watch(expandCollections, (on) => { try { localStorage.setItem(EXPAND_KEY, on ? '1' : '0'); } catch (e) { /* ignore */ } });
+const shelfOptions = computed(() => ({
+  alphabetical: sortBy.value === 'title',
+  ungroup: expandCollections.value ? (item) => item.media_type === 'movie' : null
+}));
+const hasMovieCollections = computed(() => filteredItems.value.some((i) => i.media_type === 'movie' && i.series));
+
+const shelfEntries = computed(() => buildShelfEntries(filteredItems.value, shelfOptions.value));
 
 // Windowed rendering. The grid only ever mounts the rows near the viewport: rows scrolled
 // off the top are unmounted again and replaced by a spacer of exactly their height, so the
@@ -697,7 +728,7 @@ function creatorHeading(entry) {
 const entriesByFolder = computed(() => groupEntries(shelfEntries.value, entryFolder));
 
 function folderEntries(folder) {
-  return buildShelfEntries(folder.items);
+  return buildShelfEntries(folder.items, { ungroup: shelfOptions.value.ungroup });
 }
 
 function setGrouping(id) {

@@ -12,6 +12,7 @@ import { fetchVideoArtwork, isVideoArtworkAvailable } from './artwork.js';
 import { extractVideoFrameCover } from './videoFrame.js';
 import { findCoverInFolder, looksLikeImage } from '../utils/imageFile.js';
 import { parseMediaTitle } from './titleCleaner.js';
+import { classifyExtras } from './extras.js';
 
 const VIDEO_MEDIA_TYPES = ['movie', 'show', 'anime'];
 
@@ -64,6 +65,10 @@ export async function scanLibrary(libraryId) {
     const files = [];
     walkDirectory(library.path, library.type, files);
     logger.info('scan', `Discovered ${files.length} candidate media files in "${library.name}"`);
+
+    // Trailers, featurettes and other extras, worked out from where the files sit. They're
+    // catalogued (so a film's page can list them) but kept off the shelf.
+    const extras = classifyExtras(files, library.path, library.type);
 
     // Snapshot what's currently in the DB for this library so we can detect renamed/moved
     // files (same content, different path) instead of treating them as brand-new items,
@@ -149,7 +154,10 @@ export async function scanLibrary(libraryId) {
       // Video rarely ships a poster next to the file, so fall back to TMDB when an admin has
       // configured a key. Best-effort: a miss or a network failure leaves the placeholder
       // cover and never fails the scan.
-      if (!meta.coverPath && ['movie', 'show', 'anime'].includes(mediaType)) {
+      // An extra would only pick up its film's poster or a wrong TMDB match; the artwork pass
+      // below gives it a frame from the clip itself instead.
+      if (extras.has(filePath)) meta.coverPath = null;
+      if (!meta.coverPath && ['movie', 'show', 'anime'].includes(mediaType) && !extras.has(filePath)) {
         const parsedFile = parseMediaTitle(path.basename(filePath));
         meta.coverPath = await fetchVideoArtwork({
           itemId,
@@ -220,6 +228,8 @@ export async function scanLibrary(libraryId) {
       }
     }
 
+    await applyExtras(db, libraryId, extras);
+
     // Prune rows still pointing at paths that no longer exist on disk — genuine deletions
     // (renamed/moved files were already re-linked above and excluded via discoveredPathSet).
     let removed = 0;
@@ -261,9 +271,50 @@ export async function scanLibrary(libraryId) {
  *
  * Best-effort throughout: a failure here never fails the scan.
  */
+/**
+ * Records which items are extras and what of. Runs over every item each scan (not just new
+ * or changed files), so moving a clip into an Extras folder — or out of one — takes effect.
+ * A show's extras take the show's series name so its page can list them.
+ */
+async function applyExtras(db, libraryId, extras) {
+  const rows = await db.all('SELECT id, path, series, extra_type, extra_of FROM items WHERE library_id = ?', [libraryId]);
+  const idByPath = new Map(rows.map((r) => [r.path, r.id]));
+
+  // Series per show folder, from the episodes in it (an extra has no SxxEyy to parse).
+  const seriesByShowFolder = new Map();
+  for (const [, info] of extras) {
+    if (info.showFolder && !seriesByShowFolder.has(info.showFolder)) seriesByShowFolder.set(info.showFolder, null);
+  }
+  if (seriesByShowFolder.size) {
+    for (const r of rows) {
+      if (extras.has(r.path) || !r.series) continue;
+      for (const folder of seriesByShowFolder.keys()) {
+        if (!seriesByShowFolder.get(folder) && r.path.split(path.sep).includes(folder)) seriesByShowFolder.set(folder, r.series);
+      }
+    }
+  }
+
+  await db.run('BEGIN TRANSACTION');
+  try {
+    for (const r of rows) {
+      const info = extras.get(r.path);
+      const type = info ? info.type : null;
+      const of = info?.parentPath ? idByPath.get(info.parentPath) || null : null;
+      const series = info?.showFolder ? seriesByShowFolder.get(info.showFolder) || r.series : r.series;
+      if (type !== r.extra_type || of !== r.extra_of || series !== r.series) {
+        await db.run('UPDATE items SET extra_type = ?, extra_of = ?, series = ? WHERE id = ?', [type, of, series, r.id]);
+      }
+    }
+    await db.run('COMMIT');
+  } catch (err) {
+    await db.run('ROLLBACK');
+    throw err;
+  }
+}
+
 async function backfillArtwork(db, library) {
   const items = await db.all(
-    'SELECT id, path, title, series, media_type, duration, cover_path, cover_source FROM items WHERE library_id = ?',
+    'SELECT id, path, title, series, media_type, duration, cover_path, cover_source, extra_type FROM items WHERE library_id = ?',
     [library.id]
   );
 
@@ -285,8 +336,12 @@ async function backfillArtwork(db, library) {
     // A frame grabbed from the film is a stand-in, not artwork. If a TMDB key has been
     // configured since, this is the moment to trade it for the real poster — otherwise
     // adding a key would only ever affect newly-added films.
-    const provisional = usable && item.cover_source === 'frame' && await isVideoArtworkAvailable();
-    if (usable && !provisional) continue;
+    // (Not for an extra — a frame is exactly what it should have.)
+    const provisional = usable && !item.extra_type && item.cover_source === 'frame' && await isVideoArtworkAvailable();
+    // An extra scanned before extras were recognised got its film's poster (from the folder
+    // or TMDB); swap that for a frame of its own. Art someone uploaded by hand is kept.
+    const extraWithFilmArt = usable && item.extra_type && ['folder', 'tmdb'].includes(item.cover_source);
+    if (usable && !provisional && !extraWithFilmArt) continue;
 
     let coverPath = null;
     let coverSource = null;
@@ -294,7 +349,8 @@ async function backfillArtwork(db, library) {
     // 1. Art next to the file. This also re-runs for items whose stored cover turned out to
     //    be junk (a macOS `._` sidecar, a truncated download), now that the picker validates
     //    what it copies.
-    const folderCover = findCoverInFolder(path.dirname(item.path));
+    // (Never for an extra: the folder's art is its film's poster.)
+    const folderCover = item.extra_type ? null : findCoverInFolder(path.dirname(item.path));
     if (folderCover) {
       const coverFilename = `${item.id}.jpg`;
       try {
@@ -307,7 +363,7 @@ async function backfillArtwork(db, library) {
     }
 
     // 2. TMDB, when an admin has configured a key.
-    if (!coverPath && VIDEO_MEDIA_TYPES.includes(item.media_type)) {
+    if (!coverPath && VIDEO_MEDIA_TYPES.includes(item.media_type) && !item.extra_type) {
       const parsed = parseMediaTitle(path.basename(item.path));
       coverPath = await fetchVideoArtwork({
         itemId: item.id,

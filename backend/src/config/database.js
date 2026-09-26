@@ -264,7 +264,7 @@ async function initSchema(db) {
   // the stand-in once a TMDB key exists.
   // age_rating is a per-item override (movies, standalone books); items in a series fall
   // back to the series' rating in series_settings.
-  for (const col of ['description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT', 'cover_source TEXT', 'age_rating TEXT', 'chapters_json TEXT']) {
+  for (const col of ['description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT', 'cover_source TEXT', 'age_rating TEXT', 'chapters_json TEXT', 'extra_type TEXT', 'extra_of TEXT']) {
     try {
       await db.exec(`ALTER TABLE items ADD COLUMN ${col}`);
     } catch (e) {
@@ -493,6 +493,9 @@ async function initSchema(db) {
       PRIMARY KEY (item_id, type)
     );
   `);
+
+  // Extras (trailers, featurettes…) hang off their film via extra_of; see services/extras.js.
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_items_extra_of ON items(extra_of)');
 
   // Per-series reader/display settings. Deliberately keyed by (library_id, series_name)
   // rather than a foreign key to a series table: `items.series` is a free-text column with

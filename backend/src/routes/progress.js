@@ -27,6 +27,7 @@ router.get('/continue', async (req, res) => {
       FROM user_progress p
       JOIN items i ON p.item_id = i.id
       WHERE p.user_id = ? AND p.is_finished = 0 AND p.progress_percent > 0
+      AND i.extra_type IS NULL
       AND COALESCE(p.is_skipped, 0) = 0
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
