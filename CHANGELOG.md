@@ -54,6 +54,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - The tablet header hid the Movies and Anime tabs; filters and Library Health rows were cramped on phones.
 - PWA install icons were missing.
 - Very short video clips got no frame cover (the grab was sought past their end).
+- Admin → Metadata: **Find Metadata** for a selection failed on anything but a few titles — one request for the whole batch outlasted the app's 15s limit. It now matches title by title with a progress bar and a Stop button, and results show on each row. Single **Auto Match** reports inline instead of in a pop-up, so you can run several back to back. A missing TMDB key (P400) or a type with no metadata source now says so plainly instead of "Something went wrong", and covers are credited to the provider they came from (not always "TMDB").
 - Video (HLS) playback was refused by the server because the player also sent the media token as an Authorization header.
 - Links to a filtered shelf (`/?type=…`, e.g. from breadcrumbs) were overridden by the startup default category.
 - The sign-in rate limiter counted the calls every page load makes, so a household behind one IP could be locked out after a few dozen reloads; only real sign-in attempts count now.

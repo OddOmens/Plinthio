@@ -33,6 +33,8 @@ const coverUpload = multer({
 });
 
 const ITEM_ID_RE = /^[a-f0-9]{32}$/;
+// Media types a metadata provider exists for (see services/externalMetadata.js).
+const MATCHABLE_TYPES = new Set(['manga', 'book', 'movie', 'show', 'anime']);
 
 // Batch/single auto-match already has the TMDB result in hand; store its score as the item's
 // world rating rather than looking it up again the first time someone opens the rating.
@@ -388,7 +390,7 @@ router.post('/admin/batch-match', requireEditor, async (req, res) => {
         const newArtists = best.artists || item.artists;
         const newGenres = Array.isArray(best.genres) ? best.genres.join(', ') : (best.genres || item.genres);
         const coverToSave = newCoverPath || item.cover_path;
-        const coverSource = newCoverPath ? 'tmdb' : item.cover_source;
+        const coverSource = newCoverPath ? (best.source || 'provider') : item.cover_source;
 
         await db.run(
           `UPDATE items SET
@@ -450,8 +452,20 @@ router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
     const cleanTitle = parsedPath.cleanTitle || parsedTitle.cleanTitle || item.title;
     const year = parsedPath.year || parsedTitle.year || (item.release_date ? item.release_date.slice(0, 4) : null);
 
+    // Nothing to search for this type yet — that's "no match", not a failure.
+    if (!MATCHABLE_TYPES.has(item.media_type)) {
+      return res.status(404).json({ error: `No metadata source for ${item.media_type}s yet`, cleanTitle, year });
+    }
+
     const queryTitle = parsedPath.isTv ? (parsedPath.series || cleanTitle) : cleanTitle;
-    const searchResults = await searchExternalMetadata(item.media_type, queryTitle, year);
+    let searchResults;
+    try {
+      searchResults = await searchExternalMetadata(item.media_type, queryTitle, year);
+    } catch (err) {
+      // A setup problem, not a crash: say what to do about it.
+      if (err.code === 'MISSING_API_KEY') return sendError(req, res, 'P400');
+      throw err;
+    }
 
     if (!searchResults || searchResults.length === 0) {
       return res.status(404).json({ error: 'No metadata found on external provider', cleanTitle, year });
@@ -475,7 +489,8 @@ router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
     const newArtists = best.artists || item.artists;
     const newGenres = Array.isArray(best.genres) ? best.genres.join(', ') : (best.genres || item.genres);
     const coverToSave = newCoverPath || item.cover_path;
-    const coverSource = newCoverPath ? 'tmdb' : item.cover_source;
+    // Credit the provider the art actually came from (only TMDB covers are TMDB).
+    const coverSource = newCoverPath ? (best.source || 'provider') : item.cover_source;
 
     await db.run(
       `UPDATE items SET
@@ -523,7 +538,7 @@ router.post('/apply/:itemId', requireEditor, async (req, res) => {
     if (series !== undefined) { fields.push('series = ?'); params.push(series || null); }
     if (coverPath) {
       fields.push('cover_path = ?'); params.push(coverPath);
-      fields.push('cover_source = ?'); params.push('tmdb');
+      fields.push('cover_source = ?'); params.push(typeof source === 'string' && source ? source : 'provider');
     }
     if (description !== undefined) { fields.push('description = ?'); params.push(description || null); }
     if (releaseDate !== undefined) { fields.push('release_date = ?'); params.push(releaseDate || null); }

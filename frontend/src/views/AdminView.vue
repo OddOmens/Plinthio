@@ -55,7 +55,7 @@
                 : 'text-muted-foreground hover:text-foreground'
             ]"
           >
-            <Sparkles class="w-4 h-4 text-primary" />
+            <Sparkles class="w-4 h-4" />
             <span class="hidden sm:inline">Metadata</span>
           </button>
           <button
