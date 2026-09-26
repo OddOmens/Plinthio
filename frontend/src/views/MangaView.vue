@@ -146,6 +146,18 @@
                     <span class="font-medium text-foreground/90">{{ series.artists }}</span>
                   </p>
 
+                  <!-- Ratings: your stars, the server average. On a multi-volume series this rates
+                       one volume at a time — the star button on any volume below switches it. -->
+                  <div ref="heroRatingEl" class="mt-2">
+                    <RatingBar
+                      v-if="heroRatingItem"
+                      :item="heroRatingItem"
+                      :label="heroRatingLabel"
+                      align="responsive"
+                      @rated="handleRated"
+                    />
+                  </div>
+
                   <!-- Genre / Theme Tags -->
                   <div v-if="genreTags.length || themeTags.length" class="flex flex-wrap items-center justify-center md:justify-start gap-1.5 mt-2">
                     <span
@@ -491,10 +503,10 @@
                 </button>
 
                 <!-- Rating button — shows your stars once you've rated the volume -->
-                <button v-if="customizationStore.ratingsEnabled" aria-label="Ratings"
+                <button v-if="customizationStore.ratings.showPersonal" aria-label="Rate this volume"
                   @click="openRating(vol)"
                   class="h-8 min-w-8 px-1.5 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center gap-0.5 transition active:scale-95 text-[11px] font-semibold"
-                  :title="vol.user_rating && customizationStore.ratings.showPersonal ? `You rated this ${vol.user_rating}/5` : 'Ratings'"
+                  :title="vol.user_rating && customizationStore.ratings.showPersonal ? `You rated this ${vol.user_rating}/5 — rate in header` : 'Rate this volume in the header'"
                 >
                   <Star class="w-3.5 h-3.5" :class="vol.user_rating && customizationStore.ratings.showPersonal ? 'text-amber-400 fill-amber-400' : ''" />
                   <span v-if="vol.user_rating && customizationStore.ratings.showPersonal" class="text-foreground">{{ vol.user_rating }}</span>
@@ -621,10 +633,10 @@
               </button>
 
               <!-- Rating Button -->
-              <button v-if="customizationStore.ratingsEnabled" aria-label="Ratings"
+              <button v-if="customizationStore.ratings.showPersonal" aria-label="Rate this volume"
                 @click="openRating(vol)"
                 class="h-9 min-w-9 px-2 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 transition active:scale-95 text-xs font-semibold"
-                :title="vol.user_rating && customizationStore.ratings.showPersonal ? `You rated this ${vol.user_rating}/5` : 'Ratings'"
+                :title="vol.user_rating && customizationStore.ratings.showPersonal ? `You rated this ${vol.user_rating}/5 — rate in header` : 'Rate this volume in the header'"
               >
                 <Star class="w-4 h-4" :class="vol.user_rating && customizationStore.ratings.showPersonal ? 'text-amber-400 fill-amber-400' : ''" />
                 <span v-if="vol.user_rating && customizationStore.ratings.showPersonal" class="text-foreground">{{ vol.user_rating }}</span>
@@ -654,14 +666,6 @@
       @select-manga-page="handleMangaJump"
     />
 
-    <!-- Per-volume ratings: your stars, the server average -->
-    <RatingModal
-      v-if="ratingItem"
-      :isOpen="!!ratingItem"
-      :item="ratingItem"
-      @close="ratingItem = null"
-      @rated="handleRated"
-    />
 
     <!-- External Metadata Search Modal (series-wide or single volume) -->
     <MetadataSearchModal
@@ -687,7 +691,7 @@ import Sidebar from '../components/Sidebar.vue';
 import MangaReader from '../components/MangaReader.vue';
 import BookmarksModal from '../components/BookmarksModal.vue';
 import MetadataSearchModal from '../components/MetadataSearchModal.vue';
-import RatingModal from '../components/RatingModal.vue';
+import RatingBar from '../components/RatingBar.vue';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 import {
   ArrowLeft,
@@ -1028,15 +1032,32 @@ async function handleReaderClose() {
 }
 
 // ─── Ratings ────────────────────────────────────────────────────────────────
-const ratingItem = ref(null);
+// Which volume the header's rating strip is for. Defaults to the volume you're on.
+const ratingVolumeId = ref(null);
+const heroRatingEl = ref(null);
+
+const heroRatingItem = computed(() => {
+  const vols = series.value?.volumes || [];
+  return vols.find((v) => v.id === ratingVolumeId.value) || series.value?.nextVolume || vols[0] || null;
+});
+
+const heroRatingLabel = computed(() => {
+  const vol = heroRatingItem.value;
+  if (!vol || (series.value?.volumes?.length || 0) <= 1) return '';
+  return vol.volume != null
+    ? `Rate Vol ${vol.volume % 1 === 0 ? Math.trunc(vol.volume) : vol.volume}`
+    : `Rate ${vol.title}`;
+});
 
 function openRating(vol) {
-  ratingItem.value = vol;
+  ratingVolumeId.value = vol.id;
+  heroRatingEl.value?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function handleRated({ itemId, rating }) {
   const vol = series.value?.volumes?.find((v) => v.id === itemId);
   if (vol) vol.user_rating = rating;
+  if (series.value?.nextVolume?.id === itemId) series.value.nextVolume.user_rating = rating;
 }
 
 // ─── Bookmarks ──────────────────────────────────────────────────────────────

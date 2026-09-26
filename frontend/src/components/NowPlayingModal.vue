@@ -119,6 +119,7 @@
           <span v-if="player.currentItem?.series" class="text-xs font-mono text-muted-foreground mt-0.5">
             {{ player.currentItem.series }}
           </span>
+          <RatingBar :item="player.currentItem" align="center" class="mt-2" />
         </div>
 
         <!-- Scrubber Timeline -->
@@ -254,6 +255,7 @@ import api from '../api/client';
 import { usePlayerStore } from '../stores/player';
 import { useDialogStore } from '../stores/dialog';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
+import RatingBar from './RatingBar.vue';
 import {
   ChevronDown,
   Play,

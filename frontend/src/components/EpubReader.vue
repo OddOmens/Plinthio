@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 z-50 flex flex-col bg-background text-foreground transition-colors">
     <!-- Top Bar -->
-    <header class="flex items-center justify-between px-4 h-14 border-b border-border bg-background/95 backdrop-blur flex-shrink-0 pt-safe">
+    <header class="flex items-center justify-between px-4 min-h-14 py-2 border-b border-border bg-background/95 backdrop-blur flex-shrink-0 pt-safe">
       <div class="flex items-center gap-3 min-w-0">
         <button aria-label="Back to shelf"
           @click="closeReader"
@@ -12,6 +12,7 @@
         <div class="min-w-0">
           <h2 class="text-sm font-semibold truncate text-foreground">{{ item.title }}</h2>
           <p class="text-xs text-muted-foreground">{{ item.author }}</p>
+          <RatingBar :item="item" compact class="mt-1" />
         </div>
       </div>
 
@@ -253,6 +254,7 @@ import { ArrowLeft, Type, Bookmark, Loader2, X, Trash2, BookOpen, AlignJustify }
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
 import { useViewSession } from '../composables/useViewSession';
+import RatingBar from './RatingBar.vue';
 
 const dialog = useDialogStore();
 const viewSession = useViewSession();

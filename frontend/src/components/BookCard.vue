@@ -118,15 +118,6 @@
                 <span>Remove from Folder</span>
               </button>
               <button
-                v-if="customizationStore.ratingsEnabled"
-                type="button"
-                @click="openRatingDialog"
-                class="w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5"
-              >
-                <Star class="w-4 h-4 text-muted-foreground" />
-                <span>{{ customizationStore.ratings.showPersonal ? 'Rate...' : 'Ratings...' }}</span>
-              </button>
-              <button
                 type="button"
                 @click="openBookmarksDialog"
                 class="w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5"
@@ -184,22 +175,14 @@
       </div>
     </div>
 
-    <RatingModal
-      v-if="showRating"
-      :isOpen="showRating"
-      :item="item"
-      @close="showRating = false"
-      @rated="onRated"
-    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
-import RatingModal from './RatingModal.vue';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 import {
   Headphones,
@@ -245,21 +228,9 @@ function openBookmarksDialog() {
   emit('open-bookmarks', props.item);
 }
 
-// The card owns its rating modal (rather than bubbling an event up to every shelf that
-// renders cards), and tracks the rating locally so the badge updates without a refetch.
-const showRating = ref(false);
-const myRating = ref(props.item.user_rating ?? null);
-watch(() => props.item.user_rating, (val) => { myRating.value = val ?? null; });
+// Your rating is set from the header of the player/reader; the card just shows it.
+const myRating = computed(() => props.item.user_rating ?? null);
 const showMyRating = computed(() => customizationStore.ratings.showPersonal && !!myRating.value);
-
-function openRatingDialog() {
-  showMenu.value = false;
-  showRating.value = true;
-}
-
-function onRated({ rating }) {
-  myRating.value = rating;
-}
 
 function openMetadataDialog() {
   showMenu.value = false;

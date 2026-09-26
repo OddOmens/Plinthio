@@ -25,6 +25,7 @@
         <div class="min-w-0 flex-1">
           <h2 class="text-sm font-semibold truncate text-zinc-100">{{ item.title }}</h2>
           <p class="text-xs text-zinc-400 truncate">{{ pageDisplayLabel }}</p>
+          <RatingBar :item="item" tone="dark" compact class="mt-1" />
         </div>
       </div>
 
@@ -333,6 +334,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
 import { useViewSession } from '../composables/useViewSession';
+import RatingBar from './RatingBar.vue';
 import { ArrowLeft, Loader2, Bookmark, Trash2, X, ChevronLeft, ChevronRight, Square, Columns2, Layers, BookOpen } from 'lucide-vue-next';
 
 const dialog = useDialogStore();
