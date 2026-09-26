@@ -1,0 +1,12 @@
+# Build the image from this checkout instead of pulling a release — for development or
+# running unreleased changes:
+#
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.build.yml up -d --build
+services:
+  plinthio:
+    image: plinthio:local
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        APP_VERSION: dev

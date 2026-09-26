@@ -1,12 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 import LoginView from '../views/LoginView.vue';
-import AdminView from '../views/AdminView.vue';
-import SettingsView from '../views/SettingsView.vue';
-import DocsView from '../views/DocsView.vue';
-import SetupView from '../views/SetupView.vue';
-import MangaView from '../views/MangaView.vue';
-import ReadListsView from '../views/ReadListsView.vue';
+
+// The shelf and login are the two first screens anyone sees, so they ship in the main
+// bundle; everything else is split out and fetched when first navigated to.
+const AdminView = () => import('../views/AdminView.vue');
+const SettingsView = () => import('../views/SettingsView.vue');
+const DocsView = () => import('../views/DocsView.vue');
+const SetupView = () => import('../views/SetupView.vue');
+const TitleView = () => import('../views/TitleView.vue');
+const ListsView = () => import('../views/ListsView.vue');
+const RequestsView = () => import('../views/RequestsView.vue');
+const DownloadsView = () => import('../views/DownloadsView.vue');
 import { useAuthStore } from '../stores/auth';
 
 const routes = [
@@ -16,18 +21,23 @@ const routes = [
     component: HomeView,
     meta: { requiresAuth: true }
   },
+  // Every title opens a detail page before it plays: a series page (all its volumes or
+  // episodes), or the title's own page when it isn't part of a series.
   {
-    path: '/manga/series/:seriesName',
-    name: 'manga-series',
-    component: MangaView,
+    path: '/series/:seriesName',
+    name: 'series',
+    component: TitleView,
     meta: { requiresAuth: true }
   },
   {
-    path: '/manga/:id',
-    name: 'manga-detail',
-    component: MangaView,
+    path: '/title/:id',
+    name: 'title',
+    component: TitleView,
     meta: { requiresAuth: true }
   },
+  // Earlier links (bookmarks, history) pointed at the manga-only pages.
+  { path: '/manga/series/:seriesName', redirect: (to) => ({ path: `/series/${encodeURIComponent(to.params.seriesName)}`, query: to.query }) },
+  { path: '/manga/:id', redirect: (to) => ({ path: `/title/${to.params.id}`, query: to.query }) },
   {
     path: '/login',
     name: 'login',
@@ -44,9 +54,26 @@ const routes = [
     component: DocsView
   },
   {
+    path: '/lists',
+    name: 'lists',
+    component: ListsView,
+    meta: { requiresAuth: true }
+  },
+  {
+    // Read Lists became the "Read" tab of Lists.
     path: '/read-lists',
-    name: 'read-lists',
-    component: ReadListsView,
+    redirect: { path: '/lists', query: { category: 'read' } }
+  },
+  {
+    path: '/requests',
+    name: 'requests',
+    component: RequestsView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/downloads',
+    name: 'downloads',
+    component: DownloadsView,
     meta: { requiresAuth: true }
   },
   {

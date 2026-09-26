@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { PlinthioError } from '../errors.js';
 import { logger } from './logger.js';
 
 // Codecs a mainstream browser can play from a plain <video> tag. HEVC/H.265 is absent from
@@ -28,9 +29,15 @@ function runFfprobe(filePath) {
     let stderr = '';
     proc.stdout.on('data', (d) => { stdout += d; });
     proc.stderr.on('data', (d) => { stderr += d; });
-    proc.on('error', reject);
+    // ffprobe that can't even launch is P303; one that can't read the file is P302 when the
+    // disk itself failed (a disconnected drive), otherwise P304 (corrupt/unsupported file).
+    proc.on('error', (err) => reject(new PlinthioError('P303', undefined, { cause: err })));
     proc.on('close', (code) => {
-      if (code !== 0) return reject(new Error(stderr.trim() || `ffprobe exited ${code}`));
+      if (code !== 0) {
+        const message = stderr.trim() || `ffprobe exited ${code}`;
+        const code_ = /Input\/output error|Permission denied/i.test(message) ? 'P302' : 'P304';
+        return reject(new PlinthioError(code_, undefined, { cause: new Error(message) }));
+      }
       try {
         resolve(JSON.parse(stdout));
       } catch (e) {

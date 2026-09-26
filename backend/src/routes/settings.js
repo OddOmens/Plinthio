@@ -15,47 +15,62 @@ import {
 } from '../services/backup.js';
 import { getAutoScanSettings, saveAutoScanSettings } from '../services/autoScan.js';
 import { verifyTmdbApiKey } from '../services/externalMetadata.js';
+import { serverError } from '../utils/http.js';
+import { sendError } from '../errors.js';
 
 const router = express.Router();
 
-const DEFAULT_FILTERS = ['grid', 'author', 'series', 'disk_folder', 'custom_folder'];
+// Shelf views ("grouping modes"). Series and Creator are the core ways to browse and are
+// always available; Disk Folders and Custom Folders are the ones an admin may switch off.
+// Older installs stored the previous mode names (grid / author / series), which map onto
+// the new ones so a saved choice survives the upgrade.
+const SHELF_MODES = ['series', 'creator', 'disk_folder', 'custom_folder'];
+const OPTIONAL_SHELF_MODES = ['disk_folder', 'custom_folder'];
+const LEGACY_MODE_NAMES = { grid: 'series', series: 'series', author: 'creator', creator: 'creator', disk_folder: 'disk_folder', custom_folder: 'custom_folder' };
 
-// Public / user endpoint to get allowed filters on this server
+export function normalizeShelfModes(stored) {
+  const wanted = new Set((Array.isArray(stored) ? stored : SHELF_MODES).map((m) => LEGACY_MODE_NAMES[m]).filter(Boolean));
+  return SHELF_MODES.filter((m) => !OPTIONAL_SHELF_MODES.includes(m) || wanted.has(m));
+}
+
+async function readShelfModes(db) {
+  const row = await db.get("SELECT value FROM settings WHERE key = 'allowed_grouping_modes'");
+  let stored = null;
+  try { stored = row?.value ? JSON.parse(row.value) : null; } catch (e) { /* fall back to all */ }
+  return normalizeShelfModes(stored);
+}
+
+// Which shelf views this server offers (every signed-in user needs this to draw the shelf).
 router.get('/filters', authenticateToken, async (req, res) => {
   try {
     const db = await getDb();
-    const row = await db.get("SELECT value FROM settings WHERE key = 'allowed_grouping_modes'");
-    let allowed = DEFAULT_FILTERS;
-    if (row && row.value) {
-      try {
-        allowed = JSON.parse(row.value);
-      } catch (e) {}
-    }
-    res.json({ allowedGroupingModes: allowed });
+    res.json({ allowedGroupingModes: await readShelfModes(db), optionalGroupingModes: OPTIONAL_SHELF_MODES });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
-// Admin endpoint to update allowed grouping modes
+// Admin: turn the optional views on or off. Anything else in the list is ignored — Series
+// and Creator can't be disabled.
 router.patch('/filters', authenticateToken, requireAdmin, async (req, res) => {
   const { allowedGroupingModes } = req.body;
 
-  if (!Array.isArray(allowedGroupingModes) || allowedGroupingModes.length === 0) {
-    return res.status(400).json({ error: 'At least one filter mode must remain enabled' });
+  if (!Array.isArray(allowedGroupingModes)) {
+    return res.status(400).json({ error: 'allowedGroupingModes must be an array' });
   }
 
   try {
     const db = await getDb();
+    const modes = normalizeShelfModes(allowedGroupingModes);
     await db.run(
       `INSERT INTO settings (key, value, updated_at) VALUES ('allowed_grouping_modes', ?, CURRENT_TIMESTAMP)
        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [JSON.stringify(allowedGroupingModes)]
+      [JSON.stringify(modes)]
     );
 
-    res.json({ message: 'Global filter settings updated', allowedGroupingModes });
+    res.json({ message: 'Shelf views updated', allowedGroupingModes: modes });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -66,7 +81,7 @@ router.get('/metadata-providers', authenticateToken, requireAdmin, async (req, r
     const row = await db.get("SELECT value FROM settings WHERE key = 'tmdb_api_key'");
     res.json({ tmdbConfigured: !!(row && row.value) || !!process.env.TMDB_API_KEY });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -81,7 +96,7 @@ router.get('/transcoding', authenticateToken, requireAdmin, async (req, res) => 
       available: listHwaccels()
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -100,7 +115,7 @@ router.put('/transcoding', authenticateToken, requireAdmin, async (req, res) => 
     );
     res.json({ message: 'Transcoding settings saved', preference });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -115,7 +130,7 @@ router.post('/transcoding/test', authenticateToken, requireAdmin, async (req, re
   try {
     res.json(await testHwaccel(method));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -134,7 +149,7 @@ router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, asyn
     // nothing until someone notices their posters never arrived.
     const check = await verifyTmdbApiKey(apiKey);
     if (!check.ok) {
-      return res.status(400).json({ error: check.reason, code: 'TMDB_KEY_REJECTED' });
+      return sendError(req, res, 'P401', { message: check.reason, status: 400 });
     }
 
     await db.run(
@@ -150,7 +165,7 @@ router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, asyn
       tmdbConfigured: true
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -189,7 +204,7 @@ router.get('/backup/config', authenticateToken, requireAdmin, async (req, res) =
     const settings = await getBackupSettings();
     res.json(settings);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -215,7 +230,7 @@ router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) =
     });
     res.json({ message: 'Backup schedule updated', ...settings });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -224,7 +239,7 @@ router.get('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
   try {
     res.json(await getAutoScanSettings());
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -242,7 +257,7 @@ router.put('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
     const settings = await saveAutoScanSettings({ enabled, intervalMinutes, watchEnabled });
     res.json({ message: 'Automatic scanning updated', ...settings });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -251,7 +266,7 @@ router.get('/backup/list', authenticateToken, requireAdmin, async (req, res) => 
   try {
     res.json({ backups: listBackupFiles() });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

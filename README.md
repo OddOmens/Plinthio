@@ -68,6 +68,7 @@ Plinthio was born out of frustration with fragmented media servers: having to ru
 * **Three Roles:** `admin` (full server management), `editor` (library/metadata management), and `viewer` (read/watch/listen only) — enforced server-side on every request, not just hidden in the UI.
 * **Per-Item & Per-Library Visibility:** Admins can hide specific items or restrict libraries per user.
 * **Custom Folders:** Users can organize items into their own in-app collections, independent of the on-disk folder structure, with an automatic "Unorganized" catch-all for anything not yet sorted.
+* **Ratings:** Every signed-in user can give any item 1–5 stars. Your rating sits beside the average from everyone on the server, plus TMDB's world score for movies, shows and anime when a TMDB key is configured. Under Admin → Server Settings → Ratings, admins choose which of the three are shown. A hidden rating is left out of the API response too, not only the UI.
 * **Activity & Login History:** Per-user view/listen/read/watch session history and sign-in history, visible to admins.
 * **Live Admin Logs:** A real-time, in-app log viewer for the running server (no need to `docker logs` to debug a scan or a failed metadata match).
 * **Automatic Scanning:** New media is picked up on its own — a periodic re-scan (interval configurable under Admin → Server Settings) plus a filesystem watcher that reacts within about 30 seconds of a file appearing. The periodic sweep is the dependable floor for network shares and bind mounts that emit no filesystem events; either half can be turned off.
@@ -96,6 +97,7 @@ Plinthio's entire frontend runs on its own documented REST API, which is fully a
 | `/bookmarks` | Timestamped/paged bookmarks with notes |
 | `/collections` | Custom in-app folders and ordered read lists |
 | `/series` | Per-series settings (reading direction, age rating, title) |
+| `/ratings` | Your 1–5 star rating, the server-wide average, and TMDB's score per item |
 | `/opds` | OPDS / OPDS-PSE catalog for third-party reader apps |
 | `/users` | User management (admin) |
 | `/keys` | Personal API key management |
@@ -106,10 +108,21 @@ Plinthio's entire frontend runs on its own documented REST API, which is fully a
 | `/activity` | View/listen/read session & login history |
 | `/admin/logs` | Live server log stream (admin) |
 | `/health` | Unauthenticated health check |
+| `/errors` | Error code catalog (unauthenticated) |
 
 ```bash
 curl -H "X-API-Key: plinthio_..." http://localhost:8088/api/items
 ```
+
+### Error codes
+
+Every error response carries a Plinthio error code, and the app shows it after the message, e.g. *"The media file is missing from disk (P301)"*:
+
+```json
+{ "error": "The media file is missing from disk", "code": "P301" }
+```
+
+Codes are grouped by area: **P0xx** general, **P1xx** sign-in & permissions, **P2xx** libraries & scanning, **P3xx** playback, **P4xx** metadata providers, **P5xx** lists & requests. The full list, with what each one means and how to fix it, is in [`docs/error-codes.md`](docs/error-codes.md), in the app under **Docs → Error Codes**, and at `GET /api/errors`.
 
 ---
 
@@ -156,24 +169,67 @@ Plinthio is built for trusted-network self-hosting (home LAN, Tailscale/tunnel a
 
 ---
 
-## 🚀 Quick Start (Docker)
+## 🚀 Install (Docker)
 
-### 1. Clone the repository
+You only need Docker — no need to clone the repo. Images are published for x86-64 and ARM
+(Raspberry Pi 4/5, Apple Silicon, most NAS boxes).
+
 ```bash
-git clone https://github.com/yourusername/plinthio.git
-cd plinthio
+mkdir plinthio && cd plinthio
+curl -fsSLO https://raw.githubusercontent.com/OddOmens/Plinthio/main/docker/docker-compose.yml
+MEDIA_DIR=/path/to/your/media docker compose up -d
 ```
 
-### 2. Run with Docker Compose
+Open `http://<your-server-ip>:8088`, run the setup wizard to create your admin account and
+add your media folders. On a phone, use **Add to Home Screen** to install the app.
+
+Settings like `MEDIA_DIR`, `TZ` or the port binding can live in a `.env` file next to
+`docker-compose.yml` instead of on the command line — see the comments in that file.
+
+## ⬆️ Updating
+
+When a new version is out, admins see a banner in the app. To update:
+
 ```bash
-docker compose -f docker/docker-compose.yml up -d
+docker compose pull && docker compose up -d
 ```
 
-### 3. Open Plinthio
-Navigate to `http://<your-server-ip>:8088` in your browser.
-* Complete the quick setup wizard to create your Admin account.
-* Add your media folders in **Server Settings**.
-* On your iPhone or Android, tap **Add to Home Screen** to install the PWA.
+That's it. Before the new version first starts, Plinthio **backs up your database** to
+`config/backups/` (named `plinthio-backup-before-<new>-from-<old>-….sqlite`), so every
+upgrade can be undone.
+
+**Choosing which updates you get.** Set `PLINTHIO_TAG` in your `.env`:
+
+| `PLINTHIO_TAG` | You get |
+| --- | --- |
+| `latest` *(default)* | every release |
+| `1` | all 1.x features and fixes, never a breaking 2.0 |
+| `1.2` | bug fixes for 1.2 only |
+| `1.2.3` | exactly that version, nothing changes until you edit it |
+
+Versions follow [semantic versioning](https://semver.org): a **patch** (1.2.**3**) only fixes
+bugs, a **minor** (1.**3**.0) adds features, a **major** (**2**.0.0) may ask you to change
+something — its release notes will say what. Full history is in [CHANGELOG.md](CHANGELOG.md).
+
+**Rolling back.** Set `PLINTHIO_TAG` to the version you were on, then `docker compose up -d`.
+If the newer version had already changed the database, stop Plinthio and copy the matching
+`plinthio-backup-before-…` file over `config/plinthio.sqlite` first.
+
+**Automatic updates** (optional): tools like [Watchtower](https://containrrr.dev/watchtower/)
+can run the pull for you. Pair them with a `PLINTHIO_TAG` of `1` so a major version never
+installs itself unattended.
+
+The update check is one anonymous request to GitHub every 12 hours; set `UPDATE_CHECK=false`
+to turn it off.
+
+### Building from source
+
+To run unreleased changes from a checkout instead of a published image:
+
+```bash
+git clone https://github.com/OddOmens/Plinthio.git && cd Plinthio
+docker compose -f docker/docker-compose.yml -f docker/docker-compose.build.yml up -d --build
+```
 
 ---
 

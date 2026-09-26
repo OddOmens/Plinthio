@@ -8,8 +8,8 @@ const backendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 
 // Each test file gets its own server process on its own port with its own DATA_DIR, so the
 // suite never touches a real install's database and files can run in any order.
-export async function startTestServer({ env = {} } = {}) {
-  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'plinthio-test-'));
+export async function startTestServer({ env = {}, dataDir: existingDataDir = null } = {}) {
+  const dataDir = existingDataDir || fs.mkdtempSync(path.join(os.tmpdir(), 'plinthio-test-'));
   const port = 30000 + Math.floor(Math.random() * 20000);
 
   const child = spawn('node', ['src/index.js'], {
@@ -54,7 +54,13 @@ export async function startTestServer({ env = {} } = {}) {
     fs.rmSync(dataDir, { recursive: true, force: true });
   };
 
-  return { baseUrl, dataDir, stop, output: () => output };
+  // For restart tests: stop the process but keep its data for the next server.
+  const stopKeepData = async () => {
+    child.kill('SIGKILL');
+    await new Promise((r) => child.on('exit', r));
+  };
+
+  return { baseUrl, dataDir, stop, stopKeepData, output: () => output };
 }
 
 // Runs the real first-run setup, then logs in — so tests authenticate the same way the app

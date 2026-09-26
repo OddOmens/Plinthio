@@ -13,6 +13,16 @@ import {
 } from '../services/hls.js';
 import { listSubtitleTracks, getSubtitleVtt } from '../services/subtitles.js';
 import { generateTrickplay, getTrickplayIndex, getSheetPath } from '../services/trickplay.js';
+import { sendRangedFile, streamFile } from '../utils/fileStream.js';
+import { serverError } from '../utils/http.js';
+import { sendError, codeForFsError } from '../errors.js';
+
+// A playback failure's code: ffmpeg/ffprobe errors are tagged by the services (P303 can't
+// start, P304 conversion failed, P302 unreadable file); filesystem errors map to P301/P302.
+function playbackError(req, res, err, message) {
+  const code = err?.plinthioCode || codeForFsError(err, { playback: true }) || 'P000';
+  sendError(req, res, code, { err, message: err?.plinthioCode ? undefined : message });
+}
 
 const router = express.Router();
 
@@ -38,11 +48,11 @@ async function resolvePlayableItem(req, res) {
   );
 
   if (!item) {
-    res.status(404).json({ error: 'Video not found' });
+    sendError(req, res, 'P300');
     return null;
   }
-  if (await isItemHiddenForUser(db, req.params.id, req.user.id)) {
-    res.status(404).json({ error: 'Video not found' });
+  if (await isItemHiddenForUser(db, req.params.id, req.user)) {
+    sendError(req, res, 'P300');
     return null;
   }
 
@@ -53,7 +63,7 @@ async function resolvePlayableItem(req, res) {
     return null;
   }
   if (!fs.existsSync(resolvedItemPath)) {
-    res.status(404).json({ error: 'Video file missing from disk' });
+    sendError(req, res, 'P301');
     return null;
   }
 
@@ -78,8 +88,7 @@ router.get('/:id/playback-info', authenticateToken, async (req, res) => {
       subtitles: listSubtitleTracks(info, resolved.filePath)
     });
   } catch (err) {
-    console.error('[video] playback-info failed:', err);
-    res.status(500).json({ error: 'Could not inspect this video' });
+    playbackError(req, res, err, 'Could not inspect this video');
   }
 });
 
@@ -92,14 +101,13 @@ router.get('/:id/subtitles/:trackId.vtt', authenticateToken, async (req, res) =>
 
     const info = await getPlaybackInfo(req.params.id, resolved.filePath);
     const vtt = await getSubtitleVtt(info, resolved.filePath, req.params.trackId);
-    if (!vtt) return res.status(404).json({ error: 'Subtitle track not found' });
+    if (!vtt) return sendError(req, res, 'P307');
 
     res.setHeader('Content-Type', 'text/vtt; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=86400');
     res.send(vtt);
   } catch (err) {
-    console.error('[video] subtitle extraction failed:', err);
-    if (!res.headersSent) res.status(500).json({ error: 'Could not load subtitles' });
+    playbackError(req, res, err, 'Could not load subtitles');
   }
 });
 
@@ -126,16 +134,16 @@ async function resolveHlsJob(req, res, profileParam) {
 
   if (profileParam) {
     if (!parsed) {
-      res.status(404).json({ error: 'Unknown playback profile' });
+      sendError(req, res, 'P306', { message: 'Unknown playback profile', status: 404 });
       return null;
     }
     if (!isSourceRemux && !ladder.some((rung) => rung.name === parsed.quality)) {
-      res.status(404).json({ error: 'Unknown playback profile' });
+      sendError(req, res, 'P306', { message: 'Unknown playback profile', status: 404 });
       return null;
     }
     const audioCount = info.audioTracks?.length || 1;
     if (parsed.audioTrack >= audioCount) {
-      res.status(404).json({ error: 'Unknown audio track' });
+      sendError(req, res, 'P306', { message: 'Unknown audio track', status: 404 });
       return null;
     }
     quality = parsed.quality;
@@ -187,8 +195,7 @@ router.get('/:id/hls/master.m3u8', authenticateToken, async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.send(lines.join('\n') + '\n');
   } catch (err) {
-    console.error('[video] hls master playlist failed:', err);
-    if (!res.headersSent) res.status(500).json({ error: 'Could not start playback' });
+    playbackError(req, res, err, 'Could not start playback');
   }
 });
 
@@ -196,11 +203,11 @@ router.get('/:id/hls/:profile/media.m3u8', authenticateToken, async (req, res) =
   try {
     const job = await resolveHlsJob(req, res, req.params.profile);
     if (!job) return;
-    touchJob(job);
+    touchJob(job, req.user.id);
 
     const ready = await waitForPlaylist(job);
     if (!ready) {
-      return res.status(503).json({ error: 'Still preparing this video, try again shortly' });
+      return sendError(req, res, 'P305');
     }
 
     res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
@@ -218,8 +225,7 @@ router.get('/:id/hls/:profile/media.m3u8', authenticateToken, async (req, res) =
     }
     res.send(playlist);
   } catch (err) {
-    console.error('[video] hls media playlist failed:', err);
-    if (!res.headersSent) res.status(500).json({ error: 'Could not load playlist' });
+    playbackError(req, res, err, 'Could not load playlist');
   }
 });
 
@@ -228,12 +234,12 @@ const SEGMENT_FILE_RE = /^(init\.mp4|seg_\d{5}\.m4s)$/;
 router.get('/:id/hls/:profile/:segmentFile', authenticateToken, async (req, res) => {
   try {
     if (!SEGMENT_FILE_RE.test(req.params.segmentFile)) {
-      return res.status(400).json({ error: 'Invalid segment name' });
+      return sendError(req, res, 'P306', { message: 'Invalid segment name' });
     }
 
     const job = await resolveHlsJob(req, res, req.params.profile);
     if (!job) return;
-    touchJob(job);
+    touchJob(job, req.user.id);
 
     const segmentPath = await waitForSegment(job, req.params.segmentFile);
     if (!segmentPath) {
@@ -242,17 +248,19 @@ router.get('/:id/hls/:profile/:segmentFile', authenticateToken, async (req, res)
 
     res.setHeader('Content-Type', req.params.segmentFile === 'init.mp4' ? 'video/mp4' : 'video/iso.segment');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    fs.createReadStream(segmentPath).pipe(res);
+    streamFile(res, segmentPath);
   } catch (err) {
-    console.error('[video] hls segment failed:', err);
-    if (!res.headersSent) res.status(500).json({ error: 'Could not load segment' });
+    playbackError(req, res, err, 'Could not load segment');
   }
 });
 
 // Explicitly stops any active ffmpeg encode/remux processes for this item when the user
 // closes the player, navigates away, or switches episodes/movies.
 router.post('/:id/hls/stop', authenticateToken, async (req, res) => {
-  stopItemJobs(req.params.id);
+  if (!ITEM_ID_RE.test(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid item id' });
+  }
+  stopItemJobs(req.params.id, req.user.id);
   res.json({ ok: true });
 });
 
@@ -288,7 +296,7 @@ router.get('/:id/trickplay/sheet_:sheet.jpg', authenticateToken, async (req, res
 
     res.setHeader('Content-Type', 'image/jpeg');
     res.setHeader('Cache-Control', 'public, max-age=604800');
-    fs.createReadStream(sheetPath).pipe(res);
+    streamFile(res, sheetPath);
   } catch (err) {
     console.error('[video] trickplay sheet failed:', err);
     if (!res.headersSent) res.status(500).json({ error: 'Could not load scrub preview' });
@@ -308,7 +316,7 @@ router.get('/:id/markers', authenticateToken, async (req, res) => {
     );
     res.json({ markers });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -341,7 +349,7 @@ router.put('/:id/markers', authenticateToken, requireEditor, async (req, res) =>
     }
     res.json({ message: 'Markers saved' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -365,10 +373,10 @@ router.get('/:id/stream', authenticateToken, async (req, res) => {
     );
 
     if (!item) {
-      return res.status(404).json({ error: 'Video not found' });
+      return sendError(req, res, 'P300');
     }
-    if (await isItemHiddenForUser(db, req.params.id, req.user.id)) {
-      return res.status(404).json({ error: 'Video not found' });
+    if (await isItemHiddenForUser(db, req.params.id, req.user)) {
+      return sendError(req, res, 'P300');
     }
 
     // Path traversal security check: Canonical path must exist and start with library path
@@ -380,45 +388,15 @@ router.get('/:id/stream', authenticateToken, async (req, res) => {
     }
 
     if (!fs.existsSync(resolvedItemPath)) {
-      return res.status(404).json({ error: 'Video file missing from disk' });
+      return sendError(req, res, 'P301');
     }
 
     const stat = fs.statSync(resolvedItemPath);
-    const fileSize = stat.size;
-    const range = req.headers.range;
     let contentType = mime.lookup(resolvedItemPath) || 'video/mp4';
     if (resolvedItemPath.endsWith('.mkv')) contentType = 'video/x-matroska';
-
-    if (range) {
-      const parts = range.replace(/bytes=/, '').split('-');
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-
-      if (start >= fileSize) {
-        res.status(416).send(`Requested range not satisfiable\n${start} >= ${fileSize}`);
-        return;
-      }
-
-      const chunkSize = end - start + 1;
-      const file = fs.createReadStream(resolvedItemPath, { start, end });
-
-      res.writeHead(206, {
-        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-        'Accept-Ranges': 'bytes',
-        'Content-Length': chunkSize,
-        'Content-Type': contentType
-      });
-      file.pipe(res);
-    } else {
-      res.writeHead(200, {
-        'Content-Length': fileSize,
-        'Content-Type': contentType,
-        'Accept-Ranges': 'bytes'
-      });
-      fs.createReadStream(resolvedItemPath).pipe(res);
-    }
+    sendRangedFile(req, res, resolvedItemPath, stat.size, contentType);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    playbackError(req, res, err, 'Could not stream this video');
   }
 });
 

@@ -1,3 +1,4 @@
+import { getMediaToken } from './mediaToken';
 // Cover URLs carry a version derived from the item's updated_at.
 //
 // Covers are served `immutable` with a year-long max-age, which is right for the bytes but
@@ -14,7 +15,7 @@ export function coverVersion(item) {
 export function coverUrl(item, { width, raw = false } = {}) {
   if (!item?.id) return '';
 
-  const token = localStorage.getItem('plinthio_token') || '';
+  const token = getMediaToken() || '';
   const params = new URLSearchParams();
   if (token) params.set('token', token);
   if (width) params.set('w', String(width));

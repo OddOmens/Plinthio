@@ -48,10 +48,13 @@ function runFfmpeg(args) {
 export async function extractVideoFrameCover(filePath, itemId, durationSeconds = 0) {
   if (!fs.existsSync(filePath)) return null;
 
-  const seekTo = Math.max(
+  let seekTo = Math.max(
     1,
     Math.floor(durationSeconds > 0 ? durationSeconds * GRAB_AT_FRACTION : FALLBACK_SECONDS)
   );
+  // A clip only a second or two long (a teaser, a short extra) would be sought past its
+  // end — take its middle instead.
+  if (durationSeconds > 0 && seekTo >= durationSeconds) seekTo = durationSeconds / 2;
   const coverFilename = `${itemId}.jpg`;
   const finalPath = path.join(config.coversDir, coverFilename);
   // Written aside and renamed into place so a killed ffmpeg can't leave a truncated JPEG

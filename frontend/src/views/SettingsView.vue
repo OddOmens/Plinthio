@@ -209,8 +209,8 @@
         <!-- Shelf Filter Modes Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Grouping & Filter Modes</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">Toggle which filter buttons appear in your shelf toolbar.</p>
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Views</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">Choose which views appear above your shelf. Every view shows one card per series; Alphabetical is always there.</p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -219,19 +219,19 @@
               :key="mode.id"
               :class="[
                 'flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 transition select-none',
-                mode.allowed ? 'cursor-pointer hover:bg-muted/40' : 'opacity-40 cursor-not-allowed'
+                mode.allowed && !mode.always ? 'cursor-pointer hover:bg-muted/40' : (mode.allowed ? '' : 'opacity-40 cursor-not-allowed')
               ]"
             >
               <input
                 type="checkbox"
                 :value="mode.id"
                 v-model="prefs.enabledGroupingModes"
-                :disabled="!mode.allowed"
+                :disabled="!mode.allowed || mode.always"
                 class="mt-0.5 rounded border-border text-primary focus:ring-ring"
               />
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground">{{ mode.label }}</span>
-                <span v-if="!mode.allowed" class="text-[10px] text-destructive">Disabled globally by administrator</span>
+                <span v-if="!mode.allowed" class="text-[10px] text-destructive">Turned off by your administrator</span>
                 <span v-else class="text-[11px] text-muted-foreground">{{ mode.desc }}</span>
               </div>
             </label>
@@ -531,10 +531,73 @@
           <p class="text-xs text-muted-foreground mt-0.5">Manage your credentials and view account information</p>
         </div>
 
-        <!-- Profile Details Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
-          <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2">Profile Overview</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <!-- Profile Details Card with Avatar Management -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-2">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Profile Overview</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">Customize your profile photo and view account credentials.</p>
+          </div>
+
+          <!-- Avatar Section -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-1">
+            <div class="relative flex-shrink-0">
+              <img
+                v-if="authStore.user?.avatar && !avatarLoadError"
+                :src="authStore.user.avatar"
+                :alt="authStore.user?.username || 'Avatar'"
+                class="w-20 h-20 rounded-full object-cover ring-2 ring-border shadow-sm"
+                @error="avatarLoadError = true"
+              />
+              <div
+                v-else
+                class="w-20 h-20 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xl font-bold uppercase ring-2 ring-border/50 select-none"
+              >
+                {{ (authStore.user?.username || '?').slice(0, 2) }}
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2 flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <input
+                  type="file"
+                  ref="avatarFileInput"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  class="hidden"
+                  @change="handleAvatarFileSelected"
+                />
+                <button
+                  type="button"
+                  @click="triggerAvatarUpload"
+                  :disabled="uploadingAvatar"
+                  class="px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <Upload class="w-3.5 h-3.5" />
+                  <span>{{ uploadingAvatar ? 'Uploading...' : 'Upload Avatar' }}</span>
+                </button>
+                <button
+                  v-if="authStore.user?.avatar"
+                  type="button"
+                  @click="removeAvatar"
+                  :disabled="removingAvatar"
+                  class="px-3 py-1.5 rounded-md border border-border text-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 text-xs font-medium transition disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                  <span>{{ removingAvatar ? 'Removing...' : 'Remove' }}</span>
+                </button>
+              </div>
+              <p class="text-[11px] text-muted-foreground">
+                Supports JPG, PNG, or WebP up to 5MB. Automatically cropped to a square.
+              </p>
+              <div v-if="avatarSuccess" class="text-xs text-emerald-500 font-medium flex items-center gap-1">
+                <CheckCircle class="w-3.5 h-3.5" /> {{ avatarSuccess }}
+              </div>
+              <div v-if="avatarError" class="text-xs text-destructive font-medium flex items-center gap-1">
+                <AlertCircle class="w-3.5 h-3.5" /> {{ avatarError }}
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2 border-t border-border">
             <div class="flex flex-col gap-0.5">
               <span class="text-muted-foreground">Username</span>
               <span class="font-semibold text-foreground font-mono">{{ authStore.user?.username }}</span>
@@ -629,13 +692,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
 import Sidebar from '../components/Sidebar.vue';
 import { ALL_MEDIA_TYPES } from '../constants/media';
+import { SHELF_MODES, normalizeShelfModes, userShelfModes } from '../utils/shelfModes';
 import { useDialogStore } from '../stores/dialog';
 import {
   ArrowLeft,
@@ -649,6 +713,7 @@ import {
   FileImage,
   Book,
   CheckCircle,
+  AlertCircle,
   Clock,
   Copy,
   Trash2,
@@ -658,7 +723,8 @@ import {
   Film,
   Sparkles,
   ExternalLink,
-  LogIn
+  LogIn,
+  Upload
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -711,25 +777,25 @@ const stats = ref({});
 const myActivity = ref([]);
 const prefs = ref({
   enabledMediaTypes: ALL_MEDIA_TYPES,
-  enabledGroupingModes: ['grid', 'author', 'series', 'disk_folder', 'custom_folder'],
+  enabledGroupingModes: [...SHELF_MODES],
   defaultView: 'all'
 });
 const savingPrefs = ref(false);
 
-const allowedFilters = ref(['grid', 'author', 'series', 'disk_folder', 'custom_folder']);
+const allowedFilters = ref([...SHELF_MODES]);
 
 const allFilterModes = [
-  { id: 'grid', label: 'Grid View', desc: 'Flat card layout without group headers.' },
-  { id: 'author', label: 'Group by Author', desc: 'Sort and cluster titles by creator.' },
-  { id: 'series', label: 'Group by Series', desc: 'Organize titles into narrative series.' },
-  { id: 'disk_folder', label: 'Disk Folders', desc: 'Mirror filesystem folders from storage.' },
-  { id: 'custom_folder', label: 'Custom Folders', desc: 'Custom in-app folders with an Unorganized catch-all.' }
+  { id: 'series', label: 'Alphabetical', desc: 'Every series and title A–Z; open one to see its volumes or episodes.', always: true },
+  { id: 'creator', label: 'Creator', desc: 'Grouped by author, director or studio.' },
+  { id: 'disk_folder', label: 'Disk Folders', desc: 'Mirror the folders on the server.' },
+  { id: 'custom_folder', label: 'Custom Folders', desc: 'Your own in-app folders, with an Unorganized catch-all.' }
 ];
 
 const availableFilterModes = computed(() => {
+  const serverModes = normalizeShelfModes(allowedFilters.value);
   return allFilterModes.map(m => ({
     ...m,
-    allowed: allowedFilters.value.includes(m.id)
+    allowed: serverModes.includes(m.id)
   }));
 });
 
@@ -804,7 +870,7 @@ async function loadData() {
     if (authStore.user?.preferences) {
       prefs.value = {
         enabledMediaTypes: authStore.user.preferences.enabledMediaTypes || ALL_MEDIA_TYPES,
-        enabledGroupingModes: authStore.user.preferences.enabledGroupingModes || ['grid', 'author', 'series', 'disk_folder', 'custom_folder'],
+        enabledGroupingModes: userShelfModes(authStore.user.preferences.enabledGroupingModes),
         defaultView: authStore.user.preferences.defaultView || 'all'
       };
     }
@@ -814,10 +880,8 @@ async function loadData() {
 }
 
 async function savePreferences() {
-  if (!prefs.value.enabledGroupingModes || prefs.value.enabledGroupingModes.length === 0) {
-    dialog.alert('Please enable at least one shelf filter mode.');
-    return;
-  }
+  // Series can't be switched off (the checkbox is locked on), so there's always a view.
+  prefs.value.enabledGroupingModes = [...new Set(['series', ...(prefs.value.enabledGroupingModes || [])])];
   if (!prefs.value.enabledMediaTypes || prefs.value.enabledMediaTypes.length === 0) {
     dialog.alert('Please enable at least one media category.');
     return;
@@ -918,6 +982,75 @@ async function changePassword() {
     authStore.logout();
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to change password');
+  }
+}
+
+// Avatar Management
+const avatarFileInput = ref(null);
+const uploadingAvatar = ref(false);
+const removingAvatar = ref(false);
+const avatarSuccess = ref('');
+const avatarError = ref('');
+const avatarLoadError = ref(false);
+
+watch(() => authStore.user?.avatar, () => {
+  avatarLoadError.value = false;
+});
+
+function triggerAvatarUpload() {
+  avatarSuccess.value = '';
+  avatarError.value = '';
+  avatarFileInput.value?.click();
+}
+
+async function handleAvatarFileSelected(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    avatarError.value = 'Please select a valid image file (PNG, JPG, WebP)';
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    avatarError.value = 'Avatar image must be smaller than 5MB';
+    return;
+  }
+
+  uploadingAvatar.value = true;
+  avatarError.value = '';
+  avatarSuccess.value = '';
+  try {
+    await authStore.uploadAvatar(file);
+    avatarSuccess.value = 'Avatar updated successfully!';
+    setTimeout(() => { avatarSuccess.value = ''; }, 4000);
+  } catch (err) {
+    avatarError.value = err.response?.data?.error || 'Failed to upload avatar';
+  } finally {
+    uploadingAvatar.value = false;
+    if (avatarFileInput.value) avatarFileInput.value.value = '';
+  }
+}
+
+async function removeAvatar() {
+  const confirmed = await dialog.confirm({
+    title: 'Remove Avatar',
+    message: 'Are you sure you want to remove your profile photo? Your account will display your initials instead.',
+    confirmText: 'Remove',
+    danger: true
+  });
+  if (!confirmed) return;
+
+  removingAvatar.value = true;
+  avatarError.value = '';
+  avatarSuccess.value = '';
+  try {
+    await authStore.removeAvatar();
+    avatarSuccess.value = 'Avatar removed';
+    setTimeout(() => { avatarSuccess.value = ''; }, 3000);
+  } catch (err) {
+    avatarError.value = err.response?.data?.error || 'Failed to remove avatar';
+  } finally {
+    removingAvatar.value = false;
   }
 }
 

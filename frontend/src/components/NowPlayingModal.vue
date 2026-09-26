@@ -17,8 +17,23 @@
         </h4>
       </div>
 
+      <div class="flex items-center gap-1">
       <button
-        @click="showBookmarksDrawer = !showBookmarksDrawer"
+        v-if="player.chapters.length"
+        @click="showChapters = !showChapters; showBookmarksDrawer = false"
+        :class="[
+          'p-2 rounded-full transition',
+          showChapters
+            ? 'bg-primary text-primary-foreground'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+        ]"
+        title="Chapters"
+        aria-label="Chapters"
+      >
+        <ListOrdered class="w-5 h-5" />
+      </button>
+      <button
+        @click="showBookmarksDrawer = !showBookmarksDrawer; showChapters = false"
         :class="[
           'p-2 rounded-full transition flex items-center gap-1.5',
           showBookmarksDrawer
@@ -32,10 +47,11 @@
           {{ bookmarks.length }}
         </span>
       </button>
+      </div>
     </header>
 
     <!-- Main Player Body -->
-    <main class="flex-1 overflow-y-auto flex flex-col items-center justify-center p-6 max-w-lg mx-auto w-full gap-6">
+    <main class="flex-1 overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 max-w-lg mx-auto w-full gap-3 sm:gap-6 my-auto">
       <!-- Bookmarks Drawer Overlay if active -->
       <div v-if="showBookmarksDrawer" class="w-full flex-1 flex flex-col gap-4 max-h-[600px] overflow-hidden bg-card border border-border rounded-2xl p-5 shadow-2xl">
         <div class="flex items-center justify-between border-b border-border pb-3">
@@ -101,10 +117,40 @@
         </div>
       </div>
 
+      <!-- Chapter list -->
+      <div v-else-if="showChapters" class="w-full flex-1 flex flex-col gap-3 max-h-[600px] overflow-hidden bg-card border border-border rounded-2xl p-5 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-border pb-3">
+          <div class="flex items-center gap-2">
+            <ListOrdered class="w-4 h-4 text-primary" />
+            <h3 class="text-sm font-semibold text-foreground">Chapters</h3>
+            <span class="text-[11px] text-muted-foreground">{{ player.chapters.length }}</span>
+          </div>
+          <button @click="showChapters = false" class="text-xs text-muted-foreground hover:text-foreground">
+            Back to Player
+          </button>
+        </div>
+        <ol ref="chapterListEl" class="flex-1 overflow-y-auto -mx-2">
+          <li v-for="chapter in player.chapters" :key="chapter.index">
+            <button
+              @click="player.seekChapter(chapter.index); showChapters = false"
+              :data-current="chapter.index === player.currentChapterIndex || undefined"
+              :class="[
+                'w-full text-left px-2 py-2.5 rounded-lg flex items-center gap-3 transition',
+                chapter.index === player.currentChapterIndex ? 'bg-primary/10 text-primary' : 'hover:bg-muted/60 text-foreground'
+              ]"
+            >
+              <span class="text-[11px] font-mono text-muted-foreground w-6 text-right tabular-nums">{{ chapter.index + 1 }}</span>
+              <span class="flex-1 text-sm truncate" :class="chapter.index === player.currentChapterIndex ? 'font-semibold' : ''">{{ chapter.title }}</span>
+              <span class="text-[11px] font-mono text-muted-foreground tabular-nums">{{ formatTime(chapter.end - chapter.start) }}</span>
+            </button>
+          </li>
+        </ol>
+      </div>
+
       <!-- Regular Player UI (Artwork, Scrubber, Controls) -->
       <template v-else>
-        <!-- Large High-Res Cover Artwork -->
-        <div class="relative w-56 h-56 sm:w-72 sm:h-72 rounded-2xl overflow-hidden shadow-2xl border border-border/80 flex-shrink-0">
+        <!-- Large High-Res Cover Artwork with dynamic height clamp for landscape -->
+        <div class="relative w-40 h-40 sm:w-64 sm:h-64 md:w-72 md:h-72 max-h-[30dvh] sm:max-h-[40dvh] aspect-square rounded-2xl overflow-hidden shadow-2xl border border-border/80 flex-shrink-0">
           <img :src="coverUrl" :alt="`Cover of ${player.currentItem?.title}`" class="w-full h-full object-cover" />
         </div>
 
@@ -119,6 +165,15 @@
           <span v-if="player.currentItem?.series" class="text-xs font-mono text-muted-foreground mt-0.5">
             {{ player.currentItem.series }}
           </span>
+          <button
+            v-if="player.currentChapter"
+            @click="showChapters = true"
+            class="mx-auto mt-1 max-w-full px-3 py-1 rounded-full bg-muted/60 hover:bg-muted text-xs text-foreground truncate transition"
+          >
+            {{ player.currentChapter.title }}
+            <span class="text-muted-foreground font-mono">· {{ player.currentChapterIndex + 1 }}/{{ player.chapters.length }}</span>
+          </button>
+          <RatingBar :item="player.currentItem" align="center" class="mt-2" />
         </div>
 
         <!-- Scrubber Timeline -->
@@ -134,13 +189,21 @@
           />
           <div class="flex items-center justify-between text-xs font-mono text-muted-foreground tabular-nums">
             <span>{{ formatTime(player.currentTime) }}</span>
+            <span v-if="player.currentChapter" class="text-[10px]">{{ formatTime(chapterRemaining) }} left in chapter</span>
             <span>-{{ formatTime(remainingSeconds) }}</span>
           </div>
         </div>
 
         <!-- Primary Playback Controls: -30s, -15s, Play/Pause, +15s, +30s -->
         <div class="flex items-center justify-center gap-3 sm:gap-5 w-full">
-          <button aria-label="Skip back 30s"
+          <button v-if="player.chapters.length" aria-label="Previous chapter"
+            @click="player.previousChapter()"
+            class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90"
+            title="Previous chapter"
+          >
+            <SkipBack class="w-5 h-5" />
+          </button>
+          <button v-else aria-label="Skip back 30s"
             @click="player.skip(-30)"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 flex flex-col items-center gap-0.5"
             title="Skip back 30s"
@@ -175,7 +238,15 @@
             <span class="text-[9px] font-mono font-bold leading-none">15</span>
           </button>
 
-          <button aria-label="Skip forward 30s"
+          <button v-if="player.chapters.length" aria-label="Next chapter"
+            @click="player.nextChapter()"
+            :disabled="player.currentChapterIndex >= player.chapters.length - 1"
+            class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 disabled:opacity-30"
+            title="Next chapter"
+          >
+            <SkipForward class="w-5 h-5" />
+          </button>
+          <button v-else aria-label="Skip forward 30s"
             @click="player.skip(30)"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 flex flex-col items-center gap-0.5"
             title="Skip forward 30s"
@@ -192,7 +263,7 @@
             <span class="text-[11px] text-muted-foreground font-medium">Speed</span>
             <div class="flex items-center gap-1">
               <button
-                v-for="rate in [0.75, 1.0, 1.25, 1.5, 1.75, 2.0]"
+                v-for="rate in PLAYBACK_SPEEDS"
                 :key="rate"
                 @click="player.setPlaybackRate(rate)"
                 :class="[
@@ -212,22 +283,25 @@
             <span class="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
               <Moon class="w-3.5 h-3.5" /> Sleep
             </span>
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1 flex-wrap justify-end">
               <button
-                v-for="mins in [null, 15, 30, 45, 60]"
-                :key="mins ?? 'off'"
-                @click="player.setSleepTimer(mins)"
+                v-for="opt in sleepOptions"
+                :key="opt ?? 'off'"
+                @click="player.setSleepTimer(opt)"
                 :class="[
                   'px-2 py-0.5 rounded text-[10px] font-mono font-medium transition',
-                  player.sleepTimerMinutes === mins
+                  player.sleepTimerMinutes === opt
                     ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                     : 'bg-muted/60 text-muted-foreground hover:text-foreground'
                 ]"
               >
-                {{ mins ? `${mins}m` : 'Off' }}
+                {{ opt === 'chapter' ? 'End of ch.' : (opt ? `${opt}m` : 'Off') }}
               </button>
             </div>
           </div>
+          <p v-if="player.sleepTimerMinutes" class="-mt-2 text-right text-[11px] text-primary font-mono tabular-nums">
+            {{ player.sleepTimerMinutes === 'chapter' ? 'Stopping at the end of this chapter' : `Stopping in ${formatTime(player.sleepRemaining)}` }}
+          </p>
 
           <!-- Volume Slider -->
           <div class="flex items-center gap-2 pt-1">
@@ -249,11 +323,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { getMediaToken } from '../utils/mediaToken';
+import { ref, computed, watch, nextTick } from 'vue';
 import api from '../api/client';
-import { usePlayerStore } from '../stores/player';
+import { usePlayerStore, PLAYBACK_SPEEDS } from '../stores/player';
 import { useDialogStore } from '../stores/dialog';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
+import RatingBar from './RatingBar.vue';
 import {
   ChevronDown,
   Play,
@@ -263,7 +339,10 @@ import {
   Moon,
   Volume2,
   Bookmark,
-  Trash2
+  Trash2,
+  ListOrdered,
+  SkipBack,
+  SkipForward
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -274,9 +353,27 @@ const emit = defineEmits(['close']);
 
 const player = usePlayerStore();
 const dialog = useDialogStore();
-const token = localStorage.getItem('plinthio_token') || '';
+const token = getMediaToken() || '';
 
 const showBookmarksDrawer = ref(false);
+const showChapters = ref(false);
+const chapterListEl = ref(null);
+
+const sleepOptions = computed(() => (
+  player.chapters.length ? [null, 'chapter', 15, 30, 45, 60] : [null, 15, 30, 45, 60]
+));
+
+const chapterRemaining = computed(() => {
+  const chapter = player.currentChapter;
+  return chapter ? Math.max(0, chapter.end - player.currentTime) : 0;
+});
+
+// Opening the list scrolls the chapter you're in into view.
+watch(showChapters, async (open) => {
+  if (!open) return;
+  await nextTick();
+  chapterListEl.value?.querySelector('[data-current]')?.scrollIntoView({ block: 'center' });
+});
 const bookmarks = ref([]);
 const newBookmarkNote = ref('');
 

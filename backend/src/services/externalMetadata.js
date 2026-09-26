@@ -199,7 +199,7 @@ async function fetchTmdbCredits(tmdbId, endpoint, apiKey) {
   }
 }
 
-async function searchTMDB(query, mediaType, apiKey, year = null) {
+async function searchTMDB(query, mediaType, apiKey, year = null, { withCredits = true } = {}) {
   const endpoint = mediaType === 'movie' ? 'movie' : 'tv';
   let yearParam = '';
   if (year) {
@@ -243,9 +243,11 @@ async function searchTMDB(query, mediaType, apiKey, year = null) {
   }
 
   // Fetch credits for the top 5 results in parallel — beyond that the user rarely scrolls.
+  // Callers that only want the score (the rating lookup) skip this — it's five extra
+  // requests per search.
   const creditsMap = new Map();
   await Promise.allSettled(
-    results.slice(0, 5).map(async (r) => {
+    (withCredits ? results.slice(0, 5) : []).map(async (r) => {
       const credits = await fetchTmdbCredits(r.id, endpoint, apiKey);
       creditsMap.set(String(r.id), credits);
     })
@@ -271,7 +273,11 @@ async function searchTMDB(query, mediaType, apiKey, year = null) {
       genres,
       publisher: null,
       status: null,
-      coverUrl: r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : null
+      coverUrl: r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : null,
+      // TMDB's community score (0–10). A title nobody has voted on reports 0, which isn't a
+      // rating, so it's dropped rather than shown as a zero.
+      rating: r.vote_count > 0 && typeof r.vote_average === 'number' ? r.vote_average : null,
+      ratingVotes: r.vote_count > 0 ? r.vote_count : null
     };
   });
 }
@@ -304,6 +310,24 @@ export async function getTmdbApiKey() {
   const db = await getDb();
   const row = await db.get("SELECT value FROM settings WHERE key = 'tmdb_api_key'");
   return row?.value || process.env.TMDB_API_KEY || null;
+}
+
+/**
+ * Looks up TMDB's community score for a movie/show/anime. Returns { rating, votes } on a
+ * match, null when TMDB has nothing (or no score) for it, and throws MISSING_API_KEY when no
+ * key is configured so callers can tell "unknown" from "can't check".
+ */
+export async function lookupTmdbRating(mediaType, query, year = null) {
+  const apiKey = await getTmdbApiKey();
+  if (!apiKey) {
+    const err = new Error('TMDB API key is not configured');
+    err.code = 'MISSING_API_KEY';
+    throw err;
+  }
+  const results = await searchTMDB(query, mediaType, apiKey, year, { withCredits: false });
+  const best = (year && results.find((r) => (r.releaseDate || '').startsWith(String(year)))) || results[0];
+  if (!best || best.rating == null) return null;
+  return { rating: best.rating, votes: best.ratingVotes };
 }
 
 /**

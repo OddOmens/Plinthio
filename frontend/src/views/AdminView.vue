@@ -34,6 +34,19 @@
             <span class="hidden sm:inline">Libraries</span>
           </button>
           <button
+            @click="switchTab('health')"
+            :class="[
+              'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
+              activeTab === 'health'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            ]"
+            title="Library Health"
+          >
+            <HeartPulse class="w-4 h-4" />
+            <span class="hidden sm:inline">Health</span>
+          </button>
+          <button
             @click="switchTab('metadata')"
             :class="[
               'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
@@ -42,7 +55,7 @@
                 : 'text-muted-foreground hover:text-foreground'
             ]"
           >
-            <Sparkles class="w-4 h-4 text-primary" />
+            <Sparkles class="w-4 h-4" />
             <span class="hidden sm:inline">Metadata</span>
           </button>
           <button
@@ -182,6 +195,10 @@
       </section>
 
       <!-- TAB: METADATA & TITLE CLEANUP -->
+      <section v-if="activeTab === 'health'">
+        <LibraryHealth @open-metadata="switchTab('metadata')" />
+      </section>
+
       <section v-if="activeTab === 'metadata'">
         <AdminMetadataManager :libraries="libraries" />
       </section>
@@ -225,7 +242,17 @@
             class="p-3.5 flex items-center justify-between gap-3"
           >
             <div class="flex items-center gap-3 min-w-0">
-              <div class="w-8 h-8 rounded-full bg-muted text-foreground flex items-center justify-center font-semibold text-xs border border-border flex-shrink-0">
+              <img
+                v-if="u.avatar"
+                :src="u.avatar"
+                :alt="u.username"
+                class="w-8 h-8 rounded-full object-cover border border-border flex-shrink-0"
+                @error="u.avatar = null"
+              />
+              <div
+                v-else
+                class="w-8 h-8 rounded-full bg-muted text-foreground flex items-center justify-center font-semibold text-xs border border-border flex-shrink-0 select-none"
+              >
                 {{ u.username.slice(0, 1).toUpperCase() }}
               </div>
               <div class="min-w-0">
@@ -242,6 +269,32 @@
                     <Clock class="w-3 h-3" />
                     {{ u.last_login_at ? `Last sign-in ${formatDateTime(u.last_login_at)}` : 'Never signed in' }}
                   </span>
+                  <template v-if="u.expires_at">
+                    <span class="text-muted-foreground/50">&bull;</span>
+                    <span
+                      :class="[
+                        'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium',
+                        isUserExpired(u) ? 'bg-destructive/15 text-destructive font-semibold' :
+                        isUserExpiringSoon(u) ? 'bg-amber-500/15 text-amber-500 font-semibold' :
+                        'bg-emerald-500/15 text-emerald-500'
+                      ]"
+                      :title="`Expires: ${new Date(u.expires_at).toLocaleString()}`"
+                    >
+                      <Lock v-if="isUserExpired(u)" class="w-2.5 h-2.5" />
+                      <Hourglass v-else class="w-2.5 h-2.5" />
+                      <span>{{ getUserExpirationLabel(u) }}</span>
+                    </span>
+                  </template>
+                  <template v-if="u.max_age_rating">
+                    <span class="text-muted-foreground/50">&bull;</span>
+                    <span
+                      class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-sky-500/15 text-sky-500"
+                      :title="u.allow_unrated === 0 ? 'Unrated titles are hidden too' : 'Unrated titles are allowed'"
+                    >
+                      <ShieldCheck class="w-2.5 h-2.5" />
+                      Up to {{ u.max_age_rating }}
+                    </span>
+                  </template>
                 </span>
               </div>
             </div>
@@ -266,6 +319,15 @@
               >
                 {{ u.role }}
               </span>
+
+              <button aria-label="Extend or set account limit"
+                v-if="u.id !== authStore.user?.id"
+                @click="openExtendUserModal(u)"
+                class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition"
+                :title="u.expires_at ? 'Extend or change account limit' : 'Set account access limit'"
+              >
+                <Hourglass class="w-4 h-4 text-primary" />
+              </button>
 
               <button aria-label="Edit user"
                 @click="openEditUserModal(u)"
@@ -577,12 +639,43 @@
           <p class="text-xs text-muted-foreground mt-0.5">Configure global server behavior and available features for all users</p>
         </div>
 
+        <!-- Version & updates -->
+        <div class="rounded-xl border border-border bg-card p-4 flex flex-wrap items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-foreground">Plinthio {{ updateInfo?.current || '…' }}</p>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              <template v-if="updateInfo && !updateInfo.enabled">Update checks are off (UPDATE_CHECK=false).</template>
+              <template v-else-if="updateInfo?.updateAvailable">
+                <span class="text-primary font-medium">{{ updateInfo.latest }} is available.</span>
+                Update with <code class="bg-muted px-1 rounded">docker compose pull &amp;&amp; docker compose up -d</code>
+              </template>
+              <template v-else-if="updateInfo?.checkedAt">You're up to date{{ updateInfo.error ? ' (last check failed — offline?)' : '' }}.</template>
+              <template v-else>Not checked yet.</template>
+            </p>
+          </div>
+          <a
+            v-if="updateInfo?.releaseUrl"
+            :href="updateInfo.releaseUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="h-8 px-3 rounded-lg border border-border text-xs font-medium hover:bg-muted transition flex items-center"
+          >Release notes</a>
+          <button
+            type="button"
+            @click="checkUpdates(true)"
+            :disabled="checkingUpdates || (updateInfo && !updateInfo.enabled)"
+            class="h-8 px-3 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:bg-secondary/80 transition disabled:opacity-50"
+          >
+            {{ checkingUpdates ? 'Checking…' : 'Check now' }}
+          </button>
+        </div>
+
         <!-- Shelf Filter Defaults Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Global Shelf Filter Modes</h3>
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Views</h3>
             <p class="text-xs text-muted-foreground mt-0.5">
-              Control which grouping and organization views are allowed server-wide. Disabling a filter hides it across the entire server for all users.
+              Alphabetical and Creator are always available. Turning off Disk Folders or Custom Folders hides that view for everyone on this server. Every view shows one card per series, never loose volumes or episodes.
             </p>
           </div>
 
@@ -590,17 +683,21 @@
             <label
               v-for="filter in allServerFilterModes"
               :key="filter.id"
-              class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none"
+              :class="[
+                'flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 transition select-none',
+                filter.always ? '' : 'hover:bg-muted/40 cursor-pointer'
+              ]"
             >
               <input
                 type="checkbox"
                 :value="filter.id"
                 v-model="allowedFilters"
+                :disabled="filter.always"
                 class="mt-0.5 rounded border-border text-primary focus:ring-ring"
               />
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground">{{ filter.label }}</span>
-                <span class="text-[11px] text-muted-foreground">{{ filter.desc }}</span>
+                <span class="text-[11px] text-muted-foreground">{{ filter.always ? 'Always on' : filter.desc }}</span>
               </div>
             </label>
           </div>
@@ -696,6 +793,36 @@
                 <span class="text-[11px] text-muted-foreground">Vertical navigation on the left</span>
               </div>
             </button>
+          </div>
+        </div>
+
+        <!-- Ratings Display Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Ratings</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Choose which ratings appear for all users. Turning one off hides it everywhere, and the server stops returning it.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label
+              v-for="opt in ratingDisplayOptions"
+              :key="opt.id"
+              class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none"
+            >
+              <input
+                type="checkbox"
+                :checked="customizationForm.ratings[opt.id]"
+                :disabled="savingRatings"
+                @change="toggleRatingDisplay(opt.id, $event.target.checked)"
+                class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+              />
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-foreground">{{ opt.label }}</span>
+                <span class="text-[11px] text-muted-foreground">{{ opt.desc }}</span>
+              </div>
+            </label>
           </div>
         </div>
 
@@ -1083,7 +1210,7 @@
 
     <!-- Modal: Add Library -->
     <div v-if="showAddLibraryModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-card border border-border rounded-xl w-full max-w-md shadow-xl flex flex-col max-h-[85vh]">
+      <div class="bg-card border border-border rounded-xl w-full max-w-md shadow-xl flex flex-col max-h-[85dvh]">
         <h3 class="text-sm font-semibold text-foreground p-5 pb-3 flex-shrink-0">Add Media Library</h3>
 
         <form @submit.prevent="submitAddLibrary" class="flex flex-col gap-3 px-5 pb-5 overflow-y-auto">
@@ -1147,7 +1274,7 @@
 
     <!-- Modal: Folder Browser -->
     <div v-if="showFolderBrowser" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl flex flex-col max-h-[80vh]">
+      <div class="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl flex flex-col max-h-[80dvh]">
         <div class="p-4 pb-3 border-b border-border">
           <h3 class="text-sm font-semibold text-foreground mb-2">Select a Folder</h3>
 
@@ -1211,7 +1338,7 @@
 
     <!-- Modal: Add User -->
     <div v-if="showAddUserModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-card border border-border rounded-xl w-full max-w-sm shadow-xl flex flex-col max-h-[85vh]">
+      <div class="bg-card border border-border rounded-xl w-full max-w-sm shadow-xl flex flex-col max-h-[85dvh]">
         <h3 class="text-sm font-semibold text-foreground p-5 pb-3 flex-shrink-0">Add New User</h3>
 
         <form @submit.prevent="submitAddUser" class="flex flex-col gap-3 px-5 pb-5 overflow-y-auto">
@@ -1235,6 +1362,35 @@
             </select>
           </div>
 
+          <div class="pt-2 border-t border-border">
+            <label class="block text-xs font-medium text-foreground mb-1 flex items-center gap-1.5">
+              <Hourglass class="w-3.5 h-3.5 text-muted-foreground" />
+              Account Access Limit
+            </label>
+            <select v-model="newUser.duration" class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+              <option value="forever">Forever / No Limit (Default)</option>
+              <option value="1d">1 Day (24 hours)</option>
+              <option value="3d">3 Days (Weekend pass)</option>
+              <option value="7d">7 Days (1 Week)</option>
+              <option value="14d">14 Days (2 Weeks)</option>
+              <option value="1m">1 Month (30 Days)</option>
+              <option value="3m">3 Months</option>
+              <option value="6m">6 Months</option>
+              <option value="1y">1 Year</option>
+              <option value="custom">Custom Date & Time…</option>
+            </select>
+          </div>
+
+          <div v-if="newUser.duration === 'custom'">
+            <label class="block text-xs font-medium text-foreground mb-1">Expiration Date & Time</label>
+            <input
+              v-model="newUser.customExpiry"
+              type="datetime-local"
+              required
+              class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </div>
+
           <div class="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-border">
             <button type="button" @click="showAddUserModal = false" class="px-3 py-1.5 rounded-md bg-secondary text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition">Cancel</button>
             <button type="submit" class="px-3.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm">Create User</button>
@@ -1245,13 +1401,69 @@
 
     <!-- Modal: Edit User -->
     <div v-if="showEditUserModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-card border border-border rounded-xl w-full max-w-sm shadow-xl flex flex-col max-h-[85vh]">
+      <div class="bg-card border border-border rounded-xl w-full max-w-sm shadow-xl flex flex-col max-h-[85dvh]">
         <h3 class="text-sm font-semibold text-foreground p-5 pb-3 flex-shrink-0">Edit User</h3>
 
         <form @submit.prevent="submitEditUser" class="flex flex-col gap-4 px-5 pb-5 overflow-y-auto">
           <div>
             <label class="block text-xs font-medium text-foreground mb-1">Username</label>
             <input v-model="editUser.username" required class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+          </div>
+
+          <div class="pt-3 border-t border-border">
+            <label class="block text-xs font-medium text-foreground mb-1 flex items-center gap-1.5">
+              <Hourglass class="w-3.5 h-3.5 text-muted-foreground" />
+              Account Access Limit
+            </label>
+            <p v-if="editUser.currentExpiresAt" class="text-[11px] text-muted-foreground mb-1.5">
+              Current limit: <strong class="text-foreground">{{ formatDateTime(editUser.currentExpiresAt) }}</strong>
+              <span v-if="new Date(editUser.currentExpiresAt).getTime() <= Date.now()" class="text-destructive font-semibold ml-1">(Expired)</span>
+            </p>
+            <p v-else class="text-[11px] text-muted-foreground mb-1.5">
+              Current limit: <strong class="text-foreground">Unlimited / Forever</strong>
+            </p>
+
+            <select v-model="editUser.duration" class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+              <option value="unchanged">Keep Current Limit</option>
+              <option value="forever">Set to Forever / Unlimited</option>
+              <option value="1d">1 Day from now</option>
+              <option value="3d">3 Days from now</option>
+              <option value="7d">7 Days from now</option>
+              <option value="14d">14 Days from now</option>
+              <option value="1m">1 Month from now</option>
+              <option value="3m">3 Months from now</option>
+              <option value="6m">6 Months from now</option>
+              <option value="1y">1 Year from now</option>
+              <option value="custom">Set Specific Date & Time…</option>
+            </select>
+          </div>
+
+          <div v-if="editUser.duration === 'custom'">
+            <label class="block text-xs font-medium text-foreground mb-1">New Expiration Date & Time</label>
+            <input
+              v-model="editUser.customExpiry"
+              type="datetime-local"
+              required
+              class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </div>
+
+          <div v-if="editUser.id !== authStore.user?.id" class="pt-3 border-t border-border">
+            <label class="block text-xs font-medium text-foreground mb-1 flex items-center gap-1.5">
+              <ShieldCheck class="w-3.5 h-3.5 text-muted-foreground" />
+              Content Limit
+            </label>
+            <select v-model="editUser.maxAgeRating" class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+              <option value="">No limit</option>
+              <option value="Everyone">Everyone only</option>
+              <option value="Teen">Up to Teen</option>
+              <option value="Mature">Up to Mature</option>
+            </select>
+            <label v-if="editUser.maxAgeRating" class="mt-2 flex items-start gap-2 text-[11px] text-muted-foreground cursor-pointer">
+              <input v-model="editUser.allowUnrated" type="checkbox" class="mt-0.5 accent-primary" />
+              <span>Allow titles that haven't been rated yet. Turn off for strict filtering — only rated titles at or below the limit will show.</span>
+            </label>
+            <p class="text-[11px] text-muted-foreground mt-1">Ratings are set per series (series sheet) or per title (metadata editor).</p>
           </div>
 
           <div class="pt-3 border-t border-border">
@@ -1279,12 +1491,76 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal: Quick Extend / Renew User Access -->
+    <div v-if="showExtendModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-card border border-border rounded-xl w-full max-w-sm shadow-xl flex flex-col max-h-[85dvh]">
+        <div class="p-5 pb-3 border-b border-border flex items-center justify-between flex-shrink-0">
+          <div>
+            <h3 class="text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <Hourglass class="w-4 h-4 text-primary" />
+              Manage Access Limit
+            </h3>
+            <p class="text-xs text-muted-foreground mt-0.5">@{{ extendTargetUser?.username }}</p>
+          </div>
+          <button @click="showExtendModal = false" class="text-muted-foreground hover:text-foreground p-1 rounded-md">
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+
+        <form @submit.prevent="submitExtendUser" class="flex flex-col gap-3.5 p-5 overflow-y-auto">
+          <div class="p-2.5 rounded-lg bg-muted/40 border border-border text-xs">
+            <div class="text-muted-foreground text-[11px]">Current Status</div>
+            <div class="font-medium text-foreground mt-0.5 flex items-center gap-1.5">
+              <template v-if="extendTargetUser?.expires_at">
+                <span :class="isUserExpired(extendTargetUser) ? 'text-destructive font-semibold' : 'text-emerald-500 font-semibold'">
+                  {{ isUserExpired(extendTargetUser) ? 'Expired' : 'Active' }}
+                </span>
+                <span>·</span>
+                <span class="text-muted-foreground font-mono text-[11px]">{{ formatDateTime(extendTargetUser.expires_at) }}</span>
+              </template>
+              <template v-else>
+                <span class="text-emerald-500 font-semibold">Active</span>
+                <span>·</span>
+                <span class="text-muted-foreground">Unlimited / Forever</span>
+              </template>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-foreground mb-1.5">Extend / Set Duration</label>
+            <select v-model="extendDuration" class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+              <option value="1d">+1 Day</option>
+              <option value="3d">+3 Days</option>
+              <option value="7d">+7 Days (1 Week)</option>
+              <option value="14d">+14 Days (2 Weeks)</option>
+              <option value="1m">+1 Month (30 Days)</option>
+              <option value="3m">+3 Months</option>
+              <option value="6m">+6 Months</option>
+              <option value="1y">+1 Year</option>
+              <option value="forever">Set to Forever / Unlimited</option>
+            </select>
+            <p class="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+              Extends from current expiration date (or from today if already expired).
+            </p>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-border mt-1">
+            <button type="button" @click="showExtendModal = false" class="px-3 py-1.5 rounded-md bg-secondary text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition">Cancel</button>
+            <button type="submit" :disabled="extendingUser" class="px-3.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm disabled:opacity-50 flex items-center gap-1.5">
+              <Loader2 v-if="extendingUser" class="w-3.5 h-3.5 animate-spin" />
+              <span>Apply Limit</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
@@ -1292,6 +1568,7 @@ import { useDialogStore } from '../stores/dialog';
 import { useCustomizationStore } from '../stores/customization';
 import Sidebar from '../components/Sidebar.vue';
 import AdminMetadataManager from '../components/AdminMetadataManager.vue';
+const LibraryHealth = defineAsyncComponent(() => import('../components/LibraryHealth.vue'));
 import {
   ArrowLeft,
   Folder,
@@ -1325,7 +1602,11 @@ import {
   Pencil,
   KeyRound,
   History,
-  LogIn
+  LogIn,
+  Lock,
+  Hourglass,
+  HeartPulse,
+  X
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -1341,7 +1622,7 @@ function goToShelf(type) {
 }
 
 
-const validTabs = ['libraries', 'metadata', 'users', 'logs', 'stats', 'activity', 'settings'];
+const validTabs = ['libraries', 'health', 'metadata', 'users', 'logs', 'stats', 'activity', 'settings'];
 const activeTab = ref(validTabs.includes(route.query.tab) ? route.query.tab : 'libraries');
 const libraries = ref([]);
 const users = ref([]);
@@ -1361,15 +1642,15 @@ const activity = ref([]);
 const activityUserFilter = ref('');
 const loadingActivity = ref(false);
 
-const allowedFilters = ref(['grid', 'author', 'series', 'disk_folder', 'custom_folder']);
+const allowedFilters = ref(['series', 'creator', 'disk_folder', 'custom_folder']);
 const savingFilters = ref(false);
 
+// Series and Creator can't be turned off (the server enforces it too); the folder views can.
 const allServerFilterModes = [
-  { id: 'grid', label: 'Grid View', desc: 'Standard flat grid of items.' },
-  { id: 'author', label: 'Group by Author', desc: 'Sort and group titles by author name.' },
-  { id: 'series', label: 'Group by Series', desc: 'Cluster related titles by series.' },
-  { id: 'disk_folder', label: 'Disk Folders', desc: 'Show physical file directory structure.' },
-  { id: 'custom_folder', label: 'Custom Folders', desc: 'User-created custom in-app folders with an Unorganized catch-all.' }
+  { id: 'series', label: 'Alphabetical', desc: '', always: true },
+  { id: 'creator', label: 'Creator', desc: '', always: true },
+  { id: 'disk_folder', label: 'Disk Folders', desc: 'Browse by the folders on the server.' },
+  { id: 'custom_folder', label: 'Custom Folders', desc: 'Users’ own in-app folders, with an Unorganized catch-all.' }
 ];
 
 const tmdbConfigured = ref(false);
@@ -1394,11 +1675,16 @@ const browserLoading = ref(false);
 const browserError = ref('');
 
 const showAddUserModal = ref(false);
-const newUser = ref({ username: '', password: '', role: 'viewer' });
+const newUser = ref({ username: '', password: '', role: 'viewer', duration: 'forever', customExpiry: '' });
 
 const showEditUserModal = ref(false);
 const savingEditUser = ref(false);
-const editUser = ref({ id: null, username: '', newPassword: '' });
+const editUser = ref({ id: null, username: '', newPassword: '', duration: 'unchanged', customExpiry: '', currentExpiresAt: null });
+
+const showExtendModal = ref(false);
+const extendTargetUser = ref(null);
+const extendDuration = ref('7d');
+const extendingUser = ref(false);
 
 const savingCustomization = ref(false);
 const customizationForm = ref({
@@ -1406,8 +1692,30 @@ const customizationForm = ref({
   customCss: '',
   accentTheme: 'zinc',
   loginMessage: '',
-  layoutMode: 'topnav'
+  layoutMode: 'topnav',
+  ratings: { showPersonal: true, showCommunity: true, showExternal: true }
 });
+
+const ratingDisplayOptions = computed(() => [
+  { id: 'showPersonal', label: 'Personal ratings', desc: 'Let each signed-in user give items 1–5 stars, and show their own rating.' },
+  { id: 'showCommunity', label: `${customizationStore.serverName || 'Plinthio'} user ratings`, desc: 'Show the average star rating from everyone on this server.' },
+  { id: 'showExternal', label: 'World ratings (TMDB)', desc: 'Show TMDB\'s score for movies, shows and anime. Needs a TMDB API key.' }
+]);
+const savingRatings = ref(false);
+
+async function toggleRatingDisplay(key, value) {
+  const previous = { ...customizationForm.value.ratings };
+  customizationForm.value.ratings = { ...previous, [key]: value };
+  savingRatings.value = true;
+  try {
+    await customizationStore.updateCustomization({ ratings: { [key]: value } });
+  } catch (e) {
+    customizationForm.value.ratings = previous;
+    dialog.alert('Failed to save rating settings');
+  } finally {
+    savingRatings.value = false;
+  }
+}
 
 const accentPresets = [
   { id: 'zinc', label: 'Zinc', bg: 'bg-zinc-500' },
@@ -1420,8 +1728,23 @@ const accentPresets = [
   { id: 'indigo', label: 'Indigo', bg: 'bg-indigo-500' }
 ];
 
+const updateInfo = ref(null);
+const checkingUpdates = ref(false);
+async function checkUpdates(force = true) {
+  checkingUpdates.value = true;
+  try {
+    const res = await api.get('/system/update', { params: force === true ? { refresh: '1' } : {} });
+    updateInfo.value = res.data;
+  } catch (err) {
+    // Leave the card as it was.
+  } finally {
+    checkingUpdates.value = false;
+  }
+}
+
 function switchTab(tab) {
   activeTab.value = tab;
+  if (tab === 'settings') checkUpdates(false);
   if (tab === 'logs') {
     loadLogs();
   } else if (tab === 'stats') {
@@ -1447,7 +1770,8 @@ async function loadCustomization() {
       customCss: customizationStore.customCss,
       accentTheme: customizationStore.accentTheme,
       loginMessage: customizationStore.loginMessage,
-      layoutMode: customizationStore.layoutMode
+      layoutMode: customizationStore.layoutMode,
+      ratings: { ...customizationStore.ratings }
     };
   } catch (err) {
     console.warn('Failed to load customization:', err);
@@ -1784,14 +2108,11 @@ async function loadServerFilters() {
 }
 
 async function saveServerFilters() {
-  if (allowedFilters.value.length === 0) {
-    dialog.alert('At least one filter mode must remain enabled.');
-    return;
-  }
   savingFilters.value = true;
   try {
-    await api.patch('/settings/filters', { allowedGroupingModes: allowedFilters.value });
-    dialog.alert('Server filter settings updated successfully.');
+    const res = await api.patch('/settings/filters', { allowedGroupingModes: allowedFilters.value });
+    allowedFilters.value = res.data.allowedGroupingModes || allowedFilters.value;
+    dialog.alert('Shelf views updated.');
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to update filter settings');
   } finally {
@@ -2050,11 +2371,61 @@ async function submitAddLibrary() {
   }
 }
 
+function isUserExpired(user) {
+  if (!user.expires_at) return false;
+  return new Date(user.expires_at).getTime() <= Date.now();
+}
+
+function isUserExpiringSoon(user) {
+  if (!user.expires_at) return false;
+  const diffMs = new Date(user.expires_at).getTime() - Date.now();
+  return diffMs > 0 && diffMs <= 24 * 60 * 60 * 1000;
+}
+
+function getUserExpirationLabel(user) {
+  if (!user.expires_at) return 'Unlimited';
+  const diffMs = new Date(user.expires_at).getTime() - Date.now();
+  if (diffMs <= 0) return 'Expired';
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  if (days <= 1) {
+    const hours = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60)));
+    return `${hours}h left`;
+  }
+  return `${days}d left`;
+}
+
+function openExtendUserModal(user) {
+  extendTargetUser.value = user;
+  extendDuration.value = '7d';
+  showExtendModal.value = true;
+}
+
+async function submitExtendUser() {
+  if (!extendTargetUser.value) return;
+  extendingUser.value = true;
+  try {
+    await api.post(`/users/${extendTargetUser.value.id}/extend`, { duration: extendDuration.value });
+    showExtendModal.value = false;
+    await loadData();
+    dialog.alert(extendDuration.value === 'forever' ? 'Account access set to unlimited' : 'Account access extended successfully');
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Failed to extend account access');
+  } finally {
+    extendingUser.value = false;
+  }
+}
+
 async function submitAddUser() {
   try {
-    await api.post('/users', newUser.value);
+    const payload = {
+      username: newUser.value.username,
+      password: newUser.value.password,
+      role: newUser.value.role,
+      duration: newUser.value.duration === 'custom' ? newUser.value.customExpiry : newUser.value.duration
+    };
+    await api.post('/users', payload);
     showAddUserModal.value = false;
-    newUser.value = { username: '', password: '', role: 'viewer' };
+    newUser.value = { username: '', password: '', role: 'viewer', duration: 'forever', customExpiry: '' };
     await loadData();
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to add user');
@@ -2062,7 +2433,16 @@ async function submitAddUser() {
 }
 
 function openEditUserModal(user) {
-  editUser.value = { id: user.id, username: user.username, newPassword: '' };
+  editUser.value = {
+    id: user.id,
+    username: user.username,
+    newPassword: '',
+    duration: 'unchanged',
+    customExpiry: '',
+    currentExpiresAt: user.expires_at,
+    maxAgeRating: user.max_age_rating || '',
+    allowUnrated: user.allow_unrated !== 0
+  };
   showEditUserModal.value = true;
 }
 
@@ -2070,8 +2450,25 @@ async function submitEditUser() {
   savingEditUser.value = true;
   try {
     const target = users.value.find(u => u.id === editUser.value.id);
+    const updates = {};
     if (target && editUser.value.username.trim() !== target.username) {
-      await api.patch(`/users/${editUser.value.id}`, { username: editUser.value.username.trim() });
+      updates.username = editUser.value.username.trim();
+    }
+    if (target && editUser.value.id !== authStore.user?.id) {
+      if ((editUser.value.maxAgeRating || '') !== (target.max_age_rating || '')) {
+        updates.maxAgeRating = editUser.value.maxAgeRating || null;
+      }
+      if (editUser.value.allowUnrated !== (target.allow_unrated !== 0)) {
+        updates.allowUnrated = editUser.value.allowUnrated;
+      }
+    }
+    if (editUser.value.duration !== 'unchanged') {
+      updates.duration = editUser.value.duration === 'custom'
+        ? editUser.value.customExpiry
+        : editUser.value.duration;
+    }
+    if (Object.keys(updates).length > 0) {
+      await api.patch(`/users/${editUser.value.id}`, updates);
     }
     if (editUser.value.newPassword) {
       if (editUser.value.newPassword.length < 8) {

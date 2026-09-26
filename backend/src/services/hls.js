@@ -2,6 +2,7 @@ import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { config } from '../config/env.js';
+import { PlinthioError } from '../errors.js';
 import { logger } from './logger.js';
 import { getActiveHwaccel, hwaccelConfig } from './hwaccel.js';
 
@@ -221,7 +222,7 @@ export async function getOrStartJob(itemId, filePath, opts = {}) {
 
   proc.on('error', (err) => {
     job.exited = true;
-    job.error = err;
+    job.error = new PlinthioError('P303', undefined, { cause: err });
     logger.warn('media', `HLS ffmpeg spawn failed for item ${itemId}: ${err.message}`);
   });
 
@@ -233,7 +234,11 @@ export async function getOrStartJob(itemId, filePath, opts = {}) {
       // A hardware encoder that fails at runtime (driver mismatch, unsupported pixel format)
       // would otherwise break playback outright, so the cached output is cleared and the
       // next request re-runs — falling back to software if the admin switches it off.
-      job.error = new Error(stderr.trim().slice(0, 300));
+      job.error = new PlinthioError(
+        /Input\/output error/i.test(stderr) ? 'P302' : 'P304',
+        undefined,
+        { cause: new Error(stderr.trim().slice(0, 300)) }
+      );
       fs.rmSync(job.dir, { recursive: true, force: true });
     }
   });
@@ -287,8 +292,24 @@ export async function waitForSegment(job, filename) {
   return ok ? target : null;
 }
 
-export function touchJob(job) {
-  job.lastRequestedAt = Date.now();
+// Jobs are shared per item + profile, so two people watching the same title ride the same
+// encode. Each request records who asked, which lets an explicit stop from one viewer leave
+// the job running for anyone else still pulling segments from it.
+export function touchJob(job, viewerId) {
+  const now = Date.now();
+  job.lastRequestedAt = now;
+  if (viewerId) {
+    if (!job.viewers) job.viewers = new Map();
+    job.viewers.set(viewerId, now);
+  }
+}
+
+function hasOtherActiveViewers(job, viewerId, now) {
+  if (!job.viewers) return false;
+  for (const [id, seenAt] of job.viewers) {
+    if (id !== viewerId && now - seenAt <= IDLE_REAP_MS) return true;
+  }
+  return false;
 }
 
 function killJob(job) {
@@ -299,9 +320,15 @@ function killJob(job) {
  * Immediately terminates any active ffmpeg encode/remux processes for an item.
  * Called when the client closes the player, navigates away, or switches media.
  */
-export function stopItemJobs(itemId) {
+export function stopItemJobs(itemId, viewerId = null) {
+  const now = Date.now();
   for (const [mapKey, job] of jobs.entries()) {
     if (mapKey.startsWith(`${itemId}:`)) {
+      if (viewerId) {
+        job.viewers?.delete(viewerId);
+        // Someone else is still watching this encode — leave it to the idle reaper.
+        if (hasOtherActiveViewers(job, viewerId, now)) continue;
+      }
       killJob(job);
       job.exited = true;
       job.proc = null;

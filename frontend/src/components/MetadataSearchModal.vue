@@ -1,9 +1,9 @@
 <template>
   <Teleport to="body">
-  <div v-if="isOpen" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div v-if="isOpen" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
     <div
       v-click-outside="close"
-      class="bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] transition-all"
+      class="bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90dvh] my-auto transition-all"
     >
       <!-- Header -->
       <div class="px-5 py-4 border-b border-border flex items-center justify-between flex-shrink-0">
@@ -43,7 +43,7 @@
                   type="button"
                   @click="coverFileInput?.click()"
                   :disabled="uploadingCover"
-                  class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 focus:opacity-100 transition flex flex-col items-center justify-center gap-1 text-white disabled:opacity-100"
+                  class="absolute inset-0 bg-black/60 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus:opacity-100 transition flex flex-col items-center justify-center gap-1 text-white disabled:opacity-100"
                   title="Replace cover art"
                 >
                   <Loader2 v-if="uploadingCover" class="w-4 h-4 animate-spin" />
@@ -110,6 +110,16 @@
               />
             </div>
             <div>
+              <label class="block text-[11px] font-medium text-muted-foreground mb-1">Age Rating</label>
+              <select
+                v-model="form.ageRating"
+                class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="">{{ form.series ? 'Same as series' : 'Unrated' }}</option>
+                <option v-for="rating in AGE_RATINGS" :key="rating" :value="rating">{{ rating }}</option>
+              </select>
+            </div>
+            <div>
               <label class="block text-[11px] font-medium text-muted-foreground mb-1">Status</label>
               <input
                 v-model="form.status"
@@ -156,11 +166,11 @@
           <button
             type="button"
             @click="saveForm"
-            :disabled="saving"
+            :disabled="saving || loadingFull"
             class="self-end px-4 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition disabled:opacity-50 shadow-sm flex items-center gap-1.5"
           >
             <Check class="w-3.5 h-3.5" />
-            <span>{{ saving ? 'Saving...' : 'Save' }}</span>
+            <span>{{ saving ? 'Saving...' : (loadingFull ? 'Loading…' : 'Save') }}</span>
           </button>
         </div>
 
@@ -244,7 +254,9 @@
                     <span class="text-xs font-semibold text-foreground truncate">{{ result.title }}</span>
                     <span v-if="result.author" class="text-[11px] text-muted-foreground truncate">{{ isVideoType ? 'Dir: ' : '' }}{{ result.author }}</span>
                     <span v-if="result.artists" class="text-[11px] text-muted-foreground truncate">{{ isVideoType ? 'Cast: ' : 'Art: ' }}{{ result.artists }}</span>
-                    <span v-if="result.releaseDate" class="text-[11px] text-muted-foreground font-mono">{{ result.releaseDate }}</span>
+                    <span v-if="result.releaseDate" class="text-[11px] text-muted-foreground font-mono">
+                      {{ result.releaseDate }}<template v-if="result.rating != null"> · ★ {{ result.rating.toFixed(1) }}/10</template>
+                    </span>
                     <span v-if="result.genres?.length" class="text-[11px] text-muted-foreground truncate">{{ result.genres.join(', ') }}</span>
                     <span v-if="result.themes?.length" class="text-[11px] text-muted-foreground truncate">{{ result.themes.join(', ') }}</span>
                     <span class="text-[10px] uppercase font-mono tracking-wide text-muted-foreground/70 mt-auto">{{ sourceLabel(result.source) }}</span>
@@ -281,6 +293,7 @@
 </template>
 
 <script setup>
+import { getMediaToken } from '../utils/mediaToken';
 import { ref, reactive, computed, watch } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
@@ -300,11 +313,16 @@ const emit = defineEmits(['close', 'applied']);
 
 const isBulk = computed(() => props.applyToIds && props.applyToIds.length > 0);
 
-const form = reactive({
+// Used by parental controls (Admin → Users → Content Limit).
+const AGE_RATINGS = ['Everyone', 'Teen', 'Mature', 'Explicit'];
+const form = reactive({ ageRating: '',
   title: '', author: '', artists: '', series: '',
   description: '', releaseDate: '', genres: '', themes: '', publisher: '', status: ''
 });
 const pickedCoverUrl = ref(null);
+// A TMDB result's community score, carried along when "use all" picks that result so the
+// item gets its world rating saved with the rest of the metadata.
+const pickedRating = ref(null);
 const saving = ref(false);
 const yearQuery = ref('');
 
@@ -327,6 +345,8 @@ async function onCoverSelected(event) {
     // A series-wide edit sets the art for every volume; a single-item edit sets just that one.
     if (isBulk.value && props.item.series) {
       form.append('series', props.item.series);
+      if (props.item.library_id) form.append('libraryId', props.item.library_id);
+      if (props.item.media_type) form.append('mediaType', props.item.media_type);
       await api.post('/metadata/series-cover', form);
     } else {
       await api.post(`/metadata/cover/${props.item.id}`, form);
@@ -350,7 +370,7 @@ const errorMessage = ref('');
 const searchedAs = ref('');
 const expanded = ref(false);
 
-const token = localStorage.getItem('plinthio_token') || '';
+const token = getMediaToken() || '';
 
 const isVideoType = computed(() =>
   ['movie', 'show', 'anime'].includes(props.item?.media_type)
@@ -429,17 +449,20 @@ watch(
   () => props.isOpen,
   (val) => {
     if (val && props.item) {
-      form.title = isBulk.value ? '' : (props.item.title || '');
-      form.author = props.item.author || '';
-      form.artists = props.item.artists || '';
-      form.series = props.item.series || '';
-      form.description = props.item.description || '';
-      form.releaseDate = props.item.release_date || '';
-      form.genres = props.item.genres || '';
-      form.themes = props.item.themes || '';
-      form.publisher = props.item.publisher || '';
-      form.status = props.item.status || '';
+      fillForm(props.item);
+      // Shelf cards carry a trimmed row (no description, themes, publisher, status, rating),
+      // and saving sends every field — so without the full row, saving from the shelf
+      // silently blanked all of those. Load it before the user can save.
+      if (!isBulk.value && props.item.id) {
+        const id = props.item.id;
+        loadingFull.value = true;
+        api.get(`/items/${id}`)
+          .then((res) => { if (props.item?.id === id && res.data.item) fillForm(res.data.item); })
+          .catch(() => {})
+          .finally(() => { loadingFull.value = false; });
+      }
       pickedCoverUrl.value = null;
+      pickedRating.value = null;
       query.value = props.item.cleanTitle || props.item.series || props.item.title || '';
       yearQuery.value = (props.item.release_date ? props.item.release_date.slice(0, 4) : props.item.detectedYear) || '';
       results.value = [];
@@ -450,6 +473,22 @@ watch(
     }
   }
 );
+
+const loadingFull = ref(false);
+
+function fillForm(item) {
+  form.title = isBulk.value ? '' : (item.title || '');
+  form.author = item.author || '';
+  form.artists = item.artists || '';
+  form.series = item.series || '';
+  form.description = item.description || '';
+  form.releaseDate = item.release_date || '';
+  form.genres = item.genres || '';
+  form.themes = item.themes || '';
+  form.publisher = item.publisher || '';
+  form.status = item.status || '';
+  form.ageRating = item.age_rating || '';
+}
 
 async function search() {
   if (!query.value.trim() || !props.item) return;
@@ -478,10 +517,13 @@ async function search() {
 
 function fillFromResult(result) {
   pickableFields(result).forEach((field) => applyField(result, field));
+  pickedRating.value = result.source === 'tmdb' && result.rating != null
+    ? { source: result.source, rating: result.rating, ratingVotes: result.ratingVotes }
+    : null;
 }
 
 async function saveForm() {
-  if (saving.value) return;
+  if (saving.value || loadingFull.value) return;
   saving.value = true;
   try {
     const sharedFields = {
@@ -493,7 +535,9 @@ async function saveForm() {
       genres: form.genres.trim() || null,
       themes: form.themes.trim() || null,
       publisher: form.publisher.trim() || null,
-      status: form.status.trim() || null
+      status: form.status.trim() || null,
+      ageRating: form.ageRating || null,
+      ...(pickedRating.value || {})
     };
 
     if (isBulk.value) {

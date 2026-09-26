@@ -34,6 +34,8 @@ async function initSchema(db) {
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'viewer', -- 'admin' | 'editor' (can edit shared metadata) | 'viewer'
+      avatar TEXT,
+      expires_at DATETIME,
       preferences TEXT DEFAULT '{"enabledMediaTypes":["audiobook","manga","book","show","movie","anime"],"defaultView":"all"}',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -43,6 +45,20 @@ async function initSchema(db) {
   // Migrate preferences column if users table existed previously
   try {
     await db.exec(`ALTER TABLE users ADD COLUMN preferences TEXT DEFAULT '{"enabledMediaTypes":["audiobook","manga","book","show","movie","anime"],"defaultView":"all"}'`);
+  } catch (e) {
+    // Column already exists
+  }
+
+  // Migrate avatar column
+  try {
+    await db.exec(`ALTER TABLE users ADD COLUMN avatar TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+
+  // Migrate expires_at column
+  try {
+    await db.exec(`ALTER TABLE users ADD COLUMN expires_at DATETIME`);
   } catch (e) {
     // Column already exists
   }
@@ -65,6 +81,16 @@ async function initSchema(db) {
   // Sign-in tracking: a quick "last seen" per user, backed by a full history table below
   // for the actual date/time-stamped audit trail (including failed attempts).
   for (const col of ['last_login_at DATETIME', 'last_login_ip TEXT']) {
+    try {
+      await db.exec(`ALTER TABLE users ADD COLUMN ${col}`);
+    } catch (e) {
+      // Column already exists
+    }
+  }
+
+  // Parental controls: the highest age rating this account may see (NULL = no limit), and
+  // whether content nobody has rated yet is allowed through for a restricted account.
+  for (const col of ['max_age_rating TEXT', 'allow_unrated INTEGER DEFAULT 1']) {
     try {
       await db.exec(`ALTER TABLE users ADD COLUMN ${col}`);
     } catch (e) {
@@ -236,7 +262,18 @@ async function initSchema(db) {
   // cover_source records where a cover came from ('folder', 'tmdb', 'frame', 'upload') so a
   // later scan can tell a real poster from the video still used as a stand-in, and upgrade
   // the stand-in once a TMDB key exists.
-  for (const col of ['description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT', 'cover_source TEXT']) {
+  // age_rating is a per-item override (movies, standalone books); items in a series fall
+  // back to the series' rating in series_settings.
+  //
+  // external_rating* hold a "world" score from an outside provider (TMDB's vote average,
+  // 0–10, for movies/shows/anime) shown beside Plinthio's own star ratings.
+  // external_rating_checked_at records the last lookup — hit or miss — so an item TMDB
+  // doesn't know isn't re-queried every time someone opens its rating.
+  for (const col of [
+    'description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT', 'cover_source TEXT',
+    'age_rating TEXT', 'chapters_json TEXT', 'extra_type TEXT', 'extra_of TEXT',
+    'external_rating REAL', 'external_rating_votes INTEGER', 'external_rating_source TEXT', 'external_rating_checked_at DATETIME'
+  ]) {
     try {
       await db.exec(`ALTER TABLE items ADD COLUMN ${col}`);
     } catch (e) {
@@ -276,7 +313,23 @@ async function initSchema(db) {
   } catch (e) {
     // Column already exists
   }
-  await finishItemsCascadeMigration(db, 'user_progress', 'user_id, item_id, current_time, duration, current_page, total_pages, progress_percent, is_finished, cfi, updated_at');
+  // Per-book playback speed for audiobooks, stored with progress so it follows the listener
+  // across devices.
+  try {
+    await db.exec(`ALTER TABLE user_progress ADD COLUMN playback_rate REAL`);
+  } catch (e) {
+    // Column already exists
+  }
+  // "Skipped" — the reader chose to pass over this volume (e.g. they watched the anime
+  // adaptation of it). Separate from is_finished so their real read history stays honest;
+  // any actual reading progress clears it again.
+  try {
+    await db.exec(`ALTER TABLE user_progress ADD COLUMN is_skipped INTEGER DEFAULT 0`);
+  } catch (e) {
+    // Column already exists
+  }
+
+  await finishItemsCascadeMigration(db, 'user_progress', 'user_id, item_id, current_time, duration, current_page, total_pages, progress_percent, is_finished, cfi, playback_rate, is_skipped, updated_at');
 
   // Settings table
   await db.exec(`
@@ -368,6 +421,75 @@ async function initSchema(db) {
     // Column already exists
   }
 
+  // Lists (the ordered "readlist" collections) are grouped by what they hold — movies,
+  // shows, anime, read (books + manga) or listen (audiobooks). Every list made before the
+  // categories existed was a comic/book reading order, so those land in 'read'.
+  try {
+    await db.exec(`ALTER TABLE collections ADD COLUMN category TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+  await db.run(`UPDATE collections SET category = 'read' WHERE type = 'readlist' AND category IS NULL`);
+
+  // List entries that aren't in the library: a title picked from an external metadata search
+  // (TMDB, MangaDex, Google Books, Open Library), so a list can hold "want to watch" titles
+  // the server doesn't have yet. They share the position space of collection_items, so one
+  // list can interleave library items and external titles in a single order.
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS list_external_entries (
+      id TEXT PRIMARY KEY,
+      collection_id TEXT NOT NULL,
+      media_type TEXT NOT NULL,
+      source TEXT NOT NULL,
+      external_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      subtitle TEXT,
+      author TEXT,
+      release_date TEXT,
+      overview TEXT,
+      cover_url TEXT,
+      position INTEGER,
+      added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE (collection_id, source, external_id),
+      FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_list_ext_cid ON list_external_entries(collection_id);
+  `);
+
+  // Media requests: a user asks for a title the server doesn't have; admins and editors
+  // work through them. status is one of:
+  //   'pending'          — waiting for an admin/editor to look at it
+  //   'accepted_pending' — accepted, not in the library yet
+  //   'accepted_added'   — accepted and now in the library
+  //   'rejected'
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS media_requests (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      media_type TEXT NOT NULL,
+      source TEXT NOT NULL,
+      external_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      subtitle TEXT,
+      author TEXT,
+      release_date TEXT,
+      overview TEXT,
+      cover_url TEXT,
+      note TEXT,
+      status TEXT NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'accepted_pending', 'accepted_added', 'rejected')),
+      response_note TEXT,
+      handled_by TEXT,
+      handled_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_requests_user ON media_requests(user_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_requests_status ON media_requests(status, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_requests_external ON media_requests(source, external_id);
+  `);
+
   // Intro/credits markers, so the player can offer a skip button. item_id carries no
   // FK/cascade for the same reason as user_progress and bookmarks — markers are worth
   // keeping across a library wipe and re-scan, and re-attach by the path-derived item id.
@@ -380,6 +502,9 @@ async function initSchema(db) {
       PRIMARY KEY (item_id, type)
     );
   `);
+
+  // Extras (trailers, featurettes…) hang off their film via extra_of; see services/extras.js.
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_items_extra_of ON items(extra_of)');
 
   // Per-series reader/display settings. Deliberately keyed by (library_id, series_name)
   // rather than a foreign key to a series table: `items.series` is a free-text column with
@@ -428,6 +553,23 @@ async function initSchema(db) {
     // Column already exists
   }
   await finishItemsCascadeMigration(db, 'bookmarks', 'id, user_id, item_id, type, position, title, notes, cfi, created_at');
+
+  // Internal 1–5 star ratings, one per user per item. item_id carries no FK/cascade for the
+  // same reason as user_progress and bookmarks — a rating should survive a library wipe and
+  // re-attach via the path-derived item id on re-scan. The item_id index serves the
+  // community average ("what does everyone on this server think of it").
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS user_ratings (
+      user_id TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (user_id, item_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_user_ratings_item ON user_ratings(item_id);
+  `);
 
   console.log('Database initialized successfully at:', config.dbPath);
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 z-50 flex flex-col bg-background text-foreground transition-colors">
     <!-- Top Bar -->
-    <header class="flex items-center justify-between px-4 h-14 border-b border-border bg-background/95 backdrop-blur flex-shrink-0 pt-safe">
+    <header class="flex items-center justify-between pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] min-h-14 py-2 border-b border-border bg-background/95 backdrop-blur flex-shrink-0 pt-safe">
       <div class="flex items-center gap-3 min-w-0">
         <button aria-label="Back to shelf"
           @click="closeReader"
@@ -12,13 +12,29 @@
         <div class="min-w-0">
           <h2 class="text-sm font-semibold truncate text-foreground">{{ item.title }}</h2>
           <p class="text-xs text-muted-foreground">{{ item.author }}</p>
+          <RatingBar :item="item" compact class="mt-1" />
         </div>
       </div>
 
       <div class="flex items-center gap-1.5">
+        <!-- Search inside the book -->
+        <button
+          @click="toggleSearch"
+          aria-label="Search in book"
+          :class="[
+            'px-2.5 py-1.5 rounded-lg border text-xs transition flex items-center gap-1.5',
+            showSearch
+              ? 'bg-foreground text-background border-foreground'
+              : 'text-muted-foreground border-border hover:text-foreground hover:border-muted-foreground'
+          ]"
+        >
+          <Search class="w-3.5 h-3.5" />
+          <span class="hidden sm:inline">Search</span>
+        </button>
+
         <!-- Font Settings -->
         <button
-          @click="showSettings = !showSettings"
+          @click="showSettings = !showSettings; showSearch = false"
           :class="[
             'px-2.5 py-1.5 rounded-lg border text-xs transition flex items-center gap-1.5',
             showSettings
@@ -32,7 +48,7 @@
 
         <!-- Bookmark button -->
         <button
-          @click="showBookmarks = !showBookmarks"
+          @click="showBookmarks = !showBookmarks; showSearch = false"
           :class="[
             'px-2.5 py-1.5 rounded-lg border text-xs transition flex items-center gap-1.5',
             showBookmarks
@@ -74,7 +90,7 @@
     <!-- Bottom progress bar (paged mode) -->
     <div
       v-if="settings.layout === 'paged' && progressPercent > 0"
-      class="flex-shrink-0 px-4 py-2 border-t border-border bg-background/95 flex items-center gap-3 pb-safe"
+      class="flex-shrink-0 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] py-2 border-t border-border bg-background/95 flex items-center gap-3 pb-safe"
     >
       <span class="text-xs text-muted-foreground font-mono w-10 text-right flex-shrink-0">
         {{ Math.round(progressPercent) }}%
@@ -87,12 +103,49 @@
       </div>
     </div>
 
+    <!-- Search Panel -->
+    <Transition name="panel-slide">
+      <div
+        v-if="showSearch"
+        @click.stop
+        class="absolute top-[calc(3.5rem+env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50 w-80 max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-4.5rem)] bg-popover border border-border rounded-xl shadow-2xl p-4 flex flex-col gap-3 text-sm"
+      >
+        <form @submit.prevent="runSearch" class="flex items-center gap-2">
+          <div class="relative flex-1">
+            <Search class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <input
+              ref="searchInputEl"
+              v-model="bookSearch"
+              type="search"
+              placeholder="Search this book…"
+              class="w-full h-9 bg-background border border-border rounded-lg pl-8 pr-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+            />
+          </div>
+          <button type="submit" :disabled="searching || bookSearch.trim().length < 2" class="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50">
+            <Loader2 v-if="searching" class="w-3.5 h-3.5 animate-spin" />
+            <span v-else>Find</span>
+          </button>
+        </form>
+        <p v-if="searchDone" class="text-[11px] text-muted-foreground">
+          {{ searchResults.length ? `${searchResults.length}${searchResults.length >= SEARCH_LIMIT ? '+' : ''} match${searchResults.length === 1 ? '' : 'es'}` : 'No matches' }}
+        </p>
+        <ul class="flex-1 overflow-y-auto -mx-2 divide-y divide-border/60">
+          <li v-for="(result, idx) in searchResults" :key="idx">
+            <button @click="goToResult(result)" class="w-full text-left px-2 py-2 rounded-lg hover:bg-muted/60 transition">
+              <p class="text-[11px] text-muted-foreground mb-0.5">{{ result.chapter }}</p>
+              <p class="text-xs text-foreground leading-snug">{{ result.excerpt }}</p>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </Transition>
+
     <!-- Display Settings Panel -->
     <Transition name="panel-slide">
       <div
         v-if="showSettings"
         @click.stop
-        class="absolute top-14 right-4 z-50 w-72 bg-popover border border-border rounded-xl shadow-2xl p-4 flex flex-col gap-4 text-sm"
+        class="absolute top-[calc(3.5rem+env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50 w-72 max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-4.5rem)] overflow-y-auto bg-popover border border-border rounded-xl shadow-2xl p-4 flex flex-col gap-4 text-sm"
       >
         <div class="flex items-center justify-between">
           <span class="font-semibold text-foreground">Display Settings</span>
@@ -191,7 +244,7 @@
       <div
         v-if="showBookmarks"
         @click.stop
-        class="absolute top-14 right-4 z-50 w-72 bg-popover border border-border rounded-xl shadow-2xl p-4 flex flex-col gap-3 text-sm"
+        class="absolute top-[calc(3.5rem+env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50 w-72 max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-4.5rem)] overflow-y-auto bg-popover border border-border rounded-xl shadow-2xl p-4 flex flex-col gap-3 text-sm"
       >
         <div class="flex items-center justify-between">
           <span class="font-semibold text-foreground flex items-center gap-1.5">
@@ -248,11 +301,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue';
-import { ArrowLeft, Type, Bookmark, Loader2, X, Trash2, BookOpen, AlignJustify } from 'lucide-vue-next';
+import { getMediaToken } from '../utils/mediaToken';
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
+import { ArrowLeft, Type, Bookmark, Loader2, X, Trash2, BookOpen, AlignJustify, Search } from 'lucide-vue-next';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
 import { useViewSession } from '../composables/useViewSession';
+import RatingBar from './RatingBar.vue';
 
 const dialog = useDialogStore();
 const viewSession = useViewSession();
@@ -368,12 +423,93 @@ async function createRendition() {
 
 async function init() {
   const ePub = (await import('epubjs')).default;
-  const token = localStorage.getItem('plinthio_token') || '';
+  const token = getMediaToken() || '';
   const url = `/api/media/book/${props.item.id}/file?token=${token}`;
 
-  book = ePub(url);
+  // The file route has no .epub extension, and epub.js decides "zipped book vs unpacked
+  // folder" from the extension — without openAs it went looking for
+  // /file/META-INF/container.xml and never opened anything.
+  book = ePub(url, { openAs: 'epub' });
   await book.ready;
   await createRendition();
+}
+
+// ─── Search inside the book ───────────────────────────────────────────────────
+const SEARCH_LIMIT = 200;
+const showSearch = ref(false);
+const bookSearch = ref('');
+const searchResults = ref([]);
+const searching = ref(false);
+const searchDone = ref(false);
+const searchInputEl = ref(null);
+let activeHighlight = null;
+
+async function toggleSearch() {
+  showSearch.value = !showSearch.value;
+  if (showSearch.value) {
+    showSettings.value = false;
+    showBookmarks.value = false;
+    await nextTick();
+    searchInputEl.value?.focus();
+  }
+}
+
+function chapterLabel(href) {
+  const flat = [];
+  const walk = (items) => items?.forEach((t) => { flat.push(t); walk(t.subitems); });
+  walk(book?.navigation?.toc);
+  const base = (href || '').split('#')[0];
+  const match = flat.find((t) => (t.href || '').split('#')[0].endsWith(base) || base.endsWith((t.href || '').split('#')[0]));
+  return match?.label?.trim() || '';
+}
+
+// epub.js can search one spine section at a time; sections are loaded, searched and
+// unloaded in order so a long book doesn't hold every chapter's DOM in memory at once.
+async function runSearch() {
+  const query = bookSearch.value.trim();
+  if (!book || query.length < 2) return;
+  searching.value = true;
+  searchDone.value = false;
+  searchResults.value = [];
+  try {
+    const results = [];
+    for (const section of book.spine.spineItems) {
+      if (results.length >= SEARCH_LIMIT) break;
+      try {
+        await section.load(book.load.bind(book));
+        const found = section.find(query) || [];
+        const chapter = chapterLabel(section.href);
+        for (const hit of found) {
+          results.push({ cfi: hit.cfi, excerpt: hit.excerpt.trim(), chapter });
+          if (results.length >= SEARCH_LIMIT) break;
+        }
+      } finally {
+        section.unload();
+      }
+    }
+    searchResults.value = results;
+  } catch (err) {
+    console.warn('Book search failed:', err);
+  } finally {
+    searching.value = false;
+    searchDone.value = true;
+  }
+}
+
+async function goToResult(result) {
+  if (!rendition) return;
+  if (activeHighlight) {
+    try { rendition.annotations.remove(activeHighlight, 'highlight'); } catch (e) { /* gone */ }
+  }
+  await rendition.display(result.cfi);
+  try {
+    rendition.annotations.highlight(result.cfi, {}, null, 'plinthio-search-hit', { fill: 'yellow', 'fill-opacity': '0.35' });
+    activeHighlight = result.cfi;
+  } catch (e) {
+    // Highlighting is cosmetic; navigation already happened.
+  }
+  // On a phone the panel covers the page, so get out of the way.
+  if (window.matchMedia?.('(max-width: 640px)').matches) showSearch.value = false;
 }
 
 function nextPage() {
@@ -384,10 +520,11 @@ function prevPage() {
 }
 
 function onKeyDown(e) {
-  if (showSettings.value || showBookmarks.value) {
-    if (e.key === 'Escape') { showSettings.value = false; showBookmarks.value = false; }
+  if (showSettings.value || showBookmarks.value || showSearch.value) {
+    if (e.key === 'Escape') { showSettings.value = false; showBookmarks.value = false; showSearch.value = false; }
     return;
   }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); toggleSearch(); return; }
   if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); prevPage(); }
   else if (e.key === 'Escape') closeReader();

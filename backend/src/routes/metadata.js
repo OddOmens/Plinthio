@@ -12,6 +12,9 @@ import { parseMediaTitle } from '../services/titleCleaner.js';
 import multer from 'multer';
 import sharp from 'sharp';
 import { logger } from '../services/logger.js';
+import { serverError } from '../utils/http.js';
+import { sendError } from '../errors.js';
+import { AGE_RATINGS } from '../services/visibility.js';
 
 const router = express.Router();
 
@@ -30,6 +33,20 @@ const coverUpload = multer({
 });
 
 const ITEM_ID_RE = /^[a-f0-9]{32}$/;
+// Media types a metadata provider exists for (see services/externalMetadata.js).
+const MATCHABLE_TYPES = new Set(['manga', 'book', 'movie', 'show', 'anime']);
+
+// Batch/single auto-match already has the TMDB result in hand; store its score as the item's
+// world rating rather than looking it up again the first time someone opens the rating.
+async function saveMatchedRating(db, itemId, result) {
+  if (result?.source !== 'tmdb' || result.rating == null) return;
+  await db.run(
+    `UPDATE items SET external_rating = ?, external_rating_votes = ?, external_rating_source = 'tmdb',
+       external_rating_checked_at = CURRENT_TIMESTAMP
+     WHERE id = ?`,
+    [result.rating, result.ratingVotes ?? null, itemId]
+  );
+}
 
 async function writeCoverJpeg(buffer, coverFilename) {
   const fullPath = path.join(config.coversDir, coverFilename);
@@ -91,9 +108,16 @@ router.post('/series-cover', requireEditor, coverUpload.single('cover'), async (
   if (!seriesName) return res.status(400).json({ error: 'Series name is required' });
   if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
 
+  // Scope to the library/media type the editor is looking at, so re-arting one "Naruto"
+  // doesn't overwrite a same-named series elsewhere on the server.
+  let where = 'series = ?';
+  const params = [seriesName];
+  if (req.body.libraryId) { where += ' AND library_id = ?'; params.push(String(req.body.libraryId)); }
+  if (req.body.mediaType) { where += ' AND media_type = ?'; params.push(String(req.body.mediaType)); }
+
   try {
     const db = await getDb();
-    const items = await db.all('SELECT id FROM items WHERE series = ?', [seriesName]);
+    const items = await db.all(`SELECT id FROM items WHERE ${where}`, params);
     if (items.length === 0) return res.status(404).json({ error: 'Series not found' });
 
     for (const item of items) {
@@ -145,27 +169,23 @@ router.get('/search', async (req, res) => {
     res.json({ results, searchedAs: searchQuery !== query.trim() ? searchQuery : undefined, year: searchYear });
   } catch (err) {
     if (err.code === 'MISSING_API_KEY') {
-      return res.status(409).json({ error: err.message, code: err.code });
+      return sendError(req, res, 'P400');
     }
     console.error(`[metadata] Search failed for mediaType="${mediaType}" query="${query}":`, err);
 
     if (err.status === 401 || err.status === 403) {
-      return res.status(502).json({
-        error: 'The metadata provider rejected the configured API key. For TMDB, copy either the "API Key" or the "API Read Access Token" from your TMDB account settings into Server Settings — the server reached the provider fine, so this is the credential, not the network.',
-        code: 'PROVIDER_AUTH_FAILED'
+      return sendError(req, res, 'P401', {
+        message: 'The metadata provider rejected the configured API key. For TMDB, copy either the "API Key" or the "API Read Access Token" from your TMDB account settings into Server Settings. The server reached the provider fine, so this is the credential, not the network.'
       });
     }
     if (err.status === 429) {
-      return res.status(502).json({
-        error: 'The metadata provider is rate limiting this server. Wait a moment and try again.',
-        code: 'PROVIDER_RATE_LIMITED'
-      });
+      return sendError(req, res, 'P402');
     }
 
     const hint = err.name === 'AbortError'
-      ? 'Request timed out — the server could not reach the metadata provider in time.'
+      ? 'Request timed out: the server could not reach the metadata provider in time.'
       : 'Could not reach the external metadata provider from the server. Check the container has outbound internet access.';
-    res.status(502).json({ error: `${hint} (${err.message || 'unknown error'})` });
+    sendError(req, res, 'P403', { message: `${hint} (${err.message || 'unknown error'})` });
   }
 });
 
@@ -197,6 +217,7 @@ router.get('/admin/items', requireEditor, async (req, res) => {
       SELECT i.id, i.library_id, i.title, i.author, i.series, i.volume, i.path,
              i.cover_path, i.cover_source, i.media_type, i.duration, i.file_size,
              i.format, i.description, i.release_date, i.genres, i.artists, i.updated_at,
+             i.themes, i.publisher, i.status, i.age_rating,
              l.name as library_name, l.type as library_type
       FROM items i
       LEFT JOIN libraries l ON i.library_id = l.id
@@ -264,7 +285,7 @@ router.get('/admin/items', requireEditor, async (req, res) => {
     });
   } catch (err) {
     console.error('[metadata] admin/items error:', err);
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -309,7 +330,7 @@ router.post('/admin/batch-clean-titles', requireEditor, async (req, res) => {
     res.json({ message: `Cleaned ${updatedCount} title(s)`, updatedCount, results });
   } catch (err) {
     console.error('[metadata] batch-clean-titles error:', err);
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -369,7 +390,7 @@ router.post('/admin/batch-match', requireEditor, async (req, res) => {
         const newArtists = best.artists || item.artists;
         const newGenres = Array.isArray(best.genres) ? best.genres.join(', ') : (best.genres || item.genres);
         const coverToSave = newCoverPath || item.cover_path;
-        const coverSource = newCoverPath ? 'tmdb' : item.cover_source;
+        const coverSource = newCoverPath ? (best.source || 'provider') : item.cover_source;
 
         await db.run(
           `UPDATE items SET
@@ -378,6 +399,7 @@ router.post('/admin/batch-match', requireEditor, async (req, res) => {
            WHERE id = ?`,
           [newTitle, newOverview, newReleaseDate, newAuthor, newArtists, newGenres, coverToSave, coverSource, id]
         );
+        await saveMatchedRating(db, id, best);
 
         matchedCount++;
         results.push({
@@ -408,7 +430,7 @@ router.post('/admin/batch-match', requireEditor, async (req, res) => {
     });
   } catch (err) {
     console.error('[metadata] batch-match error:', err);
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -430,8 +452,20 @@ router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
     const cleanTitle = parsedPath.cleanTitle || parsedTitle.cleanTitle || item.title;
     const year = parsedPath.year || parsedTitle.year || (item.release_date ? item.release_date.slice(0, 4) : null);
 
+    // Nothing to search for this type yet — that's "no match", not a failure.
+    if (!MATCHABLE_TYPES.has(item.media_type)) {
+      return res.status(404).json({ error: `No metadata source for ${item.media_type}s yet`, cleanTitle, year });
+    }
+
     const queryTitle = parsedPath.isTv ? (parsedPath.series || cleanTitle) : cleanTitle;
-    const searchResults = await searchExternalMetadata(item.media_type, queryTitle, year);
+    let searchResults;
+    try {
+      searchResults = await searchExternalMetadata(item.media_type, queryTitle, year);
+    } catch (err) {
+      // A setup problem, not a crash: say what to do about it.
+      if (err.code === 'MISSING_API_KEY') return sendError(req, res, 'P400');
+      throw err;
+    }
 
     if (!searchResults || searchResults.length === 0) {
       return res.status(404).json({ error: 'No metadata found on external provider', cleanTitle, year });
@@ -455,7 +489,8 @@ router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
     const newArtists = best.artists || item.artists;
     const newGenres = Array.isArray(best.genres) ? best.genres.join(', ') : (best.genres || item.genres);
     const coverToSave = newCoverPath || item.cover_path;
-    const coverSource = newCoverPath ? 'tmdb' : item.cover_source;
+    // Credit the provider the art actually came from (only TMDB covers are TMDB).
+    const coverSource = newCoverPath ? (best.source || 'provider') : item.cover_source;
 
     await db.run(
       `UPDATE items SET
@@ -464,18 +499,19 @@ router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
        WHERE id = ?`,
       [newTitle, newOverview, newReleaseDate, newAuthor, newArtists, newGenres, coverToSave, coverSource, itemId]
     );
+    await saveMatchedRating(db, itemId, best);
 
     const updated = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
     res.json({ message: 'Item matched and updated', item: updated, matched: best });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
 // Apply a chosen external metadata result to an item: updates fields and downloads the cover
 router.post('/apply/:itemId', requireEditor, async (req, res) => {
   const { itemId } = req.params;
-  const { title, author, artists, series, coverUrl, description, releaseDate, genres, themes, publisher, status } = req.body;
+  const { title, author, artists, series, coverUrl, description, releaseDate, genres, themes, publisher, status, ageRating, source, rating } = req.body;
 
   try {
     const db = await getDb();
@@ -502,7 +538,7 @@ router.post('/apply/:itemId', requireEditor, async (req, res) => {
     if (series !== undefined) { fields.push('series = ?'); params.push(series || null); }
     if (coverPath) {
       fields.push('cover_path = ?'); params.push(coverPath);
-      fields.push('cover_source = ?'); params.push('tmdb');
+      fields.push('cover_source = ?'); params.push(typeof source === 'string' && source ? source : 'provider');
     }
     if (description !== undefined) { fields.push('description = ?'); params.push(description || null); }
     if (releaseDate !== undefined) { fields.push('release_date = ?'); params.push(releaseDate || null); }
@@ -516,6 +552,20 @@ router.post('/apply/:itemId', requireEditor, async (req, res) => {
     }
     if (publisher !== undefined) { fields.push('publisher = ?'); params.push(publisher || null); }
     if (status !== undefined) { fields.push('status = ?'); params.push(status || null); }
+    if (ageRating !== undefined) {
+      if (ageRating && !AGE_RATINGS.includes(ageRating)) {
+        return res.status(400).json({ error: `Age rating must be one of: ${AGE_RATINGS.join(', ')}` });
+      }
+      fields.push('age_rating = ?'); params.push(ageRating || null);
+    }
+    // A TMDB result carries its community score — keep it as the item's world rating so it
+    // shows without a separate lookup. Other providers' results don't set one.
+    if (source === 'tmdb' && typeof rating === 'number' && rating >= 0 && rating <= 10) {
+      fields.push('external_rating = ?'); params.push(rating);
+      fields.push('external_rating_votes = ?'); params.push(Number.isInteger(req.body.ratingVotes) ? req.body.ratingVotes : null);
+      fields.push("external_rating_source = 'tmdb'");
+      fields.push('external_rating_checked_at = CURRENT_TIMESTAMP');
+    }
 
     if (fields.length === 0) {
       return res.status(400).json({ error: 'No metadata fields provided to apply' });
@@ -529,7 +579,7 @@ router.post('/apply/:itemId', requireEditor, async (req, res) => {
     const updated = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
     res.json({ message: 'Metadata updated', item: updated });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

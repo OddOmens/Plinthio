@@ -1,6 +1,6 @@
 {
   "name": "plinthio",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "All-in-one self-hosted media server & PWA for Audiobooks, Manga & Comics, Books, Movies, TV Shows, and Anime",
   "private": true,
   "scripts": {
@@ -9,7 +9,9 @@
     "build:frontend": "cd frontend && npm run build",
     "start": "cd backend && npm start",
     "docker:build": "docker build -t plinthio:latest -f docker/Dockerfile .",
-    "docker:up": "docker compose -f docker/docker-compose.yml up -d"
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "release:version": "node scripts/set-version.mjs",
+    "test": "cd backend && npm test"
   },
   "keywords": [
     "audiobooks",

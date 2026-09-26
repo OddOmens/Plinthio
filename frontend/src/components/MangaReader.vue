@@ -8,7 +8,7 @@
     <!-- Top Controls — always visible on desktop (hover), auto-hide on touch -->
     <header
       :class="[
-        'absolute top-0 inset-x-0 z-30 transition-all duration-300 bg-gradient-to-b from-black/90 via-black/60 to-transparent pt-safe px-4 pb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3',
+        'absolute top-0 inset-x-0 z-30 transition-all duration-300 bg-gradient-to-b from-black/90 via-black/60 to-transparent pt-safe pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-4 flex flex-col gap-2 sm:flex-row landscape:flex-row sm:items-center landscape:items-center sm:justify-between landscape:justify-between sm:gap-3',
         controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
       ]"
     >
@@ -25,6 +25,7 @@
         <div class="min-w-0 flex-1">
           <h2 class="text-sm font-semibold truncate text-zinc-100">{{ item.title }}</h2>
           <p class="text-xs text-zinc-400 truncate">{{ pageDisplayLabel }}</p>
+          <RatingBar :item="item" tone="dark" compact class="mt-1" />
         </div>
       </div>
 
@@ -218,7 +219,7 @@
     <!-- Bottom Scrubber -->
     <footer
       :class="[
-        'absolute bottom-0 inset-x-0 z-30 transition-all duration-300 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-safe pt-8 flex flex-col gap-2',
+        'absolute bottom-0 inset-x-0 z-30 transition-all duration-300 bg-gradient-to-t from-black/90 via-black/60 to-transparent pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-safe pt-8 flex flex-col gap-2',
         controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
       ]"
     >
@@ -329,10 +330,12 @@
 </template>
 
 <script setup>
+import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
 import { useViewSession } from '../composables/useViewSession';
+import RatingBar from './RatingBar.vue';
 import { ArrowLeft, Loader2, Bookmark, Trash2, X, ChevronLeft, ChevronRight, Square, Columns2, Layers, BookOpen } from 'lucide-vue-next';
 
 const dialog = useDialogStore();
@@ -369,7 +372,7 @@ function goToNextVolume() {
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const readerEl = ref(null);
-const token = localStorage.getItem('plinthio_token') || '';
+const token = getMediaToken() || '';
 const loading = ref(true);
 const totalPages = ref(props.item.total_pages || 0);
 const currentPageIndex = ref(
@@ -476,8 +479,9 @@ let touchStartY = 0;
 let isTouchDevice = window.matchMedia?.('(pointer: coarse)')?.matches ?? false;
 
 // ─── Pinch-to-zoom & pan (iPad/tablet panel inspection) ───────────────────────
-// Native browser pinch-zoom is disabled site-wide (user-scalable=no), so paged
-// manga/comic pages get their own gesture-driven zoom/pan instead.
+// Paged mode takes over touch entirely (touch-action: none on the gesture layer) so swipes
+// turn pages, which also means native pinch can't reach it — so pages get their own
+// gesture-driven zoom/pan. Webtoon mode scrolls natively and uses browser pinch-zoom.
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
 const zoomScale = ref(1);

@@ -2,6 +2,8 @@ import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { logger } from '../services/logger.js';
+import { serverError } from '../utils/http.js';
+import { getRatingSettings, saveRatingSettings } from '../services/ratings.js';
 
 const router = express.Router();
 
@@ -30,6 +32,9 @@ router.get('/', async (req, res) => {
       if (row.key === 'layout_mode') config.layoutMode = row.value;
     }
 
+    // Which parts of the rating UI are shown (personal stars, server average, TMDB score).
+    config.ratings = await getRatingSettings(db);
+
     res.json(config);
   } catch (err) {
     // This route is intentionally public (the login screen needs branding before auth),
@@ -41,7 +46,7 @@ router.get('/', async (req, res) => {
 
 // PATCH /api/customization (Admin only)
 router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
-  const { serverName, customCss, accentTheme, loginMessage, layoutMode } = req.body;
+  const { serverName, customCss, accentTheme, loginMessage, layoutMode, ratings } = req.body;
 
   try {
     const db = await getDb();
@@ -95,6 +100,10 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       );
     }
 
+    if (ratings && typeof ratings === 'object') {
+      await saveRatingSettings(db, ratings);
+    }
+
     logger.info('system', `Customization updated by admin ${req.user.username}`);
 
     const rows = await db.all(`
@@ -117,10 +126,11 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       if (row.key === 'login_message') result.loginMessage = row.value;
       if (row.key === 'layout_mode') result.layoutMode = row.value;
     }
+    result.ratings = await getRatingSettings(db);
 
     res.json({ message: 'Customization updated successfully', ...result });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
