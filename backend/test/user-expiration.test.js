@@ -56,7 +56,7 @@ describe('user account expiration limits', () => {
     assert.equal(meRes.status, 200);
   });
 
-  test('Login is rejected with 403 ACCOUNT_EXPIRED for expired user', async () => {
+  test('Login is rejected with 403 P103 (account expired) for expired user', async () => {
     const pastDate = new Date(Date.now() - 3600 * 1000).toISOString();
     const createRes = await fetch(`${server.baseUrl}/api/users`, {
       method: 'POST',
@@ -78,10 +78,10 @@ describe('user account expiration limits', () => {
 
     assert.equal(loginRes.status, 403);
     const errBody = await loginRes.json();
-    assert.equal(errBody.error, 'ACCOUNT_EXPIRED');
+    assert.equal(errBody.code, 'P103');
   });
 
-  test('API request is rejected with 403 ACCOUNT_EXPIRED when account expires', async () => {
+  test('API request is rejected with 403 P103 (account expired) when account expires', async () => {
     // 1. Create a user with future expiry
     const futureExpiry = new Date(Date.now() + 10000).toISOString();
     const createRes = await fetch(`${server.baseUrl}/api/users`, {
@@ -124,7 +124,7 @@ describe('user account expiration limits', () => {
     const expiredMe = await fetch(`${server.baseUrl}/api/auth/me`, { headers: authed(userToken) });
     assert.equal(expiredMe.status, 403);
     const expiredJson = await expiredMe.json();
-    assert.equal(expiredJson.error, 'ACCOUNT_EXPIRED');
+    assert.equal(expiredJson.code, 'P103');
   });
 
   test('Admin can extend and renew an expired account', async () => {

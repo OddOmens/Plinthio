@@ -22,12 +22,20 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Server errors carry a generic `error` for everyone and the real cause in `detail`
-    // for admins only (see backend utils/http.js). Where it's present, it's the message
-    // worth showing — e.g. "folder is empty, is the drive mounted?" on a scan.
+    // Server errors carry a message for everyone, a Plinthio error code (P###, listed on the
+    // Docs page) and, for admins only, the underlying cause in `detail` (see backend
+    // errors.js). Fold them into the one `error` string every screen already displays:
+    //   "The media folder could not be read (I/O error): EIO: i/o error, scandir '/media' (P201)"
+    // `data.code` stays available for anything that needs to branch on it.
     const data = error.response?.data;
-    if (data && typeof data === 'object' && data.detail) {
-      data.error = data.detail;
+    if (data && typeof data === 'object' && !data._formatted) {
+      if (data.detail && data.detail !== data.error) {
+        data.error = data.error ? `${data.error}: ${data.detail}` : data.detail;
+      }
+      if (data.code && data.error) {
+        data.error = `${data.error} (${data.code})`;
+      }
+      data._formatted = true;
     }
     // A progress save that never reached the server (no response at all = offline) is
     // queued and replayed later rather than failing — see utils/offlineQueue.js.

@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { config } from '../config/env.js';
 import { getDb } from '../config/database.js';
+import { sendError } from '../errors.js';
 
 const userAuthCache = new Map();
 const AUTH_CACHE_TTL = 60 * 1000; // 60 seconds
@@ -65,10 +66,7 @@ export async function authenticateToken(req, res, next) {
       );
       if (keyRow) {
         if (keyRow.expires_at && new Date(keyRow.expires_at).getTime() <= Date.now()) {
-          return res.status(403).json({
-            error: 'ACCOUNT_EXPIRED',
-            message: 'Your account access has expired. Please contact your administrator.'
-          });
+          return sendError(req, res, 'P103');
         }
         keyRow.preferences = keyRow.preferences ? JSON.parse(keyRow.preferences) : {};
         req.user = keyRow;
@@ -78,7 +76,7 @@ export async function authenticateToken(req, res, next) {
     } catch (err) {
       console.error('API key auth error:', err);
     }
-    return res.status(401).json({ error: 'Invalid API Key' });
+    return sendError(req, res, 'P104');
   }
 
   // 2. Support Bearer token or URL query token
@@ -93,7 +91,7 @@ export async function authenticateToken(req, res, next) {
   }
 
   if (!token) {
-    return res.status(401).json({ error: 'Authentication required' });
+    return sendError(req, res, 'P100');
   }
 
   try {
@@ -104,7 +102,11 @@ export async function authenticateToken(req, res, next) {
     // into a URL is simply refused.
     const isMediaToken = payload.typ === MEDIA_TOKEN_TYPE;
     if (fromQuery ? (!isMediaToken || !isMediaRoute(req)) : isMediaToken) {
-      return res.status(401).json({ error: 'Session expired — please log in again' });
+      return sendError(req, res, 'P102', {
+        message: isMediaToken
+          ? 'Media tokens only work as ?token= on media URLs, not in an Authorization header or on other routes'
+          : 'Session tokens are not accepted in URLs, send them in the Authorization header'
+      });
     }
 
     const now = Date.now();
@@ -118,7 +120,7 @@ export async function authenticateToken(req, res, next) {
       user = await db.get('SELECT id, username, role, avatar, preferences, expires_at, token_version, max_age_rating, allow_unrated FROM users WHERE id = ?', [payload.userId]);
 
       if (!user) {
-        return res.status(401).json({ error: 'User no longer exists' });
+        return sendError(req, res, 'P101', { message: 'This account no longer exists' });
       }
 
       user.preferences = user.preferences ? JSON.parse(user.preferences) : {};
@@ -127,17 +129,14 @@ export async function authenticateToken(req, res, next) {
 
     if (user.expires_at && new Date(user.expires_at).getTime() <= now) {
       userAuthCache.delete(payload.userId);
-      return res.status(403).json({
-        error: 'ACCOUNT_EXPIRED',
-        message: 'Your account access has expired. Please contact your administrator.'
-      });
+      return sendError(req, res, 'P103');
     }
 
     // A password change bumps token_version server-side, which immediately invalidates
     // every token issued before that change (rather than leaving a stolen/old token
     // valid for its full remaining lifetime).
     if ((payload.tokenVersion || 0) !== (user.token_version || 0)) {
-      return res.status(401).json({ error: 'Session expired — please log in again' });
+      return sendError(req, res, 'P101', { message: 'Session was signed out, please log in again' });
     }
 
     req.user = user;
@@ -147,13 +146,15 @@ export async function authenticateToken(req, res, next) {
     // become valid again — 401 so the frontend's response interceptor clears it and bounces
     // to /login, instead of 403 which it doesn't treat as "log in again" and just retries
     // into the same dead token forever.
-    return res.status(401).json({ error: 'Session expired — please log in again' });
+    return sendError(req, res, 'P101', {
+      message: fromQuery ? 'Media link expired, reload to get a new one' : 'Session expired, please log in again'
+    });
   }
 }
 
 export function requireAdmin(req, res, next) {
   if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Admin privileges required' });
+    return sendError(req, res, 'P105');
   }
   next();
 }
@@ -161,7 +162,7 @@ export function requireAdmin(req, res, next) {
 // Admins implicitly have every Editor right too.
 export function requireEditor(req, res, next) {
   if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'editor')) {
-    return res.status(403).json({ error: 'Editor privileges required' });
+    return sendError(req, res, 'P106');
   }
   next();
 }

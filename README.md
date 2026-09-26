@@ -106,10 +106,21 @@ Plinthio's entire frontend runs on its own documented REST API, which is fully a
 | `/activity` | View/listen/read session & login history |
 | `/admin/logs` | Live server log stream (admin) |
 | `/health` | Unauthenticated health check |
+| `/errors` | Error code catalog (unauthenticated) |
 
 ```bash
 curl -H "X-API-Key: plinthio_..." http://localhost:8088/api/items
 ```
+
+### Error codes
+
+Every error response carries a Plinthio error code, and the app shows it after the message, e.g. *"The media file is missing from disk (P301)"*:
+
+```json
+{ "error": "The media file is missing from disk", "code": "P301" }
+```
+
+Codes are grouped by area: **P0xx** general, **P1xx** sign-in & permissions, **P2xx** libraries & scanning, **P3xx** playback, **P4xx** metadata providers, **P5xx** lists & requests. The full list, with what each one means and how to fix it, is in [`docs/error-codes.md`](docs/error-codes.md), in the app under **Docs → Error Codes**, and at `GET /api/errors`.
 
 ---
 

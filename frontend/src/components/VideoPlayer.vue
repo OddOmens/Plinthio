@@ -270,20 +270,37 @@
       <div>
         <h3 class="text-base font-semibold text-white">Can't play this video</h3>
         <p class="text-sm text-white/70 mt-1 max-w-md">{{ errorMessage }}</p>
+        <a
+          v-if="errorCode"
+          :href="`/docs#${errorCode}`"
+          target="_blank"
+          rel="noopener"
+          class="inline-block mt-2 text-xs font-mono text-white/50 hover:text-white underline underline-offset-2"
+        >
+          Error {{ errorCode }}: what this means
+        </a>
       </div>
-      <button
-        @click="closePlayer"
-        class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition"
-      >
-        Back to shelf
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          @click="retryPlayback"
+          class="px-4 py-2 rounded-xl bg-white text-black hover:bg-white/90 text-sm font-medium transition"
+        >
+          Retry
+        </button>
+        <button
+          @click="closePlayer"
+          class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition"
+        >
+          Back to shelf
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { loadCastSdk } from '../utils/cast';
-import { getMediaToken } from '../utils/mediaToken';
+import { getMediaToken, setMediaToken } from '../utils/mediaToken';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import Hls from 'hls.js';
 import api from '../api/client';
@@ -307,6 +324,7 @@ const controlsVisible = ref(true);
 const resumedFrom = ref(0);
 const showResumeToast = ref(false);
 const errorMessage = ref('');
+const errorCode = ref('');
 
 // 'direct' plays the file as-is with native range seeking. 'remux'/'transcode' go out as HLS
 // (see services/hls.js on the backend) — segmented, so the video element seeks normally
@@ -324,7 +342,9 @@ let saveTimer = null;
 let lastSavedTime = 0;
 let hls = null;
 
-const token = getMediaToken() || '';
+// Reactive so an expired media token can be swapped for a fresh one mid-session (see
+// renewMediaToken): every URL below is recomputed from it.
+const mediaToken = ref(getMediaToken() || '');
 const isTranscoding = computed(() => playbackMode.value !== 'direct');
 
 // Track menus
@@ -360,12 +380,12 @@ const streamUrl = computed(() => {
   const base = `/api/media/video/${props.item.id}`;
   const hevc = isClientHevcSupported() ? '&clientHevc=1' : '';
   return isTranscoding.value
-    ? `${base}/hls/master.m3u8?audio=${selectedAudioTrack.value}&token=${token}${hevc}`
-    : `${base}/stream?token=${token}`;
+    ? `${base}/hls/master.m3u8?audio=${selectedAudioTrack.value}&token=${mediaToken.value}${hevc}`
+    : `${base}/stream?token=${mediaToken.value}`;
 });
 
 const activeSubtitleUrl = computed(() => selectedSubtitle.value
-  ? `/api/media/video/${props.item.id}/subtitles/${selectedSubtitle.value}.vtt?token=${token}`
+  ? `/api/media/video/${props.item.id}/subtitles/${selectedSubtitle.value}.vtt?token=${mediaToken.value}`
   : null);
 
 const progressPercent = computed(() => totalDuration.value > 0
@@ -483,7 +503,7 @@ const previewStyle = computed(() => {
   return {
     width: `${index.tileWidth}px`,
     height: `${index.tileHeight}px`,
-    backgroundImage: `url(/api/media/video/${props.item.id}/trickplay/sheet_${sheet}.jpg?token=${token})`,
+    backgroundImage: `url(/api/media/video/${props.item.id}/trickplay/sheet_${sheet}.jpg?token=${mediaToken.value})`,
     backgroundPosition: `-${column * index.tileWidth}px -${row * index.tileHeight}px`
   };
 });
@@ -561,16 +581,15 @@ function attachStream() {
       // Generous buffer for LAN — plenty of bandwidth to fill it, and a bigger buffer
       // means scrubbing forward never hits a gap even mid-encode.
       maxBufferLength: 60,
-      maxMaxBufferLength: 120,
-      xhrSetup: (xhr) => {
-        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-      }
+      maxMaxBufferLength: 120
+      // No Authorization header: `token` is the media token, which the server only accepts
+      // in the URL (a media token in a header is refused with 401). The master playlist URL
+      // carries ?token= and the server writes it into every variant and segment URL.
     });
     hls.on(Hls.Events.ERROR, (_event, data) => {
       if (!data.fatal) return;
-      console.error('[video] hls.js fatal error:', data.type, data.details);
-      preparing.value = false;
-      errorMessage.value = 'Conversion failed on the server. Check the server logs — ffmpeg may be missing or the file may be corrupt.';
+      console.error('[video] hls.js fatal error:', data.type, data.details, data.response);
+      handleHlsFatal(data);
     });
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
       hls.currentLevel = selectedQuality.value;
@@ -729,24 +748,129 @@ function cancelNextEpisode() {
   nextEpisode.value = null;
 }
 
-function onError() {
-  const video = videoEl.value;
-  const code = video?.error?.code;
+// ── Playback failures ────────────────────────────────────────────────────────────────────
+// A <video> element or hls.js only reports "it failed", never why. The server does know —
+// every error response carries a Plinthio error code (P### — see Docs → Error codes) — so
+// a failure re-requests the URL that failed and shows the server's own message and code.
+// Client-side failures use the app codes P350–P352.
 
-  // Safety net: if the probe said "direct" but the browser still can't decode it, fall back
-  // to HLS transcoding once rather than surfacing a dead end.
-  if (code === 4 && !isTranscoding.value) {
-    console.warn('Direct playback rejected by browser — falling back to HLS transcode.');
-    playbackMode.value = 'transcode';
-    preparing.value = true;
-    attachStream();
-    return;
+const CLIENT_ERRORS = {
+  P350: 'This browser cannot play this video, even after converting it.',
+  P351: 'Lost connection to the server. Check your network and press Retry.',
+  P352: 'Your media access expired and could not be renewed. Reload the page, or sign out and back in.'
+};
+
+let tokenRenewed = false;
+let mediaRecoveryTried = false;
+
+function showError(code, message) {
+  preparing.value = false;
+  errorCode.value = code || '';
+  errorMessage.value = message || CLIENT_ERRORS[code] || 'Playback failed.';
+}
+
+// Asks the server why `url` failed. Returns { status, code, message }, or null when the
+// server couldn't be reached at all.
+async function diagnose(url) {
+  try {
+    const res = await fetch(url, { headers: { Range: 'bytes=0-0' }, cache: 'no-store' });
+    if (res.ok) return { status: res.status };
+    let body = {};
+    try { body = await res.json(); } catch (e) { /* not JSON */ }
+    return { status: res.status, code: body.code, message: body.error };
+  } catch (e) {
+    return null;
+  }
+}
+
+// Media tokens last a day, but the player reads the one in storage when it opens, and an
+// installed PWA can sit in the background for longer than that. A 401 gets one fresh token
+// and a reload at the same position before it's treated as an error.
+async function renewMediaToken() {
+  if (tokenRenewed) return false;
+  tokenRenewed = true;
+  try {
+    const res = await api.post('/auth/media-token');
+    if (!res.data?.mediaToken) return false;
+    setMediaToken(res.data.mediaToken);
+    mediaToken.value = res.data.mediaToken;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function reloadAt(position) {
+  preparing.value = true;
+  errorMessage.value = '';
+  errorCode.value = '';
+  attachStream();
+  const video = videoEl.value;
+  if (!video || !position) return;
+  video.addEventListener('loadedmetadata', () => {
+    video.currentTime = position;
+    video.play().catch(() => {});
+  }, { once: true });
+}
+
+async function explainFailure(url, fallbackCode) {
+  const found = await diagnose(url);
+  if (!found) return showError('P351');
+  if (found.status === 401 && await renewMediaToken()) return reloadAt(videoTime.value);
+  if (found.status === 401) return showError('P352');
+  if (found.code) return showError(found.code, found.message);
+  showError(fallbackCode);
+}
+
+async function handleHlsFatal(data) {
+  if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+    // hls.js's standard recovery for a decoder hiccup; only give up if it happens again.
+    if (!mediaRecoveryTried && hls) {
+      mediaRecoveryTried = true;
+      hls.recoverMediaError();
+      return;
+    }
+    return showError('P350');
   }
 
-  preparing.value = false;
-  errorMessage.value = isTranscoding.value
-    ? 'Conversion failed on the server. Check the server logs — ffmpeg may be missing or the file may be corrupt.'
-    : 'The video stream stopped unexpectedly. Check the server logs for details.';
+  const failedUrl = data.url || data.context?.url || streamUrl.value;
+  if (data.response?.code === 401 && await renewMediaToken()) return reloadAt(videoTime.value);
+  await explainFailure(failedUrl, 'P304');
+}
+
+async function onError() {
+  const video = videoEl.value;
+  const code = video?.error?.code;
+  // Errors from an hls.js-driven element are handled by handleHlsFatal instead.
+  if (hls) return;
+
+  if (!isTranscoding.value) {
+    const found = await diagnose(streamUrl.value);
+    if (!found) return showError('P351');
+    if (found.status === 401 && await renewMediaToken()) return reloadAt(videoTime.value);
+    if (found.status === 401) return showError('P352');
+    if (found.code) return showError(found.code, found.message);
+
+    // The server served the file fine, so the browser can't decode it. If the probe said
+    // "direct" but the browser still refuses, fall back to HLS transcoding once rather than
+    // surfacing a dead end.
+    if (code === 4) {
+      console.warn('Direct playback rejected by browser — falling back to HLS transcode.');
+      playbackMode.value = 'transcode';
+      reloadAt(videoTime.value);
+      return;
+    }
+    return showError(code === 2 ? 'P351' : 'P350');
+  }
+
+  // Safari's native HLS.
+  await explainFailure(streamUrl.value, code === 4 ? 'P350' : 'P304');
+}
+
+function retryPlayback() {
+  tokenRenewed = false;
+  mediaRecoveryTried = false;
+  reloadAt(videoTime.value);
 }
 
 async function start() {
@@ -802,8 +926,8 @@ function closePlayer() {
 }
 
 function onBeforeUnload() {
-  if (props.item?.id && token) {
-    navigator.sendBeacon?.(`/api/media/video/${props.item.id}/hls/stop?token=${encodeURIComponent(token)}`);
+  if (props.item?.id && mediaToken.value) {
+    navigator.sendBeacon?.(`/api/media/video/${props.item.id}/hls/stop?token=${encodeURIComponent(mediaToken.value)}`);
   }
 }
 

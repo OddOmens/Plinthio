@@ -33,6 +33,7 @@ import customizationRoutes from './routes/customization.js';
 import activityRoutes from './routes/activity.js';
 import seriesRoutes from './routes/series.js';
 import requestRoutes from './routes/requests.js';
+import { attachErrorCodes, errorCatalog, sendError } from './errors.js';
 import opdsRoutes from './routes/opds.js';
 import healthRoutes from './routes/health.js';
 import systemRoutes from './routes/system.js';
@@ -115,6 +116,10 @@ app.use(compression({
 
 app.use(express.json());
 
+// Every error response carries a Plinthio error code (see errors.js). Routes name specific
+// codes; this fills in a status-based one for any that don't.
+app.use('/api', attachErrorCodes);
+
 // Media URLs authenticate via a `?token=<JWT>` query param (needed for <img>/<video> src,
 // which can't send an Authorization header) — redact it so a live session token never
 // ends up sitting in plaintext in the access log.
@@ -140,7 +145,11 @@ const authLimiter = rateLimit({
   max: 60, // 60 requests per 15 min for auth/login attempts
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many authentication attempts. Please try again later.' }
+  message: { error: 'Too many authentication attempts. Please try again later.', code: 'P108' },
+  // The app calls setup-status, refresh and media-token on every page load. Those can't be
+  // used to guess anything, and counting them locked out a household (one shared IP)
+  // after a few dozen reloads. Only real sign-in / setup attempts count.
+  skip: (req) => req.method === 'GET' || ['/refresh', '/media-token', '/me'].includes(req.path)
 });
 
 const apiLimiter = rateLimit({
@@ -156,7 +165,7 @@ const loginLimiter = rateLimit({
   max: 10, // 10 login attempts per 15 min per IP
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many login attempts. Please wait before trying again.' }
+  message: { error: 'Too many login attempts. Please wait before trying again.', code: 'P108' }
 });
 
 // Full backups (VACUUM INTO a whole-DB snapshot) are comparatively expensive disk/IO work —
@@ -166,7 +175,7 @@ const backupLimiter = rateLimit({
   max: 6, // 6 backup operations per 15 min is generous for manual + scheduled use
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many backup requests. Please wait before trying again.' }
+  message: { error: 'Too many backup requests. Please wait before trying again.', code: 'P005' }
 });
 
 // API Routes
@@ -195,6 +204,11 @@ app.use('/api/series', seriesRoutes);
 // limiter rather than the tighter JSON API one.
 app.use('/api/opds', mediaLimiter, opdsRoutes);
 
+// The error code catalog, for the in-app docs. Public, like the docs page itself.
+app.get('/api/errors', (req, res) => {
+  res.json({ codes: errorCatalog() });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', version: APP_VERSION, app: 'Plinthio' });
@@ -215,10 +229,13 @@ app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   // Body-parser rejects (malformed JSON, oversized body) are the client's fault and safe to
   // describe; anything else stays in the server log.
-  if (err.type === 'entity.parse.failed' || err.type === 'entity.too.large') {
-    return res.status(err.status || 400).json({ error: err.message });
+  if (err.type === 'entity.parse.failed') {
+    return sendError(req, res, 'P001', { message: err.message, status: err.status || 400 });
   }
-  res.status(500).json({ error: 'Internal Server Error' });
+  if (err.type === 'entity.too.large') {
+    return sendError(req, res, 'P007', { message: err.message, status: 413 });
+  }
+  sendError(req, res, 'P000', { err });
 });
 
 // Bootstrap server

@@ -10,7 +10,14 @@ import { getThumbnailPath, getOrCreateThumbnail } from '../services/thumbnails.j
 import { isItemHiddenForUser } from '../services/visibility.js';
 import { escapeXml } from '../utils/xml.js';
 import { sendRangedFile, streamFile } from '../utils/fileStream.js';
-import { serverError } from '../utils/http.js';
+import { sendError, codeForFsError } from '../errors.js';
+
+// Reading a book/comic/audiobook file: a disconnected drive or unreadable file is P302/P301,
+// anything else the generic P000.
+function mediaFileError(req, res, err) {
+  const code = err?.plinthioCode || codeForFsError(err, { playback: true }) || 'P000';
+  sendError(req, res, code, { err });
+}
 
 const router = express.Router();
 
@@ -47,7 +54,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
   try {
     const db = await getDb();
     if (await isItemHiddenForUser(db, itemId, req.user)) {
-      return res.status(404).json({ error: 'Item not found' });
+      return sendError(req, res, 'P300');
     }
 
     // FAST PATH: If thumbnail WebP file is already generated and cached on disk
@@ -127,7 +134,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     res.send(svg);
   } catch (err) {
-    serverError(req, res, err);
+    mediaFileError(req, res, err);
   }
 });
 
@@ -140,18 +147,18 @@ router.get('/stream/:id', authenticateToken, async (req, res) => {
     const db = await getDb();
     const item = await db.get('SELECT * FROM items WHERE id = ?', [req.params.id]);
 
-    if (!item) return res.status(404).json({ error: 'Item not found' });
+    if (!item) return sendError(req, res, 'P300');
     if (await isItemHiddenForUser(db, req.params.id, req.user)) {
-      return res.status(404).json({ error: 'Item not found' });
+      return sendError(req, res, 'P300');
     }
-    if (!fs.existsSync(item.path)) return res.status(404).json({ error: 'File missing from storage' });
+    if (!fs.existsSync(item.path)) return sendError(req, res, 'P301');
 
     const filePath = item.path;
     const stat = fs.statSync(filePath);
     const contentType = mime.lookup(filePath) || 'audio/mpeg';
     sendRangedFile(req, res, filePath, stat.size, contentType);
   } catch (err) {
-    serverError(req, res, err);
+    mediaFileError(req, res, err);
   }
 });
 
@@ -163,9 +170,9 @@ router.get('/manga/:id/pages', authenticateToken, async (req, res) => {
   try {
     const db = await getDb();
     const item = await db.get('SELECT path FROM items WHERE id = ?', [req.params.id]);
-    if (!item) return res.status(404).json({ error: 'Item not found' });
+    if (!item) return sendError(req, res, 'P300');
     if (await isItemHiddenForUser(db, req.params.id, req.user)) {
-      return res.status(404).json({ error: 'Item not found' });
+      return sendError(req, res, 'P300');
     }
 
     const pages = await getMangaPagesList(item.path);
@@ -174,7 +181,7 @@ router.get('/manga/:id/pages', authenticateToken, async (req, res) => {
       pages: pages.map((_, index) => ({ pageIndex: index, pageNumber: index + 1 }))
     });
   } catch (err) {
-    serverError(req, res, err);
+    mediaFileError(req, res, err);
   }
 });
 
@@ -186,14 +193,14 @@ router.get('/manga/:id/page/:pageIndex', authenticateToken, async (req, res) => 
   try {
     const db = await getDb();
     const item = await db.get('SELECT path FROM items WHERE id = ?', [req.params.id]);
-    if (!item) return res.status(404).json({ error: 'Item not found' });
+    if (!item) return sendError(req, res, 'P300');
     if (await isItemHiddenForUser(db, req.params.id, req.user)) {
-      return res.status(404).json({ error: 'Item not found' });
+      return sendError(req, res, 'P300');
     }
 
     const pageIndex = parseInt(req.params.pageIndex, 10);
     if (!Number.isInteger(pageIndex) || pageIndex < 0) {
-      return res.status(400).json({ error: 'Invalid page index' });
+      return sendError(req, res, 'P306', { message: 'Invalid page index' });
     }
     const page = await extractMangaPage(item.path, pageIndex);
 
@@ -205,7 +212,7 @@ router.get('/manga/:id/page/:pageIndex', authenticateToken, async (req, res) => 
     res.setHeader('Cache-Control', 'public, max-age=604800'); // Cache for 7 days
     res.send(page.data);
   } catch (err) {
-    serverError(req, res, err);
+    mediaFileError(req, res, err);
   }
 });
 
@@ -217,21 +224,21 @@ router.get('/book/:id/file', authenticateToken, async (req, res) => {
   try {
     const db = await getDb();
     const item = await db.get('SELECT path, title, format FROM items WHERE id = ?', [req.params.id]);
-    if (!item) return res.status(404).json({ error: 'Item not found' });
+    if (!item) return sendError(req, res, 'P300');
     if (await isItemHiddenForUser(db, req.params.id, req.user)) {
-      return res.status(404).json({ error: 'Item not found' });
+      return sendError(req, res, 'P300');
     }
 
     // Without this, a file removed from disk since the last scan made createReadStream emit
     // an unhandled 'error' and crashed the server for everyone.
-    if (!fs.existsSync(item.path)) return res.status(404).json({ error: 'File missing from storage' });
+    if (!fs.existsSync(item.path)) return sendError(req, res, 'P301');
 
     const contentType = mime.lookup(item.path) || 'application/octet-stream';
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(item.title)}.${item.format}"`);
     streamFile(res, item.path);
   } catch (err) {
-    serverError(req, res, err);
+    mediaFileError(req, res, err);
   }
 });
 

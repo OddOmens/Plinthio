@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { extractAudiobookMetadata, extractMangaMetadata, extractBookMetadata, extractVideoMetadata } from './metadata.js';
 import { logger } from './logger.js';
+import { PlinthioError, codeForFsError } from '../errors.js';
 import { config } from '../config/env.js';
 import { getThumbnailPath } from './thumbnails.js';
 import { invalidateCoverCache } from '../routes/media.js';
@@ -40,12 +41,24 @@ export async function scanLibrary(libraryId) {
   try {
     const library = await db.get('SELECT * FROM libraries WHERE id = ?', [libraryId]);
     if (!library) {
-      throw new Error(`Library ${libraryId} not found`);
+      throw new PlinthioError('P002', `Library ${libraryId} not found`);
     }
 
     logger.info('scan', `Starting scan for library "${library.name}" (${library.type})`, { path: library.path });
     if (!fs.existsSync(library.path)) {
-      throw new Error(`Library path does not exist on disk: ${library.path}`);
+      throw new PlinthioError('P200', `Library folder for "${library.name}" does not exist: ${library.path}`);
+    }
+    // walkDirectory skips unreadable subfolders so one bad folder can't sink a scan, but an
+    // unreadable library root (EIO from a disconnected drive, EACCES) would then look like
+    // an empty library. Read the root once up front so that fails loudly, with its code.
+    try {
+      fs.readdirSync(library.path);
+    } catch (err) {
+      throw new PlinthioError(
+        codeForFsError(err) || 'P000',
+        `Could not read the "${library.name}" folder (${err.code || err.message}): ${library.path}`,
+        { cause: err }
+      );
     }
 
     const files = [];
@@ -60,7 +73,8 @@ export async function scanLibrary(libraryId) {
     // looks exactly like "every file was deleted" — and the prune below would then wipe the
     // whole catalog (and its covers, reading progress links, custom art). Refuse instead.
     if (files.length === 0 && dbItemsBefore.length > 0) {
-      throw new Error(
+      throw new PlinthioError(
+        'P201',
         `"${library.name}" folder is empty but the catalog has ${dbItemsBefore.length} item(s) — ` +
         'is the drive mounted? Scan skipped so nothing was removed.'
       );

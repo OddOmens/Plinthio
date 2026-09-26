@@ -13,6 +13,7 @@ import multer from 'multer';
 import sharp from 'sharp';
 import { logger } from '../services/logger.js';
 import { serverError } from '../utils/http.js';
+import { sendError } from '../errors.js';
 import { AGE_RATINGS } from '../services/visibility.js';
 
 const router = express.Router();
@@ -154,27 +155,23 @@ router.get('/search', async (req, res) => {
     res.json({ results, searchedAs: searchQuery !== query.trim() ? searchQuery : undefined, year: searchYear });
   } catch (err) {
     if (err.code === 'MISSING_API_KEY') {
-      return res.status(409).json({ error: err.message, code: err.code });
+      return sendError(req, res, 'P400');
     }
     console.error(`[metadata] Search failed for mediaType="${mediaType}" query="${query}":`, err);
 
     if (err.status === 401 || err.status === 403) {
-      return res.status(502).json({
-        error: 'The metadata provider rejected the configured API key. For TMDB, copy either the "API Key" or the "API Read Access Token" from your TMDB account settings into Server Settings — the server reached the provider fine, so this is the credential, not the network.',
-        code: 'PROVIDER_AUTH_FAILED'
+      return sendError(req, res, 'P401', {
+        message: 'The metadata provider rejected the configured API key. For TMDB, copy either the "API Key" or the "API Read Access Token" from your TMDB account settings into Server Settings. The server reached the provider fine, so this is the credential, not the network.'
       });
     }
     if (err.status === 429) {
-      return res.status(502).json({
-        error: 'The metadata provider is rate limiting this server. Wait a moment and try again.',
-        code: 'PROVIDER_RATE_LIMITED'
-      });
+      return sendError(req, res, 'P402');
     }
 
     const hint = err.name === 'AbortError'
-      ? 'Request timed out — the server could not reach the metadata provider in time.'
+      ? 'Request timed out: the server could not reach the metadata provider in time.'
       : 'Could not reach the external metadata provider from the server. Check the container has outbound internet access.';
-    res.status(502).json({ error: `${hint} (${err.message || 'unknown error'})` });
+    sendError(req, res, 'P403', { message: `${hint} (${err.message || 'unknown error'})` });
   }
 });
 

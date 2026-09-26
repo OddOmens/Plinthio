@@ -7,6 +7,7 @@ import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { scanLibrary } from '../services/scanner.js';
 import { logger } from '../services/logger.js';
 import { serverError } from '../utils/http.js';
+import { sendError } from '../errors.js';
 
 const router = express.Router();
 
@@ -104,8 +105,8 @@ router.post('/', requireAdmin, async (req, res) => {
   const resolvedPath = resolveLibraryPath(libPath);
 
   if (!fs.existsSync(resolvedPath)) {
-    return res.status(400).json({
-      error: `Directory not found: "${libPath}". In Docker, your host database is mounted at "/media" (e.g., "/media/Books" or "/media/Manga").`
+    return sendError(req, res, 'P200', {
+      message: `Directory not found: "${libPath}". In Docker, your media folder is mounted at "/media" (e.g., "/media/Books" or "/media/Manga").`
     });
   }
 

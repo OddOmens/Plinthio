@@ -2,6 +2,7 @@ import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { config } from '../config/env.js';
+import { PlinthioError } from '../errors.js';
 import { logger } from './logger.js';
 import { getActiveHwaccel, hwaccelConfig } from './hwaccel.js';
 
@@ -221,7 +222,7 @@ export async function getOrStartJob(itemId, filePath, opts = {}) {
 
   proc.on('error', (err) => {
     job.exited = true;
-    job.error = err;
+    job.error = new PlinthioError('P303', undefined, { cause: err });
     logger.warn('media', `HLS ffmpeg spawn failed for item ${itemId}: ${err.message}`);
   });
 
@@ -233,7 +234,11 @@ export async function getOrStartJob(itemId, filePath, opts = {}) {
       // A hardware encoder that fails at runtime (driver mismatch, unsupported pixel format)
       // would otherwise break playback outright, so the cached output is cleared and the
       // next request re-runs — falling back to software if the admin switches it off.
-      job.error = new Error(stderr.trim().slice(0, 300));
+      job.error = new PlinthioError(
+        /Input\/output error/i.test(stderr) ? 'P302' : 'P304',
+        undefined,
+        { cause: new Error(stderr.trim().slice(0, 300)) }
+      );
       fs.rmSync(job.dir, { recursive: true, force: true });
     }
   });

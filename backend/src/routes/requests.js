@@ -4,6 +4,7 @@ import { getDb } from '../config/database.js';
 import { authenticateToken, requireEditor } from '../middleware/auth.js';
 import { ALL_MEDIA_TYPES } from '../config/mediaTypes.js';
 import { serverError } from '../utils/http.js';
+import { sendError } from '../errors.js';
 import { logger } from '../services/logger.js';
 
 const router = express.Router();
@@ -27,7 +28,7 @@ router.get('/', async (req, res) => {
   const { status, scope } = req.query;
   const all = scope === 'all';
   if (all && !isStaff(req.user)) {
-    return res.status(403).json({ error: 'Editor privileges required' });
+    return sendError(req, res, 'P106');
   }
   if (status && !STATUSES.includes(status)) {
     return res.status(400).json({ error: `Status must be one of: ${STATUSES.join(', ')}` });
@@ -99,11 +100,8 @@ router.post('/', async (req, res) => {
       ORDER BY created_at DESC LIMIT 1
     `, [source, String(externalId)]);
     if (existing) {
-      return res.status(409).json({
-        error: existing.status === 'accepted_added'
-          ? 'That title has already been added to the library'
-          : 'That title has already been requested',
-        status: existing.status
+      return sendError(req, res, existing.status === 'accepted_added' ? 'P504' : 'P503', {
+        extra: { status: existing.status }
       });
     }
 
@@ -138,7 +136,7 @@ router.patch('/:id', requireEditor, async (req, res) => {
   try {
     const db = await getDb();
     const request = await db.get('SELECT id, title FROM media_requests WHERE id = ?', [req.params.id]);
-    if (!request) return res.status(404).json({ error: 'Request not found' });
+    if (!request) return sendError(req, res, 'P506');
 
     // Moving a request back to pending un-handles it.
     const handled = status !== 'pending';
@@ -169,11 +167,11 @@ router.delete('/:id', async (req, res) => {
   try {
     const db = await getDb();
     const request = await db.get('SELECT id, user_id, status FROM media_requests WHERE id = ?', [req.params.id]);
-    if (!request) return res.status(404).json({ error: 'Request not found' });
+    if (!request) return sendError(req, res, 'P506');
 
     const ownPending = request.user_id === req.user.id && request.status === 'pending';
     if (!ownPending && !isStaff(req.user)) {
-      return res.status(403).json({ error: 'Only pending requests can be withdrawn' });
+      return sendError(req, res, 'P505');
     }
 
     await db.run('DELETE FROM media_requests WHERE id = ?', [request.id]);

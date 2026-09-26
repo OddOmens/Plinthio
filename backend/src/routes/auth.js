@@ -10,6 +10,7 @@ import { logger } from '../services/logger.js';
 import { LIBRARY_TYPES, resolveLibraryPath, listMediaDirectories } from './libraries.js';
 import { ALL_MEDIA_TYPES } from '../config/mediaTypes.js';
 import { serverError } from '../utils/http.js';
+import { sendError } from '../errors.js';
 import { normalizeUsername, USERNAME_RULE } from '../utils/username.js';
 
 const router = express.Router();
@@ -44,8 +45,8 @@ router.get('/setup/browse', async (req, res) => {
     }
     res.json(listMediaDirectories(req.query.dir));
   } catch (err) {
-    console.error('[auth] setup browse failed:', err);
-    res.status(500).json({ error: 'Could not list folders' });
+    // A folder that can't be read (disconnected drive → EIO) gets its library code (P201).
+    serverError(req, res, err, 'Could not list folders');
   }
 });
 
@@ -181,23 +182,20 @@ router.post('/login', async (req, res) => {
       await bcrypt.compare(password, DUMMY_HASH);
       await recordLoginAttempt(db, { userId: null, username: username.trim().slice(0, 64), success: false, ip, userAgent });
       logger.warn('auth', `Failed sign-in attempt for unknown username "${username.trim()}"`, { ip });
-      return res.status(401).json({ error: 'Invalid username or password' });
+      return sendError(req, res, 'P107');
     }
 
     const isValid = await bcrypt.compare(password, user.password_hash);
     if (!isValid) {
       await recordLoginAttempt(db, { userId: user.id, username: user.username, success: false, ip, userAgent });
       logger.warn('auth', `Failed sign-in attempt for "${user.username}" (wrong password)`, { ip });
-      return res.status(401).json({ error: 'Invalid username or password' });
+      return sendError(req, res, 'P107');
     }
 
     if (user.expires_at && new Date(user.expires_at).getTime() <= Date.now()) {
       await recordLoginAttempt(db, { userId: user.id, username: user.username, success: false, ip, userAgent });
       logger.warn('auth', `Failed sign-in attempt for expired account "${user.username}"`, { ip });
-      return res.status(403).json({
-        error: 'ACCOUNT_EXPIRED',
-        message: 'Your account access has expired. Please contact your administrator.'
-      });
+      return sendError(req, res, 'P103');
     }
 
     const token = jwt.sign(

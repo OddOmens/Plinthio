@@ -830,6 +830,50 @@ header input[type="text"] {
           </div>
         </section>
 
+        <!-- SECTION: Error codes -->
+        <section v-if="activeSection === 'errors'" id="error-codes" class="space-y-6">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">Error Codes</h1>
+            <p class="text-sm text-muted-foreground mt-1.5">
+              Every error Plinthio shows ends in a code like <code class="text-foreground bg-muted px-1 rounded">(P301)</code>.
+              Look it up here to see what went wrong and how to fix it. API responses carry the same code in a
+              <code class="text-foreground bg-muted px-1 rounded">code</code> field, and admins also get the underlying cause in
+              <code class="text-foreground bg-muted px-1 rounded">detail</code>.
+            </p>
+          </div>
+
+          <input
+            v-model="errorFilter"
+            type="search"
+            placeholder="Search codes, e.g. P301 or ffmpeg"
+            class="w-full h-10 px-3 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground"
+          />
+
+          <p v-if="errorCodesError" class="text-sm text-destructive">{{ errorCodesError }}</p>
+          <div v-else-if="!errorCodes.length" class="text-sm text-muted-foreground">Loading…</div>
+
+          <div v-for="group in errorGroups" :key="group.title" class="space-y-3">
+            <h2 class="text-sm font-semibold text-foreground">{{ group.title }}</h2>
+            <div
+              v-for="entry in group.codes"
+              :key="entry.code"
+              :id="entry.code"
+              class="p-4 rounded-xl border bg-card space-y-1.5 scroll-mt-24 transition"
+              :class="highlightedCode === entry.code ? 'border-primary ring-1 ring-primary' : 'border-border'"
+            >
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-mono text-xs font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary">{{ entry.code }}</span>
+                <span class="font-semibold text-xs text-foreground">{{ entry.title }}</span>
+                <span class="text-[10px] text-muted-foreground ml-auto">
+                  {{ entry.side === 'client' ? 'Raised by the app' : `HTTP ${entry.status}` }}
+                </span>
+              </div>
+              <p class="text-xs text-muted-foreground">{{ entry.meaning }}</p>
+              <p class="text-xs text-muted-foreground"><strong class="text-foreground">What to do:</strong> {{ entry.fix }}</p>
+            </div>
+          </div>
+        </section>
+
         <!-- SECTION: Troubleshooting -->
         <section v-if="activeSection === 'troubleshooting'" class="space-y-6">
           <div>
@@ -916,7 +960,7 @@ header input[type="text"] {
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCustomizationStore } from '../stores/customization';
 import Sidebar from '../components/Sidebar.vue';
@@ -944,7 +988,8 @@ import {
   LifeBuoy,
   Hourglass,
   Lock,
-  Clock
+  Clock,
+  CircleAlert
 } from 'lucide-vue-next';
 
 const customizationStore = useCustomizationStore();
@@ -960,6 +1005,59 @@ const activeSection = ref('overview');
 
 // Grouped so the nav stays a fixed, predictable width (w-64) no matter how many guides
 // get added — new topics join an existing group instead of growing a single flat list.
+// ── Error codes ──────────────────────────────────────────────────────────────────────────
+// Served by the backend from its catalog (backend/src/errors.js), so this page can never
+// list a code the server doesn't use. /docs#P301 opens this section on that code, which is
+// where the video player's "what this means" link points.
+const ERROR_SECTIONS = [
+  { prefix: 'P0', title: 'General' },
+  { prefix: 'P1', title: 'Sign-in & permissions' },
+  { prefix: 'P2', title: 'Libraries & scanning' },
+  { prefix: 'P3', title: 'Playback' },
+  { prefix: 'P4', title: 'Metadata providers' },
+  { prefix: 'P5', title: 'Lists & requests' }
+];
+const errorCodes = ref([]);
+const errorCodesError = ref('');
+const errorFilter = ref('');
+const highlightedCode = ref('');
+
+const errorGroups = computed(() => {
+  const q = errorFilter.value.trim().toLowerCase();
+  const matches = errorCodes.value.filter((e) => !q ||
+    [e.code, e.title, e.meaning, e.fix].some((field) => field?.toLowerCase().includes(q)));
+  return ERROR_SECTIONS
+    .map((section) => ({ title: section.title, codes: matches.filter((e) => e.code.startsWith(section.prefix)) }))
+    .filter((group) => group.codes.length);
+});
+
+async function loadErrorCodes() {
+  if (errorCodes.value.length) return;
+  try {
+    const res = await fetch('/api/errors');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    errorCodes.value = (await res.json()).codes || [];
+  } catch (err) {
+    errorCodesError.value = 'Could not load the error code list from the server. The same list is in docs/error-codes.md in the repository.';
+  }
+}
+
+watch(activeSection, (section) => {
+  if (section === 'errors') loadErrorCodes();
+});
+
+onMounted(async () => {
+  const hash = decodeURIComponent(window.location.hash.slice(1));
+  if (hash !== 'error-codes' && !/^P\d{3}$/.test(hash)) return;
+  activeSection.value = 'errors';
+  await loadErrorCodes();
+  if (hash.startsWith('P')) {
+    highlightedCode.value = hash;
+    await nextTick();
+    document.getElementById(hash)?.scrollIntoView({ block: 'center' });
+  }
+});
+
 const navGroups = [
   {
     id: 'basics',
@@ -992,7 +1090,8 @@ const navGroups = [
     id: 'help',
     label: 'Help',
     items: [
-      { id: 'troubleshooting', title: 'Troubleshooting & FAQ', icon: LifeBuoy }
+      { id: 'troubleshooting', title: 'Troubleshooting & FAQ', icon: LifeBuoy },
+      { id: 'errors', title: 'Error Codes', icon: CircleAlert }
     ]
   }
 ];

@@ -120,7 +120,7 @@ async function handleSubmit() {
     }
     router.push('/');
   } catch (err) {
-    if (err.response?.data?.error === 'ACCOUNT_EXPIRED') {
+    if (err.response?.data?.code === 'P103') {
       isExpired.value = true;
     } else {
       error.value = err.response?.data?.error || 'Authentication failed';

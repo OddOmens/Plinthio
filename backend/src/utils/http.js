@@ -1,10 +1,10 @@
-// Unexpected failures (SQL errors, filesystem errors) carry internals in their message —
-// table names, absolute paths, library layout. Those belong in the server log, not in a
-// response any signed-in viewer can read. Admins still get the detail, since they're the
-// ones who'd act on it and can already read the logs anyway.
-export function serverError(req, res, err, message = 'Something went wrong on the server') {
-  console.error(`[${req.method} ${req.baseUrl || ''}${req.route?.path || ''}]`, err);
-  if (res.headersSent) return;
-  const detail = req.user?.role === 'admin' && err?.message ? err.message : undefined;
-  res.status(500).json(detail ? { error: message, detail } : { error: message });
+import { sendError, codeForFsError } from '../errors.js';
+
+// Unexpected failures (SQL errors, filesystem errors). The response carries a Plinthio error
+// code; the internals (table names, absolute paths) go to the server log, and to admins only
+// as `detail` — see sendError in errors.js. Filesystem failures get the library code that
+// explains them (e.g. P201 for an I/O error from a disconnected drive) instead of P000.
+export function serverError(req, res, err, message) {
+  const code = err?.plinthioCode || codeForFsError(err) || 'P000';
+  sendError(req, res, code, { err, message: err?.plinthioCode ? err.message : message });
 }

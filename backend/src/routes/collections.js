@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { serverError } from '../utils/http.js';
+import { sendError } from '../errors.js';
 import { shapeItems, shapeItem } from '../services/itemView.js';
 import { ratingSql } from '../services/visibility.js';
 import { LIST_CATEGORIES, categoryForMediaType } from '../config/mediaTypes.js';
@@ -182,7 +183,7 @@ router.get('/:id', async (req, res) => {
     const db = await getDb();
     const collection = await db.get('SELECT * FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
     if (!collection) {
-      return res.status(404).json({ error: 'Folder not found' });
+      return sendError(req, res, 'P500', { message: 'Folder or list not found' });
     }
 
     const items = await db.all(`
@@ -246,7 +247,7 @@ router.delete('/:id', async (req, res) => {
     const db = await getDb();
     const result = await db.run('DELETE FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
     if (result.changes === 0) {
-      return res.status(404).json({ error: 'Folder not found' });
+      return sendError(req, res, 'P500', { message: 'Folder or list not found' });
     }
     res.json({ message: 'Folder deleted' });
   } catch (err) {
@@ -268,7 +269,7 @@ router.post('/:id/items', async (req, res) => {
     const db = await getDb();
     const collection = await db.get('SELECT id, type, category FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
     if (!collection) {
-      return res.status(404).json({ error: 'Folder not found' });
+      return sendError(req, res, 'P500', { message: 'Folder or list not found' });
     }
 
     // Reject unknown or hidden-from-this-user item ids up front — otherwise a bogus id
@@ -287,7 +288,7 @@ router.post('/:id/items', async (req, res) => {
     }
 
     if (collection.category && !LIST_CATEGORIES[collection.category]?.includes(item.media_type)) {
-      return res.status(400).json({ error: `This list only holds ${collection.category}` });
+      return sendError(req, res, 'P501', { message: `This list only holds ${collection.category}` });
     }
 
     // New items go on the end of the reading order rather than the start.
@@ -321,7 +322,7 @@ router.put('/:id/reorder', async (req, res) => {
     const db = await getDb();
     const collection = await db.get('SELECT id FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
     if (!collection) {
-      return res.status(404).json({ error: 'Folder not found' });
+      return sendError(req, res, 'P500', { message: 'Folder or list not found' });
     }
 
     await db.run('BEGIN TRANSACTION');
@@ -355,7 +356,7 @@ router.delete('/:id/items/:itemId', async (req, res) => {
     const db = await getDb();
     const collection = await db.get('SELECT id FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
     if (!collection) {
-      return res.status(404).json({ error: 'Folder not found' });
+      return sendError(req, res, 'P500', { message: 'Folder or list not found' });
     }
 
     await db.run('DELETE FROM collection_items WHERE collection_id = ? AND item_id = ?', [id, itemId]);
@@ -394,10 +395,10 @@ router.post('/:id/external', async (req, res) => {
       [id, userId]
     );
     if (!collection) {
-      return res.status(404).json({ error: 'List not found' });
+      return sendError(req, res, 'P500');
     }
     if (collection.category && !LIST_CATEGORIES[collection.category]?.includes(mediaType)) {
-      return res.status(400).json({ error: `This list only holds ${collection.category}` });
+      return sendError(req, res, 'P501', { message: `This list only holds ${collection.category}` });
     }
 
     const entryId = crypto.randomUUID();
@@ -417,7 +418,7 @@ router.post('/:id/external', async (req, res) => {
     ]);
 
     if (result.changes === 0) {
-      return res.status(409).json({ error: 'That title is already in this list' });
+      return sendError(req, res, 'P502');
     }
     res.status(201).json({ message: 'Added to list', id: entryId });
   } catch (err) {
@@ -433,7 +434,7 @@ router.delete('/:id/external/:entryId', async (req, res) => {
     const db = await getDb();
     const collection = await db.get('SELECT id FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
     if (!collection) {
-      return res.status(404).json({ error: 'List not found' });
+      return sendError(req, res, 'P500');
     }
 
     await db.run('DELETE FROM list_external_entries WHERE collection_id = ? AND id = ?', [id, entryId]);

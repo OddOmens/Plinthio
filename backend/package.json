@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "node --test --test-concurrency=1 test/"
+    "test": "node --test --test-concurrency=1 test/",
+    "docs:errors": "node scripts/gen-error-docs.js"
   },
   "dependencies": {
     "7zip-min": "^1.4.4",
