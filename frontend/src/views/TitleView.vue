@@ -908,6 +908,34 @@
         </div>
         </section>
 
+        <!-- ─── The rest of a movie's collection (Star Wars…) ───────────────────────── -->
+        <section v-if="collection && collectionSiblings.length" class="flex flex-col gap-4">
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="section-title">More in {{ collection.name }}</h2>
+            <router-link
+              :to="{ path: `/series/${encodeURIComponent(collection.name)}`, query: { library: collection.libraryId, type: collection.mediaType } }"
+              class="text-sm font-medium text-primary hover:underline flex items-center gap-1 flex-shrink-0"
+            >
+              View all {{ collection.volumeCount }}
+              <ChevronRight class="w-4 h-4" />
+            </router-link>
+          </div>
+          <div class="flex gap-4 overflow-x-auto no-scrollbar -mx-1 px-1 pb-2">
+            <router-link
+              v-for="sib in collectionSiblings"
+              :key="sib.id"
+              :to="`/title/${sib.id}`"
+              class="w-36 sm:w-44 flex-shrink-0 group"
+            >
+              <div class="aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-border group-hover:border-muted-foreground/40 transition">
+                <img :src="volumeCoverUrl(sib)" :alt="sib.title" loading="lazy" class="w-full h-full object-cover" />
+              </div>
+              <p class="mt-2 text-sm font-medium text-foreground line-clamp-2">{{ sib.title }}</p>
+              <p v-if="sib.is_finished" class="text-xs text-emerald-500 font-semibold">{{ vocab.done }}</p>
+            </router-link>
+          </div>
+        </section>
+
         <!-- ─── Cast & crew ─────────────────────────────────────────────────────────── -->
         <section v-if="people.length" class="flex flex-col gap-4">
           <h2 class="section-title">
@@ -950,34 +978,6 @@
               <p class="mt-2 text-sm font-semibold text-foreground line-clamp-2">{{ extra.title }}</p>
               <p class="text-xs text-muted-foreground mt-0.5">{{ extra.extra_type }}<template v-if="extra.duration"> · {{ formatLength(extra.duration) }}</template></p>
             </button>
-          </div>
-        </section>
-
-        <!-- ─── The rest of a movie's collection (Star Wars…) ───────────────────────── -->
-        <section v-if="collection && collectionSiblings.length" class="flex flex-col gap-4">
-          <div class="flex items-center justify-between gap-3">
-            <h2 class="section-title">More in {{ collection.name }}</h2>
-            <router-link
-              :to="{ path: `/series/${encodeURIComponent(collection.name)}`, query: { library: collection.libraryId, type: collection.mediaType } }"
-              class="text-sm font-medium text-primary hover:underline flex items-center gap-1 flex-shrink-0"
-            >
-              View all {{ collection.volumeCount }}
-              <ChevronRight class="w-4 h-4" />
-            </router-link>
-          </div>
-          <div class="flex gap-4 overflow-x-auto no-scrollbar -mx-1 px-1 pb-2">
-            <router-link
-              v-for="sib in collectionSiblings"
-              :key="sib.id"
-              :to="`/title/${sib.id}`"
-              class="w-36 sm:w-44 flex-shrink-0 group"
-            >
-              <div class="aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-border group-hover:border-muted-foreground/40 transition">
-                <img :src="volumeCoverUrl(sib)" :alt="sib.title" loading="lazy" class="w-full h-full object-cover" />
-              </div>
-              <p class="mt-2 text-sm font-medium text-foreground line-clamp-2">{{ sib.title }}</p>
-              <p v-if="sib.is_finished" class="text-xs text-emerald-500 font-semibold">{{ vocab.done }}</p>
-            </router-link>
           </div>
         </section>
 
