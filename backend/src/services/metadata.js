@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { pdfInfo, extractPdfCover } from './pdf.js';
 import { spawn } from 'child_process';
 import path from 'path';
 import * as mm from 'music-metadata';
@@ -266,6 +267,18 @@ export async function extractBookMetadata(filePath, itemId) {
     }
   }
 
+  // A PDF reads page by page, so it needs its page count; its first page makes the cover
+  // when the folder has none. Without poppler installed it still scans, just without these.
+  if (ext === '.pdf') {
+    try {
+      const info = await pdfInfo(filePath);
+      result.totalPages = info.pages;
+      if (info.author) result.author = info.author;
+    } catch (err) {
+      console.warn(`Could not read PDF info for ${filePath}: ${err.message}`);
+    }
+  }
+
   // Fallback to folder cover
   if (!result.coverPath) {
     const folderCover = findCoverInFolder(path.dirname(filePath));
@@ -275,6 +288,9 @@ export async function extractBookMetadata(filePath, itemId) {
       fs.copyFileSync(folderCover, coverFullPath);
       result.coverPath = coverFilename;
     }
+  }
+  if (!result.coverPath && ext === '.pdf') {
+    result.coverPath = await extractPdfCover(filePath, itemId);
   }
 
   return result;

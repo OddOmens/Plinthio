@@ -54,8 +54,9 @@ export function downloadKind(item) {
   if (item.media_type === 'audiobook') return 'audio';
   if (item.media_type === 'manga') return 'pages';
   if (item.media_type === 'book') {
-    // Comic archives shelved as books still read page-by-page.
-    return ['cbz', 'cbr', 'cb7', 'zip', 'rar', '7z'].includes((item.format || '').toLowerCase()) ? 'pages' : 'file';
+    // Comic archives shelved as books, and PDFs (rendered to page images on the server),
+    // read page-by-page.
+    return ['cbz', 'cbr', 'cb7', 'zip', 'rar', '7z', 'pdf'].includes((item.format || '').toLowerCase()) ? 'pages' : 'file';
   }
   return null;
 }

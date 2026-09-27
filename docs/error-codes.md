@@ -194,6 +194,18 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 
 **What to do:** Pick another track. Image-based subtitles (PGS/VobSub) cannot be shown as text.
 
+### P308: PDF reader not available
+
+*HTTP 500.* Plinthio turns PDF pages into images with poppler (pdftoppm and pdfinfo), and it could not start them.
+
+**What to do:** The Docker image includes poppler. On a bare-metal install, install poppler-utils (apt install poppler-utils, brew install poppler) and restart.
+
+### P309: PDF page could not be rendered
+
+*HTTP 500.* poppler started but failed on this file. Usually a damaged or password-protected PDF.
+
+**What to do:** Open the file in another PDF reader to check it. A password-protected PDF has to be unlocked first. Admin → Logs has the error.
+
 ### P350: Browser cannot play this format
 
 *app.* The browser rejected the stream even after the server converted it.

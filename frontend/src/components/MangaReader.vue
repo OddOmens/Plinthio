@@ -381,7 +381,9 @@ const currentPageIndex = ref(
     : (props.item.current_page ? Math.max(0, props.item.current_page - 1) : 0)
 );
 
-const mode = ref('rtl');
+// Manga opens right-to-left; comics and PDFs shelved as books read left-to-right. A series'
+// saved direction (loadSeriesSettings) wins over both.
+const mode = ref(props.item.media_type === 'manga' ? 'rtl' : 'ltr');
 const modes = [
   { id: 'rtl', short: 'RTL', label: 'Right to Left (Japanese Manga)' },
   { id: 'ltr', short: 'LTR', label: 'Left to Right (Comics)' },

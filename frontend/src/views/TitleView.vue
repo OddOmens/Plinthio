@@ -2190,7 +2190,7 @@ function openEntry(vol) {
 }
 
 // One entry point for every type: comics page-by-page, EPUBs in the book reader, audio in
-// the global player, video in the player here, and anything else (PDF) in a new tab.
+// the global player, video in the player here, and anything else in a new tab.
 function openVolumeReader(vol) {
   const kind = downloadKind(vol);
   if (vol.media_type === 'audiobook') {

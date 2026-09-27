@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { pdfInfo, extractPdfCover } from './pdf.js';
 import path from 'path';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
@@ -74,7 +75,7 @@ export async function scanLibrary(libraryId) {
     // Snapshot what's currently in the DB for this library so we can detect renamed/moved
     // files (same content, different path) instead of treating them as brand-new items,
     // which previously caused duplicates whenever a folder was renamed.
-    const dbItemsBefore = await db.all('SELECT id, path, file_size FROM items WHERE library_id = ?', [libraryId]);
+    const dbItemsBefore = await db.all('SELECT id, path, file_size, format, total_pages, cover_path FROM items WHERE library_id = ?', [libraryId]);
     // An unmounted drive usually leaves its mount point behind as an empty folder, which
     // looks exactly like "every file was deleted" — and the prune below would then wipe the
     // whole catalog (and its covers, reading progress links, custom art). Refuse instead.
@@ -128,6 +129,18 @@ export async function scanLibrary(libraryId) {
 
       // If existing at the same path with an unchanged size, skip heavy metadata re-extraction
       if (existing && !isRename && existing.file_size === stats.size) {
+        // A PDF scanned before PDFs read page by page (1.0.0) gets its page count, and page
+        // one as a cover if it has none — only those, so a title someone edited is kept.
+        if (ext === '.pdf' && !existing.total_pages) {
+          try {
+            const { pages } = await pdfInfo(filePath);
+            const cover = existing.cover_path ? null : await extractPdfCover(filePath, itemId);
+            if (pages) {
+              await db.run('UPDATE items SET total_pages = ?, cover_path = COALESCE(?, cover_path), updated_at = CURRENT_TIMESTAMP WHERE id = ?', [pages, cover, itemId]);
+              if (cover) invalidateCoverCache(itemId);
+            }
+          } catch (err) { /* no poppler: stays as it was */ }
+        }
         continue;
       }
 
