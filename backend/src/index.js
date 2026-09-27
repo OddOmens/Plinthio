@@ -37,6 +37,8 @@ import seriesRoutes from './routes/series.js';
 import requestRoutes from './routes/requests.js';
 import { attachErrorCodes, errorCatalog, sendError } from './errors.js';
 import opdsRoutes from './routes/opds.js';
+import { komgaV1, komgaV2 } from './routes/komga.js';
+import kosyncRoutes from './routes/kosync.js';
 import healthRoutes from './routes/health.js';
 import kidsRoutes from './routes/kids.js';
 import systemRoutes from './routes/system.js';
@@ -100,8 +102,9 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 // `credentials: true` only matters for cookie-based auth; Plinthio authenticates via a
-// Bearer JWT (header or query param) that the app puts in localStorage itself, never a
-// cookie, so there's nothing for a browser to attach automatically. Combined with a
+// Bearer JWT (header or query param) that the app puts in localStorage itself. The one
+// cookie, Mihon's Komga session (routes/komga.js), is only honoured by /api/v1 and /api/v2
+// and is SameSite=Lax, so there's nothing for a browser to attach automatically. Combined with a
 // wildcard origin, `credentials: true` is also something browsers just reject outright for
 // an actual cross-origin credentialed request — it was a no-op, not a real permission.
 app.use(cors({ origin: config.corsOrigin }));
@@ -143,6 +146,11 @@ const mediaLimiter = rateLimit({
 });
 app.use('/api/media/video', mediaLimiter, videoRoutes);
 app.use('/api/media', mediaLimiter, mediaRoutes);
+// Sync apps: Mihon's Komga extension and tracker at Komga's own paths, and KOReader's
+// progress sync. Mihon fetches pages one by one, so these sit under the media limiter.
+app.use('/api/v1', mediaLimiter, komgaV1);
+app.use('/api/v2', mediaLimiter, komgaV2);
+app.use('/api/kosync', mediaLimiter, kosyncRoutes);
 
 // Rate limiters for security hardening
 const authLimiter = rateLimit({

@@ -48,6 +48,46 @@ function isMediaRoute(req) {
   return (req.baseUrl || '').startsWith('/api/media');
 }
 
+const API_KEY_USER_COLUMNS = 'u.id, u.username, u.role, u.avatar, u.preferences, u.expires_at, u.max_age_rating, u.allow_unrated, u.kids_mode';
+
+async function apiKeyUser(where, params) {
+  const db = await getDb();
+  const row = await db.get(
+    `SELECT k.id AS api_key_id, ${API_KEY_USER_COLUMNS}
+     FROM api_keys k JOIN users u ON k.user_id = u.id
+     WHERE ${where}`,
+    params
+  );
+  if (!row) return null;
+  const { api_key_id: keyId, ...user } = row;
+  user.preferences = user.preferences ? JSON.parse(user.preferences) : {};
+  return { user, keyId, expired: !!(user.expires_at && new Date(user.expires_at).getTime() <= Date.now()) };
+}
+
+/**
+ * The account behind a raw API key — `{ user, keyId, expired }`, or null. Used by every
+ * app that signs in with a key: scripts (X-API-Key), OPDS readers and Mihon (HTTP Basic,
+ * key as the password).
+ */
+export function userForApiKey(rawKey) {
+  const keyHash = crypto.createHash('sha256').update(String(rawKey).trim()).digest('hex');
+  return apiKeyUser('k.key = ?', [keyHash]);
+}
+
+// A key by its id — for the Komga session cookie (routes/komga.js), which names the key it
+// was issued for so deleting the key signs Mihon out too.
+export function userForApiKeyId(keyId) {
+  return apiKeyUser('k.id = ?', [keyId]);
+}
+
+// KOReader's sync plugin sends the MD5 of the password rather than the password, so keys
+// also store their MD5 (routes/apiKeys.js). The username has to match as well.
+export function userForApiKeyMd5(username, md5) {
+  return apiKeyUser('k.key_md5 = ? AND lower(u.username) = lower(?)', [String(md5).toLowerCase(), String(username)]);
+}
+
+export { basicAuthApiKey };
+
 export async function authenticateToken(req, res, next) {
   // 1. Support X-API-Key for developer/script integrations, and HTTP Basic (username +
   // API key as the password) for OPDS reader apps, which can't do Bearer tokens and
@@ -55,22 +95,12 @@ export async function authenticateToken(req, res, next) {
   const apiKey = req.headers['x-api-key'] || basicAuthApiKey(req);
   if (apiKey) {
     try {
-      const db = await getDb();
-      const keyHash = crypto.createHash('sha256').update(apiKey.trim()).digest('hex');
-      const keyRow = await db.get(
-        `SELECT u.id, u.username, u.role, u.avatar, u.preferences, u.expires_at, u.max_age_rating, u.allow_unrated, u.kids_mode
-         FROM api_keys k
-         JOIN users u ON k.user_id = u.id
-         WHERE k.key = ?`,
-        [keyHash]
-      );
-      if (keyRow) {
-        if (keyRow.expires_at && new Date(keyRow.expires_at).getTime() <= Date.now()) {
-          return sendError(req, res, 'P103');
-        }
-        keyRow.preferences = keyRow.preferences ? JSON.parse(keyRow.preferences) : {};
-        req.user = keyRow;
+      const found = await userForApiKey(apiKey);
+      if (found) {
+        if (found.expired) return sendError(req, res, 'P103');
+        req.user = found.user;
         req.isApiKey = true;
+        req.apiKeyId = found.keyId;
         return next();
       }
     } catch (err) {

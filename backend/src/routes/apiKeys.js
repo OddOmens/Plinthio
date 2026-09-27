@@ -39,9 +39,14 @@ router.post('/', async (req, res) => {
     const rawKey = `plinthio_${crypto.randomBytes(24).toString('hex')}`;
     const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
 
+    // The MD5 is only for KOReader's sync plugin, which hashes the password that way
+    // before sending it (routes/kosync.js). The key is 192 random bits, so MD5 is no weaker
+    // here than SHA-256 in practice.
+    const keyMd5 = crypto.createHash('md5').update(rawKey).digest('hex');
+
     await db.run(
-      'INSERT INTO api_keys (id, user_id, name, key, key_last4) VALUES (?, ?, ?, ?, ?)',
-      [id, userId, name.trim(), keyHash, rawKey.slice(-4)]
+      'INSERT INTO api_keys (id, user_id, name, key, key_last4, key_md5) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, userId, name.trim(), keyHash, rawKey.slice(-4), keyMd5]
     );
 
     res.json({
