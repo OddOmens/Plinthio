@@ -226,6 +226,20 @@ export const ERROR_CODES = {
     meaning: 'The requested subtitle track does not exist or could not be extracted.',
     fix: 'Pick another track. Image-based subtitles (PGS/VobSub) cannot be shown as text.'
   },
+  P308: {
+    status: 500,
+    title: 'PDF reader not available',
+    message: 'PDF pages cannot be shown: poppler is not installed on the server',
+    meaning: 'Plinthio turns PDF pages into images with poppler (pdftoppm and pdfinfo), and it could not start them.',
+    fix: 'The Docker image includes poppler. On a bare-metal install, install poppler-utils (apt install poppler-utils, brew install poppler) and restart.'
+  },
+  P309: {
+    status: 500,
+    title: 'PDF page could not be rendered',
+    message: 'This PDF page could not be rendered',
+    meaning: 'poppler started but failed on this file. Usually a damaged or password-protected PDF.',
+    fix: 'Open the file in another PDF reader to check it. A password-protected PDF has to be unlocked first. Admin → Logs has the error.'
+  },
   P350: {
     status: null,
     side: 'client',

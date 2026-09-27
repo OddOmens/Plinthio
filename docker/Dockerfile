@@ -42,6 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gosu \
     tzdata \
     ffmpeg \
+    poppler-utils \
     mesa-va-drivers \
     vainfo \
     $( [ "$TARGETARCH" = "amd64" ] || [ -z "$TARGETARCH" ] && echo intel-media-va-driver-non-free ) \
