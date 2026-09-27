@@ -91,6 +91,57 @@ router.post('/skip', async (req, res) => {
   }
 });
 
+// Mark several titles finished (or not) at once — "mark read up to here". Finishing clears
+// skipped, like reading does. Declared before /:itemId for the same reason as /skip.
+router.post('/finish', async (req, res) => {
+  const { itemIds, finished = true } = req.body || {};
+  if (!Array.isArray(itemIds) || itemIds.length === 0 || itemIds.length > 2000) {
+    return res.status(400).json({ error: 'itemIds must be a non-empty array' });
+  }
+  const ids = [...new Set(itemIds.filter((id) => typeof id === 'string' && /^[a-f0-9]{32}$/.test(id)))];
+  if (ids.length === 0) return res.status(400).json({ error: 'No valid item ids' });
+
+  try {
+    const db = await getDb();
+    const visible = await db.all(`
+      SELECT i.id, i.total_pages, i.duration FROM items i
+      WHERE i.id IN (${ids.map(() => '?').join(',')})
+      AND NOT EXISTS (
+        SELECT 1 FROM item_visibility v
+        WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
+      )${accessSql(req.user, 'i')}
+    `, [...ids, req.user.id]);
+
+    const done = finished ? 1 : 0;
+    await db.run('BEGIN TRANSACTION');
+    try {
+      for (const item of visible) {
+        const pages = item.total_pages || 0;
+        await db.run(`
+          INSERT INTO user_progress
+            (user_id, item_id, current_time, duration, current_page, total_pages, progress_percent, is_finished, is_skipped, updated_at)
+          VALUES (?, ?, 0, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+          ON CONFLICT(user_id, item_id) DO UPDATE SET
+            current_time = 0,
+            current_page = excluded.current_page,
+            progress_percent = excluded.progress_percent,
+            is_finished = excluded.is_finished,
+            is_skipped = 0,
+            updated_at = CURRENT_TIMESTAMP
+        `, [req.user.id, item.id, item.duration || 0, done ? pages : 0, pages, done ? 100 : 0, done]);
+      }
+      await db.run('COMMIT');
+    } catch (err) {
+      await db.run('ROLLBACK');
+      throw err;
+    }
+
+    res.json({ message: finished ? 'Marked as finished' : 'Marked as not started', count: visible.length });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
 // Get progress for single item
 router.get('/:itemId', async (req, res) => {
   const userId = req.user.id;
