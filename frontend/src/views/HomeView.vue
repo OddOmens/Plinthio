@@ -35,7 +35,7 @@
           </h2>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+        <div class="poster-grid gap-3 sm:gap-4">
           <BookCard
             v-for="item in continueWatchingItems"
             :key="item.id"
@@ -58,7 +58,7 @@
           </h2>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+        <div class="poster-grid gap-3 sm:gap-4">
           <BookCard
             v-for="item in continueReadingItems"
             :key="item.id"
@@ -163,7 +163,7 @@
         </div>
 
         <!-- Loading Skeleton -->
-        <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+        <div v-if="loading" class="poster-grid gap-3 sm:gap-4">
           <div v-for="i in 12" :key="i" class="aspect-[2/3] bg-muted/40 animate-pulse rounded-xl border border-border"></div>
         </div>
 
@@ -188,7 +188,7 @@
         <!-- Mode 1: Series — one card per series (any media type), plus standalone titles.
              Every card opens a detail page; nothing plays straight from the shelf. -->
         <div v-else-if="groupBy === 'series'" class="flex flex-col gap-3">
-          <div ref="gridEl" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 auto-rows-fr gap-3 sm:gap-4">
+          <div ref="gridEl" class="poster-grid auto-rows-fr gap-3 sm:gap-4">
             <!-- Spacers stand in for the rows unmounted above and below the window, so
                  the page keeps the height it would have with every card rendered. -->
             <div v-if="padTopHeight > 0" :style="{ gridColumn: '1 / -1', height: padTopHeight + 'px' }"></div>
@@ -306,7 +306,7 @@
                   {{ folder.name }}
                 </h3>
                 <span class="text-xs text-muted-foreground">({{ folderEntries(folder).length }})</span>
-                <span v-if="folder.isDefault" class="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-muted text-muted-foreground">
+                <span v-if="folder.isDefault" class="text-[11px] font-mono uppercase px-1.5 py-0.2 rounded bg-muted text-muted-foreground">
                   Catch-all
                 </span>
               </div>

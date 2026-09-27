@@ -59,7 +59,7 @@
       class="absolute top-20 right-[max(1rem,env(safe-area-inset-right))] z-30 w-60 rounded-xl bg-black/90 backdrop-blur border border-white/10 text-white p-3 space-y-3 max-h-[70dvh] overflow-y-auto"
     >
       <div v-if="qualities.length > 1">
-        <p class="text-[11px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Quality</p>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Quality</p>
         <button
           @click="setQuality(-1)"
           :class="menuItemClass(selectedQuality === -1)"
@@ -77,7 +77,7 @@
       </div>
 
       <div v-if="audioTracks.length > 1">
-        <p class="text-[11px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Audio</p>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Audio</p>
         <button
           v-for="track in audioTracks"
           :key="track.index"
@@ -89,7 +89,7 @@
       </div>
 
       <div v-if="subtitles.length > 0">
-        <p class="text-[11px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Subtitles</p>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Subtitles</p>
         <button @click="setSubtitle(null)" :class="menuItemClass(selectedSubtitle === null)">
           Off
         </button>
@@ -162,7 +162,7 @@
       />
       <p
         v-if="previewVisible"
-        class="absolute bottom-16 text-[11px] font-mono text-white bg-black/80 px-1.5 py-0.5 rounded pointer-events-none"
+        class="absolute bottom-16 text-[12px] font-mono text-white bg-black/80 px-1.5 py-0.5 rounded pointer-events-none"
         :style="{ left: `${previewLeft}px` }"
       >
         {{ formatTime(previewTime) }}

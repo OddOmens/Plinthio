@@ -15,6 +15,7 @@ import { logger } from '../services/logger.js';
 import { serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { AGE_RATINGS } from '../services/visibility.js';
+import { resetCredits } from '../services/credits.js';
 
 const router = express.Router();
 
@@ -400,6 +401,7 @@ router.post('/admin/batch-match', requireEditor, async (req, res) => {
           [newTitle, newOverview, newReleaseDate, newAuthor, newArtists, newGenres, coverToSave, coverSource, id]
         );
         await saveMatchedRating(db, id, best);
+        if (best.source === 'tmdb') await resetCredits(db, item, best.externalId);
 
         matchedCount++;
         results.push({
@@ -500,6 +502,7 @@ router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
       [newTitle, newOverview, newReleaseDate, newAuthor, newArtists, newGenres, coverToSave, coverSource, itemId]
     );
     await saveMatchedRating(db, itemId, best);
+    if (best.source === 'tmdb') await resetCredits(db, item, best.externalId);
 
     const updated = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
     res.json({ message: 'Item matched and updated', item: updated, matched: best });
@@ -511,7 +514,7 @@ router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
 // Apply a chosen external metadata result to an item: updates fields and downloads the cover
 router.post('/apply/:itemId', requireEditor, async (req, res) => {
   const { itemId } = req.params;
-  const { title, author, artists, series, coverUrl, description, releaseDate, genres, themes, publisher, status, ageRating, source, rating } = req.body;
+  const { title, author, artists, series, coverUrl, description, releaseDate, genres, themes, publisher, status, ageRating, source, rating, externalId } = req.body;
 
   try {
     const db = await getDb();
@@ -577,6 +580,8 @@ router.post('/apply/:itemId', requireEditor, async (req, res) => {
     await db.run(`UPDATE items SET ${fields.join(', ')} WHERE id = ?`, params);
 
     const updated = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
+    // A TMDB pick: the title page's cast and crew follow the title that was chosen.
+    if (source === 'tmdb' && externalId) await resetCredits(db, updated, externalId);
     res.json({ message: 'Metadata updated', item: updated });
   } catch (err) {
     serverError(req, res, err);

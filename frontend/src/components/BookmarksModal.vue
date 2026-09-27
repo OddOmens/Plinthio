@@ -7,7 +7,7 @@
           <Bookmark class="w-4 h-4 text-primary flex-shrink-0" />
           <div class="min-w-0">
             <h3 class="text-sm font-semibold text-foreground truncate">Bookmarks: {{ item.title }}</h3>
-            <p class="text-[11px] text-muted-foreground truncate">{{ item.author || 'Unknown' }}</p>
+            <p class="text-[12px] text-muted-foreground truncate">{{ item.author || 'Unknown' }}</p>
           </div>
         </div>
         <button aria-label="Close bookmarks"
@@ -22,7 +22,7 @@
       <div class="p-4 border-b border-border bg-muted/20">
         <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mb-2">
           <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">New Bookmark</span>
-          <span class="text-[11px] text-muted-foreground font-mono">
+          <span class="text-[12px] text-muted-foreground font-mono">
             {{ item.media_type === 'audiobook' ? 'Timestamp (hh:mm:ss or seconds)' : 'Page Number' }}
           </span>
         </div>
@@ -81,7 +81,7 @@
         >
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
-              <span class="px-2 py-0.5 rounded bg-primary/10 text-primary font-mono text-[11px] font-semibold">
+              <span class="px-2 py-0.5 rounded bg-primary/10 text-primary font-mono text-[12px] font-semibold">
                 {{ formatPosition(bm.position) }}
               </span>
               <span class="text-xs font-semibold text-foreground truncate">
@@ -113,7 +113,7 @@
             {{ bm.notes }}
           </p>
 
-          <span class="text-[10px] text-muted-foreground/80 self-end">
+          <span class="text-[11px] text-muted-foreground/80 self-end">
             {{ formatDate(bm.created_at) }}
           </span>
         </div>

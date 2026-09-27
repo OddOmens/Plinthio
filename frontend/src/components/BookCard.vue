@@ -25,7 +25,7 @@
 
       <!-- Media Type Pill Badge -->
       <div class="absolute top-2 left-2 z-10 pointer-events-none">
-        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[11px] font-medium border border-border/80 shadow-sm">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[12px] font-medium border border-border/80 shadow-sm">
           <component :is="badgeIcon" class="w-3 h-3 text-muted-foreground" />
           <span class="capitalize">{{ item.media_type }}</span>
         </span>
@@ -36,7 +36,7 @@
         v-if="showMyRating || isDownloaded || isDownloading"
         class="absolute top-2 right-2 z-10 pointer-events-none flex items-center gap-1"
       >
-        <span v-if="showMyRating" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[11px] font-semibold border border-border/80 shadow-sm">
+        <span v-if="showMyRating" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[12px] font-semibold border border-border/80 shadow-sm">
           <Star class="w-3 h-3 text-amber-400 fill-amber-400" />
           {{ myRating }}
         </span>
@@ -81,7 +81,7 @@
         <!-- Volume number pill — shown for manga/book items inside a series -->
         <span
           v-if="item.volume != null && (item.media_type === 'manga' || item.media_type === 'book')"
-          class="flex-shrink-0 text-[10px] font-mono font-bold bg-muted text-muted-foreground rounded px-1.5 py-0.5 ml-1 self-start mt-0.5"
+          class="flex-shrink-0 text-[11px] font-mono font-bold bg-muted text-muted-foreground rounded px-1.5 py-0.5 ml-1 self-start mt-0.5"
         >Vol {{ item.volume % 1 === 0 ? Math.trunc(item.volume) : item.volume }}</span>
 
         <!-- Context Menu Dropdown Trigger (Visible on touch, 34px target) -->
@@ -181,7 +181,7 @@
         <span v-else-if="item.total_pages" class="font-mono">
           {{ item.total_pages }} pages
         </span>
-        <span v-else class="uppercase font-mono text-[11px]">
+        <span v-else class="uppercase font-mono text-[12px]">
           {{ item.format }}
         </span>
 

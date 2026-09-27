@@ -1,7 +1,7 @@
 <template>
   <!-- One group's cards in the grouped shelf views (Creator, Disk Folders, Custom Folders):
        a series card per series, a title card per standalone title — never loose volumes. -->
-  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 auto-rows-fr gap-3 sm:gap-4">
+  <div class="poster-grid auto-rows-fr gap-3 sm:gap-4">
     <template v-for="entry in entries" :key="entry.key">
       <SeriesCard
         v-if="entry.kind === 'series'"

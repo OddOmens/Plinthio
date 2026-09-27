@@ -66,7 +66,7 @@
               <span class="text-xs text-muted-foreground capitalize">{{ authStore.user?.role }}</span>
               <span
                 v-if="expirationLabel"
-                class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 font-medium"
+                class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 font-medium"
                 :title="`Account expires: ${new Date(authStore.user.expires_at).toLocaleString()}`"
               >
                 {{ expirationLabel }}
@@ -88,7 +88,7 @@
         <button @click="go(authStore.isEditor && pendingRequests ? '/requests?scope=all' : '/requests')" class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3">
           <Inbox class="w-[18px] h-[18px] text-muted-foreground" />
           <span class="flex-1 text-left">Requests</span>
-          <span v-if="authStore.isEditor && pendingRequests" class="min-w-[1.25rem] h-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center">
+          <span v-if="authStore.isEditor && pendingRequests" class="min-w-[1.25rem] h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold flex items-center justify-center">
             {{ pendingRequests }}
           </span>
         </button>

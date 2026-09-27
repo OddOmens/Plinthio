@@ -58,7 +58,7 @@
         >
           <Bookmark class="w-3.5 h-3.5" />
           <span class="hidden sm:inline">Bookmarks</span>
-          <span v-if="bookmarks.length > 0" class="text-[10px] bg-muted px-1 py-0.5 rounded font-mono">{{ bookmarks.length }}</span>
+          <span v-if="bookmarks.length > 0" class="text-[11px] bg-muted px-1 py-0.5 rounded font-mono">{{ bookmarks.length }}</span>
         </button>
       </div>
     </header>
@@ -126,13 +126,13 @@
             <span v-else>Find</span>
           </button>
         </form>
-        <p v-if="searchDone" class="text-[11px] text-muted-foreground">
+        <p v-if="searchDone" class="text-[12px] text-muted-foreground">
           {{ searchResults.length ? `${searchResults.length}${searchResults.length >= SEARCH_LIMIT ? '+' : ''} match${searchResults.length === 1 ? '' : 'es'}` : 'No matches' }}
         </p>
         <ul class="flex-1 overflow-y-auto -mx-2 divide-y divide-border/60">
           <li v-for="(result, idx) in searchResults" :key="idx">
             <button @click="goToResult(result)" class="w-full text-left px-2 py-2 rounded-lg hover:bg-muted/60 transition">
-              <p class="text-[11px] text-muted-foreground mb-0.5">{{ result.chapter }}</p>
+              <p class="text-[12px] text-muted-foreground mb-0.5">{{ result.chapter }}</p>
               <p class="text-xs text-foreground leading-snug">{{ result.excerpt }}</p>
             </button>
           </li>
@@ -285,7 +285,7 @@
               class="flex-1 text-left text-xs hover:text-foreground text-muted-foreground transition"
             >
               <span class="font-medium text-foreground">{{ bm.title || 'Bookmark' }}</span>
-              <p v-if="bm.notes" class="text-[11px] truncate mt-0.5">{{ bm.notes }}</p>
+              <p v-if="bm.notes" class="text-[12px] truncate mt-0.5">{{ bm.notes }}</p>
             </button>
             <button aria-label="Delete bookmark" @click="deleteBookmark(bm.id)" class="p-1 text-muted-foreground hover:text-destructive transition">
               <Trash2 class="w-3 h-3" />

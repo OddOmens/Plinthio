@@ -58,9 +58,9 @@ async function trimCache(cacheName, maxEntries) {
 }
 
 function isImageEndpoint(url) {
-  // Covers and single comic pages: content-addressed by item id and page index, and served
-  // with a long max-age already, so they're safe to keep.
-  return /\/api\/media\/cover\//.test(url.pathname) ||
+  // Covers, episode stills and single comic pages: content-addressed by item id and page
+  // index, and served with a long max-age already, so they're safe to keep.
+  return /\/api\/media\/(cover|still)\//.test(url.pathname) ||
     /\/api\/media\/manga\/[^/]+\/page\//.test(url.pathname);
 }
 

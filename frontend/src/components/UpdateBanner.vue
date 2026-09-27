@@ -53,7 +53,7 @@
             {{ copied ? 'Copied' : 'Copy' }}
           </button>
         </div>
-        <p class="opacity-80 text-[11px] sm:text-xs">
+        <p class="opacity-80 text-[12px] sm:text-xs">
           Your database is backed up to <code>config/backups</code> automatically before the new version starts.
         </p>
       </div>

@@ -11,7 +11,7 @@
       </button>
 
       <div class="text-center">
-        <span class="text-[10px] uppercase font-mono tracking-widest text-muted-foreground">Playing Audiobook</span>
+        <span class="text-[11px] uppercase font-mono tracking-widest text-muted-foreground">Playing Audiobook</span>
         <h4 class="text-xs font-semibold text-foreground truncate max-w-[240px] sm:max-w-md">
           {{ player.currentItem?.title }}
         </h4>
@@ -43,7 +43,7 @@
         title="Bookmarks"
       >
         <Bookmark class="w-5 h-5" />
-        <span v-if="bookmarks.length > 0" class="text-[10px] font-bold font-mono">
+        <span v-if="bookmarks.length > 0" class="text-[11px] font-bold font-mono">
           {{ bookmarks.length }}
         </span>
       </button>
@@ -123,7 +123,7 @@
           <div class="flex items-center gap-2">
             <ListOrdered class="w-4 h-4 text-primary" />
             <h3 class="text-sm font-semibold text-foreground">Chapters</h3>
-            <span class="text-[11px] text-muted-foreground">{{ player.chapters.length }}</span>
+            <span class="text-[12px] text-muted-foreground">{{ player.chapters.length }}</span>
           </div>
           <button @click="showChapters = false" class="text-xs text-muted-foreground hover:text-foreground">
             Back to Player
@@ -139,9 +139,9 @@
                 chapter.index === player.currentChapterIndex ? 'bg-primary/10 text-primary' : 'hover:bg-muted/60 text-foreground'
               ]"
             >
-              <span class="text-[11px] font-mono text-muted-foreground w-6 text-right tabular-nums">{{ chapter.index + 1 }}</span>
+              <span class="text-[12px] font-mono text-muted-foreground w-6 text-right tabular-nums">{{ chapter.index + 1 }}</span>
               <span class="flex-1 text-sm truncate" :class="chapter.index === player.currentChapterIndex ? 'font-semibold' : ''">{{ chapter.title }}</span>
-              <span class="text-[11px] font-mono text-muted-foreground tabular-nums">{{ formatTime(chapter.end - chapter.start) }}</span>
+              <span class="text-[12px] font-mono text-muted-foreground tabular-nums">{{ formatTime(chapter.end - chapter.start) }}</span>
             </button>
           </li>
         </ol>
@@ -189,7 +189,7 @@
           />
           <div class="flex items-center justify-between text-xs font-mono text-muted-foreground tabular-nums">
             <span>{{ formatTime(player.currentTime) }}</span>
-            <span v-if="player.currentChapter" class="text-[10px]">{{ formatTime(chapterRemaining) }} left in chapter</span>
+            <span v-if="player.currentChapter" class="text-[11px]">{{ formatTime(chapterRemaining) }} left in chapter</span>
             <span>-{{ formatTime(remainingSeconds) }}</span>
           </div>
         </div>
@@ -209,7 +209,7 @@
             title="Skip back 30s"
           >
             <RotateCcw class="w-5 h-5" />
-            <span class="text-[9px] font-mono font-bold leading-none">30</span>
+            <span class="text-[10px] font-mono font-bold leading-none">30</span>
           </button>
 
           <button aria-label="Skip back 15s"
@@ -218,7 +218,7 @@
             title="Skip back 15s"
           >
             <RotateCcw class="w-5 h-5" />
-            <span class="text-[9px] font-mono font-bold leading-none">15</span>
+            <span class="text-[10px] font-mono font-bold leading-none">15</span>
           </button>
 
           <button :aria-label="player.isPlaying ? 'Pause' : 'Play'"
@@ -235,7 +235,7 @@
             title="Skip forward 15s"
           >
             <RotateCw class="w-5 h-5" />
-            <span class="text-[9px] font-mono font-bold leading-none">15</span>
+            <span class="text-[10px] font-mono font-bold leading-none">15</span>
           </button>
 
           <button v-if="player.chapters.length" aria-label="Next chapter"
@@ -252,7 +252,7 @@
             title="Skip forward 30s"
           >
             <RotateCw class="w-5 h-5" />
-            <span class="text-[9px] font-mono font-bold leading-none">30</span>
+            <span class="text-[10px] font-mono font-bold leading-none">30</span>
           </button>
         </div>
 
@@ -260,14 +260,14 @@
         <div class="w-full flex flex-col gap-4 pt-2 border-t border-border/40">
           <!-- Speed Chips -->
           <div class="flex items-center justify-between gap-2">
-            <span class="text-[11px] text-muted-foreground font-medium">Speed</span>
+            <span class="text-[12px] text-muted-foreground font-medium">Speed</span>
             <div class="flex items-center gap-1">
               <button
                 v-for="rate in PLAYBACK_SPEEDS"
                 :key="rate"
                 @click="player.setPlaybackRate(rate)"
                 :class="[
-                  'px-2 py-0.5 rounded text-[10px] font-mono font-medium transition',
+                  'px-2 py-0.5 rounded text-[11px] font-mono font-medium transition',
                   player.playbackRate === rate
                     ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                     : 'bg-muted/60 text-muted-foreground hover:text-foreground'
@@ -280,7 +280,7 @@
 
           <!-- Sleep Timer Chips -->
           <div class="flex items-center justify-between gap-2">
-            <span class="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+            <span class="text-[12px] text-muted-foreground font-medium flex items-center gap-1">
               <Moon class="w-3.5 h-3.5" /> Sleep
             </span>
             <div class="flex items-center gap-1 flex-wrap justify-end">
@@ -289,7 +289,7 @@
                 :key="opt ?? 'off'"
                 @click="player.setSleepTimer(opt)"
                 :class="[
-                  'px-2 py-0.5 rounded text-[10px] font-mono font-medium transition',
+                  'px-2 py-0.5 rounded text-[11px] font-mono font-medium transition',
                   player.sleepTimerMinutes === opt
                     ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                     : 'bg-muted/60 text-muted-foreground hover:text-foreground'
@@ -299,7 +299,7 @@
               </button>
             </div>
           </div>
-          <p v-if="player.sleepTimerMinutes" class="-mt-2 text-right text-[11px] text-primary font-mono tabular-nums">
+          <p v-if="player.sleepTimerMinutes" class="-mt-2 text-right text-[12px] text-primary font-mono tabular-nums">
             {{ player.sleepTimerMinutes === 'chapter' ? 'Stopping at the end of this chapter' : `Stopping in ${formatTime(player.sleepRemaining)}` }}
           </p>
 

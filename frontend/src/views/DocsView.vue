@@ -34,7 +34,7 @@
       <!-- Sidebar Navigation -->
       <aside class="w-full md:w-64 border-b md:border-b-0 md:border-r border-border p-4 sm:p-6 space-y-6 flex-shrink-0">
         <div v-for="group in navGroups" :key="group.id">
-          <div class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{{ group.label }}</div>
+          <div class="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{{ group.label }}</div>
           <nav class="space-y-1">
             <button
               v-for="item in group.items"
@@ -54,8 +54,8 @@
             <Radio class="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
             <span>Server Status</span>
           </div>
-          <p class="text-[11px] text-muted-foreground">Version 0.4.0 (PWA Ready)</p>
-          <div class="text-[11px] font-mono text-muted-foreground truncate">
+          <p class="text-[12px] text-muted-foreground">Version 0.4.0 (PWA Ready)</p>
+          <div class="text-[12px] font-mono text-muted-foreground truncate">
             API: /api/health
           </div>
         </div>
@@ -80,37 +80,37 @@
             <div class="p-4 rounded-xl border border-border bg-card">
               <Headphones class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Audiobooks</div>
-              <p class="text-[11px] text-muted-foreground mt-1">M4B with chapter markers, MP3, FLAC, background playback, and Apple Music style full-screen player.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">M4B with chapter markers, MP3, FLAC, background playback, and Apple Music style full-screen player.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
               <Layers class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Manga & Comics</div>
-              <p class="text-[11px] text-muted-foreground mt-1">Direct CBZ & ZIP in-memory decompression, dual-page mode, right-to-left reading, and instant page caching.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">Direct CBZ & ZIP in-memory decompression, dual-page mode, right-to-left reading, and instant page caching.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
               <BookOpen class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Books & Documents</div>
-              <p class="text-[11px] text-muted-foreground mt-1">Standard EPUB and PDF reader with bookmarking, notes, and cross-device reading progress synchronization.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">Standard EPUB and PDF reader with bookmarking, notes, and cross-device reading progress synchronization.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
               <Film class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Movies</div>
-              <p class="text-[11px] text-muted-foreground mt-1">MP4, MKV, and WebM with byte-range streaming, scrubbing, and resume-from-position.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">MP4, MKV, and WebM with byte-range streaming, scrubbing, and resume-from-position.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
               <Tv class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">TV Shows</div>
-              <p class="text-[11px] text-muted-foreground mt-1">Season and episode grouping with per-episode progress, so continue-watching always lands on the right episode.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">Season and episode grouping with per-episode progress, so continue-watching always lands on the right episode.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
               <Sparkles class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Anime</div>
-              <p class="text-[11px] text-muted-foreground mt-1">Treated as its own library type so it can be filtered, browsed, and metadata-matched separately from live-action.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">Treated as its own library type so it can be filtered, browsed, and metadata-matched separately from live-action.</p>
             </div>
           </div>
 
@@ -221,7 +221,7 @@
               <span>Title Cleanup & Batch Metadata Matching (Admin &rarr; Metadata)</span>
             </div>
             <p class="text-xs text-muted-foreground leading-relaxed">
-              When video files with scene-release tags (e.g., <code class="text-primary font-mono text-[11px]">Resident.Evil.2002.1080p.BluRay.x264.mkv</code>) are scanned, the Title Cleaner parses the clean movie/show title and isolates the 4-digit release year.
+              When video files with scene-release tags (e.g., <code class="text-primary font-mono text-[12px]">Resident.Evil.2002.1080p.BluRay.x264.mkv</code>) are scanned, the Title Cleaner parses the clean movie/show title and isolates the 4-digit release year.
             </p>
             <ul class="text-xs text-muted-foreground list-disc list-inside space-y-1 pt-1">
               <li><strong class="text-foreground">Title Cleanup:</strong> One-click batch cleanup updates database titles to human-readable names and preserves detected years.</li>
@@ -306,7 +306,7 @@
                 <div class="font-semibold text-xs text-foreground flex items-center gap-1.5">
                   <Clock class="w-3.5 h-3.5 text-primary" /> Duration Presets & Custom Cutoffs
                 </div>
-                <p class="text-[11px] text-muted-foreground leading-relaxed">
+                <p class="text-[12px] text-muted-foreground leading-relaxed">
                   Choose from quick presets (<strong>1 Day</strong>, <strong>3 Days</strong>, <strong>7 Days</strong>, <strong>14 Days</strong>, <strong>1 Month</strong>, <strong>3 Months</strong>, <strong>6 Months</strong>, <strong>1 Year</strong>), a custom date/time picker, or <strong>Forever / No Limit</strong>.
                 </p>
               </div>
@@ -315,7 +315,7 @@
                 <div class="font-semibold text-xs text-foreground flex items-center gap-1.5">
                   <Lock class="w-3.5 h-3.5 text-amber-500" /> Graceful Lockout Flow
                 </div>
-                <p class="text-[11px] text-muted-foreground leading-relaxed">
+                <p class="text-[12px] text-muted-foreground leading-relaxed">
                   When an account reaches its expiration time, all active sessions are immediately revoked. Signing in presents a dedicated lock screen notifying the user that their pass has concluded and prompting them to contact the Admin.
                 </p>
               </div>
@@ -353,7 +353,7 @@
                 <li>Tap <strong>Add</strong> in the top right corner.</li>
                 <li>Launch the app from your home screen. It will open without browser address bars in full-screen native mode!</li>
               </ol>
-              <p class="text-[11px] text-muted-foreground">Must be added from Safari — Chrome and Firefox on iOS use Safari's engine but do not expose the "Add to Home Screen" install flow.</p>
+              <p class="text-[12px] text-muted-foreground">Must be added from Safari — Chrome and Firefox on iOS use Safari's engine but do not expose the "Add to Home Screen" install flow.</p>
             </div>
 
             <!-- Android Chrome -->
@@ -368,7 +368,7 @@
                 <li>Select <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
                 <li>Confirm the prompt. Plinthio will install into your app drawer with offline caching and background audio support.</li>
               </ol>
-              <p class="text-[11px] text-muted-foreground">Chrome may also show an automatic "Install Plinthio" banner or address-bar icon the first time you visit, once the manifest and service worker have loaded.</p>
+              <p class="text-[12px] text-muted-foreground">Chrome may also show an automatic "Install Plinthio" banner or address-bar icon the first time you visit, once the manifest and service worker have loaded.</p>
             </div>
           </div>
 
@@ -410,10 +410,10 @@
                 </div>
                 <div>
                   <h3 class="text-sm font-semibold text-foreground">Option 1: Tailscale (Recommended & Easiest)</h3>
-                  <p class="text-[11px] text-muted-foreground">Zero-config, encrypted WireGuard mesh VPN. No router port forwarding required.</p>
+                  <p class="text-[12px] text-muted-foreground">Zero-config, encrypted WireGuard mesh VPN. No router port forwarding required.</p>
                 </div>
               </div>
-              <span class="text-[10px] bg-primary text-primary-foreground font-semibold px-2 py-0.5 rounded-full uppercase">
+              <span class="text-[11px] bg-primary text-primary-foreground font-semibold px-2 py-0.5 rounded-full uppercase">
                 Recommended
               </span>
             </div>
@@ -422,7 +422,7 @@
               <p>Your Plinthio server is already accessible on the host's Tailnet at:</p>
               <div class="p-2.5 rounded-lg bg-background border border-border font-mono text-xs flex items-center justify-between gap-2 overflow-x-auto">
                 <span class="whitespace-nowrap">http://XXX.XXX.XXX.X:8088</span>
-                <span class="text-emerald-500 font-sans text-[11px] font-medium flex-shrink-0">Ready</span>
+                <span class="text-emerald-500 font-sans text-[12px] font-medium flex-shrink-0">Ready</span>
               </div>
               <div class="pt-2 text-xs text-muted-foreground space-y-1.5">
                 <div>1. Install the free <strong>Tailscale</strong> app on your iPhone or Android phone.</div>
@@ -447,7 +447,7 @@
               <div class="text-muted-foreground pt-1 whitespace-nowrap"># 3. Route tunnel to localhost:8088</div>
               <div class="whitespace-nowrap">cloudflared tunnel run --url http://localhost:8088 plinthio</div>
             </div>
-            <p class="text-[11px] text-muted-foreground">
+            <p class="text-[12px] text-muted-foreground">
               Because this exposes Plinthio to the public internet, make sure every account has a strong password —
               anyone with the URL can reach the login screen.
             </p>
@@ -495,12 +495,12 @@
                 <Layers class="w-4 h-4 text-primary" /> Manga & Comic Reader
               </div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&larr;</kbd><span class="text-muted-foreground">Previous page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&rarr;</kbd><span class="text-muted-foreground">Next page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Space</kbd><span class="text-muted-foreground">Next page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Esc</kbd><span class="text-muted-foreground">Close reader</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&larr;</kbd><span class="text-muted-foreground">Previous page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&rarr;</kbd><span class="text-muted-foreground">Next page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Space</kbd><span class="text-muted-foreground">Next page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Esc</kbd><span class="text-muted-foreground">Close reader</span></div>
               </div>
-              <p class="text-[11px] text-muted-foreground">
+              <p class="text-[12px] text-muted-foreground">
                 Left/right are automatically swapped when Right-to-Left mode is enabled, so the arrow keys always match
                 the direction pages visually turn. Swipe left/right works identically on touch devices.
               </p>
@@ -511,10 +511,10 @@
                 <Film class="w-4 h-4 text-primary" /> Video Player (Movies, TV, Anime)
               </div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Space</kbd><span class="text-muted-foreground">Play / pause</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&larr;</kbd><span class="text-muted-foreground">Seek back 10s</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&rarr;</kbd><span class="text-muted-foreground">Seek forward 10s</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Esc</kbd><span class="text-muted-foreground">Close player</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Space</kbd><span class="text-muted-foreground">Play / pause</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&larr;</kbd><span class="text-muted-foreground">Seek back 10s</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&rarr;</kbd><span class="text-muted-foreground">Seek forward 10s</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Esc</kbd><span class="text-muted-foreground">Close player</span></div>
               </div>
             </div>
 
@@ -523,10 +523,10 @@
                 <BookOpen class="w-4 h-4 text-primary" /> EPUB Book Reader
               </div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&larr;</kbd><span class="text-muted-foreground">Previous page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&rarr;</kbd><span class="text-muted-foreground">Next page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Space</kbd><span class="text-muted-foreground">Next page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Esc</kbd><span class="text-muted-foreground">Close settings / reader</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&larr;</kbd><span class="text-muted-foreground">Previous page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&rarr;</kbd><span class="text-muted-foreground">Next page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Space</kbd><span class="text-muted-foreground">Next page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Esc</kbd><span class="text-muted-foreground">Close settings / reader</span></div>
               </div>
             </div>
 
@@ -603,7 +603,7 @@
             <div class="bg-background border border-border rounded-lg p-2.5 font-mono text-xs overflow-x-auto whitespace-nowrap">
               curl -H "X-API-Key: plinthio_..." http://localhost:8088/api/items
             </div>
-            <p class="text-[11px] text-muted-foreground">
+            <p class="text-[12px] text-muted-foreground">
               All API endpoints are rate-limited, and each request is scoped to the key's owning user — an API key
               inherits that user's role and only sees what they can see.
             </p>
@@ -781,7 +781,7 @@
             <div class="space-y-3">
               <div class="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
                 <div class="font-semibold text-xs text-foreground">Make Book Covers Extra Rounded & Glowing</div>
-                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[11px] overflow-x-auto text-foreground">
+                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[12px] overflow-x-auto text-foreground">
 .group img {
   border-radius: 1rem !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
@@ -795,7 +795,7 @@
 
               <div class="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
                 <div class="font-semibold text-xs text-foreground">Compact Density Mode</div>
-                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[11px] overflow-x-auto text-foreground">
+                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[12px] overflow-x-auto text-foreground">
 body {
   font-size: 11px !important;
 }
@@ -807,7 +807,7 @@ header {
 
               <div class="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
                 <div class="font-semibold text-xs text-foreground">Hide the Search Bar</div>
-                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[11px] overflow-x-auto text-foreground">
+                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[12px] overflow-x-auto text-foreground">
 header input[type="text"] {
   display: none !important;
 }
@@ -816,7 +816,7 @@ header input[type="text"] {
 
               <div class="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
                 <div class="font-semibold text-xs text-foreground">Custom Accent Color Override</div>
-                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[11px] overflow-x-auto text-foreground">
+                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[12px] overflow-x-auto text-foreground">
 :root {
   --primary: 280 85% 60% !important;
 }
@@ -864,7 +864,7 @@ header input[type="text"] {
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-mono text-xs font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary">{{ entry.code }}</span>
                 <span class="font-semibold text-xs text-foreground">{{ entry.title }}</span>
-                <span class="text-[10px] text-muted-foreground ml-auto">
+                <span class="text-[11px] text-muted-foreground ml-auto">
                   {{ entry.side === 'client' ? 'Raised by the app' : `HTTP ${entry.status}` }}
                 </span>
               </div>

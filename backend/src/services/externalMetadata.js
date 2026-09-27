@@ -330,6 +330,81 @@ export async function lookupTmdbRating(mediaType, query, year = null) {
   return { rating: best.rating, votes: best.ratingVotes };
 }
 
+// Crew jobs worth a line on a title page, in the order they're shown. Everything else
+// (grips, caterers…) is noise next to them.
+const CREW_JOBS = ['Director', 'Screenplay', 'Writer', 'Story', 'Novel', 'Characters', 'Producer', 'Executive Producer', 'Original Music Composer', 'Director of Photography', 'Editor'];
+const CAST_LIMIT = 24;
+
+/**
+ * The full credits for one TMDB title — cast with their characters and photos, key crew,
+ * studios, and (for TV) creators and networks. `tmdbId` comes from a search result's
+ * externalId, or from a previous lookup stored on the item.
+ */
+export async function fetchTmdbDetails(tmdbId, mediaType) {
+  const apiKey = await getTmdbApiKey();
+  if (!apiKey) {
+    const err = new Error('TMDB API key is not configured');
+    err.code = 'MISSING_API_KEY';
+    throw err;
+  }
+  const isMovie = mediaType === 'movie';
+  const endpoint = isMovie ? 'movie' : 'tv';
+  const creditsKey = isMovie ? 'credits' : 'aggregate_credits';
+  const req = tmdbRequest(
+    `https://api.themoviedb.org/3/${endpoint}/${encodeURIComponent(tmdbId)}?append_to_response=${creditsKey}`,
+    apiKey
+  );
+  const data = await fetchJson(req.url, req.options);
+  const credits = data[creditsKey] || {};
+  const profile = (p) => (p ? `https://image.tmdb.org/t/p/w185${p}` : null);
+
+  // aggregate_credits lists a TV actor's roles/jobs as arrays; movie credits are flat.
+  const cast = (credits.cast || []).slice(0, CAST_LIMIT).map((c) => ({
+    name: c.name,
+    character: c.character || (c.roles || []).map((r) => r.character).filter(Boolean).join(' / ') || null,
+    photo: profile(c.profile_path)
+  })).filter((c) => c.name);
+
+  const crew = [];
+  const seen = new Set();
+  for (const c of credits.crew || []) {
+    const jobs = c.job ? [c.job] : (c.jobs || []).map((j) => j.job);
+    for (const job of jobs) {
+      if (!CREW_JOBS.includes(job) || seen.has(`${c.name}:${job}`)) continue;
+      seen.add(`${c.name}:${job}`);
+      crew.push({ name: c.name, job, photo: profile(c.profile_path) });
+    }
+  }
+  crew.sort((a, b) => CREW_JOBS.indexOf(a.job) - CREW_JOBS.indexOf(b.job));
+
+  return {
+    tmdbId: String(data.id),
+    tagline: data.tagline || null,
+    studios: (data.production_companies || []).map((s) => s.name).filter(Boolean),
+    networks: (data.networks || []).map((n) => n.name).filter(Boolean),
+    creators: (data.created_by || []).map((c) => c.name).filter(Boolean),
+    // A TV show's airing state ("Returning Series", "Ended"); a movie's is always "Released".
+    status: isMovie ? null : (data.status || null),
+    cast,
+    crew: crew.slice(0, 20)
+  };
+}
+
+/**
+ * The best TMDB match for a title, for callers that only have its name and year.
+ */
+export async function findTmdbId(mediaType, query, year = null) {
+  const apiKey = await getTmdbApiKey();
+  if (!apiKey) {
+    const err = new Error('TMDB API key is not configured');
+    err.code = 'MISSING_API_KEY';
+    throw err;
+  }
+  const results = await searchTMDB(query, mediaType, apiKey, year, { withCredits: false });
+  const best = (year && results.find((r) => (r.releaseDate || '').startsWith(String(year)))) || results[0];
+  return best?.externalId || null;
+}
+
 /**
  * Search external metadata providers for a given media type + query.
  * Providers are chosen by media type, matching only free / keyless services

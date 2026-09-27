@@ -35,7 +35,7 @@
       <div v-if="downloads.quota" class="h-1.5 rounded-full bg-muted overflow-hidden">
         <div class="h-full bg-primary" :style="{ width: `${Math.min(100, (downloads.usage / downloads.quota) * 100)}%` }" />
       </div>
-      <p class="text-[11px] text-muted-foreground">
+      <p class="text-[12px] text-muted-foreground">
         Downloads are tied to this browser and your account — signing out removes them.
       </p>
     </div>
@@ -51,7 +51,7 @@
             <div class="mt-1.5 h-1.5 rounded-full bg-muted overflow-hidden">
               <div class="h-full bg-primary transition-all" :style="{ width: `${entry.percent}%` }" />
             </div>
-            <p class="text-[11px] text-muted-foreground mt-1 tabular-nums">{{ entry.label }}</p>
+            <p class="text-[12px] text-muted-foreground mt-1 tabular-nums">{{ entry.label }}</p>
           </template>
         </div>
         <button
@@ -73,7 +73,7 @@
         <div class="min-w-0 flex-1 flex flex-col">
           <p class="text-sm font-semibold text-foreground line-clamp-2 leading-snug">{{ entry.item.title }}</p>
           <p class="text-xs text-muted-foreground truncate">{{ entry.item.series || entry.item.author || '' }}</p>
-          <p class="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
+          <p class="text-[12px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
             <component :is="kindIcon(entry.kind)" class="w-3 h-3" />
             {{ formatBytes(entry.bytes) }}
           </p>

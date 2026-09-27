@@ -4,7 +4,7 @@
   <div
     v-if="item && customizationStore.ratingsEnabled"
     class="flex flex-wrap items-center gap-x-3 gap-y-1"
-    :class="[justifyClass, compact ? 'text-[11px]' : 'text-xs']"
+    :class="[justifyClass, compact ? 'text-[12px]' : 'text-xs']"
   >
     <div v-if="ratings.showPersonal" class="inline-flex items-center gap-1.5">
       <span v-if="!compact" :class="mutedClass" class="font-medium">{{ label || 'Your rating' }}</span>

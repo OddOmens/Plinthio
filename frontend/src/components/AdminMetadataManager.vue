@@ -36,9 +36,9 @@
             : 'bg-card/60 border-border hover:bg-card hover:border-border/80'
         ]"
       >
-        <div class="text-[11px] font-medium text-muted-foreground">Total Media Items</div>
+        <div class="text-[12px] font-medium text-muted-foreground">Total Media Items</div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalAll }}</div>
-        <div class="text-[10px] text-muted-foreground mt-0.5">All indexed content</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">All indexed content</div>
       </div>
 
       <div
@@ -50,12 +50,12 @@
             : 'bg-card/60 border-border hover:bg-card hover:border-border/80'
         ]"
       >
-        <div class="text-[11px] font-medium text-amber-500 flex items-center gap-1.5">
+        <div class="text-[12px] font-medium text-amber-500 flex items-center gap-1.5">
           <AlertTriangle class="w-3.5 h-3.5" />
           Needs Title Cleanup
         </div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalDirty }}</div>
-        <div class="text-[10px] text-muted-foreground mt-0.5">Has release tags or year in title</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">Has release tags or year in title</div>
       </div>
 
       <div
@@ -67,12 +67,12 @@
             : 'bg-card/60 border-border hover:bg-card hover:border-border/80'
         ]"
       >
-        <div class="text-[11px] font-medium text-rose-500 flex items-center gap-1.5">
+        <div class="text-[12px] font-medium text-rose-500 flex items-center gap-1.5">
           <ImageOff class="w-3.5 h-3.5" />
           Missing Artwork
         </div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalMissingCover }}</div>
-        <div class="text-[10px] text-muted-foreground mt-0.5">No poster or cover file</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">No poster or cover file</div>
       </div>
 
       <div
@@ -84,12 +84,12 @@
             : 'bg-card/60 border-border hover:bg-card hover:border-border/80'
         ]"
       >
-        <div class="text-[11px] font-medium text-blue-500 flex items-center gap-1.5">
+        <div class="text-[12px] font-medium text-blue-500 flex items-center gap-1.5">
           <Info class="w-3.5 h-3.5" />
           Missing Overview / Date
         </div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalMissingMeta }}</div>
-        <div class="text-[10px] text-muted-foreground mt-0.5">Needs TMDB synopsis match</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">Needs TMDB synopsis match</div>
       </div>
     </div>
 
@@ -126,25 +126,25 @@
         <div class="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border border-border text-xs">
           <button
             @click="setStatusFilter('all')"
-            :class="['px-2.5 py-1 rounded-md transition text-[11px]', statusFilter === 'all' ? 'bg-card text-foreground font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+            :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'all' ? 'bg-card text-foreground font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
             All
           </button>
           <button
             @click="setStatusFilter('dirty')"
-            :class="['px-2.5 py-1 rounded-md transition text-[11px]', statusFilter === 'dirty' ? 'bg-card text-amber-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+            :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'dirty' ? 'bg-card text-amber-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
             Needs Cleanup
           </button>
           <button
             @click="setStatusFilter('missing_cover')"
-            :class="['px-2.5 py-1 rounded-md transition text-[11px]', statusFilter === 'missing_cover' ? 'bg-card text-rose-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+            :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'missing_cover' ? 'bg-card text-rose-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
             No Poster
           </button>
           <button
             @click="setStatusFilter('missing_meta')"
-            :class="['px-2.5 py-1 rounded-md transition text-[11px]', statusFilter === 'missing_meta' ? 'bg-card text-blue-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+            :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'missing_meta' ? 'bg-card text-blue-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
             No Synopsis
           </button>
@@ -193,7 +193,7 @@
 
       <div class="flex flex-wrap items-center gap-2">
         <!-- Batch Options Toggle -->
-        <label class="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none pr-1">
+        <label class="flex items-center gap-1.5 text-[12px] text-muted-foreground cursor-pointer select-none pr-1">
           <input
             type="checkbox"
             v-model="batchOverwriteCovers"
@@ -202,7 +202,7 @@
           <span>Overwrite Posters</span>
         </label>
 
-        <label class="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none pr-2">
+        <label class="flex items-center gap-1.5 text-[12px] text-muted-foreground cursor-pointer select-none pr-2">
           <input
             type="checkbox"
             v-model="batchUseCanonicalTitle"
@@ -249,7 +249,7 @@
             type="button"
             @click="stopBatch = true"
             :disabled="stopBatch"
-            class="h-7 px-2.5 rounded-md border border-border bg-background hover:bg-muted text-[11px] font-medium disabled:opacity-50"
+            class="h-7 px-2.5 rounded-md border border-border bg-background hover:bg-muted text-[12px] font-medium disabled:opacity-50"
           >{{ stopBatch ? 'Stopping…' : 'Stop' }}</button>
         </span>
       </div>
@@ -327,7 +327,7 @@
 
               <span
                 v-if="item.cover_source === 'tmdb'"
-                class="absolute bottom-0 inset-x-0 bg-emerald-600/90 text-[8px] font-bold text-white text-center py-0.5 leading-none"
+                class="absolute bottom-0 inset-x-0 bg-emerald-600/90 text-[10px] font-bold text-white text-center py-0.5 leading-none"
               >
                 TMDB
               </span>
@@ -340,11 +340,11 @@
                   {{ item.title }}
                 </span>
 
-                <span v-if="item.detectedYear" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                <span v-if="item.detectedYear" class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                   {{ item.detectedYear }}
                 </span>
 
-                <span v-if="item.isTv" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 font-semibold">
+                <span v-if="item.isTv" class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 font-semibold">
                   TV Episode
                 </span>
               </div>
@@ -352,7 +352,7 @@
               <!-- Result of the last auto-match, right on the row -->
               <p
                 v-if="matchResults[item.id]"
-                class="mt-0.5 text-[11px] font-medium flex items-center gap-1"
+                class="mt-0.5 text-[12px] font-medium flex items-center gap-1"
                 :class="{
                   'text-emerald-500': matchResults[item.id].status === 'matched',
                   'text-amber-500': matchResults[item.id].status === 'none',
@@ -366,7 +366,7 @@
               </p>
 
               <!-- Proposed Clean Title preview if dirty -->
-              <div v-if="item.isDirty" class="flex items-center gap-1.5 text-[11px] text-amber-500 mt-0.5 font-medium">
+              <div v-if="item.isDirty" class="flex items-center gap-1.5 text-[12px] text-amber-500 mt-0.5 font-medium">
                 <span>Clean:</span>
                 <span class="text-foreground bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded font-semibold truncate max-w-sm">
                   {{ item.cleanTitle }}
@@ -374,7 +374,7 @@
               </div>
 
               <!-- Original Filename / Path -->
-              <p class="text-[10px] font-mono text-muted-foreground truncate mt-0.5" :title="item.path">
+              <p class="text-[11px] font-mono text-muted-foreground truncate mt-0.5" :title="item.path">
                 {{ item.filename }}
               </p>
             </div>
@@ -383,7 +383,7 @@
           <!-- Middle: Metadata Badges -->
           <div class="flex items-center gap-2 flex-shrink-0 flex-wrap pl-7 md:pl-0">
             <!-- Library Tag -->
-            <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+            <span class="text-[11px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
               {{ item.library_name || item.media_type }}
             </span>
 
@@ -391,7 +391,7 @@
             <span
               v-if="item.hasCover"
               :class="[
-                'text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1 font-medium',
+                'text-[11px] px-1.5 py-0.5 rounded flex items-center gap-1 font-medium',
                 item.cover_source === 'tmdb'
                   ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                   : 'bg-muted text-muted-foreground'
@@ -400,31 +400,31 @@
               <Check class="w-3 h-3" />
               Poster
             </span>
-            <span v-else class="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20 font-medium">
+            <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20 font-medium">
               No Poster
             </span>
 
             <!-- Synopsis badge -->
             <span
               v-if="item.hasDescription"
-              class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1 font-medium"
+              class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1 font-medium"
               :title="item.description"
             >
               <Check class="w-3 h-3" />
               Synopsis
             </span>
-            <span v-else class="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
+            <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
               No Synopsis
             </span>
 
             <!-- Release Date badge -->
             <span
               v-if="item.hasReleaseDate"
-              class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-mono font-medium"
+              class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-mono font-medium"
             >
               {{ item.release_date }}
             </span>
-            <span v-else class="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
+            <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
               No Date
             </span>
           </div>
@@ -435,7 +435,7 @@
             <button
               @click="matchSingle(item)"
               :disabled="matchingIds.has(item.id)"
-              class="px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-[11px] font-medium transition flex items-center gap-1 disabled:opacity-50"
+              class="px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-[12px] font-medium transition flex items-center gap-1 disabled:opacity-50"
               title="Match against the metadata providers and update this title"
             >
               <Loader2 v-if="matchingIds.has(item.id)" class="w-3 h-3 animate-spin text-primary" />
@@ -446,7 +446,7 @@
             <!-- Manual Edit / Identify Modal Trigger -->
             <button
               @click="openIdentifyModal(item)"
-              class="px-2.5 py-1 rounded-md border border-border hover:bg-muted text-foreground text-[11px] font-medium transition flex items-center gap-1"
+              class="px-2.5 py-1 rounded-md border border-border hover:bg-muted text-foreground text-[12px] font-medium transition flex items-center gap-1"
               title="Search TMDB manually, pick artwork, or customize metadata fields"
             >
               <Pencil class="w-3 h-3 text-muted-foreground" />

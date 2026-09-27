@@ -13,7 +13,7 @@
               <h4 class="text-xs sm:text-sm font-semibold text-foreground truncate group-hover:text-primary transition">
                 {{ player.currentItem.title }}
               </h4>
-              <p class="text-[11px] text-muted-foreground truncate">
+              <p class="text-[12px] text-muted-foreground truncate">
                 {{ player.currentItem.author || 'Unknown Author' }}
               </p>
             </div>
@@ -84,7 +84,7 @@
               :title="player.sleepTimerMinutes ? sleepLabel : 'Sleep timer'"
             >
               <Moon class="w-3.5 h-3.5" />
-              <span v-if="player.sleepTimerMinutes" class="text-[10px] font-bold font-mono tabular-nums">
+              <span v-if="player.sleepTimerMinutes" class="text-[11px] font-bold font-mono tabular-nums">
                 {{ sleepLabel }}
               </span>
             </button>
@@ -101,7 +101,7 @@
 
         <!-- Scrubber Bar & Timestamps -->
         <div class="flex items-center gap-2 px-1">
-          <span class="text-[10px] text-muted-foreground tabular-nums font-mono w-10 text-right">
+          <span class="text-[11px] text-muted-foreground tabular-nums font-mono w-10 text-right">
             {{ formatTime(player.currentTime) }}
           </span>
           <div class="relative flex-1 flex items-center h-4 cursor-pointer">
@@ -115,7 +115,7 @@
               class="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none"
             />
           </div>
-          <span class="text-[10px] text-muted-foreground tabular-nums font-mono w-10">
+          <span class="text-[11px] text-muted-foreground tabular-nums font-mono w-10">
             {{ formatTime(player.duration) }}
           </span>
         </div>

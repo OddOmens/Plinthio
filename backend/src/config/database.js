@@ -269,10 +269,15 @@ async function initSchema(db) {
   // 0–10, for movies/shows/anime) shown beside Plinthio's own star ratings.
   // external_rating_checked_at records the last lookup — hit or miss — so an item TMDB
   // doesn't know isn't re-queried every time someone opens its rating.
+  //
+  // tmdb_id / credits_json hold a movie's or show's full credits (cast with characters,
+  // key crew, studios) fetched from TMDB the first time its page is opened; a metadata
+  // match sets tmdb_id and clears credits_checked_at so the next view refetches.
   for (const col of [
     'description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT', 'cover_source TEXT',
     'age_rating TEXT', 'chapters_json TEXT', 'extra_type TEXT', 'extra_of TEXT',
-    'external_rating REAL', 'external_rating_votes INTEGER', 'external_rating_source TEXT', 'external_rating_checked_at DATETIME'
+    'external_rating REAL', 'external_rating_votes INTEGER', 'external_rating_source TEXT', 'external_rating_checked_at DATETIME',
+    'tmdb_id TEXT', 'credits_json TEXT', 'credits_checked_at DATETIME'
   ]) {
     try {
       await db.exec(`ALTER TABLE items ADD COLUMN ${col}`);

@@ -159,13 +159,13 @@
                 <span v-if="entrySubtitle(entry)" class="text-xs text-muted-foreground truncate">{{ entrySubtitle(entry) }}</span>
                 <span
                   v-if="entry.kind === 'item' || entry.external.library_item"
-                  class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-500"
+                  class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-500"
                 >
                   In library
                 </span>
                 <span
                   v-else-if="entry.external.request_status"
-                  class="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                  class="text-[11px] font-medium px-1.5 py-0.5 rounded"
                   :class="REQUEST_STATUSES[entry.external.request_status]?.tone"
                 >
                   {{ REQUEST_STATUSES[entry.external.request_status]?.label }}

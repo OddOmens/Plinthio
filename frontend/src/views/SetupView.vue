@@ -68,7 +68,7 @@
                 </div>
                 <div>
                   <div class="text-xs font-medium text-foreground">Dark Theme</div>
-                  <div class="text-[11px] text-muted-foreground">Deep shadcn zinc</div>
+                  <div class="text-[12px] text-muted-foreground">Deep shadcn zinc</div>
                 </div>
               </button>
 
@@ -83,7 +83,7 @@
                 </div>
                 <div>
                   <div class="text-xs font-medium text-foreground">Light Theme</div>
-                  <div class="text-[11px] text-muted-foreground">Clean high-contrast</div>
+                  <div class="text-[12px] text-muted-foreground">Clean high-contrast</div>
                 </div>
               </button>
             </div>
@@ -101,7 +101,7 @@
                 class="flex flex-col items-center p-2 rounded-xl border hover:bg-muted/20 transition gap-1.5"
               >
                 <span :class="acc.bg" class="w-5 h-5 rounded-full border border-black/10"></span>
-                <span class="text-[11px] font-medium text-foreground capitalize">{{ acc.label }}</span>
+                <span class="text-[12px] font-medium text-foreground capitalize">{{ acc.label }}</span>
               </button>
             </div>
           </div>
@@ -142,7 +142,7 @@
                 placeholder="••••••••"
               />
             </div>
-            <p class="text-[11px] text-muted-foreground mt-1">Must be at least 8 characters long</p>
+            <p class="text-[12px] text-muted-foreground mt-1">Must be at least 8 characters long</p>
           </div>
 
           <div>
@@ -171,7 +171,7 @@
           </div>
 
           <div class="space-y-2.5">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground pt-1">
+            <div class="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground pt-1">
               Primary Books & Audio (Default)
             </div>
 
@@ -190,13 +190,13 @@
                 <div class="flex items-center gap-2">
                   <component :is="item.icon" class="w-4 h-4 text-foreground" />
                   <span class="text-xs font-medium text-foreground">{{ item.title }}</span>
-                  <span class="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{{ item.formats }}</span>
+                  <span class="text-[11px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{{ item.formats }}</span>
                 </div>
-                <p class="text-[11px] text-muted-foreground mt-0.5">{{ item.desc }}</p>
+                <p class="text-[12px] text-muted-foreground mt-0.5">{{ item.desc }}</p>
               </div>
             </label>
 
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground pt-3">
+            <div class="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground pt-3">
               Optional Video Formats (Hidden by default)
             </div>
 
@@ -215,10 +215,10 @@
                 <div class="flex items-center gap-2">
                   <component :is="item.icon" class="w-4 h-4 text-foreground" />
                   <span class="text-xs font-medium text-foreground">{{ item.title }}</span>
-                  <span class="text-[10px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-medium">Video</span>
-                  <span class="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{{ item.formats }}</span>
+                  <span class="text-[11px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-medium">Video</span>
+                  <span class="text-[11px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{{ item.formats }}</span>
                 </div>
-                <p class="text-[11px] text-muted-foreground mt-0.5">{{ item.desc }}</p>
+                <p class="text-[12px] text-muted-foreground mt-0.5">{{ item.desc }}</p>
               </div>
             </label>
           </div>
@@ -244,7 +244,7 @@
           <div v-if="form.libraries.length === 0" class="border border-dashed border-border rounded-xl p-6 text-center text-muted-foreground">
             <Folder class="w-8 h-8 mx-auto mb-2 opacity-40" />
             <p class="text-xs font-medium">No libraries configured yet.</p>
-            <p class="text-[11px] text-muted-foreground mt-1">You can also add libraries anytime later from the Admin Dashboard.</p>
+            <p class="text-[12px] text-muted-foreground mt-1">You can also add libraries anytime later from the Admin Dashboard.</p>
             <button
               type="button"
               @click="addLibraryRow"
@@ -271,7 +271,7 @@
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pr-6">
                 <div>
-                  <label class="block text-[11px] font-medium text-foreground mb-1">Library Name</label>
+                  <label class="block text-[12px] font-medium text-foreground mb-1">Library Name</label>
                   <input
                     v-model="lib.name"
                     type="text"
@@ -280,7 +280,7 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-[11px] font-medium text-foreground mb-1">Type</label>
+                  <label class="block text-[12px] font-medium text-foreground mb-1">Type</label>
                   <select
                     v-model="lib.type"
                     class="w-full bg-background border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -296,7 +296,7 @@
               </div>
 
               <div>
-                <label class="block text-[11px] font-medium text-foreground mb-1">Folder Path (on host / container)</label>
+                <label class="block text-[12px] font-medium text-foreground mb-1">Folder Path (on host / container)</label>
                 <input
                   v-model="lib.path"
                   type="text"
@@ -336,7 +336,7 @@
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pr-6">
                 <div>
-                  <label class="block text-[11px] font-medium text-foreground mb-1">Username</label>
+                  <label class="block text-[12px] font-medium text-foreground mb-1">Username</label>
                   <input
                     v-model="member.username"
                     type="text"
@@ -346,7 +346,7 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-[11px] font-medium text-foreground mb-1">Role</label>
+                  <label class="block text-[12px] font-medium text-foreground mb-1">Role</label>
                   <select
                     v-model="member.role"
                     class="w-full bg-background border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -359,7 +359,7 @@
               </div>
 
               <div class="pr-6">
-                <label class="block text-[11px] font-medium text-foreground mb-1">Password (min 8 characters)</label>
+                <label class="block text-[12px] font-medium text-foreground mb-1">Password (min 8 characters)</label>
                 <input
                   v-model="member.password"
                   type="password"
@@ -367,7 +367,7 @@
                   placeholder="Set a password for them"
                   class="w-full bg-background border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
-                <p v-if="member.password && member.password.length < 8" class="text-[11px] text-amber-500 mt-1">
+                <p v-if="member.password && member.password.length < 8" class="text-[12px] text-amber-500 mt-1">
                   Too short — accounts with a password under 8 characters are skipped.
                 </p>
               </div>

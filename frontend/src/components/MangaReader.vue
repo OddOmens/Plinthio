@@ -45,7 +45,7 @@
         >
           <Bookmark class="w-3.5 h-3.5" />
           <span class="hidden sm:inline">Bookmark</span>
-          <span v-if="bookmarks.length > 0" class="text-[10px] bg-zinc-700 text-zinc-200 px-1 py-0.5 rounded-full font-mono">
+          <span v-if="bookmarks.length > 0" class="text-[11px] bg-zinc-700 text-zinc-200 px-1 py-0.5 rounded-full font-mono">
             {{ bookmarks.length }}
           </span>
         </button>
@@ -171,7 +171,7 @@
         <!-- Zoom level indicator -->
         <div
           v-if="zoomScale > 1.01"
-          class="absolute top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none bg-black/70 text-white text-[11px] font-mono px-2 py-1 rounded-full backdrop-blur-sm"
+          class="absolute top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none bg-black/70 text-white text-[12px] font-mono px-2 py-1 rounded-full backdrop-blur-sm"
         >
           {{ Math.round(zoomScale * 100) }}%
         </div>
@@ -254,7 +254,7 @@
         class="absolute bottom-20 z-40 left-1/2 -translate-x-1/2 bg-zinc-900/95 border border-primary/50 text-white rounded-2xl px-5 py-3 shadow-2xl backdrop-blur-md flex items-center gap-4 max-w-sm w-[90%] sm:w-auto"
       >
         <div class="flex-1 min-w-0">
-          <p class="text-[11px] uppercase font-bold tracking-wider text-primary">Volume Complete!</p>
+          <p class="text-[12px] uppercase font-bold tracking-wider text-primary">Volume Complete!</p>
           <p class="text-xs font-semibold text-zinc-100 truncate mt-0.5">Next: {{ nextVolume.title }}</p>
         </div>
         <button
@@ -297,7 +297,7 @@
           />
           <button
             @click="createBookmark"
-            class="self-end px-2.5 py-1 rounded bg-zinc-100 text-zinc-900 hover:bg-white font-medium text-[11px] transition"
+            class="self-end px-2.5 py-1 rounded bg-zinc-100 text-zinc-900 hover:bg-white font-medium text-[12px] transition"
           >
             Save
           </button>
@@ -314,13 +314,13 @@
               class="flex-1 text-left hover:text-white transition"
             >
               <span class="font-mono font-bold text-zinc-200">Page {{ Math.floor(bm.position) }}</span>
-              <p v-if="bm.notes" class="text-zinc-400 text-[11px] truncate">{{ bm.notes }}</p>
+              <p v-if="bm.notes" class="text-zinc-400 text-[12px] truncate">{{ bm.notes }}</p>
             </button>
             <button aria-label="Delete bookmark" @click="deleteBookmark(bm.id)" class="p-1 text-zinc-500 hover:text-destructive transition">
               <Trash2 class="w-3 h-3" />
             </button>
           </div>
-          <div v-if="bookmarks.length === 0" class="py-4 text-center text-zinc-500 text-[11px]">
+          <div v-if="bookmarks.length === 0" class="py-4 text-center text-zinc-500 text-[12px]">
             No bookmarks yet.
           </div>
         </div>

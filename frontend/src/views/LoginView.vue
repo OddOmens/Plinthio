@@ -65,7 +65,7 @@
               class="w-full bg-background border border-border rounded-md px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring transition"
               placeholder="••••••••"
             />
-            <p v-if="!isSetup" class="text-[11px] text-muted-foreground mt-1">Minimum 8 characters</p>
+            <p v-if="!isSetup" class="text-[12px] text-muted-foreground mt-1">Minimum 8 characters</p>
           </div>
 
           <button

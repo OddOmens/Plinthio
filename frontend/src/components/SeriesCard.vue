@@ -44,7 +44,7 @@
 
         <!-- Media type pill -->
         <div class="absolute top-2 left-2 z-10 pointer-events-none">
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[11px] font-medium border border-border/80 shadow-sm">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[12px] font-medium border border-border/80 shadow-sm">
             <component :is="typeIcon" class="w-3 h-3 text-muted-foreground" />
             <span>{{ vocab.type }}</span>
           </span>
@@ -64,7 +64,7 @@
 
         <!-- Entry count badge (bottom right) -->
         <div class="absolute bottom-2 right-2 z-10 pointer-events-none">
-          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-mono font-bold backdrop-blur-sm">
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/70 text-white text-[12px] font-mono font-bold backdrop-blur-sm">
             {{ countLabel }}
           </span>
         </div>

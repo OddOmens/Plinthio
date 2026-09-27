@@ -6,6 +6,7 @@ import { serverError } from '../utils/http.js';
 import { shapeItems, shapeItem } from '../services/itemView.js';
 import { ratingSql, isItemHiddenForUser } from '../services/visibility.js';
 import { probeChapters } from '../services/chapters.js';
+import { ensureCredits } from '../services/credits.js';
 
 // Item ids are always a 32-char hex md5 of the file path (see scanner.js).
 const ITEM_ID_RE = /^[a-f0-9]{32}$/;
@@ -333,9 +334,13 @@ router.get('/series/:name', async (req, res) => {
     // 1. First in-progress volume
     // 2. First unread volume
     // 3. First volume in series
-    const inProgressVol = items.find(i => !i.is_finished && !isSkipped(i) && i.progress_percent > 0);
-    const firstUnreadVol = items.find(i => !i.is_finished && !isSkipped(i));
-    const nextVolume = inProgressVol || firstUnreadVol || items[0];
+    // A show's specials (season 0, stored as volume 0.xxx) sort first by number but are
+    // watched last: "Start Watching" begins at S1E1, not a behind-the-scenes special.
+    const isSpecial = (i) => ['show', 'anime'].includes(i.media_type) && i.volume != null && i.volume < 1;
+    const watchOrder = [...items.filter((i) => !isSpecial(i)), ...items.filter(isSpecial)];
+    const inProgressVol = watchOrder.find(i => !i.is_finished && !isSkipped(i) && i.progress_percent > 0);
+    const firstUnreadVol = watchOrder.find(i => !i.is_finished && !isSkipped(i));
+    const nextVolume = inProgressVol || firstUnreadVol || watchOrder[0];
 
     res.json({
       series: {
@@ -571,6 +576,24 @@ router.get('/:id/extras', async (req, res) => {
     `, [req.user.id, req.params.id, req.user.id]);
     await shapeItems(db, extras, req.user);
     res.json({ extras });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// Cast, crew and studios for a movie or show (an episode gets its show's). Looked up from
+// TMDB on first open and cached on the item; `credits: null` when there are none.
+router.get('/:id/credits', async (req, res) => {
+  if (!ITEM_ID_RE.test(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid item id' });
+  }
+  try {
+    const db = await getDb();
+    const item = await db.get('SELECT * FROM items WHERE id = ?', [req.params.id]);
+    if (!item || await isItemHiddenForUser(db, item.id, req.user)) {
+      return res.status(404).json({ error: 'Item not found' });
+    }
+    res.json({ credits: await ensureCredits(db, item) });
   } catch (err) {
     serverError(req, res, err);
   }

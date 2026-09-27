@@ -28,6 +28,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Media requests**: anyone can request a title from search or a list (one open request per title across users). Admins and editors get a review queue (accept as pending/added, reject, add a note), requesters can withdraw pending requests, and the user menu shows a pending count.
 - **Update notifications**: admins see a dismissible banner when a new version is released.
 - Automatic database backup before a new version's first start.
+- **Jellyfin-style title pages for movies and shows.** One hero with the poster, year · runtime · rating, tagline, full overview and Genres / Director / Writers / Studios / Network rows (no more second "About" block). A **Cast & Crew** row (photos, characters and jobs), and one Media Info panel. Shows and anime list their episodes **by season** (specials last) with a still from each episode, its own synopsis, and mark-season-watched; "Start Watching" begins at S1E1, not a special. Movie collections (Shrek, Star Wars…) list their films in release order the same way. Cast, crew and studios come from TMDB the first time a page opens (with a TMDB key) and are cached; episode stills are small frames grabbed on first view and cached, two at a time at most.
+- **Bigger posters and text.** Shelf and series grids show up to five posters a row instead of six (roughly a quarter larger), and the whole type scale is a notch larger (body text 13/15px instead of 12/14px).
 - Multi-architecture images (x86-64 and ARM) published to `ghcr.io/oddomens/plinthio`.
 
 ### Changed

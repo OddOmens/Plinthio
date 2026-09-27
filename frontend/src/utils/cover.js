@@ -24,3 +24,14 @@ export function coverUrl(item, { width, raw = false } = {}) {
 
   return `/api/media/cover/${item.id}?${params.toString()}`;
 }
+
+// A frame from the video itself (an episode's thumbnail). The server grabs it on first
+// request; when it can't, the image errors and the caller falls back to coverUrl().
+export function stillUrl(item) {
+  if (!item?.id) return '';
+  const params = new URLSearchParams();
+  const token = getMediaToken() || '';
+  if (token) params.set('token', token);
+  params.set('v', coverVersion(item));
+  return `/api/media/still/${item.id}?${params.toString()}`;
+}

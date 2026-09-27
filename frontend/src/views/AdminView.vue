@@ -157,12 +157,12 @@
               </div>
               <div class="min-w-0">
                 <h3 class="text-xs font-semibold text-foreground truncate">{{ lib.name }}</h3>
-                <p class="text-[11px] text-muted-foreground font-mono truncate mt-0.5">{{ lib.path }}</p>
+                <p class="text-[12px] text-muted-foreground font-mono truncate mt-0.5">{{ lib.path }}</p>
                 <div class="flex items-center gap-2 mt-1">
-                  <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  <span class="text-[11px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                     {{ lib.type }}
                   </span>
-                  <span class="text-[11px] text-muted-foreground">
+                  <span class="text-[12px] text-muted-foreground">
                     {{ lib.item_count || 0 }} items
                   </span>
                 </div>
@@ -223,7 +223,7 @@
         </div>
 
         <!-- Role Legend -->
-        <div class="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+        <div class="flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
           <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/50 border border-border">
             <ShieldCheck class="w-3 h-3 text-primary" /> <strong class="text-foreground">Admin</strong> — full control (libraries, users, server settings)
           </span>
@@ -258,11 +258,11 @@
               <div class="min-w-0">
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-semibold text-foreground truncate">{{ u.username }}</span>
-                  <span v-if="u.id === authStore.user?.id" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0">
+                  <span v-if="u.id === authStore.user?.id" class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0">
                     You
                   </span>
                 </div>
-                <span class="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                <span class="text-[12px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
                   <span>Joined {{ formatDate(u.created_at) }}</span>
                   <span class="text-muted-foreground/50">&bull;</span>
                   <span class="flex items-center gap-1">
@@ -273,7 +273,7 @@
                     <span class="text-muted-foreground/50">&bull;</span>
                     <span
                       :class="[
-                        'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium',
+                        'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono font-medium',
                         isUserExpired(u) ? 'bg-destructive/15 text-destructive font-semibold' :
                         isUserExpiringSoon(u) ? 'bg-amber-500/15 text-amber-500 font-semibold' :
                         'bg-emerald-500/15 text-emerald-500'
@@ -288,7 +288,7 @@
                   <template v-if="u.max_age_rating">
                     <span class="text-muted-foreground/50">&bull;</span>
                     <span
-                      class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-sky-500/15 text-sky-500"
+                      class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-sky-500/15 text-sky-500"
                       :title="u.allow_unrated === 0 ? 'Unrated titles are hidden too' : 'Unrated titles are allowed'"
                     >
                       <ShieldCheck class="w-2.5 h-2.5" />
@@ -305,7 +305,7 @@
                 :value="u.role"
                 @change="changeUserRole(u, $event.target.value)"
                 :class="[
-                  'text-[11px] font-medium rounded-md px-2 py-1.5 border focus:outline-none focus:ring-1 focus:ring-ring capitalize',
+                  'text-[12px] font-medium rounded-md px-2 py-1.5 border focus:outline-none focus:ring-1 focus:ring-ring capitalize',
                   roleBadgeClass(u.role)
                 ]"
               >
@@ -315,7 +315,7 @@
               </select>
               <span
                 v-else
-                :class="['text-[11px] font-medium rounded-md px-2 py-1.5 border capitalize', roleBadgeClass(u.role)]"
+                :class="['text-[12px] font-medium rounded-md px-2 py-1.5 border capitalize', roleBadgeClass(u.role)]"
               >
                 {{ u.role }}
               </span>
@@ -407,7 +407,7 @@
               :key="lvl"
               @click="setLogLevel(lvl)"
               :class="[
-                'px-2.5 py-0.5 rounded text-[11px] font-medium capitalize transition',
+                'px-2.5 py-0.5 rounded text-[12px] font-medium capitalize transition',
                 selectedLogLevel === lvl
                   ? 'bg-secondary text-foreground font-semibold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
@@ -419,7 +419,7 @@
         </div>
 
         <!-- Console View -->
-        <div class="bg-zinc-950 dark:bg-black text-zinc-100 border border-border rounded-xl p-3 font-mono text-[11px] leading-relaxed max-h-[520px] overflow-y-auto shadow-inner flex flex-col gap-1 select-text">
+        <div class="bg-zinc-950 dark:bg-black text-zinc-100 border border-border rounded-xl p-3 font-mono text-[12px] leading-relaxed max-h-[520px] overflow-y-auto shadow-inner flex flex-col gap-1 select-text">
           <div v-if="logs.length === 0" class="py-12 text-center text-zinc-500 font-sans text-xs">
             No log entries match your filter.
           </div>
@@ -428,12 +428,12 @@
             :key="log.id"
             class="flex items-start gap-2 hover:bg-white/5 px-2 py-1 rounded transition-colors"
           >
-            <span class="text-zinc-500 whitespace-nowrap select-none text-[10px]">
+            <span class="text-zinc-500 whitespace-nowrap select-none text-[11px]">
               {{ formatLogTime(log.timestamp) }}
             </span>
             <span
               :class="[
-                'px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider whitespace-nowrap select-none',
+                'px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider whitespace-nowrap select-none',
                 log.level === 'error' ? 'bg-rose-950 text-rose-300 border border-rose-800' :
                 log.level === 'warn' ? 'bg-amber-950 text-amber-300 border border-amber-800' :
                 'bg-zinc-800 text-zinc-300 border border-zinc-700'
@@ -441,13 +441,13 @@
             >
               {{ log.level }}
             </span>
-            <span v-if="log.category" class="text-zinc-400 select-none text-[10px] whitespace-nowrap">
+            <span v-if="log.category" class="text-zinc-400 select-none text-[11px] whitespace-nowrap">
               [{{ log.category }}]
             </span>
             <span class="text-zinc-200 flex-1 break-words">
               {{ log.message }}
             </span>
-            <span v-if="log.details" class="text-zinc-500 text-[10px] truncate max-w-[200px]" :title="log.details">
+            <span v-if="log.details" class="text-zinc-500 text-[11px] truncate max-w-[200px]" :title="log.details">
               {{ log.details }}
             </span>
           </div>
@@ -519,10 +519,10 @@
                   </div>
                   <div>
                     <h4 class="text-xs font-semibold text-foreground">{{ mediaTypeLabel(cat.media_type) }}</h4>
-                    <span class="text-[11px] text-muted-foreground font-mono">{{ formatBytes(cat.bytes) }}</span>
+                    <span class="text-[12px] text-muted-foreground font-mono">{{ formatBytes(cat.bytes) }}</span>
                   </div>
                 </div>
-                <span class="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                <span class="text-[11px] font-mono font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                   {{ cat.percentage_of_storage }}% space
                 </span>
               </div>
@@ -538,23 +538,23 @@
               <!-- Detailed Key-Value Grid -->
               <div class="grid grid-cols-2 gap-2 pt-1 text-xs border-t border-border/60">
                 <div class="flex flex-col">
-                  <span class="text-[10px] text-muted-foreground">Total Files</span>
+                  <span class="text-[11px] text-muted-foreground">Total Files</span>
                   <span class="font-bold text-foreground">{{ cat.count }}</span>
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-[10px] text-muted-foreground">Avg File Size</span>
+                  <span class="text-[11px] text-muted-foreground">Avg File Size</span>
                   <span class="font-mono text-foreground">{{ formatBytes(cat.avg_bytes) }}</span>
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-[10px] text-muted-foreground">Creators / Authors</span>
+                  <span class="text-[11px] text-muted-foreground">Creators / Authors</span>
                   <span class="font-bold text-foreground">{{ cat.unique_authors }}</span>
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-[10px] text-muted-foreground">Series Groups</span>
+                  <span class="text-[11px] text-muted-foreground">Series Groups</span>
                   <span class="font-bold text-foreground">{{ cat.unique_series }}</span>
                 </div>
                 <div v-if="cat.media_type === 'audiobook' && cat.duration > 0" class="flex flex-col col-span-2">
-                  <span class="text-[10px] text-muted-foreground">Playback Length</span>
+                  <span class="text-[11px] text-muted-foreground">Playback Length</span>
                   <span class="font-mono text-foreground">{{ formatHours(cat.duration) }}</span>
                 </div>
               </div>
@@ -619,7 +619,7 @@
                   {{ entry.ended_at ? ' viewed ' : ' is viewing ' }}<span class="italic">{{ entry.item_title || 'a deleted item' }}</span>
                 </template>
               </p>
-              <p class="text-[11px] text-muted-foreground">
+              <p class="text-[12px] text-muted-foreground">
                 {{ formatDateTime(entry.timestamp) }}
                 <span v-if="entry.type === 'login' && entry.ip_address"> &bull; {{ entry.ip_address }}</span>
                 <span v-if="entry.type === 'view' && entry.duration_seconds"> &bull; {{ formatDurationShort(entry.duration_seconds) }}</span>
@@ -697,7 +697,7 @@
               />
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground">{{ filter.label }}</span>
-                <span class="text-[11px] text-muted-foreground">{{ filter.always ? 'Always on' : filter.desc }}</span>
+                <span class="text-[12px] text-muted-foreground">{{ filter.always ? 'Always on' : filter.desc }}</span>
               </div>
             </label>
           </div>
@@ -770,7 +770,7 @@
               </div>
               <div>
                 <span class="text-xs font-semibold text-foreground block">Top Navigation</span>
-                <span class="text-[11px] text-muted-foreground">Classic horizontal header bar</span>
+                <span class="text-[12px] text-muted-foreground">Classic horizontal header bar</span>
               </div>
             </button>
 
@@ -790,7 +790,7 @@
               </div>
               <div>
                 <span class="text-xs font-semibold text-foreground block">Sidebar</span>
-                <span class="text-[11px] text-muted-foreground">Vertical navigation on the left</span>
+                <span class="text-[12px] text-muted-foreground">Vertical navigation on the left</span>
               </div>
             </button>
           </div>
@@ -820,7 +820,7 @@
               />
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground">{{ opt.label }}</span>
-                <span class="text-[11px] text-muted-foreground">{{ opt.desc }}</span>
+                <span class="text-[12px] text-muted-foreground">{{ opt.desc }}</span>
               </div>
             </label>
           </div>
@@ -917,7 +917,7 @@
               <label class="text-xs font-medium text-foreground">TMDB API Key</label>
               <span
                 :class="[
-                  'text-[10px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border',
+                  'text-[11px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border',
                   tmdbConfigured
                     ? 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10'
                     : 'text-muted-foreground border-border bg-muted/40'
@@ -942,7 +942,7 @@
                 {{ savingTmdbKey ? 'Saving...' : 'Save' }}
               </button>
             </div>
-            <p class="text-[11px] text-muted-foreground">
+            <p class="text-[12px] text-muted-foreground">
               Get a free key at themoviedb.org under Settings &rarr; API. Saving an empty value clears the stored key.
             </p>
           </div>
@@ -954,7 +954,7 @@
             <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Video Transcoding & Hardware Acceleration</h3>
             <p class="text-xs text-muted-foreground mt-0.5">
               Plinthio prioritizes <strong>Direct Play</strong> and <strong>Direct Stream</strong> before falling back to transcoding.
-              When video streams can be decoded by the browser, they are copied untouched (<code class="text-[11px] bg-muted px-1 rounded">-c:v copy</code>)
+              When video streams can be decoded by the browser, they are copied untouched (<code class="text-[12px] bg-muted px-1 rounded">-c:v copy</code>)
               with zero server video CPU load, and only incompatible audio (e.g. EAC3 / Atmos / DTS) is converted to AAC.
             </p>
           </div>
@@ -963,7 +963,7 @@
             <label class="text-xs font-medium text-foreground">Detected hardware</label>
             <span
               :class="[
-                'text-[10px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border',
+                'text-[11px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border',
                 transcoding.detected
                   ? 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10'
                   : 'text-muted-foreground border-border bg-muted/40'
@@ -996,24 +996,24 @@
               </button>
             </div>
             <p v-if="hwaccelTestResult" :class="[
-              'text-[11px]',
+              'text-[12px]',
               hwaccelTestResult.ok ? 'text-emerald-500' : 'text-destructive'
             ]">
               {{ hwaccelTestResult.ok
                 ? `${testableMethod.toUpperCase()} encoding verified and working on this machine.`
                 : `${testableMethod.toUpperCase()} test failed: ${hwaccelTestResult.error}` }}
             </p>
-            <p class="text-[11px] text-muted-foreground">
+            <p class="text-[12px] text-muted-foreground">
               Testing runs a short real encode — ffmpeg listing an encoder doesn't prove the driver underneath it works.
             </p>
           </div>
 
           <!-- Architecture & Playback Guide -->
           <div class="rounded-lg bg-muted/40 border border-border p-3 space-y-2 text-xs text-muted-foreground">
-            <div class="font-medium text-foreground text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+            <div class="font-medium text-foreground text-[12px] uppercase tracking-wider flex items-center gap-1.5">
               <span>Playback Pipeline & Host Configuration</span>
             </div>
-            <ul class="list-disc pl-4 space-y-1.5 text-[11px] leading-relaxed">
+            <ul class="list-disc pl-4 space-y-1.5 text-[12px] leading-relaxed">
               <li>
                 <strong class="text-foreground">Direct Stream (Remux):</strong> Files with native video (H.264, or HEVC on Vivaldi/Chrome/Edge/Safari) inside MKV containers or with Dolby/DTS audio stream-copy the video at original resolution (up to 4K) using negligible CPU, converting only the audio track to AAC.
               </li>
@@ -1053,7 +1053,7 @@
 
             <div v-if="autoScanConfig.enabled" class="flex flex-col gap-3 pl-0.5">
               <div class="max-w-xs">
-                <label for="auto-scan-interval" class="block text-[11px] font-medium text-muted-foreground mb-1">Re-scan every</label>
+                <label for="auto-scan-interval" class="block text-[12px] font-medium text-muted-foreground mb-1">Re-scan every</label>
                 <select
                   id="auto-scan-interval"
                   v-model.number="autoScanConfig.intervalMinutes"
@@ -1113,7 +1113,7 @@
 
             <div v-if="backupConfig.enabled" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0.5">
               <div>
-                <label class="block text-[11px] font-medium text-muted-foreground mb-1">Frequency</label>
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">Frequency</label>
                 <select
                   v-model.number="backupConfig.intervalHours"
                   class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -1126,7 +1126,7 @@
                 </select>
               </div>
               <div>
-                <label class="block text-[11px] font-medium text-muted-foreground mb-1">Keep last</label>
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">Keep last</label>
                 <input
                   type="number"
                   min="1"
@@ -1169,7 +1169,7 @@
 
           <!-- Stored backups list -->
           <div class="flex flex-col gap-2">
-            <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <h4 class="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider">
               Stored Backups {{ storedBackups.length ? `(${storedBackups.length})` : '' }}
             </h4>
             <div v-if="storedBackups.length === 0" class="text-xs text-muted-foreground py-3 text-center border border-dashed border-border rounded-lg">
@@ -1183,7 +1183,7 @@
               >
                 <div class="min-w-0">
                   <div class="text-xs font-medium text-foreground truncate">{{ formatBackupDate(b.createdAt) }}</div>
-                  <div class="text-[11px] text-muted-foreground font-mono">{{ formatBytes(b.size) }}</div>
+                  <div class="text-[12px] text-muted-foreground font-mono">{{ formatBytes(b.size) }}</div>
                 </div>
                 <div class="flex items-center gap-1 flex-shrink-0">
                   <button aria-label="Download this backup"
@@ -1233,19 +1233,19 @@
                 <span>Browse...</span>
               </button>
             </div>
-            <p class="text-[11px] text-muted-foreground mt-1">
+            <p class="text-[12px] text-muted-foreground mt-1">
               Your Database is mounted at <code class="bg-muted px-1 py-0.5 rounded font-mono">/media</code>
             </p>
 
             <!-- Detected Folder Chips -->
             <div v-if="discoveredFolders.length > 0" class="mt-2 flex flex-wrap gap-1.5 items-center">
-              <span class="text-[10px] text-muted-foreground mr-1">Available folders:</span>
+              <span class="text-[11px] text-muted-foreground mr-1">Available folders:</span>
               <button
                 v-for="folder in discoveredFolders"
                 :key="folder.path"
                 type="button"
                 @click="selectFolder(folder)"
-                class="px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-mono text-foreground border border-border transition"
+                class="px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-[12px] font-mono text-foreground border border-border transition"
               >
                 {{ folder.name }}
               </button>
@@ -1327,7 +1327,7 @@
         </div>
 
         <div class="p-4 pt-3 border-t border-border flex items-center justify-between gap-2">
-          <span class="text-[11px] font-mono text-muted-foreground truncate" :title="browserCurrentDir">{{ browserCurrentDir }}</span>
+          <span class="text-[12px] font-mono text-muted-foreground truncate" :title="browserCurrentDir">{{ browserCurrentDir }}</span>
           <div class="flex items-center gap-2 flex-shrink-0">
             <button type="button" @click="showFolderBrowser = false" class="px-3 py-1.5 rounded-md bg-secondary text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition">Cancel</button>
             <button type="button" @click="confirmFolderSelection" class="px-3.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm">Select This Folder</button>
@@ -1350,7 +1350,7 @@
           <div>
             <label class="block text-xs font-medium text-foreground mb-1">Password</label>
             <input v-model="newUser.password" type="password" required minlength="8" class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
-            <p class="text-[11px] text-muted-foreground mt-1">Must be at least 8 characters long</p>
+            <p class="text-[12px] text-muted-foreground mt-1">Must be at least 8 characters long</p>
           </div>
 
           <div>
@@ -1415,11 +1415,11 @@
               <Hourglass class="w-3.5 h-3.5 text-muted-foreground" />
               Account Access Limit
             </label>
-            <p v-if="editUser.currentExpiresAt" class="text-[11px] text-muted-foreground mb-1.5">
+            <p v-if="editUser.currentExpiresAt" class="text-[12px] text-muted-foreground mb-1.5">
               Current limit: <strong class="text-foreground">{{ formatDateTime(editUser.currentExpiresAt) }}</strong>
               <span v-if="new Date(editUser.currentExpiresAt).getTime() <= Date.now()" class="text-destructive font-semibold ml-1">(Expired)</span>
             </p>
-            <p v-else class="text-[11px] text-muted-foreground mb-1.5">
+            <p v-else class="text-[12px] text-muted-foreground mb-1.5">
               Current limit: <strong class="text-foreground">Unlimited / Forever</strong>
             </p>
 
@@ -1459,11 +1459,11 @@
               <option value="Teen">Up to Teen</option>
               <option value="Mature">Up to Mature</option>
             </select>
-            <label v-if="editUser.maxAgeRating" class="mt-2 flex items-start gap-2 text-[11px] text-muted-foreground cursor-pointer">
+            <label v-if="editUser.maxAgeRating" class="mt-2 flex items-start gap-2 text-[12px] text-muted-foreground cursor-pointer">
               <input v-model="editUser.allowUnrated" type="checkbox" class="mt-0.5 accent-primary" />
               <span>Allow titles that haven't been rated yet. Turn off for strict filtering — only rated titles at or below the limit will show.</span>
             </label>
-            <p class="text-[11px] text-muted-foreground mt-1">Ratings are set per series (series sheet) or per title (metadata editor).</p>
+            <p class="text-[12px] text-muted-foreground mt-1">Ratings are set per series (series sheet) or per title (metadata editor).</p>
           </div>
 
           <div class="pt-3 border-t border-border">
@@ -1479,7 +1479,7 @@
               placeholder="Leave blank to keep current password"
               class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
-            <p class="text-[11px] text-muted-foreground mt-1">If set, must be at least 8 characters. This immediately signs the user out of all sessions.</p>
+            <p class="text-[12px] text-muted-foreground mt-1">If set, must be at least 8 characters. This immediately signs the user out of all sessions.</p>
           </div>
 
           <div class="flex items-center justify-end gap-2 pt-2 border-t border-border">
@@ -1510,14 +1510,14 @@
 
         <form @submit.prevent="submitExtendUser" class="flex flex-col gap-3.5 p-5 overflow-y-auto">
           <div class="p-2.5 rounded-lg bg-muted/40 border border-border text-xs">
-            <div class="text-muted-foreground text-[11px]">Current Status</div>
+            <div class="text-muted-foreground text-[12px]">Current Status</div>
             <div class="font-medium text-foreground mt-0.5 flex items-center gap-1.5">
               <template v-if="extendTargetUser?.expires_at">
                 <span :class="isUserExpired(extendTargetUser) ? 'text-destructive font-semibold' : 'text-emerald-500 font-semibold'">
                   {{ isUserExpired(extendTargetUser) ? 'Expired' : 'Active' }}
                 </span>
                 <span>·</span>
-                <span class="text-muted-foreground font-mono text-[11px]">{{ formatDateTime(extendTargetUser.expires_at) }}</span>
+                <span class="text-muted-foreground font-mono text-[12px]">{{ formatDateTime(extendTargetUser.expires_at) }}</span>
               </template>
               <template v-else>
                 <span class="text-emerald-500 font-semibold">Active</span>
@@ -1540,7 +1540,7 @@
               <option value="1y">+1 Year</option>
               <option value="forever">Set to Forever / Unlimited</option>
             </select>
-            <p class="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+            <p class="text-[12px] text-muted-foreground mt-1.5 leading-relaxed">
               Extends from current expiration date (or from today if already expired).
             </p>
           </div>

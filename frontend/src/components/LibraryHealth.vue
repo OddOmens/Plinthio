@@ -38,7 +38,7 @@
           class="rounded-xl border p-3 flex flex-col gap-1 transition hover:bg-muted/40"
           :class="tile.count > 0 ? tile.tone : 'border-border bg-card'"
         >
-          <span class="text-[11px] font-medium text-muted-foreground">{{ tile.label }}</span>
+          <span class="text-[12px] font-medium text-muted-foreground">{{ tile.label }}</span>
           <span class="text-xl font-semibold tabular-nums" :class="tile.count > 0 ? '' : 'text-muted-foreground'">{{ tile.count.toLocaleString() }}</span>
         </a>
       </div>
@@ -51,20 +51,20 @@
       <section id="health-libraries" class="rounded-xl border border-border bg-card">
         <header class="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
           <h3 class="text-sm font-semibold text-foreground">Libraries</h3>
-          <span class="text-[11px] text-muted-foreground">{{ report.summary.totalItems.toLocaleString() }} items total</span>
+          <span class="text-[12px] text-muted-foreground">{{ report.summary.totalItems.toLocaleString() }} items total</span>
         </header>
         <ul class="divide-y divide-border">
           <li v-for="lib in report.libraries" :key="lib.id" class="px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <component :is="lib.path_exists ? CheckCircle2 : AlertTriangle" class="w-4 h-4 flex-shrink-0" :class="lib.path_exists ? 'text-emerald-500' : 'text-destructive'" />
             <div class="min-w-0 flex-1 basis-[calc(100%-2rem)] sm:basis-0">
               <p class="text-sm font-medium text-foreground truncate">{{ lib.name }}</p>
-              <p class="text-[11px] text-muted-foreground truncate font-mono" :title="lib.path">{{ lib.path }}</p>
+              <p class="text-[12px] text-muted-foreground truncate font-mono" :title="lib.path">{{ lib.path }}</p>
             </div>
-            <div class="text-[11px] text-muted-foreground flex flex-col items-start sm:items-end flex-1 sm:flex-none pl-7 sm:pl-0">
+            <div class="text-[12px] text-muted-foreground flex flex-col items-start sm:items-end flex-1 sm:flex-none pl-7 sm:pl-0">
               <span>{{ lib.item_count.toLocaleString() }} items</span>
               <span>{{ lib.last_scanned_at ? `Scanned ${formatTime(lib.last_scanned_at + 'Z')}` : 'Never scanned' }}</span>
             </div>
-            <p v-if="!lib.path_exists" class="basis-full text-[11px] text-destructive">
+            <p v-if="!lib.path_exists" class="basis-full text-[12px] text-destructive">
               Folder not reachable — check the drive is mounted and the Docker volume is mapped. Items stay in the catalog until it's back.
             </p>
             <button
@@ -100,7 +100,7 @@
         hint="Same title and exact same file size — usually the same file in two folders or libraries."
       >
         <div v-for="(group, idx) in report.duplicates" :key="idx" class="py-2">
-          <p class="px-4 text-[11px] font-semibold text-muted-foreground">{{ group.copies }} copies</p>
+          <p class="px-4 text-[12px] font-semibold text-muted-foreground">{{ group.copies }} copies</p>
           <ItemRow v-for="item in group.items" :key="item.id" :item="item" show-path />
         </div>
       </HealthSection>
@@ -113,7 +113,7 @@
         hint="Different files that both claim the same volume or episode number in a series. Usually a misnamed file."
       >
         <div v-for="clash in report.volumeClashes" :key="`${clash.library_id}-${clash.series}-${clash.volume}`" class="py-2">
-          <p class="px-4 text-[11px] font-semibold text-muted-foreground">{{ clash.series }} · #{{ clash.volume }} · {{ clash.library_name }}</p>
+          <p class="px-4 text-[12px] font-semibold text-muted-foreground">{{ clash.series }} · #{{ clash.volume }} · {{ clash.library_name }}</p>
           <ItemRow v-for="item in clash.items" :key="item.id" :item="item" show-path />
         </div>
       </HealthSection>
@@ -150,7 +150,7 @@
         :count="report.summary.transcodeFailures"
         hint="ffmpeg errors while preparing video. Often a hardware-acceleration driver problem — try Server Config → Transcoding → Test."
       >
-        <div v-for="(entry, idx) in report.transcodeFailures" :key="idx" class="px-4 py-2 text-[11px]">
+        <div v-for="(entry, idx) in report.transcodeFailures" :key="idx" class="px-4 py-2 text-[12px]">
           <p class="text-muted-foreground">{{ formatTime(entry.timestamp) }}</p>
           <p class="font-mono text-foreground break-all">{{ entry.message }}</p>
         </div>
@@ -243,13 +243,13 @@ const HealthSection = defineComponent({
             'aria-expanded': expandable ? String(open.value) : undefined,
             onClick: () => { if (expandable) open.value = !open.value; }
           }, [
-            h('span', { class: `text-[11px] font-semibold tabular-nums px-2 py-0.5 rounded-md ${badgeClass}` },
+            h('span', { class: `text-[12px] font-semibold tabular-nums px-2 py-0.5 rounded-md ${badgeClass}` },
               hasItems ? props.count.toLocaleString() : '✓'),
             h('h3', { class: 'text-sm font-semibold text-foreground truncate' }, props.title),
             expandable ? h(ChevronDown, { class: `w-4 h-4 text-muted-foreground transition-transform ${open.value ? 'rotate-180' : ''}` }) : null
           ]),
           slots.action && hasItems ? slots.action() : null,
-          props.hint ? h('p', { class: 'basis-full text-[11px] text-muted-foreground leading-relaxed' }, props.hint) : null
+          props.hint ? h('p', { class: 'basis-full text-[12px] text-muted-foreground leading-relaxed' }, props.hint) : null
         ]),
         expandable && open.value
           ? h('div', { class: 'border-t border-border divide-y divide-border/60 max-h-[60dvh] overflow-y-auto' }, slots.default())
@@ -269,10 +269,10 @@ const ItemRow = defineComponent({
           props.item.series ? h('span', { class: 'text-muted-foreground font-normal' }, ` · ${props.item.series}${props.item.volume != null ? ` #${props.item.volume}` : ''}`) : null
         ]),
         props.showPath
-          ? h('p', { class: 'text-[10px] font-mono text-muted-foreground break-all' }, props.item.path)
-          : h('p', { class: 'text-[10px] text-muted-foreground' }, `${props.item.library_name} · ${props.item.media_type}`)
+          ? h('p', { class: 'text-[11px] font-mono text-muted-foreground break-all' }, props.item.path)
+          : h('p', { class: 'text-[11px] text-muted-foreground' }, `${props.item.library_name} · ${props.item.media_type}`)
       ]),
-      props.note ? h('span', { class: 'text-[10px] text-muted-foreground flex-shrink-0' }, props.note) : null
+      props.note ? h('span', { class: 'text-[11px] text-muted-foreground flex-shrink-0' }, props.note) : null
     ]);
   }
 });

@@ -137,6 +137,27 @@ html {
   }
 }
 
+/* Poster grids (shelf, continue rows, a series' volumes/episodes). One definition so every
+   media view sizes its covers the same way — two columns on a phone, up to five on a wide
+   screen, which keeps posters large enough to read. */
+@layer components {
+  .poster-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5;
+  }
+  .hero-btn {
+    @apply h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs sm:text-sm transition active:scale-95 disabled:opacity-50 flex items-center gap-1.5 sm:gap-2 shadow-sm;
+  }
+  .section-title {
+    @apply text-base sm:text-lg font-bold tracking-tight text-foreground flex items-center gap-2;
+  }
+  .count-pill {
+    @apply text-xs font-mono px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-semibold;
+  }
+  .ep-btn {
+    @apply h-8 w-8 rounded-lg border border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95 text-xs;
+  }
+}
+
 /* Hide scrollbars for touch/mobile tabs while preserving momentum scroll */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

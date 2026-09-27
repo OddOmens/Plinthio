@@ -26,7 +26,7 @@
         <template #action="{ result, mediaType }">
           <span
             v-if="sentStatus(result)"
-            class="text-[10px] font-medium px-1.5 py-0.5 rounded"
+            class="text-[11px] font-medium px-1.5 py-0.5 rounded"
             :class="REQUEST_STATUSES[sentStatus(result)]?.tone"
           >
             {{ REQUEST_STATUSES[sentStatus(result)]?.label }}
@@ -61,7 +61,7 @@
             :class="scope === 'all' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
           >
             Review queue
-            <span v-if="pendingCount" class="min-w-[1.25rem] h-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center">
+            <span v-if="pendingCount" class="min-w-[1.25rem] h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold flex items-center justify-center">
               {{ pendingCount }}
             </span>
           </button>
@@ -121,14 +121,14 @@
                 </p>
               </div>
               <span
-                class="text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0 whitespace-nowrap"
+                class="text-[11px] font-medium px-1.5 py-0.5 rounded flex-shrink-0 whitespace-nowrap"
                 :class="REQUEST_STATUSES[req.status]?.tone"
               >
                 {{ REQUEST_STATUSES[req.status]?.label }}
               </span>
             </div>
 
-            <p class="text-[11px] text-muted-foreground">
+            <p class="text-[12px] text-muted-foreground">
               <span v-if="scope === 'all'">Requested by <span class="text-foreground font-medium">{{ req.requested_by || 'deleted user' }}</span> · </span>
               {{ formatDate(req.created_at) }}
             </p>

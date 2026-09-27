@@ -16,7 +16,7 @@
           </router-link>
           <div class="flex items-center gap-2 min-w-0">
             <h1 class="text-sm font-semibold text-foreground tracking-tight truncate">Settings</h1>
-            <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-muted text-muted-foreground hidden sm:inline">
+            <span class="text-[11px] font-mono uppercase px-1.5 py-0.5 rounded bg-muted text-muted-foreground hidden sm:inline">
               {{ authStore.user?.username }}
             </span>
           </div>
@@ -122,7 +122,7 @@
                 <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <Headphones class="w-3.5 h-3.5 text-muted-foreground" /> Audiobooks
                 </span>
-                <span class="text-[11px] text-muted-foreground">Spoken word, audio dramas, & audio files</span>
+                <span class="text-[12px] text-muted-foreground">Spoken word, audio dramas, & audio files</span>
               </div>
             </label>
 
@@ -137,7 +137,7 @@
                 <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <FileImage class="w-3.5 h-3.5 text-muted-foreground" /> Manga & Comics
                 </span>
-                <span class="text-[11px] text-muted-foreground">CBZ, CBR, & digital graphic novels</span>
+                <span class="text-[12px] text-muted-foreground">CBZ, CBR, & digital graphic novels</span>
               </div>
             </label>
 
@@ -152,7 +152,7 @@
                 <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <Book class="w-3.5 h-3.5 text-muted-foreground" /> Books & Documents
                 </span>
-                <span class="text-[11px] text-muted-foreground">EPUB, PDF, and text volumes</span>
+                <span class="text-[12px] text-muted-foreground">EPUB, PDF, and text volumes</span>
               </div>
             </label>
 
@@ -166,9 +166,9 @@
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <Tv class="w-3.5 h-3.5 text-muted-foreground" /> TV Shows
-                  <span class="text-[9px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.2 rounded font-medium">Video</span>
+                  <span class="text-[10px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.2 rounded font-medium">Video</span>
                 </span>
-                <span class="text-[11px] text-muted-foreground">Episodic series streaming (MP4, MKV)</span>
+                <span class="text-[12px] text-muted-foreground">Episodic series streaming (MP4, MKV)</span>
               </div>
             </label>
 
@@ -182,9 +182,9 @@
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <Film class="w-3.5 h-3.5 text-muted-foreground" /> Movies
-                  <span class="text-[9px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.2 rounded font-medium">Video</span>
+                  <span class="text-[10px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.2 rounded font-medium">Video</span>
                 </span>
-                <span class="text-[11px] text-muted-foreground">Feature films & movies</span>
+                <span class="text-[12px] text-muted-foreground">Feature films & movies</span>
               </div>
             </label>
 
@@ -198,9 +198,9 @@
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <Sparkles class="w-3.5 h-3.5 text-muted-foreground" /> Anime
-                  <span class="text-[9px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.2 rounded font-medium">Video</span>
+                  <span class="text-[10px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.2 rounded font-medium">Video</span>
                 </span>
-                <span class="text-[11px] text-muted-foreground">Anime series & movies</span>
+                <span class="text-[12px] text-muted-foreground">Anime series & movies</span>
               </div>
             </label>
           </div>
@@ -231,8 +231,8 @@
               />
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground">{{ mode.label }}</span>
-                <span v-if="!mode.allowed" class="text-[10px] text-destructive">Turned off by your administrator</span>
-                <span v-else class="text-[11px] text-muted-foreground">{{ mode.desc }}</span>
+                <span v-if="!mode.allowed" class="text-[11px] text-destructive">Turned off by your administrator</span>
+                <span v-else class="text-[12px] text-muted-foreground">{{ mode.desc }}</span>
               </div>
             </label>
           </div>
@@ -370,7 +370,7 @@
                     {{ entry.ended_at ? 'Viewed ' : 'Currently viewing ' }}<span class="italic">{{ entry.item_title || 'a deleted item' }}</span>
                   </template>
                 </p>
-                <p class="text-[11px] text-muted-foreground">
+                <p class="text-[12px] text-muted-foreground">
                   {{ formatDateTime(entry.timestamp) }}
                   <span v-if="entry.type === 'view' && entry.duration_seconds"> &bull; {{ formatDurationShort(entry.duration_seconds) }}</span>
                 </p>
@@ -402,7 +402,7 @@
           >
             <div class="min-w-0">
               <h4 class="text-xs font-semibold text-foreground truncate">{{ item.title }}</h4>
-              <p class="text-[11px] text-muted-foreground truncate">{{ item.author || 'Unknown' }}</p>
+              <p class="text-[12px] text-muted-foreground truncate">{{ item.author || 'Unknown' }}</p>
             </div>
             <button
               @click="unhideItem(item)"
@@ -455,7 +455,7 @@
           <div class="border-b border-border pb-2">
             <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Generate New Key</h3>
             <p class="text-xs text-muted-foreground mt-0.5">
-              Include with the <code class="font-mono text-[11px] bg-muted px-1 py-0.5 rounded">X-API-Key</code> HTTP header in requests.
+              Include with the <code class="font-mono text-[12px] bg-muted px-1 py-0.5 rounded">X-API-Key</code> HTTP header in requests.
             </p>
           </div>
 
@@ -507,7 +507,7 @@
               <div>
                 <span class="font-medium text-foreground">{{ k.name }}</span>
                 <span class="ml-2 font-mono text-muted-foreground">••••{{ k.last4 }}</span>
-                <span class="ml-3 text-[10px] text-muted-foreground font-mono">{{ formatDate(k.created_at) }}</span>
+                <span class="ml-3 text-[11px] text-muted-foreground font-mono">{{ formatDate(k.created_at) }}</span>
               </div>
               <button aria-label="Revoke key"
                 @click="deleteKey(k)"
@@ -585,7 +585,7 @@
                   <span>{{ removingAvatar ? 'Removing...' : 'Remove' }}</span>
                 </button>
               </div>
-              <p class="text-[11px] text-muted-foreground">
+              <p class="text-[12px] text-muted-foreground">
                 Supports JPG, PNG, or WebP up to 5MB. Automatically cropped to a square.
               </p>
               <div v-if="avatarSuccess" class="text-xs text-emerald-500 font-medium flex items-center gap-1">
@@ -621,7 +621,7 @@
             </div>
             <div class="min-w-0">
               <h3 class="text-xs font-semibold text-foreground">Server branding, theme & custom CSS</h3>
-              <p class="text-[11px] text-muted-foreground">These are server-wide, so they now live in Admin → Server Config.</p>
+              <p class="text-[12px] text-muted-foreground">These are server-wide, so they now live in Admin → Server Config.</p>
             </div>
           </div>
           <ExternalLink class="w-4 h-4 text-muted-foreground group-hover:text-primary transition flex-shrink-0" />
@@ -654,7 +654,7 @@
                 minlength="8"
                 class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
-              <p class="text-[11px] text-muted-foreground mt-1">Must be at least 8 characters long</p>
+              <p class="text-[12px] text-muted-foreground mt-1">Must be at least 8 characters long</p>
             </div>
 
             <button

@@ -11,6 +11,7 @@ import { isItemHiddenForUser } from '../services/visibility.js';
 import { escapeXml } from '../utils/xml.js';
 import { sendRangedFile, streamFile } from '../utils/fileStream.js';
 import { sendError, codeForFsError } from '../errors.js';
+import { getOrCreateStill } from '../services/videoFrame.js';
 
 // Reading a book/comic/audiobook file: a disconnected drive or unreadable file is P302/P301,
 // anything else the generic P000.
@@ -40,6 +41,33 @@ const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 // per item, instead of trusting an open 100-1200 range that trivially lets a single client
 // force ~1100 distinct sharp() resizes per cover.
 const ALLOWED_THUMB_WIDTHS = [180, 360, 720];
+
+// A still from a video (an episode's thumbnail in a show's episode list). Grabbed on first
+// request and cached; 404 when the file can't be read, and the page falls back to the cover.
+const STILL_TYPES = new Set(['show', 'anime', 'movie']);
+router.get('/still/:id', authenticateToken, async (req, res) => {
+  const itemId = req.params.id;
+  if (!ITEM_ID_RE.test(itemId)) {
+    return res.status(400).json({ error: 'Invalid item id' });
+  }
+  try {
+    const db = await getDb();
+    const item = await db.get('SELECT id, path, media_type, duration, file_size FROM items WHERE id = ?', [itemId]);
+    if (!item || !STILL_TYPES.has(item.media_type) || await isItemHiddenForUser(db, itemId, req.user)) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    const still = await getOrCreateStill(item);
+    if (!still) return res.status(404).json({ error: 'No still for this video' });
+    const etag = `"still-${itemId}-${item.file_size || 0}"`;
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('ETag', etag);
+    if (req.headers['if-none-match'] === etag) return res.status(304).end();
+    return res.sendFile(still);
+  } catch (err) {
+    mediaFileError(req, res, err);
+  }
+});
 
 // Cover image endpoint (Supports token via query string: ?token=...)
 router.get('/cover/:id', authenticateToken, async (req, res) => {

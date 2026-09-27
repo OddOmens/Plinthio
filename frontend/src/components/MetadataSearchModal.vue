@@ -48,7 +48,7 @@
                 >
                   <Loader2 v-if="uploadingCover" class="w-4 h-4 animate-spin" />
                   <Upload v-else class="w-4 h-4" />
-                  <span class="text-[9px] font-medium leading-none text-center px-1">
+                  <span class="text-[10px] font-medium leading-none text-center px-1">
                     {{ uploadingCover ? 'Saving' : (isBulk ? 'Set for series' : 'Replace') }}
                   </span>
                 </button>
@@ -65,7 +65,7 @@
 
             <div class="flex-1 flex flex-col gap-2.5 min-w-0">
               <div v-if="!isBulk">
-                <label class="block text-[11px] font-medium text-muted-foreground mb-1">Title</label>
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">Title</label>
                 <input
                   v-model="form.title"
                   placeholder="Title"
@@ -73,7 +73,7 @@
                 />
               </div>
               <div>
-                <label class="block text-[11px] font-medium text-muted-foreground mb-1">{{ authorLabel }}</label>
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ authorLabel }}</label>
                 <input
                   v-model="form.author"
                   :placeholder="isVideoType ? 'Director(s)' : 'Unknown Author'"
@@ -81,7 +81,7 @@
                 />
               </div>
               <div>
-                <label class="block text-[11px] font-medium text-muted-foreground mb-1">{{ artistsLabel }}</label>
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ artistsLabel }}</label>
                 <input
                   v-model="form.artists"
                   :placeholder="isVideoType ? 'Comma separated actors' : 'Comma separated'"
@@ -89,7 +89,7 @@
                 />
               </div>
               <div>
-                <label class="block text-[11px] font-medium text-muted-foreground mb-1">Series</label>
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">Series</label>
                 <input
                   v-model="form.series"
                   placeholder="Series name"
@@ -102,7 +102,7 @@
           <!-- Extended metadata -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
-              <label class="block text-[11px] font-medium text-muted-foreground mb-1">Release Date</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Release Date</label>
               <input
                 v-model="form.releaseDate"
                 placeholder="e.g. 2019 or 2019-06-26"
@@ -110,7 +110,7 @@
               />
             </div>
             <div>
-              <label class="block text-[11px] font-medium text-muted-foreground mb-1">Age Rating</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Age Rating</label>
               <select
                 v-model="form.ageRating"
                 class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -120,7 +120,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-[11px] font-medium text-muted-foreground mb-1">Status</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Status</label>
               <input
                 v-model="form.status"
                 placeholder="e.g. Ongoing, Completed"
@@ -128,7 +128,7 @@
               />
             </div>
             <div>
-              <label class="block text-[11px] font-medium text-muted-foreground mb-1">Publisher</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Publisher</label>
               <input
                 v-model="form.publisher"
                 placeholder="Publisher"
@@ -136,7 +136,7 @@
               />
             </div>
             <div>
-              <label class="block text-[11px] font-medium text-muted-foreground mb-1">Genres</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Genres</label>
               <input
                 v-model="form.genres"
                 placeholder="Comma separated"
@@ -144,7 +144,7 @@
               />
             </div>
             <div>
-              <label class="block text-[11px] font-medium text-muted-foreground mb-1">Themes</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Themes</label>
               <input
                 v-model="form.themes"
                 placeholder="Comma separated"
@@ -154,7 +154,7 @@
           </div>
 
           <div>
-            <label class="block text-[11px] font-medium text-muted-foreground mb-1">Description</label>
+            <label class="block text-[12px] font-medium text-muted-foreground mb-1">Description</label>
             <textarea
               v-model="form.description"
               placeholder="Synopsis / description"
@@ -228,7 +228,7 @@
                 No results found. Try a different search term.
               </div>
 
-              <div v-if="searchedAs && hasSearched && !searching" class="text-[10px] text-muted-foreground/60 text-center px-2">
+              <div v-if="searchedAs && hasSearched && !searching" class="text-[11px] text-muted-foreground/60 text-center px-2">
                 Searched as: <span class="font-mono">{{ searchedAs }}</span>
               </div>
 
@@ -252,14 +252,14 @@
                   </div>
                   <div class="flex flex-col min-w-0 flex-1 gap-0.5">
                     <span class="text-xs font-semibold text-foreground truncate">{{ result.title }}</span>
-                    <span v-if="result.author" class="text-[11px] text-muted-foreground truncate">{{ isVideoType ? 'Dir: ' : '' }}{{ result.author }}</span>
-                    <span v-if="result.artists" class="text-[11px] text-muted-foreground truncate">{{ isVideoType ? 'Cast: ' : 'Art: ' }}{{ result.artists }}</span>
-                    <span v-if="result.releaseDate" class="text-[11px] text-muted-foreground font-mono">
+                    <span v-if="result.author" class="text-[12px] text-muted-foreground truncate">{{ isVideoType ? 'Dir: ' : '' }}{{ result.author }}</span>
+                    <span v-if="result.artists" class="text-[12px] text-muted-foreground truncate">{{ isVideoType ? 'Cast: ' : 'Art: ' }}{{ result.artists }}</span>
+                    <span v-if="result.releaseDate" class="text-[12px] text-muted-foreground font-mono">
                       {{ result.releaseDate }}<template v-if="result.rating != null"> · ★ {{ result.rating.toFixed(1) }}/10</template>
                     </span>
-                    <span v-if="result.genres?.length" class="text-[11px] text-muted-foreground truncate">{{ result.genres.join(', ') }}</span>
-                    <span v-if="result.themes?.length" class="text-[11px] text-muted-foreground truncate">{{ result.themes.join(', ') }}</span>
-                    <span class="text-[10px] uppercase font-mono tracking-wide text-muted-foreground/70 mt-auto">{{ sourceLabel(result.source) }}</span>
+                    <span v-if="result.genres?.length" class="text-[12px] text-muted-foreground truncate">{{ result.genres.join(', ') }}</span>
+                    <span v-if="result.themes?.length" class="text-[12px] text-muted-foreground truncate">{{ result.themes.join(', ') }}</span>
+                    <span class="text-[11px] uppercase font-mono tracking-wide text-muted-foreground/70 mt-auto">{{ sourceLabel(result.source) }}</span>
                   </div>
                 </div>
 
@@ -268,7 +268,7 @@
                   <button
                     type="button"
                     @click="fillFromResult(result)"
-                    class="px-2 py-1 rounded-md bg-primary/15 text-primary hover:bg-primary hover:text-primary-foreground text-[10px] font-semibold transition"
+                    class="px-2 py-1 rounded-md bg-primary/15 text-primary hover:bg-primary hover:text-primary-foreground text-[11px] font-semibold transition"
                   >
                     Use All
                   </button>
@@ -277,7 +277,7 @@
                     :key="field.key"
                     type="button"
                     @click="applyField(result, field)"
-                    class="px-2 py-1 rounded-md bg-muted text-muted-foreground hover:bg-muted-foreground/20 hover:text-foreground text-[10px] font-medium transition"
+                    class="px-2 py-1 rounded-md bg-muted text-muted-foreground hover:bg-muted-foreground/20 hover:text-foreground text-[11px] font-medium transition"
                   >
                     {{ field.label }}
                   </button>
@@ -323,6 +323,8 @@ const pickedCoverUrl = ref(null);
 // A TMDB result's community score, carried along when "use all" picks that result so the
 // item gets its world rating saved with the rest of the metadata.
 const pickedRating = ref(null);
+// Which TMDB title "use all" picked, so the title page's cast and crew follow it.
+const pickedTmdbId = ref(null);
 const saving = ref(false);
 const yearQuery = ref('');
 
@@ -463,6 +465,7 @@ watch(
       }
       pickedCoverUrl.value = null;
       pickedRating.value = null;
+      pickedTmdbId.value = null;
       query.value = props.item.cleanTitle || props.item.series || props.item.title || '';
       yearQuery.value = (props.item.release_date ? props.item.release_date.slice(0, 4) : props.item.detectedYear) || '';
       results.value = [];
@@ -517,6 +520,7 @@ async function search() {
 
 function fillFromResult(result) {
   pickableFields(result).forEach((field) => applyField(result, field));
+  pickedTmdbId.value = result.source === 'tmdb' ? result.externalId : null;
   pickedRating.value = result.source === 'tmdb' && result.rating != null
     ? { source: result.source, rating: result.rating, ratingVotes: result.ratingVotes }
     : null;
@@ -537,7 +541,8 @@ async function saveForm() {
       publisher: form.publisher.trim() || null,
       status: form.status.trim() || null,
       ageRating: form.ageRating || null,
-      ...(pickedRating.value || {})
+      ...(pickedRating.value || {}),
+      ...(pickedTmdbId.value ? { source: 'tmdb', externalId: pickedTmdbId.value } : {})
     };
 
     if (isBulk.value) {
