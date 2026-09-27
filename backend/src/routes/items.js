@@ -4,7 +4,7 @@ import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { serverError } from '../utils/http.js';
 import { shapeItems, shapeItem } from '../services/itemView.js';
-import { ratingSql, isItemHiddenForUser } from '../services/visibility.js';
+import { accessSql, isItemHiddenForUser } from '../services/visibility.js';
 import { probeChapters } from '../services/chapters.js';
 import { ensureCredits } from '../services/credits.js';
 import { getFilmCollection } from '../services/collections.js';
@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
       WHERE NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
     `;
     // Order: progress join, ratings join, then the visibility check.
     const params = [userId, userId, userId];
@@ -157,7 +157,7 @@ router.get('/genres', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
     `;
     const params = [req.user.id];
     query += ' AND i.extra_type IS NULL';
@@ -201,7 +201,7 @@ router.get('/authors', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
     `;
     const params = [userId];
     query += ' AND i.extra_type IS NULL';
@@ -240,7 +240,7 @@ router.get('/series', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
     `;
     const params = [userId];
     query += ' AND i.extra_type IS NULL';
@@ -292,7 +292,7 @@ router.get('/series/:name', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
       ORDER BY
         CASE WHEN i.volume IS NULL THEN 1 ELSE 0 END,
         i.volume ASC,
@@ -392,7 +392,7 @@ router.post('/series/:name/mark-read', async (req, res) => {
       AND id NOT IN (
         SELECT item_id FROM item_visibility
         WHERE user_id = ? OR user_id IS NULL
-      )${ratingSql(req.user, 'items')}
+      )${accessSql(req.user, 'items')}
     `, [seriesName, ...scope.params, userId]);
 
     for (const item of items) {
@@ -433,7 +433,7 @@ router.post('/series/:name/mark-unread', async (req, res) => {
       AND id NOT IN (
         SELECT item_id FROM item_visibility
         WHERE user_id = ? OR user_id IS NULL
-      )${ratingSql(req.user, 'items')}
+      )${accessSql(req.user, 'items')}
     `, [seriesName, ...scope.params, userId]);
 
     for (const item of items) {
@@ -468,7 +468,7 @@ router.get('/folders', async (req, res) => {
       WHERE NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
       ORDER BY i.path ASC
     `, [userId]);
 
@@ -572,7 +572,7 @@ router.get('/:id/extras', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
       ORDER BY i.extra_type ASC, i.title ASC
     `, [req.user.id, req.params.id, req.user.id]);
     await shapeItems(db, extras, req.user);
@@ -673,7 +673,7 @@ router.get('/:id', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
     `, [userId, userId, req.params.id, userId]);
 
     if (!item) {

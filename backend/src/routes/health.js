@@ -1,5 +1,9 @@
 import express from 'express';
 import fs from 'fs';
+import path from 'path';
+import { config } from '../config/env.js';
+import { getThumbnailPath } from '../services/thumbnails.js';
+import { logger } from '../services/logger.js';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { serverError } from '../utils/http.js';
@@ -36,6 +40,7 @@ function publicRow(item) {
     media_type: item.media_type,
     library_name: item.library_name,
     path: item.path,
+    missing_since: item.missing_since || null,
     updated_at: item.updated_at
   };
 }
@@ -61,7 +66,7 @@ router.get('/', async (req, res) => {
 
     const items = await db.all(`
       SELECT i.id, i.title, i.series, i.volume, i.media_type, i.path, i.updated_at,
-             i.cover_path, i.description, i.author, i.age_rating, i.library_id,
+             i.cover_path, i.description, i.author, i.age_rating, i.library_id, i.missing_since,
              l.name AS library_name
       FROM items i
       JOIN libraries l ON l.id = i.library_id
@@ -70,7 +75,10 @@ router.get('/', async (req, res) => {
     // Files on a library that is itself unreachable are reported under the library, not as
     // thousands of individually "missing" files.
     const reachableLibIds = new Set(libraries.filter((l) => l.path_exists).map((l) => l.id));
-    const missingFiles = await findMissingFiles(items.filter((i) => reachableLibIds.has(i.library_id)));
+    // Missing = the last scan flagged it (kept, hidden, waiting for an admin), or its file is
+    // gone right now even though no scan has run since.
+    const goneNow = new Set((await findMissingFiles(items.filter((i) => reachableLibIds.has(i.library_id)))).map((i) => i.id));
+    const missingFiles = items.filter((i) => i.missing_since || goneNow.has(i.id));
 
     // Same title + same byte size in the same media type is almost always the same file
     // twice (a copy in two folders, or in two libraries).
@@ -145,6 +153,39 @@ router.get('/', async (req, res) => {
     });
   } catch (err) {
     serverError(req, res, err, 'Could not build the library health report');
+  }
+});
+
+// Remove missing titles from the catalog for good ("empty the trash"). Only titles a scan
+// has flagged missing and whose file is still gone are removed — so a drive that came back
+// since is never emptied out. Reading progress, ratings and bookmarks are kept (they're
+// keyed by item id and re-attach if the same file is ever scanned again).
+router.post('/remove-missing', async (req, res) => {
+  const { itemIds } = req.body || {};
+  try {
+    const db = await getDb();
+    let rows = await db.all('SELECT id, path, cover_path, title FROM items WHERE missing_since IS NOT NULL');
+    if (Array.isArray(itemIds)) {
+      const wanted = new Set(itemIds);
+      rows = rows.filter((r) => wanted.has(r.id));
+    }
+    let removed = 0;
+    for (const row of rows) {
+      const stillGone = await fs.promises.access(row.path).then(() => false, () => true);
+      if (!stillGone) continue;
+      await db.run('DELETE FROM items WHERE id = ?', [row.id]);
+      removed++;
+      if (row.cover_path) {
+        try { fs.unlinkSync(path.join(config.coversDir, row.cover_path)); } catch (e) { /* already gone */ }
+      }
+      for (const width of [180, 360, 720]) {
+        try { fs.unlinkSync(getThumbnailPath(row.id, width)); } catch (e) { /* not cached */ }
+      }
+    }
+    logger.info('library', `${removed} missing title(s) removed from the catalog by ${req.user.username}`);
+    res.json({ removed, skipped: rows.length - removed });
+  } catch (err) {
+    serverError(req, res, err);
   }
 });
 

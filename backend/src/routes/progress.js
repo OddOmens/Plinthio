@@ -3,7 +3,7 @@ import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { serverError } from '../utils/http.js';
 import { shapeItems, shapeItem } from '../services/itemView.js';
-import { ratingSql } from '../services/visibility.js';
+import { accessSql } from '../services/visibility.js';
 
 const router = express.Router();
 
@@ -32,7 +32,7 @@ router.get('/continue', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
       ORDER BY p.updated_at DESC
       LIMIT 10
     `, [userId, userId]);
@@ -64,7 +64,7 @@ router.post('/skip', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
     `, [...ids, req.user.id]);
 
     const flag = skipped ? 1 : 0;

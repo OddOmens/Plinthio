@@ -58,7 +58,7 @@ export async function authenticateToken(req, res, next) {
       const db = await getDb();
       const keyHash = crypto.createHash('sha256').update(apiKey.trim()).digest('hex');
       const keyRow = await db.get(
-        `SELECT u.id, u.username, u.role, u.avatar, u.preferences, u.expires_at, u.max_age_rating, u.allow_unrated
+        `SELECT u.id, u.username, u.role, u.avatar, u.preferences, u.expires_at, u.max_age_rating, u.allow_unrated, u.kids_mode
          FROM api_keys k
          JOIN users u ON k.user_id = u.id
          WHERE k.key = ?`,
@@ -117,7 +117,7 @@ export async function authenticateToken(req, res, next) {
       user = cached.user;
     } else {
       const db = await getDb();
-      user = await db.get('SELECT id, username, role, avatar, preferences, expires_at, token_version, max_age_rating, allow_unrated FROM users WHERE id = ?', [payload.userId]);
+      user = await db.get('SELECT id, username, role, avatar, preferences, expires_at, token_version, max_age_rating, allow_unrated, kids_mode FROM users WHERE id = ?', [payload.userId]);
 
       if (!user) {
         return sendError(req, res, 'P101', { message: 'This account no longer exists' });

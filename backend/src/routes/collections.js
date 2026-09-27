@@ -5,7 +5,7 @@ import { authenticateToken } from '../middleware/auth.js';
 import { serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { shapeItems, shapeItem } from '../services/itemView.js';
-import { ratingSql } from '../services/visibility.js';
+import { accessSql } from '../services/visibility.js';
 import { LIST_CATEGORIES, categoryForMediaType } from '../config/mediaTypes.js';
 import { matchLibraryTitles, latestRequestStatuses } from '../services/listMatching.js';
 
@@ -74,7 +74,7 @@ router.get('/all-grouped', async (req, res) => {
         AND NOT EXISTS (
           SELECT 1 FROM item_visibility v
           WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-        )${ratingSql(req.user, 'i')}
+        )${accessSql(req.user, 'i')}
       `;
       const params = [userId, ...collections.map((c) => c.id), userId];
       if (mediaType && mediaType !== 'all') {
@@ -116,7 +116,7 @@ router.get('/all-grouped', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
     `;
     const unorgParams = [userId, userId, userId];
     if (mediaType && mediaType !== 'all') {
@@ -203,7 +203,7 @@ router.get('/:id', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
       ORDER BY ci.position ASC, ci.added_at ASC
     `, [userId, id, userId]);
 
@@ -282,7 +282,7 @@ router.post('/:id/items', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(req.user, 'i')}
+      )${accessSql(req.user, 'i')}
     `, [itemId, userId]);
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });

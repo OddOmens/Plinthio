@@ -1,7 +1,7 @@
 import { fetchTmdbCollection } from './externalMetadata.js';
 import { ensureCredits } from './credits.js';
 import { latestRequestStatuses } from './listMatching.js';
-import { ratingSql } from './visibility.js';
+import { accessSql } from './visibility.js';
 import { logger } from './logger.js';
 
 // A film's whole TMDB collection — the films the library has and the ones it doesn't — for
@@ -75,7 +75,7 @@ export async function getFilmCollection(db, film, user) {
      WHERE i.media_type = 'movie' AND i.extra_type IS NULL
      AND NOT EXISTS (
        SELECT 1 FROM item_visibility v WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-     )${ratingSql(user, 'i')}`,
+     )${accessSql(user, 'i')}`,
     [user.id]
   );
   // Prefer a copy in the film's own library when the same film sits in several.

@@ -177,7 +177,7 @@ export async function scanLibrary(libraryId) {
             title = ?, author = ?,
             -- A film grouped into its TMDB collection keeps it; the file never names one.
             series = CASE WHEN media_type = 'movie' AND ? IS NULL THEN series ELSE ? END,
-            volume = ?, path = ?, cover_path = ?,
+            volume = ?, path = ?, cover_path = ?, missing_since = NULL,
             duration = ?, total_pages = ?, file_size = ?, format = ?, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?`,
           [
@@ -235,22 +235,22 @@ export async function scanLibrary(libraryId) {
 
     await applyExtras(db, libraryId, extras);
 
-    // Prune rows still pointing at paths that no longer exist on disk — genuine deletions
-    // (renamed/moved files were already re-linked above and excluded via discoveredPathSet).
+    // Files that have gone from disk are marked missing, not deleted: a drive that's slow to
+    // mount, or a folder mid-reorganise, must not cost anyone their progress, ratings or
+    // custom art. Missing titles are hidden everywhere (accessSql) and come back on their
+    // own if the file reappears; an admin removes them for good from Library Health.
+    // (Renamed/moved files were already re-linked above and are in discoveredPathSet.)
     let removed = 0;
-    const staleItems = await db.all('SELECT id, cover_path, path FROM items WHERE library_id = ?', [libraryId]);
-    for (const item of staleItems) {
-      if (!discoveredPathSet.has(item.path)) {
-        await db.run('DELETE FROM items WHERE id = ?', [item.id]);
+    let restored = 0;
+    const knownItems = await db.all('SELECT id, path, missing_since FROM items WHERE library_id = ?', [libraryId]);
+    for (const item of knownItems) {
+      const present = discoveredPathSet.has(item.path);
+      if (!present && !item.missing_since) {
+        await db.run('UPDATE items SET missing_since = CURRENT_TIMESTAMP WHERE id = ?', [item.id]);
         removed++;
-        if (item.cover_path) {
-          const coverFullPath = path.join(config.coversDir, item.cover_path);
-          try { fs.unlinkSync(coverFullPath); } catch (e) { /* ignore missing cover */ }
-        }
-        for (const width of [180, 360, 720]) {
-          const thumbPath = getThumbnailPath(item.id, width);
-          try { fs.unlinkSync(thumbPath); } catch (e) { /* ignore missing thumbnail */ }
-        }
+      } else if (present && item.missing_since) {
+        await db.run('UPDATE items SET missing_since = NULL WHERE id = ?', [item.id]);
+        restored++;
       }
     }
 
@@ -262,10 +262,11 @@ export async function scanLibrary(libraryId) {
 
     await db.run('UPDATE libraries SET last_scanned_at = CURRENT_TIMESTAMP WHERE id = ?', [libraryId]);
 
-    logger.info('scan', `Scan completed for "${library.name}"`, { added, updated, renamed, removed, artwork, total: files.length });
+    logger.info('scan', `Scan completed for "${library.name}"`, { added, updated, renamed, missing: removed, restored, artwork, total: files.length });
     // New films: look up their credits and collection in the background.
     if (library.type === 'movie' || added) backfillMovieCredits().catch(() => {});
-    return { status: 'completed', added, updated, renamed, removed, artwork, total: files.length };
+    // `removed` counts titles newly marked missing (kept for recovery, not deleted).
+    return { status: 'completed', added, updated, renamed, removed, restored, artwork, total: files.length };
   } finally {
     scanningLibraryIds.delete(libraryId);
   }

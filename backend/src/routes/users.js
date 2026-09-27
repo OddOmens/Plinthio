@@ -260,7 +260,7 @@ export function parseExpiration(durationOrDate, fromDate = new Date()) {
 router.get('/', requireAdmin, async (req, res) => {
   try {
     const db = await getDb();
-    const users = await db.all('SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at, max_age_rating, allow_unrated FROM users ORDER BY created_at ASC');
+    const users = await db.all('SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at, max_age_rating, allow_unrated, kids_mode FROM users ORDER BY created_at ASC');
     const parsed = users.map(u => ({
       ...u,
       preferences: u.preferences ? JSON.parse(u.preferences) : {}
@@ -311,7 +311,7 @@ router.post('/', requireAdmin, async (req, res) => {
 
 // Edit another user's account info (Admin only) — username, role, or expiration.
 router.patch('/:id', requireAdmin, async (req, res) => {
-  const { username, role, expires_at, duration, maxAgeRating, allowUnrated } = req.body;
+  const { username, role, expires_at, duration, maxAgeRating, allowUnrated, kidsMode } = req.body;
 
   try {
     const db = await getDb();
@@ -372,6 +372,18 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       updates.push('allow_unrated = ?');
       params.push(allowUnrated ? 1 : 0);
     }
+    // Kids Mode: the account sees only kids-safe libraries, series and titles. Never on your
+    // own account or an admin's — either would lock someone out of their own server.
+    if (kidsMode !== undefined) {
+      if (kidsMode && req.user.id === req.params.id) {
+        return res.status(400).json({ error: 'Cannot put your own account in Kids Mode' });
+      }
+      if (kidsMode && (role || target.role) === 'admin') {
+        return res.status(400).json({ error: 'An admin account can\'t be a kids account' });
+      }
+      updates.push('kids_mode = ?');
+      params.push(kidsMode ? 1 : 0);
+    }
 
     if (updates.length === 0) {
       return res.status(400).json({ error: 'Nothing to update' });
@@ -381,7 +393,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     await db.run(`UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, params);
     invalidateUserCache(req.params.id);
 
-    const updated = await db.get('SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at, max_age_rating, allow_unrated FROM users WHERE id = ?', [req.params.id]);
+    const updated = await db.get('SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at, max_age_rating, allow_unrated, kids_mode FROM users WHERE id = ?', [req.params.id]);
     updated.preferences = updated.preferences ? JSON.parse(updated.preferences) : {};
 
     res.json({ message: 'User updated successfully', user: updated });
@@ -409,7 +421,7 @@ router.post('/:id/extend', requireAdmin, async (req, res) => {
     await db.run('UPDATE users SET expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newExpiry, req.params.id]);
     invalidateUserCache(req.params.id);
 
-    const updated = await db.get('SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at, max_age_rating, allow_unrated FROM users WHERE id = ?', [req.params.id]);
+    const updated = await db.get('SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at, max_age_rating, allow_unrated, kids_mode FROM users WHERE id = ?', [req.params.id]);
     if (updated) {
       updated.preferences = updated.preferences ? JSON.parse(updated.preferences) : {};
     }

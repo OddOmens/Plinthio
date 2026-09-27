@@ -1,4 +1,4 @@
-import { ratingSql } from './visibility.js';
+import { accessSql } from './visibility.js';
 
 // External titles (from a metadata search) carry no link to library items — the library has
 // no provider ids to join on — so "is this already on the server?" is answered by title: an
@@ -27,7 +27,7 @@ export async function matchLibraryTitles(db, user, rows) {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${ratingSql(user, 'i')}
+      )${accessSql(user, 'i')}
       ORDER BY i.volume ASC, i.title ASC
     `, [mediaType, ...titles, ...titles, user.id]);
 

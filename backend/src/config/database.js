@@ -90,7 +90,9 @@ async function initSchema(db) {
 
   // Parental controls: the highest age rating this account may see (NULL = no limit), and
   // whether content nobody has rated yet is allowed through for a restricted account.
-  for (const col of ['max_age_rating TEXT', 'allow_unrated INTEGER DEFAULT 1']) {
+  // kids_mode: the account only sees what's been marked kids-safe (a kids library, or a
+  // series/title an admin or editor added to Kids Mode) — see services/visibility.js.
+  for (const col of ['max_age_rating TEXT', 'allow_unrated INTEGER DEFAULT 1', 'kids_mode INTEGER DEFAULT 0']) {
     try {
       await db.exec(`ALTER TABLE users ADD COLUMN ${col}`);
     } catch (e) {
@@ -288,6 +290,10 @@ async function initSchema(db) {
     'description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT', 'cover_source TEXT',
     'age_rating TEXT', 'chapters_json TEXT', 'extra_type TEXT', 'extra_of TEXT',
     'external_rating REAL', 'external_rating_votes INTEGER', 'external_rating_source TEXT', 'external_rating_checked_at DATETIME',
+    // missing_since: the file vanished from disk. The row is kept (hidden) so progress,
+    // ratings and custom art survive a drive being briefly unavailable; it's restored if the
+    // file comes back, and only an admin removes it for good (Library Health).
+    'missing_since DATETIME',
     'tmdb_id TEXT', 'credits_json TEXT', 'credits_checked_at DATETIME'
   ]) {
     try {
@@ -518,6 +524,26 @@ async function initSchema(db) {
       PRIMARY KEY (item_id, type)
     );
   `);
+
+  // Kids Mode: whole libraries can be kids-safe, and so can single series or titles.
+  try {
+    await db.exec('ALTER TABLE libraries ADD COLUMN kids_allowed INTEGER DEFAULT 0');
+  } catch (e) {
+    // Column already exists
+  }
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS kids_titles (
+      id TEXT PRIMARY KEY,
+      library_id TEXT NOT NULL,
+      series TEXT,          -- a whole series (with library_id), or…
+      item_id TEXT,         -- …one title
+      added_by TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_kids_titles_series ON kids_titles(library_id, series) WHERE series IS NOT NULL;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_kids_titles_item ON kids_titles(item_id) WHERE item_id IS NOT NULL;
+  `);
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_items_missing ON items(missing_since)');
 
   // Extras (trailers, featurettes…) hang off their film via extra_of; see services/extras.js.
   await db.exec('CREATE INDEX IF NOT EXISTS idx_items_extra_of ON items(extra_of)');

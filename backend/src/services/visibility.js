@@ -15,20 +15,41 @@ export function ratingRank(rating) {
   return rank === -1 ? null : rank;
 }
 
-// SQL fragment (starting with AND, or empty) restricting `alias` rows to what `user` may
-// see. It carries no bind parameters — every interpolated value is an integer computed
-// here, never user input — so it can be dropped into any existing query without
+// SQL fragment (starting with AND) restricting `alias` rows to what `user` may see:
+//   • never a title whose file has gone missing (kept for recovery, see missing_since)
+//   • Kids Mode: only kids-safe libraries, series and titles
+//   • parental controls: nothing above the account's age rating
+// It carries no bind parameters — every interpolated value is an integer or a fixed string
+// computed here, never user input — so it can be dropped into any existing query without
 // disturbing that query's parameter order.
-export function ratingSql(user, alias = 'i') {
+export function accessSql(user, alias = 'i') {
+  let sql = ` AND ${alias}.missing_since IS NULL`;
+
+  if (user && (user.kids_mode === 1 || user.kids_mode === true)) {
+    sql += ` AND (
+      EXISTS (SELECT 1 FROM libraries kl WHERE kl.id = ${alias}.library_id AND kl.kids_allowed = 1)
+      OR EXISTS (
+        SELECT 1 FROM kids_titles kt
+        WHERE kt.item_id = ${alias}.id
+           OR (kt.series IS NOT NULL AND kt.library_id = ${alias}.library_id AND kt.series = ${alias}.series)
+      )
+    )`;
+  }
+
   const maxRank = ratingRank(user?.max_age_rating);
-  if (maxRank === null) return '';
-  const unratedRank = user.allow_unrated === 0 || user.allow_unrated === false ? 99 : 0;
-  const cases = AGE_RATINGS.map((r, idx) => `WHEN '${r}' THEN ${idx}`).join(' ');
-  return ` AND (CASE COALESCE(NULLIF(${alias}.age_rating, ''), (
+  if (maxRank !== null) {
+    const unratedRank = user.allow_unrated === 0 || user.allow_unrated === false ? 99 : 0;
+    const cases = AGE_RATINGS.map((r, idx) => `WHEN '${r}' THEN ${idx}`).join(' ');
+    sql += ` AND (CASE COALESCE(NULLIF(${alias}.age_rating, ''), (
       SELECT ss.age_rating FROM series_settings ss
       WHERE ss.library_id = ${alias}.library_id AND ss.series_name = ${alias}.series
     )) ${cases} ELSE ${unratedRank} END) <= ${maxRank}`;
+  }
+  return sql;
 }
+
+// Earlier name, kept so existing callers (and work on other branches) keep compiling.
+export const ratingSql = accessSql;
 
 // `user` is the req.user object; a bare id is still accepted (no rating limit applied).
 export async function isItemHiddenForUser(db, itemId, user) {
@@ -39,8 +60,9 @@ export async function isItemHiddenForUser(db, itemId, user) {
   );
   if (row) return true;
 
-  const rating = typeof user === 'object' ? ratingSql(user, 'i') : '';
-  if (!rating) return false;
-  const allowed = await db.get(`SELECT 1 FROM items i WHERE i.id = ?${rating}`, [itemId]);
+  const allowed = await db.get(
+    `SELECT 1 FROM items i WHERE i.id = ?${accessSql(typeof user === 'object' ? user : null, 'i')}`,
+    [itemId]
+  );
   return !allowed;
 }
