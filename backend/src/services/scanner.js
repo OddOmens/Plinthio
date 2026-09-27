@@ -279,7 +279,7 @@ export async function scanLibrary(libraryId) {
 
     logger.info('scan', `Scan completed for "${library.name}"`, { added, updated, renamed, missing: removed, restored, artwork, total: files.length });
     // New films: look up their credits and collection in the background.
-    if (library.type === 'movie' || added) backfillMovieCredits().catch(() => {});
+    if (library.type === 'movies' && added) backfillMovieCredits().catch(() => {});
     // `removed` counts titles newly marked missing (kept for recovery, not deleted).
     return { status: 'completed', added, updated, renamed, removed, restored, artwork, total: files.length };
   } finally {

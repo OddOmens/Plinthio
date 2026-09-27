@@ -16,7 +16,7 @@ try { execFileSync('pdfinfo', ['-v'], { stdio: 'ignore' }); } catch (e) { hasPop
 // PDFs read page by page: the server renders each page to a JPEG behind the same page API
 // comics use.
 describe('PDF pages', { skip: !hasPoppler && 'poppler (pdfinfo/pdftoppm) is not installed' }, () => {
-  let server; let admin; let media; let itemId;
+  let server; let admin; let media; let itemId; let libId;
   const post = (url, body) => fetch(`${server.baseUrl}/api${url}`, {
     method: 'POST', headers: { ...authed(admin.token), 'content-type': 'application/json' }, body: JSON.stringify(body || {})
   }).then((r) => r.json());
@@ -27,6 +27,7 @@ describe('PDF pages', { skip: !hasPoppler && 'poppler (pdfinfo/pdftoppm) is not 
     media = fs.mkdtempSync(path.join(os.tmpdir(), 'plinthio-pdf-'));
     fs.copyFileSync(PDF, path.join(media, 'Field Guide.pdf'));
     const lib = await post('/libraries', { name: 'Books', path: media, type: 'books' });
+    libId = lib.library.id;
     for (let i = 0; i < 100; i++) {
       const r = await post(`/libraries/${lib.library.id}/scan`);
       if (r.status !== 'busy') break;
@@ -55,5 +56,15 @@ describe('PDF pages', { skip: !hasPoppler && 'poppler (pdfinfo/pdftoppm) is not 
     assert.equal(bytes[1], 0xd8);
     const past = await fetch(`${server.baseUrl}/api/media/manga/${itemId}/page/3`, { headers: authed(admin.token) });
     assert.equal(past.status, 404);
+  });
+
+  test('OPDS readers get page streaming for PDFs', async () => {
+    const key = (await post('/keys', { name: 'Reader' })).key.key;
+    const res = await fetch(`${server.baseUrl}/api/opds/library/${libId}`, {
+      headers: { Authorization: `Basic ${Buffer.from(`admin:${key}`).toString('base64')}` }
+    });
+    assert.equal(res.status, 200);
+    const xml = await res.text();
+    assert.match(xml, /opds-pse\/stream[^>]+pse:count="3"/);
   });
 });

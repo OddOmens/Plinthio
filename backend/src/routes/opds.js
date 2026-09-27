@@ -8,6 +8,7 @@ const router = express.Router();
 
 const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 const COMIC_MEDIA_TYPES = ['manga', 'book'];
+const PAGED_FORMATS = new Set(['cbz', 'cbr', 'cb7', 'zip', 'rar', '7z', 'pdf']);
 
 /**
  * OPDS readers (Chunky, Panels, Moon+ Reader, KyBook…) authenticate with HTTP Basic, which
@@ -240,7 +241,9 @@ function acquisitionEntry(req, item) {
 
   links.push(`    <link rel="http://opds-spec.org/acquisition" href="${escapeXml(mediaUrl(req, `/book/${item.id}/file`))}" type="${escapeXml(mimeForFormat(item.format))}"/>`);
 
-  if (item.media_type === 'manga' && item.total_pages > 0) {
+  // Page streaming for anything read page by page: manga, comics shelved as books, and PDFs
+  // (their pages are rendered to images on the server, see services/pdf.js).
+  if (item.total_pages > 0 && (item.media_type === 'manga' || PAGED_FORMATS.has(String(item.format).toLowerCase()))) {
     // {pageNumber} is substituted by the reader. Plinthio's page route is zero-indexed,
     // while OPDS-PSE counts from zero too, so the value passes through unchanged.
     links.push(`    <link rel="http://vaemendis.net/opds-pse/stream" href="${escapeXml(mediaUrl(req, `/manga/${item.id}/page/{pageNumber}`))}" type="image/jpeg" pse:count="${item.total_pages}"/>`);
