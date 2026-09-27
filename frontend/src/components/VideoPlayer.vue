@@ -1,7 +1,7 @@
 <template>
   <div
     class="fixed inset-0 z-50 bg-black flex flex-col select-none"
-    @mousemove="revealControls"
+    @mousemove="onPointerActivity"
     @touchstart="revealControls"
     @touchmove="revealControls"
   >
@@ -58,8 +58,19 @@
     <!-- Quality / audio / subtitle picker -->
     <div
       v-if="settingsOpen"
-      class="absolute top-20 right-[max(1rem,env(safe-area-inset-right))] z-30 w-60 rounded-xl bg-black/90 backdrop-blur border border-white/10 text-white p-3 space-y-3 max-h-[70dvh] overflow-y-auto"
+      class="absolute top-20 right-[max(1rem,env(safe-area-inset-right))] z-30 w-64 rounded-xl bg-black/90 backdrop-blur border border-white/10 text-white p-3 space-y-3 max-h-[70dvh] overflow-y-auto"
     >
+      <div v-if="!locked">
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Skip back</p>
+        <div class="flex flex-wrap gap-1">
+          <button v-for="s in SKIP_CHOICES" :key="`b${s}`" type="button" @click="setSkip('back', s)" :class="skipChipClass(skipBack === s)">{{ skipLabel(s) }}</button>
+        </div>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mt-2.5 mb-1.5">Skip forward</p>
+        <div class="flex flex-wrap gap-1">
+          <button v-for="s in SKIP_CHOICES" :key="`f${s}`" type="button" @click="setSkip('forward', s)" :class="skipChipClass(skipForward === s)">{{ skipLabel(s) }}</button>
+        </div>
+      </div>
+
       <div v-if="qualities.length > 1">
         <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Quality</p>
         <button
@@ -106,7 +117,7 @@
       </div>
 
       <p v-if="qualities.length <= 1 && audioTracks.length <= 1 && subtitles.length === 0"
-         class="text-xs text-white/60">
+         class="text-xs text-white/50">
         No alternate tracks for this video.
       </p>
     </div>
@@ -119,6 +130,37 @@
     >
       Skip {{ activeMarker.type === 'intro' ? 'Intro' : 'Credits' }}
     </button>
+
+    <!-- Touch: skip buttons either side of the native controls' play button -->
+    <template v-if="!useCustomScrubber && !locked && modeResolved && !errorMessage && !nextEpisode">
+      <button
+        v-for="dir in ['back', 'forward']"
+        :key="dir"
+        type="button"
+        @click.stop="skip(dir)"
+        @contextmenu.prevent="settingsOpen = true"
+        :aria-label="skipAria(dir)"
+        :class="[
+          'absolute top-1/2 -translate-y-1/2 z-20 w-16 h-16 rounded-full bg-black/45 backdrop-blur-sm text-white flex flex-col items-center justify-center transition-opacity duration-300 active:scale-95',
+          dir === 'back' ? 'left-[12%]' : 'right-[12%]',
+          controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        ]"
+      >
+        <RotateCcw v-if="dir === 'back'" class="w-6 h-6" />
+        <RotateCw v-else class="w-6 h-6" />
+        <span class="text-[11px] font-semibold leading-none mt-0.5">{{ skipLabel(dir === 'back' ? skipBack : skipForward) }}</span>
+      </button>
+    </template>
+
+    <PauseScreen
+      v-if="pauseScreenVisible"
+      :mode="pauseMode"
+      :item="item"
+      :credits="pauseCredits"
+      :current-time="videoTime"
+      :duration="totalDuration"
+      :season-rest="seasonRest"
+    />
 
     <!-- Native controls give us fullscreen, PiP, AirPlay, captions and scrubbing for free,
          and behave correctly on iOS where custom controls often don't — so they stay on
@@ -133,8 +175,8 @@
       preload="metadata"
       @loadedmetadata="onLoadedMetadata"
       @timeupdate="onTimeUpdate"
-      @play="isPlaying = true"
-      @pause="isPlaying = false; saveProgress()"
+      @play="onPlay"
+      @pause="onPause"
       @ended="onEnded"
       @error="onError"
       @click="useCustomScrubber && togglePlay()"
@@ -192,6 +234,22 @@
           <Pause v-if="isPlaying" class="w-5 h-5" />
           <Play v-else class="w-5 h-5 fill-current" />
         </button>
+        <template v-if="!locked">
+          <button
+            v-for="dir in ['back', 'forward']"
+            :key="dir"
+            type="button"
+            @click="skip(dir)"
+            @contextmenu.prevent="settingsOpen = true"
+            :aria-label="skipAria(dir)"
+            :title="`${skipAria(dir)} — right-click to change`"
+            class="h-9 px-1.5 flex items-center gap-1 rounded-lg hover:bg-white/10 transition"
+          >
+            <RotateCcw v-if="dir === 'back'" class="w-[18px] h-[18px]" />
+            <RotateCw v-else class="w-[18px] h-[18px]" />
+            <span class="text-[12px] font-semibold tabular-nums">{{ skipLabel(dir === 'back' ? skipBack : skipForward) }}</span>
+          </button>
+        </template>
         <span class="text-xs font-mono tabular-nums">
           {{ formatTime(videoTime) }} / {{ formatTime(totalDuration) }}
         </span>
@@ -309,9 +367,12 @@ import Hls from 'hls.js';
 import api from '../api/client';
 import { useViewSession } from '../composables/useViewSession';
 import RatingBar from './RatingBar.vue';
+import PauseScreen from './PauseScreen.vue';
+import { useAuthStore } from '../stores/auth';
+import { useCustomizationStore } from '../stores/customization';
 import {
   ArrowLeft, AlertCircle, Loader2, Play, Pause, Maximize,
-  Settings, Cast, MonitorSpeaker
+  Settings, Cast, MonitorSpeaker, RotateCcw, RotateCw
 } from 'lucide-vue-next';
 
 const viewSession = useViewSession();
@@ -466,6 +527,110 @@ function setAudioTrack(index) {
 function setSubtitle(trackId) {
   selectedSubtitle.value = trackId;
   settingsOpen.value = false;
+}
+
+// ── Skip back / forward ─────────────────────────────────────────────────────────────────
+// Each person picks their own jumps (Settings → Skip, or right-click a skip button); they
+// follow them to every device. The arrow keys use the same amounts.
+const authStore = useAuthStore();
+const SKIP_CHOICES = [5, 10, 15, 30, 60, 300];
+const skipPrefs = ref({ back: 10, forward: 30, ...(authStore.user?.preferences?.videoSkip || {}) });
+const skipBack = computed(() => skipPrefs.value.back);
+const skipForward = computed(() => skipPrefs.value.forward);
+
+function skipLabel(seconds) {
+  return seconds >= 60 ? `${seconds / 60}m` : `${seconds}s`;
+}
+function skipAria(dir) {
+  const s = dir === 'back' ? skipBack.value : skipForward.value;
+  const amount = s >= 60 ? `${s / 60} minute${s === 60 ? '' : 's'}` : `${s} seconds`;
+  return `${dir === 'back' ? 'Back' : 'Forward'} ${amount}`;
+}
+function skipChipClass(active) {
+  return [
+    'min-w-[2.75rem] px-2 py-1 rounded-md text-xs font-semibold transition',
+    active ? 'bg-primary text-primary-foreground' : 'bg-white/10 hover:bg-white/20'
+  ];
+}
+function skip(dir) {
+  seekTo(virtualTime.value + (dir === 'back' ? -skipBack.value : skipForward.value));
+  revealControls();
+}
+async function setSkip(dir, seconds) {
+  skipPrefs.value = { ...skipPrefs.value, [dir]: seconds };
+  try {
+    const res = await api.patch('/users/preferences', { videoSkip: skipPrefs.value });
+    if (authStore.user && res.data.preferences) {
+      authStore.user = { ...authStore.user, preferences: res.data.preferences };
+      localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+    }
+  } catch (err) {
+    // Still applies for this session.
+  }
+}
+
+// ── Pause screen ────────────────────────────────────────────────────────────────────────
+// After a few idle seconds paused, the admin's chosen pause screen (see PauseScreen.vue)
+// fades in; any movement, touch or key hides it again.
+const customizationStore = useCustomizationStore();
+const PAUSE_IDLE_MS = 2500;
+const pauseMode = computed(() => customizationStore.pauseScreen || 'simple');
+const pauseIdle = ref(false);
+const pauseCredits = ref(null);
+const seasonRest = ref(null);
+let pauseTimer = null;
+let pauseDataLoaded = false;
+
+const pauseScreenVisible = computed(() => pauseIdle.value && pauseMode.value !== 'simple' &&
+  !settingsOpen.value && !errorMessage.value && !nextEpisode.value && !preparing.value);
+
+function armPauseScreen() {
+  clearTimeout(pauseTimer);
+  pauseIdle.value = false;
+  if (pauseMode.value === 'simple' || !videoEl.value?.paused) return;
+  pauseTimer = setTimeout(() => {
+    if (!videoEl.value?.paused) return;
+    pauseIdle.value = true;
+    controlsVisible.value = false;
+    loadPauseData();
+  }, PAUSE_IDLE_MS);
+}
+
+async function loadPauseData() {
+  if (pauseDataLoaded) return;
+  pauseDataLoaded = true;
+  const isEpisode = ['show', 'anime'].includes(props.item.media_type);
+  if (pauseMode.value !== 'bedtime' && ['movie', 'show', 'anime'].includes(props.item.media_type)) {
+    try {
+      pauseCredits.value = (await api.get(`/items/${props.item.id}/credits`)).data.credits || null;
+    } catch (err) { /* the file's own details are enough */ }
+  }
+  if (pauseMode.value === 'bedtime' && isEpisode && props.item.series && props.item.volume != null) {
+    try {
+      const res = await api.get('/items', { params: { series: props.item.series } });
+      const season = Math.floor(props.item.volume);
+      const rest = (res.data.items || []).filter((i) => i.volume != null && i.volume > props.item.volume && Math.floor(i.volume) === season);
+      seasonRest.value = { count: rest.length, seconds: rest.reduce((sum, i) => sum + (i.duration || 0), 0) };
+    } catch (err) { /* just the clock, then */ }
+  }
+}
+
+function onPlay() {
+  isPlaying.value = true;
+  clearTimeout(pauseTimer);
+  pauseIdle.value = false;
+}
+function onPause() {
+  isPlaying.value = false;
+  saveProgress();
+  armPauseScreen();
+}
+
+// Chrome sends a mousemove with no movement when what's under a still pointer changes (the
+// pause screen appearing, say); only a real move counts.
+function onPointerActivity(e) {
+  if (e && e.movementX === 0 && e.movementY === 0) return;
+  revealControls();
 }
 
 function skipMarker() {
@@ -646,6 +811,7 @@ function formatTime(seconds) {
 
 function revealControls() {
   controlsVisible.value = true;
+  if (pauseIdle.value || videoEl.value?.paused) armPauseScreen();
   if (hideTimer) clearTimeout(hideTimer);
   hideTimer = setTimeout(() => {
     if (videoEl.value && !videoEl.value.paused) controlsVisible.value = false;
@@ -934,8 +1100,8 @@ function onKeyDown(e) {
   if (e.key === 'Escape') { closePlayer(); return; }
   if (locked.value && ['ArrowRight', 'ArrowLeft'].includes(e.key)) { e.preventDefault(); revealControls(); return; }
   if (e.key === ' ') { e.preventDefault(); video.paused ? video.play() : video.pause(); }
-  else if (e.key === 'ArrowRight') { e.preventDefault(); seekTo(virtualTime.value + 10); }
-  else if (e.key === 'ArrowLeft') { e.preventDefault(); seekTo(virtualTime.value - 10); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); seekTo(virtualTime.value + skipForward.value); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); seekTo(virtualTime.value - skipBack.value); }
   revealControls();
 }
 
@@ -973,6 +1139,7 @@ onUnmounted(() => {
   window.removeEventListener('plinthio-cast-ready', onCastReady);
   if (hideTimer) clearTimeout(hideTimer);
   if (saveTimer) clearInterval(saveTimer);
+  clearTimeout(pauseTimer);
   stopCountdown();
   teardownHls();
   viewSession.close();

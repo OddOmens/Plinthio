@@ -913,6 +913,39 @@
           </label>
         </div>
 
+        <!-- Pause Screen Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Pause Screen</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              What movies and shows show after a couple of seconds paused. It fades away as soon as someone moves the mouse or touches the screen.
+              Cast, crew and facts come from TMDB (needs a TMDB API key); without one, the file's own details are used.
+            </p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <label
+              v-for="opt in pauseScreenOptions"
+              :key="opt.id"
+              class="flex items-start gap-3 p-3 rounded-lg border transition cursor-pointer select-none"
+              :class="customizationStore.pauseScreen === opt.id ? 'border-primary bg-primary/5' : 'border-border bg-muted/20 hover:bg-muted/40'"
+            >
+              <input
+                type="radio"
+                name="pause-screen"
+                :value="opt.id"
+                :checked="customizationStore.pauseScreen === opt.id"
+                :disabled="savingPauseScreen"
+                @change="setPauseScreen(opt.id)"
+                class="mt-0.5 border-border text-primary focus:ring-ring"
+              />
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-foreground">{{ opt.label }}</span>
+                <span class="text-[12px] text-muted-foreground">{{ opt.desc }}</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <!-- Server Branding Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
@@ -1826,6 +1859,24 @@ async function toggleShowMissingFilms(checkbox) {
     dialog.alert('Failed to save the collections setting');
   } finally {
     savingMissingFilms.value = false;
+  }
+}
+
+const pauseScreenOptions = [
+  { id: 'simple', label: 'Simple', desc: 'Just the player controls — nothing covers the picture.' },
+  { id: 'details', label: 'Details', desc: 'Poster, title, tagline, synopsis, director and cast, and when it will end.' },
+  { id: 'cinematic', label: 'Cinematic', desc: 'The picture dims behind a full-screen title card with cast photos and facts from TMDB — box office, original title, keywords.' },
+  { id: 'bedtime', label: 'Bedtime', desc: 'A dim clock with the time it ends and, for shows, when the rest of the season would. Easy on the eyes in a dark room.' }
+];
+const savingPauseScreen = ref(false);
+async function setPauseScreen(id) {
+  savingPauseScreen.value = true;
+  try {
+    await customizationStore.updateCustomization({ pauseScreen: id });
+  } catch (e) {
+    dialog.alert('Failed to save the pause screen setting');
+  } finally {
+    savingPauseScreen.value = false;
   }
 }
 
