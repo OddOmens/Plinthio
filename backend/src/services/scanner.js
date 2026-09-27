@@ -191,6 +191,8 @@ export async function scanLibrary(libraryId) {
             -- A film grouped into its TMDB collection keeps it; the file never names one.
             series = CASE WHEN media_type = 'movie' AND ? IS NULL THEN series ELSE ? END,
             volume = ?, path = ?, cover_path = ?, missing_since = NULL,
+            -- KOReader's document ids are hashes of the file and its name (routes/kosync.js).
+            koreader_hash = NULL, koreader_name_hash = NULL,
             duration = ?, total_pages = ?, file_size = ?, format = ?, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?`,
           [

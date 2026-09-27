@@ -160,6 +160,16 @@ async function initSchema(db) {
     // Column already exists
   }
 
+  // KOReader sync signs in with the MD5 of the password (a key) — see routes/kosync.js.
+  // Keys made before 1.0.0 have none and need re-creating for KOReader.
+  try {
+    await db.exec(`ALTER TABLE api_keys ADD COLUMN key_md5 TEXT`);
+  } catch (e) {
+    // Column already exists
+  }
+  await db.exec(`CREATE INDEX IF NOT EXISTS idx_api_keys_md5 ON api_keys(key_md5)`);
+
+
   // One-time migration: any key still stored as the raw "shlf_..." secret (from before
   // keys were hashed at rest) gets rehashed in place so a DB leak no longer hands out
   // live credentials. Already-migrated rows (64-char hex hash, no prefix) are skipped.
@@ -302,6 +312,34 @@ async function initSchema(db) {
       // Column already exists
     }
   }
+
+  // KOReader identifies a book by a hash of the file ("binary", its default) or of the file
+  // name. Both are kept per item, filled in lazily by routes/kosync.js. Its last reported
+  // position is kept as it sent it (an EPUB position is a KOReader XPointer, which only
+  // KOReader understands) alongside the percentage Plinthio shows.
+  for (const col of ['koreader_hash TEXT', 'koreader_name_hash TEXT']) {
+    try {
+      await db.exec(`ALTER TABLE items ADD COLUMN ${col}`);
+    } catch (e) {
+      // Column already exists
+    }
+  }
+  await db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_items_koreader_hash ON items(koreader_hash);
+    CREATE INDEX IF NOT EXISTS idx_items_koreader_name_hash ON items(koreader_name_hash);
+    CREATE TABLE IF NOT EXISTS kosync_progress (
+      user_id TEXT NOT NULL,
+      document TEXT NOT NULL,
+      item_id TEXT,
+      progress TEXT,
+      percentage REAL,
+      device TEXT,
+      device_id TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (user_id, document),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+  `);
 
   // User progress tracking table. item_id intentionally carries no FK/cascade to items:
   // a user's reading/listening/watching history must survive an item (or its whole

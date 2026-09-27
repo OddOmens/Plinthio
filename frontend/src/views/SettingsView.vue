@@ -425,28 +425,34 @@
           <p class="text-xs text-muted-foreground mt-0.5">Generate personal API keys to authenticate scripts, widgets, and 3rd party apps</p>
         </div>
 
-        <!-- OPDS catalog: comic/ebook reader apps authenticate with an API key, so this
-             belongs next to where keys are created rather than off in its own tab. -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
+        <!-- Reading apps: they all sign in with an API key, so they live next to where keys
+             are made. -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-2">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">OPDS Catalog</h3>
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Reading Apps</h3>
             <p class="text-xs text-muted-foreground mt-0.5">
-              Add this URL to a comics/ebook reader (Chunky, Panels, KyBook, Moon+ Reader) to browse and read your
-              library there. Sign in with your Plinthio username and an API key from below as the password.
+              Read your comics, manga, PDFs and books in other apps. Each one signs in with your Plinthio username
+              (<span class="font-mono">{{ authStore.user?.username }}</span>) and an API key from below as the password — make one key per app,
+              so you can sign one out by deleting its key.
             </p>
           </div>
-          <div class="flex gap-2">
-            <input
-              :value="opdsUrl"
-              readonly
-              class="flex-1 bg-background border border-border rounded-md px-3 py-1.5 text-xs font-mono text-foreground"
-            />
-            <button
-              @click="copyOpdsUrl"
-              class="px-3.5 py-1.5 rounded-md border border-border text-xs font-medium text-foreground hover:bg-muted transition"
-            >
-              {{ opdsCopied ? 'Copied' : 'Copy' }}
-            </button>
+          <div v-for="app in readingApps" :key="app.id" class="flex flex-col gap-1.5">
+            <p class="text-xs font-semibold text-foreground">{{ app.name }}</p>
+            <p class="text-[12px] text-muted-foreground">{{ app.how }}</p>
+            <div class="flex gap-2">
+              <input
+                :value="app.url"
+                readonly
+                :aria-label="`${app.name} address`"
+                class="flex-1 min-w-0 bg-background border border-border rounded-md px-3 py-1.5 text-xs font-mono text-foreground"
+              />
+              <button
+                @click="copyAppUrl(app)"
+                class="px-3.5 py-1.5 rounded-md border border-border text-xs font-medium text-foreground hover:bg-muted transition"
+              >
+                {{ copiedApp === app.id ? 'Copied' : 'Copy' }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -802,16 +808,36 @@ const availableFilterModes = computed(() => {
 const hiddenItems = ref([]);
 const apiKeys = ref([]);
 
-const opdsUrl = `${window.location.origin}/api/opds`;
-const opdsCopied = ref(false);
+const origin = window.location.origin;
+const readingApps = [
+  {
+    id: 'mihon',
+    name: 'Mihon (Android)',
+    how: 'Install the Komga extension, open its settings and enter this address, your username and an API key as the password. Then, in Mihon\'s Settings → Tracking, turn on Komga so what you read in Mihon marks it read here.',
+    url: origin
+  },
+  {
+    id: 'koreader',
+    name: 'KOReader (Kobo, Kindle, PocketBook, Android)',
+    how: 'Open a book, then Tools → Progress sync → Custom sync server: enter this address. Choose Login (not Register) with your username and an API key as the password. Your place in PDFs and comics syncs both ways; EPUB positions sync between KOReader devices, and Plinthio shows how far through you are. Keys made before Plinthio 1.0 don\'t work here — make a new one.',
+    url: `${origin}/api/kosync`
+  },
+  {
+    id: 'opds',
+    name: 'OPDS readers (Chunky, Panels, KyBook, Moon+ Reader)',
+    how: 'Add this as an OPDS catalog, with your username and an API key as the password.',
+    url: `${origin}/api/opds`
+  }
+];
+const copiedApp = ref('');
 
-async function copyOpdsUrl() {
+async function copyAppUrl(app) {
   try {
-    await navigator.clipboard.writeText(opdsUrl);
-    opdsCopied.value = true;
-    setTimeout(() => { opdsCopied.value = false; }, 2000);
+    await navigator.clipboard.writeText(app.url);
+    copiedApp.value = app.id;
+    setTimeout(() => { copiedApp.value = ''; }, 2000);
   } catch (err) {
-    console.warn('Could not copy OPDS URL:', err);
+    console.warn('Could not copy address:', err);
   }
 }
 const newKeyName = ref('');
