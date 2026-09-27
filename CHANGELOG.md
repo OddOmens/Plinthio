@@ -45,6 +45,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - Media links now use a short-lived, media-only token; the session token is never put in a URL.
 - A Content-Security-Policy is enabled by default (set `CSP=off` or `CSP=report-only` to diagnose).
 - Faster first load: readers, players and admin pages load on demand (main bundle 1.2 MB → 275 KB).
+- **Documentation**: a full guide in `docs/` — setup, configuration, every feature, reading apps, troubleshooting, the API and how the code fits together.
 - **Missing files are kept until an admin removes them**, for every media type. A title whose file disappears (a drive that didn't mount, a folder being reorganised) is hidden from everyone but keeps its progress, ratings, bookmarks and list entries, and comes back by itself when the file returns. Admin → Health lists them with a **Remove from catalog** button. Previously a rescan deleted them straight away.
 - Pinch-zoom is allowed across the app; the paged manga reader keeps its own zoom and pan.
 - The Google Cast SDK only loads in Chromium browsers, and only when a video is opened.
