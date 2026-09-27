@@ -14,6 +14,8 @@ export const useCustomizationStore = defineStore('customization', {
     showMissingFilms: true,
     // Watch parties — off until an admin turns them on.
     partyModeEnabled: false,
+    // What the video player shows while paused: simple | details | cinematic | bedtime.
+    pauseScreen: 'details',
     loading: false
   }),
 
@@ -34,6 +36,7 @@ export const useCustomizationStore = defineStore('customization', {
           if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
+          if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
           this.applyToDom();
         }
         return res.data;
@@ -55,6 +58,7 @@ export const useCustomizationStore = defineStore('customization', {
           if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
+          if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
           this.applyToDom();
         }
         return res.data;

@@ -351,7 +351,7 @@ export async function fetchTmdbDetails(tmdbId, mediaType) {
   const endpoint = isMovie ? 'movie' : 'tv';
   const creditsKey = isMovie ? 'credits' : 'aggregate_credits';
   const req = tmdbRequest(
-    `https://api.themoviedb.org/3/${endpoint}/${encodeURIComponent(tmdbId)}?append_to_response=${creditsKey}`,
+    `https://api.themoviedb.org/3/${endpoint}/${encodeURIComponent(tmdbId)}?append_to_response=${creditsKey},keywords`,
     apiKey
   );
   const data = await fetchJson(req.url, req.options);
@@ -389,7 +389,23 @@ export async function fetchTmdbDetails(tmdbId, mediaType) {
     collection: isMovie ? (data.belongs_to_collection?.name || null) : null,
     collectionId: isMovie ? (data.belongs_to_collection?.id ? String(data.belongs_to_collection.id) : null) : null,
     cast,
-    crew: crew.slice(0, 20)
+    crew: crew.slice(0, 20),
+    // Odds and ends for the player's pause screen. TMDB has no trivia as such, so these are
+    // the facts it does keep. Money is 0 on TMDB when unknown, so 0 becomes null.
+    facts: {
+      originalTitle: data.original_title || data.original_name || null,
+      originalLanguage: data.original_language || null,
+      releaseDate: data.release_date || data.first_air_date || null,
+      lastAirDate: isMovie ? null : (data.last_air_date || null),
+      runtime: isMovie ? (data.runtime || null) : null,
+      budget: isMovie && data.budget > 0 ? data.budget : null,
+      revenue: isMovie && data.revenue > 0 ? data.revenue : null,
+      seasons: isMovie ? null : (data.number_of_seasons || null),
+      episodes: isMovie ? null : (data.number_of_episodes || null),
+      countries: (data.production_countries || data.origin_country || [])
+        .map((c) => (typeof c === 'string' ? c : c.iso_3166_1)).filter(Boolean).slice(0, 3)
+    },
+    keywords: ((data.keywords?.keywords || data.keywords?.results) || []).map((k) => k.name).filter(Boolean).slice(0, 8)
   };
 }
 
