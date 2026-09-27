@@ -74,4 +74,21 @@ describe('skipped volumes', () => {
     assert.equal((await post('/progress/skip', { itemIds: [] })).status, 400);
     assert.equal((await post('/progress/skip', { itemIds: ['../etc'] })).status, 400);
   });
+
+  test('mark finished up to here: several at once, clears skipped, and can undo', async () => {
+    await post('/progress/skip', { itemIds: [vol(3)], skipped: true });
+    const res = await post('/progress/finish', { itemIds: [vol(1), vol(2), vol(3)] });
+    assert.equal(res.status, 200);
+    assert.equal((await res.json()).count, 3);
+    let s = await series();
+    assert.equal(s.readCount, 3);
+    assert.equal(s.skippedCount, 0);
+    assert.equal(s.nextVolume.id, vol(4));
+    assert.equal(s.volumes.find((v) => v.id === vol(2)).current_page, 100);
+
+    await post('/progress/finish', { itemIds: [vol(1), vol(2), vol(3)], finished: false });
+    s = await series();
+    assert.equal(s.readCount, 0);
+    assert.equal((await post('/progress/finish', { itemIds: 'nope' })).status, 400);
+  });
 });

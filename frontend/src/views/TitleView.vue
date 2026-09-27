@@ -1057,6 +1057,30 @@
     </div>
 
     <!-- Skip volumes dialog -->
+    <!-- "Mark the earlier ones too?" -->
+    <Transition
+      enter-from-class="opacity-0 translate-y-2" leave-to-class="opacity-0"
+      enter-active-class="transition duration-200" leave-active-class="transition duration-150"
+    >
+      <div
+        v-if="markEarlier"
+        role="status"
+        class="fixed left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-md bg-card border border-border rounded-xl shadow-2xl px-4 py-3 flex items-center gap-3"
+        style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))"
+      >
+        <p class="flex-1 text-xs text-foreground">
+          Mark the {{ markEarlier.ids.length }} earlier {{ (markEarlier.ids.length === 1 ? vocab.unit : vocab.units).toLowerCase() }}
+          {{ vocab.done.toLowerCase() }} too?
+        </p>
+        <button type="button" @click="confirmMarkEarlier" class="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition shrink-0">
+          Mark all
+        </button>
+        <button type="button" @click="markEarlier = null" class="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted shrink-0" aria-label="No thanks">
+          <X class="w-4 h-4" />
+        </button>
+      </div>
+    </Transition>
+
     <div
       v-if="showSkipDialog && series"
       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
@@ -1220,7 +1244,8 @@ import {
   Users,
   Info,
   PartyPopper,
-  Baby
+  Baby,
+  X
 } from 'lucide-vue-next';
 import { useDownloadsStore } from '../stores/downloads';
 
@@ -2108,6 +2133,7 @@ async function toggleVolumeReadStatus(vol) {
       currentPage: newFinished ? (vol.total_pages || 1) : 0,
       totalPages: vol.total_pages || 1
     });
+    if (newFinished) offerMarkEarlier(vol);
 
     // Re-sync metadata and progress
     await fetchSeriesData();
@@ -2115,6 +2141,40 @@ async function toggleVolumeReadStatus(vol) {
     console.error('Failed to toggle volume read status:', err);
     await fetchSeriesData();
   }
+}
+
+// ─── Mark read up to here ───────────────────────────────────────────────────
+// Finishing one volume or episode with unfinished ones before it offers to finish those
+// too. The offer waits at the bottom of the screen and never blocks marking the next one.
+const markEarlier = ref(null); // { vol, ids }
+let markEarlierTimer = null;
+function earlierUnfinished(vol) {
+  const list = orderedVolumes.value;
+  const idx = list.findIndex((v) => v.id === vol.id);
+  if (idx <= 0) return [];
+  // Specials (season 0) sort first; watching S2E3 doesn't mean you've watched them.
+  const isEpisode = vol.media_type === 'show' || vol.media_type === 'anime';
+  const special = (v) => isEpisode && v.volume != null && v.volume < 1;
+  return list.slice(0, idx).filter((v) => !v.is_finished && (special(vol) || !special(v)));
+}
+function offerMarkEarlier(vol) {
+  if (vol.media_type === 'movie' || isSingle.value) return;
+  const ids = earlierUnfinished(vol).map((v) => v.id);
+  clearTimeout(markEarlierTimer);
+  markEarlier.value = ids.length ? { vol, ids } : null;
+  if (ids.length) markEarlierTimer = setTimeout(() => { markEarlier.value = null; }, 12000);
+}
+async function confirmMarkEarlier() {
+  const offer = markEarlier.value;
+  markEarlier.value = null;
+  clearTimeout(markEarlierTimer);
+  if (!offer) return;
+  try {
+    await api.post('/progress/finish', { itemIds: offer.ids, finished: true });
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not mark those as finished');
+  }
+  await fetchSeriesData();
 }
 
 // ─── Reader Actions ─────────────────────────────────────────────────────────
