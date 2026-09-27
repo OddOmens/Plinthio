@@ -44,6 +44,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - GPU passthrough (`/dev/dri`) is now opt-in in `docker-compose.yml`, so the default file starts on machines without a GPU. **Intel/AMD hardware transcoding users: uncomment the `devices:`/`group_add:` lines when upgrading.**
 
 ### Fixed
+- WebM videos play directly again instead of always being remuxed (the file type check didn't recognise how WebM files report themselves).
 - EPUB books failed to open.
 - Saving metadata from the shelf erased description, themes, publisher and status.
 - Closing the audio player left audio playing with no controls.
