@@ -1,13 +1,13 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div v-if="isOpen" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
     <div
       v-click-outside="close"
-      class="bg-card border border-border rounded-xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col transition-all"
+      class="bg-card border border-border rounded-xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col transition-all my-auto max-h-[calc(100dvh-2rem)]"
     >
       <!-- Header -->
       <div class="px-5 py-4 border-b border-border flex items-center justify-between">
         <div class="min-w-0 pr-2">
-          <h3 class="text-sm font-semibold text-foreground truncate">Add to Custom Folder</h3>
+          <h3 class="text-sm font-semibold text-foreground truncate">Add to Folder or List</h3>
           <p class="text-xs text-muted-foreground truncate mt-0.5">{{ item?.title }}</p>
         </div>
         <button aria-label="Close"

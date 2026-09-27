@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { queueProgress, flushProgressQueue } from '../utils/offlineQueue';
 
 const api = axios.create({
   baseURL: '/api',
@@ -21,9 +22,34 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Server errors carry a message for everyone, a Plinthio error code (P###, listed on the
+    // Docs page) and, for admins only, the underlying cause in `detail` (see backend
+    // errors.js). Fold them into the one `error` string every screen already displays:
+    //   "The media folder could not be read (I/O error): EIO: i/o error, scandir '/media' (P201)"
+    // `data.code` stays available for anything that needs to branch on it.
+    const data = error.response?.data;
+    if (data && typeof data === 'object' && !data._formatted) {
+      if (data.detail && data.detail !== data.error) {
+        data.error = data.error ? `${data.error}: ${data.detail}` : data.detail;
+      }
+      if (data.code && data.error) {
+        data.error = `${data.error} (${data.code})`;
+      }
+      data._formatted = true;
+    }
+    // A progress save that never reached the server (no response at all = offline) is
+    // queued and replayed later rather than failing — see utils/offlineQueue.js.
+    const cfg = error.config;
+    if (!error.response && cfg && !cfg._fromQueue && cfg.method === 'post' && /^\/?progress\/[^/]+$/.test(cfg.url || '')) {
+      let data = cfg.data;
+      try { data = typeof data === 'string' ? JSON.parse(data) : data; } catch (e) { /* keep raw */ }
+      queueProgress(cfg.url.startsWith('/') ? cfg.url : `/${cfg.url}`, data);
+      return Promise.resolve({ data: { queued: true }, status: 202, config: cfg });
+    }
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('plinthio_token');
       localStorage.removeItem('plinthio_user');
+      localStorage.removeItem('plinthio_media_token');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
@@ -31,5 +57,10 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => flushProgressQueue(api));
+  setTimeout(() => flushProgressQueue(api), 3000);
+}
 
 export default api;

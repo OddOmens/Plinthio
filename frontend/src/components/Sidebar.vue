@@ -58,13 +58,13 @@
 
   <!-- Mobile Top Bar + Drawer -->
   <header class="md:hidden sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border safe-top transition-colors">
-    <div class="px-4 h-[68px] flex items-center justify-between gap-3">
+    <div class="px-4 h-[56px] sm:h-[60px] flex items-center justify-between gap-3">
       <button aria-label="Open menu"
         @click="mobileOpen = true"
-        class="w-11 h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition flex-shrink-0"
+        class="w-10 h-10 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition flex-shrink-0"
         title="Open menu"
       >
-        <Menu class="w-6 h-6" />
+        <Menu class="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
 
       <router-link to="/" class="flex items-center gap-2.5 flex-1 min-w-0 justify-center group">
@@ -80,7 +80,7 @@
     </div>
 
     <!-- Mobile Search Bar -->
-    <div class="px-4 pt-0.5 pb-2.5">
+    <div class="px-4 pt-0.5 pb-2">
       <div class="relative w-full flex items-center">
         <Search class="w-4 h-4 absolute left-3.5 text-muted-foreground pointer-events-none" />
         <input
@@ -88,7 +88,7 @@
           :value="searchQuery"
           @input="$emit('update:searchQuery', $event.target.value)"
           placeholder="Search titles, authors, series..."
-          class="w-full h-10 bg-muted/60 dark:bg-muted/30 border border-border/80 rounded-xl pl-10 pr-9 text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:bg-background transition shadow-xs"
+          class="w-full h-9.5 bg-muted/60 dark:bg-muted/30 border border-border/80 rounded-xl pl-10 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:bg-background transition shadow-xs"
         />
         <button aria-label="Clear search"
           v-if="searchQuery"
@@ -103,19 +103,19 @@
     </div>
 
     <!-- Mobile Category Pills -->
-    <div class="px-4 pb-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
+    <div class="px-4 pb-2.5 sm:pb-2 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar">
       <button
         v-for="tab in visibleMediaTabs"
         :key="tab.value"
         @click="$emit('filter-type', tab.value)"
         :class="[
-          'h-10 px-4 rounded-full text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 flex-shrink-0 active:scale-95',
+          'h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-1.5 sm:gap-2 flex-shrink-0 active:scale-95',
           activeType === tab.value
             ? 'bg-foreground text-background font-semibold shadow-sm'
             : 'bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/50'
         ]"
       >
-        <component :is="tab.icon" class="w-4 h-4" />
+        <component :is="tab.icon" class="w-3.5 h-3.5" />
         <span>{{ tab.label }}</span>
       </button>
     </div>
@@ -147,20 +147,20 @@
   >
     <aside
       v-if="mobileOpen"
-      class="md:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-background border-r border-border flex flex-col safe-top"
+      class="md:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-background border-r border-border flex flex-col safe-top safe-bottom"
     >
-      <div class="flex items-center justify-between px-4 h-[68px] border-b border-border flex-shrink-0">
-        <router-link to="/" @click="mobileOpen = false" class="flex items-center gap-3 group">
-          <div class="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
-            <BookOpen class="w-5 h-5" />
+      <div class="flex items-center justify-between px-4 h-[56px] sm:h-[60px] border-b border-border flex-shrink-0">
+        <router-link to="/" @click="mobileOpen = false" class="flex items-center gap-2.5 group">
+          <div class="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
+            <BookOpen class="w-4 h-4" />
           </div>
-          <span class="text-lg font-semibold tracking-tight text-foreground truncate">
+          <span class="text-base font-semibold tracking-tight text-foreground truncate">
             {{ customizationStore.serverName || 'Plinthio' }}
           </span>
         </router-link>
         <button aria-label="Close menu"
           @click="mobileOpen = false"
-          class="w-11 h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition"
+          class="w-10 h-10 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition"
         >
           <X class="w-5 h-5" />
         </button>

@@ -7,6 +7,7 @@ dotenv.config();
 const DATA_DIR = process.env.DATA_DIR || path.resolve(process.cwd(), 'data');
 const CACHE_DIR = path.join(DATA_DIR, 'cache');
 const COVERS_DIR = path.join(DATA_DIR, 'covers');
+const AVATARS_DIR = path.join(DATA_DIR, 'avatars');
 
 import crypto from 'crypto';
 
@@ -14,6 +15,7 @@ import crypto from 'crypto';
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
 if (!fs.existsSync(COVERS_DIR)) fs.mkdirSync(COVERS_DIR, { recursive: true });
+if (!fs.existsSync(AVATARS_DIR)) fs.mkdirSync(AVATARS_DIR, { recursive: true });
 
 // Auto-generate and persist cryptographically secure random JWT secret if not explicitly provided
 let jwtSecret = process.env.JWT_SECRET;
@@ -52,6 +54,7 @@ export const config = {
   dataDir: DATA_DIR,
   cacheDir: CACHE_DIR,
   coversDir: COVERS_DIR,
+  avatarsDir: AVATARS_DIR,
   dbPath: path.join(DATA_DIR, 'plinthio.sqlite'),
   jwtSecret,
   // Shortened from 30d now that the app refreshes its token on every load (see

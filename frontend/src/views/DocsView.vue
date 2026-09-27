@@ -34,7 +34,7 @@
       <!-- Sidebar Navigation -->
       <aside class="w-full md:w-64 border-b md:border-b-0 md:border-r border-border p-4 sm:p-6 space-y-6 flex-shrink-0">
         <div v-for="group in navGroups" :key="group.id">
-          <div class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{{ group.label }}</div>
+          <div class="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{{ group.label }}</div>
           <nav class="space-y-1">
             <button
               v-for="item in group.items"
@@ -54,8 +54,8 @@
             <Radio class="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
             <span>Server Status</span>
           </div>
-          <p class="text-[11px] text-muted-foreground">Version 0.4.0 (PWA Ready)</p>
-          <div class="text-[11px] font-mono text-muted-foreground truncate">
+          <p class="text-[12px] text-muted-foreground">Version 0.4.0 (PWA Ready)</p>
+          <div class="text-[12px] font-mono text-muted-foreground truncate">
             API: /api/health
           </div>
         </div>
@@ -80,37 +80,37 @@
             <div class="p-4 rounded-xl border border-border bg-card">
               <Headphones class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Audiobooks</div>
-              <p class="text-[11px] text-muted-foreground mt-1">M4B with chapter markers, MP3, FLAC, background playback, and Apple Music style full-screen player.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">M4B with chapter markers, MP3, FLAC, background playback, and Apple Music style full-screen player.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
               <Layers class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Manga & Comics</div>
-              <p class="text-[11px] text-muted-foreground mt-1">Direct CBZ & ZIP in-memory decompression, dual-page mode, right-to-left reading, and instant page caching.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">Direct CBZ & ZIP in-memory decompression, dual-page mode, right-to-left reading, and instant page caching.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
               <BookOpen class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Books & Documents</div>
-              <p class="text-[11px] text-muted-foreground mt-1">Standard EPUB and PDF reader with bookmarking, notes, and cross-device reading progress synchronization.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">Standard EPUB and PDF reader with bookmarking, notes, and cross-device reading progress synchronization.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
               <Film class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Movies</div>
-              <p class="text-[11px] text-muted-foreground mt-1">MP4, MKV, and WebM with byte-range streaming, scrubbing, and resume-from-position.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">MP4, MKV, and WebM with byte-range streaming, scrubbing, and resume-from-position.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
               <Tv class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">TV Shows</div>
-              <p class="text-[11px] text-muted-foreground mt-1">Season and episode grouping with per-episode progress, so continue-watching always lands on the right episode.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">Season and episode grouping with per-episode progress, so continue-watching always lands on the right episode.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
               <Sparkles class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Anime</div>
-              <p class="text-[11px] text-muted-foreground mt-1">Treated as its own library type so it can be filtered, browsed, and metadata-matched separately from live-action.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">Treated as its own library type so it can be filtered, browsed, and metadata-matched separately from live-action.</p>
             </div>
           </div>
 
@@ -221,7 +221,7 @@
               <span>Title Cleanup & Batch Metadata Matching (Admin &rarr; Metadata)</span>
             </div>
             <p class="text-xs text-muted-foreground leading-relaxed">
-              When video files with scene-release tags (e.g., <code class="text-primary font-mono text-[11px]">Resident.Evil.2002.1080p.BluRay.x264.mkv</code>) are scanned, the Title Cleaner parses the clean movie/show title and isolates the 4-digit release year.
+              When video files with scene-release tags (e.g., <code class="text-primary font-mono text-[12px]">Resident.Evil.2002.1080p.BluRay.x264.mkv</code>) are scanned, the Title Cleaner parses the clean movie/show title and isolates the 4-digit release year.
             </p>
             <ul class="text-xs text-muted-foreground list-disc list-inside space-y-1 pt-1">
               <li><strong class="text-foreground">Title Cleanup:</strong> One-click batch cleanup updates database titles to human-readable names and preserves detected years.</li>
@@ -291,6 +291,43 @@
               does require their current password.
             </p>
           </div>
+
+          <div class="space-y-3 pt-3 border-t border-border">
+            <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
+              <Hourglass class="w-4 h-4 text-primary" />
+              Temporary Guest Passes & Account Expiration Limits
+            </h2>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              Admins can assign time-boxed access limits to any user account (especially useful for house guests, friends borrowing an audiobook or comic series, or trial access).
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                <div class="font-semibold text-xs text-foreground flex items-center gap-1.5">
+                  <Clock class="w-3.5 h-3.5 text-primary" /> Duration Presets & Custom Cutoffs
+                </div>
+                <p class="text-[12px] text-muted-foreground leading-relaxed">
+                  Choose from quick presets (<strong>1 Day</strong>, <strong>3 Days</strong>, <strong>7 Days</strong>, <strong>14 Days</strong>, <strong>1 Month</strong>, <strong>3 Months</strong>, <strong>6 Months</strong>, <strong>1 Year</strong>), a custom date/time picker, or <strong>Forever / No Limit</strong>.
+                </p>
+              </div>
+
+              <div class="p-3.5 rounded-xl border border-border bg-card space-y-1">
+                <div class="font-semibold text-xs text-foreground flex items-center gap-1.5">
+                  <Lock class="w-3.5 h-3.5 text-amber-500" /> Graceful Lockout Flow
+                </div>
+                <p class="text-[12px] text-muted-foreground leading-relaxed">
+                  When an account reaches its expiration time, all active sessions are immediately revoked. Signing in presents a dedicated lock screen notifying the user that their pass has concluded and prompting them to contact the Admin.
+                </p>
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-muted/30 border border-border text-xs text-muted-foreground space-y-1.5">
+              <div class="font-semibold text-foreground">One-Click Renewals & Extensions:</div>
+              <p class="leading-relaxed">
+                Admins can view account expiration status badges (<span class="text-emerald-500 font-medium">Active</span>, <span class="text-amber-500 font-medium">Expiring Soon</span>, or <span class="text-destructive font-medium">Expired</span>) directly from the <strong>Admin &rarr; Users</strong> table and click the <strong class="text-foreground">Hourglass</strong> icon on any user to add additional days or set the account to unlimited in one click.
+              </p>
+            </div>
+          </div>
         </section>
 
         <!-- SECTION: PWA Mobile Install -->
@@ -316,7 +353,7 @@
                 <li>Tap <strong>Add</strong> in the top right corner.</li>
                 <li>Launch the app from your home screen. It will open without browser address bars in full-screen native mode!</li>
               </ol>
-              <p class="text-[11px] text-muted-foreground">Must be added from Safari — Chrome and Firefox on iOS use Safari's engine but do not expose the "Add to Home Screen" install flow.</p>
+              <p class="text-[12px] text-muted-foreground">Must be added from Safari — Chrome and Firefox on iOS use Safari's engine but do not expose the "Add to Home Screen" install flow.</p>
             </div>
 
             <!-- Android Chrome -->
@@ -331,7 +368,7 @@
                 <li>Select <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
                 <li>Confirm the prompt. Plinthio will install into your app drawer with offline caching and background audio support.</li>
               </ol>
-              <p class="text-[11px] text-muted-foreground">Chrome may also show an automatic "Install Plinthio" banner or address-bar icon the first time you visit, once the manifest and service worker have loaded.</p>
+              <p class="text-[12px] text-muted-foreground">Chrome may also show an automatic "Install Plinthio" banner or address-bar icon the first time you visit, once the manifest and service worker have loaded.</p>
             </div>
           </div>
 
@@ -373,10 +410,10 @@
                 </div>
                 <div>
                   <h3 class="text-sm font-semibold text-foreground">Option 1: Tailscale (Recommended & Easiest)</h3>
-                  <p class="text-[11px] text-muted-foreground">Zero-config, encrypted WireGuard mesh VPN. No router port forwarding required.</p>
+                  <p class="text-[12px] text-muted-foreground">Zero-config, encrypted WireGuard mesh VPN. No router port forwarding required.</p>
                 </div>
               </div>
-              <span class="text-[10px] bg-primary text-primary-foreground font-semibold px-2 py-0.5 rounded-full uppercase">
+              <span class="text-[11px] bg-primary text-primary-foreground font-semibold px-2 py-0.5 rounded-full uppercase">
                 Recommended
               </span>
             </div>
@@ -385,7 +422,7 @@
               <p>Your Plinthio server is already accessible on the host's Tailnet at:</p>
               <div class="p-2.5 rounded-lg bg-background border border-border font-mono text-xs flex items-center justify-between gap-2 overflow-x-auto">
                 <span class="whitespace-nowrap">http://XXX.XXX.XXX.X:8088</span>
-                <span class="text-emerald-500 font-sans text-[11px] font-medium flex-shrink-0">Ready</span>
+                <span class="text-emerald-500 font-sans text-[12px] font-medium flex-shrink-0">Ready</span>
               </div>
               <div class="pt-2 text-xs text-muted-foreground space-y-1.5">
                 <div>1. Install the free <strong>Tailscale</strong> app on your iPhone or Android phone.</div>
@@ -410,7 +447,7 @@
               <div class="text-muted-foreground pt-1 whitespace-nowrap"># 3. Route tunnel to localhost:8088</div>
               <div class="whitespace-nowrap">cloudflared tunnel run --url http://localhost:8088 plinthio</div>
             </div>
-            <p class="text-[11px] text-muted-foreground">
+            <p class="text-[12px] text-muted-foreground">
               Because this exposes Plinthio to the public internet, make sure every account has a strong password —
               anyone with the URL can reach the login screen.
             </p>
@@ -458,12 +495,12 @@
                 <Layers class="w-4 h-4 text-primary" /> Manga & Comic Reader
               </div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&larr;</kbd><span class="text-muted-foreground">Previous page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&rarr;</kbd><span class="text-muted-foreground">Next page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Space</kbd><span class="text-muted-foreground">Next page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Esc</kbd><span class="text-muted-foreground">Close reader</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&larr;</kbd><span class="text-muted-foreground">Previous page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&rarr;</kbd><span class="text-muted-foreground">Next page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Space</kbd><span class="text-muted-foreground">Next page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Esc</kbd><span class="text-muted-foreground">Close reader</span></div>
               </div>
-              <p class="text-[11px] text-muted-foreground">
+              <p class="text-[12px] text-muted-foreground">
                 Left/right are automatically swapped when Right-to-Left mode is enabled, so the arrow keys always match
                 the direction pages visually turn. Swipe left/right works identically on touch devices.
               </p>
@@ -474,10 +511,10 @@
                 <Film class="w-4 h-4 text-primary" /> Video Player (Movies, TV, Anime)
               </div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Space</kbd><span class="text-muted-foreground">Play / pause</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&larr;</kbd><span class="text-muted-foreground">Seek back 10s</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&rarr;</kbd><span class="text-muted-foreground">Seek forward 10s</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Esc</kbd><span class="text-muted-foreground">Close player</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Space</kbd><span class="text-muted-foreground">Play / pause</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&larr;</kbd><span class="text-muted-foreground">Seek back 10s</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&rarr;</kbd><span class="text-muted-foreground">Seek forward 10s</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Esc</kbd><span class="text-muted-foreground">Close player</span></div>
               </div>
             </div>
 
@@ -486,10 +523,10 @@
                 <BookOpen class="w-4 h-4 text-primary" /> EPUB Book Reader
               </div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&larr;</kbd><span class="text-muted-foreground">Previous page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">&rarr;</kbd><span class="text-muted-foreground">Next page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Space</kbd><span class="text-muted-foreground">Next page</span></div>
-                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[11px]">Esc</kbd><span class="text-muted-foreground">Close settings / reader</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&larr;</kbd><span class="text-muted-foreground">Previous page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&rarr;</kbd><span class="text-muted-foreground">Next page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Space</kbd><span class="text-muted-foreground">Next page</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Esc</kbd><span class="text-muted-foreground">Close settings / reader</span></div>
               </div>
             </div>
 
@@ -561,12 +598,12 @@
           <div class="p-4 rounded-xl bg-muted/30 border border-border space-y-2">
             <div class="font-semibold text-xs text-foreground">Authentication</div>
             <p class="text-xs text-muted-foreground">
-              Pass your API key in the <code class="text-foreground bg-muted px-1 rounded">X-API-Key</code> HTTP header. Create and manage keys in <strong>Settings &rarr; API Keys</strong>. Browser requests instead use a JWT Bearer token issued at login, which most media URLs also accept as a <code class="text-foreground bg-muted px-1 rounded">?token=</code> query parameter (needed for plain <code class="text-foreground bg-muted px-1 rounded">&lt;img&gt;</code>/<code class="text-foreground bg-muted px-1 rounded">&lt;video&gt;</code> tags, which can't set headers).
+              Pass your API key in the <code class="text-foreground bg-muted px-1 rounded">X-API-Key</code> HTTP header. Create and manage keys in <strong>Settings &rarr; API Keys</strong>. Browser requests instead use a JWT Bearer token issued at login, used in the <code class="text-foreground bg-muted px-1 rounded">Authorization</code> header. Media URLs under <code class="text-foreground bg-muted px-1 rounded">/api/media/*</code> instead take a short-lived, media-only token (<code class="text-foreground bg-muted px-1 rounded">POST /api/auth/media-token</code>) as a <code class="text-foreground bg-muted px-1 rounded">?token=</code> query parameter — the session token itself is refused in URLs (needed for plain <code class="text-foreground bg-muted px-1 rounded">&lt;img&gt;</code>/<code class="text-foreground bg-muted px-1 rounded">&lt;video&gt;</code> tags, which can't set headers).
             </p>
             <div class="bg-background border border-border rounded-lg p-2.5 font-mono text-xs overflow-x-auto whitespace-nowrap">
               curl -H "X-API-Key: plinthio_..." http://localhost:8088/api/items
             </div>
-            <p class="text-[11px] text-muted-foreground">
+            <p class="text-[12px] text-muted-foreground">
               All API endpoints are rate-limited, and each request is scoped to the key's owning user — an API key
               inherits that user's role and only sees what they can see.
             </p>
@@ -615,7 +652,7 @@
                     <span class="bg-emerald-500/10 text-emerald-600 font-bold px-1.5 py-0.5 rounded">GET</span>
                     <span class="text-foreground break-all">/api/media/stream/:id</span>
                   </div>
-                  <p class="text-muted-foreground">Audio stream endpoint supporting HTTP 206 Partial Content range requests and query token (<code class="text-foreground bg-muted px-1">?token=...</code>).</p>
+                  <p class="text-muted-foreground">Audio stream endpoint supporting HTTP 206 Partial Content range requests and a media token (<code class="text-foreground bg-muted px-1">?token=...</code>).</p>
                 </div>
                 <div class="p-3 rounded-xl border border-border bg-card space-y-1">
                   <div class="flex items-center gap-2 font-mono flex-wrap">
@@ -718,10 +755,10 @@
           </div>
         </section>
 
-        <!-- SECTION: Jellyfin Custom CSS -->
+        <!-- SECTION: Custom CSS -->
         <section v-if="activeSection === 'css'" class="space-y-6">
           <div>
-            <h1 class="text-2xl font-bold tracking-tight text-foreground">Jellyfin-Style Custom CSS</h1>
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">Custom CSS</h1>
             <p class="text-sm text-muted-foreground mt-1.5">
               Customize the appearance of Plinthio with custom CSS injected live across your server.
             </p>
@@ -744,7 +781,7 @@
             <div class="space-y-3">
               <div class="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
                 <div class="font-semibold text-xs text-foreground">Make Book Covers Extra Rounded & Glowing</div>
-                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[11px] overflow-x-auto text-foreground">
+                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[12px] overflow-x-auto text-foreground">
 .group img {
   border-radius: 1rem !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
@@ -758,7 +795,7 @@
 
               <div class="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
                 <div class="font-semibold text-xs text-foreground">Compact Density Mode</div>
-                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[11px] overflow-x-auto text-foreground">
+                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[12px] overflow-x-auto text-foreground">
 body {
   font-size: 11px !important;
 }
@@ -770,7 +807,7 @@ header {
 
               <div class="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
                 <div class="font-semibold text-xs text-foreground">Hide the Search Bar</div>
-                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[11px] overflow-x-auto text-foreground">
+                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[12px] overflow-x-auto text-foreground">
 header input[type="text"] {
   display: none !important;
 }
@@ -779,7 +816,7 @@ header input[type="text"] {
 
               <div class="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
                 <div class="font-semibold text-xs text-foreground">Custom Accent Color Override</div>
-                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[11px] overflow-x-auto text-foreground">
+                <pre class="bg-background p-3 rounded-lg border border-border font-mono text-[12px] overflow-x-auto text-foreground">
 :root {
   --primary: 280 85% 60% !important;
 }
@@ -790,6 +827,50 @@ header input[type="text"] {
             <p class="text-xs text-muted-foreground">
               To apply custom CSS, go to <strong>Admin &rarr; Server Config &rarr; Custom CSS Injection</strong> (Admin only), paste your rules into the editor, use <strong>Test Preview</strong> to check it live in your current tab before saving, then <strong>Save Branding & CSS</strong> to push it to every connected client.
             </p>
+          </div>
+        </section>
+
+        <!-- SECTION: Error codes -->
+        <section v-if="activeSection === 'errors'" id="error-codes" class="space-y-6">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">Error Codes</h1>
+            <p class="text-sm text-muted-foreground mt-1.5">
+              Every error Plinthio shows ends in a code like <code class="text-foreground bg-muted px-1 rounded">(P301)</code>.
+              Look it up here to see what went wrong and how to fix it. API responses carry the same code in a
+              <code class="text-foreground bg-muted px-1 rounded">code</code> field, and admins also get the underlying cause in
+              <code class="text-foreground bg-muted px-1 rounded">detail</code>.
+            </p>
+          </div>
+
+          <input
+            v-model="errorFilter"
+            type="search"
+            placeholder="Search codes, e.g. P301 or ffmpeg"
+            class="w-full h-10 px-3 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground"
+          />
+
+          <p v-if="errorCodesError" class="text-sm text-destructive">{{ errorCodesError }}</p>
+          <div v-else-if="!errorCodes.length" class="text-sm text-muted-foreground">Loading…</div>
+
+          <div v-for="group in errorGroups" :key="group.title" class="space-y-3">
+            <h2 class="text-sm font-semibold text-foreground">{{ group.title }}</h2>
+            <div
+              v-for="entry in group.codes"
+              :key="entry.code"
+              :id="entry.code"
+              class="p-4 rounded-xl border bg-card space-y-1.5 scroll-mt-24 transition"
+              :class="highlightedCode === entry.code ? 'border-primary ring-1 ring-primary' : 'border-border'"
+            >
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-mono text-xs font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary">{{ entry.code }}</span>
+                <span class="font-semibold text-xs text-foreground">{{ entry.title }}</span>
+                <span class="text-[11px] text-muted-foreground ml-auto">
+                  {{ entry.side === 'client' ? 'Raised by the app' : `HTTP ${entry.status}` }}
+                </span>
+              </div>
+              <p class="text-xs text-muted-foreground">{{ entry.meaning }}</p>
+              <p class="text-xs text-muted-foreground"><strong class="text-foreground">What to do:</strong> {{ entry.fix }}</p>
+            </div>
           </div>
         </section>
 
@@ -879,7 +960,7 @@ header input[type="text"] {
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCustomizationStore } from '../stores/customization';
 import Sidebar from '../components/Sidebar.vue';
@@ -904,7 +985,11 @@ import {
   Keyboard,
   Save,
   AlertTriangle,
-  LifeBuoy
+  LifeBuoy,
+  Hourglass,
+  Lock,
+  Clock,
+  CircleAlert
 } from 'lucide-vue-next';
 
 const customizationStore = useCustomizationStore();
@@ -920,6 +1005,60 @@ const activeSection = ref('overview');
 
 // Grouped so the nav stays a fixed, predictable width (w-64) no matter how many guides
 // get added — new topics join an existing group instead of growing a single flat list.
+// ── Error codes ──────────────────────────────────────────────────────────────────────────
+// Served by the backend from its catalog (backend/src/errors.js), so this page can never
+// list a code the server doesn't use. /docs#P301 opens this section on that code, which is
+// where the video player's "what this means" link points.
+const ERROR_SECTIONS = [
+  { prefix: 'P0', title: 'General' },
+  { prefix: 'P1', title: 'Sign-in & permissions' },
+  { prefix: 'P2', title: 'Libraries & scanning' },
+  { prefix: 'P3', title: 'Playback' },
+  { prefix: 'P4', title: 'Metadata providers' },
+  { prefix: 'P5', title: 'Lists & requests' },
+  { prefix: 'P6', title: 'Watch parties' }
+];
+const errorCodes = ref([]);
+const errorCodesError = ref('');
+const errorFilter = ref('');
+const highlightedCode = ref('');
+
+const errorGroups = computed(() => {
+  const q = errorFilter.value.trim().toLowerCase();
+  const matches = errorCodes.value.filter((e) => !q ||
+    [e.code, e.title, e.meaning, e.fix].some((field) => field?.toLowerCase().includes(q)));
+  return ERROR_SECTIONS
+    .map((section) => ({ title: section.title, codes: matches.filter((e) => e.code.startsWith(section.prefix)) }))
+    .filter((group) => group.codes.length);
+});
+
+async function loadErrorCodes() {
+  if (errorCodes.value.length) return;
+  try {
+    const res = await fetch('/api/errors');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    errorCodes.value = (await res.json()).codes || [];
+  } catch (err) {
+    errorCodesError.value = 'Could not load the error code list from the server. The same list is in docs/error-codes.md in the repository.';
+  }
+}
+
+watch(activeSection, (section) => {
+  if (section === 'errors') loadErrorCodes();
+});
+
+onMounted(async () => {
+  const hash = decodeURIComponent(window.location.hash.slice(1));
+  if (hash !== 'error-codes' && !/^P\d{3}$/.test(hash)) return;
+  activeSection.value = 'errors';
+  await loadErrorCodes();
+  if (hash.startsWith('P')) {
+    highlightedCode.value = hash;
+    await nextTick();
+    document.getElementById(hash)?.scrollIntoView({ block: 'center' });
+  }
+});
+
 const navGroups = [
   {
     id: 'basics',
@@ -952,7 +1091,8 @@ const navGroups = [
     id: 'help',
     label: 'Help',
     items: [
-      { id: 'troubleshooting', title: 'Troubleshooting & FAQ', icon: LifeBuoy }
+      { id: 'troubleshooting', title: 'Troubleshooting & FAQ', icon: LifeBuoy },
+      { id: 'errors', title: 'Error Codes', icon: CircleAlert }
     ]
   }
 ];

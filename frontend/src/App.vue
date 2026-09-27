@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-primary selection:text-primary-foreground">
+    <UpdateBanner v-if="!['/login', '/setup'].includes(route.path)" />
     <router-view />
     <AudioPlayer />
     <GlobalDialog />
@@ -8,11 +9,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 import AudioPlayer from './components/AudioPlayer.vue';
 import GlobalDialog from './components/GlobalDialog.vue';
-import OnboardingFlow from './components/OnboardingFlow.vue';
+import UpdateBanner from './components/UpdateBanner.vue';
+// Shown once per account, so it's fetched only when needed.
+const OnboardingFlow = defineAsyncComponent(() => import('./components/OnboardingFlow.vue'));
 import { useAuthStore } from './stores/auth';
 
 const route = useRoute();
@@ -27,6 +30,7 @@ const onboardingDone = ref(false);
 // token lifetime (see POST /api/auth/refresh).
 onMounted(() => {
   authStore.refreshSession();
+  authStore.keepMediaTokenFresh();
 });
 
 const showOnboarding = computed(() => {

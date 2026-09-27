@@ -20,8 +20,8 @@ jobs:
 
       # ffprobe is what the scanner reads durations with, so the duration tests only really
       # run where it's installed — locally they skip, here they don't.
-      - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Install ffmpeg and poppler
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg poppler-utils
 
       - name: Install dependencies
         working-directory: backend

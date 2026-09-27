@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Plinthio</title>
     
     <!-- PWA & Mobile Web App tags -->
@@ -13,32 +13,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Plinthio" />
-    <link rel="apple-touch-icon" href="/icons/icon.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
   </head>
   <body class="bg-background text-foreground min-h-screen">
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
-    <!-- Google Cast sender SDK, loaded lazily and only in Chromium browsers that support it.
-         The player shows a cast button once cast.framework appears; elsewhere this is a
-         no-op and the button never renders. -->
-    <script>
-      window.__onGCastApiAvailable = function (isAvailable) {
-        if (!isAvailable || !window.cast?.framework) return;
-        cast.framework.CastContext.getInstance().setOptions({
-          receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-          autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
-        });
-        window.dispatchEvent(new Event('plinthio-cast-ready'));
-      };
-    </script>
-    <script defer src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed: ', err));
-        });
-      }
-    </script>
   </body>
 </html>

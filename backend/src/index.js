@@ -9,6 +9,9 @@ import { fileURLToPath } from 'url';
 
 import { config } from './config/env.js';
 import { getDb } from './config/database.js';
+import { APP_VERSION } from './config/version.js';
+import { backupBeforeUpgrade, recordRunningVersion } from './services/upgrade.js';
+import { initUpdateCheck } from './services/updateCheck.js';
 
 import rateLimit from 'express-rate-limit';
 
@@ -27,12 +30,23 @@ import bookmarkRoutes from './routes/bookmarks.js';
 import settingRoutes from './routes/settings.js';
 import metadataRoutes from './routes/metadata.js';
 import customizationRoutes from './routes/customization.js';
+import partyRoutes from './routes/party.js';
+import { startPartySweeper } from './services/party.js';
 import activityRoutes from './routes/activity.js';
 import seriesRoutes from './routes/series.js';
+import requestRoutes from './routes/requests.js';
+import { attachErrorCodes, errorCatalog, sendError } from './errors.js';
 import opdsRoutes from './routes/opds.js';
+import { komgaV1, komgaV2 } from './routes/komga.js';
+import kosyncRoutes from './routes/kosync.js';
+import healthRoutes from './routes/health.js';
+import kidsRoutes from './routes/kids.js';
+import systemRoutes from './routes/system.js';
+import ratingRoutes from './routes/ratings.js';
 import { warmThumbnailCache } from './services/thumbnails.js';
 import { initBackupScheduler } from './services/backup.js';
 import { initAutoScan } from './services/autoScan.js';
+import { backfillMovieCredits } from './services/credits.js';
 import { sweepHlsCache } from './services/hls.js';
 import { sweepArchiveCache } from './services/archive/sevenZipBackend.js';
 
@@ -48,13 +62,49 @@ if (config.trustProxy !== false) {
 }
 
 // Security and utility middleware
+// Content-Security-Policy. The session token lives in localStorage, so any injected script
+// could lift it — the CSP is the backstop: no inline or third-party script except Google's
+// Cast SDK (loaded on demand, Chromium only), and images only from ourselves plus the
+// metadata providers whose cover art the editor previews.
+//   - style 'unsafe-inline': Vue style bindings, the admin's custom CSS and EPUB styling
+//   - blob:/data: — hls.js MediaSource URLs, epub.js resource URLs, placeholder covers
+//   - no upgrade-insecure-requests: most installs are reached over plain HTTP on a LAN,
+//     where it would rewrite every same-origin request to https and break the app
+// Set CSP=off to disable (e.g. while diagnosing a blocked resource), or CSP=report-only.
+const cspMode = (process.env.CSP || 'on').toLowerCase();
+const COVER_PROVIDER_HOSTS = [
+  'uploads.mangadex.org', 'books.google.com', 'books.googleusercontent.com',
+  'covers.openlibrary.org', '*.archive.org', 'image.tmdb.org'
+];
+const contentSecurityPolicy = cspMode === 'off' ? false : {
+  useDefaults: false,
+  reportOnly: cspMode === 'report-only',
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", 'https://www.gstatic.com'],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    imgSrc: ["'self'", 'data:', 'blob:', ...COVER_PROVIDER_HOSTS],
+    mediaSrc: ["'self'", 'blob:'],
+    fontSrc: ["'self'", 'data:', 'blob:'],
+    connectSrc: ["'self'", 'https://www.gstatic.com'],
+    workerSrc: ["'self'", 'blob:'],
+    frameSrc: ["'self'", 'blob:'],
+    manifestSrc: ["'self'"],
+    objectSrc: ["'none'"],
+    baseUri: ["'self'"],
+    formAction: ["'self'"],
+    frameAncestors: ["'self'"]
+  }
+};
+
 app.use(helmet({
-  contentSecurityPolicy: false, // Allow streaming media & blob URLs in PWA
+  contentSecurityPolicy,
   crossOriginEmbedderPolicy: false
 }));
 // `credentials: true` only matters for cookie-based auth; Plinthio authenticates via a
-// Bearer JWT (header or query param) that the app puts in localStorage itself, never a
-// cookie, so there's nothing for a browser to attach automatically. Combined with a
+// Bearer JWT (header or query param) that the app puts in localStorage itself. The one
+// cookie, Mihon's Komga session (routes/komga.js), is only honoured by /api/v1 and /api/v2
+// and is SameSite=Lax, so there's nothing for a browser to attach automatically. Combined with a
 // wildcard origin, `credentials: true` is also something browsers just reject outright for
 // an actual cross-origin credentialed request — it was a no-op, not a real permission.
 app.use(cors({ origin: config.corsOrigin }));
@@ -74,6 +124,10 @@ app.use(compression({
 
 app.use(express.json());
 
+// Every error response carries a Plinthio error code (see errors.js). Routes name specific
+// codes; this fills in a status-based one for any that don't.
+app.use('/api', attachErrorCodes);
+
 // Media URLs authenticate via a `?token=<JWT>` query param (needed for <img>/<video> src,
 // which can't send an Authorization header) — redact it so a live session token never
 // ends up sitting in plaintext in the access log.
@@ -92,6 +146,11 @@ const mediaLimiter = rateLimit({
 });
 app.use('/api/media/video', mediaLimiter, videoRoutes);
 app.use('/api/media', mediaLimiter, mediaRoutes);
+// Sync apps: Mihon's Komga extension and tracker at Komga's own paths, and KOReader's
+// progress sync. Mihon fetches pages one by one, so these sit under the media limiter.
+app.use('/api/v1', mediaLimiter, komgaV1);
+app.use('/api/v2', mediaLimiter, komgaV2);
+app.use('/api/kosync', mediaLimiter, kosyncRoutes);
 
 // Rate limiters for security hardening
 const authLimiter = rateLimit({
@@ -99,7 +158,11 @@ const authLimiter = rateLimit({
   max: 60, // 60 requests per 15 min for auth/login attempts
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many authentication attempts. Please try again later.' }
+  message: { error: 'Too many authentication attempts. Please try again later.', code: 'P108' },
+  // The app calls setup-status, refresh and media-token on every page load. Those can't be
+  // used to guess anything, and counting them locked out a household (one shared IP)
+  // after a few dozen reloads. Only real sign-in / setup attempts count.
+  skip: (req) => req.method === 'GET' || ['/refresh', '/media-token', '/me'].includes(req.path)
 });
 
 const apiLimiter = rateLimit({
@@ -115,7 +178,7 @@ const loginLimiter = rateLimit({
   max: 10, // 10 login attempts per 15 min per IP
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many login attempts. Please wait before trying again.' }
+  message: { error: 'Too many login attempts. Please wait before trying again.', code: 'P108' }
 });
 
 // Full backups (VACUUM INTO a whole-DB snapshot) are comparatively expensive disk/IO work —
@@ -125,7 +188,7 @@ const backupLimiter = rateLimit({
   max: 6, // 6 backup operations per 15 min is generous for manual + scheduled use
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many backup requests. Please wait before trying again.' }
+  message: { error: 'Too many backup requests. Please wait before trying again.', code: 'P005' }
 });
 
 // API Routes
@@ -138,22 +201,33 @@ app.use('/api/items', itemRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin/logs', logRoutes);
+app.use('/api/admin/health', healthRoutes);
+app.use('/api/kids', kidsRoutes);
+app.use('/api/system', systemRoutes);
 app.use('/api/stats', statRoutes);
 app.use('/api/keys', apiKeyRoutes);
 app.use('/api/collections', collectionRoutes);
+app.use('/api/requests', requestRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/metadata', metadataRoutes);
 app.use('/api/customization', customizationRoutes);
+app.use('/api/party', partyRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/series', seriesRoutes);
+app.use('/api/ratings', ratingRoutes);
 // OPDS readers poll the catalog and fetch pages one at a time, so it sits under the media
 // limiter rather than the tighter JSON API one.
 app.use('/api/opds', mediaLimiter, opdsRoutes);
 
+// The error code catalog, for the in-app docs. Public, like the docs page itself.
+app.get('/api/errors', (req, res) => {
+  res.json({ codes: errorCatalog() });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'healthy', version: '0.2.0', app: 'Plinthio' });
+  res.json({ status: 'healthy', version: APP_VERSION, app: 'Plinthio' });
 });
 
 // Serve frontend build if present
@@ -169,13 +243,33 @@ if (fs.existsSync(frontendDist)) {
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
-  res.status(500).json({ error: err.message || 'Internal Server Error' });
+  // Body-parser rejects (malformed JSON, oversized body) are the client's fault and safe to
+  // describe; anything else stays in the server log.
+  if (err.type === 'entity.parse.failed') {
+    return sendError(req, res, 'P001', { message: err.message, status: err.status || 400 });
+  }
+  if (err.type === 'entity.too.large') {
+    return sendError(req, res, 'P007', { message: err.message, status: 413 });
+  }
+  sendError(req, res, 'P000', { err });
 });
 
 // Bootstrap server
 async function start() {
   try {
+    // Snapshot the database before a new version's migrations touch it (no-op when the
+    // version hasn't changed or on a fresh install).
+    const upgrade = await backupBeforeUpgrade();
+
     await getDb(); // Ensure database and tables are ready
+    recordRunningVersion();
+    if (upgrade) {
+      console.log(`[upgrade] Now running Plinthio ${APP_VERSION}.`);
+    }
+
+    // Admins get a dismissible banner when a newer release is published (UPDATE_CHECK=false
+    // turns the outbound check off entirely).
+    initUpdateCheck();
 
     // Pre-warm WebP thumbnail cache in background
     warmThumbnailCache().catch(e => console.warn('Thumbnail warming warning:', e.message));
@@ -186,6 +280,13 @@ async function start() {
     // Pick up new media on its own: a periodic re-scan plus (where the filesystem supports
     // it) a watcher, both configurable under Admin → Server Settings.
     initAutoScan();
+
+    // Watch parties: drop ones everyone has left, release anyone stuck buffering.
+    startPartySweeper();
+
+    // Films not yet looked up on TMDB: fill in their credits and collections (Shrek 1–4 as
+    // one "Shrek Collection"). Delayed so it doesn't compete with startup.
+    setTimeout(() => backfillMovieCredits().catch(() => {}), 15000);
 
     // Evict stale on-disk HLS segment caches (see HLS_CACHE_MAX_AGE_HOURS) — run once at
     // boot and then hourly, mirroring the backup scheduler's own setInterval pattern.
@@ -202,7 +303,7 @@ async function start() {
     app.listen(config.port, config.host, () => {
       console.log(`
 =====================================================
-  📚 Plinthio Media Server v0.2.0 is Running!
+  📚 Plinthio Media Server v${APP_VERSION} is Running!
   ---------------------------------------------------
   Local:    http://localhost:${config.port}
   Network:  http://${config.host}:${config.port}

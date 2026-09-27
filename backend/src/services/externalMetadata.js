@@ -199,7 +199,7 @@ async function fetchTmdbCredits(tmdbId, endpoint, apiKey) {
   }
 }
 
-async function searchTMDB(query, mediaType, apiKey, year = null) {
+async function searchTMDB(query, mediaType, apiKey, year = null, { withCredits = true } = {}) {
   const endpoint = mediaType === 'movie' ? 'movie' : 'tv';
   let yearParam = '';
   if (year) {
@@ -243,9 +243,11 @@ async function searchTMDB(query, mediaType, apiKey, year = null) {
   }
 
   // Fetch credits for the top 5 results in parallel — beyond that the user rarely scrolls.
+  // Callers that only want the score (the rating lookup) skip this — it's five extra
+  // requests per search.
   const creditsMap = new Map();
   await Promise.allSettled(
-    results.slice(0, 5).map(async (r) => {
+    (withCredits ? results.slice(0, 5) : []).map(async (r) => {
       const credits = await fetchTmdbCredits(r.id, endpoint, apiKey);
       creditsMap.set(String(r.id), credits);
     })
@@ -271,7 +273,11 @@ async function searchTMDB(query, mediaType, apiKey, year = null) {
       genres,
       publisher: null,
       status: null,
-      coverUrl: r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : null
+      coverUrl: r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : null,
+      // TMDB's community score (0–10). A title nobody has voted on reports 0, which isn't a
+      // rating, so it's dropped rather than shown as a zero.
+      rating: r.vote_count > 0 && typeof r.vote_average === 'number' ? r.vote_average : null,
+      ratingVotes: r.vote_count > 0 ? r.vote_count : null
     };
   });
 }
@@ -304,6 +310,144 @@ export async function getTmdbApiKey() {
   const db = await getDb();
   const row = await db.get("SELECT value FROM settings WHERE key = 'tmdb_api_key'");
   return row?.value || process.env.TMDB_API_KEY || null;
+}
+
+/**
+ * Looks up TMDB's community score for a movie/show/anime. Returns { rating, votes } on a
+ * match, null when TMDB has nothing (or no score) for it, and throws MISSING_API_KEY when no
+ * key is configured so callers can tell "unknown" from "can't check".
+ */
+export async function lookupTmdbRating(mediaType, query, year = null) {
+  const apiKey = await getTmdbApiKey();
+  if (!apiKey) {
+    const err = new Error('TMDB API key is not configured');
+    err.code = 'MISSING_API_KEY';
+    throw err;
+  }
+  const results = await searchTMDB(query, mediaType, apiKey, year, { withCredits: false });
+  const best = (year && results.find((r) => (r.releaseDate || '').startsWith(String(year)))) || results[0];
+  if (!best || best.rating == null) return null;
+  return { rating: best.rating, votes: best.ratingVotes };
+}
+
+// Crew jobs worth a line on a title page, in the order they're shown. Everything else
+// (grips, caterers…) is noise next to them.
+const CREW_JOBS = ['Director', 'Screenplay', 'Writer', 'Story', 'Novel', 'Characters', 'Producer', 'Executive Producer', 'Original Music Composer', 'Director of Photography', 'Editor'];
+const CAST_LIMIT = 24;
+
+/**
+ * The full credits for one TMDB title — cast with their characters and photos, key crew,
+ * studios, and (for TV) creators and networks. `tmdbId` comes from a search result's
+ * externalId, or from a previous lookup stored on the item.
+ */
+export async function fetchTmdbDetails(tmdbId, mediaType) {
+  const apiKey = await getTmdbApiKey();
+  if (!apiKey) {
+    const err = new Error('TMDB API key is not configured');
+    err.code = 'MISSING_API_KEY';
+    throw err;
+  }
+  const isMovie = mediaType === 'movie';
+  const endpoint = isMovie ? 'movie' : 'tv';
+  const creditsKey = isMovie ? 'credits' : 'aggregate_credits';
+  const req = tmdbRequest(
+    `https://api.themoviedb.org/3/${endpoint}/${encodeURIComponent(tmdbId)}?append_to_response=${creditsKey},keywords`,
+    apiKey
+  );
+  const data = await fetchJson(req.url, req.options);
+  const credits = data[creditsKey] || {};
+  const profile = (p) => (p ? `https://image.tmdb.org/t/p/w185${p}` : null);
+
+  // aggregate_credits lists a TV actor's roles/jobs as arrays; movie credits are flat.
+  const cast = (credits.cast || []).slice(0, CAST_LIMIT).map((c) => ({
+    name: c.name,
+    character: c.character || (c.roles || []).map((r) => r.character).filter(Boolean).join(' / ') || null,
+    photo: profile(c.profile_path)
+  })).filter((c) => c.name);
+
+  const crew = [];
+  const seen = new Set();
+  for (const c of credits.crew || []) {
+    const jobs = c.job ? [c.job] : (c.jobs || []).map((j) => j.job);
+    for (const job of jobs) {
+      if (!CREW_JOBS.includes(job) || seen.has(`${c.name}:${job}`)) continue;
+      seen.add(`${c.name}:${job}`);
+      crew.push({ name: c.name, job, photo: profile(c.profile_path) });
+    }
+  }
+  crew.sort((a, b) => CREW_JOBS.indexOf(a.job) - CREW_JOBS.indexOf(b.job));
+
+  return {
+    tmdbId: String(data.id),
+    tagline: data.tagline || null,
+    studios: (data.production_companies || []).map((s) => s.name).filter(Boolean),
+    networks: (data.networks || []).map((n) => n.name).filter(Boolean),
+    creators: (data.created_by || []).map((c) => c.name).filter(Boolean),
+    // A TV show's airing state ("Returning Series", "Ended"); a movie's is always "Released".
+    status: isMovie ? null : (data.status || null),
+    // The film series it belongs to on TMDB ("Shrek Collection"); movies only.
+    collection: isMovie ? (data.belongs_to_collection?.name || null) : null,
+    collectionId: isMovie ? (data.belongs_to_collection?.id ? String(data.belongs_to_collection.id) : null) : null,
+    cast,
+    crew: crew.slice(0, 20),
+    // Odds and ends for the player's pause screen. TMDB has no trivia as such, so these are
+    // the facts it does keep. Money is 0 on TMDB when unknown, so 0 becomes null.
+    facts: {
+      originalTitle: data.original_title || data.original_name || null,
+      originalLanguage: data.original_language || null,
+      releaseDate: data.release_date || data.first_air_date || null,
+      lastAirDate: isMovie ? null : (data.last_air_date || null),
+      runtime: isMovie ? (data.runtime || null) : null,
+      budget: isMovie && data.budget > 0 ? data.budget : null,
+      revenue: isMovie && data.revenue > 0 ? data.revenue : null,
+      seasons: isMovie ? null : (data.number_of_seasons || null),
+      episodes: isMovie ? null : (data.number_of_episodes || null),
+      countries: (data.production_countries || data.origin_country || [])
+        .map((c) => (typeof c === 'string' ? c : c.iso_3166_1)).filter(Boolean).slice(0, 3)
+    },
+    keywords: ((data.keywords?.keywords || data.keywords?.results) || []).map((k) => k.name).filter(Boolean).slice(0, 8)
+  };
+}
+
+/**
+ * Every film in a TMDB collection ("Shrek Collection"), released or announced, in release
+ * order — so a collection page can show the ones the library doesn't have.
+ */
+export async function fetchTmdbCollection(collectionId) {
+  const apiKey = await getTmdbApiKey();
+  if (!apiKey) {
+    const err = new Error('TMDB API key is not configured');
+    err.code = 'MISSING_API_KEY';
+    throw err;
+  }
+  const req = tmdbRequest(`https://api.themoviedb.org/3/collection/${encodeURIComponent(collectionId)}`, apiKey);
+  const data = await fetchJson(req.url, req.options);
+  const parts = (data.parts || [])
+    .filter((p) => p.title)
+    .map((p) => ({
+      tmdbId: String(p.id),
+      title: p.title,
+      releaseDate: p.release_date || null,
+      overview: p.overview || null,
+      posterUrl: p.poster_path ? `https://image.tmdb.org/t/p/w342${p.poster_path}` : null
+    }))
+    .sort((a, b) => (a.releaseDate || '9999').localeCompare(b.releaseDate || '9999'));
+  return { id: String(data.id), name: data.name || null, parts };
+}
+
+/**
+ * The best TMDB match for a title, for callers that only have its name and year.
+ */
+export async function findTmdbId(mediaType, query, year = null) {
+  const apiKey = await getTmdbApiKey();
+  if (!apiKey) {
+    const err = new Error('TMDB API key is not configured');
+    err.code = 'MISSING_API_KEY';
+    throw err;
+  }
+  const results = await searchTMDB(query, mediaType, apiKey, year, { withCredits: false });
+  const best = (year && results.find((r) => (r.releaseDate || '').startsWith(String(year)))) || results[0];
+  return best?.externalId || null;
 }
 
 /**

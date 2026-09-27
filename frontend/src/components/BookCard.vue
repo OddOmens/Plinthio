@@ -25,9 +25,28 @@
 
       <!-- Media Type Pill Badge -->
       <div class="absolute top-2 left-2 z-10 pointer-events-none">
-        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[11px] font-medium border border-border/80 shadow-sm">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[12px] font-medium border border-border/80 shadow-sm">
           <component :is="badgeIcon" class="w-3 h-3 text-muted-foreground" />
           <span class="capitalize">{{ item.media_type }}</span>
+        </span>
+      </div>
+
+      <!-- Top-right badges: your star rating (when you've given one) and offline state -->
+      <div
+        v-if="showMyRating || isDownloaded || isDownloading"
+        class="absolute top-2 right-2 z-10 pointer-events-none flex items-center gap-1"
+      >
+        <span v-if="showMyRating" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[12px] font-semibold border border-border/80 shadow-sm">
+          <Star class="w-3 h-3 text-amber-400 fill-amber-400" />
+          {{ myRating }}
+        </span>
+        <span
+          v-if="isDownloaded || isDownloading"
+          class="w-6 h-6 rounded-full bg-background/85 backdrop-blur-md border border-border/80 flex items-center justify-center shadow-sm"
+          :title="isDownloaded ? 'Available offline' : 'Downloading…'"
+        >
+          <CheckCircle2 v-if="isDownloaded" class="w-3.5 h-3.5 text-emerald-500" />
+          <Loader2 v-else class="w-3.5 h-3.5 animate-spin text-muted-foreground" />
         </span>
       </div>
 
@@ -62,7 +81,7 @@
         <!-- Volume number pill — shown for manga/book items inside a series -->
         <span
           v-if="item.volume != null && (item.media_type === 'manga' || item.media_type === 'book')"
-          class="flex-shrink-0 text-[10px] font-mono font-bold bg-muted text-muted-foreground rounded px-1.5 py-0.5 ml-1 self-start mt-0.5"
+          class="flex-shrink-0 text-[11px] font-mono font-bold bg-muted text-muted-foreground rounded px-1.5 py-0.5 ml-1 self-start mt-0.5"
         >Vol {{ item.volume % 1 === 0 ? Math.trunc(item.volume) : item.volume }}</span>
 
         <!-- Context Menu Dropdown Trigger (Visible on touch, 34px target) -->
@@ -118,6 +137,15 @@
                 <span>Bookmarks & Notes...</span>
               </button>
               <button
+                v-if="downloads.canDownload(item)"
+                type="button"
+                @click="toggleDownload"
+                class="w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5"
+              >
+                <component :is="isDownloaded ? Trash2 : (isDownloading ? X : Download)" class="w-4 h-4 text-muted-foreground" />
+                <span>{{ isDownloaded ? 'Remove Download' : (isDownloading ? 'Cancel Download' : 'Download for Offline') }}</span>
+              </button>
+              <button
                 v-if="authStore.isEditor"
                 type="button"
                 @click="openMetadataDialog"
@@ -142,7 +170,7 @@
       </div>
 
       <p class="text-xs text-muted-foreground truncate mt-1">
-        {{ item.author || 'Unknown Author' }}
+        {{ realCreator(item.author, item.title) || vocabFor(item.media_type).type.replace(/s$/, '') }}
       </p>
 
       <!-- Details footer (duration, pages, or format) -->
@@ -153,7 +181,7 @@
         <span v-else-if="item.total_pages" class="font-mono">
           {{ item.total_pages }} pages
         </span>
-        <span v-else class="uppercase font-mono text-[11px]">
+        <span v-else class="uppercase font-mono text-[12px]">
           {{ item.format }}
         </span>
 
@@ -166,13 +194,16 @@
         </span>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
+import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
+import { useCustomizationStore } from '../stores/customization';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 import {
   Headphones,
@@ -191,8 +222,16 @@ import {
   Tv,
   Film,
   Sparkles,
-  Search
+  Search,
+  Download,
+  Trash2,
+  X,
+  CheckCircle2,
+  Loader2,
+  Star
 } from 'lucide-vue-next';
+import { useDownloadsStore } from '../stores/downloads';
+import { realCreator, vocabFor } from '../utils/mediaVocab';
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -200,6 +239,7 @@ const props = defineProps({
 });
 
 const authStore = useAuthStore();
+const customizationStore = useCustomizationStore();
 
 const emit = defineEmits(['select', 'refresh', 'add-to-folder', 'remove-from-folder', 'open-bookmarks', 'edit-metadata']);
 
@@ -216,11 +256,26 @@ function openBookmarksDialog() {
   emit('open-bookmarks', props.item);
 }
 
+const downloads = useDownloadsStore();
+const isDownloaded = computed(() => downloads.isDownloaded(props.item.id));
+const isDownloading = computed(() => downloads.isDownloading(props.item.id));
+
+function toggleDownload() {
+  showMenu.value = false;
+  if (isDownloaded.value) downloads.remove(props.item.id);
+  else if (isDownloading.value) downloads.cancel(props.item.id);
+  else downloads.download(props.item);
+}
+
+// Your rating is set from the header of the title page / player; the card just shows it.
+const myRating = computed(() => props.item.user_rating ?? null);
+const showMyRating = computed(() => customizationStore.ratings.showPersonal && !!myRating.value);
+
 function openMetadataDialog() {
   showMenu.value = false;
   emit('edit-metadata', props.item);
 }
-const token = localStorage.getItem('plinthio_token') || '';
+const token = getMediaToken() || '';
 
 const coverUrl = computed(() => {
   return buildCoverUrl(props.item, { width: 360 });

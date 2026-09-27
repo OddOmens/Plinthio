@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { PlinthioError } from '../errors.js';
 import { logger } from './logger.js';
 
 // Codecs a mainstream browser can play from a plain <video> tag. HEVC/H.265 is absent from
@@ -10,6 +11,8 @@ const BROWSER_AUDIO_CODECS = new Set(['aac', 'mp3', 'opus', 'vorbis', 'flac']);
 // MKV is a container browsers don't play even when the streams inside are compatible, so
 // it gets remuxed (stream-copied into MP4) — far cheaper than a real transcode.
 const BROWSER_CONTAINERS = new Set(['mov,mp4,m4a,3gp,3g2,mj2', 'webm']);
+const WEBM_VIDEO_CODECS = new Set(['vp8', 'vp9', 'av1']);
+const WEBM_AUDIO_CODECS = new Set(['opus', 'vorbis']);
 
 const probeCache = new Map();
 const PROBE_CACHE_MAX = 500;
@@ -28,9 +31,15 @@ function runFfprobe(filePath) {
     let stderr = '';
     proc.stdout.on('data', (d) => { stdout += d; });
     proc.stderr.on('data', (d) => { stderr += d; });
-    proc.on('error', reject);
+    // ffprobe that can't even launch is P303; one that can't read the file is P302 when the
+    // disk itself failed (a disconnected drive), otherwise P304 (corrupt/unsupported file).
+    proc.on('error', (err) => reject(new PlinthioError('P303', undefined, { cause: err })));
     proc.on('close', (code) => {
-      if (code !== 0) return reject(new Error(stderr.trim() || `ffprobe exited ${code}`));
+      if (code !== 0) {
+        const message = stderr.trim() || `ffprobe exited ${code}`;
+        const code_ = /Input\/output error|Permission denied/i.test(message) ? 'P302' : 'P304';
+        return reject(new PlinthioError(code_, undefined, { cause: new Error(message) }));
+      }
       try {
         resolve(JSON.parse(stdout));
       } catch (e) {
@@ -69,7 +78,12 @@ export async function getPlaybackInfo(itemId, filePath, caps = {}) {
 
     const videoOk = videoStream ? BROWSER_VIDEO_CODECS.has(videoStream.codec_name) : true;
     const audioOk = audioStream ? BROWSER_AUDIO_CODECS.has(audioStream.codec_name) : true;
-    const containerOk = BROWSER_CONTAINERS.has(container);
+    // ffprobe names WebM and MKV alike ("matroska,webm"). A .webm file holding only WebM
+    // codecs (VP8/VP9/AV1, Opus/Vorbis) is WebM, which browsers play as-is; an MKV isn't.
+    const isWebm = container === 'matroska,webm' && /\.webm$/i.test(filePath) &&
+      (!videoStream || WEBM_VIDEO_CODECS.has(videoStream.codec_name)) &&
+      audioStreams.every((a) => WEBM_AUDIO_CODECS.has(a.codec_name));
+    const containerOk = BROWSER_CONTAINERS.has(container) || isWebm;
 
     // 10-bit H.264 is technically "h264" but browsers can't decode High10 profile.
     const tenBitH264 = videoStream?.codec_name === 'h264' && (videoStream.pix_fmt || '').includes('10');

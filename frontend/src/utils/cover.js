@@ -1,3 +1,4 @@
+import { getMediaToken } from './mediaToken';
 // Cover URLs carry a version derived from the item's updated_at.
 //
 // Covers are served `immutable` with a year-long max-age, which is right for the bytes but
@@ -14,7 +15,7 @@ export function coverVersion(item) {
 export function coverUrl(item, { width, raw = false } = {}) {
   if (!item?.id) return '';
 
-  const token = localStorage.getItem('plinthio_token') || '';
+  const token = getMediaToken() || '';
   const params = new URLSearchParams();
   if (token) params.set('token', token);
   if (width) params.set('w', String(width));
@@ -22,4 +23,15 @@ export function coverUrl(item, { width, raw = false } = {}) {
   params.set('v', coverVersion(item));
 
   return `/api/media/cover/${item.id}?${params.toString()}`;
+}
+
+// A frame from the video itself (an episode's thumbnail). The server grabs it on first
+// request; when it can't, the image errors and the caller falls back to coverUrl().
+export function stillUrl(item) {
+  if (!item?.id) return '';
+  const params = new URLSearchParams();
+  const token = getMediaToken() || '';
+  if (token) params.set('token', token);
+  params.set('v', coverVersion(item));
+  return `/api/media/still/${item.id}?${params.toString()}`;
 }

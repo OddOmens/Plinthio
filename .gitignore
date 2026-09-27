@@ -17,3 +17,6 @@ cache/
 *.secret
 .idea/
 .vscode/
+
+# Per-machine compose settings (e.g. GPU passthrough)
+docker/docker-compose.override.yml

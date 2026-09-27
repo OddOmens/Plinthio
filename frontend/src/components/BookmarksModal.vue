@@ -1,13 +1,13 @@
 <template>
-  <div v-if="isOpen && item" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-card border border-border rounded-2xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+  <div v-if="isOpen && item" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-card border border-border rounded-2xl w-full max-w-md max-h-[85dvh] my-auto flex flex-col shadow-2xl overflow-hidden">
       <!-- Modal Header -->
       <div class="px-5 py-4 border-b border-border flex items-center justify-between">
         <div class="flex items-center gap-2 min-w-0">
           <Bookmark class="w-4 h-4 text-primary flex-shrink-0" />
           <div class="min-w-0">
             <h3 class="text-sm font-semibold text-foreground truncate">Bookmarks: {{ item.title }}</h3>
-            <p class="text-[11px] text-muted-foreground truncate">{{ item.author || 'Unknown' }}</p>
+            <p class="text-[12px] text-muted-foreground truncate">{{ item.author || 'Unknown' }}</p>
           </div>
         </div>
         <button aria-label="Close bookmarks"
@@ -22,7 +22,7 @@
       <div class="p-4 border-b border-border bg-muted/20">
         <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mb-2">
           <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">New Bookmark</span>
-          <span class="text-[11px] text-muted-foreground font-mono">
+          <span class="text-[12px] text-muted-foreground font-mono">
             {{ item.media_type === 'audiobook' ? 'Timestamp (hh:mm:ss or seconds)' : 'Page Number' }}
           </span>
         </div>
@@ -81,7 +81,7 @@
         >
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
-              <span class="px-2 py-0.5 rounded bg-primary/10 text-primary font-mono text-[11px] font-semibold">
+              <span class="px-2 py-0.5 rounded bg-primary/10 text-primary font-mono text-[12px] font-semibold">
                 {{ formatPosition(bm.position) }}
               </span>
               <span class="text-xs font-semibold text-foreground truncate">
@@ -113,7 +113,7 @@
             {{ bm.notes }}
           </p>
 
-          <span class="text-[10px] text-muted-foreground/80 self-end">
+          <span class="text-[11px] text-muted-foreground/80 self-end">
             {{ formatDate(bm.created_at) }}
           </span>
         </div>
@@ -123,6 +123,7 @@
 </template>
 
 <script setup>
+import { getMediaToken } from '../utils/mediaToken';
 import { ref, watch } from 'vue';
 import api from '../api/client';
 import { usePlayerStore } from '../stores/player';
@@ -233,7 +234,7 @@ function jumpToBookmark(bm) {
     emit('select-manga-page', { item: props.item, page: Math.floor(bm.position) });
     emit('close');
   } else {
-    const token = localStorage.getItem('plinthio_token');
+    const token = getMediaToken();
     window.open(`/api/media/book/${props.item.id}/file?token=${token}`, '_blank');
   }
 }

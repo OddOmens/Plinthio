@@ -1,14 +1,14 @@
 <template>
   <div
     class="fixed inset-0 z-50 bg-black flex flex-col select-none"
-    @mousemove="revealControls"
+    @mousemove="onPointerActivity"
     @touchstart="revealControls"
     @touchmove="revealControls"
   >
     <!-- Top bar — auto-hides during playback, like a normal video app -->
     <header
       :class="[
-        'absolute top-0 inset-x-0 z-20 transition-opacity duration-300 bg-gradient-to-b from-black/85 to-transparent pt-safe px-4 pb-8 flex items-start gap-3',
+        'absolute top-0 inset-x-0 z-20 transition-opacity duration-300 bg-gradient-to-b from-black/85 to-transparent pt-safe pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-8 flex items-start gap-3',
         controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       ]"
     >
@@ -23,10 +23,11 @@
       <div class="min-w-0 flex-1 pt-1.5">
         <h2 class="text-base font-semibold text-white truncate drop-shadow">{{ item.title }}</h2>
         <p v-if="subtitleLine" class="text-sm text-white/70 truncate drop-shadow">{{ subtitleLine }}</p>
+        <RatingBar :item="item" tone="dark" compact class="mt-1.5 drop-shadow" />
       </div>
 
       <button aria-label="Cast to TV"
-        v-if="castAvailable"
+        v-if="castAvailable && !partyMode"
         @click="startCast"
         class="w-11 h-11 rounded-xl bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition active:scale-95 flex-shrink-0 backdrop-blur-sm"
         title="Cast to TV"
@@ -35,13 +36,15 @@
       </button>
 
       <button aria-label="AirPlay"
-        v-if="airplayAvailable"
+        v-if="airplayAvailable && !partyMode"
         @click="startAirplay"
         class="w-11 h-11 rounded-xl bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition active:scale-95 flex-shrink-0 backdrop-blur-sm"
         title="AirPlay"
       >
         <MonitorSpeaker class="w-5 h-5" />
       </button>
+
+      <slot name="header-actions" />
 
       <button aria-label="Playback settings"
         @click="settingsOpen = !settingsOpen"
@@ -55,10 +58,21 @@
     <!-- Quality / audio / subtitle picker -->
     <div
       v-if="settingsOpen"
-      class="absolute top-20 right-4 z-30 w-60 rounded-xl bg-black/90 backdrop-blur border border-white/10 text-white p-3 space-y-3 max-h-[70vh] overflow-y-auto"
+      class="absolute top-20 right-[max(1rem,env(safe-area-inset-right))] z-30 w-64 rounded-xl bg-black/90 backdrop-blur border border-white/10 text-white p-3 space-y-3 max-h-[70dvh] overflow-y-auto"
     >
+      <div v-if="!locked">
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Skip back</p>
+        <div class="flex flex-wrap gap-1">
+          <button v-for="s in SKIP_CHOICES" :key="`b${s}`" type="button" @click="setSkip('back', s)" :class="skipChipClass(skipBack === s)">{{ skipLabel(s) }}</button>
+        </div>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mt-2.5 mb-1.5">Skip forward</p>
+        <div class="flex flex-wrap gap-1">
+          <button v-for="s in SKIP_CHOICES" :key="`f${s}`" type="button" @click="setSkip('forward', s)" :class="skipChipClass(skipForward === s)">{{ skipLabel(s) }}</button>
+        </div>
+      </div>
+
       <div v-if="qualities.length > 1">
-        <p class="text-[11px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Quality</p>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Quality</p>
         <button
           @click="setQuality(-1)"
           :class="menuItemClass(selectedQuality === -1)"
@@ -76,7 +90,7 @@
       </div>
 
       <div v-if="audioTracks.length > 1">
-        <p class="text-[11px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Audio</p>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Audio</p>
         <button
           v-for="track in audioTracks"
           :key="track.index"
@@ -88,7 +102,7 @@
       </div>
 
       <div v-if="subtitles.length > 0">
-        <p class="text-[11px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Subtitles</p>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Subtitles</p>
         <button @click="setSubtitle(null)" :class="menuItemClass(selectedSubtitle === null)">
           Off
         </button>
@@ -103,7 +117,7 @@
       </div>
 
       <p v-if="qualities.length <= 1 && audioTracks.length <= 1 && subtitles.length === 0"
-         class="text-xs text-white/60">
+         class="text-xs text-white/50">
         No alternate tracks for this video.
       </p>
     </div>
@@ -116,6 +130,37 @@
     >
       Skip {{ activeMarker.type === 'intro' ? 'Intro' : 'Credits' }}
     </button>
+
+    <!-- Touch: skip buttons either side of the native controls' play button -->
+    <template v-if="!useCustomScrubber && !locked && modeResolved && !errorMessage && !nextEpisode">
+      <button
+        v-for="dir in ['back', 'forward']"
+        :key="dir"
+        type="button"
+        @click.stop="skip(dir)"
+        @contextmenu.prevent="settingsOpen = true"
+        :aria-label="skipAria(dir)"
+        :class="[
+          'absolute top-1/2 -translate-y-1/2 z-20 w-16 h-16 rounded-full bg-black/45 backdrop-blur-sm text-white flex flex-col items-center justify-center transition-opacity duration-300 active:scale-95',
+          dir === 'back' ? 'left-[12%]' : 'right-[12%]',
+          controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        ]"
+      >
+        <RotateCcw v-if="dir === 'back'" class="w-6 h-6" />
+        <RotateCw v-else class="w-6 h-6" />
+        <span class="text-[11px] font-semibold leading-none mt-0.5">{{ skipLabel(dir === 'back' ? skipBack : skipForward) }}</span>
+      </button>
+    </template>
+
+    <PauseScreen
+      v-if="pauseScreenVisible"
+      :mode="pauseMode"
+      :item="item"
+      :credits="pauseCredits"
+      :current-time="videoTime"
+      :duration="totalDuration"
+      :season-rest="seasonRest"
+    />
 
     <!-- Native controls give us fullscreen, PiP, AirPlay, captions and scrubbing for free,
          and behave correctly on iOS where custom controls often don't — so they stay on
@@ -130,8 +175,8 @@
       preload="metadata"
       @loadedmetadata="onLoadedMetadata"
       @timeupdate="onTimeUpdate"
-      @play="isPlaying = true"
-      @pause="isPlaying = false; saveProgress()"
+      @play="onPlay"
+      @pause="onPause"
       @ended="onEnded"
       @error="onError"
       @click="useCustomScrubber && togglePlay()"
@@ -149,7 +194,7 @@
     <div
       v-if="useCustomScrubber && !errorMessage"
       :class="[
-        'absolute bottom-0 inset-x-0 z-20 transition-opacity duration-300 bg-gradient-to-t from-black/90 to-transparent px-4 pt-10 pb-4',
+        'absolute bottom-0 inset-x-0 z-20 transition-opacity duration-300 bg-gradient-to-t from-black/90 to-transparent pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-10 pb-[max(1rem,env(safe-area-inset-bottom))]',
         controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       ]"
     >
@@ -161,7 +206,7 @@
       />
       <p
         v-if="previewVisible"
-        class="absolute bottom-16 text-[11px] font-mono text-white bg-black/80 px-1.5 py-0.5 rounded pointer-events-none"
+        class="absolute bottom-16 text-[12px] font-mono text-white bg-black/80 px-1.5 py-0.5 rounded pointer-events-none"
         :style="{ left: `${previewLeft}px` }"
       >
         {{ formatTime(previewTime) }}
@@ -189,6 +234,22 @@
           <Pause v-if="isPlaying" class="w-5 h-5" />
           <Play v-else class="w-5 h-5 fill-current" />
         </button>
+        <template v-if="!locked">
+          <button
+            v-for="dir in ['back', 'forward']"
+            :key="dir"
+            type="button"
+            @click="skip(dir)"
+            @contextmenu.prevent="settingsOpen = true"
+            :aria-label="skipAria(dir)"
+            :title="`${skipAria(dir)} — right-click to change`"
+            class="h-9 px-1.5 flex items-center gap-1 rounded-lg hover:bg-white/10 transition"
+          >
+            <RotateCcw v-if="dir === 'back'" class="w-[18px] h-[18px]" />
+            <RotateCw v-else class="w-[18px] h-[18px]" />
+            <span class="text-[12px] font-semibold tabular-nums">{{ skipLabel(dir === 'back' ? skipBack : skipForward) }}</span>
+          </button>
+        </template>
         <span class="text-xs font-mono tabular-nums">
           {{ formatTime(videoTime) }} / {{ formatTime(totalDuration) }}
         </span>
@@ -270,31 +331,64 @@
       <div>
         <h3 class="text-base font-semibold text-white">Can't play this video</h3>
         <p class="text-sm text-white/70 mt-1 max-w-md">{{ errorMessage }}</p>
+        <a
+          v-if="errorCode"
+          :href="`/docs#${errorCode}`"
+          target="_blank"
+          rel="noopener"
+          class="inline-block mt-2 text-xs font-mono text-white/50 hover:text-white underline underline-offset-2"
+        >
+          Error {{ errorCode }}: what this means
+        </a>
       </div>
-      <button
-        @click="closePlayer"
-        class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition"
-      >
-        Back to shelf
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          @click="retryPlayback"
+          class="px-4 py-2 rounded-xl bg-white text-black hover:bg-white/90 text-sm font-medium transition"
+        >
+          Retry
+        </button>
+        <button
+          @click="closePlayer"
+          class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition"
+        >
+          Back to shelf
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { loadCastSdk } from '../utils/cast';
+import { getMediaToken, setMediaToken } from '../utils/mediaToken';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import Hls from 'hls.js';
 import api from '../api/client';
 import { useViewSession } from '../composables/useViewSession';
+import RatingBar from './RatingBar.vue';
+import PauseScreen from './PauseScreen.vue';
+import { useAuthStore } from '../stores/auth';
+import { useCustomizationStore } from '../stores/customization';
 import {
   ArrowLeft, AlertCircle, Loader2, Play, Pause, Maximize,
-  Settings, Cast, MonitorSpeaker
+  Settings, Cast, MonitorSpeaker, RotateCcw, RotateCw
 } from 'lucide-vue-next';
 
 const viewSession = useViewSession();
 
-const props = defineProps({ item: { type: Object, required: true } });
+const props = defineProps({
+  item: { type: Object, required: true },
+  // In a watch party (views/PartyView.vue) the party decides position and play/pause: no
+  // resume-from-where-you-left-off, no casting, and without control the buttons are locked.
+  partyMode: { type: Boolean, default: false },
+  canControl: { type: Boolean, default: true }
+});
 const emit = defineEmits(['close', 'play-next']);
+// Locked: a party guest while the host keeps control — no seeking. Play/pause stay usable
+// (a browser that blocks autoplay needs a tap to start), and the party page puts a guest
+// back in step if they pause or seek anyway (see PartyView).
+const locked = computed(() => props.partyMode && !props.canControl);
 
 const nextEpisode = ref(null);
 const countdown = ref(0);
@@ -305,6 +399,7 @@ const controlsVisible = ref(true);
 const resumedFrom = ref(0);
 const showResumeToast = ref(false);
 const errorMessage = ref('');
+const errorCode = ref('');
 
 // 'direct' plays the file as-is with native range seeking. 'remux'/'transcode' go out as HLS
 // (see services/hls.js on the backend) — segmented, so the video element seeks normally
@@ -322,7 +417,9 @@ let saveTimer = null;
 let lastSavedTime = 0;
 let hls = null;
 
-const token = localStorage.getItem('plinthio_token') || '';
+// Reactive so an expired media token can be swapped for a fresh one mid-session (see
+// renewMediaToken): every URL below is recomputed from it.
+const mediaToken = ref(getMediaToken() || '');
 const isTranscoding = computed(() => playbackMode.value !== 'direct');
 
 // Track menus
@@ -358,12 +455,12 @@ const streamUrl = computed(() => {
   const base = `/api/media/video/${props.item.id}`;
   const hevc = isClientHevcSupported() ? '&clientHevc=1' : '';
   return isTranscoding.value
-    ? `${base}/hls/master.m3u8?audio=${selectedAudioTrack.value}&token=${token}${hevc}`
-    : `${base}/stream?token=${token}`;
+    ? `${base}/hls/master.m3u8?audio=${selectedAudioTrack.value}&token=${mediaToken.value}${hevc}`
+    : `${base}/stream?token=${mediaToken.value}`;
 });
 
 const activeSubtitleUrl = computed(() => selectedSubtitle.value
-  ? `/api/media/video/${props.item.id}/subtitles/${selectedSubtitle.value}.vtt?token=${token}`
+  ? `/api/media/video/${props.item.id}/subtitles/${selectedSubtitle.value}.vtt?token=${mediaToken.value}`
   : null);
 
 const progressPercent = computed(() => totalDuration.value > 0
@@ -432,6 +529,110 @@ function setSubtitle(trackId) {
   settingsOpen.value = false;
 }
 
+// ── Skip back / forward ─────────────────────────────────────────────────────────────────
+// Each person picks their own jumps (Settings → Skip, or right-click a skip button); they
+// follow them to every device. The arrow keys use the same amounts.
+const authStore = useAuthStore();
+const SKIP_CHOICES = [5, 10, 15, 30, 60, 300];
+const skipPrefs = ref({ back: 10, forward: 30, ...(authStore.user?.preferences?.videoSkip || {}) });
+const skipBack = computed(() => skipPrefs.value.back);
+const skipForward = computed(() => skipPrefs.value.forward);
+
+function skipLabel(seconds) {
+  return seconds >= 60 ? `${seconds / 60}m` : `${seconds}s`;
+}
+function skipAria(dir) {
+  const s = dir === 'back' ? skipBack.value : skipForward.value;
+  const amount = s >= 60 ? `${s / 60} minute${s === 60 ? '' : 's'}` : `${s} seconds`;
+  return `${dir === 'back' ? 'Back' : 'Forward'} ${amount}`;
+}
+function skipChipClass(active) {
+  return [
+    'min-w-[2.75rem] px-2 py-1 rounded-md text-xs font-semibold transition',
+    active ? 'bg-primary text-primary-foreground' : 'bg-white/10 hover:bg-white/20'
+  ];
+}
+function skip(dir) {
+  seekTo(virtualTime.value + (dir === 'back' ? -skipBack.value : skipForward.value));
+  revealControls();
+}
+async function setSkip(dir, seconds) {
+  skipPrefs.value = { ...skipPrefs.value, [dir]: seconds };
+  try {
+    const res = await api.patch('/users/preferences', { videoSkip: skipPrefs.value });
+    if (authStore.user && res.data.preferences) {
+      authStore.user = { ...authStore.user, preferences: res.data.preferences };
+      localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+    }
+  } catch (err) {
+    // Still applies for this session.
+  }
+}
+
+// ── Pause screen ────────────────────────────────────────────────────────────────────────
+// After a few idle seconds paused, the admin's chosen pause screen (see PauseScreen.vue)
+// fades in; any movement, touch or key hides it again.
+const customizationStore = useCustomizationStore();
+const PAUSE_IDLE_MS = 2500;
+const pauseMode = computed(() => customizationStore.pauseScreen || 'simple');
+const pauseIdle = ref(false);
+const pauseCredits = ref(null);
+const seasonRest = ref(null);
+let pauseTimer = null;
+let pauseDataLoaded = false;
+
+const pauseScreenVisible = computed(() => pauseIdle.value && pauseMode.value !== 'simple' &&
+  !settingsOpen.value && !errorMessage.value && !nextEpisode.value && !preparing.value);
+
+function armPauseScreen() {
+  clearTimeout(pauseTimer);
+  pauseIdle.value = false;
+  if (pauseMode.value === 'simple' || !videoEl.value?.paused) return;
+  pauseTimer = setTimeout(() => {
+    if (!videoEl.value?.paused) return;
+    pauseIdle.value = true;
+    controlsVisible.value = false;
+    loadPauseData();
+  }, PAUSE_IDLE_MS);
+}
+
+async function loadPauseData() {
+  if (pauseDataLoaded) return;
+  pauseDataLoaded = true;
+  const isEpisode = ['show', 'anime'].includes(props.item.media_type);
+  if (pauseMode.value !== 'bedtime' && ['movie', 'show', 'anime'].includes(props.item.media_type)) {
+    try {
+      pauseCredits.value = (await api.get(`/items/${props.item.id}/credits`)).data.credits || null;
+    } catch (err) { /* the file's own details are enough */ }
+  }
+  if (pauseMode.value === 'bedtime' && isEpisode && props.item.series && props.item.volume != null) {
+    try {
+      const res = await api.get('/items', { params: { series: props.item.series } });
+      const season = Math.floor(props.item.volume);
+      const rest = (res.data.items || []).filter((i) => i.volume != null && i.volume > props.item.volume && Math.floor(i.volume) === season);
+      seasonRest.value = { count: rest.length, seconds: rest.reduce((sum, i) => sum + (i.duration || 0), 0) };
+    } catch (err) { /* just the clock, then */ }
+  }
+}
+
+function onPlay() {
+  isPlaying.value = true;
+  clearTimeout(pauseTimer);
+  pauseIdle.value = false;
+}
+function onPause() {
+  isPlaying.value = false;
+  saveProgress();
+  armPauseScreen();
+}
+
+// Chrome sends a mousemove with no movement when what's under a still pointer changes (the
+// pause screen appearing, say); only a real move counts.
+function onPointerActivity(e) {
+  if (e && e.movementX === 0 && e.movementY === 0) return;
+  revealControls();
+}
+
 function skipMarker() {
   const marker = activeMarker.value;
   if (marker) seekTo(marker.endSeconds);
@@ -450,6 +651,7 @@ function toggleFullscreen() {
 }
 
 function scrubTo(event) {
+  if (locked.value) return;
   const rect = scrubberEl.value?.getBoundingClientRect();
   if (!rect || !totalDuration.value) return;
   const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
@@ -481,7 +683,7 @@ const previewStyle = computed(() => {
   return {
     width: `${index.tileWidth}px`,
     height: `${index.tileHeight}px`,
-    backgroundImage: `url(/api/media/video/${props.item.id}/trickplay/sheet_${sheet}.jpg?token=${token})`,
+    backgroundImage: `url(/api/media/video/${props.item.id}/trickplay/sheet_${sheet}.jpg?token=${mediaToken.value})`,
     backgroundPosition: `-${column * index.tileWidth}px -${row * index.tileHeight}px`
   };
 });
@@ -559,16 +761,15 @@ function attachStream() {
       // Generous buffer for LAN — plenty of bandwidth to fill it, and a bigger buffer
       // means scrubbing forward never hits a gap even mid-encode.
       maxBufferLength: 60,
-      maxMaxBufferLength: 120,
-      xhrSetup: (xhr) => {
-        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-      }
+      maxMaxBufferLength: 120
+      // No Authorization header: `token` is the media token, which the server only accepts
+      // in the URL (a media token in a header is refused with 401). The master playlist URL
+      // carries ?token= and the server writes it into every variant and segment URL.
     });
     hls.on(Hls.Events.ERROR, (_event, data) => {
       if (!data.fatal) return;
-      console.error('[video] hls.js fatal error:', data.type, data.details);
-      preparing.value = false;
-      errorMessage.value = 'Conversion failed on the server. Check the server logs — ffmpeg may be missing or the file may be corrupt.';
+      console.error('[video] hls.js fatal error:', data.type, data.details, data.response);
+      handleHlsFatal(data);
     });
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
       hls.currentLevel = selectedQuality.value;
@@ -610,6 +811,7 @@ function formatTime(seconds) {
 
 function revealControls() {
   controlsVisible.value = true;
+  if (pauseIdle.value || videoEl.value?.paused) armPauseScreen();
   if (hideTimer) clearTimeout(hideTimer);
   hideTimer = setTimeout(() => {
     if (videoEl.value && !videoEl.value.paused) controlsVisible.value = false;
@@ -629,7 +831,8 @@ function onLoadedMetadata() {
 
   // Resume where they left off, but not if they were basically at the end — otherwise
   // reopening a finished item drops you on the closing credits with nothing left to watch.
-  const saved = props.item.current_time || 0;
+  // A party starts wherever the party is, not where you personally left off.
+  const saved = props.partyMode ? 0 : (props.item.current_time || 0);
   const nearEnd = totalDuration.value > 0 && saved > 0 && saved / totalDuration.value >= 0.98;
 
   if (saved > 10 && !nearEnd) {
@@ -653,6 +856,7 @@ function onTimeUpdate() {
 // HLS is segmented, so seeking (in either mode) is a normal currentTime jump — no more
 // restarting the encode from a new offset.
 function seekTo(seconds) {
+  if (locked.value) return;
   const target = Math.max(0, Math.min(seconds, totalDuration.value || seconds));
   if (videoEl.value) videoEl.value.currentTime = target;
   saveProgress();
@@ -688,6 +892,7 @@ async function onEnded() {
 // within the same series. Movies have no series and are skipped.
 async function offerNextEpisode() {
   if (!['show', 'anime'].includes(props.item.media_type) || !props.item.series) return;
+  if (locked.value) return; // the host moves the party on
 
   try {
     const res = await api.get('/items', { params: { series: props.item.series } });
@@ -727,24 +932,129 @@ function cancelNextEpisode() {
   nextEpisode.value = null;
 }
 
-function onError() {
-  const video = videoEl.value;
-  const code = video?.error?.code;
+// ── Playback failures ────────────────────────────────────────────────────────────────────
+// A <video> element or hls.js only reports "it failed", never why. The server does know —
+// every error response carries a Plinthio error code (P### — see Docs → Error codes) — so
+// a failure re-requests the URL that failed and shows the server's own message and code.
+// Client-side failures use the app codes P350–P352.
 
-  // Safety net: if the probe said "direct" but the browser still can't decode it, fall back
-  // to HLS transcoding once rather than surfacing a dead end.
-  if (code === 4 && !isTranscoding.value) {
-    console.warn('Direct playback rejected by browser — falling back to HLS transcode.');
-    playbackMode.value = 'transcode';
-    preparing.value = true;
-    attachStream();
-    return;
+const CLIENT_ERRORS = {
+  P350: 'This browser cannot play this video, even after converting it.',
+  P351: 'Lost connection to the server. Check your network and press Retry.',
+  P352: 'Your media access expired and could not be renewed. Reload the page, or sign out and back in.'
+};
+
+let tokenRenewed = false;
+let mediaRecoveryTried = false;
+
+function showError(code, message) {
+  preparing.value = false;
+  errorCode.value = code || '';
+  errorMessage.value = message || CLIENT_ERRORS[code] || 'Playback failed.';
+}
+
+// Asks the server why `url` failed. Returns { status, code, message }, or null when the
+// server couldn't be reached at all.
+async function diagnose(url) {
+  try {
+    const res = await fetch(url, { headers: { Range: 'bytes=0-0' }, cache: 'no-store' });
+    if (res.ok) return { status: res.status };
+    let body = {};
+    try { body = await res.json(); } catch (e) { /* not JSON */ }
+    return { status: res.status, code: body.code, message: body.error };
+  } catch (e) {
+    return null;
+  }
+}
+
+// Media tokens last a day, but the player reads the one in storage when it opens, and an
+// installed PWA can sit in the background for longer than that. A 401 gets one fresh token
+// and a reload at the same position before it's treated as an error.
+async function renewMediaToken() {
+  if (tokenRenewed) return false;
+  tokenRenewed = true;
+  try {
+    const res = await api.post('/auth/media-token');
+    if (!res.data?.mediaToken) return false;
+    setMediaToken(res.data.mediaToken);
+    mediaToken.value = res.data.mediaToken;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function reloadAt(position) {
+  preparing.value = true;
+  errorMessage.value = '';
+  errorCode.value = '';
+  attachStream();
+  const video = videoEl.value;
+  if (!video || !position) return;
+  video.addEventListener('loadedmetadata', () => {
+    video.currentTime = position;
+    video.play().catch(() => {});
+  }, { once: true });
+}
+
+async function explainFailure(url, fallbackCode) {
+  const found = await diagnose(url);
+  if (!found) return showError('P351');
+  if (found.status === 401 && await renewMediaToken()) return reloadAt(videoTime.value);
+  if (found.status === 401) return showError('P352');
+  if (found.code) return showError(found.code, found.message);
+  showError(fallbackCode);
+}
+
+async function handleHlsFatal(data) {
+  if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+    // hls.js's standard recovery for a decoder hiccup; only give up if it happens again.
+    if (!mediaRecoveryTried && hls) {
+      mediaRecoveryTried = true;
+      hls.recoverMediaError();
+      return;
+    }
+    return showError('P350');
   }
 
-  preparing.value = false;
-  errorMessage.value = isTranscoding.value
-    ? 'Conversion failed on the server. Check the server logs — ffmpeg may be missing or the file may be corrupt.'
-    : 'The video stream stopped unexpectedly. Check the server logs for details.';
+  const failedUrl = data.url || data.context?.url || streamUrl.value;
+  if (data.response?.code === 401 && await renewMediaToken()) return reloadAt(videoTime.value);
+  await explainFailure(failedUrl, 'P304');
+}
+
+async function onError() {
+  const video = videoEl.value;
+  const code = video?.error?.code;
+  // Errors from an hls.js-driven element are handled by handleHlsFatal instead.
+  if (hls) return;
+
+  if (!isTranscoding.value) {
+    const found = await diagnose(streamUrl.value);
+    if (!found) return showError('P351');
+    if (found.status === 401 && await renewMediaToken()) return reloadAt(videoTime.value);
+    if (found.status === 401) return showError('P352');
+    if (found.code) return showError(found.code, found.message);
+
+    // The server served the file fine, so the browser can't decode it. If the probe said
+    // "direct" but the browser still refuses, fall back to HLS transcoding once rather than
+    // surfacing a dead end.
+    if (code === 4) {
+      console.warn('Direct playback rejected by browser — falling back to HLS transcode.');
+      playbackMode.value = 'transcode';
+      reloadAt(videoTime.value);
+      return;
+    }
+    return showError(code === 2 ? 'P351' : 'P350');
+  }
+
+  // Safari's native HLS.
+  await explainFailure(streamUrl.value, code === 4 ? 'P350' : 'P304');
+}
+
+function retryPlayback() {
+  tokenRenewed = false;
+  mediaRecoveryTried = false;
+  reloadAt(videoTime.value);
 }
 
 async function start() {
@@ -788,9 +1098,10 @@ function onKeyDown(e) {
   const video = videoEl.value;
   if (!video) return;
   if (e.key === 'Escape') { closePlayer(); return; }
+  if (locked.value && ['ArrowRight', 'ArrowLeft'].includes(e.key)) { e.preventDefault(); revealControls(); return; }
   if (e.key === ' ') { e.preventDefault(); video.paused ? video.play() : video.pause(); }
-  else if (e.key === 'ArrowRight') { e.preventDefault(); seekTo(virtualTime.value + 10); }
-  else if (e.key === 'ArrowLeft') { e.preventDefault(); seekTo(virtualTime.value - 10); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); seekTo(virtualTime.value + skipForward.value); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); seekTo(virtualTime.value - skipBack.value); }
   revealControls();
 }
 
@@ -800,8 +1111,8 @@ function closePlayer() {
 }
 
 function onBeforeUnload() {
-  if (props.item?.id && token) {
-    navigator.sendBeacon?.(`/api/media/video/${props.item.id}/hls/stop?token=${encodeURIComponent(token)}`);
+  if (props.item?.id && mediaToken.value) {
+    navigator.sendBeacon?.(`/api/media/video/${props.item.id}/hls/stop?token=${encodeURIComponent(mediaToken.value)}`);
   }
 }
 
@@ -813,10 +1124,14 @@ onMounted(() => {
   loadMarkers();
   if (useCustomScrubber) loadTrickplay();
   window.addEventListener('plinthio-cast-ready', onCastReady);
+  loadCastSdk().then((ok) => { if (ok) castReady.value = true; });
   // Backstop for the timeupdate throttle — covers a tab left paused mid-file.
   saveTimer = setInterval(() => saveProgress(), 15000);
   viewSession.open(props.item.id);
 });
+
+// The party page drives the <video> element directly.
+defineExpose({ videoEl, totalDuration });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown);
@@ -824,6 +1139,7 @@ onUnmounted(() => {
   window.removeEventListener('plinthio-cast-ready', onCastReady);
   if (hideTimer) clearTimeout(hideTimer);
   if (saveTimer) clearInterval(saveTimer);
+  clearTimeout(pauseTimer);
   stopCountdown();
   teardownHls();
   viewSession.close();

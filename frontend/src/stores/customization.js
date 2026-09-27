@@ -8,8 +8,20 @@ export const useCustomizationStore = defineStore('customization', {
     accentTheme: 'zinc',
     loginMessage: '',
     layoutMode: 'topnav',
+    // Admin display switches for the rating UI — mirrored from the server, all on by default.
+    ratings: { showPersonal: true, showCommunity: true, showExternal: true },
+    // Movie collections also list the films the library doesn't have (greyed, requestable).
+    showMissingFilms: true,
+    // Watch parties — off until an admin turns them on.
+    partyModeEnabled: false,
+    // What the video player shows while paused: simple | details | cinematic | bedtime.
+    pauseScreen: 'details',
     loading: false
   }),
+
+  getters: {
+    ratingsEnabled: (state) => state.ratings.showPersonal || state.ratings.showCommunity || state.ratings.showExternal
+  },
 
   actions: {
     async fetchCustomization() {
@@ -21,6 +33,10 @@ export const useCustomizationStore = defineStore('customization', {
           this.accentTheme = res.data.accentTheme || 'zinc';
           this.loginMessage = res.data.loginMessage || '';
           this.layoutMode = res.data.layoutMode || 'topnav';
+          if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
+          if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
+          if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
+          if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
           this.applyToDom();
         }
         return res.data;
@@ -39,6 +55,10 @@ export const useCustomizationStore = defineStore('customization', {
           this.accentTheme = res.data.accentTheme || this.accentTheme;
           this.loginMessage = res.data.loginMessage !== undefined ? res.data.loginMessage : this.loginMessage;
           this.layoutMode = res.data.layoutMode || this.layoutMode;
+          if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
+          if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
+          if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
+          if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
           this.applyToDom();
         }
         return res.data;

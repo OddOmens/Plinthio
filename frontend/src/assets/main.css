@@ -100,18 +100,62 @@
   background: hsl(var(--muted-foreground));
 }
 
-/* iOS Safe Areas */
-.safe-top {
-  padding-top: max(env(safe-area-inset-top, 0px), 0px);
+/* iOS Safe Areas
+   Kept in the components layer so they sort *before* Tailwind utilities: declared after
+   them, `.safe-left` beat `px-4` on equal specificity and zeroed the padding on every
+   device without a notch. Where an element needs both a base padding and inset clearance,
+   use an arbitrary value instead, e.g. `pl-[max(1rem,env(safe-area-inset-left))]`. */
+@layer components {
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .safe-left {
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+  .safe-right {
+    padding-right: env(safe-area-inset-right, 0px);
+  }
 }
-.safe-bottom {
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+
+/* Zoom: pinch-zoom is allowed site-wide (blocking it fails WCAG 1.4.4 and locks out anyone
+   who needs to enlarge text). Two things kept it disabled before, handled here instead:
+   - double-tap zoom on app chrome — `manipulation` keeps pinch but drops double-tap;
+   - iOS auto-zooming into any input under 16px — so on touch screens, inputs never are.
+   The paged manga reader has its own pinch/pan (its gesture layer is touch-action: none). */
+html {
+  touch-action: manipulation;
 }
-.safe-left {
-  padding-left: max(env(safe-area-inset-left, 0px), 0px);
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  /* :not() only adds specificity so this outranks Tailwind's text-xs/text-sm utilities. */
+  select:not([data-keep-size]),
+  textarea:not([data-keep-size]) {
+    font-size: max(16px, 1em);
+  }
 }
-.safe-right {
-  padding-right: max(env(safe-area-inset-right, 0px), 0px);
+
+/* Poster grids (shelf, continue rows, a series' volumes/episodes). One definition so every
+   media view sizes its covers the same way — two columns on a phone, up to five on a wide
+   screen, which keeps posters large enough to read. */
+@layer components {
+  .poster-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5;
+  }
+  .hero-btn {
+    @apply h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs sm:text-sm transition active:scale-95 disabled:opacity-50 flex items-center gap-1.5 sm:gap-2 shadow-sm;
+  }
+  .section-title {
+    @apply text-base sm:text-lg font-bold tracking-tight text-foreground flex items-center gap-2;
+  }
+  .count-pill {
+    @apply text-xs font-mono px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-semibold;
+  }
+  .ep-btn {
+    @apply h-8 w-8 rounded-lg border border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95 text-xs;
+  }
 }
 
 /* Hide scrollbars for touch/mobile tabs while preserving momentum scroll */

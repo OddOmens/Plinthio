@@ -1,6 +1,7 @@
 import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import { serverError } from '../utils/http.js';
 
 const router = express.Router();
 
@@ -66,7 +67,7 @@ router.get('/me', async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -196,7 +197,7 @@ router.get('/admin', requireAdmin, async (req, res) => {
       byType: Object.values(typeMap)
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

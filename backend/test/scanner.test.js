@@ -53,6 +53,24 @@ describe('library scanner', () => {
     fs.rmSync(mediaRoot, { recursive: true, force: true });
   });
 
+  test('an emptied library folder (unmounted drive) does not wipe the catalog', async () => {
+    const dir = path.join(mediaRoot, 'Unmountable');
+    makeVideo('Unmountable/Kept Film (2020)/Kept.Film.2020.mp4');
+    await addLibrary('lib-unmount', 'movies', dir);
+    await scanLibrary('lib-unmount');
+
+    const db = await getDb();
+    const before = await db.get("SELECT COUNT(*) AS n FROM items WHERE library_id = 'lib-unmount'");
+    assert.equal(before.n, 1);
+
+    // The mount point stays behind as an empty directory.
+    fs.rmSync(path.join(dir, 'Kept Film (2020)'), { recursive: true, force: true });
+    await assert.rejects(scanLibrary('lib-unmount'), /is the drive mounted/);
+
+    const after = await db.get("SELECT COUNT(*) AS n FROM items WHERE library_id = 'lib-unmount'");
+    assert.equal(after.n, 1);
+  });
+
   test('finds movies in per-title subfolders', async () => {
     const dir = path.join(mediaRoot, 'Movies');
     makeVideo('Movies/Some Film (2019)/Some.Film.2019.1080p.mp4');

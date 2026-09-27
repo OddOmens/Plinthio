@@ -34,6 +34,19 @@
             <span class="hidden sm:inline">Libraries</span>
           </button>
           <button
+            @click="switchTab('health')"
+            :class="[
+              'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
+              activeTab === 'health'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            ]"
+            title="Library Health"
+          >
+            <HeartPulse class="w-4 h-4" />
+            <span class="hidden sm:inline">Health</span>
+          </button>
+          <button
             @click="switchTab('metadata')"
             :class="[
               'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
@@ -42,7 +55,7 @@
                 : 'text-muted-foreground hover:text-foreground'
             ]"
           >
-            <Sparkles class="w-4 h-4 text-primary" />
+            <Sparkles class="w-4 h-4" />
             <span class="hidden sm:inline">Metadata</span>
           </button>
           <button
@@ -136,7 +149,7 @@
             :key="lib.id"
             class="bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-colors"
           >
-            <div class="flex items-center gap-3 min-w-0">
+            <div class="flex items-center gap-3 min-w-0 w-full sm:w-auto">
               <div class="w-10 h-10 rounded-lg bg-muted text-foreground flex items-center justify-center flex-shrink-0">
                 <Headphones v-if="lib.type === 'audiobooks'" class="w-5 h-5 text-muted-foreground" />
                 <FileImage v-else-if="lib.type === 'manga'" class="w-5 h-5 text-muted-foreground" />
@@ -144,12 +157,12 @@
               </div>
               <div class="min-w-0">
                 <h3 class="text-xs font-semibold text-foreground truncate">{{ lib.name }}</h3>
-                <p class="text-[11px] text-muted-foreground font-mono truncate mt-0.5">{{ lib.path }}</p>
+                <p class="text-[12px] text-muted-foreground font-mono truncate mt-0.5" :title="lib.path">{{ lib.path }}</p>
                 <div class="flex items-center gap-2 mt-1">
-                  <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  <span class="text-[11px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                     {{ lib.type }}
                   </span>
-                  <span class="text-[11px] text-muted-foreground">
+                  <span class="text-[12px] text-muted-foreground">
                     {{ lib.item_count || 0 }} items
                   </span>
                 </div>
@@ -157,6 +170,19 @@
             </div>
 
             <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                @click="toggleLibraryKids(lib)"
+                :aria-pressed="String(!!lib.kids_allowed)"
+                :class="[
+                  'px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 border',
+                  lib.kids_allowed ? 'bg-sky-500/15 text-sky-500 border-sky-500/40' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border'
+                ]"
+                :title="lib.kids_allowed ? 'Everything in this library is visible to Kids Mode accounts — click to turn off' : 'Make everything in this library visible to Kids Mode accounts'"
+              >
+                <Baby class="w-3.5 h-3.5" />
+                <span>{{ lib.kids_allowed ? 'Kids: On' : 'Kids' }}</span>
+              </button>
               <button
                 @click="triggerScan(lib)"
                 :disabled="scanningId === lib.id"
@@ -179,9 +205,34 @@
             No media libraries configured yet. Click "Add Library" to point Plinthio at your media folders.
           </div>
         </div>
+
+        <!-- Kids Mode: single series and titles (whole libraries are switched on above) -->
+        <div class="bg-card border border-border rounded-xl p-4 flex flex-col gap-3">
+          <div>
+            <h3 class="text-xs font-semibold text-foreground flex items-center gap-1.5"><Baby class="w-4 h-4 text-sky-500" /> Kids Mode</h3>
+            <p class="text-[12px] text-muted-foreground mt-0.5">
+              Kids accounts (set in Users → Edit) see only kids libraries plus the series and titles listed here.
+              Add more from any series or title page with its <strong>Kids</strong> button.
+            </p>
+          </div>
+          <ul v-if="kidsTitles.length" class="flex flex-col divide-y divide-border/60">
+            <li v-for="t in kidsTitles" :key="t.id" class="py-2 flex items-center gap-3 text-xs">
+              <span class="flex-1 min-w-0 truncate text-foreground font-medium">{{ t.name }}</span>
+              <span class="text-muted-foreground">{{ t.series ? 'Series' : 'Title' }} · {{ t.library_name }}</span>
+              <button type="button" @click="removeKidsTitle(t)" class="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-muted" :aria-label="`Remove ${t.name} from Kids Mode`">
+                <X class="w-3.5 h-3.5" />
+              </button>
+            </li>
+          </ul>
+          <p v-else class="text-[12px] text-muted-foreground">No single series or titles yet.</p>
+        </div>
       </section>
 
       <!-- TAB: METADATA & TITLE CLEANUP -->
+      <section v-if="activeTab === 'health'">
+        <LibraryHealth @open-metadata="switchTab('metadata')" />
+      </section>
+
       <section v-if="activeTab === 'metadata'">
         <AdminMetadataManager :libraries="libraries" />
       </section>
@@ -206,7 +257,7 @@
         </div>
 
         <!-- Role Legend -->
-        <div class="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+        <div class="flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
           <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/50 border border-border">
             <ShieldCheck class="w-3 h-3 text-primary" /> <strong class="text-foreground">Admin</strong> — full control (libraries, users, server settings)
           </span>
@@ -225,23 +276,65 @@
             class="p-3.5 flex items-center justify-between gap-3"
           >
             <div class="flex items-center gap-3 min-w-0">
-              <div class="w-8 h-8 rounded-full bg-muted text-foreground flex items-center justify-center font-semibold text-xs border border-border flex-shrink-0">
+              <img
+                v-if="u.avatar"
+                :src="u.avatar"
+                :alt="u.username"
+                class="w-8 h-8 rounded-full object-cover border border-border flex-shrink-0"
+                @error="u.avatar = null"
+              />
+              <div
+                v-else
+                class="w-8 h-8 rounded-full bg-muted text-foreground flex items-center justify-center font-semibold text-xs border border-border flex-shrink-0 select-none"
+              >
                 {{ u.username.slice(0, 1).toUpperCase() }}
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-semibold text-foreground truncate">{{ u.username }}</span>
-                  <span v-if="u.id === authStore.user?.id" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0">
+                  <span v-if="u.id === authStore.user?.id" class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0">
                     You
                   </span>
                 </div>
-                <span class="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                <span class="text-[12px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
                   <span>Joined {{ formatDate(u.created_at) }}</span>
                   <span class="text-muted-foreground/50">&bull;</span>
                   <span class="flex items-center gap-1">
                     <Clock class="w-3 h-3" />
                     {{ u.last_login_at ? `Last sign-in ${formatDateTime(u.last_login_at)}` : 'Never signed in' }}
                   </span>
+                  <template v-if="u.expires_at">
+                    <span class="text-muted-foreground/50">&bull;</span>
+                    <span
+                      :class="[
+                        'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono font-medium',
+                        isUserExpired(u) ? 'bg-destructive/15 text-destructive font-semibold' :
+                        isUserExpiringSoon(u) ? 'bg-amber-500/15 text-amber-500 font-semibold' :
+                        'bg-emerald-500/15 text-emerald-500'
+                      ]"
+                      :title="`Expires: ${new Date(u.expires_at).toLocaleString()}`"
+                    >
+                      <Lock v-if="isUserExpired(u)" class="w-2.5 h-2.5" />
+                      <Hourglass v-else class="w-2.5 h-2.5" />
+                      <span>{{ getUserExpirationLabel(u) }}</span>
+                    </span>
+                  </template>
+                  <template v-if="u.kids_mode">
+                    <span class="text-muted-foreground/50">&bull;</span>
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-sky-500/15 text-sky-500">
+                      <Baby class="w-2.5 h-2.5" /> Kids
+                    </span>
+                  </template>
+                  <template v-if="u.max_age_rating">
+                    <span class="text-muted-foreground/50">&bull;</span>
+                    <span
+                      class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-sky-500/15 text-sky-500"
+                      :title="u.allow_unrated === 0 ? 'Unrated titles are hidden too' : 'Unrated titles are allowed'"
+                    >
+                      <ShieldCheck class="w-2.5 h-2.5" />
+                      Up to {{ u.max_age_rating }}
+                    </span>
+                  </template>
                 </span>
               </div>
             </div>
@@ -252,7 +345,7 @@
                 :value="u.role"
                 @change="changeUserRole(u, $event.target.value)"
                 :class="[
-                  'text-[11px] font-medium rounded-md px-2 py-1.5 border focus:outline-none focus:ring-1 focus:ring-ring capitalize',
+                  'text-[12px] font-medium rounded-md px-2 py-1.5 border focus:outline-none focus:ring-1 focus:ring-ring capitalize',
                   roleBadgeClass(u.role)
                 ]"
               >
@@ -262,10 +355,19 @@
               </select>
               <span
                 v-else
-                :class="['text-[11px] font-medium rounded-md px-2 py-1.5 border capitalize', roleBadgeClass(u.role)]"
+                :class="['text-[12px] font-medium rounded-md px-2 py-1.5 border capitalize', roleBadgeClass(u.role)]"
               >
                 {{ u.role }}
               </span>
+
+              <button aria-label="Extend or set account limit"
+                v-if="u.id !== authStore.user?.id"
+                @click="openExtendUserModal(u)"
+                class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition"
+                :title="u.expires_at ? 'Extend or change account limit' : 'Set account access limit'"
+              >
+                <Hourglass class="w-4 h-4 text-primary" />
+              </button>
 
               <button aria-label="Edit user"
                 @click="openEditUserModal(u)"
@@ -345,7 +447,7 @@
               :key="lvl"
               @click="setLogLevel(lvl)"
               :class="[
-                'px-2.5 py-0.5 rounded text-[11px] font-medium capitalize transition',
+                'px-2.5 py-0.5 rounded text-[12px] font-medium capitalize transition',
                 selectedLogLevel === lvl
                   ? 'bg-secondary text-foreground font-semibold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
@@ -357,7 +459,7 @@
         </div>
 
         <!-- Console View -->
-        <div class="bg-zinc-950 dark:bg-black text-zinc-100 border border-border rounded-xl p-3 font-mono text-[11px] leading-relaxed max-h-[520px] overflow-y-auto shadow-inner flex flex-col gap-1 select-text">
+        <div class="bg-zinc-950 dark:bg-black text-zinc-100 border border-border rounded-xl p-3 font-mono text-[12px] leading-relaxed max-h-[520px] overflow-y-auto shadow-inner flex flex-col gap-1 select-text">
           <div v-if="logs.length === 0" class="py-12 text-center text-zinc-500 font-sans text-xs">
             No log entries match your filter.
           </div>
@@ -366,12 +468,12 @@
             :key="log.id"
             class="flex items-start gap-2 hover:bg-white/5 px-2 py-1 rounded transition-colors"
           >
-            <span class="text-zinc-500 whitespace-nowrap select-none text-[10px]">
+            <span class="text-zinc-500 whitespace-nowrap select-none text-[11px]">
               {{ formatLogTime(log.timestamp) }}
             </span>
             <span
               :class="[
-                'px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider whitespace-nowrap select-none',
+                'px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider whitespace-nowrap select-none',
                 log.level === 'error' ? 'bg-rose-950 text-rose-300 border border-rose-800' :
                 log.level === 'warn' ? 'bg-amber-950 text-amber-300 border border-amber-800' :
                 'bg-zinc-800 text-zinc-300 border border-zinc-700'
@@ -379,13 +481,13 @@
             >
               {{ log.level }}
             </span>
-            <span v-if="log.category" class="text-zinc-400 select-none text-[10px] whitespace-nowrap">
+            <span v-if="log.category" class="text-zinc-400 select-none text-[11px] whitespace-nowrap">
               [{{ log.category }}]
             </span>
             <span class="text-zinc-200 flex-1 break-words">
               {{ log.message }}
             </span>
-            <span v-if="log.details" class="text-zinc-500 text-[10px] truncate max-w-[200px]" :title="log.details">
+            <span v-if="log.details" class="text-zinc-500 text-[11px] truncate max-w-[200px]" :title="log.details">
               {{ log.details }}
             </span>
           </div>
@@ -457,10 +559,10 @@
                   </div>
                   <div>
                     <h4 class="text-xs font-semibold text-foreground">{{ mediaTypeLabel(cat.media_type) }}</h4>
-                    <span class="text-[11px] text-muted-foreground font-mono">{{ formatBytes(cat.bytes) }}</span>
+                    <span class="text-[12px] text-muted-foreground font-mono">{{ formatBytes(cat.bytes) }}</span>
                   </div>
                 </div>
-                <span class="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                <span class="text-[11px] font-mono font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                   {{ cat.percentage_of_storage }}% space
                 </span>
               </div>
@@ -476,23 +578,23 @@
               <!-- Detailed Key-Value Grid -->
               <div class="grid grid-cols-2 gap-2 pt-1 text-xs border-t border-border/60">
                 <div class="flex flex-col">
-                  <span class="text-[10px] text-muted-foreground">Total Files</span>
+                  <span class="text-[11px] text-muted-foreground">Total Files</span>
                   <span class="font-bold text-foreground">{{ cat.count }}</span>
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-[10px] text-muted-foreground">Avg File Size</span>
+                  <span class="text-[11px] text-muted-foreground">Avg File Size</span>
                   <span class="font-mono text-foreground">{{ formatBytes(cat.avg_bytes) }}</span>
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-[10px] text-muted-foreground">Creators / Authors</span>
+                  <span class="text-[11px] text-muted-foreground">Creators / Authors</span>
                   <span class="font-bold text-foreground">{{ cat.unique_authors }}</span>
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-[10px] text-muted-foreground">Series Groups</span>
+                  <span class="text-[11px] text-muted-foreground">Series Groups</span>
                   <span class="font-bold text-foreground">{{ cat.unique_series }}</span>
                 </div>
                 <div v-if="cat.media_type === 'audiobook' && cat.duration > 0" class="flex flex-col col-span-2">
-                  <span class="text-[10px] text-muted-foreground">Playback Length</span>
+                  <span class="text-[11px] text-muted-foreground">Playback Length</span>
                   <span class="font-mono text-foreground">{{ formatHours(cat.duration) }}</span>
                 </div>
               </div>
@@ -557,7 +659,7 @@
                   {{ entry.ended_at ? ' viewed ' : ' is viewing ' }}<span class="italic">{{ entry.item_title || 'a deleted item' }}</span>
                 </template>
               </p>
-              <p class="text-[11px] text-muted-foreground">
+              <p class="text-[12px] text-muted-foreground">
                 {{ formatDateTime(entry.timestamp) }}
                 <span v-if="entry.type === 'login' && entry.ip_address"> &bull; {{ entry.ip_address }}</span>
                 <span v-if="entry.type === 'view' && entry.duration_seconds"> &bull; {{ formatDurationShort(entry.duration_seconds) }}</span>
@@ -577,12 +679,43 @@
           <p class="text-xs text-muted-foreground mt-0.5">Configure global server behavior and available features for all users</p>
         </div>
 
+        <!-- Version & updates -->
+        <div class="rounded-xl border border-border bg-card p-4 flex flex-wrap items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-foreground">Plinthio {{ updateInfo?.current || '…' }}</p>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              <template v-if="updateInfo && !updateInfo.enabled">Update checks are off (UPDATE_CHECK=false).</template>
+              <template v-else-if="updateInfo?.updateAvailable">
+                <span class="text-primary font-medium">{{ updateInfo.latest }} is available.</span>
+                Update with <code class="bg-muted px-1 rounded">docker compose pull &amp;&amp; docker compose up -d</code>
+              </template>
+              <template v-else-if="updateInfo?.checkedAt">You're up to date{{ updateInfo.error ? ' (last check failed — offline?)' : '' }}.</template>
+              <template v-else>Not checked yet.</template>
+            </p>
+          </div>
+          <a
+            v-if="updateInfo?.releaseUrl"
+            :href="updateInfo.releaseUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="h-8 px-3 rounded-lg border border-border text-xs font-medium hover:bg-muted transition flex items-center"
+          >Release notes</a>
+          <button
+            type="button"
+            @click="checkUpdates(true)"
+            :disabled="checkingUpdates || (updateInfo && !updateInfo.enabled)"
+            class="h-8 px-3 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:bg-secondary/80 transition disabled:opacity-50"
+          >
+            {{ checkingUpdates ? 'Checking…' : 'Check now' }}
+          </button>
+        </div>
+
         <!-- Shelf Filter Defaults Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Global Shelf Filter Modes</h3>
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Views</h3>
             <p class="text-xs text-muted-foreground mt-0.5">
-              Control which grouping and organization views are allowed server-wide. Disabling a filter hides it across the entire server for all users.
+              Alphabetical and Creator are always available. Turning off Disk Folders or Custom Folders hides that view for everyone on this server. Every view shows one card per series, never loose volumes or episodes.
             </p>
           </div>
 
@@ -590,17 +723,21 @@
             <label
               v-for="filter in allServerFilterModes"
               :key="filter.id"
-              class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none"
+              :class="[
+                'flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 transition select-none',
+                filter.always ? '' : 'hover:bg-muted/40 cursor-pointer'
+              ]"
             >
               <input
                 type="checkbox"
                 :value="filter.id"
                 v-model="allowedFilters"
+                :disabled="filter.always"
                 class="mt-0.5 rounded border-border text-primary focus:ring-ring"
               />
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground">{{ filter.label }}</span>
-                <span class="text-[11px] text-muted-foreground">{{ filter.desc }}</span>
+                <span class="text-[12px] text-muted-foreground">{{ filter.always ? 'Always on' : filter.desc }}</span>
               </div>
             </label>
           </div>
@@ -673,7 +810,7 @@
               </div>
               <div>
                 <span class="text-xs font-semibold text-foreground block">Top Navigation</span>
-                <span class="text-[11px] text-muted-foreground">Classic horizontal header bar</span>
+                <span class="text-[12px] text-muted-foreground">Classic horizontal header bar</span>
               </div>
             </button>
 
@@ -693,9 +830,119 @@
               </div>
               <div>
                 <span class="text-xs font-semibold text-foreground block">Sidebar</span>
-                <span class="text-[11px] text-muted-foreground">Vertical navigation on the left</span>
+                <span class="text-[12px] text-muted-foreground">Vertical navigation on the left</span>
               </div>
             </button>
+          </div>
+        </div>
+
+        <!-- Ratings Display Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Ratings</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Choose which ratings appear for all users. Turning one off hides it everywhere, and the server stops returning it.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label
+              v-for="opt in ratingDisplayOptions"
+              :key="opt.id"
+              class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none"
+            >
+              <input
+                type="checkbox"
+                :checked="customizationForm.ratings[opt.id]"
+                :disabled="savingRatings"
+                @change="toggleRatingDisplay(opt.id, $event.target.checked)"
+                class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+              />
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-foreground">{{ opt.label }}</span>
+                <span class="text-[12px] text-muted-foreground">{{ opt.desc }}</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Movie Collections Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Movie Collections</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              How a collection like Shrek or Star Wars is shown on its page and on each film's page. Needs a TMDB API key.
+            </p>
+          </div>
+          <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+            <input
+              type="checkbox"
+              :checked="customizationStore.showMissingFilms"
+              :disabled="savingMissingFilms"
+              @change="toggleShowMissingFilms($event.target)"
+              class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+            />
+            <div class="flex flex-col">
+              <span class="text-xs font-semibold text-foreground">Show missing films in collections</span>
+              <span class="text-[12px] text-muted-foreground">List the films this server doesn't have, with a greyed-out poster and a Request button. They never appear on the Movies shelf.</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Watch Parties Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Watch Parties</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Let people on this server watch a movie or show together from different places, in sync, with chat.
+              Friends outside your home network need to be able to reach this server (a domain, a reverse proxy or a VPN).
+            </p>
+          </div>
+          <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+            <input
+              type="checkbox"
+              :checked="customizationStore.partyModeEnabled"
+              :disabled="savingPartyMode"
+              @change="togglePartyMode($event.target)"
+              class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+            />
+            <div class="flex flex-col">
+              <span class="text-xs font-semibold text-foreground">Enable watch parties</span>
+              <span class="text-[12px] text-muted-foreground">Adds a "Watch Together" button to movies and episodes. Content limits still apply to everyone in a party. Turning this off ends any party in progress.</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Pause Screen Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Pause Screen</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              What movies and shows show after a couple of seconds paused. It fades away as soon as someone moves the mouse or touches the screen.
+              Cast, crew and facts come from TMDB (needs a TMDB API key); without one, the file's own details are used.
+            </p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <label
+              v-for="opt in pauseScreenOptions"
+              :key="opt.id"
+              class="flex items-start gap-3 p-3 rounded-lg border transition cursor-pointer select-none"
+              :class="customizationStore.pauseScreen === opt.id ? 'border-primary bg-primary/5' : 'border-border bg-muted/20 hover:bg-muted/40'"
+            >
+              <input
+                type="radio"
+                name="pause-screen"
+                :value="opt.id"
+                :checked="customizationStore.pauseScreen === opt.id"
+                :disabled="savingPauseScreen"
+                @change="setPauseScreen(opt.id)"
+                class="mt-0.5 border-border text-primary focus:ring-ring"
+              />
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-foreground">{{ opt.label }}</span>
+                <span class="text-[12px] text-muted-foreground">{{ opt.desc }}</span>
+              </div>
+            </label>
           </div>
         </div>
 
@@ -729,7 +976,7 @@
           </div>
         </div>
 
-        <!-- Custom CSS Injection (Jellyfin Style) -->
+        <!-- Custom CSS Injection -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3 flex items-center justify-between">
             <div>
@@ -790,7 +1037,7 @@
               <label class="text-xs font-medium text-foreground">TMDB API Key</label>
               <span
                 :class="[
-                  'text-[10px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border',
+                  'text-[11px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border',
                   tmdbConfigured
                     ? 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10'
                     : 'text-muted-foreground border-border bg-muted/40'
@@ -815,7 +1062,7 @@
                 {{ savingTmdbKey ? 'Saving...' : 'Save' }}
               </button>
             </div>
-            <p class="text-[11px] text-muted-foreground">
+            <p class="text-[12px] text-muted-foreground">
               Get a free key at themoviedb.org under Settings &rarr; API. Saving an empty value clears the stored key.
             </p>
           </div>
@@ -827,7 +1074,7 @@
             <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Video Transcoding & Hardware Acceleration</h3>
             <p class="text-xs text-muted-foreground mt-0.5">
               Plinthio prioritizes <strong>Direct Play</strong> and <strong>Direct Stream</strong> before falling back to transcoding.
-              When video streams can be decoded by the browser, they are copied untouched (<code class="text-[11px] bg-muted px-1 rounded">-c:v copy</code>)
+              When video streams can be decoded by the browser, they are copied untouched (<code class="text-[12px] bg-muted px-1 rounded">-c:v copy</code>)
               with zero server video CPU load, and only incompatible audio (e.g. EAC3 / Atmos / DTS) is converted to AAC.
             </p>
           </div>
@@ -836,7 +1083,7 @@
             <label class="text-xs font-medium text-foreground">Detected hardware</label>
             <span
               :class="[
-                'text-[10px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border',
+                'text-[11px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border',
                 transcoding.detected
                   ? 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10'
                   : 'text-muted-foreground border-border bg-muted/40'
@@ -869,24 +1116,24 @@
               </button>
             </div>
             <p v-if="hwaccelTestResult" :class="[
-              'text-[11px]',
+              'text-[12px]',
               hwaccelTestResult.ok ? 'text-emerald-500' : 'text-destructive'
             ]">
               {{ hwaccelTestResult.ok
                 ? `${testableMethod.toUpperCase()} encoding verified and working on this machine.`
                 : `${testableMethod.toUpperCase()} test failed: ${hwaccelTestResult.error}` }}
             </p>
-            <p class="text-[11px] text-muted-foreground">
+            <p class="text-[12px] text-muted-foreground">
               Testing runs a short real encode — ffmpeg listing an encoder doesn't prove the driver underneath it works.
             </p>
           </div>
 
           <!-- Architecture & Playback Guide -->
           <div class="rounded-lg bg-muted/40 border border-border p-3 space-y-2 text-xs text-muted-foreground">
-            <div class="font-medium text-foreground text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+            <div class="font-medium text-foreground text-[12px] uppercase tracking-wider flex items-center gap-1.5">
               <span>Playback Pipeline & Host Configuration</span>
             </div>
-            <ul class="list-disc pl-4 space-y-1.5 text-[11px] leading-relaxed">
+            <ul class="list-disc pl-4 space-y-1.5 text-[12px] leading-relaxed">
               <li>
                 <strong class="text-foreground">Direct Stream (Remux):</strong> Files with native video (H.264, or HEVC on Vivaldi/Chrome/Edge/Safari) inside MKV containers or with Dolby/DTS audio stream-copy the video at original resolution (up to 4K) using negligible CPU, converting only the audio track to AAC.
               </li>
@@ -926,7 +1173,7 @@
 
             <div v-if="autoScanConfig.enabled" class="flex flex-col gap-3 pl-0.5">
               <div class="max-w-xs">
-                <label for="auto-scan-interval" class="block text-[11px] font-medium text-muted-foreground mb-1">Re-scan every</label>
+                <label for="auto-scan-interval" class="block text-[12px] font-medium text-muted-foreground mb-1">Re-scan every</label>
                 <select
                   id="auto-scan-interval"
                   v-model.number="autoScanConfig.intervalMinutes"
@@ -986,7 +1233,7 @@
 
             <div v-if="backupConfig.enabled" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0.5">
               <div>
-                <label class="block text-[11px] font-medium text-muted-foreground mb-1">Frequency</label>
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">Frequency</label>
                 <select
                   v-model.number="backupConfig.intervalHours"
                   class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -999,7 +1246,7 @@
                 </select>
               </div>
               <div>
-                <label class="block text-[11px] font-medium text-muted-foreground mb-1">Keep last</label>
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">Keep last</label>
                 <input
                   type="number"
                   min="1"
@@ -1042,7 +1289,7 @@
 
           <!-- Stored backups list -->
           <div class="flex flex-col gap-2">
-            <h4 class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <h4 class="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider">
               Stored Backups {{ storedBackups.length ? `(${storedBackups.length})` : '' }}
             </h4>
             <div v-if="storedBackups.length === 0" class="text-xs text-muted-foreground py-3 text-center border border-dashed border-border rounded-lg">
@@ -1056,7 +1303,7 @@
               >
                 <div class="min-w-0">
                   <div class="text-xs font-medium text-foreground truncate">{{ formatBackupDate(b.createdAt) }}</div>
-                  <div class="text-[11px] text-muted-foreground font-mono">{{ formatBytes(b.size) }}</div>
+                  <div class="text-[12px] text-muted-foreground font-mono">{{ formatBytes(b.size) }}</div>
                 </div>
                 <div class="flex items-center gap-1 flex-shrink-0">
                   <button aria-label="Download this backup"
@@ -1083,7 +1330,7 @@
 
     <!-- Modal: Add Library -->
     <div v-if="showAddLibraryModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-card border border-border rounded-xl w-full max-w-md shadow-xl flex flex-col max-h-[85vh]">
+      <div class="bg-card border border-border rounded-xl w-full max-w-md shadow-xl flex flex-col max-h-[85dvh]">
         <h3 class="text-sm font-semibold text-foreground p-5 pb-3 flex-shrink-0">Add Media Library</h3>
 
         <form @submit.prevent="submitAddLibrary" class="flex flex-col gap-3 px-5 pb-5 overflow-y-auto">
@@ -1106,19 +1353,19 @@
                 <span>Browse...</span>
               </button>
             </div>
-            <p class="text-[11px] text-muted-foreground mt-1">
+            <p class="text-[12px] text-muted-foreground mt-1">
               Your Database is mounted at <code class="bg-muted px-1 py-0.5 rounded font-mono">/media</code>
             </p>
 
             <!-- Detected Folder Chips -->
             <div v-if="discoveredFolders.length > 0" class="mt-2 flex flex-wrap gap-1.5 items-center">
-              <span class="text-[10px] text-muted-foreground mr-1">Available folders:</span>
+              <span class="text-[11px] text-muted-foreground mr-1">Available folders:</span>
               <button
                 v-for="folder in discoveredFolders"
                 :key="folder.path"
                 type="button"
                 @click="selectFolder(folder)"
-                class="px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-mono text-foreground border border-border transition"
+                class="px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-[12px] font-mono text-foreground border border-border transition"
               >
                 {{ folder.name }}
               </button>
@@ -1147,7 +1394,7 @@
 
     <!-- Modal: Folder Browser -->
     <div v-if="showFolderBrowser" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl flex flex-col max-h-[80vh]">
+      <div class="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl flex flex-col max-h-[80dvh]">
         <div class="p-4 pb-3 border-b border-border">
           <h3 class="text-sm font-semibold text-foreground mb-2">Select a Folder</h3>
 
@@ -1200,7 +1447,7 @@
         </div>
 
         <div class="p-4 pt-3 border-t border-border flex items-center justify-between gap-2">
-          <span class="text-[11px] font-mono text-muted-foreground truncate" :title="browserCurrentDir">{{ browserCurrentDir }}</span>
+          <span class="text-[12px] font-mono text-muted-foreground truncate" :title="browserCurrentDir">{{ browserCurrentDir }}</span>
           <div class="flex items-center gap-2 flex-shrink-0">
             <button type="button" @click="showFolderBrowser = false" class="px-3 py-1.5 rounded-md bg-secondary text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition">Cancel</button>
             <button type="button" @click="confirmFolderSelection" class="px-3.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm">Select This Folder</button>
@@ -1211,7 +1458,7 @@
 
     <!-- Modal: Add User -->
     <div v-if="showAddUserModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-card border border-border rounded-xl w-full max-w-sm shadow-xl flex flex-col max-h-[85vh]">
+      <div class="bg-card border border-border rounded-xl w-full max-w-sm shadow-xl flex flex-col max-h-[85dvh]">
         <h3 class="text-sm font-semibold text-foreground p-5 pb-3 flex-shrink-0">Add New User</h3>
 
         <form @submit.prevent="submitAddUser" class="flex flex-col gap-3 px-5 pb-5 overflow-y-auto">
@@ -1223,7 +1470,7 @@
           <div>
             <label class="block text-xs font-medium text-foreground mb-1">Password</label>
             <input v-model="newUser.password" type="password" required minlength="8" class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
-            <p class="text-[11px] text-muted-foreground mt-1">Must be at least 8 characters long</p>
+            <p class="text-[12px] text-muted-foreground mt-1">Must be at least 8 characters long</p>
           </div>
 
           <div>
@@ -1233,6 +1480,35 @@
               <option value="editor">Editor — can also edit shared metadata</option>
               <option value="admin">Admin — full control</option>
             </select>
+          </div>
+
+          <div class="pt-2 border-t border-border">
+            <label class="block text-xs font-medium text-foreground mb-1 flex items-center gap-1.5">
+              <Hourglass class="w-3.5 h-3.5 text-muted-foreground" />
+              Account Access Limit
+            </label>
+            <select v-model="newUser.duration" class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+              <option value="forever">Forever / No Limit (Default)</option>
+              <option value="1d">1 Day (24 hours)</option>
+              <option value="3d">3 Days (Weekend pass)</option>
+              <option value="7d">7 Days (1 Week)</option>
+              <option value="14d">14 Days (2 Weeks)</option>
+              <option value="1m">1 Month (30 Days)</option>
+              <option value="3m">3 Months</option>
+              <option value="6m">6 Months</option>
+              <option value="1y">1 Year</option>
+              <option value="custom">Custom Date & Time…</option>
+            </select>
+          </div>
+
+          <div v-if="newUser.duration === 'custom'">
+            <label class="block text-xs font-medium text-foreground mb-1">Expiration Date & Time</label>
+            <input
+              v-model="newUser.customExpiry"
+              type="datetime-local"
+              required
+              class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
           </div>
 
           <div class="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-border">
@@ -1245,13 +1521,79 @@
 
     <!-- Modal: Edit User -->
     <div v-if="showEditUserModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-card border border-border rounded-xl w-full max-w-sm shadow-xl flex flex-col max-h-[85vh]">
+      <div class="bg-card border border-border rounded-xl w-full max-w-sm shadow-xl flex flex-col max-h-[85dvh]">
         <h3 class="text-sm font-semibold text-foreground p-5 pb-3 flex-shrink-0">Edit User</h3>
 
         <form @submit.prevent="submitEditUser" class="flex flex-col gap-4 px-5 pb-5 overflow-y-auto">
           <div>
             <label class="block text-xs font-medium text-foreground mb-1">Username</label>
             <input v-model="editUser.username" required class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+          </div>
+
+          <div class="pt-3 border-t border-border">
+            <label class="block text-xs font-medium text-foreground mb-1 flex items-center gap-1.5">
+              <Hourglass class="w-3.5 h-3.5 text-muted-foreground" />
+              Account Access Limit
+            </label>
+            <p v-if="editUser.currentExpiresAt" class="text-[12px] text-muted-foreground mb-1.5">
+              Current limit: <strong class="text-foreground">{{ formatDateTime(editUser.currentExpiresAt) }}</strong>
+              <span v-if="new Date(editUser.currentExpiresAt).getTime() <= Date.now()" class="text-destructive font-semibold ml-1">(Expired)</span>
+            </p>
+            <p v-else class="text-[12px] text-muted-foreground mb-1.5">
+              Current limit: <strong class="text-foreground">Unlimited / Forever</strong>
+            </p>
+
+            <select v-model="editUser.duration" class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+              <option value="unchanged">Keep Current Limit</option>
+              <option value="forever">Set to Forever / Unlimited</option>
+              <option value="1d">1 Day from now</option>
+              <option value="3d">3 Days from now</option>
+              <option value="7d">7 Days from now</option>
+              <option value="14d">14 Days from now</option>
+              <option value="1m">1 Month from now</option>
+              <option value="3m">3 Months from now</option>
+              <option value="6m">6 Months from now</option>
+              <option value="1y">1 Year from now</option>
+              <option value="custom">Set Specific Date & Time…</option>
+            </select>
+          </div>
+
+          <div v-if="editUser.duration === 'custom'">
+            <label class="block text-xs font-medium text-foreground mb-1">New Expiration Date & Time</label>
+            <input
+              v-model="editUser.customExpiry"
+              type="datetime-local"
+              required
+              class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </div>
+
+          <div v-if="editUser.id !== authStore.user?.id && editUser.role !== 'admin'" class="pt-3 border-t border-border">
+            <label class="flex items-start gap-2 text-xs cursor-pointer">
+              <input v-model="editUser.kidsMode" type="checkbox" class="mt-0.5 accent-primary" />
+              <span>
+                <span class="font-medium text-foreground flex items-center gap-1.5"><Baby class="w-3.5 h-3.5 text-sky-500" /> Kids account</span>
+                <span class="block text-[12px] text-muted-foreground mt-0.5">Only sees kids libraries and the series/titles added to Kids Mode (Libraries tab).</span>
+              </span>
+            </label>
+          </div>
+
+          <div v-if="editUser.id !== authStore.user?.id" class="pt-3 border-t border-border">
+            <label class="block text-xs font-medium text-foreground mb-1 flex items-center gap-1.5">
+              <ShieldCheck class="w-3.5 h-3.5 text-muted-foreground" />
+              Content Limit
+            </label>
+            <select v-model="editUser.maxAgeRating" class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+              <option value="">No limit</option>
+              <option value="Everyone">Everyone only</option>
+              <option value="Teen">Up to Teen</option>
+              <option value="Mature">Up to Mature</option>
+            </select>
+            <label v-if="editUser.maxAgeRating" class="mt-2 flex items-start gap-2 text-[12px] text-muted-foreground cursor-pointer">
+              <input v-model="editUser.allowUnrated" type="checkbox" class="mt-0.5 accent-primary" />
+              <span>Allow titles that haven't been rated yet. Turn off for strict filtering — only rated titles at or below the limit will show.</span>
+            </label>
+            <p class="text-[12px] text-muted-foreground mt-1">Ratings are set per series (series sheet) or per title (metadata editor).</p>
           </div>
 
           <div class="pt-3 border-t border-border">
@@ -1267,7 +1609,7 @@
               placeholder="Leave blank to keep current password"
               class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
-            <p class="text-[11px] text-muted-foreground mt-1">If set, must be at least 8 characters. This immediately signs the user out of all sessions.</p>
+            <p class="text-[12px] text-muted-foreground mt-1">If set, must be at least 8 characters. This immediately signs the user out of all sessions.</p>
           </div>
 
           <div class="flex items-center justify-end gap-2 pt-2 border-t border-border">
@@ -1279,12 +1621,76 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal: Quick Extend / Renew User Access -->
+    <div v-if="showExtendModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-card border border-border rounded-xl w-full max-w-sm shadow-xl flex flex-col max-h-[85dvh]">
+        <div class="p-5 pb-3 border-b border-border flex items-center justify-between flex-shrink-0">
+          <div>
+            <h3 class="text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <Hourglass class="w-4 h-4 text-primary" />
+              Manage Access Limit
+            </h3>
+            <p class="text-xs text-muted-foreground mt-0.5">@{{ extendTargetUser?.username }}</p>
+          </div>
+          <button @click="showExtendModal = false" class="text-muted-foreground hover:text-foreground p-1 rounded-md">
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+
+        <form @submit.prevent="submitExtendUser" class="flex flex-col gap-3.5 p-5 overflow-y-auto">
+          <div class="p-2.5 rounded-lg bg-muted/40 border border-border text-xs">
+            <div class="text-muted-foreground text-[12px]">Current Status</div>
+            <div class="font-medium text-foreground mt-0.5 flex items-center gap-1.5">
+              <template v-if="extendTargetUser?.expires_at">
+                <span :class="isUserExpired(extendTargetUser) ? 'text-destructive font-semibold' : 'text-emerald-500 font-semibold'">
+                  {{ isUserExpired(extendTargetUser) ? 'Expired' : 'Active' }}
+                </span>
+                <span>·</span>
+                <span class="text-muted-foreground font-mono text-[12px]">{{ formatDateTime(extendTargetUser.expires_at) }}</span>
+              </template>
+              <template v-else>
+                <span class="text-emerald-500 font-semibold">Active</span>
+                <span>·</span>
+                <span class="text-muted-foreground">Unlimited / Forever</span>
+              </template>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-foreground mb-1.5">Extend / Set Duration</label>
+            <select v-model="extendDuration" class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+              <option value="1d">+1 Day</option>
+              <option value="3d">+3 Days</option>
+              <option value="7d">+7 Days (1 Week)</option>
+              <option value="14d">+14 Days (2 Weeks)</option>
+              <option value="1m">+1 Month (30 Days)</option>
+              <option value="3m">+3 Months</option>
+              <option value="6m">+6 Months</option>
+              <option value="1y">+1 Year</option>
+              <option value="forever">Set to Forever / Unlimited</option>
+            </select>
+            <p class="text-[12px] text-muted-foreground mt-1.5 leading-relaxed">
+              Extends from current expiration date (or from today if already expired).
+            </p>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-border mt-1">
+            <button type="button" @click="showExtendModal = false" class="px-3 py-1.5 rounded-md bg-secondary text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition">Cancel</button>
+            <button type="submit" :disabled="extendingUser" class="px-3.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm disabled:opacity-50 flex items-center gap-1.5">
+              <Loader2 v-if="extendingUser" class="w-3.5 h-3.5 animate-spin" />
+              <span>Apply Limit</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
@@ -1292,6 +1698,7 @@ import { useDialogStore } from '../stores/dialog';
 import { useCustomizationStore } from '../stores/customization';
 import Sidebar from '../components/Sidebar.vue';
 import AdminMetadataManager from '../components/AdminMetadataManager.vue';
+const LibraryHealth = defineAsyncComponent(() => import('../components/LibraryHealth.vue'));
 import {
   ArrowLeft,
   Folder,
@@ -1325,7 +1732,12 @@ import {
   Pencil,
   KeyRound,
   History,
-  LogIn
+  LogIn,
+  Lock,
+  Hourglass,
+  HeartPulse,
+  X,
+  Baby
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -1341,7 +1753,7 @@ function goToShelf(type) {
 }
 
 
-const validTabs = ['libraries', 'metadata', 'users', 'logs', 'stats', 'activity', 'settings'];
+const validTabs = ['libraries', 'health', 'metadata', 'users', 'logs', 'stats', 'activity', 'settings'];
 const activeTab = ref(validTabs.includes(route.query.tab) ? route.query.tab : 'libraries');
 const libraries = ref([]);
 const users = ref([]);
@@ -1361,15 +1773,15 @@ const activity = ref([]);
 const activityUserFilter = ref('');
 const loadingActivity = ref(false);
 
-const allowedFilters = ref(['grid', 'author', 'series', 'disk_folder', 'custom_folder']);
+const allowedFilters = ref(['series', 'creator', 'disk_folder', 'custom_folder']);
 const savingFilters = ref(false);
 
+// Series and Creator can't be turned off (the server enforces it too); the folder views can.
 const allServerFilterModes = [
-  { id: 'grid', label: 'Grid View', desc: 'Standard flat grid of items.' },
-  { id: 'author', label: 'Group by Author', desc: 'Sort and group titles by author name.' },
-  { id: 'series', label: 'Group by Series', desc: 'Cluster related titles by series.' },
-  { id: 'disk_folder', label: 'Disk Folders', desc: 'Show physical file directory structure.' },
-  { id: 'custom_folder', label: 'Custom Folders', desc: 'User-created custom in-app folders with an Unorganized catch-all.' }
+  { id: 'series', label: 'Alphabetical', desc: '', always: true },
+  { id: 'creator', label: 'Creator', desc: '', always: true },
+  { id: 'disk_folder', label: 'Disk Folders', desc: 'Browse by the folders on the server.' },
+  { id: 'custom_folder', label: 'Custom Folders', desc: 'Users’ own in-app folders, with an Unorganized catch-all.' }
 ];
 
 const tmdbConfigured = ref(false);
@@ -1394,11 +1806,16 @@ const browserLoading = ref(false);
 const browserError = ref('');
 
 const showAddUserModal = ref(false);
-const newUser = ref({ username: '', password: '', role: 'viewer' });
+const newUser = ref({ username: '', password: '', role: 'viewer', duration: 'forever', customExpiry: '' });
 
 const showEditUserModal = ref(false);
 const savingEditUser = ref(false);
-const editUser = ref({ id: null, username: '', newPassword: '' });
+const editUser = ref({ id: null, username: '', newPassword: '', duration: 'unchanged', customExpiry: '', currentExpiresAt: null });
+
+const showExtendModal = ref(false);
+const extendTargetUser = ref(null);
+const extendDuration = ref('7d');
+const extendingUser = ref(false);
 
 const savingCustomization = ref(false);
 const customizationForm = ref({
@@ -1406,8 +1823,76 @@ const customizationForm = ref({
   customCss: '',
   accentTheme: 'zinc',
   loginMessage: '',
-  layoutMode: 'topnav'
+  layoutMode: 'topnav',
+  ratings: { showPersonal: true, showCommunity: true, showExternal: true }
 });
+
+const ratingDisplayOptions = computed(() => [
+  { id: 'showPersonal', label: 'Personal ratings', desc: 'Let each signed-in user give items 1–5 stars, and show their own rating.' },
+  { id: 'showCommunity', label: `${customizationStore.serverName || 'Plinthio'} user ratings`, desc: 'Show the average star rating from everyone on this server.' },
+  { id: 'showExternal', label: 'World ratings (TMDB)', desc: 'Show TMDB\'s score for movies, shows and anime. Needs a TMDB API key.' }
+]);
+const savingRatings = ref(false);
+
+async function toggleRatingDisplay(key, value) {
+  const previous = { ...customizationForm.value.ratings };
+  customizationForm.value.ratings = { ...previous, [key]: value };
+  savingRatings.value = true;
+  try {
+    await customizationStore.updateCustomization({ ratings: { [key]: value } });
+  } catch (e) {
+    customizationForm.value.ratings = previous;
+    dialog.alert('Failed to save rating settings');
+  } finally {
+    savingRatings.value = false;
+  }
+}
+
+const savingMissingFilms = ref(false);
+
+async function toggleShowMissingFilms(checkbox) {
+  savingMissingFilms.value = true;
+  try {
+    await customizationStore.updateCustomization({ showMissingFilms: checkbox.checked });
+  } catch (e) {
+    checkbox.checked = !checkbox.checked;
+    dialog.alert('Failed to save the collections setting');
+  } finally {
+    savingMissingFilms.value = false;
+  }
+}
+
+const pauseScreenOptions = [
+  { id: 'simple', label: 'Simple', desc: 'Just the player controls — nothing covers the picture.' },
+  { id: 'details', label: 'Details', desc: 'Poster, title, tagline, synopsis, director and cast, and when it will end.' },
+  { id: 'cinematic', label: 'Cinematic', desc: 'The picture dims behind a full-screen title card with cast photos and facts from TMDB — box office, original title, keywords.' },
+  { id: 'bedtime', label: 'Bedtime', desc: 'A dim clock with the time it ends and, for shows, when the rest of the season would. Easy on the eyes in a dark room.' }
+];
+const savingPauseScreen = ref(false);
+async function setPauseScreen(id) {
+  savingPauseScreen.value = true;
+  try {
+    await customizationStore.updateCustomization({ pauseScreen: id });
+  } catch (e) {
+    dialog.alert('Failed to save the pause screen setting');
+  } finally {
+    savingPauseScreen.value = false;
+  }
+}
+
+const savingPartyMode = ref(false);
+
+async function togglePartyMode(checkbox) {
+  savingPartyMode.value = true;
+  try {
+    await customizationStore.updateCustomization({ partyModeEnabled: checkbox.checked });
+  } catch (e) {
+    checkbox.checked = !checkbox.checked;
+    dialog.alert('Failed to save the watch party setting');
+  } finally {
+    savingPartyMode.value = false;
+  }
+}
 
 const accentPresets = [
   { id: 'zinc', label: 'Zinc', bg: 'bg-zinc-500' },
@@ -1420,8 +1905,23 @@ const accentPresets = [
   { id: 'indigo', label: 'Indigo', bg: 'bg-indigo-500' }
 ];
 
+const updateInfo = ref(null);
+const checkingUpdates = ref(false);
+async function checkUpdates(force = true) {
+  checkingUpdates.value = true;
+  try {
+    const res = await api.get('/system/update', { params: force === true ? { refresh: '1' } : {} });
+    updateInfo.value = res.data;
+  } catch (err) {
+    // Leave the card as it was.
+  } finally {
+    checkingUpdates.value = false;
+  }
+}
+
 function switchTab(tab) {
   activeTab.value = tab;
+  if (tab === 'settings') checkUpdates(false);
   if (tab === 'logs') {
     loadLogs();
   } else if (tab === 'stats') {
@@ -1447,7 +1947,8 @@ async function loadCustomization() {
       customCss: customizationStore.customCss,
       accentTheme: customizationStore.accentTheme,
       loginMessage: customizationStore.loginMessage,
-      layoutMode: customizationStore.layoutMode
+      layoutMode: customizationStore.layoutMode,
+      ratings: { ...customizationStore.ratings }
     };
   } catch (err) {
     console.warn('Failed to load customization:', err);
@@ -1784,14 +2285,11 @@ async function loadServerFilters() {
 }
 
 async function saveServerFilters() {
-  if (allowedFilters.value.length === 0) {
-    dialog.alert('At least one filter mode must remain enabled.');
-    return;
-  }
   savingFilters.value = true;
   try {
-    await api.patch('/settings/filters', { allowedGroupingModes: allowedFilters.value });
-    dialog.alert('Server filter settings updated successfully.');
+    const res = await api.patch('/settings/filters', { allowedGroupingModes: allowedFilters.value });
+    allowedFilters.value = res.data.allowedGroupingModes || allowedFilters.value;
+    dialog.alert('Shelf views updated.');
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to update filter settings');
   } finally {
@@ -1998,6 +2496,34 @@ function confirmFolderSelection() {
   showFolderBrowser.value = false;
 }
 
+// ─── Kids Mode ──────────────────────────────────────────────────────────────
+const kidsTitles = ref([]);
+async function loadKids() {
+  try {
+    const res = await api.get('/kids');
+    kidsTitles.value = res.data.titles || [];
+  } catch (err) {
+    kidsTitles.value = [];
+  }
+}
+async function toggleLibraryKids(lib) {
+  const next = !lib.kids_allowed;
+  try {
+    await api.patch(`/libraries/${lib.id}`, { kidsAllowed: next });
+    lib.kids_allowed = next ? 1 : 0;
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not change Kids Mode for this library');
+  }
+}
+async function removeKidsTitle(t) {
+  try {
+    await api.delete(`/kids/titles/${t.id}`);
+    kidsTitles.value = kidsTitles.value.filter((x) => x.id !== t.id);
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not remove it from Kids Mode');
+  }
+}
+
 async function triggerScan(lib) {
   scanningId.value = lib.id;
   try {
@@ -2050,11 +2576,61 @@ async function submitAddLibrary() {
   }
 }
 
+function isUserExpired(user) {
+  if (!user.expires_at) return false;
+  return new Date(user.expires_at).getTime() <= Date.now();
+}
+
+function isUserExpiringSoon(user) {
+  if (!user.expires_at) return false;
+  const diffMs = new Date(user.expires_at).getTime() - Date.now();
+  return diffMs > 0 && diffMs <= 24 * 60 * 60 * 1000;
+}
+
+function getUserExpirationLabel(user) {
+  if (!user.expires_at) return 'Unlimited';
+  const diffMs = new Date(user.expires_at).getTime() - Date.now();
+  if (diffMs <= 0) return 'Expired';
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  if (days <= 1) {
+    const hours = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60)));
+    return `${hours}h left`;
+  }
+  return `${days}d left`;
+}
+
+function openExtendUserModal(user) {
+  extendTargetUser.value = user;
+  extendDuration.value = '7d';
+  showExtendModal.value = true;
+}
+
+async function submitExtendUser() {
+  if (!extendTargetUser.value) return;
+  extendingUser.value = true;
+  try {
+    await api.post(`/users/${extendTargetUser.value.id}/extend`, { duration: extendDuration.value });
+    showExtendModal.value = false;
+    await loadData();
+    dialog.alert(extendDuration.value === 'forever' ? 'Account access set to unlimited' : 'Account access extended successfully');
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Failed to extend account access');
+  } finally {
+    extendingUser.value = false;
+  }
+}
+
 async function submitAddUser() {
   try {
-    await api.post('/users', newUser.value);
+    const payload = {
+      username: newUser.value.username,
+      password: newUser.value.password,
+      role: newUser.value.role,
+      duration: newUser.value.duration === 'custom' ? newUser.value.customExpiry : newUser.value.duration
+    };
+    await api.post('/users', payload);
     showAddUserModal.value = false;
-    newUser.value = { username: '', password: '', role: 'viewer' };
+    newUser.value = { username: '', password: '', role: 'viewer', duration: 'forever', customExpiry: '' };
     await loadData();
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to add user');
@@ -2062,7 +2638,18 @@ async function submitAddUser() {
 }
 
 function openEditUserModal(user) {
-  editUser.value = { id: user.id, username: user.username, newPassword: '' };
+  editUser.value = {
+    id: user.id,
+    username: user.username,
+    newPassword: '',
+    duration: 'unchanged',
+    customExpiry: '',
+    currentExpiresAt: user.expires_at,
+    maxAgeRating: user.max_age_rating || '',
+    allowUnrated: user.allow_unrated !== 0,
+    kidsMode: !!user.kids_mode,
+    role: user.role
+  };
   showEditUserModal.value = true;
 }
 
@@ -2070,8 +2657,28 @@ async function submitEditUser() {
   savingEditUser.value = true;
   try {
     const target = users.value.find(u => u.id === editUser.value.id);
+    const updates = {};
     if (target && editUser.value.username.trim() !== target.username) {
-      await api.patch(`/users/${editUser.value.id}`, { username: editUser.value.username.trim() });
+      updates.username = editUser.value.username.trim();
+    }
+    if (target && editUser.value.id !== authStore.user?.id) {
+      if ((editUser.value.maxAgeRating || '') !== (target.max_age_rating || '')) {
+        updates.maxAgeRating = editUser.value.maxAgeRating || null;
+      }
+      if (editUser.value.allowUnrated !== (target.allow_unrated !== 0)) {
+        updates.allowUnrated = editUser.value.allowUnrated;
+      }
+      if (editUser.value.kidsMode !== !!target.kids_mode) {
+        updates.kidsMode = editUser.value.kidsMode;
+      }
+    }
+    if (editUser.value.duration !== 'unchanged') {
+      updates.duration = editUser.value.duration === 'custom'
+        ? editUser.value.customExpiry
+        : editUser.value.duration;
+    }
+    if (Object.keys(updates).length > 0) {
+      await api.patch(`/users/${editUser.value.id}`, updates);
     }
     if (editUser.value.newPassword) {
       if (editUser.value.newPassword.length < 8) {
@@ -2110,6 +2717,7 @@ async function deleteUser(user) {
 
 onMounted(() => {
   loadData();
+  loadKids();
   startLogPolling();
   if (activeTab.value !== 'libraries') {
     switchTab(activeTab.value);
