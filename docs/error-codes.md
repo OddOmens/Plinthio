@@ -281,3 +281,41 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 *HTTP 404.* The request was deleted or never existed.
 
 **What to do:** Refresh the Requests page.
+
+## Watch parties
+
+### P600: Watch parties are turned off
+
+*HTTP 403.* An admin has not enabled watch parties.
+
+**What to do:** An admin can turn them on in Admin → Server Config → Watch Parties.
+
+### P601: Party not found
+
+*HTTP 404.* The host ended the party, everyone left, or the server restarted.
+
+**What to do:** Ask the host for a new invite link.
+
+### P602: Only the host can do that
+
+*HTTP 403.* The host has kept playback controls to themselves.
+
+**What to do:** Ask the host, or ask them to let everyone control playback.
+
+### P603: Not available to your account
+
+*HTTP 403.* The title is hidden from you, or above your account's content limit.
+
+**What to do:** Ask an admin about your account's content settings.
+
+### P604: Not everyone can watch that
+
+*HTTP 409.* The title is hidden from, or above the content limit of, someone watching.
+
+**What to do:** Pick something everyone in the party can watch.
+
+### P605: Party is full
+
+*HTTP 409.* A party holds up to 20 people, and a server runs up to 20 parties at once.
+
+**What to do:** Try again when someone leaves or a party ends.

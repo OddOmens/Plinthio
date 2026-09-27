@@ -84,11 +84,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { BookOpen, AlertCircle, Loader2, Lock } from 'lucide-vue-next';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 const username = ref('');
@@ -118,7 +119,9 @@ async function handleSubmit() {
     } else {
       await authStore.login(username.value, password.value);
     }
-    router.push('/');
+    // Only an in-app path ("/party/K7Q2"), never another site.
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '';
+    router.push(/^\/(?!\/)/.test(redirect) ? redirect : '/');
   } catch (err) {
     if (err.response?.data?.code === 'P103') {
       isExpired.value = true;

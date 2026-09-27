@@ -382,6 +382,25 @@
             <Plus class="w-3.5 h-3.5" />
             Add someone
           </button>
+
+          <!-- Watch parties: off unless chosen here or later in Admin -->
+          <label class="flex items-start gap-3 p-3 rounded-xl border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+            <input
+              v-model="form.partyModeEnabled"
+              type="checkbox"
+              class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+            />
+            <div class="flex flex-col gap-0.5">
+              <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <PartyPopper class="w-3.5 h-3.5 text-primary" />
+                Turn on watch parties
+              </span>
+              <span class="text-[12px] text-muted-foreground">
+                Watch a movie or show together from different places, in sync, with chat. Friends outside your
+                home need to be able to reach this server. You can change this anytime in Admin.
+              </span>
+            </div>
+          </label>
         </div>
 
         <!-- STEP 6: Review & Ready -->
@@ -408,9 +427,13 @@
               <span class="text-muted-foreground">Enabled Media</span>
               <span class="font-medium text-foreground capitalize">{{ form.enabledMediaTypes.join(', ') }}</span>
             </div>
-            <div class="flex justify-between items-center py-1">
+            <div class="flex justify-between items-center py-1 border-b border-border/60">
               <span class="text-muted-foreground">Libraries Configured</span>
               <span class="font-medium text-foreground">{{ form.libraries.length }} folder(s)</span>
+            </div>
+            <div class="flex justify-between items-center py-1">
+              <span class="text-muted-foreground">Watch Parties</span>
+              <span class="font-medium text-foreground">{{ form.partyModeEnabled ? 'On' : 'Off' }}</span>
             </div>
           </div>
 
@@ -484,7 +507,8 @@ import {
   ArrowRight, 
   CheckCircle2, 
   AlertCircle, 
-  Loader2 
+  Loader2,
+  PartyPopper
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -535,7 +559,8 @@ const form = reactive({
   confirmPassword: '',
   enabledMediaTypes: ALL_MEDIA_TYPES,
   libraries: [],
-  extraUsers: []
+  extraUsers: [],
+  partyModeEnabled: false
 });
 
 function setTheme(theme) {
@@ -623,7 +648,8 @@ async function completeSetup() {
     // 2. Set server customizations in customization store
     await customizationStore.updateCustomization({
       serverName: form.serverName.trim(),
-      accentTheme: form.accentTheme
+      accentTheme: form.accentTheme,
+      partyModeEnabled: form.partyModeEnabled
     });
 
     // 3. Navigate home

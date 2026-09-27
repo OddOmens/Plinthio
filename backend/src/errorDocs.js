@@ -6,7 +6,8 @@ const SECTIONS = [
   { prefix: 'P2', title: 'Libraries & scanning' },
   { prefix: 'P3', title: 'Playback' },
   { prefix: 'P4', title: 'Metadata providers' },
-  { prefix: 'P5', title: 'Lists & requests' }
+  { prefix: 'P5', title: 'Lists & requests' },
+  { prefix: 'P6', title: 'Watch parties' }
 ];
 
 // Markdown reference for docs/error-codes.md. Generated, so edit src/errors.js instead.

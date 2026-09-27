@@ -5,6 +5,8 @@ import { logger } from '../services/logger.js';
 import { serverError } from '../utils/http.js';
 import { getRatingSettings, saveRatingSettings } from '../services/ratings.js';
 import { getShowMissingFilms, saveShowMissingFilms } from '../services/collections.js';
+import { isPartyModeEnabled, savePartyModeEnabled } from './party.js';
+import { endAllParties } from '../services/party.js';
 
 const router = express.Router();
 
@@ -37,6 +39,8 @@ router.get('/', async (req, res) => {
     config.ratings = await getRatingSettings(db);
     // Whether a movie collection also shows the films the library doesn't have.
     config.showMissingFilms = await getShowMissingFilms(db);
+    // Watch parties — off unless an admin turns them on.
+    config.partyModeEnabled = await isPartyModeEnabled(db);
 
     res.json(config);
   } catch (err) {
@@ -49,7 +53,7 @@ router.get('/', async (req, res) => {
 
 // PATCH /api/customization (Admin only)
 router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
-  const { serverName, customCss, accentTheme, loginMessage, layoutMode, ratings, showMissingFilms } = req.body;
+  const { serverName, customCss, accentTheme, loginMessage, layoutMode, ratings, showMissingFilms, partyModeEnabled } = req.body;
 
   try {
     const db = await getDb();
@@ -111,6 +115,11 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       await saveShowMissingFilms(db, showMissingFilms);
     }
 
+    if (typeof partyModeEnabled === 'boolean') {
+      await savePartyModeEnabled(db, partyModeEnabled);
+      if (!partyModeEnabled) endAllParties();
+    }
+
     logger.info('system', `Customization updated by admin ${req.user.username}`);
 
     const rows = await db.all(`
@@ -135,6 +144,7 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
     }
     result.ratings = await getRatingSettings(db);
     result.showMissingFilms = await getShowMissingFilms(db);
+    result.partyModeEnabled = await isPartyModeEnabled(db);
 
     res.json({ message: 'Customization updated successfully', ...result });
   } catch (err) {
