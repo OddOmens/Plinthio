@@ -1,4 +1,5 @@
-import { fetchTmdbDetails, findTmdbId } from './externalMetadata.js';
+import { getDb } from '../config/database.js';
+import { fetchTmdbDetails, findTmdbId, getTmdbApiKey } from './externalMetadata.js';
 import { cleanSearchTitle, parseMediaTitle } from './titleCleaner.js';
 import { logger } from './logger.js';
 
@@ -8,6 +9,9 @@ import { logger } from './logger.js';
 // is remembered for the same span so an unknown title isn't searched on every open.
 export const CREDIT_TYPES = new Set(['movie', 'show', 'anime']);
 const CREDITS_MAX_AGE_DAYS = 30;
+// A film's credits cached before the collection was recorded count as stale, so the film
+// still gets grouped (json_type is NULL for a missing key, 'null' for a known-empty one).
+const HAS_COLLECTION_FIELD = `(media_type != 'movie' OR credits_json IS NULL OR json_type(credits_json, '$.collection') IS NOT NULL)`;
 
 // Episodes of one show share the show's credits, so opening several at once (or one from
 // two tabs) collapses into a single lookup.
@@ -31,10 +35,10 @@ export async function ensureCredits(db, item) {
   if (!CREDIT_TYPES.has(item.media_type)) return null;
 
   const fresh = await db.get(
-    `SELECT 1 FROM items WHERE id = ? AND credits_checked_at > datetime('now', ?)`,
+    `SELECT 1 FROM items WHERE id = ? AND credits_checked_at > datetime('now', ?) AND ${HAS_COLLECTION_FIELD}`,
     [item.id, `-${CREDITS_MAX_AGE_DAYS} days`]
   );
-  if (fresh) return parse(item.credits_json);
+  if (fresh) return withCollection(db, item, parse(item.credits_json));
 
   const isEpisode = item.media_type !== 'movie' && item.series;
   const key = `${item.media_type}:${isEpisode ? `series:${item.library_id}:${item.series}` : item.id}`;
@@ -86,7 +90,66 @@ export async function ensureCredits(db, item) {
   await inFlight.get(key);
 
   const row = await db.get('SELECT credits_json FROM items WHERE id = ?', [item.id]);
-  return parse(row?.credits_json);
+  return withCollection(db, item, parse(row?.credits_json));
+}
+
+// A film not yet in a collection joins its TMDB one (if the library has two of it).
+async function withCollection(db, item, credits) {
+  if (item.media_type === 'movie' && !item.series && credits?.collection) {
+    await assignCollection(db, item.library_id, credits.collection);
+  }
+  return credits;
+}
+
+/**
+ * Groups a library's films into their TMDB collection ("Shrek Collection") once it holds
+ * at least two of them — a lone film stays a lone film rather than a one-film collection.
+ * Only films with no collection yet are touched, so one set by hand is kept.
+ */
+export async function assignCollection(db, libraryId, collection) {
+  const films = await db.all(
+    `SELECT id, series FROM items
+     WHERE library_id = ? AND media_type = 'movie' AND extra_type IS NULL
+       AND json_extract(credits_json, '$.collection') = ?`,
+    [libraryId, collection]
+  );
+  if (films.length < 2) return;
+  const loose = films.filter((f) => !f.series).map((f) => f.id);
+  if (!loose.length) return;
+  await db.run(
+    `UPDATE items SET series = ?, updated_at = CURRENT_TIMESTAMP WHERE id IN (${loose.map(() => '?').join(', ')})`,
+    [collection, ...loose]
+  );
+  logger.info('metadata', `Grouped ${loose.length} film(s) into "${collection}"`);
+}
+
+// ─── Background backfill ─────────────────────────────────────────────────────
+// Films get their credits (and so their collection) when their page is first opened; this
+// fills in the rest after startup and after each scan, so collections appear on the shelf
+// without opening every film. One lookup at a time, spaced out, and only with a TMDB key.
+const BACKFILL_SPACING_MS = 400;
+let backfillRunning = false;
+
+export async function backfillMovieCredits() {
+  if (backfillRunning) return;
+  backfillRunning = true;
+  try {
+    if (!await getTmdbApiKey()) return;
+    const db = await getDb();
+    const films = await db.all(
+      `SELECT * FROM items WHERE media_type = 'movie' AND extra_type IS NULL
+         AND (credits_checked_at IS NULL OR NOT ${HAS_COLLECTION_FIELD})`
+    );
+    for (const film of films) {
+      await ensureCredits(db, film);
+      await new Promise((resolve) => setTimeout(resolve, BACKFILL_SPACING_MS));
+    }
+    if (films.length) logger.info('metadata', `Looked up credits for ${films.length} film(s)`);
+  } catch (err) {
+    logger.warn('metadata', `Credits backfill stopped: ${err.message}`);
+  } finally {
+    backfillRunning = false;
+  }
 }
 
 /**

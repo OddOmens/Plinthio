@@ -41,6 +41,7 @@ import ratingRoutes from './routes/ratings.js';
 import { warmThumbnailCache } from './services/thumbnails.js';
 import { initBackupScheduler } from './services/backup.js';
 import { initAutoScan } from './services/autoScan.js';
+import { backfillMovieCredits } from './services/credits.js';
 import { sweepHlsCache } from './services/hls.js';
 import { sweepArchiveCache } from './services/archive/sevenZipBackend.js';
 
@@ -266,6 +267,10 @@ async function start() {
     // Pick up new media on its own: a periodic re-scan plus (where the filesystem supports
     // it) a watcher, both configurable under Admin → Server Settings.
     initAutoScan();
+
+    // Films not yet looked up on TMDB: fill in their credits and collections (Shrek 1–4 as
+    // one "Shrek Collection"). Delayed so it doesn't compete with startup.
+    setTimeout(() => backfillMovieCredits().catch(() => {}), 15000);
 
     // Evict stale on-disk HLS segment caches (see HLS_CACHE_MAX_AGE_HOURS) — run once at
     // boot and then hourly, mirroring the backup scheduler's own setInterval pattern.

@@ -10,6 +10,7 @@ import { getThumbnailPath } from './thumbnails.js';
 import { invalidateCoverCache } from '../routes/media.js';
 import { fetchVideoArtwork, isVideoArtworkAvailable } from './artwork.js';
 import { extractVideoFrameCover } from './videoFrame.js';
+import { backfillMovieCredits } from './credits.js';
 import { findCoverInFolder, looksLikeImage } from '../utils/imageFile.js';
 import { parseMediaTitle } from './titleCleaner.js';
 import { classifyExtras } from './extras.js';
@@ -173,12 +174,16 @@ export async function scanLibrary(libraryId) {
       if (existing) {
         await db.run(
           `UPDATE items SET
-            title = ?, author = ?, series = ?, volume = ?, path = ?, cover_path = ?,
+            title = ?, author = ?,
+            -- A film grouped into its TMDB collection keeps it; the file never names one.
+            series = CASE WHEN media_type = 'movie' AND ? IS NULL THEN series ELSE ? END,
+            volume = ?, path = ?, cover_path = ?,
             duration = ?, total_pages = ?, file_size = ?, format = ?, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?`,
           [
             meta.title,
             meta.author,
+            meta.series,
             meta.series,
             meta.volume,
             filePath,
@@ -258,6 +263,8 @@ export async function scanLibrary(libraryId) {
     await db.run('UPDATE libraries SET last_scanned_at = CURRENT_TIMESTAMP WHERE id = ?', [libraryId]);
 
     logger.info('scan', `Scan completed for "${library.name}"`, { added, updated, renamed, removed, artwork, total: files.length });
+    // New films: look up their credits and collection in the background.
+    if (library.type === 'movie' || added) backfillMovieCredits().catch(() => {});
     return { status: 'completed', added, updated, renamed, removed, artwork, total: files.length };
   } finally {
     scanningLibraryIds.delete(libraryId);

@@ -385,6 +385,8 @@ export async function fetchTmdbDetails(tmdbId, mediaType) {
     creators: (data.created_by || []).map((c) => c.name).filter(Boolean),
     // A TV show's airing state ("Returning Series", "Ended"); a movie's is always "Released".
     status: isMovie ? null : (data.status || null),
+    // The film series it belongs to on TMDB ("Shrek Collection"); movies only.
+    collection: isMovie ? (data.belongs_to_collection?.name || null) : null,
     cast,
     crew: crew.slice(0, 20)
   };
