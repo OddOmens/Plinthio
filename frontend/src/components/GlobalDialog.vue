@@ -3,12 +3,12 @@
     <Transition name="dialog-fade">
       <div
         v-if="dialog.isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto"
         @click.self="dialog.showCancel ? dialog.onCancel() : dialog.onConfirm()"
         @keydown.escape="dialog.showCancel ? dialog.onCancel() : dialog.onConfirm()"
       >
         <div
-          class="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl overflow-hidden p-6 animate-in fade-in zoom-in-95 duration-200"
+          class="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl overflow-hidden p-6 my-auto animate-in fade-in zoom-in-95 duration-200"
           role="dialog"
           aria-modal="true"
         >

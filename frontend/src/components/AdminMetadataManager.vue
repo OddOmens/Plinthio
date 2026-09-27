@@ -36,9 +36,9 @@
             : 'bg-card/60 border-border hover:bg-card hover:border-border/80'
         ]"
       >
-        <div class="text-[11px] font-medium text-muted-foreground">Total Media Items</div>
+        <div class="text-[12px] font-medium text-muted-foreground">Total Media Items</div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalAll }}</div>
-        <div class="text-[10px] text-muted-foreground mt-0.5">All indexed content</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">All indexed content</div>
       </div>
 
       <div
@@ -50,12 +50,12 @@
             : 'bg-card/60 border-border hover:bg-card hover:border-border/80'
         ]"
       >
-        <div class="text-[11px] font-medium text-amber-500 flex items-center gap-1.5">
+        <div class="text-[12px] font-medium text-amber-500 flex items-center gap-1.5">
           <AlertTriangle class="w-3.5 h-3.5" />
           Needs Title Cleanup
         </div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalDirty }}</div>
-        <div class="text-[10px] text-muted-foreground mt-0.5">Has release tags or year in title</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">Has release tags or year in title</div>
       </div>
 
       <div
@@ -67,12 +67,12 @@
             : 'bg-card/60 border-border hover:bg-card hover:border-border/80'
         ]"
       >
-        <div class="text-[11px] font-medium text-rose-500 flex items-center gap-1.5">
+        <div class="text-[12px] font-medium text-rose-500 flex items-center gap-1.5">
           <ImageOff class="w-3.5 h-3.5" />
           Missing Artwork
         </div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalMissingCover }}</div>
-        <div class="text-[10px] text-muted-foreground mt-0.5">No poster or cover file</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">No poster or cover file</div>
       </div>
 
       <div
@@ -84,12 +84,12 @@
             : 'bg-card/60 border-border hover:bg-card hover:border-border/80'
         ]"
       >
-        <div class="text-[11px] font-medium text-blue-500 flex items-center gap-1.5">
+        <div class="text-[12px] font-medium text-blue-500 flex items-center gap-1.5">
           <Info class="w-3.5 h-3.5" />
           Missing Overview / Date
         </div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalMissingMeta }}</div>
-        <div class="text-[10px] text-muted-foreground mt-0.5">Needs TMDB synopsis match</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">Needs TMDB synopsis match</div>
       </div>
     </div>
 
@@ -126,25 +126,25 @@
         <div class="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border border-border text-xs">
           <button
             @click="setStatusFilter('all')"
-            :class="['px-2.5 py-1 rounded-md transition text-[11px]', statusFilter === 'all' ? 'bg-card text-foreground font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+            :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'all' ? 'bg-card text-foreground font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
             All
           </button>
           <button
             @click="setStatusFilter('dirty')"
-            :class="['px-2.5 py-1 rounded-md transition text-[11px]', statusFilter === 'dirty' ? 'bg-card text-amber-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+            :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'dirty' ? 'bg-card text-amber-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
             Needs Cleanup
           </button>
           <button
             @click="setStatusFilter('missing_cover')"
-            :class="['px-2.5 py-1 rounded-md transition text-[11px]', statusFilter === 'missing_cover' ? 'bg-card text-rose-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+            :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'missing_cover' ? 'bg-card text-rose-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
             No Poster
           </button>
           <button
             @click="setStatusFilter('missing_meta')"
-            :class="['px-2.5 py-1 rounded-md transition text-[11px]', statusFilter === 'missing_meta' ? 'bg-card text-blue-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+            :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'missing_meta' ? 'bg-card text-blue-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
             No Synopsis
           </button>
@@ -193,7 +193,7 @@
 
       <div class="flex flex-wrap items-center gap-2">
         <!-- Batch Options Toggle -->
-        <label class="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none pr-1">
+        <label class="flex items-center gap-1.5 text-[12px] text-muted-foreground cursor-pointer select-none pr-1">
           <input
             type="checkbox"
             v-model="batchOverwriteCovers"
@@ -202,7 +202,7 @@
           <span>Overwrite Posters</span>
         </label>
 
-        <label class="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none pr-2">
+        <label class="flex items-center gap-1.5 text-[12px] text-muted-foreground cursor-pointer select-none pr-2">
           <input
             type="checkbox"
             v-model="batchUseCanonicalTitle"
@@ -227,22 +227,31 @@
           @click="batchMatchMetadata"
           :disabled="selectedIds.size === 0 || processingBatch"
           class="px-3.5 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition flex items-center gap-1.5 shadow-sm disabled:opacity-40"
-          title="Search TMDB using clean title and year, download posters, and populate synopses"
+          title="Match each selected title against the metadata providers (TMDB, MangaDex, Google Books, Open Library): artwork, synopsis, release date"
         >
           <Sparkles class="w-3.5 h-3.5" />
-          <span>Find & Match TMDB ({{ selectedIds.size }})</span>
+          <span>Find Metadata ({{ selectedIds.size }})</span>
         </button>
       </div>
     </div>
 
     <!-- Active Batch Progress Banner -->
-    <div v-if="processingBatch" class="bg-primary/10 border border-primary/20 rounded-xl p-4 flex flex-col gap-2">
-      <div class="flex items-center justify-between text-xs font-medium text-foreground">
-        <span class="flex items-center gap-2">
-          <Loader2 class="w-4 h-4 animate-spin text-primary" />
-          {{ batchStatusText }}
+    <div v-if="processingBatch" class="bg-primary/10 border border-primary/20 rounded-xl p-4 flex flex-col gap-2" role="status">
+      <div class="flex items-center justify-between gap-3 text-xs font-medium text-foreground">
+        <span class="flex items-center gap-2 min-w-0">
+          <Loader2 class="w-4 h-4 animate-spin text-primary flex-shrink-0" />
+          <span class="truncate">{{ batchStatusText }}</span>
         </span>
-        <span class="font-mono text-muted-foreground">{{ batchPercent }}%</span>
+        <span class="flex items-center gap-2 flex-shrink-0">
+          <span class="font-mono text-muted-foreground">{{ batchPercent }}%</span>
+          <button
+            v-if="batchMatching"
+            type="button"
+            @click="stopBatch = true"
+            :disabled="stopBatch"
+            class="h-7 px-2.5 rounded-md border border-border bg-background hover:bg-muted text-[12px] font-medium disabled:opacity-50"
+          >{{ stopBatch ? 'Stopping…' : 'Stop' }}</button>
+        </span>
       </div>
       <div class="w-full h-1.5 bg-muted rounded-full overflow-hidden">
         <div
@@ -250,6 +259,26 @@
           :style="{ width: `${batchPercent}%` }"
         />
       </div>
+    </div>
+
+    <!-- Last batch result (inline, dismissible — no pop-up to click through) -->
+    <div
+      v-if="batchSummary && !processingBatch"
+      class="rounded-xl border px-4 py-3 flex items-start gap-3 text-xs"
+      :class="batchSummary.matched ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-amber-500/30 bg-amber-500/10'"
+      role="status"
+    >
+      <CheckCircle2 v-if="batchSummary.matched" class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-px" />
+      <AlertTriangle v-else class="w-4 h-4 text-amber-500 flex-shrink-0 mt-px" />
+      <p class="flex-1 text-foreground">
+        <span>Matched <strong>{{ batchSummary.matched }}</strong> of {{ batchSummary.total }}<template v-if="batchSummary.stopped"> before you stopped it</template>.</span>
+        <span v-if="batchSummary.notFound" class="ml-1">{{ batchSummary.notFound }} had no match — they're marked below; try <em>Edit / Search</em> on those.</span>
+        <span v-if="batchSummary.needsKey" class="ml-1">{{ batchSummary.needsKey }} {{ batchSummary.needsKey === 1 ? 'is a video' : 'are videos' }}, which need a TMDB key — add one under <em>Server Config → External Metadata Providers</em> and run it again.</span>
+        <span v-if="batchSummary.failed" class="ml-1">{{ batchSummary.failed }} failed (see the row for why).</span>
+      </p>
+      <button type="button" @click="batchSummary = null" class="text-muted-foreground hover:text-foreground" aria-label="Dismiss">
+        <X class="w-4 h-4" />
+      </button>
     </div>
 
     <!-- Items List / Table -->
@@ -298,7 +327,7 @@
 
               <span
                 v-if="item.cover_source === 'tmdb'"
-                class="absolute bottom-0 inset-x-0 bg-emerald-600/90 text-[8px] font-bold text-white text-center py-0.5 leading-none"
+                class="absolute bottom-0 inset-x-0 bg-emerald-600/90 text-[10px] font-bold text-white text-center py-0.5 leading-none"
               >
                 TMDB
               </span>
@@ -311,17 +340,33 @@
                   {{ item.title }}
                 </span>
 
-                <span v-if="item.detectedYear" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                <span v-if="item.detectedYear" class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                   {{ item.detectedYear }}
                 </span>
 
-                <span v-if="item.isTv" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 font-semibold">
+                <span v-if="item.isTv" class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 font-semibold">
                   TV Episode
                 </span>
               </div>
 
+              <!-- Result of the last auto-match, right on the row -->
+              <p
+                v-if="matchResults[item.id]"
+                class="mt-0.5 text-[12px] font-medium flex items-center gap-1"
+                :class="{
+                  'text-emerald-500': matchResults[item.id].status === 'matched',
+                  'text-amber-500': matchResults[item.id].status === 'none',
+                  'text-destructive': matchResults[item.id].status === 'error'
+                }"
+                role="status"
+              >
+                <CheckCircle2 v-if="matchResults[item.id].status === 'matched'" class="w-3 h-3 flex-shrink-0" />
+                <AlertTriangle v-else class="w-3 h-3 flex-shrink-0" />
+                <span class="truncate">{{ matchResults[item.id].message }}</span>
+              </p>
+
               <!-- Proposed Clean Title preview if dirty -->
-              <div v-if="item.isDirty" class="flex items-center gap-1.5 text-[11px] text-amber-500 mt-0.5 font-medium">
+              <div v-if="item.isDirty" class="flex items-center gap-1.5 text-[12px] text-amber-500 mt-0.5 font-medium">
                 <span>Clean:</span>
                 <span class="text-foreground bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded font-semibold truncate max-w-sm">
                   {{ item.cleanTitle }}
@@ -329,7 +374,7 @@
               </div>
 
               <!-- Original Filename / Path -->
-              <p class="text-[10px] font-mono text-muted-foreground truncate mt-0.5" :title="item.path">
+              <p class="text-[11px] font-mono text-muted-foreground truncate mt-0.5" :title="item.path">
                 {{ item.filename }}
               </p>
             </div>
@@ -338,7 +383,7 @@
           <!-- Middle: Metadata Badges -->
           <div class="flex items-center gap-2 flex-shrink-0 flex-wrap pl-7 md:pl-0">
             <!-- Library Tag -->
-            <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+            <span class="text-[11px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
               {{ item.library_name || item.media_type }}
             </span>
 
@@ -346,7 +391,7 @@
             <span
               v-if="item.hasCover"
               :class="[
-                'text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1 font-medium',
+                'text-[11px] px-1.5 py-0.5 rounded flex items-center gap-1 font-medium',
                 item.cover_source === 'tmdb'
                   ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                   : 'bg-muted text-muted-foreground'
@@ -355,31 +400,31 @@
               <Check class="w-3 h-3" />
               Poster
             </span>
-            <span v-else class="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20 font-medium">
+            <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20 font-medium">
               No Poster
             </span>
 
             <!-- Synopsis badge -->
             <span
               v-if="item.hasDescription"
-              class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1 font-medium"
+              class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1 font-medium"
               :title="item.description"
             >
               <Check class="w-3 h-3" />
               Synopsis
             </span>
-            <span v-else class="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
+            <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
               No Synopsis
             </span>
 
             <!-- Release Date badge -->
             <span
               v-if="item.hasReleaseDate"
-              class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-mono font-medium"
+              class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-mono font-medium"
             >
               {{ item.release_date }}
             </span>
-            <span v-else class="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
+            <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
               No Date
             </span>
           </div>
@@ -390,8 +435,8 @@
             <button
               @click="matchSingle(item)"
               :disabled="matchingIds.has(item.id)"
-              class="px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-[11px] font-medium transition flex items-center gap-1 disabled:opacity-50"
-              title="Automatically match with TMDB and update metadata"
+              class="px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-[12px] font-medium transition flex items-center gap-1 disabled:opacity-50"
+              title="Match against the metadata providers and update this title"
             >
               <Loader2 v-if="matchingIds.has(item.id)" class="w-3 h-3 animate-spin text-primary" />
               <Sparkles v-else class="w-3 h-3 text-primary" />
@@ -401,7 +446,7 @@
             <!-- Manual Edit / Identify Modal Trigger -->
             <button
               @click="openIdentifyModal(item)"
-              class="px-2.5 py-1 rounded-md border border-border hover:bg-muted text-foreground text-[11px] font-medium transition flex items-center gap-1"
+              class="px-2.5 py-1 rounded-md border border-border hover:bg-muted text-foreground text-[12px] font-medium transition flex items-center gap-1"
               title="Search TMDB manually, pick artwork, or customize metadata fields"
             >
               <Pencil class="w-3 h-3 text-muted-foreground" />
@@ -444,7 +489,8 @@ import {
   Book,
   Pencil,
   Loader2,
-  X
+  X,
+  CheckCircle2
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -569,16 +615,21 @@ function toggleSelectItem(id) {
   }
 }
 
-// Single item auto match
-async function matchSingle(item) {
+// ─── Auto match ─────────────────────────────────────────────────────────────
+// Each match reports back on its own row instead of in a pop-up, so several can be started
+// back to back. Batch "Find Metadata" runs the very same single-item match one title at a
+// time from here: one long request for the whole selection used to outlive the API
+// timeout (a real match takes 1–3s) and report failure while the server carried on.
+const matchResults = ref({});
+
+async function performMatch(item) {
   matchingIds.value.add(item.id);
   try {
     const res = await api.post(`/metadata/admin/match-single/${item.id}`, {
-      overwriteCover: true,
-      useCanonicalTitle: true
-    });
+      overwriteCover: batchMatching.value ? batchOverwriteCovers.value : true,
+      useCanonicalTitle: batchMatching.value ? batchUseCanonicalTitle.value : true
+    }, { timeout: 60000 });
 
-    // Update in local list
     const updated = res.data.item;
     const index = items.value.findIndex((i) => i.id === item.id);
     if (index !== -1 && updated) {
@@ -592,22 +643,29 @@ async function matchSingle(item) {
       };
     }
     cacheBuster.value = Date.now();
-
-    dialog.alert({
-      title: 'Item Matched',
-      message: `Successfully matched "${updated?.title || item.title}" from TMDB!`,
-      variant: 'success'
-    });
+    matchResults.value[item.id] = { status: 'matched', message: `Matched as "${updated?.title || item.title}"` };
+    return 'matched';
   } catch (err) {
-    console.error(`Auto match failed for ${item.id}:`, err);
-    dialog.alert({
-      title: 'Auto Match Failed',
-      message: err.response?.data?.error || 'No metadata found. Try "Edit / Search" to identify manually.',
-      variant: 'warning'
-    });
+    const data = err.response?.data || {};
+    if (data.code === 'P400') {
+      // Not a failure of this title — the server has no TMDB key yet.
+      matchResults.value[item.id] = { status: 'none', message: 'Needs a TMDB key — add one in Server Config' };
+      return 'needsKey';
+    }
+    if (err.response?.status === 404) {
+      const why = /No metadata source/.test(data.error || '') ? data.error : 'No match found — try Edit / Search';
+      matchResults.value[item.id] = { status: 'none', message: why };
+      return 'none';
+    }
+    matchResults.value[item.id] = { status: 'error', message: data.error || 'Match failed — try again' };
+    return 'error';
   } finally {
     matchingIds.value.delete(item.id);
   }
+}
+
+function matchSingle(item) {
+  return performMatch(item);
 }
 
 // Batch clean titles
@@ -650,49 +708,51 @@ async function batchCleanTitles() {
   }
 }
 
-// Batch match metadata with TMDB
+// Batch "Find Metadata": one title at a time, with progress and a Stop button.
+const batchMatching = ref(false);
+const stopBatch = ref(false);
+const batchSummary = ref(null);
+
 async function batchMatchMetadata() {
   const ids = Array.from(selectedIds.value);
   if (ids.length === 0) return;
 
   const confirmed = await dialog.confirm({
-    title: `Find Metadata for ${ids.length} Items?`,
-    message: `Plinthio will clean each item's title, extract the release year, search TMDB, download official posters, and populate synopses and release dates.`,
+    title: `Find Metadata for ${ids.length} ${ids.length === 1 ? 'Item' : 'Items'}?`,
+    message: `Each selected title is matched against the metadata providers (TMDB, MangaDex, Google Books, Open Library) and its artwork, synopsis and release date are updated. Results show on each row; you can stop at any time.`,
     confirmText: 'Start Matching'
   });
   if (!confirmed) return;
 
   processingBatch.value = true;
-  batchStatusText.value = `Finding metadata for ${ids.length} items from TMDB...`;
-  batchPercent.value = 25;
+  batchMatching.value = true;
+  stopBatch.value = false;
+  batchSummary.value = null;
+  const counts = { matched: 0, none: 0, error: 0, needsKey: 0 };
+  let done = 0;
 
   try {
-    const res = await api.post('/metadata/admin/batch-match', {
-      itemIds: ids,
-      overwriteCovers: batchOverwriteCovers.value,
-      useCanonicalTitle: batchUseCanonicalTitle.value
-    });
-
-    batchPercent.value = 100;
-    const { matched, skipped, total } = res.data;
-
-    await dialog.alert({
-      title: 'Metadata Matching Complete',
-      message: `Successfully matched ${matched} of ${total} items (${skipped} skipped or not found).`,
-      variant: matched > 0 ? 'success' : 'info'
-    });
-
-    await fetchItems();
-    selectedIds.value.clear();
-  } catch (err) {
-    console.error('Batch match metadata error:', err);
-    dialog.alert({
-      title: 'Batch Match Failed',
-      message: err.response?.data?.error || err.message,
-      variant: 'error'
-    });
+    for (const id of ids) {
+      if (stopBatch.value) break;
+      const item = items.value.find((i) => i.id === id) || { id, title: 'item' };
+      batchStatusText.value = `Matching ${done + 1} of ${ids.length}: ${item.title}`;
+      counts[await performMatch(item)]++;
+      done++;
+      batchPercent.value = Math.round((done / ids.length) * 100);
+      selectedIds.value.delete(id);
+    }
   } finally {
+    batchSummary.value = {
+      total: ids.length,
+      matched: counts.matched,
+      notFound: counts.none,
+      needsKey: counts.needsKey,
+      failed: counts.error,
+      stopped: stopBatch.value && done < ids.length
+    };
     processingBatch.value = false;
+    batchMatching.value = false;
+    batchPercent.value = 0;
   }
 }
 

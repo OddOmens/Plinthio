@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import mime from 'mime-types';
+import { pdfInfo, renderPdfPage } from './pdf.js';
+
+const isPdf = (p) => path.extname(p).toLowerCase() === '.pdf';
 
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif']);
 
@@ -83,9 +86,14 @@ export async function readArchiveEntry(archivePath, entryName) {
 }
 
 /**
- * Sorted image page names from a comic archive (CBZ/ZIP, CBR/RAR, CB7/7z).
+ * Sorted image page names from a comic archive (CBZ/ZIP, CBR/RAR, CB7/7z), or one name per
+ * page of a PDF (rendered on request — see services/pdf.js).
  */
 export async function getMangaPagesList(archivePath) {
+  if (isPdf(archivePath)) {
+    const { pages } = await pdfInfo(archivePath);
+    return Array.from({ length: pages }, (_, i) => `page-${String(i + 1).padStart(4, '0')}.jpg`);
+  }
   const entries = await listArchiveEntries(archivePath);
   return sortedImageEntries(entries).map((entry) => entry.name);
 }
@@ -94,6 +102,18 @@ export async function getMangaPagesList(archivePath) {
  * Extract a single page from a comic archive.
  */
 export async function extractMangaPage(archivePath, pageIndex) {
+  if (isPdf(archivePath)) {
+    const rendered = await renderPdfPage(archivePath, pageIndex);
+    if (!rendered) return null;
+    const { pages } = await pdfInfo(archivePath);
+    return {
+      data: await fs.promises.readFile(rendered),
+      mimeType: 'image/jpeg',
+      pageNumber: pageIndex + 1,
+      totalPages: pages,
+      filename: `page-${pageIndex + 1}.jpg`
+    };
+  }
   const backend = await backendFor(archivePath);
   const pages = sortedImageEntries(await backend.listEntries(archivePath));
 

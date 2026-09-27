@@ -1,6 +1,7 @@
 import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import { serverError } from '../utils/http.js';
 
 const router = express.Router();
 
@@ -34,7 +35,7 @@ router.get('/', async (req, res) => {
     const logs = await db.all(query, params);
     res.json({ logs });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -45,7 +46,7 @@ router.delete('/', async (req, res) => {
     await db.run('DELETE FROM system_logs');
     res.json({ message: 'Logs cleared successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

@@ -48,10 +48,13 @@ function runFfmpeg(args) {
 export async function extractVideoFrameCover(filePath, itemId, durationSeconds = 0) {
   if (!fs.existsSync(filePath)) return null;
 
-  const seekTo = Math.max(
+  let seekTo = Math.max(
     1,
     Math.floor(durationSeconds > 0 ? durationSeconds * GRAB_AT_FRACTION : FALLBACK_SECONDS)
   );
+  // A clip only a second or two long (a teaser, a short extra) would be sought past its
+  // end — take its middle instead.
+  if (durationSeconds > 0 && seekTo >= durationSeconds) seekTo = durationSeconds / 2;
   const coverFilename = `${itemId}.jpg`;
   const finalPath = path.join(config.coversDir, coverFilename);
   // Written aside and renamed into place so a killed ffmpeg can't leave a truncated JPEG
@@ -87,4 +90,77 @@ export async function extractVideoFrameCover(filePath, itemId, durationSeconds =
   }
 
   return coverFilename;
+}
+
+// ─── Episode stills ──────────────────────────────────────────────────────────
+// A show's episodes usually share the show's poster (folder artwork), which makes an
+// episode list a column of identical pictures. A still per episode is grabbed the first
+// time the list asks for it — small (480px, ~25 KB), cached on disk, and never more than
+// two ffmpeg processes at once, so opening a 24-episode season doesn't flood the server.
+const STILL_WIDTH = 480;
+const STILL_AT_FRACTION = 0.3; // past the cold open and title sequence
+const MAX_CONCURRENT_STILLS = 2;
+const stillsDir = path.join(config.cacheDir, 'stills');
+const stillsInFlight = new Map();
+const stillQueue = [];
+let stillsRunning = 0;
+
+function pumpStills() {
+  while (stillsRunning < MAX_CONCURRENT_STILLS && stillQueue.length) {
+    stillsRunning++;
+    stillQueue.shift()().finally(() => {
+      stillsRunning--;
+      pumpStills();
+    });
+  }
+}
+
+function runQueued(task) {
+  return new Promise((resolve) => {
+    stillQueue.push(() => task().then(resolve, () => resolve(null)));
+    pumpStills();
+  });
+}
+
+// Keyed on the file size so replacing the file makes a new still rather than serving the
+// old episode's.
+export function stillPath(item) {
+  return path.join(stillsDir, `${item.id}-${item.file_size || 0}.jpg`);
+}
+
+/**
+ * Returns the path of a still for this video item, grabbing it first if needed, or null
+ * if the file can't be read.
+ */
+export async function getOrCreateStill(item) {
+  const finalPath = stillPath(item);
+  if (fs.existsSync(finalPath)) return finalPath;
+  if (!item.path || !fs.existsSync(item.path)) return null;
+
+  if (!stillsInFlight.has(finalPath)) {
+    stillsInFlight.set(finalPath, runQueued(async () => {
+      fs.mkdirSync(stillsDir, { recursive: true });
+      const duration = item.duration || 0;
+      let seekTo = Math.max(1, Math.floor(duration > 0 ? duration * STILL_AT_FRACTION : 120));
+      if (duration > 0 && seekTo >= duration) seekTo = duration / 2;
+      const tempPath = `${finalPath}.${process.pid}.tmp`;
+      const ok = await runFfmpeg([
+        '-v', 'error',
+        '-ss', String(seekTo),
+        '-i', item.path,
+        '-frames:v', '1',
+        '-vf', `scale=${STILL_WIDTH}:-2`,
+        '-q:v', '6',
+        '-f', 'image2',
+        '-y', tempPath
+      ]);
+      if (!ok || !fs.existsSync(tempPath) || fs.statSync(tempPath).size === 0) {
+        try { fs.unlinkSync(tempPath); } catch (e) { /* nothing to clean up */ }
+        return null;
+      }
+      fs.renameSync(tempPath, finalPath);
+      return finalPath;
+    }).finally(() => stillsInFlight.delete(finalPath)));
+  }
+  return stillsInFlight.get(finalPath);
 }

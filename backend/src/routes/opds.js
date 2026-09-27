@@ -2,11 +2,13 @@ import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { escapeXml } from '../utils/xml.js';
+import { accessSql } from '../services/visibility.js';
 
 const router = express.Router();
 
 const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 const COMIC_MEDIA_TYPES = ['manga', 'book'];
+const PAGED_FORMATS = new Set(['cbz', 'cbr', 'cb7', 'zip', 'rar', '7z', 'pdf']);
 
 /**
  * OPDS readers (Chunky, Panels, Moon+ Reader, KyBook…) authenticate with HTTP Basic, which
@@ -107,7 +109,7 @@ router.get('/library/:libraryId', async (req, res) => {
        FROM items
        WHERE library_id = ? AND series IS NOT NULL AND series != ''
        AND media_type IN (${COMIC_MEDIA_TYPES.map(() => '?').join(',')})
-       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)
+       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)${accessSql(req.user, 'items')}
        GROUP BY series ORDER BY series ASC`,
       [libraryId, ...COMIC_MEDIA_TYPES, req.user.id]
     );
@@ -116,7 +118,7 @@ router.get('/library/:libraryId', async (req, res) => {
       `SELECT * FROM items
        WHERE library_id = ? AND (series IS NULL OR series = '')
        AND media_type IN (${COMIC_MEDIA_TYPES.map(() => '?').join(',')})
-       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)
+       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)${accessSql(req.user, 'items')}
        ORDER BY title ASC`,
       [libraryId, ...COMIC_MEDIA_TYPES, req.user.id]
     );
@@ -151,7 +153,7 @@ router.get('/library/:libraryId/series/:seriesName', async (req, res) => {
     const items = await db.all(
       `SELECT * FROM items
        WHERE library_id = ? AND series = ?
-       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)
+       AND id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)${accessSql(req.user, 'items')}
        ORDER BY volume ASC, title ASC`,
       [libraryId, seriesName, req.user.id]
     );
@@ -172,7 +174,7 @@ router.get('/readlists', async (req, res) => {
   try {
     const db = await getDb();
     const lists = await db.all(
-      "SELECT * FROM collections WHERE user_id = ? AND COALESCE(type, 'collection') = 'readlist' ORDER BY name ASC",
+      "SELECT * FROM collections WHERE user_id = ? AND COALESCE(type, 'collection') = 'readlist' AND COALESCE(category, 'read') = 'read' ORDER BY name ASC",
       [req.user.id]
     );
 
@@ -206,7 +208,7 @@ router.get('/readlists/:id', async (req, res) => {
       SELECT i.* FROM collection_items ci
       JOIN items i ON ci.item_id = i.id
       WHERE ci.collection_id = ?
-      AND i.id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)
+      AND i.id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)${accessSql(req.user, 'i')}
       ORDER BY ci.position ASC, ci.added_at ASC
     `, [req.params.id, req.user.id]);
 
@@ -239,7 +241,9 @@ function acquisitionEntry(req, item) {
 
   links.push(`    <link rel="http://opds-spec.org/acquisition" href="${escapeXml(mediaUrl(req, `/book/${item.id}/file`))}" type="${escapeXml(mimeForFormat(item.format))}"/>`);
 
-  if (item.media_type === 'manga' && item.total_pages > 0) {
+  // Page streaming for anything read page by page: manga, comics shelved as books, and PDFs
+  // (their pages are rendered to images on the server, see services/pdf.js).
+  if (item.total_pages > 0 && (item.media_type === 'manga' || PAGED_FORMATS.has(String(item.format).toLowerCase()))) {
     // {pageNumber} is substituted by the reader. Plinthio's page route is zero-indexed,
     // while OPDS-PSE counts from zero too, so the value passes through unchanged.
     links.push(`    <link rel="http://vaemendis.net/opds-pse/stream" href="${escapeXml(mediaUrl(req, `/manga/${item.id}/page/{pageNumber}`))}" type="image/jpeg" pse:count="${item.total_pages}"/>`);

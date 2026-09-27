@@ -2,6 +2,7 @@ import express from 'express';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireEditor } from '../middleware/auth.js';
+import { serverError } from '../utils/http.js';
 
 const router = express.Router();
 
@@ -29,7 +30,7 @@ router.get('/:libraryId/:seriesName/settings', async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -82,7 +83,7 @@ router.put('/:libraryId/:seriesName/settings', requireEditor, async (req, res) =
 
     res.json({ message: 'Series settings saved', seriesName: renamed ? titleOverride : seriesName });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

@@ -3,9 +3,11 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { getDb } from '../config/database.js';
-import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import { authenticateToken, requireAdmin, requireEditor } from '../middleware/auth.js';
 import { scanLibrary } from '../services/scanner.js';
 import { logger } from '../services/logger.js';
+import { serverError } from '../utils/http.js';
+import { sendError } from '../errors.js';
 
 const router = express.Router();
 
@@ -42,13 +44,17 @@ router.get('/', async (req, res) => {
     const libraries = await db.all(`
       SELECT l.*, COUNT(i.id) as item_count
       FROM libraries l
-      LEFT JOIN items i ON l.id = i.library_id
+      LEFT JOIN items i ON l.id = i.library_id AND i.missing_since IS NULL AND i.extra_type IS NULL
       GROUP BY l.id
       ORDER BY l.name ASC
     `);
+    // Mount paths are server layout; only admins (who manage libraries) need them.
+    if (req.user.role !== 'admin') {
+      for (const lib of libraries) delete lib.path;
+    }
     res.json({ libraries });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -76,7 +82,7 @@ router.get('/browse', requireAdmin, async (req, res) => {
   try {
     res.json(listMediaDirectories(req.query.dir));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -99,8 +105,8 @@ router.post('/', requireAdmin, async (req, res) => {
   const resolvedPath = resolveLibraryPath(libPath);
 
   if (!fs.existsSync(resolvedPath)) {
-    return res.status(400).json({
-      error: `Directory not found: "${libPath}". In Docker, your host database is mounted at "/media" (e.g., "/media/Books" or "/media/Manga").`
+    return sendError(req, res, 'P200', {
+      message: `Directory not found: "${libPath}". In Docker, your media folder is mounted at "/media" (e.g., "/media/Books" or "/media/Manga").`
     });
   }
 
@@ -122,7 +128,25 @@ router.post('/', requireAdmin, async (req, res) => {
       library: { id, name: name.trim(), path: resolvedPath, type }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
+  }
+});
+
+// Library options admins and editors can change. Today: whether it's kids-safe — every
+// title in a kids-safe library is visible to Kids Mode accounts.
+router.patch('/:id', requireEditor, async (req, res) => {
+  const { kidsAllowed } = req.body;
+  if (typeof kidsAllowed !== 'boolean') {
+    return res.status(400).json({ error: 'kidsAllowed must be true or false' });
+  }
+  try {
+    const db = await getDb();
+    const result = await db.run('UPDATE libraries SET kids_allowed = ? WHERE id = ?', [kidsAllowed ? 1 : 0, req.params.id]);
+    if (!result.changes) return res.status(404).json({ error: 'Library not found' });
+    logger.info('library', `Library ${req.params.id} ${kidsAllowed ? 'added to' : 'removed from'} Kids Mode by ${req.user.username}`);
+    res.json({ id: req.params.id, kidsAllowed });
+  } catch (err) {
+    serverError(req, res, err);
   }
 });
 
@@ -132,7 +156,7 @@ router.post('/:id/scan', requireAdmin, async (req, res) => {
     const result = await scanLibrary(req.params.id);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -156,7 +180,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
     res.json({ message: 'Library deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

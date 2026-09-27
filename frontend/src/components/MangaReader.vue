@@ -8,7 +8,7 @@
     <!-- Top Controls — always visible on desktop (hover), auto-hide on touch -->
     <header
       :class="[
-        'absolute top-0 inset-x-0 z-30 transition-all duration-300 bg-gradient-to-b from-black/90 via-black/60 to-transparent pt-safe px-4 pb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3',
+        'absolute top-0 inset-x-0 z-30 transition-all duration-300 bg-gradient-to-b from-black/90 via-black/60 to-transparent pt-safe pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-4 flex flex-col gap-2 sm:flex-row landscape:flex-row sm:items-center landscape:items-center sm:justify-between landscape:justify-between sm:gap-3',
         controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
       ]"
     >
@@ -25,6 +25,7 @@
         <div class="min-w-0 flex-1">
           <h2 class="text-sm font-semibold truncate text-zinc-100">{{ item.title }}</h2>
           <p class="text-xs text-zinc-400 truncate">{{ pageDisplayLabel }}</p>
+          <RatingBar :item="item" tone="dark" compact class="mt-1" />
         </div>
       </div>
 
@@ -44,7 +45,7 @@
         >
           <Bookmark class="w-3.5 h-3.5" />
           <span class="hidden sm:inline">Bookmark</span>
-          <span v-if="bookmarks.length > 0" class="text-[10px] bg-zinc-700 text-zinc-200 px-1 py-0.5 rounded-full font-mono">
+          <span v-if="bookmarks.length > 0" class="text-[11px] bg-zinc-700 text-zinc-200 px-1 py-0.5 rounded-full font-mono">
             {{ bookmarks.length }}
           </span>
         </button>
@@ -170,7 +171,7 @@
         <!-- Zoom level indicator -->
         <div
           v-if="zoomScale > 1.01"
-          class="absolute top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none bg-black/70 text-white text-[11px] font-mono px-2 py-1 rounded-full backdrop-blur-sm"
+          class="absolute top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none bg-black/70 text-white text-[12px] font-mono px-2 py-1 rounded-full backdrop-blur-sm"
         >
           {{ Math.round(zoomScale * 100) }}%
         </div>
@@ -218,7 +219,7 @@
     <!-- Bottom Scrubber -->
     <footer
       :class="[
-        'absolute bottom-0 inset-x-0 z-30 transition-all duration-300 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-safe pt-8 flex flex-col gap-2',
+        'absolute bottom-0 inset-x-0 z-30 transition-all duration-300 bg-gradient-to-t from-black/90 via-black/60 to-transparent pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-safe pt-8 flex flex-col gap-2',
         controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
       ]"
     >
@@ -253,7 +254,7 @@
         class="absolute bottom-20 z-40 left-1/2 -translate-x-1/2 bg-zinc-900/95 border border-primary/50 text-white rounded-2xl px-5 py-3 shadow-2xl backdrop-blur-md flex items-center gap-4 max-w-sm w-[90%] sm:w-auto"
       >
         <div class="flex-1 min-w-0">
-          <p class="text-[11px] uppercase font-bold tracking-wider text-primary">Volume Complete!</p>
+          <p class="text-[12px] uppercase font-bold tracking-wider text-primary">Volume Complete!</p>
           <p class="text-xs font-semibold text-zinc-100 truncate mt-0.5">Next: {{ nextVolume.title }}</p>
         </div>
         <button
@@ -296,7 +297,7 @@
           />
           <button
             @click="createBookmark"
-            class="self-end px-2.5 py-1 rounded bg-zinc-100 text-zinc-900 hover:bg-white font-medium text-[11px] transition"
+            class="self-end px-2.5 py-1 rounded bg-zinc-100 text-zinc-900 hover:bg-white font-medium text-[12px] transition"
           >
             Save
           </button>
@@ -313,13 +314,13 @@
               class="flex-1 text-left hover:text-white transition"
             >
               <span class="font-mono font-bold text-zinc-200">Page {{ Math.floor(bm.position) }}</span>
-              <p v-if="bm.notes" class="text-zinc-400 text-[11px] truncate">{{ bm.notes }}</p>
+              <p v-if="bm.notes" class="text-zinc-400 text-[12px] truncate">{{ bm.notes }}</p>
             </button>
             <button aria-label="Delete bookmark" @click="deleteBookmark(bm.id)" class="p-1 text-zinc-500 hover:text-destructive transition">
               <Trash2 class="w-3 h-3" />
             </button>
           </div>
-          <div v-if="bookmarks.length === 0" class="py-4 text-center text-zinc-500 text-[11px]">
+          <div v-if="bookmarks.length === 0" class="py-4 text-center text-zinc-500 text-[12px]">
             No bookmarks yet.
           </div>
         </div>
@@ -329,10 +330,12 @@
 </template>
 
 <script setup>
+import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
 import { useViewSession } from '../composables/useViewSession';
+import RatingBar from './RatingBar.vue';
 import { ArrowLeft, Loader2, Bookmark, Trash2, X, ChevronLeft, ChevronRight, Square, Columns2, Layers, BookOpen } from 'lucide-vue-next';
 
 const dialog = useDialogStore();
@@ -369,7 +372,7 @@ function goToNextVolume() {
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const readerEl = ref(null);
-const token = localStorage.getItem('plinthio_token') || '';
+const token = getMediaToken() || '';
 const loading = ref(true);
 const totalPages = ref(props.item.total_pages || 0);
 const currentPageIndex = ref(
@@ -378,7 +381,9 @@ const currentPageIndex = ref(
     : (props.item.current_page ? Math.max(0, props.item.current_page - 1) : 0)
 );
 
-const mode = ref('rtl');
+// Manga opens right-to-left; comics and PDFs shelved as books read left-to-right. A series'
+// saved direction (loadSeriesSettings) wins over both.
+const mode = ref(props.item.media_type === 'manga' ? 'rtl' : 'ltr');
 const modes = [
   { id: 'rtl', short: 'RTL', label: 'Right to Left (Japanese Manga)' },
   { id: 'ltr', short: 'LTR', label: 'Left to Right (Comics)' },
@@ -476,8 +481,9 @@ let touchStartY = 0;
 let isTouchDevice = window.matchMedia?.('(pointer: coarse)')?.matches ?? false;
 
 // ─── Pinch-to-zoom & pan (iPad/tablet panel inspection) ───────────────────────
-// Native browser pinch-zoom is disabled site-wide (user-scalable=no), so paged
-// manga/comic pages get their own gesture-driven zoom/pan instead.
+// Paged mode takes over touch entirely (touch-action: none on the gesture layer) so swipes
+// turn pages, which also means native pinch can't reach it — so pages get their own
+// gesture-driven zoom/pan. Webtoon mode scrolls natively and uses browser pinch-zoom.
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
 const zoomScale = ref(1);

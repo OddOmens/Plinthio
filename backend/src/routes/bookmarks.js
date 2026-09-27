@@ -2,6 +2,7 @@ import express from 'express';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { serverError } from '../utils/http.js';
 
 const router = express.Router();
 
@@ -22,7 +23,7 @@ router.get('/:itemId', async (req, res) => {
 
     res.json({ bookmarks });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -49,7 +50,7 @@ router.post('/', async (req, res) => {
     const bookmark = await db.get('SELECT * FROM bookmarks WHERE id = ?', [id]);
     res.status(201).json({ message: 'Bookmark created', bookmark });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -90,7 +91,7 @@ router.patch('/:id', async (req, res) => {
     const bookmark = await db.get('SELECT * FROM bookmarks WHERE id = ?', [id]);
     res.json({ message: 'Bookmark updated', bookmark });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 
@@ -107,7 +108,7 @@ router.delete('/:id', async (req, res) => {
     }
     res.json({ message: 'Bookmark deleted' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(req, res, err);
   }
 });
 

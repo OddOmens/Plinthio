@@ -1,9 +1,17 @@
+# Plinthio — download just this file, then `docker compose up -d`.
+#
+# Updating:  docker compose pull && docker compose up -d
+#   Your database is backed up automatically (to ./config/backups) before a new version
+#   starts, so you can always roll back by pinning the previous tag below.
+#
+# Which updates to take — set PLINTHIO_TAG in a .env file next to this file:
+#   latest  every release (default)
+#   1       new features and fixes, never a breaking 2.0
+#   1.2     bug fixes only for the 1.2 line
+#   1.2.3   exactly this version, never changes
 services:
   plinthio:
-    image: plinthio:latest
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
+    image: ghcr.io/oddomens/plinthio:${PLINTHIO_TAG:-latest}
     container_name: plinthio
     restart: unless-stopped
     ports:
@@ -27,15 +35,23 @@ services:
       # Hardware transcoding is auto-detected. Force or disable it under
       # Admin → Server Settings if detection guesses wrong for your setup.
       # - HLS_CACHE_MAX_AGE_HOURS=24
+      # Admins see a banner when a new release is out. The check is a single anonymous
+      # request to GitHub every 12 hours; set UPDATE_CHECK=false to turn it off.
+      # - UPDATE_CHECK=false
     volumes:
       - ./config:/config
       - ${MEDIA_DIR:-/media/library}:/media
-    # Intel QuickSync / AMD VAAPI hardware transcoding: pass the GPU through.
-    # The iHD VAAPI drivers are already in the image.
-    devices:
-      - /dev/dri:/dev/dri
-    group_add:
-      - "992"  # host 'render' group GID — grants access to /dev/dri/renderD128
+    # Hardware transcoding (optional). Off by default so the file starts anywhere — with
+    # these lines active, `docker compose up` refuses to start on machines without a GPU
+    # device (Macs, most VPSs, some Pis). Without them, video still plays; ffmpeg just
+    # transcodes on the CPU.
+    #
+    # Intel QuickSync / AMD VAAPI: uncomment the four lines below (the drivers are already
+    # in the image). Check your render group's GID with: getent group render
+    # devices:
+    #   - /dev/dri:/dev/dri
+    # group_add:
+    #   - "992"  # host 'render' group GID — grants access to /dev/dri/renderD128
     #
     # NVIDIA NVENC instead: install the NVIDIA Container Toolkit on the host and uncomment:
     # deploy:
