@@ -104,7 +104,7 @@ router.get('/:id/subtitles/:trackId.vtt', authenticateToken, async (req, res) =>
     if (!vtt) return sendError(req, res, 'P307');
 
     res.setHeader('Content-Type', 'text/vtt; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Cache-Control', 'private, max-age=86400');
     res.send(vtt);
   } catch (err) {
     playbackError(req, res, err, 'Could not load subtitles');
@@ -247,7 +247,7 @@ router.get('/:id/hls/:profile/:segmentFile', authenticateToken, async (req, res)
     }
 
     res.setHeader('Content-Type', req.params.segmentFile === 'init.mp4' ? 'video/mp4' : 'video/iso.segment');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
     streamFile(res, segmentPath);
   } catch (err) {
     playbackError(req, res, err, 'Could not load segment');
@@ -295,7 +295,7 @@ router.get('/:id/trickplay/sheet_:sheet.jpg', authenticateToken, async (req, res
     if (!sheetPath) return res.status(404).json({ error: 'Sheet not found' });
 
     res.setHeader('Content-Type', 'image/jpeg');
-    res.setHeader('Cache-Control', 'public, max-age=604800');
+    res.setHeader('Cache-Control', 'private, max-age=604800');
     streamFile(res, sheetPath);
   } catch (err) {
     console.error('[video] trickplay sheet failed:', err);
