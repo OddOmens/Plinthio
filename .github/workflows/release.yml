@@ -1,0 +1,139 @@
+name: Release
+
+# Pushing a version tag (v1.0.0, v1.1.0, v2.0.0-beta.1 …) publishes that version:
+#   1. checks the tag matches package.json and the changelog, runs the tests
+#   2. builds the image for x86-64 and ARM and pushes it to GitHub Container Registry as
+#      :1.1.0, :1.1, :1 and :latest (pre-releases only get their exact tag)
+#   3. creates the GitHub Release with that version's CHANGELOG section as the notes —
+#      which is also what running servers read to show admins "update available".
+# See RELEASING.md for the whole routine.
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  IMAGE: ghcr.io/oddomens/plinthio
+
+jobs:
+  verify:
+    name: Verify & test
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches the code
+        id: version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          for f in package.json backend/package.json frontend/package.json; do
+            PKG=$(node -p "require('./$f').version")
+            if [ "$PKG" != "$VERSION" ]; then
+              echo "::error file=$f::version is $PKG but the tag is $GITHUB_REF_NAME — run: npm run release:version -- $VERSION"
+              exit 1
+            fi
+          done
+          if ! grep -q "^## \[$VERSION\]" CHANGELOG.md; then
+            echo "::error file=CHANGELOG.md::no '## [$VERSION]' section — release notes come from there"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          case "$VERSION" in *-*) echo "prerelease=true" >> "$GITHUB_OUTPUT" ;; *) echo "prerelease=false" >> "$GITHUB_OUTPUT" ;; esac
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Backend tests
+        working-directory: backend
+        run: npm ci && npm test
+
+      - name: Frontend build
+        working-directory: frontend
+        run: npm ci && npm run build
+
+  image:
+    name: Build & publish image
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          # {{major}}.{{minor}} / {{major}} / latest are skipped automatically for pre-releases.
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+          flavor: |
+            latest=${{ needs.verify.outputs.prerelease == 'false' }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: APP_VERSION=${{ needs.verify.outputs.version }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  release:
+    name: GitHub Release
+    needs: [verify, image]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Release notes from CHANGELOG
+        run: |
+          VERSION="${{ needs.verify.outputs.version }}"
+          # Everything under "## [VERSION]" up to the next "## [" heading.
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\[" v "\\]" { on = 1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          cat >> notes.md <<EOF
+
+          ---
+          **Update:** \`docker compose pull && docker compose up -d\` — your database is backed up automatically before the new version starts.
+          **Image:** \`${{ env.IMAGE }}:$VERSION\`
+          EOF
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""
+          [ "${{ needs.verify.outputs.prerelease }}" = "true" ] && FLAGS="--prerelease"
+          gh release create "$GITHUB_REF_NAME" --title "Plinthio $GITHUB_REF_NAME" --notes-file notes.md --verify-tag $FLAGS
