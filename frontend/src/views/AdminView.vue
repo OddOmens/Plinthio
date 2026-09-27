@@ -149,7 +149,7 @@
             :key="lib.id"
             class="bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-colors"
           >
-            <div class="flex items-center gap-3 min-w-0">
+            <div class="flex items-center gap-3 min-w-0 w-full sm:w-auto">
               <div class="w-10 h-10 rounded-lg bg-muted text-foreground flex items-center justify-center flex-shrink-0">
                 <Headphones v-if="lib.type === 'audiobooks'" class="w-5 h-5 text-muted-foreground" />
                 <FileImage v-else-if="lib.type === 'manga'" class="w-5 h-5 text-muted-foreground" />
@@ -157,7 +157,7 @@
               </div>
               <div class="min-w-0">
                 <h3 class="text-xs font-semibold text-foreground truncate">{{ lib.name }}</h3>
-                <p class="text-[12px] text-muted-foreground font-mono truncate mt-0.5">{{ lib.path }}</p>
+                <p class="text-[12px] text-muted-foreground font-mono truncate mt-0.5" :title="lib.path">{{ lib.path }}</p>
                 <div class="flex items-center gap-2 mt-1">
                   <span class="text-[11px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                     {{ lib.type }}
@@ -170,6 +170,19 @@
             </div>
 
             <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                @click="toggleLibraryKids(lib)"
+                :aria-pressed="String(!!lib.kids_allowed)"
+                :class="[
+                  'px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 border',
+                  lib.kids_allowed ? 'bg-sky-500/15 text-sky-500 border-sky-500/40' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border'
+                ]"
+                :title="lib.kids_allowed ? 'Everything in this library is visible to Kids Mode accounts — click to turn off' : 'Make everything in this library visible to Kids Mode accounts'"
+              >
+                <Baby class="w-3.5 h-3.5" />
+                <span>{{ lib.kids_allowed ? 'Kids: On' : 'Kids' }}</span>
+              </button>
               <button
                 @click="triggerScan(lib)"
                 :disabled="scanningId === lib.id"
@@ -191,6 +204,27 @@
           <div v-if="libraries.length === 0" class="text-center py-12 text-xs text-muted-foreground bg-card border border-dashed border-border rounded-xl">
             No media libraries configured yet. Click "Add Library" to point Plinthio at your media folders.
           </div>
+        </div>
+
+        <!-- Kids Mode: single series and titles (whole libraries are switched on above) -->
+        <div class="bg-card border border-border rounded-xl p-4 flex flex-col gap-3">
+          <div>
+            <h3 class="text-xs font-semibold text-foreground flex items-center gap-1.5"><Baby class="w-4 h-4 text-sky-500" /> Kids Mode</h3>
+            <p class="text-[12px] text-muted-foreground mt-0.5">
+              Kids accounts (set in Users → Edit) see only kids libraries plus the series and titles listed here.
+              Add more from any series or title page with its <strong>Kids</strong> button.
+            </p>
+          </div>
+          <ul v-if="kidsTitles.length" class="flex flex-col divide-y divide-border/60">
+            <li v-for="t in kidsTitles" :key="t.id" class="py-2 flex items-center gap-3 text-xs">
+              <span class="flex-1 min-w-0 truncate text-foreground font-medium">{{ t.name }}</span>
+              <span class="text-muted-foreground">{{ t.series ? 'Series' : 'Title' }} · {{ t.library_name }}</span>
+              <button type="button" @click="removeKidsTitle(t)" class="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-muted" :aria-label="`Remove ${t.name} from Kids Mode`">
+                <X class="w-3.5 h-3.5" />
+              </button>
+            </li>
+          </ul>
+          <p v-else class="text-[12px] text-muted-foreground">No single series or titles yet.</p>
         </div>
       </section>
 
@@ -283,6 +317,12 @@
                       <Lock v-if="isUserExpired(u)" class="w-2.5 h-2.5" />
                       <Hourglass v-else class="w-2.5 h-2.5" />
                       <span>{{ getUserExpirationLabel(u) }}</span>
+                    </span>
+                  </template>
+                  <template v-if="u.kids_mode">
+                    <span class="text-muted-foreground/50">&bull;</span>
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-sky-500/15 text-sky-500">
+                      <Baby class="w-2.5 h-2.5" /> Kids
                     </span>
                   </template>
                   <template v-if="u.max_age_rating">
@@ -1495,6 +1535,16 @@
             />
           </div>
 
+          <div v-if="editUser.id !== authStore.user?.id && editUser.role !== 'admin'" class="pt-3 border-t border-border">
+            <label class="flex items-start gap-2 text-xs cursor-pointer">
+              <input v-model="editUser.kidsMode" type="checkbox" class="mt-0.5 accent-primary" />
+              <span>
+                <span class="font-medium text-foreground flex items-center gap-1.5"><Baby class="w-3.5 h-3.5 text-sky-500" /> Kids account</span>
+                <span class="block text-[12px] text-muted-foreground mt-0.5">Only sees kids libraries and the series/titles added to Kids Mode (Libraries tab).</span>
+              </span>
+            </label>
+          </div>
+
           <div v-if="editUser.id !== authStore.user?.id" class="pt-3 border-t border-border">
             <label class="block text-xs font-medium text-foreground mb-1 flex items-center gap-1.5">
               <ShieldCheck class="w-3.5 h-3.5 text-muted-foreground" />
@@ -1653,7 +1703,8 @@ import {
   Lock,
   Hourglass,
   HeartPulse,
-  X
+  X,
+  Baby
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -2394,6 +2445,34 @@ function confirmFolderSelection() {
   showFolderBrowser.value = false;
 }
 
+// ─── Kids Mode ──────────────────────────────────────────────────────────────
+const kidsTitles = ref([]);
+async function loadKids() {
+  try {
+    const res = await api.get('/kids');
+    kidsTitles.value = res.data.titles || [];
+  } catch (err) {
+    kidsTitles.value = [];
+  }
+}
+async function toggleLibraryKids(lib) {
+  const next = !lib.kids_allowed;
+  try {
+    await api.patch(`/libraries/${lib.id}`, { kidsAllowed: next });
+    lib.kids_allowed = next ? 1 : 0;
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not change Kids Mode for this library');
+  }
+}
+async function removeKidsTitle(t) {
+  try {
+    await api.delete(`/kids/titles/${t.id}`);
+    kidsTitles.value = kidsTitles.value.filter((x) => x.id !== t.id);
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not remove it from Kids Mode');
+  }
+}
+
 async function triggerScan(lib) {
   scanningId.value = lib.id;
   try {
@@ -2516,7 +2595,9 @@ function openEditUserModal(user) {
     customExpiry: '',
     currentExpiresAt: user.expires_at,
     maxAgeRating: user.max_age_rating || '',
-    allowUnrated: user.allow_unrated !== 0
+    allowUnrated: user.allow_unrated !== 0,
+    kidsMode: !!user.kids_mode,
+    role: user.role
   };
   showEditUserModal.value = true;
 }
@@ -2535,6 +2616,9 @@ async function submitEditUser() {
       }
       if (editUser.value.allowUnrated !== (target.allow_unrated !== 0)) {
         updates.allowUnrated = editUser.value.allowUnrated;
+      }
+      if (editUser.value.kidsMode !== !!target.kids_mode) {
+        updates.kidsMode = editUser.value.kidsMode;
       }
     }
     if (editUser.value.duration !== 'unchanged') {
@@ -2582,6 +2666,7 @@ async function deleteUser(user) {
 
 onMounted(() => {
   loadData();
+  loadKids();
   startLogPolling();
   if (activeTab.value !== 'libraries') {
     switchTab(activeTab.value);
