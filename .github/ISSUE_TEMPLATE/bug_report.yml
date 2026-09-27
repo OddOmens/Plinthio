@@ -1,0 +1,53 @@
+name: Bug report
+description: Something doesn't work the way it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Check [Troubleshooting](https://github.com/OddOmens/Plinthio/blob/main/docs/troubleshooting.md)
+        and the [error codes](https://github.com/OddOmens/Plinthio/blob/main/docs/error-codes.md) first, since many problems have a known fix.
+        **Security problems:** please report them privately instead (see SECURITY.md).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead. Include any P### error code shown.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plinthio version
+      description: Shown under Admin → Server Config, or at /api/health.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How it's installed
+      options:
+        - Docker Compose (published image)
+        - docker run (published image)
+        - NAS app / UI (Synology, Unraid, TrueNAS, Portainer…)
+        - Built from source
+        - Without Docker (bare metal)
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Server hardware and OS
+      placeholder: "Raspberry Pi 5, Debian 13 / Synology DS920+ / Intel N100 mini PC, Ubuntu 24.04"
+  - type: input
+    id: client
+    attributes:
+      label: Browser or app you saw it in
+      placeholder: "Safari on iPhone (installed app) / Chrome 140 on Windows / Mihon"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Server logs
+      description: "`docker logs plinthio --tail 100`, or Admin → Logs. Remove anything private."
+      render: text

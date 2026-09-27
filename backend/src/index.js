@@ -8,7 +8,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 import { config } from './config/env.js';
-import { getDb } from './config/database.js';
+import { getDb, closeDb } from './config/database.js';
 import { APP_VERSION } from './config/version.js';
 import { backupBeforeUpgrade, recordRunningVersion } from './services/upgrade.js';
 import { initUpdateCheck } from './services/updateCheck.js';
@@ -300,7 +300,7 @@ async function start() {
     sweepCaches();
     setInterval(sweepCaches, 60 * 60 * 1000).unref();
 
-    app.listen(config.port, config.host, () => {
+    const server = app.listen(config.port, config.host, () => {
       console.log(`
 =====================================================
   📚 Plinthio Media Server v${APP_VERSION} is Running!
@@ -311,10 +311,39 @@ async function start() {
 =====================================================
       `);
     });
+    handleShutdown(server);
   } catch (err) {
     console.error('Failed to start Plinthio:', err);
     process.exit(1);
   }
 }
+
+// In the Docker image Node runs as PID 1, which ignores SIGTERM unless it handles it — so
+// without this every `docker stop` / update waited out Docker's 10 s grace period and then
+// SIGKILLed the server mid-write. Stop taking requests, close the database (checkpointing
+// its WAL) and exit; a second signal, or a shutdown that hangs, exits straight away.
+function handleShutdown(server) {
+  let stopping = false;
+  const shutdown = (signal) => {
+    if (stopping) process.exit(1);
+    stopping = true;
+    console.log(`[shutdown] ${signal} received, stopping Plinthio…`);
+    setTimeout(() => process.exit(1), 8000).unref();
+    server.close();
+    // Streams and watch-party connections stay open indefinitely; don't wait on them.
+    server.closeIdleConnections?.();
+    closeDb()
+      .catch((err) => console.error('[shutdown] closing the database failed:', err))
+      .finally(() => process.exit(0));
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+}
+
+// One stray rejected promise (a background job, a fire-and-forget log write) would
+// otherwise take the whole server down for everyone; log it and keep serving.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
 
 start();

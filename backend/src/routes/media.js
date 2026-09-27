@@ -60,7 +60,7 @@ router.get('/still/:id', authenticateToken, async (req, res) => {
     if (!still) return res.status(404).json({ error: 'No still for this video' });
     const etag = `"still-${itemId}-${item.file_size || 0}"`;
     res.setHeader('Content-Type', 'image/jpeg');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
     res.setHeader('ETag', etag);
     if (req.headers['if-none-match'] === etag) return res.status(304).end();
     return res.sendFile(still);
@@ -92,7 +92,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
         const stat = fs.statSync(thumbPath);
         const etag = `"${itemId}-w${width}-${stat.size}"`;
         res.setHeader('Content-Type', 'image/webp');
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
         res.setHeader('ETag', etag);
         if (req.headers['if-none-match'] === etag) return res.status(304).end();
         return res.sendFile(thumbPath);
@@ -115,7 +115,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
           const stat = fs.statSync(coverFullPath);
           const etag = `"${itemId}-raw-${stat.size}"`;
           res.setHeader('Content-Type', 'image/jpeg');
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
           res.setHeader('ETag', etag);
           if (req.headers['if-none-match'] === etag) return res.status(304).end();
           return res.sendFile(coverFullPath);
@@ -127,7 +127,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
           const stat = fs.statSync(thumbPath);
           const etag = `"${itemId}-w${width}-${stat.size}"`;
           res.setHeader('Content-Type', 'image/webp');
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
           res.setHeader('ETag', etag);
           if (req.headers['if-none-match'] === etag) return res.status(304).end();
           return res.sendFile(thumbPath);
@@ -237,7 +237,7 @@ router.get('/manga/:id/page/:pageIndex', authenticateToken, async (req, res) => 
     }
 
     res.setHeader('Content-Type', page.mimeType);
-    res.setHeader('Cache-Control', 'public, max-age=604800'); // Cache for 7 days
+    res.setHeader('Cache-Control', 'private, max-age=604800'); // Cache for 7 days
     res.send(page.data);
   } catch (err) {
     mediaFileError(req, res, err);

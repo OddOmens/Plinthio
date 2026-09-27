@@ -47,7 +47,7 @@ router.get('/:id/avatar', async (req, res) => {
     const etag = `"${id}-${stat.mtimeMs}-${stat.size}"`;
 
     res.setHeader('Content-Type', 'image/webp');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Cache-Control', 'private, max-age=86400');
     res.setHeader('ETag', etag);
 
     if (req.headers['if-none-match'] === etag) {
