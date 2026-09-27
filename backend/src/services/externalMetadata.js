@@ -387,9 +387,36 @@ export async function fetchTmdbDetails(tmdbId, mediaType) {
     status: isMovie ? null : (data.status || null),
     // The film series it belongs to on TMDB ("Shrek Collection"); movies only.
     collection: isMovie ? (data.belongs_to_collection?.name || null) : null,
+    collectionId: isMovie ? (data.belongs_to_collection?.id ? String(data.belongs_to_collection.id) : null) : null,
     cast,
     crew: crew.slice(0, 20)
   };
+}
+
+/**
+ * Every film in a TMDB collection ("Shrek Collection"), released or announced, in release
+ * order — so a collection page can show the ones the library doesn't have.
+ */
+export async function fetchTmdbCollection(collectionId) {
+  const apiKey = await getTmdbApiKey();
+  if (!apiKey) {
+    const err = new Error('TMDB API key is not configured');
+    err.code = 'MISSING_API_KEY';
+    throw err;
+  }
+  const req = tmdbRequest(`https://api.themoviedb.org/3/collection/${encodeURIComponent(collectionId)}`, apiKey);
+  const data = await fetchJson(req.url, req.options);
+  const parts = (data.parts || [])
+    .filter((p) => p.title)
+    .map((p) => ({
+      tmdbId: String(p.id),
+      title: p.title,
+      releaseDate: p.release_date || null,
+      overview: p.overview || null,
+      posterUrl: p.poster_path ? `https://image.tmdb.org/t/p/w342${p.poster_path}` : null
+    }))
+    .sort((a, b) => (a.releaseDate || '9999').localeCompare(b.releaseDate || '9999'));
+  return { id: String(data.id), name: data.name || null, parts };
 }
 
 /**

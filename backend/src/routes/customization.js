@@ -4,6 +4,7 @@ import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { logger } from '../services/logger.js';
 import { serverError } from '../utils/http.js';
 import { getRatingSettings, saveRatingSettings } from '../services/ratings.js';
+import { getShowMissingFilms, saveShowMissingFilms } from '../services/collections.js';
 
 const router = express.Router();
 
@@ -34,6 +35,8 @@ router.get('/', async (req, res) => {
 
     // Which parts of the rating UI are shown (personal stars, server average, TMDB score).
     config.ratings = await getRatingSettings(db);
+    // Whether a movie collection also shows the films the library doesn't have.
+    config.showMissingFilms = await getShowMissingFilms(db);
 
     res.json(config);
   } catch (err) {
@@ -46,7 +49,7 @@ router.get('/', async (req, res) => {
 
 // PATCH /api/customization (Admin only)
 router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
-  const { serverName, customCss, accentTheme, loginMessage, layoutMode, ratings } = req.body;
+  const { serverName, customCss, accentTheme, loginMessage, layoutMode, ratings, showMissingFilms } = req.body;
 
   try {
     const db = await getDb();
@@ -104,6 +107,10 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       await saveRatingSettings(db, ratings);
     }
 
+    if (typeof showMissingFilms === 'boolean') {
+      await saveShowMissingFilms(db, showMissingFilms);
+    }
+
     logger.info('system', `Customization updated by admin ${req.user.username}`);
 
     const rows = await db.all(`
@@ -127,6 +134,7 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       if (row.key === 'layout_mode') result.layoutMode = row.value;
     }
     result.ratings = await getRatingSettings(db);
+    result.showMissingFilms = await getShowMissingFilms(db);
 
     res.json({ message: 'Customization updated successfully', ...result });
   } catch (err) {

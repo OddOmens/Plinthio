@@ -7,6 +7,7 @@ import { shapeItems, shapeItem } from '../services/itemView.js';
 import { ratingSql, isItemHiddenForUser } from '../services/visibility.js';
 import { probeChapters } from '../services/chapters.js';
 import { ensureCredits } from '../services/credits.js';
+import { getFilmCollection } from '../services/collections.js';
 
 // Item ids are always a 32-char hex md5 of the file path (see scanner.js).
 const ITEM_ID_RE = /^[a-f0-9]{32}$/;
@@ -594,6 +595,24 @@ router.get('/:id/credits', async (req, res) => {
       return res.status(404).json({ error: 'Item not found' });
     }
     res.json({ credits: await ensureCredits(db, item) });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// Every film in a movie's TMDB collection — the library's copies and (unless the admin
+// turned it off) the ones it doesn't have. `collection: null` when it isn't in one.
+router.get('/:id/collection', async (req, res) => {
+  if (!ITEM_ID_RE.test(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid item id' });
+  }
+  try {
+    const db = await getDb();
+    const item = await db.get('SELECT * FROM items WHERE id = ?', [req.params.id]);
+    if (!item || await isItemHiddenForUser(db, item.id, req.user)) {
+      return res.status(404).json({ error: 'Item not found' });
+    }
+    res.json({ collection: await getFilmCollection(db, item, req.user) });
   } catch (err) {
     serverError(req, res, err);
   }

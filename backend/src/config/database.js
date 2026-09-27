@@ -221,6 +221,17 @@ async function initSchema(db) {
     // Column already exists
   }
 
+  // TMDB collections (every film in "Shrek Collection", owned or not), cached so a collection
+  // page doesn't ask TMDB each time. Refreshed weekly: announced films get dates and posters.
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS tmdb_collections (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      parts_json TEXT NOT NULL,
+      fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // Media items table
   await db.exec(`
     CREATE TABLE IF NOT EXISTS items (

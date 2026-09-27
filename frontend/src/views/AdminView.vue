@@ -826,6 +826,29 @@
           </div>
         </div>
 
+        <!-- Movie Collections Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Movie Collections</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              How a collection like Shrek or Star Wars is shown on its page and on each film's page. Needs a TMDB API key.
+            </p>
+          </div>
+          <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+            <input
+              type="checkbox"
+              :checked="customizationStore.showMissingFilms"
+              :disabled="savingMissingFilms"
+              @change="toggleShowMissingFilms($event.target)"
+              class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+            />
+            <div class="flex flex-col">
+              <span class="text-xs font-semibold text-foreground">Show missing films in collections</span>
+              <span class="text-[12px] text-muted-foreground">List the films this server doesn't have, with a greyed-out poster and a Request button. They never appear on the Movies shelf.</span>
+            </div>
+          </label>
+        </div>
+
         <!-- Server Branding Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
@@ -1714,6 +1737,20 @@ async function toggleRatingDisplay(key, value) {
     dialog.alert('Failed to save rating settings');
   } finally {
     savingRatings.value = false;
+  }
+}
+
+const savingMissingFilms = ref(false);
+
+async function toggleShowMissingFilms(checkbox) {
+  savingMissingFilms.value = true;
+  try {
+    await customizationStore.updateCustomization({ showMissingFilms: checkbox.checked });
+  } catch (e) {
+    checkbox.checked = !checkbox.checked;
+    dialog.alert('Failed to save the collections setting');
+  } finally {
+    savingMissingFilms.value = false;
   }
 }
 

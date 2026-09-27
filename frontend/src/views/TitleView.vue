@@ -432,7 +432,7 @@
           <div class="flex items-center justify-between gap-3">
             <h2 class="section-title">
               Movies
-              <span class="count-pill">{{ series.volumeCount }}</span>
+              <span class="count-pill">{{ collectionMissingCount ? `${series.volumeCount} of ${collectionRows.length}` : series.volumeCount }}</span>
             </h2>
             <button
               @click="sortAscending = !sortAscending"
@@ -445,73 +445,92 @@
           </div>
 
           <div class="flex flex-col divide-y divide-border/60 rounded-2xl border border-border bg-card/40 overflow-hidden">
-            <div
-              v-for="(film, i) in collectionFilms"
-              :key="film.id"
-              class="group flex gap-3 sm:gap-5 p-3 sm:p-4 hover:bg-muted/30 transition"
-              :class="film.id === series.nextVolume?.id ? 'bg-primary/5' : ''"
-            >
-              <router-link
-                :to="`/title/${film.id}`"
-                class="relative w-20 sm:w-28 aspect-[2/3] self-start rounded-lg overflow-hidden bg-muted border border-border flex-shrink-0"
+            <template v-for="({ kind, film, part, key }, i) in collectionRows" :key="key">
+              <div
+                v-if="kind === 'film'"
+                class="group flex gap-3 sm:gap-5 p-3 sm:p-4 hover:bg-muted/30 transition"
+                :class="film.id === series.nextVolume?.id ? 'bg-primary/5' : ''"
               >
-                <img :src="volumeCoverUrl(film)" :alt="film.title" loading="lazy" class="w-full h-full object-cover" />
-                <span v-if="film.is_finished" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
-                  <Check class="w-3.5 h-3.5 stroke-[3]" />
-                </span>
-                <div v-if="film.progress_percent > 0 && !film.is_finished" class="absolute bottom-0 inset-x-0 h-1.5 bg-black/50">
-                  <div class="h-full bg-primary" :style="{ width: `${film.progress_percent}%` }" />
-                </div>
-              </router-link>
-
-              <div class="flex-1 min-w-0 flex flex-col gap-1.5">
-                <h3 class="text-sm sm:text-base font-semibold text-foreground">
-                  <span class="text-muted-foreground font-mono mr-1">{{ sortAscending ? i + 1 : collectionFilms.length - i }}.</span>
-                  <router-link :to="`/title/${film.id}`" class="hover:underline">{{ film.title }}</router-link>
-                </h3>
-                <p class="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span v-if="yearOf(film)">{{ yearOf(film) }}</span>
-                  <span v-if="film.duration">{{ formatLength(film.duration) }}</span>
-                  <span v-if="film.id === series.nextVolume?.id && !film.is_finished" class="px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-semibold">Up next</span>
-                  <span v-if="film.is_finished" class="text-emerald-500 font-semibold">Watched<template v-if="film.progress_updated_at"> · {{ formatDate(film.progress_updated_at) }}</template></span>
-                  <span v-else-if="hasStarted(film)" class="text-primary font-medium font-mono">{{ positionLabel(film, true) }}</span>
-                  <span v-if="film.user_rating" class="inline-flex items-center gap-0.5 text-foreground font-semibold">
-                    <Star class="w-3.5 h-3.5 text-amber-400 fill-amber-400" />{{ film.user_rating }}
+                <router-link
+                  :to="`/title/${film.id}`"
+                  class="relative w-20 sm:w-28 aspect-[2/3] self-start rounded-lg overflow-hidden bg-muted border border-border flex-shrink-0"
+                >
+                  <img :src="volumeCoverUrl(film)" :alt="film.title" loading="lazy" class="w-full h-full object-cover" />
+                  <span v-if="film.is_finished" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
+                    <Check class="w-3.5 h-3.5 stroke-[3]" />
                   </span>
-                </p>
-                <p v-if="film.description" class="text-sm text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-3">{{ film.description }}</p>
-
-                <div class="mt-auto pt-1 flex items-center gap-1.5">
-                  <button
-                    @click="openVolumeReader(film)"
-                    class="h-8 px-3 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground text-xs font-semibold transition flex items-center gap-1.5"
-                  >
-                    <Play class="w-3.5 h-3.5 fill-current" />
-                    {{ film.is_finished ? 'Watch Again' : (hasStarted(film) ? 'Resume' : 'Play') }}
-                  </button>
-                  <button
-                    @click="toggleVolumeReadStatus(film)"
-                    class="ep-btn"
-                    :title="film.is_finished ? 'Mark as not watched' : 'Mark as watched'"
-                    :aria-label="film.is_finished ? 'Mark as not watched' : 'Mark as watched'"
-                  >
-                    <CheckCircle2 v-if="film.is_finished" class="w-4 h-4 text-emerald-500" />
-                    <Check v-else class="w-4 h-4" />
-                  </button>
-                  <button
-                    v-if="downloads.canDownload(film)"
-                    @click="toggleVolumeDownload(film)"
-                    class="ep-btn"
-                    :title="downloadLabel(film)"
-                    :aria-label="downloadLabel(film)"
-                  >
-                    <CheckCircle2 v-if="downloads.isDownloaded(film.id)" class="w-4 h-4 text-emerald-500" />
-                    <Loader2 v-else-if="downloads.isDownloading(film.id)" class="w-4 h-4 animate-spin" />
-                    <Download v-else class="w-4 h-4" />
-                  </button>
+                  <div v-if="film.progress_percent > 0 && !film.is_finished" class="absolute bottom-0 inset-x-0 h-1.5 bg-black/50">
+                    <div class="h-full bg-primary" :style="{ width: `${film.progress_percent}%` }" />
+                  </div>
+                </router-link>
+                <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+                  <h3 class="text-sm sm:text-base font-semibold text-foreground">
+                    <span class="text-muted-foreground font-mono mr-1">{{ sortAscending ? i + 1 : collectionRows.length - i }}.</span>
+                    <router-link :to="`/title/${film.id}`" class="hover:underline">{{ film.title }}</router-link>
+                  </h3>
+                  <p class="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span v-if="yearOf(film)">{{ yearOf(film) }}</span>
+                    <span v-if="film.duration">{{ formatLength(film.duration) }}</span>
+                    <span v-if="film.id === series.nextVolume?.id && !film.is_finished" class="px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-semibold">Up next</span>
+                    <span v-if="film.is_finished" class="text-emerald-500 font-semibold">Watched<template v-if="film.progress_updated_at"> · {{ formatDate(film.progress_updated_at) }}</template></span>
+                    <span v-else-if="hasStarted(film)" class="text-primary font-medium font-mono">{{ positionLabel(film, true) }}</span>
+                    <span v-if="film.user_rating" class="inline-flex items-center gap-0.5 text-foreground font-semibold">
+                      <Star class="w-3.5 h-3.5 text-amber-400 fill-amber-400" />{{ film.user_rating }}
+                    </span>
+                  </p>
+                  <p v-if="film.description" class="text-sm text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-3">{{ film.description }}</p>
+                  <div class="mt-auto pt-1 flex items-center gap-1.5">
+                    <button
+                      @click="openVolumeReader(film)"
+                      class="h-8 px-3 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground text-xs font-semibold transition flex items-center gap-1.5"
+                    >
+                      <Play class="w-3.5 h-3.5 fill-current" />
+                      {{ film.is_finished ? 'Watch Again' : (hasStarted(film) ? 'Resume' : 'Play') }}
+                    </button>
+                    <button
+                      @click="toggleVolumeReadStatus(film)"
+                      class="ep-btn"
+                      :title="film.is_finished ? 'Mark as not watched' : 'Mark as watched'"
+                      :aria-label="film.is_finished ? 'Mark as not watched' : 'Mark as watched'"
+                    >
+                      <CheckCircle2 v-if="film.is_finished" class="w-4 h-4 text-emerald-500" />
+                      <Check v-else class="w-4 h-4" />
+                    </button>
+                    <button
+                      v-if="downloads.canDownload(film)"
+                      @click="toggleVolumeDownload(film)"
+                      class="ep-btn"
+                      :title="downloadLabel(film)"
+                      :aria-label="downloadLabel(film)"
+                    >
+                      <CheckCircle2 v-if="downloads.isDownloaded(film.id)" class="w-4 h-4 text-emerald-500" />
+                      <Loader2 v-else-if="downloads.isDownloading(film.id)" class="w-4 h-4 animate-spin" />
+                      <Download v-else class="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+                <!-- A film this server doesn't have: greyed out, requestable -->
+                <div v-else class="flex gap-3 sm:gap-5 p-3 sm:p-4">
+                  <div class="relative w-20 sm:w-28 aspect-[2/3] self-start rounded-lg overflow-hidden bg-muted border border-dashed border-border flex-shrink-0">
+                    <img v-if="part.posterUrl" :src="part.posterUrl" :alt="part.title" loading="lazy" class="w-full h-full object-cover grayscale opacity-50" />
+                    <div v-else class="w-full h-full flex items-center justify-center text-2xl font-semibold text-muted-foreground/50">{{ initials(part.title) }}</div>
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+                    <h3 class="text-sm sm:text-base font-semibold text-muted-foreground">
+                      <span class="font-mono mr-1">{{ sortAscending ? i + 1 : collectionRows.length - i }}.</span>{{ part.title }}
+                    </h3>
+                    <p class="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span v-if="part.releaseDate">{{ part.releaseDate.slice(0, 4) }}</span>
+                      <span class="px-1.5 py-0.5 rounded border border-dashed border-muted-foreground/40 font-medium">{{ part.upcoming ? 'Coming soon' : 'Not in library' }}</span>
+                    </p>
+                    <p v-if="part.overview" class="text-sm text-muted-foreground/80 leading-relaxed line-clamp-2 sm:line-clamp-3">{{ part.overview }}</p>
+                    <div class="mt-auto pt-1">
+                      <MissingFilmAction :part="part" />
+                    </div>
+                  </div>
+                </div>
+            </template>
           </div>
         </section>
 
@@ -908,11 +927,12 @@
         </div>
         </section>
 
-        <!-- ─── The rest of a movie's collection (Star Wars…) ───────────────────────── -->
-        <section v-if="collection && collectionSiblings.length" class="flex flex-col gap-4">
+        <!-- ─── The rest of a movie's collection (Star Wars…), owned or not ────────── -->
+        <section v-if="moreInEntries.length" class="flex flex-col gap-4">
           <div class="flex items-center justify-between gap-3">
-            <h2 class="section-title">More in {{ collection.name }}</h2>
+            <h2 class="section-title">More in {{ moreInName }}</h2>
             <router-link
+              v-if="collection"
               :to="{ path: `/series/${encodeURIComponent(collection.name)}`, query: { library: collection.libraryId, type: collection.mediaType } }"
               class="text-sm font-medium text-primary hover:underline flex items-center gap-1 flex-shrink-0"
             >
@@ -921,18 +941,30 @@
             </router-link>
           </div>
           <div class="flex gap-4 overflow-x-auto no-scrollbar -mx-1 px-1 pb-2">
-            <router-link
-              v-for="sib in collectionSiblings"
-              :key="sib.id"
-              :to="`/title/${sib.id}`"
-              class="w-36 sm:w-44 flex-shrink-0 group"
-            >
-              <div class="aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-border group-hover:border-muted-foreground/40 transition">
-                <img :src="volumeCoverUrl(sib)" :alt="sib.title" loading="lazy" class="w-full h-full object-cover" />
+            <template v-for="entry in moreInEntries" :key="entry.key">
+              <router-link v-if="entry.to" :to="entry.to" class="w-36 sm:w-44 flex-shrink-0 group">
+                <div class="aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-border group-hover:border-muted-foreground/40 transition">
+                  <img :src="entry.cover" :alt="entry.title" loading="lazy" class="w-full h-full object-cover" />
+                </div>
+                <p class="mt-2 text-sm font-medium text-foreground line-clamp-2">{{ entry.title }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ entry.year }}<span v-if="entry.finished" class="text-emerald-500 font-semibold"><template v-if="entry.year"> · </template>{{ vocab.done }}</span>
+                </p>
+              </router-link>
+              <!-- A film this server doesn't have -->
+              <div v-else class="w-36 sm:w-44 flex-shrink-0">
+                <div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-dashed border-border">
+                  <img v-if="entry.part.posterUrl" :src="entry.part.posterUrl" :alt="entry.title" loading="lazy" class="w-full h-full object-cover grayscale opacity-50" />
+                  <div v-else class="w-full h-full flex items-center justify-center text-2xl font-semibold text-muted-foreground/50">{{ initials(entry.title) }}</div>
+                  <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-semibold">
+                    {{ entry.part.upcoming ? 'Coming soon' : 'Not in library' }}
+                  </span>
+                </div>
+                <p class="mt-2 text-sm font-medium text-muted-foreground line-clamp-2">{{ entry.title }}</p>
+                <p v-if="entry.year" class="text-xs text-muted-foreground">{{ entry.year }}</p>
+                <div class="mt-1.5"><MissingFilmAction :part="entry.part" compact /></div>
               </div>
-              <p class="mt-2 text-sm font-medium text-foreground line-clamp-2">{{ sib.title }}</p>
-              <p v-if="sib.is_finished" class="text-xs text-emerald-500 font-semibold">{{ vocab.done }}</p>
-            </router-link>
+            </template>
           </div>
         </section>
 
@@ -1127,6 +1159,7 @@ import { downloadKind } from '../stores/downloads';
 const BookmarksModal = defineAsyncComponent(() => import('../components/BookmarksModal.vue'));
 const MetadataSearchModal = defineAsyncComponent(() => import('../components/MetadataSearchModal.vue'));
 import RatingBar from '../components/RatingBar.vue';
+import MissingFilmAction from '../components/MissingFilmAction.vue';
 import { coverUrl as buildCoverUrl, stillUrl } from '../utils/cover';
 import {
   ArrowLeft,
@@ -1193,6 +1226,9 @@ const overviewExpanded = ref(false);
 const credits = ref(null);
 const extrasList = ref([]);
 const collection = ref(null);
+// The film's whole TMDB collection — owned films and (unless the admin turned it off) the
+// ones this server doesn't have. See GET /items/:id/collection.
+const filmCollection = ref(null);
 // In release order, like the collection's own page.
 const collectionSiblings = computed(() =>
   (collection.value?.volumes || [])
@@ -1498,6 +1534,49 @@ const collectionFilms = computed(() => {
   );
   return sortAscending.value ? list : list.reverse();
 });
+
+// The collection page's rows: the library's films plus the ones it doesn't have, in release
+// order. Missing films only join when this is that TMDB collection (not one named by hand).
+const collectionMissing = computed(() => {
+  const fc = filmCollection.value;
+  if (!isMovieCollection.value || !fc || fc.name !== series.value?.name) return [];
+  return fc.parts.filter((p) => !p.itemId);
+});
+const collectionMissingCount = computed(() => collectionMissing.value.length);
+const collectionRows = computed(() => {
+  const rows = [
+    ...collectionFilms.value.map((film) => ({ kind: 'film', film, part: null, key: film.id, date: film.release_date })),
+    ...collectionMissing.value.map((part) => ({ kind: 'missing', film: null, part, key: `tmdb-${part.tmdbId}`, date: part.releaseDate }))
+  ];
+  rows.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
+  return sortAscending.value ? rows : rows.reverse();
+});
+
+// A film page's "More in …" row: the rest of its TMDB collection, owned or not, in release
+// order — or, without TMDB data, the other films the library files under the same series.
+const moreInName = computed(() => filmCollection.value?.name || collection.value?.name || '');
+const moreInEntries = computed(() => {
+  if (!isSingle.value || single.value?.media_type !== 'movie') return [];
+  const selfId = single.value.id;
+  const ownedEntry = (it) => ({
+    key: it.id,
+    title: it.title,
+    year: yearOf(it),
+    to: `/title/${it.id}`,
+    cover: volumeCoverUrl(it),
+    finished: !!it.is_finished
+  });
+  const fc = filmCollection.value;
+  if (fc?.parts?.length) {
+    const known = new Map((collection.value?.volumes || []).map((v) => [v.id, v]));
+    return fc.parts
+      .filter((p) => p.itemId !== selfId)
+      .map((p) => (p.itemId
+        ? { ...ownedEntry(known.get(p.itemId) || { id: p.itemId, title: p.title, release_date: p.releaseDate, cover_path: 'tmdb' }), key: p.itemId }
+        : { key: `tmdb-${p.tmdbId}`, title: p.title, year: p.releaseDate?.slice(0, 4) || null, part: p }));
+  }
+  return collectionSiblings.value.map(ownedEntry);
+});
 // A show's page lists its episodes by season; a lone episode opened on its own doesn't.
 const isEpisodic = computed(() => (mediaType.value === 'show' || mediaType.value === 'anime') && !series.value?.standalone && (series.value?.volumes?.length || 0) > 0);
 
@@ -1730,6 +1809,16 @@ const mediaFacts = computed(() => {
   return facts;
 });
 
+async function loadFilmCollection(itemId) {
+  filmCollection.value = null;
+  try {
+    const res = await api.get(`/items/${itemId}/collection`);
+    if (series.value?.volumes?.some((v) => v.id === itemId)) filmCollection.value = res.data?.collection || null;
+  } catch (e) {
+    // No collection data: the page shows just the library's own films.
+  }
+}
+
 async function loadCredits(itemId) {
   credits.value = null;
   if (!itemId) return;
@@ -1748,6 +1837,7 @@ async function fetchSeriesData() {
   extrasList.value = [];
   collection.value = null;
   credits.value = null;
+  filmCollection.value = null;
   overviewExpanded.value = false;
 
   try {
@@ -1768,6 +1858,7 @@ async function fetchSeriesData() {
       if (vols.length && (type === 'show' || type === 'anime' || (type === 'movie' && vols.length === 1))) {
         loadCredits(vols[0].id);
       }
+      if (type === 'movie' && vols.length) loadFilmCollection(vols[0].id);
     } else if (itemIdParam) {
       // Fetch item first
       const itemRes = await api.get(`/items/${itemIdParam}`);
@@ -1803,6 +1894,7 @@ async function fetchSeriesData() {
         };
         // Its extras, and the collection it's part of (if any), load alongside.
         if (['movie', 'show', 'anime'].includes(item.media_type)) loadCredits(item.id);
+        if (item.media_type === 'movie') loadFilmCollection(item.id);
         api.get(`/items/${item.id}/extras`)
           .then((r) => { if (series.value?.id === item.id) extrasList.value = r.data.extras || []; })
           .catch(() => {});

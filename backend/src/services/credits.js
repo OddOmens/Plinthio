@@ -11,7 +11,7 @@ export const CREDIT_TYPES = new Set(['movie', 'show', 'anime']);
 const CREDITS_MAX_AGE_DAYS = 30;
 // A film's credits cached before the collection was recorded count as stale, so the film
 // still gets grouped (json_type is NULL for a missing key, 'null' for a known-empty one).
-const HAS_COLLECTION_FIELD = `(media_type != 'movie' OR credits_json IS NULL OR json_type(credits_json, '$.collection') IS NOT NULL)`;
+const HAS_COLLECTION_FIELD = `(media_type != 'movie' OR credits_json IS NULL OR json_type(credits_json, '$.collectionId') IS NOT NULL)`;
 
 // Episodes of one show share the show's credits, so opening several at once (or one from
 // two tabs) collapses into a single lookup.

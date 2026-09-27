@@ -10,6 +10,8 @@ export const useCustomizationStore = defineStore('customization', {
     layoutMode: 'topnav',
     // Admin display switches for the rating UI — mirrored from the server, all on by default.
     ratings: { showPersonal: true, showCommunity: true, showExternal: true },
+    // Movie collections also list the films the library doesn't have (greyed, requestable).
+    showMissingFilms: true,
     loading: false
   }),
 
@@ -28,6 +30,7 @@ export const useCustomizationStore = defineStore('customization', {
           this.loginMessage = res.data.loginMessage || '';
           this.layoutMode = res.data.layoutMode || 'topnav';
           if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
+          if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           this.applyToDom();
         }
         return res.data;
@@ -47,6 +50,7 @@ export const useCustomizationStore = defineStore('customization', {
           this.loginMessage = res.data.loginMessage !== undefined ? res.data.loginMessage : this.loginMessage;
           this.layoutMode = res.data.layoutMode || this.layoutMode;
           if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
+          if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           this.applyToDom();
         }
         return res.data;

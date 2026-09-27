@@ -39,11 +39,24 @@ async function seedVideo(dataDir, libraryId) {
   // A show whose credits were cached (on every episode, as ensureCredits stores them).
   await insert(EPISODE_1, 'Pilot', 'show', 'Some Show', { json: JSON.stringify({ ...credits, creators: ['Someone'] }), checked: new Date().toISOString().replace('T', ' ').slice(0, 19) });
   await insert(EPISODE_2, 'Second', 'show', 'Some Show', { json: JSON.stringify({ ...credits, creators: ['Someone'] }), checked: new Date().toISOString().replace('T', ' ').slice(0, 19) });
-  const inCollection = (collection) => ({ json: JSON.stringify({ ...credits, collection }), checked: new Date().toISOString().replace('T', ' ').slice(0, 19) });
+  const inCollection = (collection) => ({ json: JSON.stringify({ ...credits, collection, collectionId: collection === 'Shrek Collection' ? '2150' : '999' }), checked: new Date().toISOString().replace('T', ' ').slice(0, 19) });
   await insert(SHREK_1, 'Shrek', 'movie', null, inCollection('Shrek Collection'));
   await insert(SHREK_2, 'Shrek 2', 'movie', null, inCollection('Shrek Collection'));
   await insert(LONE, 'The Wild Robot', 'movie', null, inCollection('The Wild Robot Collection'));
   await insert(HAND_SET, 'Shrek the Third', 'movie', 'My Ogre Films', inCollection('Shrek Collection'));
+  // A cached TMDB collection, so nothing is fetched: two films the library has (Shrek by
+  // TMDB id, Shrek 2 by title + year), one it doesn't, and one not out yet.
+  await db.run('UPDATE items SET tmdb_id = ?, release_date = ? WHERE id = ?', ['808', '2001-05-18', SHREK_1]);
+  await db.run('UPDATE items SET release_date = ? WHERE id = ?', ['2004-05-19', SHREK_2]);
+  await db.run(
+    "INSERT INTO tmdb_collections (id, name, parts_json) VALUES ('2150', 'Shrek Collection', ?)",
+    [JSON.stringify([
+      { tmdbId: '808', title: 'Shrek', releaseDate: '2001-05-18', overview: null, posterUrl: null },
+      { tmdbId: '809', title: 'Shrek 2', releaseDate: '2004-05-19', overview: null, posterUrl: null },
+      { tmdbId: '810', title: 'Shrek the Third', releaseDate: '2007-05-17', overview: null, posterUrl: 'https://image.tmdb.org/t/p/w342/x.jpg' },
+      { tmdbId: '9999', title: 'Shrek 5', releaseDate: '2099-06-30', overview: null, posterUrl: null }
+    ])]
+  );
   await db.close();
 }
 
@@ -86,6 +99,40 @@ describe('/api/items/:id/credits', () => {
     assert.equal((await item(SHREK_2)).series, 'Shrek Collection');
     assert.equal((await item(LONE)).series, null, 'a lone film is not a one-film collection');
     assert.equal((await item(HAND_SET)).series, 'My Ogre Films', 'a collection set by hand is kept');
+  });
+
+  test('a film\'s collection lists owned and missing films, with request status', async () => {
+    await fetch(`${server.baseUrl}/api/requests`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ mediaType: 'movie', source: 'tmdb', externalId: '810', title: 'Shrek the Third' })
+    });
+    const { status, body } = await getJson(server.baseUrl, `/items/${SHREK_1}/collection`, token);
+    assert.equal(status, 200);
+    assert.equal(body.collection.name, 'Shrek Collection');
+    const parts = Object.fromEntries(body.collection.parts.map((p) => [p.tmdbId, p]));
+    assert.equal(parts['808'].itemId, SHREK_1);
+    assert.equal(parts['809'].itemId, SHREK_2, 'matched by title and year');
+    assert.equal(parts['810'].itemId, null);
+    assert.equal(parts['810'].requestStatus, 'pending');
+    assert.equal(parts['810'].upcoming, false);
+    assert.equal(parts['9999'].upcoming, true);
+  });
+
+  test('the admin can hide missing films', async () => {
+    const patch = await fetch(`${server.baseUrl}/api/customization`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ showMissingFilms: false })
+    });
+    assert.equal((await patch.json()).showMissingFilms, false);
+    const { body } = await getJson(server.baseUrl, `/items/${SHREK_1}/collection`, token);
+    assert.deepEqual(body.collection.parts.map((p) => p.tmdbId), ['808', '809']);
+  });
+
+  test('a film in no collection has none', async () => {
+    const { body } = await getJson(server.baseUrl, `/items/${CACHED}/collection`, token);
+    assert.equal(body.collection, null);
   });
 
   test('rejects malformed ids and 404s unknown ones', async () => {
