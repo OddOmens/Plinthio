@@ -240,6 +240,18 @@
                   <Search class="w-4 h-4 text-muted-foreground" />
                   <span class="hidden sm:inline">Edit Metadata</span>
                 </button>
+                <button
+                  v-if="authStore.isEditor && kidsStatus"
+                  @click="toggleKids"
+                  :disabled="kidsStatus.via === 'library' || (kidsStatus.via === 'series' && series.standalone) || kidsBusy"
+                  :aria-pressed="String(kidsStatus.allowed)"
+                  class="hero-btn disabled:opacity-70"
+                  :class="kidsStatus.allowed ? '!text-sky-500 !border-sky-500/40' : ''"
+                  :title="kidsTitle"
+                >
+                  <Baby class="w-4 h-4" :class="kidsStatus.allowed ? 'text-sky-500' : 'text-muted-foreground'" />
+                  <span class="hidden sm:inline">{{ kidsStatus.allowed ? 'In Kids Mode' : 'Kids' }}</span>
+                </button>
               </div>
 
               <!-- Progress through a series (a single title shows it on the poster) -->
@@ -1207,7 +1219,8 @@ import {
   Clapperboard,
   Users,
   Info,
-  PartyPopper
+  PartyPopper,
+  Baby
 } from 'lucide-vue-next';
 import { useDownloadsStore } from '../stores/downloads';
 
@@ -2222,6 +2235,53 @@ function formatFileSize(bytes) {
 watch(() => [route.params.seriesName, route.params.id], () => {
   fetchSeriesData();
 });
+
+// ─── Kids Mode (editors) ─────────────────────────────────────────────────────
+// A series is added as a whole; a standalone title on its own.
+const kidsStatus = ref(null);
+const kidsBusy = ref(false);
+function kidsTarget() {
+  const s = series.value;
+  if (!s) return null;
+  if (s.standalone) return { itemId: s.id };
+  const libraryId = s.libraryId || s.volumes?.[0]?.library_id;
+  return libraryId ? { libraryId, series: s.name } : null;
+}
+async function loadKidsStatus() {
+  kidsStatus.value = null;
+  const target = kidsTarget();
+  if (!authStore.isEditor || !target) return;
+  try {
+    const params = target.itemId ? { itemId: target.itemId } : { library: target.libraryId, series: target.series };
+    const res = await api.get('/kids/status', { params });
+    kidsStatus.value = res.data;
+  } catch (err) {
+    kidsStatus.value = null;
+  }
+}
+const kidsTitle = computed(() => {
+  const st = kidsStatus.value;
+  if (!st) return '';
+  if (st.via === 'library') return 'Its whole library is in Kids Mode (change that in Admin → Libraries)';
+  if (st.via === 'series' && series.value?.standalone) return 'Its series is in Kids Mode — change it on the series page';
+  return st.allowed ? 'Kids accounts can see this — click to remove it from Kids Mode' : 'Let Kids Mode accounts see this';
+});
+async function toggleKids() {
+  const target = kidsTarget();
+  const st = kidsStatus.value;
+  if (!target || !st || st.via === 'library') return;
+  kidsBusy.value = true;
+  try {
+    if (st.allowed && st.entryId) await api.delete(`/kids/titles/${st.entryId}`);
+    else await api.post('/kids/titles', target);
+    await loadKidsStatus();
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not change Kids Mode');
+  } finally {
+    kidsBusy.value = false;
+  }
+}
+watch(() => [series.value?.id, series.value?.name, series.value?.libraryId], loadKidsStatus);
 
 onMounted(() => {
   fetchSeriesData();

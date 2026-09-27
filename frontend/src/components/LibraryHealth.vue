@@ -87,8 +87,18 @@
         id="health-missing"
         title="Missing files"
         :count="report.summary.missingFiles"
-        hint="In the catalog but gone from disk. A rescan of the library removes them (reading progress re-attaches if the file comes back)."
+        hint="Gone from disk. They're kept (hidden from everyone) so a drive that's briefly unavailable doesn't cost anyone their progress, and they come back on their own if the files return. Remove them for good once you're sure."
       >
+        <template #action>
+          <button
+            type="button"
+            @click="removeMissing"
+            :disabled="removingMissing"
+            class="h-8 px-3 rounded-lg border border-destructive/40 text-destructive text-xs font-medium hover:bg-destructive/10 transition disabled:opacity-50"
+          >
+            {{ removingMissing ? 'Removing…' : 'Remove from catalog' }}
+          </button>
+        </template>
         <ItemRow v-for="item in report.missingFiles" :key="item.id" :item="item" show-path />
       </HealthSection>
 
@@ -205,6 +215,28 @@ async function load() {
     error.value = err.response?.data?.error || 'Could not run the health check';
   } finally {
     loading.value = false;
+  }
+}
+
+const removingMissing = ref(false);
+async function removeMissing() {
+  const count = report.value?.summary?.missingFiles || 0;
+  const ok = await dialog.confirm({
+    title: 'Remove missing titles?',
+    message: `Remove ${count} missing ${count === 1 ? 'title' : 'titles'} from the catalog for good? Anything whose file has come back is kept. Reading progress and ratings are kept too, and re-attach if the same files are ever scanned again.`,
+    confirmText: 'Remove',
+    danger: true
+  });
+  if (!ok) return;
+  removingMissing.value = true;
+  try {
+    const res = await api.post('/admin/health/remove-missing', {});
+    dialog.alert(`Removed ${res.data.removed} ${res.data.removed === 1 ? 'title' : 'titles'}${res.data.skipped ? ` (${res.data.skipped} kept — their files are back)` : ''}.`);
+    await load();
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not remove missing titles');
+  } finally {
+    removingMissing.value = false;
   }
 }
 

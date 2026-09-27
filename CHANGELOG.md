@@ -33,11 +33,13 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - Multi-architecture images (x86-64 and ARM) published to `ghcr.io/oddomens/plinthio`.
 - **Watch parties**: watch a movie or show together with people in other places, in sync. Start one with **Watch Together** on any movie or show and share the invite link (or its six-letter code) with anyone who has an account on the server. Play, pause and seeking stay in step for everyone; if someone's connection stalls, the party waits for them; the next episode starts for everyone together. The host decides whether only they or everyone controls playback, and can end the party for all. Includes a member list and chat. Content limits still apply — nobody can join, or be moved to, something their account can't open. Off by default: turn on under Admin → Server Config → Watch Parties, or while setting up a new server. Friends outside your home network need to be able to reach the server.
 - Signing in now returns you to the page you were trying to open (an invite link, say) instead of the home page.
+- **Kids Mode**: mark an account as a kids account (Admin → Users → Edit) and it sees only what an admin or editor has made kids-safe — whole libraries (the **Kids** button on each library in Admin → Libraries) or single series and titles (the **Kids** button on their page). Everything else is hidden everywhere: shelves, search, Continue, lists, direct links, files, watch parties and sync apps. Admin → Libraries lists the series and titles in Kids Mode. Admins can't be kids accounts; the content limit still applies on top.
 
 ### Changed
 - Media links now use a short-lived, media-only token; the session token is never put in a URL.
 - A Content-Security-Policy is enabled by default (set `CSP=off` or `CSP=report-only` to diagnose).
 - Faster first load: readers, players and admin pages load on demand (main bundle 1.2 MB → 275 KB).
+- **Missing files are kept until an admin removes them**, for every media type. A title whose file disappears (a drive that didn't mount, a folder being reorganised) is hidden from everyone but keeps its progress, ratings, bookmarks and list entries, and comes back by itself when the file returns. Admin → Health lists them with a **Remove from catalog** button. Previously a rescan deleted them straight away.
 - Pinch-zoom is allowed across the app; the paged manga reader keeps its own zoom and pan.
 - The Google Cast SDK only loads in Chromium browsers, and only when a video is opened.
 - Server errors and absolute file paths are only shown to admins.
