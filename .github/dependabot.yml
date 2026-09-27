@@ -1,0 +1,34 @@
+# Keeps dependencies patched: a pull request when a new version (or a security fix) is out.
+# Minor and patch updates are grouped into one PR per ecosystem so they're quick to review;
+# majors come one at a time. CI runs on each.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /backend
+    schedule:
+      interval: weekly
+    groups:
+      backend-minor:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    groups:
+      frontend-minor:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directory: /docker
+    schedule:
+      interval: weekly
+    ignore:
+      # Node majors (and odd, non-LTS ones in particular) are moved by hand.
+      - dependency-name: node
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

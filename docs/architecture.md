@@ -10,7 +10,7 @@ ffmpeg, ffprobe and poppler are called as child processes. No other services are
 no Redis, no queue, no separate transcoder.
 
 ```text
-backend/            Express API and media engine (ES modules, Node 20)
+backend/            Express API and media engine (ES modules, Node 24)
   src/index.js      App setup: security headers, CSP, rate limits, route mounting, static frontend
   src/config/       env.js (settings from the environment), database.js (schema + migrations), version.js
   src/middleware/   auth.js — tokens, API keys, role checks

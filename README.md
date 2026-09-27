@@ -4,7 +4,8 @@
 
 [![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/License-PolyForm%20Noncommercial%201.0.0-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker/docker-compose.yml)
-[![Node.js](https://img.shields.io/badge/Node.js-v20-green?logo=node.js)](https://nodejs.org)
+[![Node.js](https://img.shields.io/badge/Node.js-v24-green?logo=node.js)](https://nodejs.org)
+[![Release](https://img.shields.io/github/v/release/OddOmens/Plinthio)](https://github.com/OddOmens/Plinthio/releases/latest)
 [![Vue 3](https://img.shields.io/badge/Vue.js-3.5-4FC08D?logo=vuedotjs&logoColor=white)](https://vuejs.org)
 
 Plinthio was born out of frustration with fragmented media servers: having to run one server for audiobooks, another for comics, another for video, while juggling multiple third-party mobile apps with paywalls.
@@ -81,8 +82,15 @@ Plinthio is built for trusted-network self-hosting (your home, and people you in
 
 ## 🚀 Install (Docker)
 
-You only need Docker — no need to clone the repo. Images are published for x86-64 and ARM
-(Raspberry Pi 4/5, Apple Silicon, most NAS boxes).
+You only need Docker, no need to clone the repo. The image is
+`ghcr.io/oddomens/plinthio`, published for x86-64 and ARM (Raspberry Pi 4/5, Apple Silicon,
+most NAS boxes).
+
+**1. Install Docker** if you don't have it: [Docker Engine](https://docs.docker.com/engine/install/)
+on Linux (it includes `docker compose`), or [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+on macOS and Windows. Synology, Unraid, TrueNAS and similar have Docker in their app centres.
+
+**2. Get the compose file and start Plinthio:**
 
 ```bash
 mkdir plinthio && cd plinthio
@@ -90,11 +98,45 @@ curl -fsSLO https://raw.githubusercontent.com/OddOmens/Plinthio/main/docker/dock
 MEDIA_DIR=/path/to/your/media docker compose up -d
 ```
 
-Open `http://<your-server-ip>:8088`, run the setup wizard to create your admin account and
-add your media folders. On a phone, use **Add to Home Screen** to install the app.
+**3. Open `http://<your-server-ip>:8088`** and follow the setup wizard: it creates your admin
+account and adds your media folders (they appear under `/media`). On a phone, use
+**Add to Home Screen** to install the app.
 
-Settings like `MEDIA_DIR`, `TZ` or the port binding can live in a `.env` file next to
-`docker-compose.yml` instead of on the command line — see the comments in that file.
+Settings can live in a `.env` file next to `docker-compose.yml` instead of on the command line:
+
+```ini
+# The folder holding your media, and your time zone
+MEDIA_DIR=/srv/media
+TZ=Europe/London
+# Owner of ./config (run `id` to see yours)
+PUID=1000
+PGID=1000
+# Which updates to take, see Updating below
+PLINTHIO_TAG=1
+```
+
+The database, covers and caches go in `./config`. Plinthio only reads your media folders; it
+never writes to them.
+
+<details>
+<summary><b>Without Compose</b> (<code>docker run</code>)</summary>
+
+```bash
+docker run -d --name plinthio --restart unless-stopped \
+  -p 8088:8080 \
+  -e TZ=Europe/London \
+  -v "$PWD/config:/config" \
+  -v /path/to/your/media:/media \
+  ghcr.io/oddomens/plinthio:latest
+```
+
+To update: `docker pull ghcr.io/oddomens/plinthio:latest`, then `docker rm -f plinthio` and
+run the same command again. Your data stays in `./config`.
+</details>
+
+More: hardware transcoding, several media folders, remote access over HTTPS and installing
+without Docker are all in [docs/setup.md](docs/setup.md). If something goes wrong,
+see [docs/troubleshooting.md](docs/troubleshooting.md).
 
 ## ⬆️ Updating
 
@@ -145,7 +187,7 @@ docker compose -f docker/docker-compose.yml -f docker/docker-compose.build.yml u
 
 ## 🛠️ Development
 
-You need Node.js 20+, **ffmpeg/ffprobe** (video) and **poppler** (`pdfinfo`/`pdftoppm`, PDFs):
+You need Node.js 24 (20.17 or newer works), **ffmpeg/ffprobe** (video) and **poppler** (`pdfinfo`/`pdftoppm`, PDFs):
 
 ```bash
 sudo apt install ffmpeg poppler-utils     # Debian/Ubuntu

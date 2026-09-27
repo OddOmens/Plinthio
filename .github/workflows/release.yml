@@ -49,14 +49,14 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: |
             backend/package-lock.json
             frontend/package-lock.json
 
-      - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Install ffmpeg and poppler
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg poppler-utils
 
       - name: Backend tests
         working-directory: backend
@@ -126,8 +126,9 @@ jobs:
           cat >> notes.md <<EOF
 
           ---
+          **New install:** download [\`docker-compose.yml\`](https://raw.githubusercontent.com/${{ github.repository }}/$GITHUB_REF_NAME/docker/docker-compose.yml) and run \`MEDIA_DIR=/path/to/your/media docker compose up -d\`, then open \`http://<server>:8088\`. Full steps: [Install](https://github.com/${{ github.repository }}#-install-docker) · [docs/setup.md](https://github.com/${{ github.repository }}/blob/$GITHUB_REF_NAME/docs/setup.md)
           **Update:** \`docker compose pull && docker compose up -d\` — your database is backed up automatically before the new version starts.
-          **Image:** \`${{ env.IMAGE }}:$VERSION\`
+          **Image:** \`${{ env.IMAGE }}:$VERSION\` (x86-64 and ARM64)
           EOF
 
       - name: Publish release

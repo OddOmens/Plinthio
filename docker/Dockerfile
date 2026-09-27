@@ -1,7 +1,7 @@
 # ==========================================
 # Stage 1: Build Frontend
 # ==========================================
-FROM node:20-slim AS frontend-builder
+FROM node:24-trixie-slim AS frontend-builder
 WORKDIR /app/frontend
 
 COPY frontend/package*.json ./
@@ -13,7 +13,7 @@ RUN npm run build
 # ==========================================
 # Stage 2: Production Server
 # ==========================================
-FROM node:20-slim AS runner
+FROM node:24-trixie-slim AS runner
 WORKDIR /app
 
 # Set by `docker buildx` per platform, and by the release workflow for the version.
@@ -56,7 +56,7 @@ ENV NODE_ENV=production \
 
 WORKDIR /app/backend
 COPY backend/package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev && npm cache clean --force
 
 COPY backend/ ./
 COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist

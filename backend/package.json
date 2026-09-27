@@ -4,15 +4,18 @@
   "type": "module",
   "description": "Plinthio API and streaming server",
   "main": "src/index.js",
+  "engines": {
+    "node": ">=20.17.0"
+  },
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "node --test --test-concurrency=1 test/",
+    "test": "node --test --test-concurrency=1 test/*.test.js",
     "docs:errors": "node scripts/gen-error-docs.js"
   },
   "dependencies": {
     "7zip-min": "^1.4.4",
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.1",
     "bcryptjs": "^2.4.3",
     "compression": "^1.8.2",
     "cors": "^2.8.5",
@@ -24,11 +27,11 @@
     "mime-types": "^2.1.35",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
-    "music-metadata": "^7.14.0",
+    "music-metadata": "^11.16.1",
     "node-unrar-js": "^2.0.2",
     "sharp": "^0.35.4",
     "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^6.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"

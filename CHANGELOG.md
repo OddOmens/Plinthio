@@ -9,7 +9,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-09-25
+## [1.0.0] - 2026-09-27
 
 ### Added
 - **Offline downloads** for books, comics/manga and audiobooks, with a Downloads page that works with no connection. Progress made offline syncs when you're back online.
@@ -52,9 +52,19 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - Server errors and absolute file paths are only shown to admins.
 - Same-named series in different libraries or media types are kept separate.
 - Install is pull-based: `docker/docker-compose.yml` uses the published image; building from source moved to `docker/docker-compose.build.yml`.
+- The Docker image runs on **Node.js 24 LTS and Debian 13** (was Node.js 20, which no longer gets security fixes).
+- `docker stop` and updates stop Plinthio cleanly in about a second (database closed properly) instead of waiting 10 seconds and force-killing it.
+- Starting the container no longer re-owns every cached file in `config/`, which slowed each start on big libraries. The container also runs as a fixed user (`user:` / `--user`) when you set one; otherwise `PUID`/`PGID` apply as before.
+- Covers, pages and other media are cached only by your browser, never by a shared proxy in between.
 - GPU passthrough (`/dev/dri`) is now opt-in in `docker-compose.yml`, so the default file starts on machines without a GPU. **Intel/AMD hardware transcoding users: uncomment the `devices:`/`group_add:` lines when upgrading.**
 
+### Security
+- Updated libraries with published vulnerabilities: a crafted comic archive could exhaust the server's memory, a malformed audio file could hang a library scan, and the EPUB reader's XML parser had injection and denial-of-service bugs.
+- The setup wizard can't be completed twice at once: two people submitting it at the same moment could otherwise both create an admin account.
+
 ### Fixed
+- Setup no longer fails part-way (admin created, the rest missing) when two extra accounts in the wizard share a name; the repeat is skipped.
+- A server error that nothing was waiting for could stop the whole server; it's now logged and the server keeps running.
 - WebM videos play directly again instead of always being remuxed (the file type check didn't recognise how WebM files report themselves).
 - EPUB books failed to open.
 - Saving metadata from the shelf erased description, themes, publisher and status.

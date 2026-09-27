@@ -14,7 +14,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
@@ -39,7 +39,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -62,3 +62,32 @@ jobs:
       # change rather than finding out at release time.
       - name: Build image
         run: docker build -f docker/Dockerfile -t plinthio:ci .
+
+      # Building isn't enough: a native module built for a newer glibc than the base image
+      # has builds fine and then crashes on start. Boot it the way users do and wait for
+      # the health check.
+      - name: Start image and wait for it to be healthy
+        run: |
+          mkdir -p "$RUNNER_TEMP/config" "$RUNNER_TEMP/media"
+          docker run -d --name plinthio -p 8088:8080 \
+            -v "$RUNNER_TEMP/config:/config" -v "$RUNNER_TEMP/media:/media" plinthio:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8088/api/health; then
+              echo
+              curl -fsS http://127.0.0.1:8088/ | grep -q '<div id="app"' || { echo "web app not served"; exit 1; }
+              echo "web app served"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs plinthio
+          exit 1
+
+      - name: Stops cleanly on SIGTERM
+        run: |
+          start=$(date +%s)
+          docker stop -t 30 plinthio
+          took=$(( $(date +%s) - start ))
+          echo "stopped in ${took}s"
+          docker logs plinthio 2>&1 | tail -5
+          [ "$took" -lt 10 ]

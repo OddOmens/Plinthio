@@ -29,8 +29,31 @@ line:
 ```ini
 MEDIA_DIR=/srv/media
 TZ=Europe/London
+PUID=1000
+PGID=1000
 PLINTHIO_TAG=1
 ```
+
+### Without Compose
+
+The same thing as a single `docker run`:
+
+```bash
+docker run -d --name plinthio --restart unless-stopped \
+  -p 8088:8080 \
+  -e TZ=Europe/London \
+  -v "$PWD/config:/config" \
+  -v /path/to/your/media:/media \
+  ghcr.io/oddomens/plinthio:latest
+```
+
+To update, `docker pull ghcr.io/oddomens/plinthio:latest`, remove the container
+(`docker rm -f plinthio`) and run the command again. Everything that matters is in `./config`.
+
+On NAS systems with a Docker UI (Synology Container Manager, Unraid, TrueNAS, Portainer), create
+a container from `ghcr.io/oddomens/plinthio` with the same settings: container port `8080`
+published on a host port of your choice, a folder mapped to `/config`, your media mapped to
+`/media`, and optionally `TZ`, `PUID` and `PGID`.
 
 ### What the compose file sets up
 
@@ -53,7 +76,7 @@ Inside `/config`:
 | `cache/` | Thumbnails, HLS segments, trickplay sheets, episode stills, rendered PDF pages | Yes, it all regenerates |
 
 Files in `/config` are owned by user and group `1000:1000` by default. Set `PUID` and `PGID`
-in the compose `environment:` to match your host user if needed.
+(in `.env`, or the compose `environment:`) to match your host user if needed.
 
 To use several media folders, mount each one and add each as a library in the app:
 
@@ -181,7 +204,7 @@ docker compose -f docker/docker-compose.yml -f docker/docker-compose.build.yml u
 
 Supported for development, and it works for installs too. You need:
 
-- Node.js 20 or newer
+- Node.js 24 (20.17 or newer works)
 - `ffmpeg` and `ffprobe` for all video: probing, remuxing, transcoding, subtitles, trickplay,
   episode stills and video covers. Without them video that needs converting fails with P303.
 - `pdfinfo` and `pdftoppm` (poppler) for PDFs. Without them PDFs fail with P308.

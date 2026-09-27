@@ -3,27 +3,47 @@ import { open } from 'sqlite';
 import { config } from './env.js';
 import { ALL_MEDIA_TYPES } from './mediaTypes.js';
 
-let dbInstance = null;
+let dbPromise = null;
 
-export async function getDb() {
-  if (dbInstance) return dbInstance;
+// The opening promise is what's cached, not the handle: two callers arriving before the
+// first open finished would otherwise each open a connection and run the migrations
+// concurrently against the same file.
+export function getDb() {
+  if (!dbPromise) {
+    dbPromise = openDb().catch((err) => {
+      dbPromise = null;
+      throw err;
+    });
+  }
+  return dbPromise;
+}
 
-  dbInstance = await open({
+// For shutdown: waits for the connection (if one was ever opened) and closes it, which
+// checkpoints the WAL back into the main database file.
+export async function closeDb() {
+  if (!dbPromise) return;
+  const db = await dbPromise.catch(() => null);
+  dbPromise = null;
+  if (db) await db.close();
+}
+
+async function openDb() {
+  const db = await open({
     filename: config.dbPath,
     driver: sqlite3.Database
   });
 
   // Enable foreign keys & WAL mode for performance
-  await dbInstance.run('PRAGMA foreign_keys = ON');
-  await dbInstance.run('PRAGMA journal_mode = WAL');
+  await db.run('PRAGMA foreign_keys = ON');
+  await db.run('PRAGMA journal_mode = WAL');
   // WAL lets readers run during a write, but a writer still blocks another writer. The
   // driver's 1s default was short enough that a library scan writing in bulk could surface
   // SQLITE_BUSY to someone just saving their reading position.
-  await dbInstance.run('PRAGMA busy_timeout = 5000');
+  await db.run('PRAGMA busy_timeout = 5000');
 
-  await initSchema(dbInstance);
+  await initSchema(db);
 
-  return dbInstance;
+  return db;
 }
 
 async function initSchema(db) {

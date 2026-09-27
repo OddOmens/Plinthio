@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/OddOmens/Plinthio/tree/main/docs
+    about: Setup, every feature, configuration and troubleshooting.
+  - name: Report a security vulnerability
+    url: https://github.com/OddOmens/Plinthio/security/advisories/new
+    about: Please report security problems privately, not as a public issue.

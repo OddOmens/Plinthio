@@ -23,6 +23,10 @@ services:
       - "${BIND_ADDRESS:-0.0.0.0}:8088:8080"
     environment:
       - TZ=${TZ:-UTC}
+      # Files in ./config are owned by 1000:1000. Match your own user if that's different
+      # (run `id` on the host to see your uid and gid).
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       # Set TRUST_PROXY=1 ONLY when Plinthio sits behind a reverse proxy (nginx, Caddy,
       # Cloudflare tunnel). Without it, per-IP rate limits see the proxy's IP for every
       # request and collapse into one shared bucket; with it set but no proxy in front,

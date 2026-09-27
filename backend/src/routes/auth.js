@@ -50,19 +50,31 @@ router.get('/setup/browse', async (req, res) => {
   }
 });
 
-// Initial Setup Wizard - Creates the first Admin user and bootstraps server configuration
+// Initial Setup Wizard - Creates the first Admin user and bootstraps server configuration.
+// Only one setup can run at a time: without this, two requests arriving together (the
+// owner's wizard and anyone else on the network) could both see "no users yet" during the
+// bcrypt hashing below and both create an admin account.
+let setupInFlight = false;
+
 router.post('/setup', async (req, res) => {
   const { username, password, theme = 'dark', serverName, enabledMediaTypes, libraries = [], extraUsers = [] } = req.body;
 
-  if (!username || !password || password.length < 8) {
+  if (typeof password !== 'string' || password.length < 8) {
     return res.status(400).json({ error: 'Admin username and password (min 8 chars) are required' });
   }
-  if (!normalizeUsername(username)) {
+  const adminName = normalizeUsername(username);
+  if (!adminName) {
     return res.status(400).json({ error: USERNAME_RULE });
   }
+  if (setupInFlight) {
+    return res.status(409).json({ error: 'Setup is already in progress' });
+  }
 
+  setupInFlight = true;
+  let inTransaction = false;
+  let db;
   try {
-    const db = await getDb();
+    db = await getDb();
     const countResult = await db.get('SELECT COUNT(*) as count FROM users');
 
     if (countResult.count > 0) {
@@ -71,8 +83,8 @@ router.post('/setup', async (req, res) => {
 
     const userId = crypto.randomUUID();
     const passwordHash = await bcrypt.hash(password, 10);
-    const mediaTypes = Array.isArray(enabledMediaTypes) && enabledMediaTypes.length > 0 
-      ? enabledMediaTypes 
+    const mediaTypes = Array.isArray(enabledMediaTypes) && enabledMediaTypes.length > 0
+      ? enabledMediaTypes.filter((t) => ALL_MEDIA_TYPES.includes(t))
       : ALL_MEDIA_TYPES;
 
     // The setup wizard already walks the admin through theme, accent and media types, so
@@ -81,18 +93,48 @@ router.post('/setup', async (req, res) => {
     // get the onboarding on their own first login.
     const adminPrefs = JSON.stringify({
       theme: theme === 'light' ? 'light' : 'dark',
-      enabledMediaTypes: mediaTypes,
+      enabledMediaTypes: mediaTypes.length > 0 ? mediaTypes : ALL_MEDIA_TYPES,
       defaultView: 'all',
       onboardingComplete: true
     });
 
+    // Extra accounts are validated and hashed before anything is written, and a name that
+    // repeats one already taken is skipped — so a typo in the wizard can't leave the server
+    // half set up (admin created, then a UNIQUE failure) behind an error message.
+    const takenNames = new Set([adminName]);
+    const extraRows = [];
+    for (const u of Array.isArray(extraUsers) ? extraUsers : []) {
+      const name = normalizeUsername(u?.username);
+      if (!name || takenNames.has(name) || typeof u.password !== 'string' || u.password.length < 8) continue;
+      takenNames.add(name);
+      extraRows.push({
+        id: crypto.randomUUID(),
+        username: name,
+        hash: await bcrypt.hash(u.password, 10),
+        role: VALID_ROLES.includes(u.role) ? u.role : 'viewer'
+      });
+    }
+
+    const libraryRows = [];
+    for (const lib of Array.isArray(libraries) ? libraries : []) {
+      if (!lib || typeof lib.name !== 'string' || !lib.name.trim() || typeof lib.path !== 'string' || !lib.path) continue;
+      if (!LIBRARY_TYPES.includes(lib.type)) continue;
+      // Same normalization the Admin "Add Library" path gets, so a host-style path
+      // typed during setup (/media/you/Drive/Books) still resolves to the container's
+      // mount (/media/Books) instead of silently scanning nothing.
+      libraryRows.push({ id: crypto.randomUUID(), name: lib.name.trim(), path: resolveLibraryPath(lib.path), type: lib.type });
+    }
+
+    await db.run('BEGIN IMMEDIATE');
+    inTransaction = true;
+
     await db.run(
       'INSERT INTO users (id, username, password_hash, role, preferences) VALUES (?, ?, ?, ?, ?)',
-      [userId, username.trim(), passwordHash, 'admin', adminPrefs]
+      [userId, adminName, passwordHash, 'admin', adminPrefs]
     );
 
     // Save Server Name if provided
-    if (serverName && serverName.trim()) {
+    if (typeof serverName === 'string' && serverName.trim()) {
       await db.run(
         `INSERT INTO settings (key, value, updated_at) VALUES ('server_name', ?, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
@@ -100,52 +142,32 @@ router.post('/setup', async (req, res) => {
       );
     }
 
-    // Insert any initial libraries configured during setup, then kick off their first scan.
-    // Without that scan the wizard finishes and drops the user on a completely empty shelf
-    // with no indication anything is missing — the library rows exist but nothing has been
-    // indexed yet. Scans run in the background so setup returns immediately.
-    if (Array.isArray(libraries)) {
-      for (const lib of libraries) {
-        if (lib.name && lib.path && lib.type) {
-          if (!LIBRARY_TYPES.includes(lib.type)) continue;
-          const libId = crypto.randomUUID();
-          // Same normalization the Admin "Add Library" path gets, so a host-style path
-          // typed during setup (/media/you/Drive/Books) still resolves to the container's
-          // mount (/media/Books) instead of silently scanning nothing.
-          const resolvedPath = resolveLibraryPath(lib.path);
-          await db.run(
-            'INSERT INTO libraries (id, name, path, type) VALUES (?, ?, ?, ?)',
-            [libId, lib.name.trim(), resolvedPath, lib.type]
-          );
-          scanLibrary(libId).catch((err) =>
-            logger.error('scan', `Initial scan failed for "${lib.name}": ${err.message}`, { libraryId: libId })
-          );
-        }
-      }
+    for (const lib of libraryRows) {
+      await db.run('INSERT INTO libraries (id, name, path, type) VALUES (?, ?, ?, ?)', [lib.id, lib.name, lib.path, lib.type]);
     }
 
-    // Insert any extra users created during setup
-    if (Array.isArray(extraUsers)) {
-      for (const u of extraUsers) {
-        if (normalizeUsername(u.username) && u.password && u.password.length >= 8) {
-          const uId = crypto.randomUUID();
-          const uHash = await bcrypt.hash(u.password, 10);
-          const uRole = VALID_ROLES.includes(u.role) ? u.role : 'viewer';
-          const uPrefs = JSON.stringify({
-            theme: 'dark',
-            enabledMediaTypes: mediaTypes,
-            defaultView: 'all'
-          });
-          await db.run(
-            'INSERT INTO users (id, username, password_hash, role, preferences) VALUES (?, ?, ?, ?, ?)',
-            [uId, u.username.trim(), uHash, uRole, uPrefs]
-          );
-        }
-      }
+    const userPrefs = JSON.stringify({ theme: 'dark', enabledMediaTypes: mediaTypes.length > 0 ? mediaTypes : ALL_MEDIA_TYPES, defaultView: 'all' });
+    for (const u of extraRows) {
+      await db.run(
+        'INSERT INTO users (id, username, password_hash, role, preferences) VALUES (?, ?, ?, ?, ?)',
+        [u.id, u.username, u.hash, u.role, userPrefs]
+      );
+    }
+
+    await db.run('COMMIT');
+    inTransaction = false;
+
+    // Kick off each new library's first scan. Without it the wizard finishes and drops the
+    // user on a completely empty shelf with no indication anything is missing. Scans run in
+    // the background so setup returns immediately.
+    for (const lib of libraryRows) {
+      scanLibrary(lib.id).catch((err) =>
+        logger.error('scan', `Initial scan failed for "${lib.name}": ${err.message}`, { libraryId: lib.id })
+      );
     }
 
     const token = jwt.sign(
-      { userId, username: username.trim(), role: 'admin', tokenVersion: 0 },
+      { userId, username: adminName, role: 'admin', tokenVersion: 0 },
       config.jwtSecret,
       { expiresIn: config.jwtExpiresIn }
     );
@@ -154,11 +176,16 @@ router.post('/setup', async (req, res) => {
       message: 'Server initialized successfully',
       token,
       mediaToken: signMediaToken({ id: userId, token_version: 0 }),
-      user: { id: userId, username: username.trim(), role: 'admin', avatar: null, expires_at: null, preferences: JSON.parse(adminPrefs) }
+      user: { id: userId, username: adminName, role: 'admin', avatar: null, expires_at: null, preferences: JSON.parse(adminPrefs) }
     });
   } catch (err) {
+    if (inTransaction) {
+      await db.run('ROLLBACK').catch(() => {});
+    }
     console.error('[auth] setup failed:', err);
     res.status(500).json({ error: 'Server setup failed. Check the server logs for details.' });
+  } finally {
+    setupInFlight = false;
   }
 });
 
