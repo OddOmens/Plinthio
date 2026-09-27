@@ -159,6 +159,19 @@
                   </span>
                 </button>
 
+                <!-- Watch party on whatever the play button would start -->
+                <button
+                  v-if="canStartParty"
+                  @click="startWatchParty"
+                  :disabled="startingParty"
+                  class="hero-btn"
+                  title="Watch this together with people in other places"
+                >
+                  <Loader2 v-if="startingParty" class="w-4 h-4 animate-spin" />
+                  <PartyPopper v-else class="w-4 h-4 text-primary" />
+                  <span>Watch Together</span>
+                </button>
+
                 <button
                   @click="markAllAsRead"
                   :disabled="series.readCount === series.volumeCount || actionLoading"
@@ -1160,6 +1173,7 @@ const BookmarksModal = defineAsyncComponent(() => import('../components/Bookmark
 const MetadataSearchModal = defineAsyncComponent(() => import('../components/MetadataSearchModal.vue'));
 import RatingBar from '../components/RatingBar.vue';
 import MissingFilmAction from '../components/MissingFilmAction.vue';
+import { startParty } from '../utils/party';
 import { coverUrl as buildCoverUrl, stillUrl } from '../utils/cover';
 import {
   ArrowLeft,
@@ -1192,7 +1206,8 @@ import {
   Clock,
   Clapperboard,
   Users,
-  Info
+  Info,
+  PartyPopper
 } from 'lucide-vue-next';
 import { useDownloadsStore } from '../stores/downloads';
 
@@ -1808,6 +1823,24 @@ const mediaFacts = computed(() => {
   }
   return facts;
 });
+
+// ─── Watch parties ──────────────────────────────────────────────────────────
+const startingParty = ref(false);
+const canStartParty = computed(() =>
+  customizationStore.partyModeEnabled && isVideoType.value && !!series.value?.nextVolume
+);
+
+async function startWatchParty() {
+  startingParty.value = true;
+  try {
+    const party = await startParty(series.value.nextVolume.id);
+    router.push(`/party/${party.code}`);
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Couldn\'t start a watch party');
+  } finally {
+    startingParty.value = false;
+  }
+}
 
 async function loadFilmCollection(itemId) {
   filmCollection.value = null;

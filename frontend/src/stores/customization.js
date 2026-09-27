@@ -12,6 +12,8 @@ export const useCustomizationStore = defineStore('customization', {
     ratings: { showPersonal: true, showCommunity: true, showExternal: true },
     // Movie collections also list the films the library doesn't have (greyed, requestable).
     showMissingFilms: true,
+    // Watch parties — off until an admin turns them on.
+    partyModeEnabled: false,
     loading: false
   }),
 
@@ -31,6 +33,7 @@ export const useCustomizationStore = defineStore('customization', {
           this.layoutMode = res.data.layoutMode || 'topnav';
           if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
+          if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
           this.applyToDom();
         }
         return res.data;
@@ -51,6 +54,7 @@ export const useCustomizationStore = defineStore('customization', {
           this.layoutMode = res.data.layoutMode || this.layoutMode;
           if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
+          if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
           this.applyToDom();
         }
         return res.data;

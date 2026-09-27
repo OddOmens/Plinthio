@@ -1015,7 +1015,8 @@ const ERROR_SECTIONS = [
   { prefix: 'P2', title: 'Libraries & scanning' },
   { prefix: 'P3', title: 'Playback' },
   { prefix: 'P4', title: 'Metadata providers' },
-  { prefix: 'P5', title: 'Lists & requests' }
+  { prefix: 'P5', title: 'Lists & requests' },
+  { prefix: 'P6', title: 'Watch parties' }
 ];
 const errorCodes = ref([]);
 const errorCodesError = ref('');

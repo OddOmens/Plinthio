@@ -12,6 +12,7 @@ const TitleView = () => import('../views/TitleView.vue');
 const ListsView = () => import('../views/ListsView.vue');
 const RequestsView = () => import('../views/RequestsView.vue');
 const DownloadsView = () => import('../views/DownloadsView.vue');
+const PartyView = () => import('../views/PartyView.vue');
 import { useAuthStore } from '../stores/auth';
 
 const routes = [
@@ -36,6 +37,13 @@ const routes = [
     meta: { requiresAuth: true }
   },
   // Earlier links (bookmarks, history) pointed at the manga-only pages.
+  {
+    // A watch party's invite link.
+    path: '/party/:code',
+    name: 'Party',
+    component: PartyView,
+    meta: { requiresAuth: true }
+  },
   { path: '/manga/series/:seriesName', redirect: (to) => ({ path: `/series/${encodeURIComponent(to.params.seriesName)}`, query: to.query }) },
   { path: '/manga/:id', redirect: (to) => ({ path: `/title/${to.params.id}`, query: to.query }) },
   {
@@ -120,7 +128,8 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login');
+    // Come back here after signing in — a watch-party invite link, say.
+    next(to.fullPath === '/' ? '/login' : { path: '/login', query: { redirect: to.fullPath } });
   } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
     next('/');
   } else {

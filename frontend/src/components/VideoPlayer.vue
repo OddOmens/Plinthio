@@ -27,7 +27,7 @@
       </div>
 
       <button aria-label="Cast to TV"
-        v-if="castAvailable"
+        v-if="castAvailable && !partyMode"
         @click="startCast"
         class="w-11 h-11 rounded-xl bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition active:scale-95 flex-shrink-0 backdrop-blur-sm"
         title="Cast to TV"
@@ -36,13 +36,15 @@
       </button>
 
       <button aria-label="AirPlay"
-        v-if="airplayAvailable"
+        v-if="airplayAvailable && !partyMode"
         @click="startAirplay"
         class="w-11 h-11 rounded-xl bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition active:scale-95 flex-shrink-0 backdrop-blur-sm"
         title="AirPlay"
       >
         <MonitorSpeaker class="w-5 h-5" />
       </button>
+
+      <slot name="header-actions" />
 
       <button aria-label="Playback settings"
         @click="settingsOpen = !settingsOpen"
@@ -314,8 +316,18 @@ import {
 
 const viewSession = useViewSession();
 
-const props = defineProps({ item: { type: Object, required: true } });
+const props = defineProps({
+  item: { type: Object, required: true },
+  // In a watch party (views/PartyView.vue) the party decides position and play/pause: no
+  // resume-from-where-you-left-off, no casting, and without control the buttons are locked.
+  partyMode: { type: Boolean, default: false },
+  canControl: { type: Boolean, default: true }
+});
 const emit = defineEmits(['close', 'play-next']);
+// Locked: a party guest while the host keeps control — no seeking. Play/pause stay usable
+// (a browser that blocks autoplay needs a tap to start), and the party page puts a guest
+// back in step if they pause or seek anyway (see PartyView).
+const locked = computed(() => props.partyMode && !props.canControl);
 
 const nextEpisode = ref(null);
 const countdown = ref(0);
@@ -474,6 +486,7 @@ function toggleFullscreen() {
 }
 
 function scrubTo(event) {
+  if (locked.value) return;
   const rect = scrubberEl.value?.getBoundingClientRect();
   if (!rect || !totalDuration.value) return;
   const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
@@ -652,7 +665,8 @@ function onLoadedMetadata() {
 
   // Resume where they left off, but not if they were basically at the end — otherwise
   // reopening a finished item drops you on the closing credits with nothing left to watch.
-  const saved = props.item.current_time || 0;
+  // A party starts wherever the party is, not where you personally left off.
+  const saved = props.partyMode ? 0 : (props.item.current_time || 0);
   const nearEnd = totalDuration.value > 0 && saved > 0 && saved / totalDuration.value >= 0.98;
 
   if (saved > 10 && !nearEnd) {
@@ -676,6 +690,7 @@ function onTimeUpdate() {
 // HLS is segmented, so seeking (in either mode) is a normal currentTime jump — no more
 // restarting the encode from a new offset.
 function seekTo(seconds) {
+  if (locked.value) return;
   const target = Math.max(0, Math.min(seconds, totalDuration.value || seconds));
   if (videoEl.value) videoEl.value.currentTime = target;
   saveProgress();
@@ -711,6 +726,7 @@ async function onEnded() {
 // within the same series. Movies have no series and are skipped.
 async function offerNextEpisode() {
   if (!['show', 'anime'].includes(props.item.media_type) || !props.item.series) return;
+  if (locked.value) return; // the host moves the party on
 
   try {
     const res = await api.get('/items', { params: { series: props.item.series } });
@@ -916,6 +932,7 @@ function onKeyDown(e) {
   const video = videoEl.value;
   if (!video) return;
   if (e.key === 'Escape') { closePlayer(); return; }
+  if (locked.value && ['ArrowRight', 'ArrowLeft'].includes(e.key)) { e.preventDefault(); revealControls(); return; }
   if (e.key === ' ') { e.preventDefault(); video.paused ? video.play() : video.pause(); }
   else if (e.key === 'ArrowRight') { e.preventDefault(); seekTo(virtualTime.value + 10); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); seekTo(virtualTime.value - 10); }
@@ -946,6 +963,9 @@ onMounted(() => {
   saveTimer = setInterval(() => saveProgress(), 15000);
   viewSession.open(props.item.id);
 });
+
+// The party page drives the <video> element directly.
+defineExpose({ videoEl, totalDuration });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown);
