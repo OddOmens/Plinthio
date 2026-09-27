@@ -9,10 +9,6 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
-### Added
-- **Watch parties**: watch a movie or show together with people in other places, in sync. Start one with **Watch Together** on any movie or show and share the invite link (or its six-letter code) with anyone who has an account on the server. Play, pause and seeking stay in step for everyone; if someone's connection stalls, the party waits for them; the next episode starts for everyone together. The host decides whether only they or everyone controls playback, and can end the party for all. Includes a member list and chat. Content limits still apply — nobody can join, or be moved to, something their account can't open. Off by default: turn on under Admin → Server Config → Watch Parties, or while setting up a new server. Friends outside your home network need to be able to reach the server.
-- Signing in now returns you to the page you were trying to open (an invite link, say) instead of the home page.
-
 ## [1.0.0] - 2026-09-25
 
 ### Added
@@ -35,6 +31,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **New title pages for movies and shows.** One hero with the poster, year · runtime · rating, tagline, full overview and Genres / Director / Writers / Studios / Network rows (no more second "About" block). A **Cast & Crew** row (photos, characters and jobs), and one Media Info panel. Shows and anime list their episodes **by season** (specials last) with a still from each episode, its own synopsis, and mark-season-watched; "Start Watching" begins at S1E1, not a special. Movie collections (Shrek, Star Wars…) list their films in release order the same way, and films are grouped into their collection automatically (with a TMDB key) once the library has two or more of it. A collection also lists the films the server doesn't have — greyed out, with a **Request** button (or "Coming 2027" for one not out yet) — on its page and in each film's "More in…" row, never on the Movies shelf; Admin → Server Config → Movie Collections turns this off. Cast, crew and studios come from TMDB the first time a page opens (with a TMDB key) and are cached; episode stills are small frames grabbed on first view and cached, two at a time at most.
 - **Bigger posters and text.** Shelf and series grids show up to five posters a row instead of six (roughly a quarter larger), and the whole type scale is a notch larger (body text 13/15px instead of 12/14px).
 - Multi-architecture images (x86-64 and ARM) published to `ghcr.io/oddomens/plinthio`.
+- **Watch parties**: watch a movie or show together with people in other places, in sync. Start one with **Watch Together** on any movie or show and share the invite link (or its six-letter code) with anyone who has an account on the server. Play, pause and seeking stay in step for everyone; if someone's connection stalls, the party waits for them; the next episode starts for everyone together. The host decides whether only they or everyone controls playback, and can end the party for all. Includes a member list and chat. Content limits still apply — nobody can join, or be moved to, something their account can't open. Off by default: turn on under Admin → Server Config → Watch Parties, or while setting up a new server. Friends outside your home network need to be able to reach the server.
+- Signing in now returns you to the page you were trying to open (an invite link, say) instead of the home page.
 
 ### Changed
 - Media links now use a short-lived, media-only token; the session token is never put in a URL.
