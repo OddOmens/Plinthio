@@ -755,10 +755,10 @@
           </div>
         </section>
 
-        <!-- SECTION: Jellyfin Custom CSS -->
+        <!-- SECTION: Custom CSS -->
         <section v-if="activeSection === 'css'" class="space-y-6">
           <div>
-            <h1 class="text-2xl font-bold tracking-tight text-foreground">Jellyfin-Style Custom CSS</h1>
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">Custom CSS</h1>
             <p class="text-sm text-muted-foreground mt-1.5">
               Customize the appearance of Plinthio with custom CSS injected live across your server.
             </p>

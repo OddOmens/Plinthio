@@ -38,7 +38,7 @@
                   <ImageOff class="w-4 h-4 text-muted-foreground" />
                 </div>
 
-                <!-- Click the art itself to replace it, the way Jellyfin does -->
+                <!-- Click the art itself to replace it -->
                 <button
                   type="button"
                   @click="coverFileInput?.click()"

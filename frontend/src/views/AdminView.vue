@@ -856,7 +856,7 @@
           </div>
         </div>
 
-        <!-- Custom CSS Injection (Jellyfin Style) -->
+        <!-- Custom CSS Injection -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3 flex items-center justify-between">
             <div>

@@ -7,7 +7,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-v20-green?logo=node.js)](https://nodejs.org)
 [![Vue 3](https://img.shields.io/badge/Vue.js-3.5-4FC08D?logo=vuedotjs&logoColor=white)](https://vuejs.org)
 
-Plinthio was born out of frustration with fragmented media servers: having to run one server for audiobooks (like Audiobookshelf), another for comics (like Komga), another for video (like Jellyfin), while juggling multiple third-party mobile apps with paywalls.
+Plinthio was born out of frustration with fragmented media servers: having to run one server for audiobooks, another for comics, another for video, while juggling multiple third-party mobile apps with paywalls.
 
 **Plinthio unifies everything into a single Docker container with an installable mobile-first Progressive Web App (PWA).**
 
@@ -29,7 +29,7 @@ Plinthio was born out of frustration with fragmented media servers: having to ru
 * **High-Speed Archive Streaming:** Pages are streamed directly out of `.cbz`/`.zip`, `.cbr`/`.rar`, and `.cb7`/`.7z` archives on the fly — nothing is pre-extracted to disk (except 7z, which the format requires).
 * **Format Sniffing:** Archives are identified by their actual contents, not their file extension — so the very common mislabelled `.cbr`-that-is-really-a-zip opens fine instead of erroring.
 * **Per-Series Metadata:** Edit a series' name, reading direction, and age rating in one place; `ComicInfo.xml` tags (including `Manga` and `AgeRating`) are read during scans to set sensible defaults.
-* **Read Lists:** Build an ordered reading order that spans multiple series — a Komga-style read list — and reorder it item by item.
+* **Read Lists:** Build an ordered reading order that spans multiple series and reorder it item by item.
 * **OPDS & OPDS-PSE:** Browse and read your library in dedicated reader apps (Chunky, Panels, KyBook, Moon+ Reader) via a standard OPDS catalog, with page streaming so readers fetch pages individually instead of downloading whole archives.
 * **Automatic Progress Tracking:** Remembers your last read page per series.
 
