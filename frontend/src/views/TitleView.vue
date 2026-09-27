@@ -1666,7 +1666,7 @@ async function toggleSeasonWatched(season) {
   }
 }
 
-// Cast & crew, Jellyfin-style: director and writers first, then the cast in billing
+// Cast & crew: director and writers first, then the cast in billing
 // order, then the rest of the crew. Someone with several jobs gets one card. Without TMDB
 // credits it falls back to the names in the metadata (director, cast).
 const LEAD_JOBS = ['Director', 'Screenplay', 'Writer', 'Story', 'Novel', 'Characters'];
