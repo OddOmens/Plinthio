@@ -30,6 +30,8 @@ import bookmarkRoutes from './routes/bookmarks.js';
 import settingRoutes from './routes/settings.js';
 import metadataRoutes from './routes/metadata.js';
 import customizationRoutes from './routes/customization.js';
+import partyRoutes from './routes/party.js';
+import { startPartySweeper } from './services/party.js';
 import activityRoutes from './routes/activity.js';
 import seriesRoutes from './routes/series.js';
 import requestRoutes from './routes/requests.js';
@@ -202,6 +204,7 @@ app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/metadata', metadataRoutes);
 app.use('/api/customization', customizationRoutes);
+app.use('/api/party', partyRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/series', seriesRoutes);
 app.use('/api/ratings', ratingRoutes);
@@ -269,6 +272,9 @@ async function start() {
     // Pick up new media on its own: a periodic re-scan plus (where the filesystem supports
     // it) a watcher, both configurable under Admin → Server Settings.
     initAutoScan();
+
+    // Watch parties: drop ones everyone has left, release anyone stuck buffering.
+    startPartySweeper();
 
     // Films not yet looked up on TMDB: fill in their credits and collections (Shrek 1–4 as
     // one "Shrek Collection"). Delayed so it doesn't compete with startup.

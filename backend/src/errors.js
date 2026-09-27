@@ -330,6 +330,50 @@ export const ERROR_CODES = {
     message: 'Request not found',
     meaning: 'The request was deleted or never existed.',
     fix: 'Refresh the Requests page.'
+  },
+
+  // ── Watch parties ──────────────────────────────────────────────────────────
+  P600: {
+    status: 403,
+    title: 'Watch parties are turned off',
+    message: 'Watch parties are turned off on this server',
+    meaning: 'An admin has not enabled watch parties.',
+    fix: 'An admin can turn them on in Admin → Server Config → Watch Parties.'
+  },
+  P601: {
+    status: 404,
+    title: 'Party not found',
+    message: 'That watch party has ended or never existed',
+    meaning: 'The host ended the party, everyone left, or the server restarted.',
+    fix: 'Ask the host for a new invite link.'
+  },
+  P602: {
+    status: 403,
+    title: 'Only the host can do that',
+    message: 'Only the party host can do that',
+    meaning: 'The host has kept playback controls to themselves.',
+    fix: 'Ask the host, or ask them to let everyone control playback.'
+  },
+  P603: {
+    status: 403,
+    title: 'Not available to your account',
+    message: 'This party is watching something your account can\'t open',
+    meaning: 'The title is hidden from you, or above your account\'s content limit.',
+    fix: 'Ask an admin about your account\'s content settings.'
+  },
+  P604: {
+    status: 409,
+    title: 'Not everyone can watch that',
+    message: 'Someone in the party can\'t open that title',
+    meaning: 'The title is hidden from, or above the content limit of, someone watching.',
+    fix: 'Pick something everyone in the party can watch.'
+  },
+  P605: {
+    status: 409,
+    title: 'Party is full',
+    message: 'That watch party is full',
+    meaning: 'A party holds up to 20 people, and a server runs up to 20 parties at once.',
+    fix: 'Try again when someone leaves or a party ends.'
   }
 };
 

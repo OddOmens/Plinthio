@@ -849,6 +849,30 @@
           </label>
         </div>
 
+        <!-- Watch Parties Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Watch Parties</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Let people on this server watch a movie or show together from different places, in sync, with chat.
+              Friends outside your home network need to be able to reach this server (a domain, a reverse proxy or a VPN).
+            </p>
+          </div>
+          <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+            <input
+              type="checkbox"
+              :checked="customizationStore.partyModeEnabled"
+              :disabled="savingPartyMode"
+              @change="togglePartyMode($event.target)"
+              class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+            />
+            <div class="flex flex-col">
+              <span class="text-xs font-semibold text-foreground">Enable watch parties</span>
+              <span class="text-[12px] text-muted-foreground">Adds a "Watch Together" button to movies and episodes. Content limits still apply to everyone in a party. Turning this off ends any party in progress.</span>
+            </div>
+          </label>
+        </div>
+
         <!-- Server Branding Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
@@ -1751,6 +1775,20 @@ async function toggleShowMissingFilms(checkbox) {
     dialog.alert('Failed to save the collections setting');
   } finally {
     savingMissingFilms.value = false;
+  }
+}
+
+const savingPartyMode = ref(false);
+
+async function togglePartyMode(checkbox) {
+  savingPartyMode.value = true;
+  try {
+    await customizationStore.updateCustomization({ partyModeEnabled: checkbox.checked });
+  } catch (e) {
+    checkbox.checked = !checkbox.checked;
+    dialog.alert('Failed to save the watch party setting');
+  } finally {
+    savingPartyMode.value = false;
   }
 }
 
