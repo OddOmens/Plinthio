@@ -99,7 +99,7 @@ and anime: **Admin → Server Config → Opening Sequence**.
 - The title loads behind the clip, so it starts as soon as the clip ends.
 - Your own clip must be an **MP4 with H.264 video**, **1–10 seconds** long and **under
   20 MB**. The server checks it when uploaded. 1080p at around 8 Mbps is plenty for most
-  clips; fine noise or thin lines need more (see below).
+  clips; fine noise, grain or thin lines need 30–40 Mbps to stay sharp.
 - It never plays when resuming partway through (Resume, Continue Watching), before an
   autoplayed next episode, a trailer or other extra, or in a watch party.
 - Anyone can skip it (the Skip button, Esc, Enter or a tap). If it can't play, the title
