@@ -9,6 +9,7 @@ build/
 backend/data/
 /config/
 docker/config/
+docker/config-test/
 cache/
 *.sqlite
 *.sqlite3

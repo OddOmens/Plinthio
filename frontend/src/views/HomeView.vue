@@ -16,7 +16,7 @@
     />
 
     <div class="flex-1 flex flex-col min-w-0 pb-28">
-    <main class="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 flex-1 flex flex-col gap-8">
+    <main class="page-width mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 flex-1 flex flex-col gap-8">
       <router-link
         v-if="!isOnline"
         to="/downloads"

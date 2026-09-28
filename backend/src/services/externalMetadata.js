@@ -351,7 +351,7 @@ export async function fetchTmdbDetails(tmdbId, mediaType) {
   const endpoint = isMovie ? 'movie' : 'tv';
   const creditsKey = isMovie ? 'credits' : 'aggregate_credits';
   const req = tmdbRequest(
-    `https://api.themoviedb.org/3/${endpoint}/${encodeURIComponent(tmdbId)}?append_to_response=${creditsKey},keywords`,
+    `https://api.themoviedb.org/3/${endpoint}/${encodeURIComponent(tmdbId)}?append_to_response=${creditsKey},keywords,images&include_image_language=en,null`,
     apiKey
   );
   const data = await fetchJson(req.url, req.options);
@@ -377,9 +377,18 @@ export async function fetchTmdbDetails(tmdbId, mediaType) {
   }
   crew.sort((a, b) => CREW_JOBS.indexOf(a.job) - CREW_JOBS.indexOf(b.job));
 
+  // The title's logo (its name as artwork) for the banner on its page: English first, then
+  // one with no text language, then whatever there is. PNG, since SVG logos can't be
+  // trusted to render the same everywhere.
+  const logos = (data.images?.logos || []).filter((l) => l.file_path && !l.file_path.endsWith('.svg'));
+  const logo = logos.find((l) => l.iso_639_1 === 'en') || logos.find((l) => !l.iso_639_1) || logos[0];
+
   return {
     tmdbId: String(data.id),
     tagline: data.tagline || null,
+    // Wide artwork for the top of the title page. Paths only; the page picks the size.
+    backdropPath: data.backdrop_path || null,
+    logoPath: logo?.file_path || null,
     studios: (data.production_companies || []).map((s) => s.name).filter(Boolean),
     networks: (data.networks || []).map((n) => n.name).filter(Boolean),
     creators: (data.created_by || []).map((c) => c.name).filter(Boolean),
@@ -388,6 +397,16 @@ export async function fetchTmdbDetails(tmdbId, mediaType) {
     // The film series it belongs to on TMDB ("Shrek Collection"); movies only.
     collection: isMovie ? (data.belongs_to_collection?.name || null) : null,
     collectionId: isMovie ? (data.belongs_to_collection?.id ? String(data.belongs_to_collection.id) : null) : null,
+    // A show's seasons with their own posters, for the season picker on its page.
+    seasons: isMovie ? null : (data.seasons || [])
+      .filter((s) => Number.isInteger(s.season_number))
+      .map((s) => ({
+        number: s.season_number,
+        name: s.name || null,
+        posterUrl: s.poster_path ? `https://image.tmdb.org/t/p/w342${s.poster_path}` : null,
+        airDate: s.air_date || null,
+        episodeCount: s.episode_count || null
+      })),
     cast,
     crew: crew.slice(0, 20),
     // Odds and ends for the player's pause screen. TMDB has no trivia as such, so these are

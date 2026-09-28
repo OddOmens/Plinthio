@@ -1,11 +1,14 @@
 // Google Cast sender SDK. It's third-party script running with full access to the page (and
 // so to the session in localStorage), so it's only fetched when it can actually be used:
-// a Chromium browser on a secure origin, and only once a video is opened — not on every
+// a Chromium browser on HTTPS, and only once a video is opened — not on every
 // page load in every browser as before.
 let loadPromise = null;
 
 export function isCastCapableBrowser() {
-  if (!window.isSecureContext || !window.chrome) return false;
+  // HTTPS only. http://localhost counts as a secure context, but the SDK then pulls its other
+  // scripts over plain http://, which the CSP blocks (and a Cast device can't reach
+  // localhost anyway).
+  if (location.protocol !== 'https:' || !window.chrome) return false;
   if (/iPhone|iPad|iPod/.test(navigator.userAgent)) return false;
   const brands = navigator.userAgentData?.brands;
   if (brands) return brands.some((b) => b.brand === 'Chromium' || b.brand === 'Google Chrome');

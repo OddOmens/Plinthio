@@ -14,7 +14,7 @@
 //   (none)   API JSON, video and audio — always network. Progress, listings and streams
 //            must never be served stale.
 
-const VERSION = 'v4';
+const VERSION = 'v5';
 const SHELL_CACHE = `plinthio-shell-${VERSION}`;
 const IMAGE_CACHE = `plinthio-images-${VERSION}`;
 // Downloads the user explicitly asked for. Deliberately NOT versioned: a service worker
@@ -26,7 +26,7 @@ const CURRENT_CACHES = new Set([SHELL_CACHE, IMAGE_CACHE, OFFLINE_CACHE]);
 // Roughly a couple of comic volumes' worth of pages. Entries are evicted oldest-first.
 const MAX_IMAGE_ENTRIES = 600;
 
-const SHELL_URLS = ['/', '/manifest.json', '/icons/icon.svg'];
+const SHELL_URLS = ['/', '/manifest.json', '/icons/icon.svg', '/icons/logo.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

@@ -170,7 +170,7 @@
       ref="videoEl"
       class="w-full h-full bg-black"
       :controls="!useCustomScrubber"
-      autoplay
+      :autoplay="!held"
       playsinline
       preload="metadata"
       @loadedmetadata="onLoadedMetadata"
@@ -362,7 +362,7 @@
 <script setup>
 import { loadCastSdk } from '../utils/cast';
 import { getMediaToken, setMediaToken } from '../utils/mediaToken';
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import Hls from 'hls.js';
 import api from '../api/client';
 import { useViewSession } from '../composables/useViewSession';
@@ -382,7 +382,10 @@ const props = defineProps({
   // In a watch party (views/PartyView.vue) the party decides position and play/pause: no
   // resume-from-where-you-left-off, no casting, and without control the buttons are locked.
   partyMode: { type: Boolean, default: false },
-  canControl: { type: Boolean, default: true }
+  canControl: { type: Boolean, default: true },
+  // Held behind the opening sequence (views/TitleView.vue): the stream loads but doesn't
+  // play until the clip ends, so the title starts the moment it does.
+  held: { type: Boolean, default: false }
 });
 const emit = defineEmits(['close', 'play-next']);
 // Locked: a party guest while the host keeps control — no seeking. Play/pause stay usable
@@ -691,7 +694,7 @@ const previewStyle = computed(() => {
 async function loadTrickplay() {
   try {
     const res = await api.get(`/media/video/${props.item.id}/trickplay/index.json`);
-    // 202 means generation just started; previews simply stay off for this session.
+    // 204 means this file has no sheets; previews simply stay off.
     if (res.status === 200) trickplay.value = res.data;
   } catch (err) {
     // Previews are a nicety — never block playback on them.
@@ -1089,14 +1092,14 @@ async function start() {
     modeResolved.value = true;
     requestAnimationFrame(() => {
       attachStream();
-      videoEl.value?.play?.().catch(() => {});
+      if (!props.held) videoEl.value?.play?.().catch(() => {});
     });
   }
 }
 
 function onKeyDown(e) {
   const video = videoEl.value;
-  if (!video) return;
+  if (!video || props.held) return;
   if (e.key === 'Escape') { closePlayer(); return; }
   if (locked.value && ['ArrowRight', 'ArrowLeft'].includes(e.key)) { e.preventDefault(); revealControls(); return; }
   if (e.key === ' ') { e.preventDefault(); video.paused ? video.play() : video.pause(); }
@@ -1128,6 +1131,12 @@ onMounted(() => {
   // Backstop for the timeupdate throttle — covers a tab left paused mid-file.
   saveTimer = setInterval(() => saveProgress(), 15000);
   viewSession.open(props.item.id);
+});
+
+watch(() => props.held, (held) => {
+  if (held) return;
+  revealControls();
+  videoEl.value?.play?.().catch(() => {});
 });
 
 // The party page drives the <video> element directly.

@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, defineAsyncComponent } from 'vue';
+import { ref, computed, watchEffect, onMounted, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 import AudioPlayer from './components/AudioPlayer.vue';
 import GlobalDialog from './components/GlobalDialog.vue';
@@ -31,6 +31,12 @@ const onboardingDone = ref(false);
 onMounted(() => {
   authStore.refreshSession();
   authStore.keepMediaTokenFresh();
+});
+
+// Page width is each user's own choice (Settings → Preferences): full width unless they pick
+// contained, which caps pages at 1440px (the .page-width rules in assets/main.css).
+watchEffect(() => {
+  document.documentElement.classList.toggle('page-contained', authStore.user?.preferences?.pageWidth === 'contained');
 });
 
 const showOnboarding = computed(() => {

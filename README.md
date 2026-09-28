@@ -1,4 +1,6 @@
-# 📚 Plinthio
+<p align="center"><img src="frontend/public/icons/logo.svg" alt="Plinthio logo" width="120" /></p>
+
+# Plinthio
 
 > **The all-in-one self-hosted media server and PWA for Audiobooks, Manga & Comics, Books, Movies, TV Shows, and Anime.**
 
@@ -8,9 +10,20 @@
 [![Release](https://img.shields.io/github/v/release/OddOmens/Plinthio)](https://github.com/OddOmens/Plinthio/releases/latest)
 [![Vue 3](https://img.shields.io/badge/Vue.js-3.5-4FC08D?logo=vuedotjs&logoColor=white)](https://vuejs.org)
 
-Plinthio was born out of frustration with fragmented media servers: having to run one server for audiobooks, another for comics, another for video, while juggling multiple third-party mobile apps with paywalls.
+**Plinthio brings everything together in a single Docker container with an installable, mobile-first Progressive Web App (PWA).**
 
-**Plinthio unifies everything into a single Docker container with an installable mobile-first Progressive Web App (PWA).**
+## 💭 Why I wanted this
+
+As a big fan of Jellyfin (I still use it as my main source for video), I struggled to find
+something that worked as well for audiobooks, books and manga. Each has its own specialized
+self-hosted product, usually paired with a mostly good iOS app made by third-party
+developers.
+
+So I decided to build Plinthio: to bring all of that media together in one place, and to
+make it highly customizable for the person using it.
+
+Is it perfect? By no means. It's a passion project, one I wanted to exist, and I'm sharing it
+in case others want to explore it too.
 
 ---
 

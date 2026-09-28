@@ -152,4 +152,23 @@ describe('library scanner', () => {
       assert.equal(isLibraryScanning('lib-missing'), false, 'a thrown scan must not wedge the lock');
     });
   });
+
+  test('one show spelled two ways by its files stays one show, under the folder\'s spelling', async () => {
+    const dir = path.join(mediaRoot, 'AnimeLib');
+    makeVideo('AnimeLib/Farming Life In Another World/Season 01/[Grp] Farming Life in Another World - S01E01 [9857604D].mp4');
+    makeVideo('AnimeLib/Farming Life In Another World/Season 02/Farming.Life.In.Another.World.S02E01.Welcome.1080p.WEB-DL.mp4');
+    await addLibrary('lib-spelling', 'anime', dir);
+    const db = await getDb();
+    // Settings saved under the spelling that loses move to the one that stays.
+    await db.run(
+      `INSERT INTO series_settings (id, library_id, series_name, age_rating) VALUES ('ss-spell', 'lib-spelling', 'Farming Life in Another World', 'TV-14')`
+    );
+
+    await scanLibrary('lib-spelling');
+
+    const series = await db.all(`SELECT DISTINCT series FROM items WHERE library_id = 'lib-spelling'`);
+    assert.deepEqual(series.map((r) => r.series), ['Farming Life In Another World']);
+    const settings = await db.all(`SELECT series_name, age_rating FROM series_settings WHERE library_id = 'lib-spelling'`);
+    assert.deepEqual(settings, [{ series_name: 'Farming Life In Another World', age_rating: 'TV-14' }]);
+  });
 });

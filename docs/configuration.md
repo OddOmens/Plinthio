@@ -41,6 +41,10 @@ the compose-level ones.
 
 ### Admin → Server Config
 
+The look-and-feel cards (theme through custom CSS) sit next to a **live preview** of the
+shelf, a title page, the sign-in screen and the pause screen. It follows whichever card you
+are using, and hovering a pause screen style shows it before you choose.
+
 | Card | Default | What it controls |
 | --- | --- | --- |
 | **Shelf Views** | all on | Whether **Disk Folders** and **Custom Folders** views are offered to everyone. Alphabetical and Creator are always there |
@@ -50,6 +54,7 @@ the compose-level ones.
 | **Movie Collections** | on | Whether a collection also lists the films the server doesn't have, greyed out with a Request button. They never appear on the shelf |
 | **Watch Parties** | off | Adds "Watch Together" to movies and episodes. Turning it off ends any party in progress |
 | **Pause Screen** | Details | What movies and shows show after a couple of seconds paused: Simple, Details, Cinematic or Bedtime. See [Movies and shows](video.md#pause-screens) |
+| **Opening Sequence** | off, built-in clip | A short clip played before movies and/or episodes when someone presses Play. Replace it with your own 1–10 second MP4 (H.264, under 20 MB). See [Movies and shows](video.md#opening-sequence) |
 | **Server Branding & Notices** | "Plinthio", no notice | Server name (shown everywhere and in the browser tab) and a message on the sign-in page |
 | **Custom CSS Injection** | empty | CSS applied for every user, live. Docs → Custom CSS Styling lists the variables |
 | **External Metadata Providers** | no TMDB key | The TMDB key, checked against TMDB when saved. MangaDex, Google Books and Open Library need no key |
@@ -73,8 +78,10 @@ the compose-level ones.
 
 ### Per user (Settings, everyone)
 
-- **Preferences:** which media categories you see, which shelf views you use, and the view
-  you land on. Light or dark mode is the sun/moon button in the top bar.
+- **Preferences:** which media categories you see, which shelf views you use, the view you
+  land on, and **page width**: full width (the default, with more posters in a row on big
+  screens) or contained (centred, up to 1440px). Light or dark mode is the sun/moon button
+  in the top bar.
 - **My Activity:** what you've read, watched and listened to.
 - **Hidden:** titles you've hidden from your own shelves, with a way to bring them back.
 - **API Keys:** keys for scripts and reading apps, and the **Reading Apps** setup guide.

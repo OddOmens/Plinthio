@@ -137,13 +137,38 @@ html {
   }
 }
 
+/* Page width, a per-user choice (Settings → Preferences → Page Width, stores/auth.js puts
+   the class on <html>): full width by default, or contained to 1440px, centred. Every page's
+   header and content use .page-width so they line up. */
+@layer components {
+  .page-width { max-width: none; }
+  html.page-contained .page-width { max-width: 1440px; }
+}
+
+/* Title page on a wide full-width page: a bigger poster that rises into the backdrop banner,
+   and everything below lines up in one column beside it (views/TitleView.vue). Contained
+   pages and smaller screens keep the stacked layout. 2rem page padding + poster + 2.5rem gap. */
+@media (min-width: 1280px) {
+  html:not(.page-contained) .title-poster { width: 22rem; }
+  html:not(.page-contained) .title-poster.has-banner { margin-top: -13rem; }
+  html:not(.page-contained) .title-text { max-width: 80rem; }
+  html:not(.page-contained) .title-indent { padding-left: calc(2rem + 22rem + 2.5rem); }
+}
+
 /* Poster grids (shelf, continue rows, a series' volumes/episodes). One definition so every
-   media view sizes its covers the same way — two columns on a phone, up to five on a wide
-   screen, which keeps posters large enough to read. */
+   media view sizes its covers the same way — two columns on a phone, five on a laptop. At
+   full width, big screens add columns instead of blowing posters up (about 200px wide each,
+   nine across at 1920px). */
 @layer components {
   .poster-grid {
     @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5;
   }
+  @media (min-width: 1400px) { html:not(.page-contained) .poster-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+  @media (min-width: 1600px) { html:not(.page-contained) .poster-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+  @media (min-width: 1760px) { html:not(.page-contained) .poster-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+  @media (min-width: 1900px) { html:not(.page-contained) .poster-grid { grid-template-columns: repeat(9, minmax(0, 1fr)); } }
+  @media (min-width: 2200px) { html:not(.page-contained) .poster-grid { grid-template-columns: repeat(10, minmax(0, 1fr)); } }
+  @media (min-width: 2600px) { html:not(.page-contained) .poster-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); } }
   .hero-btn {
     @apply h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl bg-card hover:bg-muted text-foreground border border-border font-medium text-xs sm:text-sm transition active:scale-95 disabled:opacity-50 flex items-center gap-1.5 sm:gap-2 shadow-sm;
   }

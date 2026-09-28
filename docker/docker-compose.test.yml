@@ -1,0 +1,32 @@
+# A second Plinthio next to your real one, for trying unreleased changes before they ship.
+# It builds from this checkout (whatever branch is checked out), keeps its own settings and
+# database in ./config-test, and mounts your media READ-ONLY, so nothing done on it can
+# touch your files or your real server.
+#
+#   docker compose -f docker/docker-compose.test.yml up -d --build
+#
+# Then open http://<this machine>:8089. Run the same command again after switching branches
+# or pulling to rebuild it. To start it from a copy of your real server's accounts and
+# libraries, see "A test server" in docs/setup.md.
+name: plinthio-test
+services:
+  plinthio-test:
+    image: plinthio:test
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        APP_VERSION: test
+    container_name: plinthio-test
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:${TEST_PORT:-8089}:8080"
+    environment:
+      - TZ=${TZ:-UTC}
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      # A test build isn't a release; don't show it the update banner.
+      - UPDATE_CHECK=false
+    volumes:
+      - ./config-test:/config
+      - ${MEDIA_DIR:-/media/library}:/media:ro
