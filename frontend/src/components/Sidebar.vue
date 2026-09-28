@@ -3,9 +3,7 @@
   <aside class="hidden md:flex md:flex-col w-64 flex-shrink-0 h-screen sticky top-0 border-r border-border bg-background/95 backdrop-blur-md transition-colors">
     <!-- Logo -->
     <router-link to="/" class="flex items-center gap-3 px-4 h-[68px] border-b border-border flex-shrink-0 group">
-      <div class="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm flex-shrink-0">
-        <BookOpen class="w-5 h-5" />
-      </div>
+      <AppLogo class="w-9 h-9 flex-shrink-0" />
       <span class="text-lg font-semibold tracking-tight text-foreground truncate">
         {{ customizationStore.serverName || 'Plinthio' }}
       </span>
@@ -68,9 +66,7 @@
       </button>
 
       <router-link to="/" class="flex items-center gap-2.5 flex-1 min-w-0 justify-center group">
-        <div class="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shadow-sm flex-shrink-0">
-          <BookOpen class="w-4 h-4" />
-        </div>
+        <AppLogo class="w-8 h-8 flex-shrink-0" />
         <span class="text-base font-semibold tracking-tight text-foreground truncate">
           {{ customizationStore.serverName || 'Plinthio' }}
         </span>
@@ -151,9 +147,7 @@
     >
       <div class="flex items-center justify-between px-4 h-[56px] sm:h-[60px] border-b border-border flex-shrink-0">
         <router-link to="/" @click="mobileOpen = false" class="flex items-center gap-2.5 group">
-          <div class="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
-            <BookOpen class="w-4 h-4" />
-          </div>
+          <AppLogo class="w-8 h-8 flex-shrink-0" />
           <span class="text-base font-semibold tracking-tight text-foreground truncate">
             {{ customizationStore.serverName || 'Plinthio' }}
           </span>
@@ -191,13 +185,14 @@
 </template>
 
 <script setup>
+import AppLogo from './AppLogo.vue';
 import { ref, computed } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { ALL_MEDIA_TYPES } from '../constants/media';
 import { useCustomizationStore } from '../stores/customization';
 import UserMenu from './UserMenu.vue';
 import {
-  BookOpen,
+  
   Headphones,
   FileImage,
   Book,

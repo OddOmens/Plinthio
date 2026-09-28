@@ -7,6 +7,8 @@ import { getRatingSettings, saveRatingSettings } from '../services/ratings.js';
 import { getShowMissingFilms, saveShowMissingFilms } from '../services/collections.js';
 import { isPartyModeEnabled, savePartyModeEnabled } from './party.js';
 import { endAllParties } from '../services/party.js';
+import multer from 'multer';
+import { getIntroSettings, saveIntroSettings, installIntro, removeIntro, INTRO_MAX_BYTES } from '../services/intro.js';
 
 const router = express.Router();
 
@@ -48,6 +50,8 @@ router.get('/', async (req, res) => {
     config.showMissingFilms = await getShowMissingFilms(db);
     // Watch parties — off unless an admin turns them on.
     config.partyModeEnabled = await isPartyModeEnabled(db);
+    // The opening sequence played before movies and episodes.
+    Object.assign(config, await getIntroSettings(db));
 
     res.json(config);
   } catch (err) {
@@ -60,7 +64,7 @@ router.get('/', async (req, res) => {
 
 // PATCH /api/customization (Admin only)
 router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
-  const { serverName, customCss, accentTheme, loginMessage, layoutMode, ratings, showMissingFilms, partyModeEnabled, pauseScreen } = req.body;
+  const { serverName, customCss, accentTheme, loginMessage, layoutMode, ratings, showMissingFilms, partyModeEnabled, pauseScreen, introEnabled, introMovies, introShows } = req.body;
 
   try {
     const db = await getDb();
@@ -138,6 +142,8 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       if (!partyModeEnabled) endAllParties();
     }
 
+    await saveIntroSettings(db, { introEnabled, introMovies, introShows });
+
     logger.info('system', `Customization updated by admin ${req.user.username}`);
 
     const rows = await db.all(`
@@ -165,8 +171,45 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
     result.ratings = await getRatingSettings(db);
     result.showMissingFilms = await getShowMissingFilms(db);
     result.partyModeEnabled = await isPartyModeEnabled(db);
+    Object.assign(result, await getIntroSettings(db));
 
     res.json({ message: 'Customization updated successfully', ...result });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// ─── Opening sequence ────────────────────────────────────────────────────────
+// POST /api/customization/intro (Admin): upload or replace the clip. multipart, field "intro".
+const introUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: INTRO_MAX_BYTES, files: 1 } });
+
+router.post('/intro', authenticateToken, requireAdmin, (req, res) => {
+  introUpload.single('intro')(req, res, async (err) => {
+    if (err) {
+      const tooBig = err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE';
+      return res.status(tooBig ? 413 : 400).json({
+        error: tooBig ? `The opening sequence must be smaller than ${INTRO_MAX_BYTES / 1024 / 1024} MB` : 'Upload failed'
+      });
+    }
+    if (!req.file) return res.status(400).json({ error: 'Choose an MP4 file to upload' });
+    try {
+      const db = await getDb();
+      await installIntro(db, req.file.buffer);
+      logger.info('system', `Opening sequence uploaded by admin ${req.user.username}`);
+      res.json(await getIntroSettings(db));
+    } catch (e) {
+      res.status(400).json({ error: e.message });
+    }
+  });
+});
+
+// DELETE /api/customization/intro (Admin): remove the uploaded clip, back to the built-in one.
+router.delete('/intro', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const db = await getDb();
+    await removeIntro();
+    logger.info('system', `Opening sequence removed by admin ${req.user.username}`);
+    res.json(await getIntroSettings(db));
   } catch (err) {
     serverError(req, res, err);
   }

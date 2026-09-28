@@ -9,6 +9,27 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-28
+
+### Added
+- **Backdrops on title pages.** Movies and shows open under their TMDB backdrop with the title's logo on it. On a wide screen at full width, the poster sits over the backdrop and the details, episodes and cast line up beside it.
+- **Full-width pages.** Pages now use the whole screen, and big displays get more posters in a row (nine across at 1920px) instead of five oversized ones. Anyone who prefers the old centred layout can pick **Contained** in Settings → Preferences → Page Width. It's per person, so a TV and a laptop can differ.
+- **Opening sequence.** Admins can switch on a short Plinthio clip that plays full-screen before movies and episodes when someone presses Play, like a streaming service's intro, and the title starts the moment it ends. Replace it with your own 1–10 second MP4, or limit it to movies or shows. Off by default, always skippable, and never when resuming, before autoplayed next episodes, trailers or watch parties. Admin → Server Config → Opening Sequence.
+- **Live preview in Admin → Server Config.** Theme, navigation layout, ratings, movie collections, watch parties, pause screen, server name and sign-in notice now sit beside a preview of the shelf, a title page, the sign-in screen and the player. It updates as you change each setting, and hovering a pause screen style previews it before you pick it. It uses your own movies' posters when the server has some.
+
+### Changed
+- **A new sign-in page**: the logo, a welcome and the sign-in card in one centred column over soft, slowly shifting colour, with the admin's notice at the top of the card and a show-password button. It uses no online services and shows nothing from your library before someone signs in, and it stays still for anyone who has reduced motion turned on.
+- **A new logo**, in the app, on the sign-in and setup screens, and as the icon when you install Plinthio on a phone or desktop. Android gets a properly padded version so the launcher doesn't crop it.
+- **Seasons as posters.** A show's or anime's seasons are picked from a row of posters (each season's own art from TMDB, or the show's poster) with a check on finished seasons, instead of plain "Season 1, Season 2" buttons.
+- **Movie collections as posters.** A collection's page shows its films as a poster grid, like the shelf, instead of an episode-style list. Hover a poster to play it straight away.
+- **A film always opens its own page.** With the shelf on "All movies", in Continue Watching and anywhere else a single film appears, clicking Shrek 2 opens Shrek 2 rather than the Shrek collection. Its page links to the rest of the collection.
+- **Pause screens fill the screen.** Details and Cinematic are sized to the player, so the poster, title and details are large on a TV or a big monitor instead of sitting small in one corner. Bedtime's clock scales the same way.
+
+### Fixed
+- **A show no longer splits in two when its files spell its name differently.** Episodes from different release groups ("Farming Life in Another World" and "Farming.Life.In.Another.World") are now one show, named after its folder, with any series settings or Kids Mode entry carried over. Existing splits merge on the next scan.
+- **Server name and sign-in notice save as you type**, like the other appearance settings, and the notice has a button to remove it. Before, they only saved with the button under Custom CSS, so clearing the notice could look done without being saved.
+- The sign-in notice set in Server Branding now actually appears on the sign-in page, and the sign-in page greets people with the server's name.
+
 ## [1.0.0] - 2026-09-27
 
 ### Added

@@ -16,6 +16,15 @@ export const useCustomizationStore = defineStore('customization', {
     partyModeEnabled: false,
     // What the video player shows while paused: simple | details | cinematic | bedtime.
     pauseScreen: 'details',
+    // The opening sequence played before movies/episodes: the built-in clip unless an admin
+    // uploads one (introCustom). introVersion changes with each upload so the new clip isn't
+    // cached over.
+    introEnabled: false,
+    introMovies: true,
+    introShows: true,
+    introCustom: false,
+    introVersion: null,
+    introDuration: null,
     loading: false
   }),
 
@@ -37,6 +46,7 @@ export const useCustomizationStore = defineStore('customization', {
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
           if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
+          this.applyIntro(res.data);
           this.applyToDom();
         }
         return res.data;
@@ -59,12 +69,37 @@ export const useCustomizationStore = defineStore('customization', {
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
           if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
+          this.applyIntro(res.data);
           this.applyToDom();
         }
         return res.data;
       } finally {
         this.loading = false;
       }
+    },
+
+    applyIntro(data) {
+      if (!data || !('introVersion' in data)) return;
+      this.introEnabled = !!data.introEnabled;
+      this.introMovies = data.introMovies !== false;
+      this.introShows = data.introShows !== false;
+      this.introCustom = !!data.introCustom;
+      this.introVersion = data.introVersion || null;
+      this.introDuration = data.introDuration || null;
+    },
+
+    // Whether pressing Play on this title shows the opening sequence first. Never for extras
+    // (a trailer) or when resuming partway through (Resume / Continue Watching), and the
+    // caller leaves it out of autoplayed next episodes and watch parties.
+    playsIntroBefore(item) {
+      if (!this.introEnabled || !this.introVersion || !item || item.extra_type) return false;
+      // The same test the player uses to decide whether to resume (VideoPlayer onLoadedMetadata).
+      const saved = item.current_time || 0;
+      const nearEnd = item.duration > 0 && saved / item.duration >= 0.98;
+      if (saved > 10 && !nearEnd) return false;
+      if (item.media_type === 'movie') return this.introMovies;
+      if (item.media_type === 'show' || item.media_type === 'anime') return this.introShows;
+      return false;
     },
 
     applyToDom() {

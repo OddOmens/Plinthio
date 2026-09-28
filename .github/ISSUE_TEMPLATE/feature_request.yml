@@ -2,6 +2,34 @@ name: Feature request
 description: Suggest something Plinthio should do
 labels: [enhancement]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. One idea per request makes it easier to discuss and track.
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Before you start
+      options:
+        - label: I searched the [existing issues](https://github.com/OddOmens/Plinthio/issues?q=is%3Aissue) and nobody has asked for this yet. (If they have, add a 👍 there instead.)
+          required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of Plinthio
+      options:
+        - Movies and shows
+        - Books, comics, manga and PDFs
+        - Audiobooks
+        - Watch parties (Together)
+        - Reading apps (OPDS, Mihon, KOReader)
+        - Libraries and scanning
+        - Accounts, sign-in and Kids Mode
+        - Admin and server settings
+        - Installing and updating
+        - Something else
+    validations:
+      required: true
   - type: textarea
     id: problem
     attributes:
@@ -14,3 +42,8 @@ body:
     attributes:
       label: What would help
       description: How you imagine it working. Optional.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots, examples from other software, or how you'd use it.

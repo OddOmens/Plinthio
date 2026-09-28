@@ -20,9 +20,7 @@
 
           <!-- STEP: Welcome -->
           <section v-if="step === 'welcome'" class="flex flex-col items-center text-center gap-5">
-            <div class="w-16 h-16 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20">
-              <BookOpen class="w-8 h-8" />
-            </div>
+            <AppLogo class="w-20 h-20" />
             <div class="space-y-2">
               <h1 class="text-3xl font-bold tracking-tight text-foreground">
                 Welcome to {{ serverName }}
@@ -195,6 +193,7 @@
 </template>
 
 <script setup>
+import AppLogo from './AppLogo.vue';
 import { ref, reactive, computed } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
@@ -202,7 +201,7 @@ import { useThemeStore } from '../stores/theme';
 import { useCustomizationStore } from '../stores/customization';
 import { ALL_MEDIA_TYPES } from '../constants/media';
 import {
-  BookOpen, Headphones, FileImage, Book, Tv, Film, Sparkles,
+  Headphones, FileImage, Book, Tv, Film, Sparkles,
   Check, ArrowRight, Loader2, Moon, Sun
 } from 'lucide-vue-next';
 

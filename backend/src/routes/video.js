@@ -274,7 +274,8 @@ router.get('/:id/trickplay/index.json', authenticateToken, async (req, res) => {
     const existing = getTrickplayIndex(req.params.id);
     if (existing) return res.json(existing);
 
-    res.status(404).json({ status: 'not_available' });
+    // No sheets for this file is normal, not an error: 204 keeps it out of the browser console.
+    res.status(204).end();
   } catch (err) {
     console.error('[video] trickplay index failed:', err);
     if (!res.headersSent) res.status(500).json({ error: 'Could not load scrub previews' });

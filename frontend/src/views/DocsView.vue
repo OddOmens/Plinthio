@@ -3,14 +3,12 @@
     <!-- Primary navigation: sidebar layout keeps global nav present on this page too -->
     <Sidebar v-if="isSidebarLayout" activeType="all" @filter-type="goToShelf" />
     <div class="flex-1 flex flex-col min-w-0">
-    <!-- Top Bar (width matches the max-w-[1440px] content container below, same as Admin/Settings) -->
+    <!-- Top Bar (width matches the page-width content container below, same as Admin/Settings) -->
     <header class="bg-card/60 backdrop-blur-md border-b border-border sticky top-0 z-30 safe-top transition-colors">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-[60px] flex items-center justify-between gap-2">
+      <div class="page-width mx-auto px-4 sm:px-6 lg:px-8 h-[60px] flex items-center justify-between gap-2">
         <div class="flex items-center gap-3 min-w-0">
           <router-link to="/" class="flex items-center gap-2 hover:opacity-80 transition min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm flex-shrink-0">
-              S
-            </div>
+            <AppLogo class="w-8 h-8 flex-shrink-0" />
             <span class="font-semibold text-sm tracking-tight truncate">{{ customizationStore.serverName }}</span>
           </router-link>
           <span class="text-xs text-muted-foreground hidden sm:inline flex-shrink-0">/</span>
@@ -30,7 +28,7 @@
     </header>
 
     <!-- Main Container with Sidebar + Content -->
-    <div class="flex-1 max-w-[1440px] w-full mx-auto flex flex-col md:flex-row">
+    <div class="flex-1 page-width w-full mx-auto flex flex-col md:flex-row">
       <!-- Sidebar Navigation -->
       <aside class="w-full md:w-64 border-b md:border-b-0 md:border-r border-border p-4 sm:p-6 space-y-6 flex-shrink-0">
         <div v-for="group in navGroups" :key="group.id">
@@ -960,6 +958,7 @@ header input[type="text"] {
 </template>
 
 <script setup>
+import AppLogo from '../components/AppLogo.vue';
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCustomizationStore } from '../stores/customization';
