@@ -22,6 +22,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Pause screens fill the screen.** Details and Cinematic are sized to the player, so the poster, title and details are large on a TV or a big monitor instead of sitting small in one corner. Bedtime's clock scales the same way.
 
 ### Fixed
+- **A show no longer splits in two when its files spell its name differently.** Episodes from different release groups ("Farming Life in Another World" and "Farming.Life.In.Another.World") are now one show, named after its folder, with any series settings or Kids Mode entry carried over. Existing splits merge on the next scan.
 - The sign-in notice set in Server Branding now actually appears on the sign-in page, and the sign-in page greets people with the server's name.
 
 ## [1.0.0] - 2026-09-27

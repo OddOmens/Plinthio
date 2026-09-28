@@ -249,6 +249,7 @@ export async function scanLibrary(libraryId) {
     }
 
     await applyExtras(db, libraryId, extras);
+    await unifySeriesSpellings(db, libraryId);
 
     // Files that have gone from disk are marked missing, not deleted: a drive that's slow to
     // mount, or a folder mid-reorganise, must not cost anyone their progress, ratings or
@@ -294,6 +295,69 @@ export async function scanLibrary(libraryId) {
  *
  * Best-effort throughout: a failure here never fails the scan.
  */
+/**
+ * A show's name comes from each episode's filename, so two release groups that spell it
+ * differently ("Farming Life in Another World - S01E01" and
+ * "Farming.Life.In.Another.World.S02E01") would split one show into two. Names that differ
+ * only in case or punctuation are the same show: they're merged under one spelling — the
+ * show folder's, when a folder is named exactly that, otherwise the most common one. Series
+ * settings and Kids Mode entries saved under a losing spelling move across. Shows and anime
+ * only; everything else takes its series from folders or tags that don't vary per file.
+ */
+export function seriesKey(name) {
+  return String(name).normalize('NFKD').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+}
+
+async function unifySeriesSpellings(db, libraryId) {
+  const rows = await db.all(
+    `SELECT series, media_type, path FROM items
+     WHERE library_id = ? AND media_type IN ('show', 'anime') AND series IS NOT NULL`,
+    [libraryId]
+  );
+  // key -> spelling -> { count, isFolder }
+  const groups = new Map();
+  for (const r of rows) {
+    const key = `${r.media_type}:${seriesKey(r.series)}`;
+    if (!groups.has(key)) groups.set(key, new Map());
+    const spellings = groups.get(key);
+    const entry = spellings.get(r.series) || { count: 0, isFolder: false };
+    entry.count++;
+    if (!entry.isFolder && r.path.split(path.sep).includes(r.series)) entry.isFolder = true;
+    spellings.set(r.series, entry);
+  }
+
+  for (const [key, spellings] of groups) {
+    if (spellings.size < 2) continue;
+    const mediaType = key.slice(0, key.indexOf(':'));
+    const [canonical] = [...spellings.entries()].sort(([a, x], [b, y]) =>
+      (y.isFolder - x.isFolder) || (y.count - x.count) || a.localeCompare(b))[0];
+    const others = [...spellings.keys()].filter((name) => name !== canonical);
+
+    await db.run('BEGIN TRANSACTION');
+    try {
+      for (const name of others) {
+        await db.run(
+          'UPDATE items SET series = ? WHERE library_id = ? AND media_type = ? AND series = ?',
+          [canonical, libraryId, mediaType, name]
+        );
+        // Keep the canonical spelling's own settings if it has some; otherwise inherit.
+        await db.run(
+          `UPDATE OR IGNORE series_settings SET series_name = ? WHERE library_id = ? AND series_name = ?`,
+          [canonical, libraryId, name]
+        );
+        await db.run('DELETE FROM series_settings WHERE library_id = ? AND series_name = ?', [libraryId, name]);
+        await db.run('UPDATE OR IGNORE kids_titles SET series = ? WHERE library_id = ? AND series = ?', [canonical, libraryId, name]);
+        await db.run('DELETE FROM kids_titles WHERE library_id = ? AND series = ?', [libraryId, name]);
+      }
+      await db.run('COMMIT');
+    } catch (err) {
+      await db.run('ROLLBACK');
+      throw err;
+    }
+    logger.info('scan', `Merged ${others.map((n) => `"${n}"`).join(', ')} into "${canonical}" (same show, different spelling)`);
+  }
+}
+
 /**
  * Records which items are extras and what of. Runs over every item each scan (not just new
  * or changed files), so moving a clip into an Extras folder — or out of one — takes effect.
