@@ -9,38 +9,24 @@
       <div class="absolute inset-0 grain"></div>
     </div>
 
-    <div class="relative min-h-screen w-full max-w-6xl mx-auto px-4 sm:px-8 py-10 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
+    <div class="relative min-h-screen w-full max-w-md mx-auto px-4 sm:px-6 py-10 flex flex-col items-center justify-center gap-8">
       <!-- Welcome -->
-      <div class="flex flex-col items-center lg:items-start text-center lg:text-left gap-4 lg:flex-1 max-w-xl login-in">
-        <AppLogo class="w-16 h-16 lg:w-24 lg:h-24" />
+      <div class="flex flex-col items-center text-center gap-4 login-in">
+        <AppLogo class="w-20 h-20 sm:w-24 sm:h-24" />
         <div class="flex flex-col gap-2">
-          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-primary">{{ isSetup ? 'Welcome to' : 'Let\'s get started' }}</p>
-          <h1 class="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
-            {{ isSetup ? (customizationStore.serverName || 'Plinthio') : 'Set up Plinthio' }}
+          <h1 class="text-3xl sm:text-4xl font-bold tracking-tight leading-tight">
+            {{ isSetup ? `Welcome to ${customizationStore.serverName || 'Plinthio'}` : 'Set up Plinthio' }}
           </h1>
-          <p class="text-sm lg:text-base text-muted-foreground leading-relaxed max-w-md mx-auto lg:mx-0">
+          <p class="text-sm sm:text-base text-muted-foreground leading-relaxed">
             {{ isSetup
               ? 'Books, comics, audiobooks, movies and shows. All in one place, and right where you left off.'
               : 'Create the administrator account for this server. You can add libraries and invite people next.' }}
           </p>
         </div>
-        <ul class="hidden sm:flex flex-wrap justify-center lg:justify-start gap-2 mt-1">
-          <li v-for="m in mediaKinds" :key="m.label" class="h-8 px-3 rounded-full border border-border bg-card/60 backdrop-blur text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-            <component :is="m.icon" class="w-3.5 h-3.5 text-primary" />{{ m.label }}
-          </li>
-        </ul>
-        <!-- The admin's notice (Admin → Server Config → Server Branding) -->
-        <div
-          v-if="isSetup && customizationStore.loginMessage"
-          class="w-full max-w-md flex items-start gap-2.5 p-3 rounded-xl bg-primary/10 border border-primary/25 text-sm text-foreground text-left leading-relaxed backdrop-blur"
-        >
-          <Megaphone class="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-          <p class="whitespace-pre-line">{{ customizationStore.loginMessage }}</p>
-        </div>
       </div>
 
       <!-- Sign-in card -->
-      <div class="w-full max-w-sm lg:flex-shrink-0 bg-card/80 backdrop-blur-xl border border-border rounded-2xl p-6 sm:p-7 shadow-2xl login-in login-in-late">
+      <div class="w-full bg-card/80 backdrop-blur-xl border border-border rounded-2xl p-6 sm:p-7 shadow-2xl login-in login-in-late">
         <!-- Expired Account State -->
         <div v-if="isExpired" class="flex flex-col items-center text-center py-2 animate-in fade-in duration-200">
           <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-500 flex items-center justify-center mb-3.5 shadow-sm">
@@ -62,10 +48,15 @@
 
         <!-- Regular Login Form -->
         <template v-else>
-          <div class="mb-5">
-            <h2 class="text-lg font-semibold tracking-tight">{{ isSetup ? 'Sign in' : 'Create admin account' }}</h2>
-            <p class="text-xs text-muted-foreground mt-0.5">{{ isSetup ? 'Use the account your server admin gave you.' : 'Password needs at least 8 characters.' }}</p>
+          <!-- The admin's notice (Admin → Server Config → Server Branding), read before signing in -->
+          <div
+            v-if="isSetup && customizationStore.loginMessage"
+            class="mb-5 flex items-start gap-2.5 p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-foreground leading-relaxed"
+          >
+            <Megaphone class="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+            <p class="whitespace-pre-line">{{ customizationStore.loginMessage }}</p>
           </div>
+          <p v-if="!isSetup" class="mb-4 text-xs text-muted-foreground">Password needs at least 8 characters.</p>
 
           <!-- Error Alert -->
           <div v-if="error" class="mb-4 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
@@ -141,7 +132,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
-import { AlertCircle, Loader2, Lock, User, KeyRound, Eye, EyeOff, ArrowRight, Megaphone, Book, FileImage, Headphones, Film, Tv, Sparkles } from 'lucide-vue-next';
+import { AlertCircle, Loader2, Lock, User, KeyRound, Eye, EyeOff, ArrowRight, Megaphone } from 'lucide-vue-next';
 
 const router = useRouter();
 const route = useRoute();
@@ -156,14 +147,6 @@ const isSetup = ref(true);
 const isExpired = ref(false);
 const showPassword = ref(false);
 
-const mediaKinds = [
-  { label: 'Books', icon: Book },
-  { label: 'Comics & Manga', icon: FileImage },
-  { label: 'Audiobooks', icon: Headphones },
-  { label: 'Movies', icon: Film },
-  { label: 'Shows', icon: Tv },
-  { label: 'Anime', icon: Sparkles }
-];
 
 
 onMounted(async () => {

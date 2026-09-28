@@ -758,7 +758,7 @@
         <!-- Appearance: settings on the left, a live preview of them on the right -->
         <div class="flex flex-col gap-1">
           <h3 class="text-sm font-semibold text-foreground tracking-tight">Look &amp; feel</h3>
-          <p class="text-xs text-muted-foreground">Each change shows in the preview straight away. Most save as you click; server name, notice and CSS save with their button.</p>
+          <p class="text-xs text-muted-foreground">Each change shows in the preview straight away and saves on its own. Only custom CSS waits for its Save button.</p>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] gap-5 items-start">
           <div class="order-2 lg:order-1 flex flex-col gap-5 min-w-0">
@@ -957,9 +957,16 @@
 
             <!-- Server Branding Card -->
             <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'login'" @click="previewView = 'login'">
-              <div class="border-b border-border pb-3">
-                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Branding & Notices</h3>
-                <p class="text-xs text-muted-foreground mt-0.5">Configure your server name and custom login-screen announcements.</p>
+              <div class="border-b border-border pb-3 flex items-start justify-between gap-3">
+                <div>
+                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Branding & Notices</h3>
+                  <p class="text-xs text-muted-foreground mt-0.5">Your server's name, and an optional notice on the sign-in page. Saves as you type.</p>
+                </div>
+                <span v-if="brandingStatus" class="text-[12px] font-medium flex-shrink-0 flex items-center gap-1" :class="brandingStatus === 'error' ? 'text-destructive' : 'text-muted-foreground'">
+                  <Loader2 v-if="brandingStatus === 'saving'" class="w-3 h-3 animate-spin" />
+                  <CheckCircle v-else-if="brandingStatus === 'saved'" class="w-3 h-3 text-emerald-500" />
+                  {{ { saving: 'Saving…', saved: 'Saved', error: 'Couldn\'t save' }[brandingStatus] }}
+                </span>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -967,6 +974,8 @@
                   <label class="block text-xs font-medium text-foreground mb-1.5">Server Name</label>
                   <input
                     v-model="customizationForm.serverName"
+                    @input="scheduleBrandingSave"
+                    @blur="saveBranding"
                     type="text"
                     class="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="Plinthio"
@@ -974,13 +983,25 @@
                 </div>
 
                 <div>
-                  <label class="block text-xs font-medium text-foreground mb-1.5">Login Notice / Message</label>
-                  <input
-                    v-model="customizationForm.loginMessage"
-                    type="text"
-                    class="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                    placeholder="Welcome to family media server"
-                  />
+                  <label class="block text-xs font-medium text-foreground mb-1.5">Sign-in Notice</label>
+                  <div class="relative">
+                    <input
+                      v-model="customizationForm.loginMessage"
+                      @input="scheduleBrandingSave"
+                      @blur="saveBranding"
+                      type="text"
+                      class="w-full bg-background border border-border rounded-lg pl-3 pr-8 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                      placeholder="None: leave empty to show no notice"
+                    />
+                    <button
+                      v-if="customizationForm.loginMessage"
+                      type="button"
+                      @click="customizationForm.loginMessage = ''; saveBranding()"
+                      class="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center transition"
+                      aria-label="Remove the sign-in notice"
+                      title="Remove the notice"
+                    ><X class="w-3.5 h-3.5" /></button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1018,7 +1039,7 @@
                   class="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm flex items-center gap-2 disabled:opacity-50"
                 >
                   <Loader2 v-if="savingCustomization" class="w-3.5 h-3.5 animate-spin" />
-                  <span>Save Branding & CSS</span>
+                  <span>Save CSS</span>
                 </button>
 
                 <button
@@ -1974,6 +1995,8 @@ async function loadCustomization() {
       layoutMode: customizationStore.layoutMode,
       ratings: { ...customizationStore.ratings }
     };
+    brandingSaved = { serverName: customizationStore.serverName, loginMessage: customizationStore.loginMessage };
+    brandingStatus.value = '';
   } catch (err) {
     console.warn('Failed to load customization:', err);
   }
@@ -2010,16 +2033,36 @@ function previewCustomCss() {
   tag.textContent = customizationForm.value.customCss || '';
 }
 
+// Server name and sign-in notice save on their own, a moment after typing stops (or on
+// leaving the field), like every other card here. Custom CSS keeps its Save button: half-typed
+// CSS shouldn't go live for everyone.
+const brandingStatus = ref('');
+let brandingTimer = null;
+let brandingSaved = { serverName: null, loginMessage: null };
+function scheduleBrandingSave() {
+  clearTimeout(brandingTimer);
+  brandingTimer = setTimeout(saveBranding, 800);
+}
+async function saveBranding() {
+  clearTimeout(brandingTimer);
+  const serverName = (customizationForm.value.serverName || '').trim();
+  const loginMessage = (customizationForm.value.loginMessage || '').trim();
+  if (serverName === brandingSaved.serverName && loginMessage === brandingSaved.loginMessage) return;
+  brandingStatus.value = 'saving';
+  try {
+    await customizationStore.updateCustomization({ serverName, loginMessage });
+    brandingSaved = { serverName, loginMessage };
+    brandingStatus.value = 'saved';
+  } catch (err) {
+    brandingStatus.value = 'error';
+  }
+}
+
 async function saveCustomization() {
   savingCustomization.value = true;
   try {
-    await customizationStore.updateCustomization({
-      serverName: customizationForm.value.serverName.trim(),
-      customCss: customizationForm.value.customCss,
-      accentTheme: customizationForm.value.accentTheme,
-      loginMessage: customizationForm.value.loginMessage.trim()
-    });
-    dialog.alert('Branding and CSS saved successfully!');
+    await customizationStore.updateCustomization({ customCss: customizationForm.value.customCss });
+    dialog.alert('Custom CSS saved.');
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to save customization');
   } finally {

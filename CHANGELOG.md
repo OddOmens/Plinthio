@@ -15,7 +15,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Live preview in Admin → Server Config.** Theme, navigation layout, ratings, movie collections, watch parties, pause screen, server name and sign-in notice now sit beside a preview of the shelf, a title page, the sign-in screen and the player. It updates as you change each setting, and hovering a pause screen style previews it before you pick it. It uses your own movies' posters when the server has some.
 
 ### Changed
-- **A new sign-in page**: the server's name, the admin's notice and a clean sign-in card over soft, slowly shifting colour, with a show-password button. It uses no online services and shows nothing from your library before someone signs in, and it stays still for anyone who has reduced motion turned on.
+- **A new sign-in page**: the logo, a welcome and the sign-in card in one centred column over soft, slowly shifting colour, with the admin's notice at the top of the card and a show-password button. It uses no online services and shows nothing from your library before someone signs in, and it stays still for anyone who has reduced motion turned on.
 - **A new logo**, in the app, on the sign-in and setup screens, and as the icon when you install Plinthio on a phone or desktop. Android gets a properly padded version so the launcher doesn't crop it.
 - **Seasons as posters.** A show's or anime's seasons are picked from a row of posters (each season's own art from TMDB, or the show's poster) with a check on finished seasons, instead of plain "Season 1, Season 2" buttons.
 - **Movie collections as posters.** A collection's page shows its films as a poster grid, like the shelf, instead of an episode-style list. Hover a poster to play it straight away.
@@ -24,6 +24,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ### Fixed
 - **A show no longer splits in two when its files spell its name differently.** Episodes from different release groups ("Farming Life in Another World" and "Farming.Life.In.Another.World") are now one show, named after its folder, with any series settings or Kids Mode entry carried over. Existing splits merge on the next scan.
+- **Server name and sign-in notice save as you type**, like the other appearance settings, and the notice has a button to remove it. Before, they only saved with the button under Custom CSS, so clearing the notice could look done without being saved.
 - The sign-in notice set in Server Branding now actually appears on the sign-in page, and the sign-in page greets people with the server's name.
 
 ## [1.0.0] - 2026-09-27

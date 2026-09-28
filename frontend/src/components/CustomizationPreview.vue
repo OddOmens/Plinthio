@@ -135,21 +135,26 @@
           </div>
         </div>
 
-        <!-- Sign-in: server name and the login notice -->
-        <div v-else-if="view === 'login'" class="w-full h-full bg-background flex items-center justify-center">
-          <div class="w-[384px] bg-card border border-border rounded-xl p-6 shadow-lg">
-            <div class="flex flex-col items-center text-center mb-6">
-              <AppLogo class="w-14 h-14 mb-3" />
-              <h1 class="text-xl font-semibold tracking-tight text-foreground">Welcome to {{ brand }}</h1>
-              <p class="text-xs text-muted-foreground mt-1">Sign in to access your library</p>
+        <!-- Sign-in: server name and the sign-in notice, laid out like LoginView -->
+        <div v-else-if="view === 'login'" class="w-full h-full bg-background relative overflow-hidden flex items-center justify-center">
+          <div class="absolute -top-40 -left-24 w-[640px] h-[640px] rounded-full blur-[100px] bg-[hsl(213_55%_50%/0.28)]"></div>
+          <div class="absolute -bottom-48 -right-24 w-[560px] h-[560px] rounded-full blur-[100px] bg-[hsl(255_45%_50%/0.24)]"></div>
+          <div class="relative w-[448px] flex flex-col items-center gap-8">
+            <div class="flex flex-col items-center text-center gap-4">
+              <AppLogo class="w-24 h-24" />
+              <h1 class="text-4xl font-bold tracking-tight leading-tight text-foreground">Welcome to {{ brand }}</h1>
+              <p class="text-base text-muted-foreground leading-relaxed">Books, comics, audiobooks, movies and shows. All in one place, and right where you left off.</p>
             </div>
-            <p v-if="settings.loginMessage" class="mb-4 p-2.5 rounded-md bg-primary/10 border border-primary/20 text-foreground text-xs text-center leading-relaxed whitespace-pre-line">{{ settings.loginMessage }}</p>
-            <div class="flex flex-col gap-3.5">
+            <div class="w-full bg-card/80 border border-border rounded-2xl p-7 shadow-2xl flex flex-col gap-4">
+              <div v-if="settings.loginMessage" class="flex items-start gap-2.5 p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-foreground leading-relaxed">
+                <Megaphone class="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                <p class="whitespace-pre-line">{{ settings.loginMessage }}</p>
+              </div>
               <div v-for="field in ['Username', 'Password']" :key="field">
                 <p class="text-xs font-medium text-foreground mb-1.5">{{ field }}</p>
-                <div class="w-full h-8 bg-background border border-border rounded-md"></div>
+                <div class="w-full h-10 bg-background/70 border border-border rounded-lg"></div>
               </div>
-              <div class="w-full h-9 rounded-md bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center shadow-sm">Sign In</div>
+              <div class="w-full h-10 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center shadow-lg">Sign In</div>
             </div>
           </div>
         </div>
@@ -185,7 +190,7 @@
 <script setup>
 import AppLogo from './AppLogo.vue';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { Search, Play, Film, Tv, Headphones, Book, Users, Star, Plus, LayoutGrid } from 'lucide-vue-next';
+import { Search, Play, Film, Tv, Headphones, Book, Users, Star, Plus, LayoutGrid, Megaphone } from 'lucide-vue-next';
 import api from '../api/client';
 import { coverUrl } from '../utils/cover';
 import PauseScreen from './PauseScreen.vue';
@@ -313,7 +318,7 @@ const simpleTime = computed(() => {
 const caption = computed(() => {
   switch (props.view) {
     case 'title': return 'A movie page with the rating, watch party and collection settings above.';
-    case 'login': return 'The sign-in screen. Server name and notice show here before you save.';
+    case 'login': return 'The sign-in screen, with your server name and notice.';
     case 'pause': return {
       simple: 'Simple: nothing covers the picture. Pick another style to see it here.',
       details: 'Details: shown after a couple of seconds paused. Hover a style to compare.',
