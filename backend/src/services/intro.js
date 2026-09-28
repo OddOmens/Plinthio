@@ -2,13 +2,19 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { spawn } from 'child_process';
+import { fileURLToPath } from 'url';
 import { config } from '../config/env.js';
 
-// The opening sequence: a short clip an admin uploads, played before a movie or episode
-// starts (components/IntroSequence.vue). One file per server, kept in the data folder so it
-// survives image updates and goes along with backups of /config.
+// The opening sequence: a short clip played before a movie or episode starts
+// (components/IntroSequence.vue). Plinthio ships its own (assets/default-intro.mp4), on by
+// default; an admin can upload a replacement, kept in the data folder so it survives image
+// updates and goes along with backups of /config.
 export const INTRO_DIR = path.join(config.dataDir, 'intro');
 export const INTRO_FILE = path.join(INTRO_DIR, 'intro.mp4');
+export const DEFAULT_INTRO_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../assets/default-intro.mp4');
+// Bump when assets/default-intro.mp4 changes, so players don't keep a cached copy.
+const DEFAULT_INTRO_VERSION = 'default-1';
+const DEFAULT_INTRO_DURATION = 4;
 export const INTRO_MAX_BYTES = 20 * 1024 * 1024;
 export const INTRO_MIN_SECONDS = 1;
 export const INTRO_MAX_SECONDS = 10;
@@ -17,18 +23,28 @@ const DURATION_SLACK = 0.25;
 
 const KEYS = ['intro_enabled', 'intro_movies', 'intro_shows', 'intro_version', 'intro_duration'];
 
+// The clip to play: the admin's upload if there is one, otherwise the built-in one.
+export function activeIntroFile() {
+  if (fs.existsSync(INTRO_FILE)) return INTRO_FILE;
+  if (fs.existsSync(DEFAULT_INTRO_FILE)) return DEFAULT_INTRO_FILE;
+  return null;
+}
+
 export async function getIntroSettings(db) {
   const rows = await db.all(`SELECT key, value FROM settings WHERE key IN (${KEYS.map(() => '?').join(', ')})`, KEYS);
   const s = Object.fromEntries(rows.map((r) => [r.key, r.value]));
-  const hasFile = fs.existsSync(INTRO_FILE);
+  const file = activeIntroFile();
+  const custom = file === INTRO_FILE;
   return {
-    // Only on when there's a file to play.
-    introEnabled: hasFile && s.intro_enabled === '1',
+    // On unless an admin switches it off, and only when there's a file to play.
+    introEnabled: !!file && s.intro_enabled !== '0',
     introMovies: s.intro_movies !== '0',
     introShows: s.intro_shows !== '0',
+    // Whether the clip is an admin's upload (Remove goes back to the built-in one).
+    introCustom: custom,
     // Changes with every upload, so players fetch the new clip instead of a cached one.
-    introVersion: hasFile ? (s.intro_version || '1') : null,
-    introDuration: hasFile && s.intro_duration ? Number(s.intro_duration) : null
+    introVersion: !file ? null : custom ? (s.intro_version || '1') : DEFAULT_INTRO_VERSION,
+    introDuration: !file ? null : custom ? (s.intro_duration ? Number(s.intro_duration) : null) : DEFAULT_INTRO_DURATION
   };
 }
 
@@ -41,9 +57,7 @@ async function setSetting(db, key, value) {
 }
 
 export async function saveIntroSettings(db, { introEnabled, introMovies, introShows }) {
-  // Switching it on before there's a clip is ignored rather than remembered, so a later
-  // upload doesn't turn it on by surprise.
-  if (typeof introEnabled === 'boolean') await setSetting(db, 'intro_enabled', introEnabled && fs.existsSync(INTRO_FILE) ? '1' : '0');
+  if (typeof introEnabled === 'boolean') await setSetting(db, 'intro_enabled', introEnabled ? '1' : '0');
   if (typeof introMovies === 'boolean') await setSetting(db, 'intro_movies', introMovies ? '1' : '0');
   if (typeof introShows === 'boolean') await setSetting(db, 'intro_shows', introShows ? '1' : '0');
 }
@@ -108,7 +122,7 @@ export async function installIntro(db, buffer) {
   }
 }
 
-export async function removeIntro(db) {
+// Removes an uploaded clip; the built-in one plays again (if it's switched on).
+export async function removeIntro() {
   fs.rmSync(INTRO_FILE, { force: true });
-  await setSetting(db, 'intro_enabled', '0');
 }

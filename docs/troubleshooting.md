@@ -54,7 +54,7 @@ This page starts from what you see instead.
 | Hardware transcoding not detected | Pass `/dev/dri` through, with the right render group GID, or use the NVIDIA toolkit for NVENC. Use **Test** in Server Config. See [Setup → Hardware transcoding](setup.md#hardware-transcoding) |
 | No subtitle track listed | Picture-based subtitles (PGS, VobSub) can't be shown. Add an `.srt` next to the file |
 | No scrub previews | They're generated in the background on first play. They're only shown on computers |
-| Casting button missing | Chromecast needs Chrome with a Cast device on the same network. AirPlay needs Safari |
+| Casting button missing | Chromecast needs Chrome, Plinthio opened over HTTPS, and a Cast device on the same network. AirPlay needs Safari |
 
 ## Reading and listening
 

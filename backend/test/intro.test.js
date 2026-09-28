@@ -50,12 +50,19 @@ describe('opening sequence', () => {
 
   after(async () => { await server.stop(); });
 
-  test('is off by default, and can\'t be switched on without a clip', async () => {
+  test('the built-in clip is on by default, and can be switched off', async () => {
     const config = await fetch(`${server.baseUrl}/api/customization`).then((r) => r.json());
-    assert.equal(config.introEnabled, false);
-    assert.equal(config.introVersion, null);
-    const { body } = await patch(server.baseUrl, adminToken, { introEnabled: true });
-    assert.equal(body.introEnabled, false);
+    assert.equal(config.introEnabled, true);
+    assert.equal(config.introCustom, false);
+    assert.equal(config.introVersion, 'default-1');
+    assert.equal(config.introDuration, 4);
+    const clip = await fetch(`${server.baseUrl}/api/media/intro`, { headers: { ...authed(viewerToken), range: 'bytes=0-99' } });
+    assert.equal(clip.status, 206);
+
+    const off = await patch(server.baseUrl, adminToken, { introEnabled: false });
+    assert.equal(off.body.introEnabled, false);
+    const on = await patch(server.baseUrl, adminToken, { introEnabled: true });
+    assert.equal(on.body.introEnabled, true);
   });
 
   test('only an admin can upload one', async () => {
@@ -69,14 +76,14 @@ describe('opening sequence', () => {
     assert.match(body.error, /MP4/);
   });
 
-  test('a short H.264 MP4 is accepted, played once switched on, and removable', { skip: !hasFfprobe && 'needs ffprobe' }, async () => {
+  test('a short H.264 MP4 replaces the built-in clip, and removing it brings that back', { skip: !hasFfprobe && 'needs ffprobe' }, async () => {
     const up = await upload(server.baseUrl, adminToken, fs.readFileSync(TINY_MP4));
     assert.equal(up.status, 200);
-    assert.ok(up.body.introVersion);
+    assert.equal(up.body.introCustom, true);
+    assert.notEqual(up.body.introVersion, 'default-1');
     assert.equal(Math.round(up.body.introDuration), 2);
-    assert.equal(up.body.introEnabled, false, 'uploading doesn\'t switch it on');
 
-    const on = await patch(server.baseUrl, adminToken, { introEnabled: true, introShows: false });
+    const on = await patch(server.baseUrl, adminToken, { introShows: false });
     assert.equal(on.body.introEnabled, true);
     assert.equal(on.body.introMovies, true);
     assert.equal(on.body.introShows, false);
@@ -89,13 +96,15 @@ describe('opening sequence', () => {
 
     const del = await fetch(`${server.baseUrl}/api/customization/intro`, { method: 'DELETE', headers: authed(adminToken) });
     const after = await del.json();
-    assert.equal(after.introEnabled, false);
-    assert.equal(after.introVersion, null);
-    assert.equal((await fetch(`${server.baseUrl}/api/media/intro`, { headers: authed(viewerToken) })).status, 404);
+    assert.equal(after.introCustom, false);
+    assert.equal(after.introVersion, 'default-1');
+    assert.equal(after.introDuration, 4);
+    assert.equal(after.introEnabled, true);
+    assert.equal((await fetch(`${server.baseUrl}/api/media/intro`, { headers: authed(viewerToken) })).status, 200);
   });
 
   test('the public config says what the player needs and nothing more', async () => {
     const { body } = await getJson(server.baseUrl, '/customization', viewerToken);
-    for (const key of ['introEnabled', 'introMovies', 'introShows', 'introVersion', 'introDuration']) assert.ok(key in body, key);
+    for (const key of ['introEnabled', 'introMovies', 'introShows', 'introCustom', 'introVersion', 'introDuration']) assert.ok(key in body, key);
   });
 });

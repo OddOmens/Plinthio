@@ -990,6 +990,7 @@
 
                 <div class="flex-1 min-w-0 flex flex-col gap-3">
                   <p class="text-[12px] text-muted-foreground leading-relaxed">
+                    {{ customizationStore.introCustom ? 'Your own clip.' : 'Plinthio\'s built-in clip. Replace it with your own:' }}
                     MP4 (H.264), 1–10 seconds, up to 20 MB. 1080p at around 8 Mbps is plenty.
                     <template v-if="customizationStore.introDuration"> This one is {{ customizationStore.introDuration.toFixed(1) }} seconds.</template>
                   </p>
@@ -1007,13 +1008,13 @@
                       Replace
                     </button>
                     <button
-                      v-if="customizationStore.introVersion"
+                      v-if="customizationStore.introCustom"
                       type="button"
                       @click="removeIntro"
                       :disabled="introBusy"
                       class="h-8 px-3 rounded-lg border border-border text-xs font-medium text-destructive hover:bg-destructive/10 transition flex items-center gap-1.5 disabled:opacity-50"
                     >
-                      <Trash2 class="w-3.5 h-3.5" /> Remove
+                      <Trash2 class="w-3.5 h-3.5" /> Use the built-in clip
                     </button>
                   </div>
                   <p v-if="introError" class="text-xs text-destructive">{{ introError }}</p>
@@ -1028,7 +1029,7 @@
                     />
                     <div class="flex flex-col">
                       <span class="text-xs font-semibold text-foreground">Play the opening sequence</span>
-                      <span class="text-[12px] text-muted-foreground">{{ customizationStore.introVersion ? 'Off by default. Turn on to play it for everyone.' : 'Upload a clip first.' }}</span>
+                      <span class="text-[12px] text-muted-foreground">{{ customizationStore.introVersion ? 'On by default. Plays for everyone.' : 'Upload a clip first.' }}</span>
                     </div>
                   </label>
                   <div v-if="customizationStore.introEnabled" class="flex flex-wrap gap-x-5 gap-y-2 pl-1">
@@ -2050,8 +2051,8 @@ async function uploadIntro(event) {
 }
 async function removeIntro() {
   const confirmed = await dialog.confirm({
-    title: 'Remove Opening Sequence',
-    message: 'Remove the clip? It stops playing for everyone.',
+    title: 'Remove Your Clip',
+    message: 'Remove your clip and go back to Plinthio\'s built-in opening sequence?',
     confirmText: 'Remove',
     danger: true
   });
