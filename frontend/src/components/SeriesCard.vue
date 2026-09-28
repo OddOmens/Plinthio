@@ -115,7 +115,7 @@
 import { placeholderCover } from '../utils/placeholder';
 import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
-import { BookImage, Layers, BookCheck, Headphones, Book, Tv, Film, Sparkles, FolderMinus } from 'lucide-vue-next';
+import { BookImage, Layers, BookCheck, Headphones, Book, Tv, Film, Sparkles, FolderMinus } from '@lucide/vue';
 import { vocabFor, realCreator } from '../utils/mediaVocab';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 

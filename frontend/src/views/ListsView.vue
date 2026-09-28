@@ -221,7 +221,7 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   ListOrdered, ChevronDown, ChevronUp, X, ArrowLeft, Plus, Check, Trash2, Send, Inbox, ImageOff,
   Film, Tv, Sparkles, BookOpen, Headphones
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import api from '../api/client';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 import { externalTitlePayload, SOURCE_LABELS } from '../utils/externalTitle';

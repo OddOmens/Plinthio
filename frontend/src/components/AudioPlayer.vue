@@ -135,7 +135,7 @@ import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
 import { usePlayerStore, PLAYBACK_SPEEDS } from '../stores/player';
 import NowPlayingModal from './NowPlayingModal.vue';
-import { Play, Pause, RotateCcw, RotateCw, Moon, X, Maximize2 } from 'lucide-vue-next';
+import { Play, Pause, RotateCcw, RotateCw, Moon, X, Maximize2 } from '@lucide/vue';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 
 const player = usePlayerStore();

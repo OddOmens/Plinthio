@@ -33,7 +33,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { Star } from 'lucide-vue-next';
+import { Star } from '@lucide/vue';
 
 const props = defineProps({
   modelValue: { type: Number, default: null },

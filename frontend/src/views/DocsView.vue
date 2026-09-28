@@ -989,7 +989,7 @@ import {
   Lock,
   Clock,
   CircleAlert
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const customizationStore = useCustomizationStore();
 const router = useRouter();

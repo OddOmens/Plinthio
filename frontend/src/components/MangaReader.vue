@@ -336,7 +336,7 @@ import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
 import { useViewSession } from '../composables/useViewSession';
 import RatingBar from './RatingBar.vue';
-import { ArrowLeft, Loader2, Bookmark, Trash2, X, ChevronLeft, ChevronRight, Square, Columns2, Layers, BookOpen } from 'lucide-vue-next';
+import { ArrowLeft, Loader2, Bookmark, Trash2, X, ChevronLeft, ChevronRight, Square, Columns2, Layers, BookOpen } from '@lucide/vue';
 
 const dialog = useDialogStore();
 const viewSession = useViewSession();

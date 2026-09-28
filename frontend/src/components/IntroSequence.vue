@@ -29,7 +29,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { ChevronsRight } from 'lucide-vue-next';
+import { ChevronsRight } from '@lucide/vue';
 import { useCustomizationStore } from '../stores/customization';
 import { getMediaToken } from '../utils/mediaToken';
 

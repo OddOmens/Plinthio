@@ -83,7 +83,7 @@ import {
   CheckCircle,
   Info,
   X
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const dialog = useDialogStore();
 </script>

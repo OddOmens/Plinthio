@@ -25,7 +25,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { CalendarClock, CheckCircle2, Loader2, Plus } from 'lucide-vue-next';
+import { CalendarClock, CheckCircle2, Loader2, Plus } from '@lucide/vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
 

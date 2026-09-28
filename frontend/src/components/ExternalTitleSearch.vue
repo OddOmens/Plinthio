@@ -77,7 +77,7 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue';
-import { Search, Loader2, ImageOff } from 'lucide-vue-next';
+import { Search, Loader2, ImageOff } from '@lucide/vue';
 import api from '../api/client';
 
 // Searches the same external metadata providers used to link metadata to library items
