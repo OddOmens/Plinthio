@@ -145,6 +145,16 @@ html {
   html.page-contained .page-width { max-width: 1440px; }
 }
 
+/* Title page on a wide full-width page: a bigger poster that rises into the backdrop banner,
+   and everything below lines up in one column beside it (views/TitleView.vue). Contained
+   pages and smaller screens keep the stacked layout. 2rem page padding + poster + 2.5rem gap. */
+@media (min-width: 1280px) {
+  html:not(.page-contained) .title-poster { width: 22rem; }
+  html:not(.page-contained) .title-poster.has-banner { margin-top: -13rem; }
+  html:not(.page-contained) .title-text { max-width: 80rem; }
+  html:not(.page-contained) .title-indent { padding-left: calc(2rem + 22rem + 2.5rem); }
+}
+
 /* Poster grids (shelf, continue rows, a series' volumes/episodes). One definition so every
    media view sizes its covers the same way — two columns on a phone, five on a laptop. At
    full width, big screens add columns instead of blowing posters up (about 200px wide each,

@@ -13,8 +13,10 @@
   button, or "Coming 2027" for one not yet out. A film in a collection opens its own page,
   with a "More in …" row and a link back to the collection.
 
-Cast, crew, studios, tagline and facts come from TMDB (needs a key), fetched when a page
-first opens and cached for 30 days.
+Cast, crew, studios, tagline, facts, the **backdrop** and the title's **logo** come from TMDB
+(needs a key), fetched when a page first opens and cached for 30 days. The backdrop runs
+across the top of the page with the logo over it. On a wide screen at full page width, the
+poster rises into the backdrop and everything else lines up in one column beside it.
 
 ## How playback works
 
