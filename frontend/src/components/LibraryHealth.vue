@@ -173,7 +173,7 @@
 import { ref, computed, onMounted, h, defineComponent } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
-import { HeartPulse, RefreshCw, CheckCircle2, AlertTriangle, ChevronDown } from 'lucide-vue-next';
+import { HeartPulse, RefreshCw, CheckCircle2, AlertTriangle, ChevronDown } from '@lucide/vue';
 
 defineEmits(['open-metadata']);
 

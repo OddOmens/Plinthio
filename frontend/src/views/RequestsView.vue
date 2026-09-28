@@ -189,7 +189,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, Send, Inbox, ImageOff, Trash2, X, Clock, CheckCircle2, PackageCheck, Ban } from 'lucide-vue-next';
+import { ArrowLeft, Send, Inbox, ImageOff, Trash2, X, Clock, CheckCircle2, PackageCheck, Ban } from '@lucide/vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { useDialogStore } from '../stores/dialog';

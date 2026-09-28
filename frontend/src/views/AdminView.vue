@@ -1866,7 +1866,7 @@ import {
   X,
   Baby,
   Upload,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { getMediaToken } from '../utils/mediaToken';
 
 const route = useRoute();

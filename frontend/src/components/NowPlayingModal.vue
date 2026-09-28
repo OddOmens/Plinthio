@@ -343,7 +343,7 @@ import {
   ListOrdered,
   SkipBack,
   SkipForward
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false }

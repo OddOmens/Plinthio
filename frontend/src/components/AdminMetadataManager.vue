@@ -491,7 +491,7 @@ import {
   Loader2,
   X,
   CheckCircle2
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const props = defineProps({
   libraries: {

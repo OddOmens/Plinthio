@@ -56,7 +56,7 @@ import { ref, computed, watch } from 'vue';
 import api from '../api/client';
 import { useCustomizationStore } from '../stores/customization';
 import StarRating from './StarRating.vue';
-import { Star, Users, Globe } from 'lucide-vue-next';
+import { Star, Users, Globe } from '@lucide/vue';
 
 const props = defineProps({
   item: { type: Object, default: null },

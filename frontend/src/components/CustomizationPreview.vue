@@ -190,7 +190,7 @@
 <script setup>
 import AppLogo from './AppLogo.vue';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { Search, Play, Film, Tv, Headphones, Book, Users, Star, Plus, LayoutGrid, Megaphone } from 'lucide-vue-next';
+import { Search, Play, Film, Tv, Headphones, Book, Users, Star, Plus, LayoutGrid, Megaphone } from '@lucide/vue';
 import api from '../api/client';
 import { coverUrl } from '../utils/cover';
 import PauseScreen from './PauseScreen.vue';

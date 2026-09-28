@@ -297,7 +297,7 @@ import { getMediaToken } from '../utils/mediaToken';
 import { ref, reactive, computed, watch } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
-import { X, Search as SearchIcon, ImageOff, Check, ChevronDown, Upload, Loader2 } from 'lucide-vue-next';
+import { X, Search as SearchIcon, ImageOff, Check, ChevronDown, Upload, Loader2 } from '@lucide/vue';
 
 const dialog = useDialogStore();
 
