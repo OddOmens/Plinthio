@@ -129,7 +129,9 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 
 | Route | Who | |
 | --- | --- | --- |
-| `GET /customization` · `PATCH` | public / A | Branding, theme, layout, ratings display, collections, parties, pause screen |
+| `GET /customization` · `PATCH` | public / A | Branding, theme, layout, ratings display, collections, parties, pause screen, opening sequence switches |
+| `POST /customization/intro` · `DELETE` | A | Upload (multipart field `intro`) or remove the opening sequence clip |
+| `GET /media/intro` | U | The opening sequence clip (range requests; `?v=` is the upload version) |
 | `GET /settings/filters` · `PATCH` | V / A | Which shelf views are offered |
 | `/settings/transcoding` · `/transcoding/test` · `/metadata-providers` · `/metadata-providers/tmdb-key` · `/auto-scan` · `/backup/*` | A | Server settings and backups |
 | `GET /admin/health` · `POST /admin/health/remove-missing` | A | Library Health, removing missing titles |

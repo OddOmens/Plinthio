@@ -89,6 +89,21 @@ fill the screen. **Hover** each style in that card to see it in the live preview
 TMDB has no trivia as such; the facts above are what it does keep. Without a TMDB key the
 screens use the file's own details: title, year, runtime, genres, description.
 
+## Opening sequence
+
+An admin can upload a short clip (a logo sting, say) that plays full-screen when someone
+presses Play on a movie or episode, before the title starts: **Admin → Server Config →
+Opening Sequence**. It's off until switched on, and can be limited to movies or to shows and
+anime.
+
+- The clip must be an **MP4 with H.264 video**, **1–10 seconds** long and **under 20 MB**. The
+  server checks it when uploaded. 1080p at around 8 Mbps is plenty.
+- It never plays before an autoplayed next episode, a trailer or other extra, or in a watch
+  party.
+- Anyone can skip it (the Skip button, Esc, Enter or a tap). If it can't play, the title
+  starts straight away.
+- It's kept in the data folder (`/config/intro/intro.mp4`), so it survives updates.
+
 ## Skip intro and credits
 
 While playback is inside an intro or credits range, viewers get a **Skip Intro** or **Skip

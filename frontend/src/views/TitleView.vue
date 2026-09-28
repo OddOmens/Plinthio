@@ -1140,6 +1140,8 @@
       :item="activeEpubItem"
       @close="activeEpubItem = null; fetchSeriesData()"
     />
+    <!-- The admin's opening sequence, when there is one, before the title itself -->
+    <IntroSequence v-if="introFor" @done="activeVideoItem = introFor; introFor = null" />
     <VideoPlayer
       v-if="activeVideoItem"
       :key="activeVideoItem.id"
@@ -1192,6 +1194,9 @@ import Sidebar from '../components/Sidebar.vue';
 const MangaReader = defineAsyncComponent(() => import('../components/MangaReader.vue'));
 const EpubReader = defineAsyncComponent(() => import('../components/EpubReader.vue'));
 const VideoPlayer = defineAsyncComponent(() => import('../components/VideoPlayer.vue'));
+// Loaded up front, not lazily: it has to start playing while the Play press still counts
+// as a user gesture, or browsers mute it.
+import IntroSequence from '../components/IntroSequence.vue';
 import { usePlayerStore } from '../stores/player';
 import { vocabFor, entryLabel, isTimeBased, isVideo, realCreator } from '../utils/mediaVocab';
 import { downloadKind } from '../stores/downloads';
@@ -1280,6 +1285,8 @@ const collectionSiblings = computed(() =>
 );
 const activeEpubItem = ref(null);
 const activeVideoItem = ref(null);
+// A title waiting for the opening sequence to finish (IntroSequence), then played.
+const introFor = ref(null);
 const error = ref(null);
 const series = ref(null);
 
@@ -2194,7 +2201,10 @@ function openVolumeReader(vol) {
   if (vol.media_type === 'audiobook') {
     player.playItem(vol);
   } else if (isVideo(vol.media_type)) {
-    activeVideoItem.value = vol;
+    // Pressing Play: the opening sequence first, if the admin has one on. (The player's own
+    // "next episode" swaps activeVideoItem directly, so autoplay never replays it.)
+    if (customizationStore.playsIntroBefore(vol)) introFor.value = vol;
+    else activeVideoItem.value = vol;
   } else if (kind === 'pages') {
     activeReadingItem.value = vol;
   } else if ((vol.format || '').toLowerCase() === 'epub') {

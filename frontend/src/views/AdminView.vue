@@ -955,6 +955,96 @@
               </div>
             </div>
 
+            <!-- Opening Sequence Card -->
+            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+              <div class="border-b border-border pb-3">
+                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Opening Sequence</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">
+                  A short clip played full-screen when someone presses Play on a movie or episode, before the title starts. Never before autoplayed next episodes, trailers or watch parties, and anyone can skip it.
+                </p>
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-4">
+                <div class="sm:w-64 flex-shrink-0">
+                  <video
+                    v-if="customizationStore.introVersion"
+                    :key="customizationStore.introVersion"
+                    :src="introPreviewUrl"
+                    controls
+                    playsinline
+                    preload="metadata"
+                    class="w-full aspect-video rounded-lg bg-black border border-border"
+                  />
+                  <button
+                    v-else
+                    type="button"
+                    @click="introFileInput?.click()"
+                    :disabled="introBusy"
+                    class="w-full aspect-video rounded-lg border-2 border-dashed border-border hover:border-muted-foreground/50 hover:bg-muted/30 transition flex flex-col items-center justify-center gap-1.5 text-muted-foreground disabled:opacity-50"
+                  >
+                    <Loader2 v-if="introBusy" class="w-5 h-5 animate-spin" />
+                    <Film v-else class="w-5 h-5" />
+                    <span class="text-xs font-medium">{{ introBusy ? 'Checking…' : 'Upload a clip' }}</span>
+                  </button>
+                </div>
+
+                <div class="flex-1 min-w-0 flex flex-col gap-3">
+                  <p class="text-[12px] text-muted-foreground leading-relaxed">
+                    MP4 (H.264), 1–10 seconds, up to 20 MB. 1080p at around 8 Mbps is plenty.
+                    <template v-if="customizationStore.introDuration"> This one is {{ customizationStore.introDuration.toFixed(1) }} seconds.</template>
+                  </p>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <input ref="introFileInput" type="file" accept="video/mp4,.mp4" class="hidden" @change="uploadIntro" />
+                    <button
+                      v-if="customizationStore.introVersion"
+                      type="button"
+                      @click="introFileInput?.click()"
+                      :disabled="introBusy"
+                      class="h-8 px-3 rounded-lg border border-border text-xs font-medium hover:bg-muted transition flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      <Loader2 v-if="introBusy" class="w-3.5 h-3.5 animate-spin" />
+                      <Upload v-else class="w-3.5 h-3.5" />
+                      Replace
+                    </button>
+                    <button
+                      v-if="customizationStore.introVersion"
+                      type="button"
+                      @click="removeIntro"
+                      :disabled="introBusy"
+                      class="h-8 px-3 rounded-lg border border-border text-xs font-medium text-destructive hover:bg-destructive/10 transition flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      <Trash2 class="w-3.5 h-3.5" /> Remove
+                    </button>
+                  </div>
+                  <p v-if="introError" class="text-xs text-destructive">{{ introError }}</p>
+
+                  <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 transition select-none" :class="customizationStore.introVersion ? 'hover:bg-muted/40 cursor-pointer' : 'opacity-60'">
+                    <input
+                      type="checkbox"
+                      :checked="customizationStore.introEnabled"
+                      :disabled="!customizationStore.introVersion || introBusy"
+                      @change="saveIntroSetting({ introEnabled: $event.target.checked })"
+                      class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+                    />
+                    <div class="flex flex-col">
+                      <span class="text-xs font-semibold text-foreground">Play the opening sequence</span>
+                      <span class="text-[12px] text-muted-foreground">{{ customizationStore.introVersion ? 'Off by default. Turn on to play it for everyone.' : 'Upload a clip first.' }}</span>
+                    </div>
+                  </label>
+                  <div v-if="customizationStore.introEnabled" class="flex flex-wrap gap-x-5 gap-y-2 pl-1">
+                    <label class="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none">
+                      <input type="checkbox" :checked="customizationStore.introMovies" @change="saveIntroSetting({ introMovies: $event.target.checked })" class="rounded border-border text-primary focus:ring-ring" />
+                      Before movies
+                    </label>
+                    <label class="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none">
+                      <input type="checkbox" :checked="customizationStore.introShows" @change="saveIntroSetting({ introShows: $event.target.checked })" class="rounded border-border text-primary focus:ring-ring" />
+                      Before shows and anime episodes
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Server Branding Card -->
             <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'login'" @click="previewView = 'login'">
               <div class="border-b border-border pb-3 flex items-start justify-between gap-3">
@@ -1773,8 +1863,10 @@ import {
   Hourglass,
   HeartPulse,
   X,
-  Baby
+  Baby,
+  Upload,
 } from 'lucide-vue-next';
+import { getMediaToken } from '../utils/mediaToken';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -1922,6 +2014,65 @@ async function setPauseScreen(id) {
     dialog.alert('Failed to save the pause screen setting');
   } finally {
     savingPauseScreen.value = false;
+  }
+}
+
+// Opening sequence: upload/replace/remove the clip, and when it plays.
+const introFileInput = ref(null);
+const introBusy = ref(false);
+const introError = ref('');
+const introPreviewUrl = computed(() => {
+  const params = new URLSearchParams({ v: customizationStore.introVersion || '1' });
+  const token = getMediaToken();
+  if (token) params.set('token', token);
+  return `/api/media/intro?${params}`;
+});
+async function uploadIntro(event) {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  if (!file) return;
+  introError.value = '';
+  if (file.size > 20 * 1024 * 1024) {
+    introError.value = 'That file is over 20 MB. Export it shorter or at a lower bitrate.';
+    return;
+  }
+  introBusy.value = true;
+  try {
+    const form = new FormData();
+    form.append('intro', file);
+    const res = await api.post('/customization/intro', form);
+    customizationStore.applyIntro(res.data);
+  } catch (err) {
+    introError.value = err.response?.data?.error || 'Upload failed';
+  } finally {
+    introBusy.value = false;
+  }
+}
+async function removeIntro() {
+  const confirmed = await dialog.confirm({
+    title: 'Remove Opening Sequence',
+    message: 'Remove the clip? It stops playing for everyone.',
+    confirmText: 'Remove',
+    danger: true
+  });
+  if (!confirmed) return;
+  introBusy.value = true;
+  introError.value = '';
+  try {
+    const res = await api.delete('/customization/intro');
+    customizationStore.applyIntro(res.data);
+  } catch (err) {
+    introError.value = err.response?.data?.error || 'Could not remove it';
+  } finally {
+    introBusy.value = false;
+  }
+}
+async function saveIntroSetting(patch) {
+  introError.value = '';
+  try {
+    await customizationStore.updateCustomization(patch);
+  } catch (err) {
+    introError.value = 'Could not save that setting';
   }
 }
 
