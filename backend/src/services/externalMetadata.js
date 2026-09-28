@@ -388,6 +388,16 @@ export async function fetchTmdbDetails(tmdbId, mediaType) {
     // The film series it belongs to on TMDB ("Shrek Collection"); movies only.
     collection: isMovie ? (data.belongs_to_collection?.name || null) : null,
     collectionId: isMovie ? (data.belongs_to_collection?.id ? String(data.belongs_to_collection.id) : null) : null,
+    // A show's seasons with their own posters, for the season picker on its page.
+    seasons: isMovie ? null : (data.seasons || [])
+      .filter((s) => Number.isInteger(s.season_number))
+      .map((s) => ({
+        number: s.season_number,
+        name: s.name || null,
+        posterUrl: s.poster_path ? `https://image.tmdb.org/t/p/w342${s.poster_path}` : null,
+        airDate: s.air_date || null,
+        episodeCount: s.episode_count || null
+      })),
     cast,
     crew: crew.slice(0, 20),
     // Odds and ends for the player's pause screen. TMDB has no trivia as such, so these are

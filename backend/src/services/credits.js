@@ -14,6 +14,8 @@ const CREDITS_MAX_AGE_DAYS = 30;
 const HAS_COLLECTION_FIELD = `(media_type != 'movie' OR credits_json IS NULL OR json_type(credits_json, '$.collectionId') IS NOT NULL)`;
 // Likewise credits cached before the pause-screen facts were kept.
 const HAS_FACTS_FIELD = `(credits_json IS NULL OR json_type(credits_json, '$.keywords') IS NOT NULL)`;
+// And a show's credits cached before its season posters were.
+const HAS_SEASONS_FIELD = `(media_type = 'movie' OR credits_json IS NULL OR json_type(credits_json, '$.seasons') IS NOT NULL)`;
 
 // Episodes of one show share the show's credits, so opening several at once (or one from
 // two tabs) collapses into a single lookup.
@@ -37,7 +39,7 @@ export async function ensureCredits(db, item) {
   if (!CREDIT_TYPES.has(item.media_type)) return null;
 
   const fresh = await db.get(
-    `SELECT 1 FROM items WHERE id = ? AND credits_checked_at > datetime('now', ?) AND ${HAS_COLLECTION_FIELD} AND ${HAS_FACTS_FIELD}`,
+    `SELECT 1 FROM items WHERE id = ? AND credits_checked_at > datetime('now', ?) AND ${HAS_COLLECTION_FIELD} AND ${HAS_FACTS_FIELD} AND ${HAS_SEASONS_FIELD}`,
     [item.id, `-${CREDITS_MAX_AGE_DAYS} days`]
   );
   if (fresh) return withCollection(db, item, parse(item.credits_json));

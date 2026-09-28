@@ -332,20 +332,43 @@
             </div>
           </div>
 
-          <!-- Season picker -->
-          <div v-if="seasons.length > 1" class="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
+          <!-- Season picker: each season's poster (TMDB's, or the show's own when it has none) -->
+          <div v-if="seasons.length > 1" class="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar -mx-1 px-1 pt-1 pb-2">
             <button
               v-for="s in seasons"
               :key="s.key"
+              type="button"
               @click="activeSeasonKey = s.key"
-              class="flex-shrink-0 px-4 py-2 rounded-xl border text-sm font-medium transition flex items-center gap-2"
-              :class="activeSeason?.key === s.key
-                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                : 'bg-card border-border text-foreground hover:bg-muted'"
+              :aria-pressed="String(activeSeason?.key === s.key)"
+              class="w-28 sm:w-36 flex-shrink-0 text-left group"
             >
-              <span>{{ s.label }}</span>
-              <CheckCircle2 v-if="s.watched === s.episodes.length" class="w-4 h-4" :class="activeSeason?.key === s.key ? '' : 'text-emerald-500'" />
-              <span v-else class="text-xs font-mono opacity-75">{{ s.watched ? `${s.watched}/` : '' }}{{ s.episodes.length }}</span>
+              <div
+                class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border-2 transition"
+                :class="activeSeason?.key === s.key ? 'border-primary ring-2 ring-primary/30' : 'border-transparent group-hover:border-muted-foreground/40'"
+              >
+                <img
+                  :src="seasonPoster(s)"
+                  :alt="s.label"
+                  loading="lazy"
+                  decoding="async"
+                  @error="seasonPosterFailed[s.key] = true"
+                  class="w-full h-full object-cover"
+                  :class="activeSeason?.key === s.key ? '' : 'opacity-80 group-hover:opacity-100 transition'"
+                />
+                <span v-if="s.watched === s.episodes.length" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
+                  <Check class="w-3.5 h-3.5 stroke-[3]" />
+                </span>
+                <div v-else-if="s.watched" class="absolute bottom-0 inset-x-0 h-1.5 bg-black/50">
+                  <div class="h-full bg-primary" :style="{ width: `${(s.watched / s.episodes.length) * 100}%` }" />
+                </div>
+              </div>
+              <p
+                class="mt-2 text-sm font-semibold truncate transition"
+                :class="activeSeason?.key === s.key ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'"
+              >{{ s.label }}</p>
+              <p class="text-xs text-muted-foreground">
+                {{ s.watched && s.watched < s.episodes.length ? `${s.watched} of ` : '' }}{{ s.episodes.length }} {{ s.episodes.length === 1 ? 'episode' : 'episodes' }}
+              </p>
             </button>
           </div>
 
@@ -469,92 +492,59 @@
             </button>
           </div>
 
-          <div class="flex flex-col divide-y divide-border/60 rounded-2xl border border-border bg-card/40 overflow-hidden">
-            <template v-for="({ kind, film, part, key }, i) in collectionRows" :key="key">
-              <div
-                v-if="kind === 'film'"
-                class="group flex gap-3 sm:gap-5 p-3 sm:p-4 hover:bg-muted/30 transition"
-                :class="film.id === series.nextVolume?.id ? 'bg-primary/5' : ''"
-              >
+          <!-- Posters, like the shelf: a film opens its own page, the play button starts it -->
+          <div class="grid grid-cols-2 min-[480px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-6">
+            <template v-for="({ kind, film, part, key }) in collectionRows" :key="key">
+              <div v-if="kind === 'film'" class="group flex flex-col min-w-0">
                 <router-link
                   :to="`/title/${film.id}`"
-                  class="relative w-20 sm:w-28 aspect-[2/3] self-start rounded-lg overflow-hidden bg-muted border border-border flex-shrink-0"
+                  class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-border group-hover:border-muted-foreground/40 transition"
                 >
-                  <img :src="volumeCoverUrl(film)" :alt="film.title" loading="lazy" class="w-full h-full object-cover" />
-                  <span v-if="film.is_finished" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
+                  <img :src="volumeCoverUrl(film, 480)" :alt="film.title" loading="lazy" decoding="async" class="w-full h-full object-cover" />
+                  <span v-if="film.is_finished" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
                     <Check class="w-3.5 h-3.5 stroke-[3]" />
                   </span>
+                  <span
+                    v-else-if="film.id === series.nextVolume?.id"
+                    class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-primary text-primary-foreground text-[11px] font-semibold shadow"
+                  >Up next</span>
                   <div v-if="film.progress_percent > 0 && !film.is_finished" class="absolute bottom-0 inset-x-0 h-1.5 bg-black/50">
                     <div class="h-full bg-primary" :style="{ width: `${film.progress_percent}%` }" />
                   </div>
+                  <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                    <button
+                      type="button"
+                      @click.prevent.stop="openVolumeReader(film)"
+                      class="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl active:scale-95 transition"
+                      :aria-label="`${film.is_finished ? 'Watch again' : (hasStarted(film) ? 'Resume' : 'Play')}: ${film.title}`"
+                    >
+                      <Play class="w-5 h-5 fill-current ml-0.5" />
+                    </button>
+                  </div>
                 </router-link>
-                <div class="flex-1 min-w-0 flex flex-col gap-1.5">
-                  <h3 class="text-sm sm:text-base font-semibold text-foreground">
-                    <span class="text-muted-foreground font-mono mr-1">{{ sortAscending ? i + 1 : collectionRows.length - i }}.</span>
-                    <router-link :to="`/title/${film.id}`" class="hover:underline">{{ film.title }}</router-link>
-                  </h3>
-                  <p class="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span v-if="yearOf(film)">{{ yearOf(film) }}</span>
-                    <span v-if="film.duration">{{ formatLength(film.duration) }}</span>
-                    <span v-if="film.id === series.nextVolume?.id && !film.is_finished" class="px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-semibold">Up next</span>
-                    <span v-if="film.is_finished" class="text-emerald-500 font-semibold">Watched<template v-if="film.progress_updated_at"> · {{ formatDate(film.progress_updated_at) }}</template></span>
-                    <span v-else-if="hasStarted(film)" class="text-primary font-medium font-mono">{{ positionLabel(film, true) }}</span>
-                    <span v-if="film.user_rating" class="inline-flex items-center gap-0.5 text-foreground font-semibold">
-                      <Star class="w-3.5 h-3.5 text-amber-400 fill-amber-400" />{{ film.user_rating }}
-                    </span>
-                  </p>
-                  <p v-if="film.description" class="text-sm text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-3">{{ film.description }}</p>
-                  <div class="mt-auto pt-1 flex items-center gap-1.5">
-                    <button
-                      @click="openVolumeReader(film)"
-                      class="h-8 px-3 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground text-xs font-semibold transition flex items-center gap-1.5"
-                    >
-                      <Play class="w-3.5 h-3.5 fill-current" />
-                      {{ film.is_finished ? 'Watch Again' : (hasStarted(film) ? 'Resume' : 'Play') }}
-                    </button>
-                    <button
-                      @click="toggleVolumeReadStatus(film)"
-                      class="ep-btn"
-                      :title="film.is_finished ? 'Mark as not watched' : 'Mark as watched'"
-                      :aria-label="film.is_finished ? 'Mark as not watched' : 'Mark as watched'"
-                    >
-                      <CheckCircle2 v-if="film.is_finished" class="w-4 h-4 text-emerald-500" />
-                      <Check v-else class="w-4 h-4" />
-                    </button>
-                    <button
-                      v-if="downloads.canDownload(film)"
-                      @click="toggleVolumeDownload(film)"
-                      class="ep-btn"
-                      :title="downloadLabel(film)"
-                      :aria-label="downloadLabel(film)"
-                    >
-                      <CheckCircle2 v-if="downloads.isDownloaded(film.id)" class="w-4 h-4 text-emerald-500" />
-                      <Loader2 v-else-if="downloads.isDownloading(film.id)" class="w-4 h-4 animate-spin" />
-                      <Download v-else class="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+                <router-link :to="`/title/${film.id}`" class="mt-2 text-sm font-medium text-foreground line-clamp-2 hover:underline">{{ film.title }}</router-link>
+                <p class="text-xs text-muted-foreground flex flex-wrap items-center gap-x-1.5">
+                  <span v-if="yearOf(film)">{{ yearOf(film) }}</span>
+                  <span v-if="yearOf(film) && film.duration">·</span>
+                  <span v-if="film.duration">{{ formatLength(film.duration) }}</span>
+                  <span v-if="film.user_rating" class="inline-flex items-center gap-0.5 text-foreground font-semibold">
+                    <Star class="w-3 h-3 text-amber-400 fill-amber-400" />{{ film.user_rating }}
+                  </span>
+                </p>
               </div>
-                <!-- A film this server doesn't have: greyed out, requestable -->
-                <div v-else class="flex gap-3 sm:gap-5 p-3 sm:p-4">
-                  <div class="relative w-20 sm:w-28 aspect-[2/3] self-start rounded-lg overflow-hidden bg-muted border border-dashed border-border flex-shrink-0">
-                    <img v-if="part.posterUrl" :src="part.posterUrl" :alt="part.title" loading="lazy" class="w-full h-full object-cover grayscale opacity-50" />
-                    <div v-else class="w-full h-full flex items-center justify-center text-2xl font-semibold text-muted-foreground/50">{{ initials(part.title) }}</div>
-                  </div>
-                  <div class="flex-1 min-w-0 flex flex-col gap-1.5">
-                    <h3 class="text-sm sm:text-base font-semibold text-muted-foreground">
-                      <span class="font-mono mr-1">{{ sortAscending ? i + 1 : collectionRows.length - i }}.</span>{{ part.title }}
-                    </h3>
-                    <p class="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <span v-if="part.releaseDate">{{ part.releaseDate.slice(0, 4) }}</span>
-                      <span class="px-1.5 py-0.5 rounded border border-dashed border-muted-foreground/40 font-medium">{{ part.upcoming ? 'Coming soon' : 'Not in library' }}</span>
-                    </p>
-                    <p v-if="part.overview" class="text-sm text-muted-foreground/80 leading-relaxed line-clamp-2 sm:line-clamp-3">{{ part.overview }}</p>
-                    <div class="mt-auto pt-1">
-                      <MissingFilmAction :part="part" />
-                    </div>
-                  </div>
+              <!-- A film this server doesn't have: greyed out, requestable -->
+              <div v-else class="flex flex-col min-w-0">
+                <div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-dashed border-border">
+                  <img v-if="part.posterUrl" :src="part.posterUrl" :alt="part.title" loading="lazy" class="w-full h-full object-cover grayscale opacity-50" />
+                  <div v-else class="w-full h-full flex items-center justify-center text-2xl font-semibold text-muted-foreground/50">{{ initials(part.title) }}</div>
+                  <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-semibold">
+                    {{ part.upcoming ? 'Coming soon' : 'Not in library' }}
+                  </span>
                 </div>
+                <p class="mt-2 text-sm font-medium text-muted-foreground line-clamp-2">{{ part.title }}</p>
+                <p v-if="part.releaseDate" class="text-xs text-muted-foreground">{{ part.releaseDate.slice(0, 4) }}</p>
+                <div class="mt-1.5"><MissingFilmAction :part="part" compact /></div>
+              </div>
             </template>
           </div>
         </section>
@@ -1743,6 +1733,14 @@ const seasons = computed(() => {
 });
 
 const activeSeasonKey = ref(null);
+
+// A season's poster: TMDB's for that season, or the show's own when TMDB has none (or it
+// fails to load — offline, say).
+const seasonPosterFailed = ref({});
+function seasonPoster(season) {
+  const tmdb = (credits.value?.seasons || []).find((x) => x.number === season.seasonNumber)?.posterUrl;
+  return tmdb && !seasonPosterFailed.value[season.key] ? tmdb : primaryCoverUrl.value;
+}
 const activeSeason = computed(() => seasons.value.find(s => s.key === activeSeasonKey.value) || seasons.value[0] || null);
 
 // Opening a show lands on the season you're up to. Later refreshes (marking an episode
@@ -1754,7 +1752,7 @@ watch(seasons, (list) => {
   const target = next && list.find((x) => x.key === seasonKey(getSeasonEpisode(next).season));
   activeSeasonKey.value = (target || list[0]).key;
 });
-watch(() => [route.params.seriesName, route.params.id], () => { activeSeasonKey.value = null; });
+watch(() => [route.params.seriesName, route.params.id], () => { activeSeasonKey.value = null; seasonPosterFailed.value = {}; });
 
 const seasonEpisodes = computed(() => {
   if (!activeSeason.value) return [];

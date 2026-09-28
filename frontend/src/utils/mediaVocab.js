@@ -36,9 +36,11 @@ export function entryLabel(item) {
 }
 
 // Where clicking a title goes: its series page, or its own page when it has no series.
+// A film always gets its own page, even inside a collection: clicking Shrek 2 means Shrek 2,
+// and its page links on to the rest of the collection.
 // Everything opens a detail page first; reading/listening/watching starts from there.
 export function detailRoute(item) {
-  if (item?.series) {
+  if (item?.series && (item.media_type || item.mediaType) !== 'movie') {
     return {
       path: `/series/${encodeURIComponent(item.series)}`,
       query: { library: item.library_id || item.libraryId, type: item.media_type || item.mediaType }

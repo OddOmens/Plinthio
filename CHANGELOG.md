@@ -16,6 +16,9 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ### Changed
 - **A new logo**, in the app, on the sign-in and setup screens, and as the icon when you install Plinthio on a phone or desktop. Android gets a properly padded version so the launcher doesn't crop it.
+- **Seasons as posters.** A show's or anime's seasons are picked from a row of posters (each season's own art from TMDB, or the show's poster) with a check on finished seasons, instead of plain "Season 1, Season 2" buttons.
+- **Movie collections as posters.** A collection's page shows its films as a poster grid, like the shelf, instead of an episode-style list. Hover a poster to play it straight away.
+- **A film always opens its own page.** With the shelf on "All movies", in Continue Watching and anywhere else a single film appears, clicking Shrek 2 opens Shrek 2 rather than the Shrek collection. Its page links to the rest of the collection.
 - **Pause screens fill the screen.** Details and Cinematic are sized to the player, so the poster, title and details are large on a TV or a big monitor instead of sitting small in one corner. Bedtime's clock scales the same way.
 
 ### Fixed
