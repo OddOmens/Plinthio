@@ -143,7 +143,7 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { AlertCircle, Check, Copy, Loader2, PartyPopper, Send, Users, X } from 'lucide-vue-next';
+import { AlertCircle, Check, Copy, Loader2, PartyPopper, Send, Users, X } from '@lucide/vue';
 import api from '../api/client';
 import { useCustomizationStore } from '../stores/customization';
 import { useDialogStore } from '../stores/dialog';

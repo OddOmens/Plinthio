@@ -203,7 +203,7 @@ import { ALL_MEDIA_TYPES } from '../constants/media';
 import {
   Headphones, FileImage, Book, Tv, Film, Sparkles,
   Check, ArrowRight, Loader2, Moon, Sun
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const emit = defineEmits(['done']);
 

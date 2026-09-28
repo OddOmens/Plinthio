@@ -1267,7 +1267,7 @@ import {
   PartyPopper,
   Baby,
   X
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { useDownloadsStore } from '../stores/downloads';
 
 const route = useRoute();

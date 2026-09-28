@@ -122,7 +122,7 @@ import { usePlayerStore } from '../stores/player';
 import { useDialogStore } from '../stores/dialog';
 import { coverUrl } from '../utils/cover';
 import { getMediaToken } from '../utils/mediaToken';
-import { ArrowLeft, WifiOff, Download, Trash2, Play, BookOpen, Headphones, FileImage, Book } from 'lucide-vue-next';
+import { ArrowLeft, WifiOff, Download, Trash2, Play, BookOpen, Headphones, FileImage, Book } from '@lucide/vue';
 
 const MangaReader = defineAsyncComponent(() => import('../components/MangaReader.vue'));
 const EpubReader = defineAsyncComponent(() => import('../components/EpubReader.vue'));

@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const DATA_DIR = process.env.DATA_DIR || path.resolve(process.cwd(), 'data');
 const CACHE_DIR = path.join(DATA_DIR, 'cache');

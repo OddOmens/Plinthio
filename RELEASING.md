@@ -45,8 +45,11 @@ section for the version.
 - After the very first release, open the package at
   `github.com/orgs/OddOmens/packages/container/plinthio/settings` and set its visibility to
   **Public** — new GHCR packages start private, and users can't pull a private image.
-- Branch protection on `main` (Settings → Branches): require the CI checks to pass and
-  require a pull request.
+- Branch protection: done with rulesets (Settings → Rules). **Protect main** requires a pull
+  request, the maintainer's review (CODEOWNERS) and the three CI checks; **Protect release
+  tags** lets only admins create, move or delete `v*` tags. Admins can bypass both, so a
+  release commit and tag can still be pushed straight to `main`. If a CI job is renamed or
+  added, update the required checks in the ruleset.
 
 ## If a release is bad
 

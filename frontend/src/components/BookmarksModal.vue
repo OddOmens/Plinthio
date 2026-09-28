@@ -128,7 +128,7 @@ import { ref, watch } from 'vue';
 import api from '../api/client';
 import { usePlayerStore } from '../stores/player';
 import { useDialogStore } from '../stores/dialog';
-import { Bookmark, X, Plus, Trash2, Play, BookOpen } from 'lucide-vue-next';
+import { Bookmark, X, Plus, Trash2, Play, BookOpen } from '@lucide/vue';
 
 const props = defineProps({
   isOpen: Boolean,

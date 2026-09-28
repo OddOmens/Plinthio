@@ -229,7 +229,7 @@ import {
   CheckCircle2,
   Loader2,
   Star
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { useDownloadsStore } from '../stores/downloads';
 import { realCreator, vocabFor } from '../utils/mediaVocab';
 

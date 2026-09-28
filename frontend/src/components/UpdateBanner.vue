@@ -65,7 +65,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
-import { Sparkles, X, ExternalLink, Copy, Check } from 'lucide-vue-next';
+import { Sparkles, X, ExternalLink, Copy, Check } from '@lucide/vue';
 
 const UPDATE_COMMAND = 'docker compose pull && docker compose up -d';
 // Local fallback so the banner stays dismissed even if saving the preference fails.
