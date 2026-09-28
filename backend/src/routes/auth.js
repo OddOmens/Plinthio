@@ -1,0 +1,325 @@
+import express from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import { getDb } from '../config/database.js';
+import { config } from '../config/env.js';
+import { authenticateToken, invalidateUserCache, signMediaToken } from '../middleware/auth.js';
+import { scanLibrary } from '../services/scanner.js';
+import { logger } from '../services/logger.js';
+import { LIBRARY_TYPES, resolveLibraryPath, listMediaDirectories } from './libraries.js';
+import { ALL_MEDIA_TYPES } from '../config/mediaTypes.js';
+import { serverError } from '../utils/http.js';
+import { sendError } from '../errors.js';
+import { normalizeUsername, USERNAME_RULE } from '../utils/username.js';
+
+const router = express.Router();
+const VALID_ROLES = ['admin', 'editor', 'viewer'];
+// A throwaway hash at the same cost factor as real ones (see the unknown-user login path).
+const DUMMY_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10);
+
+// Check if initial admin account has been set up
+router.get('/setup-status', async (req, res) => {
+  try {
+    const db = await getDb();
+    const countResult = await db.get('SELECT COUNT(*) as count FROM users');
+    res.json({ isSetup: countResult.count > 0 });
+  } catch (err) {
+    // These auth routes are reachable without a token, so the raw error (SQL text, file
+    // paths) must stay server-side — it's in the container logs, not the HTTP response.
+    console.error('[auth] setup-status failed:', err);
+    res.status(500).json({ error: 'Could not read server setup status' });
+  }
+});
+
+// Folder picker for the first-run wizard. Unauthenticated by necessity (no account exists
+// yet), but hard-gated on the server being un-set-up — the same window in which anyone who
+// can reach the server could already claim the admin account, so this grants no new
+// capability, and it closes permanently the moment setup completes.
+router.get('/setup/browse', async (req, res) => {
+  try {
+    const db = await getDb();
+    const countResult = await db.get('SELECT COUNT(*) as count FROM users');
+    if (countResult.count > 0) {
+      return res.status(403).json({ error: 'Server is already set up' });
+    }
+    res.json(listMediaDirectories(req.query.dir));
+  } catch (err) {
+    // A folder that can't be read (disconnected drive → EIO) gets its library code (P201).
+    serverError(req, res, err, 'Could not list folders');
+  }
+});
+
+// Initial Setup Wizard - Creates the first Admin user and bootstraps server configuration.
+// Only one setup can run at a time: without this, two requests arriving together (the
+// owner's wizard and anyone else on the network) could both see "no users yet" during the
+// bcrypt hashing below and both create an admin account.
+let setupInFlight = false;
+
+router.post('/setup', async (req, res) => {
+  const { username, password, theme = 'dark', serverName, enabledMediaTypes, libraries = [], extraUsers = [] } = req.body;
+
+  if (typeof password !== 'string' || password.length < 8) {
+    return res.status(400).json({ error: 'Admin username and password (min 8 chars) are required' });
+  }
+  const adminName = normalizeUsername(username);
+  if (!adminName) {
+    return res.status(400).json({ error: USERNAME_RULE });
+  }
+  if (setupInFlight) {
+    return res.status(409).json({ error: 'Setup is already in progress' });
+  }
+
+  setupInFlight = true;
+  let inTransaction = false;
+  let db;
+  try {
+    db = await getDb();
+    const countResult = await db.get('SELECT COUNT(*) as count FROM users');
+
+    if (countResult.count > 0) {
+      return res.status(400).json({ error: 'Server is already set up. Please log in.' });
+    }
+
+    const userId = crypto.randomUUID();
+    const passwordHash = await bcrypt.hash(password, 10);
+    const mediaTypes = Array.isArray(enabledMediaTypes) && enabledMediaTypes.length > 0
+      ? enabledMediaTypes.filter((t) => ALL_MEDIA_TYPES.includes(t))
+      : ALL_MEDIA_TYPES;
+
+    // The setup wizard already walks the admin through theme, accent and media types, so
+    // mark onboarding done for them — otherwise they'd be asked the same questions twice in
+    // a row. Accounts created below (and any added later) deliberately omit the flag so they
+    // get the onboarding on their own first login.
+    const adminPrefs = JSON.stringify({
+      theme: theme === 'light' ? 'light' : 'dark',
+      enabledMediaTypes: mediaTypes.length > 0 ? mediaTypes : ALL_MEDIA_TYPES,
+      defaultView: 'all',
+      onboardingComplete: true
+    });
+
+    // Extra accounts are validated and hashed before anything is written, and a name that
+    // repeats one already taken is skipped — so a typo in the wizard can't leave the server
+    // half set up (admin created, then a UNIQUE failure) behind an error message.
+    const takenNames = new Set([adminName]);
+    const extraRows = [];
+    for (const u of Array.isArray(extraUsers) ? extraUsers : []) {
+      const name = normalizeUsername(u?.username);
+      if (!name || takenNames.has(name) || typeof u.password !== 'string' || u.password.length < 8) continue;
+      takenNames.add(name);
+      extraRows.push({
+        id: crypto.randomUUID(),
+        username: name,
+        hash: await bcrypt.hash(u.password, 10),
+        role: VALID_ROLES.includes(u.role) ? u.role : 'viewer'
+      });
+    }
+
+    const libraryRows = [];
+    for (const lib of Array.isArray(libraries) ? libraries : []) {
+      if (!lib || typeof lib.name !== 'string' || !lib.name.trim() || typeof lib.path !== 'string' || !lib.path) continue;
+      if (!LIBRARY_TYPES.includes(lib.type)) continue;
+      // Same normalization the Admin "Add Library" path gets, so a host-style path
+      // typed during setup (/media/you/Drive/Books) still resolves to the container's
+      // mount (/media/Books) instead of silently scanning nothing.
+      libraryRows.push({ id: crypto.randomUUID(), name: lib.name.trim(), path: resolveLibraryPath(lib.path), type: lib.type });
+    }
+
+    await db.run('BEGIN IMMEDIATE');
+    inTransaction = true;
+
+    await db.run(
+      'INSERT INTO users (id, username, password_hash, role, preferences) VALUES (?, ?, ?, ?, ?)',
+      [userId, adminName, passwordHash, 'admin', adminPrefs]
+    );
+
+    // Save Server Name if provided
+    if (typeof serverName === 'string' && serverName.trim()) {
+      await db.run(
+        `INSERT INTO settings (key, value, updated_at) VALUES ('server_name', ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+        [serverName.trim()]
+      );
+    }
+
+    for (const lib of libraryRows) {
+      await db.run('INSERT INTO libraries (id, name, path, type) VALUES (?, ?, ?, ?)', [lib.id, lib.name, lib.path, lib.type]);
+    }
+
+    const userPrefs = JSON.stringify({ theme: 'dark', enabledMediaTypes: mediaTypes.length > 0 ? mediaTypes : ALL_MEDIA_TYPES, defaultView: 'all' });
+    for (const u of extraRows) {
+      await db.run(
+        'INSERT INTO users (id, username, password_hash, role, preferences) VALUES (?, ?, ?, ?, ?)',
+        [u.id, u.username, u.hash, u.role, userPrefs]
+      );
+    }
+
+    await db.run('COMMIT');
+    inTransaction = false;
+
+    // Kick off each new library's first scan. Without it the wizard finishes and drops the
+    // user on a completely empty shelf with no indication anything is missing. Scans run in
+    // the background so setup returns immediately.
+    for (const lib of libraryRows) {
+      scanLibrary(lib.id).catch((err) =>
+        logger.error('scan', `Initial scan failed for "${lib.name}": ${err.message}`, { libraryId: lib.id })
+      );
+    }
+
+    const token = jwt.sign(
+      { userId, username: adminName, role: 'admin', tokenVersion: 0 },
+      config.jwtSecret,
+      { expiresIn: config.jwtExpiresIn }
+    );
+
+    res.json({
+      message: 'Server initialized successfully',
+      token,
+      mediaToken: signMediaToken({ id: userId, token_version: 0 }),
+      user: { id: userId, username: adminName, role: 'admin', avatar: null, expires_at: null, preferences: JSON.parse(adminPrefs) }
+    });
+  } catch (err) {
+    if (inTransaction) {
+      await db.run('ROLLBACK').catch(() => {});
+    }
+    console.error('[auth] setup failed:', err);
+    res.status(500).json({ error: 'Server setup failed. Check the server logs for details.' });
+  } finally {
+    setupInFlight = false;
+  }
+});
+
+// Login
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  const ip = req.ip;
+  const userAgent = req.headers['user-agent'] || null;
+
+  if (typeof username !== 'string' || typeof password !== 'string' || !username || !password) {
+    return res.status(400).json({ error: 'Username and password are required' });
+  }
+
+  try {
+    const db = await getDb();
+    const user = await db.get('SELECT * FROM users WHERE username = ?', [username.trim()]);
+
+    if (!user) {
+      // Burn the same bcrypt time a real account would, so response timing doesn't reveal
+      // which usernames exist.
+      await bcrypt.compare(password, DUMMY_HASH);
+      await recordLoginAttempt(db, { userId: null, username: username.trim().slice(0, 64), success: false, ip, userAgent });
+      logger.warn('auth', `Failed sign-in attempt for unknown username "${username.trim()}"`, { ip });
+      return sendError(req, res, 'P107');
+    }
+
+    const isValid = await bcrypt.compare(password, user.password_hash);
+    if (!isValid) {
+      await recordLoginAttempt(db, { userId: user.id, username: user.username, success: false, ip, userAgent });
+      logger.warn('auth', `Failed sign-in attempt for "${user.username}" (wrong password)`, { ip });
+      return sendError(req, res, 'P107');
+    }
+
+    if (user.expires_at && new Date(user.expires_at).getTime() <= Date.now()) {
+      await recordLoginAttempt(db, { userId: user.id, username: user.username, success: false, ip, userAgent });
+      logger.warn('auth', `Failed sign-in attempt for expired account "${user.username}"`, { ip });
+      return sendError(req, res, 'P103');
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, username: user.username, role: user.role, tokenVersion: user.token_version || 0 },
+      config.jwtSecret,
+      { expiresIn: config.jwtExpiresIn }
+    );
+
+    await db.run(
+      'UPDATE users SET last_login_at = CURRENT_TIMESTAMP, last_login_ip = ? WHERE id = ?',
+      [ip, user.id]
+    );
+    await recordLoginAttempt(db, { userId: user.id, username: user.username, success: true, ip, userAgent });
+    logger.info('auth', `"${user.username}" signed in`, { ip });
+
+    let preferences = { enabledMediaTypes: ALL_MEDIA_TYPES, defaultView: 'all' };
+    if (user.preferences) {
+      try { preferences = JSON.parse(user.preferences); } catch (e) {}
+    }
+
+    res.json({
+      token,
+      mediaToken: signMediaToken(user),
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        avatar: user.avatar || null,
+        expires_at: user.expires_at || null,
+        preferences
+      }
+    });
+  } catch (err) {
+    console.error('[auth] login failed:', err);
+    res.status(500).json({ error: 'Login failed. Check the server logs for details.' });
+  }
+});
+
+async function recordLoginAttempt(db, { userId, username, success, ip, userAgent }) {
+  try {
+    await db.run(
+      'INSERT INTO login_history (user_id, username, success, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)',
+      [userId, username, success ? 1 : 0, ip, userAgent]
+    );
+  } catch (err) {
+    // Never let sign-in tracking break the actual login flow
+    console.error('[auth] failed to record login history:', err);
+  }
+}
+
+// Get current user profile
+router.get('/me', authenticateToken, (req, res) => {
+  res.json({ user: req.user });
+});
+
+// Exchange a still-valid token for a fresh one. The app calls this on load, which is what
+// makes a shorter token lifetime workable: someone who opens Plinthio regularly is never
+// signed out, while a token copied off a shared machine stops working within the window
+// rather than a month later.
+router.post('/refresh', authenticateToken, (req, res) => {
+  const token = jwt.sign(
+    {
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
+      tokenVersion: req.user.token_version || 0
+    },
+    config.jwtSecret,
+    { expiresIn: config.jwtExpiresIn }
+  );
+  res.json({ token, mediaToken: signMediaToken(req.user), user: req.user });
+});
+
+// Just a fresh media token, for a long-lived tab whose current one is close to expiring.
+router.post('/media-token', authenticateToken, (req, res) => {
+  if (req.isApiKey) {
+    return res.status(400).json({ error: 'API keys authenticate media requests directly' });
+  }
+  res.json({ mediaToken: signMediaToken(req.user) });
+});
+
+// Invalidate every token issued for this account, this one included — the "signed in
+// somewhere I shouldn't be" button. Bumping token_version is the same mechanism a password
+// change uses, so it revokes instantly rather than waiting for expiry.
+router.post('/sign-out-everywhere', authenticateToken, async (req, res) => {
+  try {
+    const db = await getDb();
+    await db.run(
+      'UPDATE users SET token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [req.user.id]
+    );
+    invalidateUserCache(req.user.id);
+    logger.info('auth', `"${req.user.username}" signed out all sessions`);
+    res.json({ message: 'All sessions signed out. Please sign in again.' });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+export default router;

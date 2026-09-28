@@ -1,0 +1,23 @@
+node_modules/
+dist/
+dist.old/
+build/
+.env
+*.log
+.DS_Store
+/data/
+backend/data/
+/config/
+docker/config/
+docker/config-test/
+cache/
+*.sqlite
+*.sqlite3
+*.sqlite-shm
+*.sqlite-wal
+*.secret
+.idea/
+.vscode/
+
+# Per-machine compose settings (e.g. GPU passthrough)
+docker/docker-compose.override.yml

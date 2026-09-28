@@ -1,0 +1,67 @@
+# Plinthio — download just this file, then `docker compose up -d`.
+#
+# Updating:  docker compose pull && docker compose up -d
+#   Your database is backed up automatically (to ./config/backups) before a new version
+#   starts, so you can always roll back by pinning the previous tag below.
+#
+# Which updates to take — set PLINTHIO_TAG in a .env file next to this file:
+#   latest  every release (default)
+#   1       new features and fixes, never a breaking 2.0
+#   1.2     bug fixes only for the 1.2 line
+#   1.2.3   exactly this version, never changes
+services:
+  plinthio:
+    image: ghcr.io/oddomens/plinthio:${PLINTHIO_TAG:-latest}
+    container_name: plinthio
+    restart: unless-stopped
+    ports:
+      # Defaults to 0.0.0.0 — reachable from any device on your LAN (phones, the PWA, other
+      # machines). To make Plinthio reachable ONLY from this machine, set BIND_ADDRESS=127.0.0.1
+      # in a .env file next to this compose file. Note that publishing a container port
+      # punches through the host firewall on most Docker setups, so 0.0.0.0 really does mean
+      # "anyone on the network", not just "anyone allowed by ufw".
+      - "${BIND_ADDRESS:-0.0.0.0}:8088:8080"
+    environment:
+      - TZ=${TZ:-UTC}
+      # Files in ./config are owned by 1000:1000. Match your own user if that's different
+      # (run `id` on the host to see your uid and gid).
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      # Set TRUST_PROXY=1 ONLY when Plinthio sits behind a reverse proxy (nginx, Caddy,
+      # Cloudflare tunnel). Without it, per-IP rate limits see the proxy's IP for every
+      # request and collapse into one shared bucket; with it set but no proxy in front,
+      # clients can forge X-Forwarded-For and bypass rate limiting entirely.
+      # - TRUST_PROXY=1
+      # JWT_SECRET intentionally not set here — the server auto-generates a strong random
+      # secret on first boot and persists it to /config/jwt.secret. Do not hardcode a
+      # literal secret in this file: anyone who reads it (repo history, a shared screenshot,
+      # a leaked backup) could forge valid login tokens for any account.
+      # Hardware transcoding is auto-detected. Force or disable it under
+      # Admin → Server Settings if detection guesses wrong for your setup.
+      # - HLS_CACHE_MAX_AGE_HOURS=24
+      # Admins see a banner when a new release is out. The check is a single anonymous
+      # request to GitHub every 12 hours; set UPDATE_CHECK=false to turn it off.
+      # - UPDATE_CHECK=false
+    volumes:
+      - ./config:/config
+      - ${MEDIA_DIR:-/media/library}:/media
+    # Hardware transcoding (optional). Off by default so the file starts anywhere — with
+    # these lines active, `docker compose up` refuses to start on machines without a GPU
+    # device (Macs, most VPSs, some Pis). Without them, video still plays; ffmpeg just
+    # transcodes on the CPU.
+    #
+    # Intel QuickSync / AMD VAAPI: uncomment the four lines below (the drivers are already
+    # in the image). Check your render group's GID with: getent group render
+    # devices:
+    #   - /dev/dri:/dev/dri
+    # group_add:
+    #   - "992"  # host 'render' group GID — grants access to /dev/dri/renderD128
+    #
+    # NVIDIA NVENC instead: install the NVIDIA Container Toolkit on the host and uncomment:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu, video]
