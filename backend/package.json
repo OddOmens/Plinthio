@@ -14,7 +14,7 @@
     "docs:errors": "node scripts/gen-error-docs.js"
   },
   "dependencies": {
-    "7zip-min": "^1.4.4",
+    "7zip-min": "^3.0.1",
     "adm-zip": "^0.6.1",
     "bcryptjs": "^2.4.3",
     "compression": "^1.8.2",
