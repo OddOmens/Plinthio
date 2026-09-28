@@ -6,9 +6,7 @@
       <div class="p-6 border-b border-border bg-muted/20">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm font-bold text-base">
-              S
-            </div>
+            <AppLogo class="w-9 h-9 flex-shrink-0" />
             <div>
               <h1 class="text-base font-semibold text-foreground tracking-tight">Plinthio Setup Wizard</h1>
               <p class="text-xs text-muted-foreground">Step {{ step }} of 6: {{ stepTitles[step - 1] }}</p>
@@ -484,6 +482,7 @@
 </template>
 
 <script setup>
+import AppLogo from '../components/AppLogo.vue';
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';

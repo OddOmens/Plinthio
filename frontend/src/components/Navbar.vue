@@ -3,9 +3,7 @@
     <div class="max-w-[1440px] mx-auto px-3 sm:px-5 lg:px-8 h-[58px] sm:h-[60px] flex items-center justify-between gap-2 sm:gap-4">
       <!-- Logo -->
       <router-link to="/" class="flex items-center gap-2.5 sm:gap-3 flex-shrink-0 group">
-        <div class="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
-          <BookOpen class="w-4.5 h-4.5 sm:w-5 sm:h-5" />
-        </div>
+        <AppLogo class="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0" />
         <span class="text-base sm:text-lg font-semibold tracking-tight text-foreground truncate max-w-[140px] sm:max-w-none">
           {{ customizationStore.serverName || 'Plinthio' }}
         </span>
@@ -99,13 +97,14 @@
 </template>
 
 <script setup>
+import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { ALL_MEDIA_TYPES } from '../constants/media';
 import { useCustomizationStore } from '../stores/customization';
 import UserMenu from './UserMenu.vue';
 import {
-  BookOpen,
+  
   Headphones,
   FileImage,
   Book,

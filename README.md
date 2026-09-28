@@ -1,4 +1,6 @@
-# 📚 Plinthio
+<p align="center"><img src="frontend/public/icons/logo.svg" alt="Plinthio logo" width="120" /></p>
+
+# Plinthio
 
 > **The all-in-one self-hosted media server and PWA for Audiobooks, Manga & Comics, Books, Movies, TV Shows, and Anime.**
 

@@ -8,9 +8,7 @@
       <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-[60px] flex items-center justify-between gap-2">
         <div class="flex items-center gap-3 min-w-0">
           <router-link to="/" class="flex items-center gap-2 hover:opacity-80 transition min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm flex-shrink-0">
-              S
-            </div>
+            <AppLogo class="w-8 h-8 flex-shrink-0" />
             <span class="font-semibold text-sm tracking-tight truncate">{{ customizationStore.serverName }}</span>
           </router-link>
           <span class="text-xs text-muted-foreground hidden sm:inline flex-shrink-0">/</span>
@@ -960,6 +958,7 @@ header input[type="text"] {
 </template>
 
 <script setup>
+import AppLogo from '../components/AppLogo.vue';
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCustomizationStore } from '../stores/customization';

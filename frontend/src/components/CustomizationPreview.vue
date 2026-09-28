@@ -32,7 +32,7 @@
         <div v-if="view === 'shelf'" class="w-full h-full bg-background text-foreground flex" :class="settings.layoutMode === 'sidebar' ? 'flex-row' : 'flex-col'">
           <aside v-if="settings.layoutMode === 'sidebar'" class="w-[230px] shrink-0 border-r border-border bg-card/40 p-4 flex flex-col gap-1">
             <div class="flex items-center gap-2.5 mb-5 px-1">
-              <div class="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shadow-sm"><BookOpen class="w-4 h-4" /></div>
+              <AppLogo class="w-9 h-9" />
               <span class="text-base font-semibold tracking-tight truncate">{{ brand }}</span>
             </div>
             <div
@@ -45,7 +45,7 @@
           </aside>
           <header v-else class="h-[60px] shrink-0 border-b border-border px-8 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm"><BookOpen class="w-4 h-4" /></div>
+              <AppLogo class="w-9 h-9" />
               <span class="text-lg font-semibold tracking-tight">{{ brand }}</span>
             </div>
             <nav class="flex items-center gap-1 bg-muted/50 p-1 rounded-xl border border-border">
@@ -139,7 +139,7 @@
         <div v-else-if="view === 'login'" class="w-full h-full bg-background flex items-center justify-center">
           <div class="w-[384px] bg-card border border-border rounded-xl p-6 shadow-lg">
             <div class="flex flex-col items-center text-center mb-6">
-              <div class="w-10 h-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center mb-3 shadow-sm"><BookOpen class="w-5 h-5" /></div>
+              <AppLogo class="w-14 h-14 mb-3" />
               <h1 class="text-xl font-semibold tracking-tight text-foreground">Welcome to {{ brand }}</h1>
               <p class="text-xs text-muted-foreground mt-1">Sign in to access your library</p>
             </div>
@@ -183,8 +183,9 @@
 </template>
 
 <script setup>
+import AppLogo from './AppLogo.vue';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { BookOpen, Search, Play, Film, Tv, Headphones, Book, Users, Star, Plus, LayoutGrid } from 'lucide-vue-next';
+import { Search, Play, Film, Tv, Headphones, Book, Users, Star, Plus, LayoutGrid } from 'lucide-vue-next';
 import api from '../api/client';
 import { coverUrl } from '../utils/cover';
 import PauseScreen from './PauseScreen.vue';

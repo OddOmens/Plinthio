@@ -15,6 +15,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Live preview in Admin → Server Config.** Theme, navigation layout, ratings, movie collections, watch parties, pause screen, server name and sign-in notice now sit beside a preview of the shelf, a title page, the sign-in screen and the player. It updates as you change each setting, and hovering a pause screen style previews it before you pick it. It uses your own movies' posters when the server has some.
 
 ### Changed
+- **A new logo**, in the app, on the sign-in and setup screens, and as the icon when you install Plinthio on a phone or desktop. Android gets a properly padded version so the launcher doesn't crop it.
 - **Pause screens fill the screen.** Details and Cinematic are sized to the player, so the poster, title and details are large on a TV or a big monitor instead of sitting small in one corner. Bedtime's clock scales the same way.
 
 ### Fixed

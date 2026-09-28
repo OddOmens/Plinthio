@@ -193,6 +193,29 @@ version never installs unattended.
 
 Progress made on the newer version after the upgrade is lost by the restore.
 
+## A test server
+
+To try unreleased changes without risking your real server, run a second copy beside it.
+`docker/docker-compose.test.yml` builds from your checkout, listens on port **8089**, keeps
+its own data in `docker/config-test`, and mounts your media **read-only**:
+
+```bash
+docker compose -f docker/docker-compose.test.yml up -d --build
+```
+
+Run the same command again after switching branches or pulling. With an empty
+`docker/config-test` it starts at the setup wizard. To start from a copy of your real
+server's accounts, libraries and settings instead, stop the test server, then copy the
+database (safe while the real server is running) and the artwork:
+
+```bash
+docker compose -f docker/docker-compose.test.yml down
+cd backend && node -e "const s=require('sqlite3');const d=new s.Database('../docker/config/plinthio.sqlite',s.OPEN_READONLY);d.run(\"VACUUM INTO '../docker/config-test/plinthio.sqlite'\",()=>d.close())" && cd ..
+cp -a docker/config/covers docker/config/avatars docker/config-test/
+```
+
+Anything done on the test server (progress, ratings, settings) stays there.
+
 ## Building from source
 
 ```bash

@@ -3,9 +3,7 @@
     <div class="w-full max-w-sm bg-card border border-border rounded-xl p-6 shadow-lg my-auto">
       <!-- App Header -->
       <div class="flex flex-col items-center text-center mb-6">
-        <div class="w-10 h-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center mb-3 shadow-sm">
-          <BookOpen class="w-5 h-5" />
-        </div>
+        <AppLogo class="w-14 h-14 mb-3" />
         <h1 class="text-xl font-semibold tracking-tight text-foreground">
           {{ isSetup ? `Welcome to ${customizationStore.serverName || 'Plinthio'}` : 'Initial Server Setup' }}
         </h1>
@@ -89,11 +87,12 @@
 </template>
 
 <script setup>
+import AppLogo from '../components/AppLogo.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
-import { BookOpen, AlertCircle, Loader2, Lock } from 'lucide-vue-next';
+import { AlertCircle, Loader2, Lock } from 'lucide-vue-next';
 
 const router = useRouter();
 const route = useRoute();
