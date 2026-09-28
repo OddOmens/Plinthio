@@ -1029,7 +1029,7 @@
                     />
                     <div class="flex flex-col">
                       <span class="text-xs font-semibold text-foreground">Play the opening sequence</span>
-                      <span class="text-[12px] text-muted-foreground">{{ customizationStore.introVersion ? 'On by default. Plays for everyone.' : 'Upload a clip first.' }}</span>
+                      <span class="text-[12px] text-muted-foreground">{{ customizationStore.introVersion ? 'Off by default. Turn on to play it for everyone.' : 'Upload a clip first.' }}</span>
                     </div>
                   </label>
                   <div v-if="customizationStore.introEnabled" class="flex flex-wrap gap-x-5 gap-y-2 pl-1">

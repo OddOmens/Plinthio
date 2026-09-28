@@ -6,8 +6,8 @@ import { fileURLToPath } from 'url';
 import { config } from '../config/env.js';
 
 // The opening sequence: a short clip played before a movie or episode starts
-// (components/IntroSequence.vue). Plinthio ships its own (assets/default-intro.mp4), on by
-// default; an admin can upload a replacement, kept in the data folder so it survives image
+// (components/IntroSequence.vue). Plinthio ships its own (assets/default-intro.mp4), off until
+// an admin switches it on; they can also upload a replacement, kept in the data folder so it survives image
 // updates and goes along with backups of /config.
 export const INTRO_DIR = path.join(config.dataDir, 'intro');
 export const INTRO_FILE = path.join(INTRO_DIR, 'intro.mp4');
@@ -36,8 +36,8 @@ export async function getIntroSettings(db) {
   const file = activeIntroFile();
   const custom = file === INTRO_FILE;
   return {
-    // On unless an admin switches it off, and only when there's a file to play.
-    introEnabled: !!file && s.intro_enabled !== '0',
+    // Off until an admin switches it on, and only when there's a file to play.
+    introEnabled: !!file && s.intro_enabled === '1',
     introMovies: s.intro_movies !== '0',
     introShows: s.intro_shows !== '0',
     // Whether the clip is an admin's upload (Remove goes back to the built-in one).
@@ -122,7 +122,7 @@ export async function installIntro(db, buffer) {
   }
 }
 
-// Removes an uploaded clip; the built-in one plays again (if it's switched on).
+// Removes an uploaded clip; the built-in one plays instead (if it's switched on).
 export async function removeIntro() {
   fs.rmSync(INTRO_FILE, { force: true });
 }

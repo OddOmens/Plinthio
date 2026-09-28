@@ -91,16 +91,17 @@ screens use the file's own details: title, year, runtime, genres, description.
 
 ## Opening sequence
 
-A short clip plays full-screen when someone presses Play on a movie or episode, before the
-title starts. Plinthio comes with its own, switched on. An admin can replace it with their
-own clip (a logo sting, say), limit it to movies or to shows and anime, or switch it off:
-**Admin → Server Config → Opening Sequence**.
+A short clip can play full-screen when someone presses Play on a movie or episode, before
+the title starts. Plinthio comes with its own, off until an admin switches it on. They can
+also replace it with their own clip (a logo sting, say) and limit it to movies or to shows
+and anime: **Admin → Server Config → Opening Sequence**.
 
 - The title loads behind the clip, so it starts as soon as the clip ends.
-- Your own clip must be an **MP4 with H.264 video**, **1–10 seconds** long and **under 20 MB**. The
-  server checks it when uploaded. 1080p at around 8 Mbps is plenty.
-- It never plays before an autoplayed next episode, a trailer or other extra, or in a watch
-  party.
+- Your own clip must be an **MP4 with H.264 video**, **1–10 seconds** long and **under
+  20 MB**. The server checks it when uploaded. 1080p at around 8 Mbps is plenty for most
+  clips; fine noise or thin lines need more (see below).
+- It never plays when resuming partway through (Resume, Continue Watching), before an
+  autoplayed next episode, a trailer or other extra, or in a watch party.
 - Anyone can skip it (the Skip button, Esc, Enter or a tap). If it can't play, the title
   starts straight away.
 - Your own clip is kept in the data folder (`/config/intro/intro.mp4`), so it survives
