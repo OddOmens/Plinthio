@@ -5,7 +5,7 @@
     <div class="flex-1 flex flex-col min-w-0 pb-24">
     <!-- Settings Header (Matching AdminView header) -->
     <header class="bg-background/95 backdrop-blur-xl border-b border-border sticky top-0 z-30 safe-top transition-colors">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-[60px] flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+      <div class="page-width mx-auto px-4 sm:px-6 lg:px-8 h-[60px] flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
         <div class="flex items-center gap-2.5 min-w-0 flex-shrink-0">
           <router-link
             to="/"
@@ -92,7 +92,7 @@
       </div>
     </header>
 
-    <main class="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 flex flex-col gap-6">
+    <main class="page-width mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 flex flex-col gap-6">
       <!-- TAB 1: PREFERENCES -->
       <section v-if="activeTab === 'preferences'" class="flex flex-col gap-5">
         <div>
@@ -235,6 +235,35 @@
                 <span v-else class="text-[12px] text-muted-foreground">{{ mode.desc }}</span>
               </div>
             </label>
+          </div>
+        </div>
+
+        <!-- Page Width Card (applies and saves on its own, so the page can be seen changing) -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Page Width</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">How wide pages get on a big screen. Full width fits more posters in a row.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl" role="radiogroup" aria-label="Page width">
+            <button
+              v-for="option in PAGE_WIDTHS"
+              :key="option.id"
+              type="button"
+              role="radio"
+              :aria-checked="pageWidth === option.id"
+              @click="setPageWidth(option.id)"
+              :class="[
+                'flex items-start gap-3 p-3 rounded-lg border text-left transition',
+                pageWidth === option.id ? 'border-primary bg-primary/5' : 'border-border bg-muted/20 hover:bg-muted/40'
+              ]"
+            >
+              <component :is="option.icon" class="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-foreground">{{ option.label }}</span>
+                <span class="text-[12px] text-muted-foreground">{{ option.desc }}</span>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -730,7 +759,9 @@ import {
   Sparkles,
   ExternalLink,
   LogIn,
-  Upload
+  Upload,
+  StretchHorizontal,
+  RectangleHorizontal
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -902,6 +933,26 @@ async function loadData() {
     }
   } catch (err) {
     console.error('Failed to load user settings data:', err);
+  }
+}
+
+// Page width saves as soon as it's picked; App.vue applies it from the stored preferences.
+const PAGE_WIDTHS = [
+  { id: 'full', label: 'Full width', desc: 'Use the whole screen', icon: StretchHorizontal },
+  { id: 'contained', label: 'Contained', desc: 'Centred, up to 1440px wide', icon: RectangleHorizontal }
+];
+const pageWidth = computed(() => authStore.user?.preferences?.pageWidth === 'contained' ? 'contained' : 'full');
+async function setPageWidth(value) {
+  if (!authStore.user || value === pageWidth.value) return;
+  const previous = authStore.user.preferences || {};
+  authStore.user.preferences = { ...previous, pageWidth: value };
+  try {
+    const { data } = await api.patch('/users/preferences', { pageWidth: value });
+    authStore.user.preferences = data.preferences || authStore.user.preferences;
+    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+  } catch (err) {
+    authStore.user.preferences = previous;
+    dialog.alert(err.response?.data?.error || 'Could not save the page width');
   }
 }
 

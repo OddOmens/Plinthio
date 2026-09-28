@@ -5,7 +5,7 @@
     <div class="flex-1 flex flex-col min-w-0 pb-24">
     <!-- Admin Header -->
     <header class="bg-background/95 backdrop-blur-xl border-b border-border sticky top-0 z-30 safe-top transition-colors">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-[60px] flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+      <div class="page-width mx-auto px-4 sm:px-6 lg:px-8 h-[60px] flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
         <div class="flex items-center gap-2.5 min-w-0 flex-shrink-0">
           <router-link
             to="/"
@@ -122,7 +122,7 @@
       </div>
     </header>
 
-    <main class="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 flex flex-col gap-6">
+    <main class="page-width mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 flex flex-col gap-6">
       <!-- TAB 1: LIBRARIES -->
       <section v-if="activeTab === 'libraries'" class="flex flex-col gap-4">
         <div class="flex items-center justify-between">
