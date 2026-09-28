@@ -1,20 +1,12 @@
 <template>
   <div class="login-root relative min-h-screen bg-background text-foreground overflow-hidden safe-top safe-bottom transition-colors">
-    <!-- Backdrop: an endless, slowly drifting wall of stylised shelf tiles, one icon per kind
-         of media. Decorative only: it needs no API and shows nothing from the library, so
-         it's safe in front of anyone who opens the address. -->
+    <!-- Backdrop: a few soft glows in the logo's colours drifting very slowly, with a faint
+         grain. Decorative only: no API, nothing from the library. -->
     <div class="absolute inset-0 pointer-events-none select-none" aria-hidden="true">
-      <div class="glow glow-a"></div>
-      <div class="glow glow-b"></div>
-      <div class="shelf-wall">
-        <div v-for="(row, r) in wallRows" :key="r" class="shelf-row" :class="r % 2 ? 'drift-right' : 'drift-left'" :style="{ animationDuration: `${90 + r * 25}s` }">
-          <div v-for="(tile, i) in row" :key="i" class="shelf-tile" :style="{ background: tile.bg }">
-            <component :is="tile.icon" class="w-1/3 h-1/3 text-white/35" />
-          </div>
-        </div>
-      </div>
-      <img src="/icons/logo.svg" alt="" class="ghost-logo" />
-      <div class="absolute inset-0 veil"></div>
+      <div class="aura aura-a"></div>
+      <div class="aura aura-b"></div>
+      <div class="aura aura-c"></div>
+      <div class="absolute inset-0 grain"></div>
     </div>
 
     <div class="relative min-h-screen w-full max-w-6xl mx-auto px-4 sm:px-8 py-10 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
@@ -149,7 +141,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
-import { AlertCircle, Loader2, Lock, User, KeyRound, Eye, EyeOff, ArrowRight, Megaphone, BookOpen, Book, FileImage, Headphones, Film, Tv, Sparkles } from 'lucide-vue-next';
+import { AlertCircle, Loader2, Lock, User, KeyRound, Eye, EyeOff, ArrowRight, Megaphone, Book, FileImage, Headphones, Film, Tv, Sparkles } from 'lucide-vue-next';
 
 const router = useRouter();
 const route = useRoute();
@@ -173,20 +165,6 @@ const mediaKinds = [
   { label: 'Anime', icon: Sparkles }
 ];
 
-// The backdrop's tiles: each row is its tiles twice over, so sliding it by half its width
-// loops without a seam. Colours are a fixed spread around the wheel, darkened, so they read
-// as posters in either theme without looking like any real one.
-const TILE_ICONS = [BookOpen, Headphones, Film, Tv, FileImage, Sparkles, Book];
-const wallRows = Array.from({ length: 5 }, (_, r) => {
-  const row = Array.from({ length: 12 }, (_, i) => {
-    const hue = (r * 67 + i * 41) % 360;
-    return {
-      icon: TILE_ICONS[(r * 3 + i) % TILE_ICONS.length],
-      bg: `linear-gradient(160deg, hsl(${hue} 45% 38%), hsl(${(hue + 35) % 360} 55% 14%))`
-    };
-  });
-  return [...row, ...row];
-});
 
 onMounted(async () => {
   isSetup.value = await authStore.checkSetupStatus();
@@ -224,75 +202,49 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-.glow {
+/* Three large, heavily blurred glows in the logo's steel blue and a violet, drifting over a
+   minute or so. Stronger in dark mode, where they read as light; softer in light mode. */
+.aura {
   position: absolute;
-  width: 60vmax;
-  height: 60vmax;
   border-radius: 9999px;
-  filter: blur(90px);
-  opacity: 0.35;
-  /* The logo's steel blue, not the accent: the default accent is near-white in dark mode
-     and would fog the whole page. */
-  background: radial-gradient(circle, hsl(213 45% 55%), transparent 65%);
-  animation: float 28s ease-in-out infinite alternate;
+  filter: blur(100px);
+  will-change: transform;
 }
-.glow-a { top: -25vmax; left: -15vmax; }
-.dark .glow { opacity: 0.18; }
-.glow-b { bottom: -30vmax; right: -20vmax; opacity: 0.22; background: radial-gradient(circle, hsl(250 45% 55%), transparent 65%); animation-duration: 36s; animation-direction: alternate-reverse; }
+.aura-a {
+  width: 55vmax; height: 55vmax; top: -18vmax; left: -12vmax;
+  background: hsl(213 60% 62% / 0.35);
+  animation: drift-a 60s ease-in-out infinite alternate;
+}
+.aura-b {
+  width: 45vmax; height: 45vmax; bottom: -20vmax; right: -10vmax;
+  background: hsl(255 55% 64% / 0.28);
+  animation: drift-b 75s ease-in-out infinite alternate;
+}
+.aura-c {
+  width: 30vmax; height: 30vmax; top: 35%; left: 45%;
+  background: hsl(195 55% 60% / 0.18);
+  animation: drift-c 90s ease-in-out infinite alternate;
+}
+.dark .aura-a { background: hsl(213 55% 45% / 0.35); }
+.dark .aura-b { background: hsl(255 45% 45% / 0.30); }
+.dark .aura-c { background: hsl(195 50% 40% / 0.20); }
 
-/* Tilted so the rows read as shelves receding, and masked so they fade out at the edges. */
-.shelf-wall {
-  position: absolute;
-  inset: -20% -30%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1.25rem;
-  transform: rotate(-12deg) scale(1.05);
-  opacity: 0.55;
-  -webkit-mask-image: radial-gradient(ellipse 70% 65% at 60% 50%, #000 30%, transparent 75%);
-  mask-image: radial-gradient(ellipse 70% 65% at 60% 50%, #000 30%, transparent 75%);
+/* Fine film grain so the gradients don't band. */
+.grain {
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.dark .shelf-wall { opacity: 0.4; }
-.shelf-row { display: flex; gap: 1.25rem; width: max-content; animation: drift linear infinite; }
-.drift-right { animation-direction: reverse; }
-.shelf-tile {
-  width: clamp(88px, 11vw, 150px);
-  aspect-ratio: 2 / 3;
-  border-radius: 0.9rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.12);
-}
-
-.ghost-logo {
-  position: absolute;
-  width: min(80vmin, 720px);
-  right: -8vmin;
-  top: 50%;
-  transform: translateY(-50%) rotate(8deg);
-  opacity: 0.07;
-  filter: blur(1px);
-  animation: bob 18s ease-in-out infinite alternate;
-}
-
-/* Keeps the text side readable over the wall in both themes. */
-.veil { background: linear-gradient(90deg, hsl(var(--background)) 0%, hsl(var(--background) / 0.85) 35%, hsl(var(--background) / 0.35) 100%); }
-@media (max-width: 1023px) {
-  .veil { background: linear-gradient(180deg, hsl(var(--background) / 0.55) 0%, hsl(var(--background) / 0.9) 60%, hsl(var(--background)) 100%); }
-}
+.dark .grain { opacity: 0.07; }
 
 .login-in { animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .login-in-late { animation-delay: 0.12s; }
 
-@keyframes drift { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@keyframes float { from { transform: translate(0, 0); } to { transform: translate(8vmax, 6vmax); } }
-@keyframes bob { from { transform: translateY(-52%) rotate(6deg); } to { transform: translateY(-48%) rotate(10deg); } }
+@keyframes drift-a { to { transform: translate(10vmax, 8vmax) scale(1.1); } }
+@keyframes drift-b { to { transform: translate(-12vmax, -6vmax) scale(0.9); } }
+@keyframes drift-c { to { transform: translate(-18vmax, 10vmax) scale(1.2); } }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .shelf-row, .glow, .ghost-logo, .login-in { animation: none; }
+  .aura, .login-in { animation: none; }
 }
 </style>
