@@ -9,6 +9,9 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Security
+- **File uploads** (avatars, cover art, the opening sequence) use an updated upload library that fixes several ways a crafted request could tie up or crash the server.
+
 ### Changed
 - **Updated libraries** on the server (password hashing, file types, 7z archives, settings loading) and in the app (state management, icons), plus the build and release tooling. Nothing to do when upgrading: existing passwords keep working. `.m4b` audiobooks are now served with the correct audio type.
 
