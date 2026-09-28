@@ -1140,12 +1140,14 @@
       :item="activeEpubItem"
       @close="activeEpubItem = null; fetchSeriesData()"
     />
-    <!-- The admin's opening sequence, when there is one, before the title itself -->
-    <IntroSequence v-if="introFor" @done="activeVideoItem = introFor; introFor = null" />
+    <!-- The opening sequence before the title itself. The player loads underneath it, held,
+         so the title starts the moment the clip ends instead of after a load. -->
+    <IntroSequence v-if="introFor" @done="introFor = null" />
     <VideoPlayer
       v-if="activeVideoItem"
       :key="activeVideoItem.id"
       :item="activeVideoItem"
+      :held="!!introFor"
       @close="activeVideoItem = null; fetchSeriesData()"
       @play-next="activeVideoItem = $event"
     />
@@ -1285,7 +1287,7 @@ const collectionSiblings = computed(() =>
 );
 const activeEpubItem = ref(null);
 const activeVideoItem = ref(null);
-// A title waiting for the opening sequence to finish (IntroSequence), then played.
+// A title waiting for the opening sequence to finish (IntroSequence) before it plays.
 const introFor = ref(null);
 const error = ref(null);
 const series = ref(null);
@@ -2204,7 +2206,7 @@ function openVolumeReader(vol) {
     // Pressing Play: the opening sequence first, if the admin has one on. (The player's own
     // "next episode" swaps activeVideoItem directly, so autoplay never replays it.)
     if (customizationStore.playsIntroBefore(vol)) introFor.value = vol;
-    else activeVideoItem.value = vol;
+    activeVideoItem.value = vol;
   } else if (kind === 'pages') {
     activeReadingItem.value = vol;
   } else if ((vol.format || '').toLowerCase() === 'epub') {

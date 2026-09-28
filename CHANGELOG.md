@@ -12,7 +12,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 ## [1.1.0] - 2026-09-28
 
 ### Added
-- **Opening sequence.** Admins can upload a 1–10 second MP4 (a logo sting, say) that plays full-screen before movies and/or episodes when someone presses Play, like a streaming service's intro. Off by default, always skippable, and never before autoplayed next episodes, trailers or watch parties. Admin → Server Config → Opening Sequence.
+- **Opening sequence.** A short Plinthio clip plays full-screen before movies and episodes when someone presses Play, like a streaming service's intro, and the title starts the moment it ends. Admins can replace it with their own 1–10 second MP4, limit it to movies or shows, or switch it off. Always skippable, and never before autoplayed next episodes, trailers or watch parties. Admin → Server Config → Opening Sequence.
 - **Live preview in Admin → Server Config.** Theme, navigation layout, ratings, movie collections, watch parties, pause screen, server name and sign-in notice now sit beside a preview of the shelf, a title page, the sign-in screen and the player. It updates as you change each setting, and hovering a pause screen style previews it before you pick it. It uses your own movies' posters when the server has some.
 
 ### Changed

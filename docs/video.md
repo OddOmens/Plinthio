@@ -68,7 +68,7 @@ including HEVC/H.265, which Chrome, Edge and Safari can play.
 - **Up next:** at the end of an episode the next one starts after a 10-second countdown,
   which you can cancel.
 - **Casting:** Chromecast (Chrome, including Google TV) and AirPlay (Safari) buttons appear
-  when a device is available.
+  when a device is available. Chromecast needs Plinthio opened over HTTPS.
 - On phones the browser's own controls are used, because they handle full screen,
   picture-in-picture and AirPlay best.
 
@@ -91,18 +91,20 @@ screens use the file's own details: title, year, runtime, genres, description.
 
 ## Opening sequence
 
-An admin can upload a short clip (a logo sting, say) that plays full-screen when someone
-presses Play on a movie or episode, before the title starts: **Admin → Server Config →
-Opening Sequence**. It's off until switched on, and can be limited to movies or to shows and
-anime.
+A short clip plays full-screen when someone presses Play on a movie or episode, before the
+title starts. Plinthio comes with its own, switched on. An admin can replace it with their
+own clip (a logo sting, say), limit it to movies or to shows and anime, or switch it off:
+**Admin → Server Config → Opening Sequence**.
 
-- The clip must be an **MP4 with H.264 video**, **1–10 seconds** long and **under 20 MB**. The
+- The title loads behind the clip, so it starts as soon as the clip ends.
+- Your own clip must be an **MP4 with H.264 video**, **1–10 seconds** long and **under 20 MB**. The
   server checks it when uploaded. 1080p at around 8 Mbps is plenty.
 - It never plays before an autoplayed next episode, a trailer or other extra, or in a watch
   party.
 - Anyone can skip it (the Skip button, Esc, Enter or a tap). If it can't play, the title
   starts straight away.
-- It's kept in the data folder (`/config/intro/intro.mp4`), so it survives updates.
+- Your own clip is kept in the data folder (`/config/intro/intro.mp4`), so it survives
+  updates. Removing it goes back to the built-in one.
 
 ## Skip intro and credits
 

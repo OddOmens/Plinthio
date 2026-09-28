@@ -105,7 +105,7 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `GET /media/video/:id/stream` | Direct play, with byte ranges |
 | `GET /media/video/:id/hls/master.m3u8?audio=` (+ variant playlists and segments) · `POST …/hls/stop` | HLS |
 | `GET /media/video/:id/subtitles/:track.vtt` | Subtitles as WebVTT |
-| `GET /media/video/:id/trickplay/index.json` · `sheet_N.jpg` | Scrub previews |
+| `GET /media/video/:id/trickplay/index.json` · `sheet_N.jpg` | Scrub previews (index is 204 when the file has none) |
 | `GET /media/video/:id/markers` · `PUT` (E) | Intro and credits ranges |
 
 ### Lists, requests, parties

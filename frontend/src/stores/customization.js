@@ -16,11 +16,13 @@ export const useCustomizationStore = defineStore('customization', {
     partyModeEnabled: false,
     // What the video player shows while paused: simple | details | cinematic | bedtime.
     pauseScreen: 'details',
-    // The opening sequence played before movies/episodes (off, and no clip, until an admin
-    // uploads one). introVersion changes with each upload so the new clip isn't cached over.
+    // The opening sequence played before movies/episodes: the built-in clip unless an admin
+    // uploads one (introCustom). introVersion changes with each upload so the new clip isn't
+    // cached over.
     introEnabled: false,
     introMovies: true,
     introShows: true,
+    introCustom: false,
     introVersion: null,
     introDuration: null,
     loading: false
@@ -81,6 +83,7 @@ export const useCustomizationStore = defineStore('customization', {
       this.introEnabled = !!data.introEnabled;
       this.introMovies = data.introMovies !== false;
       this.introShows = data.introShows !== false;
+      this.introCustom = !!data.introCustom;
       this.introVersion = data.introVersion || null;
       this.introDuration = data.introDuration || null;
     },

@@ -203,11 +203,11 @@ router.post('/intro', authenticateToken, requireAdmin, (req, res) => {
   });
 });
 
-// DELETE /api/customization/intro (Admin): remove the clip, which also turns it off.
+// DELETE /api/customization/intro (Admin): remove the uploaded clip, back to the built-in one.
 router.delete('/intro', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const db = await getDb();
-    await removeIntro(db);
+    await removeIntro();
     logger.info('system', `Opening sequence removed by admin ${req.user.username}`);
     res.json(await getIntroSettings(db));
   } catch (err) {
