@@ -351,7 +351,7 @@ export async function fetchTmdbDetails(tmdbId, mediaType) {
   const endpoint = isMovie ? 'movie' : 'tv';
   const creditsKey = isMovie ? 'credits' : 'aggregate_credits';
   const req = tmdbRequest(
-    `https://api.themoviedb.org/3/${endpoint}/${encodeURIComponent(tmdbId)}?append_to_response=${creditsKey},keywords`,
+    `https://api.themoviedb.org/3/${endpoint}/${encodeURIComponent(tmdbId)}?append_to_response=${creditsKey},keywords,images&include_image_language=en,null`,
     apiKey
   );
   const data = await fetchJson(req.url, req.options);
@@ -377,9 +377,18 @@ export async function fetchTmdbDetails(tmdbId, mediaType) {
   }
   crew.sort((a, b) => CREW_JOBS.indexOf(a.job) - CREW_JOBS.indexOf(b.job));
 
+  // The title's logo (its name as artwork) for the banner on its page: English first, then
+  // one with no text language, then whatever there is. PNG, since SVG logos can't be
+  // trusted to render the same everywhere.
+  const logos = (data.images?.logos || []).filter((l) => l.file_path && !l.file_path.endsWith('.svg'));
+  const logo = logos.find((l) => l.iso_639_1 === 'en') || logos.find((l) => !l.iso_639_1) || logos[0];
+
   return {
     tmdbId: String(data.id),
     tagline: data.tagline || null,
+    // Wide artwork for the top of the title page. Paths only; the page picks the size.
+    backdropPath: data.backdrop_path || null,
+    logoPath: logo?.file_path || null,
     studios: (data.production_companies || []).map((s) => s.name).filter(Boolean),
     networks: (data.networks || []).map((n) => n.name).filter(Boolean),
     creators: (data.created_by || []).map((c) => c.name).filter(Boolean),

@@ -72,18 +72,41 @@
 
     <!-- Main View Content: one scrolling page — hero, then the sections below it. -->
     <main v-else-if="series" class="flex-1 lg:min-h-0 lg:overflow-y-auto">
-      <!-- ─── Hero: artwork, what it is, what to do, and the key facts ─────────────── -->
-      <section class="relative overflow-hidden border-b border-border/60">
-        <div
-          class="absolute inset-0 opacity-20 dark:opacity-25 blur-3xl scale-125 pointer-events-none bg-center bg-cover"
-          :style="{ backgroundImage: `url(${primaryCoverUrl})` }"
+      <!-- ─── Banner: the TMDB backdrop, with the title's logo when it has one ─────── -->
+      <section v-if="backdropUrl" class="relative h-[34vh] min-h-[200px] max-h-[520px] overflow-hidden bg-black">
+        <img
+          :src="backdropUrl"
+          :srcset="backdropSrcset"
+          sizes="100vw"
+          alt=""
+          class="absolute inset-0 w-full h-full object-cover object-[center_25%]"
         />
-        <div class="absolute inset-0 bg-gradient-to-b from-background/30 via-background/70 to-background pointer-events-none" />
+        <div class="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-background pointer-events-none" />
+        <div v-if="logoUrl" class="title-indent relative h-full page-width mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+          <img
+            :src="logoUrl"
+            :alt="series.name"
+            class="max-h-[45%] max-w-[min(520px,70%)] object-contain drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
+          />
+        </div>
+      </section>
+
+      <!-- ─── Hero: artwork, what it is, what to do, and the key facts ─────────────── -->
+      <!-- With a banner, the poster rises into it on a wide full-width page (.title-poster in
+           assets/main.css), so the hero mustn't clip, and the blurred cover isn't needed. -->
+      <section class="relative border-b border-border/60" :class="backdropUrl ? '' : 'overflow-hidden'">
+        <template v-if="!backdropUrl">
+          <div
+            class="absolute inset-0 opacity-20 dark:opacity-25 blur-3xl scale-125 pointer-events-none bg-center bg-cover"
+            :style="{ backgroundImage: `url(${primaryCoverUrl})` }"
+          />
+          <div class="absolute inset-0 bg-gradient-to-b from-background/30 via-background/70 to-background pointer-events-none" />
+        </template>
 
         <div class="relative page-width mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div class="flex flex-col sm:flex-row gap-6 lg:gap-10 items-center sm:items-start">
             <!-- Poster (a 3D stack for a multi-volume book/comic series) -->
-            <div class="relative w-44 sm:w-52 md:w-64 lg:w-72 aspect-[2/3] flex-shrink-0">
+            <div class="title-poster relative w-44 sm:w-52 md:w-64 lg:w-72 aspect-[2/3] flex-shrink-0" :class="{ 'has-banner': backdropUrl }">
               <template v-if="!isVideoType">
                 <div
                   v-if="series.volumes?.length > 2"
@@ -109,7 +132,7 @@
             </div>
 
             <!-- Title, facts, actions -->
-            <div class="flex-1 min-w-0 max-w-4xl flex flex-col gap-3.5 text-center sm:text-left">
+            <div class="title-text flex-1 min-w-0 max-w-4xl flex flex-col gap-3.5 text-center sm:text-left">
               <div>
                 <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
                   <span class="text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
@@ -279,7 +302,7 @@
               <!-- A collection's "description" is just its first film's plot; each film lists its own below. -->
               <div v-if="series.description && !isMovieCollection">
                 <p
-                  class="text-sm text-foreground/85 leading-relaxed whitespace-pre-line text-left"
+                  class="text-sm text-foreground/85 leading-relaxed whitespace-pre-line text-left max-w-[110ch]"
                   :class="overviewExpanded ? '' : 'line-clamp-4'"
                 >{{ series.description }}</p>
                 <button
@@ -303,7 +326,8 @@
         </div>
       </section>
 
-      <div class="page-width mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
+      <!-- On a wide full-width page this lines up with the text beside the poster (.title-indent). -->
+      <div class="title-indent page-width mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
         <!-- ─── Seasons & episodes (shows, anime) ───────────────────────────────────── -->
         <section v-if="isEpisodic" class="flex flex-col gap-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1338,6 +1362,16 @@ const genreTags = computed(() => splitTags(series.value?.genres));
 const themeTags = computed(() => splitTags(series.value?.themes));
 
 // ─── Cover URLs ─────────────────────────────────────────────────────────────
+// TMDB artwork for the banner (movies and shows with credits). w1280 for most screens, the
+// original for big ones, so it stays sharp on a 4K display.
+const tmdbImage = (size, path) => (path ? `https://image.tmdb.org/t/p/${size}${path}` : null);
+const backdropUrl = computed(() => (isVideoType.value ? tmdbImage('w1280', credits.value?.backdropPath) : null));
+const backdropSrcset = computed(() => {
+  const path = credits.value?.backdropPath;
+  return path ? `${tmdbImage('w1280', path)} 1280w, ${tmdbImage('original', path)} 2560w` : undefined;
+});
+const logoUrl = computed(() => (backdropUrl.value ? tmdbImage('w500', credits.value?.logoPath) : null));
+
 const primaryCoverUrl = computed(() => {
   if (!series.value || !series.value.volumes || series.value.volumes.length === 0) {
     return placeholderCover(vocab.value.type, { width: 400, height: 600 });
