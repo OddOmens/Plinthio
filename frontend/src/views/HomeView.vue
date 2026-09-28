@@ -414,7 +414,7 @@ import {
   MonitorPlay,
   X,
   WifiOff
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const authStore = useAuthStore();
 const player = usePlayerStore();

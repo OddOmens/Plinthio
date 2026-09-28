@@ -24,6 +24,10 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Movie collections as posters.** A collection's page shows its films as a poster grid, like the shelf, instead of an episode-style list. Hover a poster to play it straight away.
 - **A film always opens its own page.** With the shelf on "All movies", in Continue Watching and anywhere else a single film appears, clicking Shrek 2 opens Shrek 2 rather than the Shrek collection. Its page links to the rest of the collection.
 - **Pause screens fill the screen.** Details and Cinematic are sized to the player, so the poster, title and details are large on a TV or a big monitor instead of sitting small in one corner. Bedtime's clock scales the same way.
+- **Updated libraries** on the server (password hashing, file types, 7z archives, settings loading) and in the app (state management, icons), plus the build and release tooling. Nothing to do when upgrading: existing passwords keep working. `.m4b` audiobooks are now served with the correct audio type.
+
+### Security
+- **File uploads** (avatars, cover art, the opening sequence) use an updated upload library that fixes several ways a crafted request could tie up or crash the server.
 
 ### Fixed
 - **A show no longer splits in two when its files spell its name differently.** Episodes from different release groups ("Farming Life in Another World" and "Farming.Life.In.Another.World") are now one show, named after its folder, with any series settings or Kids Mode entry carried over. Existing splits merge on the next scan.

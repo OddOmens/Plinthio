@@ -508,7 +508,7 @@ import {
   AlertCircle, 
   Loader2,
   PartyPopper
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const router = useRouter();
 const authStore = useAuthStore();

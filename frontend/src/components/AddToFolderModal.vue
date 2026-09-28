@@ -92,7 +92,7 @@
 import { ref, watch } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
-import { X, Folder, FolderPlus, ListOrdered } from 'lucide-vue-next';
+import { X, Folder, FolderPlus, ListOrdered } from '@lucide/vue';
 
 const dialog = useDialogStore();
 

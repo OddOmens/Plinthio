@@ -114,7 +114,7 @@ import {
   Tv,
   Film,
   Sparkles
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 defineProps({
   activeType: { type: String, default: 'all' },

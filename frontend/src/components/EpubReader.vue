@@ -303,7 +303,7 @@
 <script setup>
 import { getMediaToken } from '../utils/mediaToken';
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
-import { ArrowLeft, Type, Bookmark, Loader2, X, Trash2, BookOpen, AlignJustify, Search } from 'lucide-vue-next';
+import { ArrowLeft, Type, Bookmark, Loader2, X, Trash2, BookOpen, AlignJustify, Search } from '@lucide/vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
 import { useViewSession } from '../composables/useViewSession';

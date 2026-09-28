@@ -373,7 +373,7 @@ import { useCustomizationStore } from '../stores/customization';
 import {
   ArrowLeft, AlertCircle, Loader2, Play, Pause, Maximize,
   Settings, Cast, MonitorSpeaker, RotateCcw, RotateCw
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 const viewSession = useViewSession();
 
