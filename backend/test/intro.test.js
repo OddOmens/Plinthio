@@ -50,19 +50,19 @@ describe('opening sequence', () => {
 
   after(async () => { await server.stop(); });
 
-  test('the built-in clip is on by default, and can be switched off', async () => {
+  test('the built-in clip is there but off by default, and can be switched on and off', async () => {
     const config = await fetch(`${server.baseUrl}/api/customization`).then((r) => r.json());
-    assert.equal(config.introEnabled, true);
+    assert.equal(config.introEnabled, false);
     assert.equal(config.introCustom, false);
     assert.equal(config.introVersion, 'default-1');
     assert.equal(config.introDuration, 4);
     const clip = await fetch(`${server.baseUrl}/api/media/intro`, { headers: { ...authed(viewerToken), range: 'bytes=0-99' } });
     assert.equal(clip.status, 206);
 
-    const off = await patch(server.baseUrl, adminToken, { introEnabled: false });
-    assert.equal(off.body.introEnabled, false);
     const on = await patch(server.baseUrl, adminToken, { introEnabled: true });
     assert.equal(on.body.introEnabled, true);
+    const off = await patch(server.baseUrl, adminToken, { introEnabled: false });
+    assert.equal(off.body.introEnabled, false);
   });
 
   test('only an admin can upload one', async () => {
@@ -83,7 +83,7 @@ describe('opening sequence', () => {
     assert.notEqual(up.body.introVersion, 'default-1');
     assert.equal(Math.round(up.body.introDuration), 2);
 
-    const on = await patch(server.baseUrl, adminToken, { introShows: false });
+    const on = await patch(server.baseUrl, adminToken, { introEnabled: true, introShows: false });
     assert.equal(on.body.introEnabled, true);
     assert.equal(on.body.introMovies, true);
     assert.equal(on.body.introShows, false);
