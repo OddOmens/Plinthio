@@ -17,7 +17,7 @@
     <div class="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
     <!-- Sub-Navigation Header: Dedicated Breadcrumbs & Back Bar -->
     <nav class="bg-muted/40 border-b border-border/80 flex-shrink-0 z-20">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-10 flex items-center justify-between gap-3 text-xs">
+      <div class="page-width mx-auto px-4 sm:px-6 lg:px-8 h-10 flex items-center justify-between gap-3 text-xs">
         <div class="flex items-center gap-2.5 min-w-0">
           <button
             @click="goBack"
@@ -80,7 +80,7 @@
         />
         <div class="absolute inset-0 bg-gradient-to-b from-background/30 via-background/70 to-background pointer-events-none" />
 
-        <div class="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div class="relative page-width mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div class="flex flex-col sm:flex-row gap-6 lg:gap-10 items-center sm:items-start">
             <!-- Poster (a 3D stack for a multi-volume book/comic series) -->
             <div class="relative w-44 sm:w-52 md:w-64 lg:w-72 aspect-[2/3] flex-shrink-0">
@@ -303,7 +303,7 @@
         </div>
       </section>
 
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
+      <div class="page-width mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
         <!-- ─── Seasons & episodes (shows, anime) ───────────────────────────────────── -->
         <section v-if="isEpisodic" class="flex flex-col gap-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

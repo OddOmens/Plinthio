@@ -4,7 +4,7 @@
     role="status"
     class="relative z-[45] bg-primary text-primary-foreground pt-[env(safe-area-inset-top)]"
   >
-    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm">
+    <div class="page-width mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm">
       <Sparkles class="w-4 h-4 flex-shrink-0" />
       <p class="flex-1 min-w-[12rem]">
         <strong>Plinthio {{ status.latest }}</strong> is available

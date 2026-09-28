@@ -12,6 +12,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 ## [1.1.0] - 2026-09-28
 
 ### Added
+- **Full-width pages.** Pages now use the whole screen, and big displays get more posters in a row (nine across at 1920px) instead of five oversized ones. Anyone who prefers the old centred layout can pick **Contained** in Settings → Preferences → Page Width. It's per person, so a TV and a laptop can differ.
 - **Opening sequence.** Admins can switch on a short Plinthio clip that plays full-screen before movies and episodes when someone presses Play, like a streaming service's intro, and the title starts the moment it ends. Replace it with your own 1–10 second MP4, or limit it to movies or shows. Off by default, always skippable, and never when resuming, before autoplayed next episodes, trailers or watch parties. Admin → Server Config → Opening Sequence.
 - **Live preview in Admin → Server Config.** Theme, navigation layout, ratings, movie collections, watch parties, pause screen, server name and sign-in notice now sit beside a preview of the shelf, a title page, the sign-in screen and the player. It updates as you change each setting, and hovering a pause screen style previews it before you pick it. It uses your own movies' posters when the server has some.
 

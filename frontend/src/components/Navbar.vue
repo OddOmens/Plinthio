@@ -1,6 +1,6 @@
 <template>
   <header class="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border safe-top transition-colors">
-    <div class="max-w-[1440px] mx-auto px-3 sm:px-5 lg:px-8 h-[58px] sm:h-[60px] flex items-center justify-between gap-2 sm:gap-4">
+    <div class="page-width mx-auto px-3 sm:px-5 lg:px-8 h-[58px] sm:h-[60px] flex items-center justify-between gap-2 sm:gap-4">
       <!-- Logo -->
       <router-link to="/" class="flex items-center gap-2.5 sm:gap-3 flex-shrink-0 group">
         <AppLogo class="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0" />

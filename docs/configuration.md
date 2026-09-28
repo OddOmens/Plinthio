@@ -78,8 +78,10 @@ are using, and hovering a pause screen style shows it before you choose.
 
 ### Per user (Settings, everyone)
 
-- **Preferences:** which media categories you see, which shelf views you use, and the view
-  you land on. Light or dark mode is the sun/moon button in the top bar.
+- **Preferences:** which media categories you see, which shelf views you use, the view you
+  land on, and **page width**: full width (the default, with more posters in a row on big
+  screens) or contained (centred, up to 1440px). Light or dark mode is the sun/moon button
+  in the top bar.
 - **My Activity:** what you've read, watched and listened to.
 - **Hidden:** titles you've hidden from your own shelves, with a way to bring them back.
 - **API Keys:** keys for scripts and reading apps, and the **Reading Apps** setup guide.
