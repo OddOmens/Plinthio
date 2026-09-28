@@ -13,7 +13,7 @@ export const INTRO_DIR = path.join(config.dataDir, 'intro');
 export const INTRO_FILE = path.join(INTRO_DIR, 'intro.mp4');
 export const DEFAULT_INTRO_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../assets/default-intro.mp4');
 // Bump when assets/default-intro.mp4 changes, so players don't keep a cached copy.
-const DEFAULT_INTRO_VERSION = 'default-1';
+const DEFAULT_INTRO_VERSION = 'default-2';
 const DEFAULT_INTRO_DURATION = 4;
 export const INTRO_MAX_BYTES = 20 * 1024 * 1024;
 export const INTRO_MIN_SECONDS = 1;

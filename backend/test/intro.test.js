@@ -54,7 +54,7 @@ describe('opening sequence', () => {
     const config = await fetch(`${server.baseUrl}/api/customization`).then((r) => r.json());
     assert.equal(config.introEnabled, false);
     assert.equal(config.introCustom, false);
-    assert.equal(config.introVersion, 'default-1');
+    assert.equal(config.introVersion, 'default-2');
     assert.equal(config.introDuration, 4);
     const clip = await fetch(`${server.baseUrl}/api/media/intro`, { headers: { ...authed(viewerToken), range: 'bytes=0-99' } });
     assert.equal(clip.status, 206);
@@ -80,7 +80,7 @@ describe('opening sequence', () => {
     const up = await upload(server.baseUrl, adminToken, fs.readFileSync(TINY_MP4));
     assert.equal(up.status, 200);
     assert.equal(up.body.introCustom, true);
-    assert.notEqual(up.body.introVersion, 'default-1');
+    assert.notEqual(up.body.introVersion, 'default-2');
     assert.equal(Math.round(up.body.introDuration), 2);
 
     const on = await patch(server.baseUrl, adminToken, { introEnabled: true, introShows: false });
@@ -97,7 +97,7 @@ describe('opening sequence', () => {
     const del = await fetch(`${server.baseUrl}/api/customization/intro`, { method: 'DELETE', headers: authed(adminToken) });
     const after = await del.json();
     assert.equal(after.introCustom, false);
-    assert.equal(after.introVersion, 'default-1');
+    assert.equal(after.introVersion, 'default-2');
     assert.equal(after.introDuration, 4);
     assert.equal(after.introEnabled, true);
     assert.equal((await fetch(`${server.baseUrl}/api/media/intro`, { headers: authed(viewerToken) })).status, 200);
