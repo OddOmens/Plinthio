@@ -8,6 +8,30 @@ body:
         Thanks for reporting. Check [Troubleshooting](https://github.com/OddOmens/Plinthio/blob/main/docs/troubleshooting.md)
         and the [error codes](https://github.com/OddOmens/Plinthio/blob/main/docs/error-codes.md) first, since many problems have a known fix.
         **Security problems:** please report them privately instead (see SECURITY.md).
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Before you start
+      options:
+        - label: I searched the [existing issues](https://github.com/OddOmens/Plinthio/issues?q=is%3Aissue) and this isn't there yet.
+          required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of Plinthio
+      options:
+        - Movies and shows
+        - Books, comics, manga and PDFs
+        - Audiobooks
+        - Watch parties (Together)
+        - Reading apps (OPDS, Mihon, KOReader)
+        - Libraries and scanning
+        - Accounts, sign-in and Kids Mode
+        - Admin and server settings
+        - Installing and updating
+        - Something else
+    validations:
+      required: true
   - type: textarea
     id: what
     attributes:
