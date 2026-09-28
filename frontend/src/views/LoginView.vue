@@ -7,12 +7,18 @@
           <BookOpen class="w-5 h-5" />
         </div>
         <h1 class="text-xl font-semibold tracking-tight text-foreground">
-          {{ isSetup ? 'Welcome back' : 'Initial Server Setup' }}
+          {{ isSetup ? `Welcome to ${customizationStore.serverName || 'Plinthio'}` : 'Initial Server Setup' }}
         </h1>
         <p class="text-xs text-muted-foreground mt-1">
           {{ isSetup ? 'Sign in to access your library' : 'Create an Administrator account to get started' }}
         </p>
       </div>
+
+      <!-- The admin's notice (Admin → Server Config → Server Branding) -->
+      <p
+        v-if="isSetup && customizationStore.loginMessage"
+        class="mb-4 p-2.5 rounded-md bg-primary/10 border border-primary/20 text-foreground text-xs text-center leading-relaxed whitespace-pre-line"
+      >{{ customizationStore.loginMessage }}</p>
 
       <!-- Expired Account State -->
       <div v-if="isExpired" class="flex flex-col items-center text-center py-2 animate-in fade-in duration-200">
@@ -86,11 +92,13 @@
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import { useCustomizationStore } from '../stores/customization';
 import { BookOpen, AlertCircle, Loader2, Lock } from 'lucide-vue-next';
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const customizationStore = useCustomizationStore();
 
 const username = ref('');
 const password = ref('');

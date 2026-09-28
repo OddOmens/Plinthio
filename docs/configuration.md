@@ -41,6 +41,10 @@ the compose-level ones.
 
 ### Admin → Server Config
 
+The look-and-feel cards (theme through custom CSS) sit next to a **live preview** of the
+shelf, a title page, the sign-in screen and the pause screen. It follows whichever card you
+are using, and hovering a pause screen style shows it before you choose.
+
 | Card | Default | What it controls |
 | --- | --- | --- |
 | **Shelf Views** | all on | Whether **Disk Folders** and **Custom Folders** views are offered to everyone. Alphabetical and Creator are always there |

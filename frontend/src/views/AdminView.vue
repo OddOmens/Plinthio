@@ -755,270 +755,284 @@
           </div>
         </div>
 
-        <!-- Accent Theme Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
-          <div class="border-b border-border pb-3 flex items-center justify-between">
-            <div>
-              <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Accent Theme Preset</h3>
-              <p class="text-xs text-muted-foreground mt-0.5">Select a primary color scheme across buttons, badges, and active highlights for all users.</p>
-            </div>
-            <span class="text-xs font-mono capitalize px-2 py-0.5 rounded bg-muted text-foreground">
-              {{ customizationForm.accentTheme }}
-            </span>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
-            <button
-              v-for="acc in accentPresets"
-              :key="acc.id"
-              type="button"
-              @click="selectAccent(acc.id)"
-              :class="[
-                'p-3 rounded-xl border flex flex-col items-center gap-2 transition active:scale-95 text-center',
-                customizationForm.accentTheme === acc.id
-                  ? 'border-primary ring-2 ring-primary/20 bg-muted/40 font-medium'
-                  : 'border-border hover:bg-muted/20'
-              ]"
-            >
-              <span :class="acc.bg" class="w-6 h-6 rounded-full border border-black/10 shadow-sm"></span>
-              <span class="text-xs text-foreground capitalize">{{ acc.label }}</span>
-            </button>
-          </div>
+        <!-- Appearance: settings on the left, a live preview of them on the right -->
+        <div class="flex flex-col gap-1">
+          <h3 class="text-sm font-semibold text-foreground tracking-tight">Look &amp; feel</h3>
+          <p class="text-xs text-muted-foreground">Each change shows in the preview straight away. Most save as you click; server name, notice and CSS save with their button.</p>
         </div>
-
-        <!-- Layout Mode Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
-          <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Navigation Layout</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">Choose how the primary navigation is presented for all users.</p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
-              type="button"
-              @click="selectLayoutMode('topnav')"
-              :class="[
-                'p-3.5 rounded-xl border flex items-center gap-3 text-left transition active:scale-95',
-                customizationForm.layoutMode === 'topnav'
-                  ? 'border-primary ring-2 ring-primary/20 bg-muted/40'
-                  : 'border-border hover:bg-muted/20'
-              ]"
-            >
-              <div class="w-11 h-9 rounded-md border border-border/70 bg-background flex flex-col gap-0.5 p-1 flex-shrink-0">
-                <div class="h-1.5 w-full rounded-sm bg-muted-foreground/40"></div>
-                <div class="flex-1 rounded-sm bg-muted-foreground/15"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] gap-5 items-start">
+          <div class="order-2 lg:order-1 flex flex-col gap-5 min-w-0">
+            <!-- Accent Theme Card -->
+            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+              <div class="border-b border-border pb-3 flex items-center justify-between">
+                <div>
+                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Accent Theme Preset</h3>
+                  <p class="text-xs text-muted-foreground mt-0.5">Select a primary color scheme across buttons, badges, and active highlights for all users.</p>
+                </div>
+                <span class="text-xs font-mono capitalize px-2 py-0.5 rounded bg-muted text-foreground">
+                  {{ customizationForm.accentTheme }}
+                </span>
               </div>
-              <div>
-                <span class="text-xs font-semibold text-foreground block">Top Navigation</span>
-                <span class="text-[12px] text-muted-foreground">Classic horizontal header bar</span>
+
+              <div class="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-4 2xl:grid-cols-8 gap-2.5">
+                <button
+                  v-for="acc in accentPresets"
+                  :key="acc.id"
+                  type="button"
+                  @click="selectAccent(acc.id)"
+                  :class="[
+                    'p-3 rounded-xl border flex flex-col items-center gap-2 transition active:scale-95 text-center',
+                    customizationForm.accentTheme === acc.id
+                      ? 'border-primary ring-2 ring-primary/20 bg-muted/40 font-medium'
+                      : 'border-border hover:bg-muted/20'
+                  ]"
+                >
+                  <span :class="acc.bg" class="w-6 h-6 rounded-full border border-black/10 shadow-sm"></span>
+                  <span class="text-xs text-foreground capitalize">{{ acc.label }}</span>
+                </button>
               </div>
-            </button>
-
-            <button
-              type="button"
-              @click="selectLayoutMode('sidebar')"
-              :class="[
-                'p-3.5 rounded-xl border flex items-center gap-3 text-left transition active:scale-95',
-                customizationForm.layoutMode === 'sidebar'
-                  ? 'border-primary ring-2 ring-primary/20 bg-muted/40'
-                  : 'border-border hover:bg-muted/20'
-              ]"
-            >
-              <div class="w-11 h-9 rounded-md border border-border/70 bg-background flex gap-0.5 p-1 flex-shrink-0">
-                <div class="w-2.5 h-full rounded-sm bg-muted-foreground/40"></div>
-                <div class="flex-1 rounded-sm bg-muted-foreground/15"></div>
-              </div>
-              <div>
-                <span class="text-xs font-semibold text-foreground block">Sidebar</span>
-                <span class="text-[12px] text-muted-foreground">Vertical navigation on the left</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Ratings Display Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
-          <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Ratings</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">
-              Choose which ratings appear for all users. Turning one off hides it everywhere, and the server stops returning it.
-            </p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <label
-              v-for="opt in ratingDisplayOptions"
-              :key="opt.id"
-              class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none"
-            >
-              <input
-                type="checkbox"
-                :checked="customizationForm.ratings[opt.id]"
-                :disabled="savingRatings"
-                @change="toggleRatingDisplay(opt.id, $event.target.checked)"
-                class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-              />
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-foreground">{{ opt.label }}</span>
-                <span class="text-[12px] text-muted-foreground">{{ opt.desc }}</span>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <!-- Movie Collections Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
-          <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Movie Collections</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">
-              How a collection like Shrek or Star Wars is shown on its page and on each film's page. Needs a TMDB API key.
-            </p>
-          </div>
-          <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-            <input
-              type="checkbox"
-              :checked="customizationStore.showMissingFilms"
-              :disabled="savingMissingFilms"
-              @change="toggleShowMissingFilms($event.target)"
-              class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-            />
-            <div class="flex flex-col">
-              <span class="text-xs font-semibold text-foreground">Show missing films in collections</span>
-              <span class="text-[12px] text-muted-foreground">List the films this server doesn't have, with a greyed-out poster and a Request button. They never appear on the Movies shelf.</span>
-            </div>
-          </label>
-        </div>
-
-        <!-- Watch Parties Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
-          <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Watch Parties</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">
-              Let people on this server watch a movie or show together from different places, in sync, with chat.
-              Friends outside your home network need to be able to reach this server (a domain, a reverse proxy or a VPN).
-            </p>
-          </div>
-          <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-            <input
-              type="checkbox"
-              :checked="customizationStore.partyModeEnabled"
-              :disabled="savingPartyMode"
-              @change="togglePartyMode($event.target)"
-              class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-            />
-            <div class="flex flex-col">
-              <span class="text-xs font-semibold text-foreground">Enable watch parties</span>
-              <span class="text-[12px] text-muted-foreground">Adds a "Watch Together" button to movies and episodes. Content limits still apply to everyone in a party. Turning this off ends any party in progress.</span>
-            </div>
-          </label>
-        </div>
-
-        <!-- Pause Screen Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
-          <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Pause Screen</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">
-              What movies and shows show after a couple of seconds paused. It fades away as soon as someone moves the mouse or touches the screen.
-              Cast, crew and facts come from TMDB (needs a TMDB API key); without one, the file's own details are used.
-            </p>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <label
-              v-for="opt in pauseScreenOptions"
-              :key="opt.id"
-              class="flex items-start gap-3 p-3 rounded-lg border transition cursor-pointer select-none"
-              :class="customizationStore.pauseScreen === opt.id ? 'border-primary bg-primary/5' : 'border-border bg-muted/20 hover:bg-muted/40'"
-            >
-              <input
-                type="radio"
-                name="pause-screen"
-                :value="opt.id"
-                :checked="customizationStore.pauseScreen === opt.id"
-                :disabled="savingPauseScreen"
-                @change="setPauseScreen(opt.id)"
-                class="mt-0.5 border-border text-primary focus:ring-ring"
-              />
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-foreground">{{ opt.label }}</span>
-                <span class="text-[12px] text-muted-foreground">{{ opt.desc }}</span>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <!-- Server Branding Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
-          <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Branding & Notices</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">Configure your server name and custom login-screen announcements.</p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-medium text-foreground mb-1.5">Server Name</label>
-              <input
-                v-model="customizationForm.serverName"
-                type="text"
-                class="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                placeholder="Plinthio"
-              />
             </div>
 
-            <div>
-              <label class="block text-xs font-medium text-foreground mb-1.5">Login Notice / Message</label>
-              <input
-                v-model="customizationForm.loginMessage"
-                type="text"
-                class="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                placeholder="Welcome to family media server"
-              />
+            <!-- Layout Mode Card -->
+            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'shelf'" @click="previewView = 'shelf'">
+              <div class="border-b border-border pb-3">
+                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Navigation Layout</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">Choose how the primary navigation is presented for all users.</p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  @click="selectLayoutMode('topnav')"
+                  :class="[
+                    'p-3.5 rounded-xl border flex items-center gap-3 text-left transition active:scale-95',
+                    customizationForm.layoutMode === 'topnav'
+                      ? 'border-primary ring-2 ring-primary/20 bg-muted/40'
+                      : 'border-border hover:bg-muted/20'
+                  ]"
+                >
+                  <div class="w-11 h-9 rounded-md border border-border/70 bg-background flex flex-col gap-0.5 p-1 flex-shrink-0">
+                    <div class="h-1.5 w-full rounded-sm bg-muted-foreground/40"></div>
+                    <div class="flex-1 rounded-sm bg-muted-foreground/15"></div>
+                  </div>
+                  <div>
+                    <span class="text-xs font-semibold text-foreground block">Top Navigation</span>
+                    <span class="text-[12px] text-muted-foreground">Classic horizontal header bar</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  @click="selectLayoutMode('sidebar')"
+                  :class="[
+                    'p-3.5 rounded-xl border flex items-center gap-3 text-left transition active:scale-95',
+                    customizationForm.layoutMode === 'sidebar'
+                      ? 'border-primary ring-2 ring-primary/20 bg-muted/40'
+                      : 'border-border hover:bg-muted/20'
+                  ]"
+                >
+                  <div class="w-11 h-9 rounded-md border border-border/70 bg-background flex gap-0.5 p-1 flex-shrink-0">
+                    <div class="w-2.5 h-full rounded-sm bg-muted-foreground/40"></div>
+                    <div class="flex-1 rounded-sm bg-muted-foreground/15"></div>
+                  </div>
+                  <div>
+                    <span class="text-xs font-semibold text-foreground block">Sidebar</span>
+                    <span class="text-[12px] text-muted-foreground">Vertical navigation on the left</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Ratings Display Card -->
+            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'title'" @click="previewView = 'title'">
+              <div class="border-b border-border pb-3">
+                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Ratings</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">
+                  Choose which ratings appear for all users. Turning one off hides it everywhere, and the server stops returning it.
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <label
+                  v-for="opt in ratingDisplayOptions"
+                  :key="opt.id"
+                  class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="customizationForm.ratings[opt.id]"
+                    :disabled="savingRatings"
+                    @change="toggleRatingDisplay(opt.id, $event.target.checked)"
+                    class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+                  />
+                  <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-foreground">{{ opt.label }}</span>
+                    <span class="text-[12px] text-muted-foreground">{{ opt.desc }}</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Movie Collections Card -->
+            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'title'" @click="previewView = 'title'">
+              <div class="border-b border-border pb-3">
+                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Movie Collections</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">
+                  How a collection like Shrek or Star Wars is shown on its page and on each film's page. Needs a TMDB API key.
+                </p>
+              </div>
+              <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  :checked="customizationStore.showMissingFilms"
+                  :disabled="savingMissingFilms"
+                  @change="toggleShowMissingFilms($event.target)"
+                  class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+                />
+                <div class="flex flex-col">
+                  <span class="text-xs font-semibold text-foreground">Show missing films in collections</span>
+                  <span class="text-[12px] text-muted-foreground">List the films this server doesn't have, with a greyed-out poster and a Request button. They never appear on the Movies shelf.</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Watch Parties Card -->
+            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'title'" @click="previewView = 'title'">
+              <div class="border-b border-border pb-3">
+                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Watch Parties</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">
+                  Let people on this server watch a movie or show together from different places, in sync, with chat.
+                  Friends outside your home network need to be able to reach this server (a domain, a reverse proxy or a VPN).
+                </p>
+              </div>
+              <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  :checked="customizationStore.partyModeEnabled"
+                  :disabled="savingPartyMode"
+                  @change="togglePartyMode($event.target)"
+                  class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+                />
+                <div class="flex flex-col">
+                  <span class="text-xs font-semibold text-foreground">Enable watch parties</span>
+                  <span class="text-[12px] text-muted-foreground">Adds a "Watch Together" button to movies and episodes. Content limits still apply to everyone in a party. Turning this off ends any party in progress.</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Pause Screen Card -->
+            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'pause'" @click="previewView = 'pause'">
+              <div class="border-b border-border pb-3">
+                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Pause Screen</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">
+                  What movies and shows show after a couple of seconds paused. It fades away as soon as someone moves the mouse or touches the screen.
+                  Cast, crew and facts come from TMDB (needs a TMDB API key); without one, the file's own details are used.
+                </p>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <label
+                  v-for="opt in pauseScreenOptions"
+                  :key="opt.id"
+                  class="flex items-start gap-3 p-3 rounded-lg border transition cursor-pointer select-none"
+                  @pointerenter="hoverPauseScreen = opt.id; previewView = 'pause'"
+                  @pointerleave="hoverPauseScreen = null"
+                  :class="customizationStore.pauseScreen === opt.id ? 'border-primary bg-primary/5' : 'border-border bg-muted/20 hover:bg-muted/40'"
+                >
+                  <input
+                    type="radio"
+                    name="pause-screen"
+                    :value="opt.id"
+                    :checked="customizationStore.pauseScreen === opt.id"
+                    :disabled="savingPauseScreen"
+                    @change="setPauseScreen(opt.id)"
+                    class="mt-0.5 border-border text-primary focus:ring-ring"
+                  />
+                  <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-foreground">{{ opt.label }}</span>
+                    <span class="text-[12px] text-muted-foreground">{{ opt.desc }}</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Server Branding Card -->
+            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'login'" @click="previewView = 'login'">
+              <div class="border-b border-border pb-3">
+                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Branding & Notices</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">Configure your server name and custom login-screen announcements.</p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-foreground mb-1.5">Server Name</label>
+                  <input
+                    v-model="customizationForm.serverName"
+                    type="text"
+                    class="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="Plinthio"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-foreground mb-1.5">Login Notice / Message</label>
+                  <input
+                    v-model="customizationForm.loginMessage"
+                    type="text"
+                    class="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="Welcome to family media server"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Custom CSS Injection -->
+            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+              <div class="border-b border-border pb-3 flex items-center justify-between">
+                <div>
+                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Custom CSS Injection</h3>
+                  <p class="text-xs text-muted-foreground mt-0.5">
+                    Inject custom CSS rules live into the web client and PWA for every user.
+                  </p>
+                </div>
+                <router-link
+                  to="/docs"
+                  class="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
+                >
+                  <span>CSS Cheatsheet</span>
+                  <ExternalLink class="w-3.5 h-3.5" />
+                </router-link>
+              </div>
+
+              <textarea
+                v-model="customizationForm.customCss"
+                rows="8"
+                class="w-full bg-background border border-border rounded-lg p-3 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                placeholder="/* Add your custom CSS here */&#10;.group img { border-radius: 1rem !important; }"
+              ></textarea>
+
+              <div class="flex items-center gap-3">
+                <button
+                  type="button"
+                  :disabled="savingCustomization"
+                  @click="saveCustomization"
+                  class="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Loader2 v-if="savingCustomization" class="w-3.5 h-3.5 animate-spin" />
+                  <span>Save Branding & CSS</span>
+                </button>
+
+                <button
+                  type="button"
+                  @click="previewCustomCss"
+                  class="px-3.5 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted/40 transition"
+                >
+                  Test Preview
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-
-        <!-- Custom CSS Injection -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
-          <div class="border-b border-border pb-3 flex items-center justify-between">
-            <div>
-              <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Custom CSS Injection</h3>
-              <p class="text-xs text-muted-foreground mt-0.5">
-                Inject custom CSS rules live into the web client and PWA for every user.
-              </p>
-            </div>
-            <router-link
-              to="/docs"
-              class="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
-            >
-              <span>CSS Cheatsheet</span>
-              <ExternalLink class="w-3.5 h-3.5" />
-            </router-link>
-          </div>
-
-          <textarea
-            v-model="customizationForm.customCss"
-            rows="8"
-            class="w-full bg-background border border-border rounded-lg p-3 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-            placeholder="/* Add your custom CSS here */&#10;.group img { border-radius: 1rem !important; }"
-          ></textarea>
-
-          <div class="flex items-center gap-3">
-            <button
-              type="button"
-              :disabled="savingCustomization"
-              @click="saveCustomization"
-              class="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm flex items-center gap-2 disabled:opacity-50"
-            >
-              <Loader2 v-if="savingCustomization" class="w-3.5 h-3.5 animate-spin" />
-              <span>Save Branding & CSS</span>
-            </button>
-
-            <button
-              type="button"
-              @click="previewCustomCss"
-              class="px-3.5 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted/40 transition"
-            >
-              Test Preview
-            </button>
+          <div class="order-1 lg:order-2 lg:sticky lg:top-[76px] min-w-0">
+            <CustomizationPreview v-model:view="previewView" :settings="previewSettings" />
           </div>
         </div>
 
@@ -1696,6 +1710,7 @@ import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { useDialogStore } from '../stores/dialog';
 import { useCustomizationStore } from '../stores/customization';
+import CustomizationPreview from '../components/CustomizationPreview.vue';
 import Sidebar from '../components/Sidebar.vue';
 import AdminMetadataManager from '../components/AdminMetadataManager.vue';
 const LibraryHealth = defineAsyncComponent(() => import('../components/LibraryHealth.vue'));
@@ -1818,6 +1833,15 @@ const extendDuration = ref('7d');
 const extendingUser = ref(false);
 
 const savingCustomization = ref(false);
+// Live preview (CustomizationPreview): which screen it shows, and a pause style being hovered.
+const previewView = ref('shelf');
+const hoverPauseScreen = ref(null);
+const previewSettings = computed(() => ({
+  ...customizationForm.value,
+  showMissingFilms: customizationStore.showMissingFilms,
+  partyModeEnabled: customizationStore.partyModeEnabled,
+  pauseScreen: hoverPauseScreen.value || customizationStore.pauseScreen
+}));
 const customizationForm = ref({
   serverName: 'Plinthio',
   customCss: '',

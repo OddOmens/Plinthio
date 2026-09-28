@@ -76,7 +76,8 @@ including HEVC/H.265, which Chrome, Edge and Safari can play.
 
 What appears after a couple of seconds paused is chosen by an admin in **Admin → Server
 Config → Pause Screen**. Moving the mouse, touching the screen or pressing a key hides it,
-and it never blocks the controls.
+and it never blocks the controls. It is sized to the player, so on a TV the poster and text
+fill the screen. **Hover** each style in that card to see it in the live preview.
 
 | Style | Shows |
 | --- | --- |

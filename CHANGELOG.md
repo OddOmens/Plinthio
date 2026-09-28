@@ -9,6 +9,17 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-28
+
+### Added
+- **Live preview in Admin → Server Config.** Theme, navigation layout, ratings, movie collections, watch parties, pause screen, server name and sign-in notice now sit beside a preview of the shelf, a title page, the sign-in screen and the player. It updates as you change each setting, and hovering a pause screen style previews it before you pick it. It uses your own movies' posters when the server has some.
+
+### Changed
+- **Pause screens fill the screen.** Details and Cinematic are sized to the player, so the poster, title and details are large on a TV or a big monitor instead of sitting small in one corner. Bedtime's clock scales the same way.
+
+### Fixed
+- The sign-in notice set in Server Branding now actually appears on the sign-in page, and the sign-in page greets people with the server's name.
+
 ## [1.0.0] - 2026-09-27
 
 ### Added
