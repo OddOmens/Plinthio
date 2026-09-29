@@ -165,10 +165,10 @@ nothing to install on the host:
    `https://plinthio.<your-tailnet>.ts.net`. The exact name is in the admin console under
    **Machines**. Set `TS_HOSTNAME` in `.env` for a name other than `plinthio`.
 
-The add-on keeps Tailscale's state in `./tailscale`, next to `./config`. Plinthio uses the
-Tailscale container's network, so `http://<server>:8088` on your home network still works,
-and `TRUST_PROXY` is set to `loopback`: Plinthio believes the device address Tailscale
-passes along, and nothing else on your network can fake one.
+The add-on keeps Tailscale's state in `./tailscale`, next to `./config`. Tailscale runs in
+Plinthio's network, so `http://<server>:8088` on your home network still works, and
+`TRUST_PROXY` is set to `loopback`: Plinthio believes the device address Tailscale passes
+along, and nothing else on your network can fake one.
 
 **Without Docker**, or with Tailscale already installed on the host: run
 `sudo tailscale serve --bg 8088` once (8088 being the port Plinthio is on), and Plinthio is
