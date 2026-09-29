@@ -122,6 +122,61 @@ Send friends that link, and make them Plinthio accounts (Admin → Users). To cl
 set `TS_FUNNEL=false` (or remove the line) and run `docker compose up -d --force-recreate`. Your own Tailscale
 devices keep working either way.
 
+### How Funnel forwards to Plinthio
+
+```
+friend's browser ──HTTPS──▶ Tailscale's Funnel relays ──encrypted──▶ plinthio-tailscale ──▶ Plinthio
+  (anywhere)                (public DNS: *.ts.net)                    (its own device)      127.0.0.1:8080
+```
+
+- The Tailscale add-on is **its own device** on your tailnet (named by `TS_HOSTNAME`, default
+  `plinthio`). It shares Plinthio's container network and forwards only to Plinthio's port
+  8080. Nothing else on the computer, including other apps and the computer's own Tailscale
+  device, is reachable through the link.
+- HTTPS ends inside that container, with a certificate Tailscale gets for you. Tailscale's
+  relays pass the encrypted traffic along; they can't read it.
+- Tailscale marks Funnel visits (`Tailscale-Funnel-Request`), so Plinthio always counts them
+  as **outside**, even when the friend is on your Wi-Fi. Visits from your own Tailscale devices
+  count as Tailscale.
+- Plinthio trusts forwarding headers only from the add-on (`TRUST_PROXY=loopback`, set by the
+  add-on), so nobody can pretend to be at home by sending a fake address.
+- The settings behind it: `TS_HOSTNAME` and `TS_FUNNEL` in `docker/.env`, and the add-on's
+  saved sign-in in `docker/tailscale/` (never share or commit that folder). `TS_AUTHKEY` is
+  only needed for the first sign-in; delete it from `.env` afterwards.
+
+**Funnel names are public.** Every certificate is published in public logs, so anyone can
+find that `plinthio.<your-tailnet>.ts.net` exists. That's fine: the link only leads to the
+sign-in page. Your passwords and two-factor are what keep people out, not a secret name.
+
+### A shorter link
+
+Funnel only works on `ts.net` names; you can't point your own domain at it. If you already own
+a domain, you can make a short link that **redirects** to it (e.g. `watch.yourdomain.com` →
+`https://plinthio.<your-tailnet>.ts.net`). With Cloudflare DNS: add a proxied record for the
+name (an `AAAA` record to `100::` works) and a **Redirect Rule** sending it to your Funnel
+link. The address bar ends up on the `ts.net` link; the short one is just easier to share.
+Cloudflare doesn't give away domains, but its registrar sells them at cost (usually around
+$10 a year for a `.com`).
+
+### A test server with its own link
+
+`docker-compose.test-tailscale.yml` gives the test server (`docker-compose.test.yml`) its own
+device, `plinthio-test`, with settings named `TS_TEST_*` so they never touch the real
+server's:
+
+```ini
+TS_TEST_AUTHKEY=tskey-auth-…   # first sign-in only
+TS_TEST_HOSTNAME=plinthio-test
+TS_TEST_FUNNEL=false           # true for a public link too
+```
+
+```bash
+docker compose -f docker/docker-compose.test.yml -f docker/docker-compose.test-tailscale.yml up -d --build
+```
+
+A test server copied from your real one has the same accounts and passwords. Leave its Funnel
+off unless you need it, and turn it off again when you're done testing.
+
 ## A web address for guests
 
 Guests open something like `https://media.yourdomain.com`, sign in, and add it to their home
