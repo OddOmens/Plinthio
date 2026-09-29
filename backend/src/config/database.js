@@ -324,6 +324,10 @@ async function initSchema(db) {
     // ratings and custom art survive a drive being briefly unavailable; it's restored if the
     // file comes back, and only an admin removes it for good (Library Health).
     'missing_since DATETIME',
+    // offloaded_at: an admin chose to keep this as history after removing (or before
+    // removing) its file to free space. Hidden like a missing title, but shown on its title
+    // page, greyed, with everyone's progress; restored if the file comes back.
+    'offloaded_at DATETIME',
     'tmdb_id TEXT', 'credits_json TEXT', 'credits_checked_at DATETIME'
   ]) {
     try {
@@ -602,6 +606,7 @@ async function initSchema(db) {
     CREATE UNIQUE INDEX IF NOT EXISTS idx_kids_titles_item ON kids_titles(item_id) WHERE item_id IS NOT NULL;
   `);
   await db.exec('CREATE INDEX IF NOT EXISTS idx_items_missing ON items(missing_since)');
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_items_offloaded ON items(offloaded_at)');
 
   // Extras (trailers, featurettes…) hang off their film via extra_of; see services/extras.js.
   await db.exec('CREATE INDEX IF NOT EXISTS idx_items_extra_of ON items(extra_of)');

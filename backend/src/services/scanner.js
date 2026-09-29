@@ -75,7 +75,7 @@ export async function scanLibrary(libraryId) {
     // Snapshot what's currently in the DB for this library so we can detect renamed/moved
     // files (same content, different path) instead of treating them as brand-new items,
     // which previously caused duplicates whenever a folder was renamed.
-    const dbItemsBefore = await db.all('SELECT id, path, file_size, format, total_pages, cover_path FROM items WHERE library_id = ?', [libraryId]);
+    const dbItemsBefore = await db.all('SELECT id, path, file_size, format, total_pages, cover_path, media_type, title, series, volume, offloaded_at FROM items WHERE library_id = ?', [libraryId]);
     // An unmounted drive usually leaves its mount point behind as an empty folder, which
     // looks exactly like "every file was deleted" — and the prune below would then wipe the
     // whole catalog (and its covers, reading progress links, custom art). Refuse instead.
@@ -101,6 +101,19 @@ export async function scanLibrary(libraryId) {
     }
     const claimedOrphanIds = new Set();
 
+    // Offloaded titles whose file is gone. A new file that's clearly the same episode, volume
+    // or film (a re-download under a different name) takes one over, so its history comes
+    // back with it instead of starting a new, empty entry.
+    const offloadedGone = dbItemsBefore.filter((i) => i.offloaded_at && !discoveredPathSet.has(i.path));
+    const offloadedMatch = (mediaType, meta) => {
+      const found = offloadedGone.filter((c) => !claimedOrphanIds.has(c.id) && c.media_type === mediaType && (
+        meta.series && meta.volume != null
+          ? c.series === meta.series && c.volume === meta.volume
+          : mediaType === 'movie' && (c.title || '').toLowerCase() === (meta.title || '').toLowerCase()
+      ));
+      return found.length === 1 ? found[0] : null;
+    };
+
     let added = 0;
     let updated = 0;
     let renamed = 0;
@@ -125,7 +138,7 @@ export async function scanLibrary(libraryId) {
         }
       }
 
-      const existing = dbItemsById.get(itemId) || null;
+      let existing = dbItemsById.get(itemId) || null;
 
       // If existing at the same path with an unchanged size, skip heavy metadata re-extraction
       if (existing && !isRename && existing.file_size === stats.size) {
@@ -184,6 +197,16 @@ export async function scanLibrary(libraryId) {
 
       const format = ext.replace('.', '');
 
+      if (!existing) {
+        const back = offloadedMatch(mediaType, meta);
+        if (back) {
+          itemId = back.id;
+          existing = back;
+          isRename = true;
+          claimedOrphanIds.add(back.id);
+        }
+      }
+
       if (existing) {
         await db.run(
           `UPDATE items SET
@@ -191,6 +214,9 @@ export async function scanLibrary(libraryId) {
             -- A film grouped into its TMDB collection keeps it; the file never names one.
             series = CASE WHEN media_type = 'movie' AND ? IS NULL THEN series ELSE ? END,
             volume = ?, path = ?, cover_path = ?, missing_since = NULL,
+            -- A file for an offloaded title that had gone means it's back; one offloaded
+            -- ahead of deleting its file (never gone) stays offloaded.
+            offloaded_at = CASE WHEN missing_since IS NOT NULL OR ? THEN NULL ELSE offloaded_at END,
             -- KOReader's document ids are hashes of the file and its name (routes/kosync.js).
             koreader_hash = NULL, koreader_name_hash = NULL,
             duration = ?, total_pages = ?, file_size = ?, format = ?, updated_at = CURRENT_TIMESTAMP
@@ -203,6 +229,7 @@ export async function scanLibrary(libraryId) {
             meta.volume,
             filePath,
             meta.coverPath,
+            isRename ? 1 : 0,
             meta.duration || 0,
             meta.totalPages || 0,
             stats.size,
@@ -256,16 +283,21 @@ export async function scanLibrary(libraryId) {
     // custom art. Missing titles are hidden everywhere (accessSql) and come back on their
     // own if the file reappears; an admin removes them for good from Library Health.
     // (Renamed/moved files were already re-linked above and are in discoveredPathSet.)
+    //
+    // Offloaded titles (kept as history on purpose) get missing_since too once their file is
+    // gone, but aren't counted as missing. One whose file is still there was offloaded ahead
+    // of deleting it and stays offloaded; one whose file comes back after being gone is
+    // restored, offload and all.
     let removed = 0;
     let restored = 0;
-    const knownItems = await db.all('SELECT id, path, missing_since FROM items WHERE library_id = ?', [libraryId]);
+    const knownItems = await db.all('SELECT id, path, missing_since, offloaded_at FROM items WHERE library_id = ?', [libraryId]);
     for (const item of knownItems) {
       const present = discoveredPathSet.has(item.path);
       if (!present && !item.missing_since) {
         await db.run('UPDATE items SET missing_since = CURRENT_TIMESTAMP WHERE id = ?', [item.id]);
-        removed++;
+        if (!item.offloaded_at) removed++;
       } else if (present && item.missing_since) {
-        await db.run('UPDATE items SET missing_since = NULL WHERE id = ?', [item.id]);
+        await db.run('UPDATE items SET missing_since = NULL, offloaded_at = NULL WHERE id = ?', [item.id]);
         restored++;
       }
     }
