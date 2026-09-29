@@ -66,7 +66,7 @@
 
         <div>
           <p class="text-sm font-medium mb-2">Accent colour</p>
-          <div class="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
+          <div class="grid grid-cols-4 sm:grid-cols-8 gap-2.5">
             <button
               v-for="acc in accentOptions"
               :key="acc.id"
@@ -418,6 +418,7 @@
 </template>
 
 <script setup>
+import { ACCENT_OPTIONS } from '../constants/appearance';
 import AppLogo from '../components/AppLogo.vue';
 import TwoFactorSetup from '../components/TwoFactorSetup.vue';
 import TailscaleGuide from '../components/TailscaleGuide.vue';
@@ -472,14 +473,7 @@ const themeOptions = [
   { id: 'light', label: 'Light', hint: 'Clean and bright', icon: Sun, swatch: 'bg-zinc-100 text-zinc-900 border-zinc-300' }
 ];
 
-const accentOptions = [
-  { id: 'zinc', label: 'Zinc', bg: 'bg-zinc-500' },
-  { id: 'slate', label: 'Slate', bg: 'bg-slate-500' },
-  { id: 'emerald', label: 'Emerald', bg: 'bg-emerald-500' },
-  { id: 'violet', label: 'Violet', bg: 'bg-violet-500' },
-  { id: 'rose', label: 'Rose', bg: 'bg-rose-500' },
-  { id: 'amber', label: 'Amber', bg: 'bg-amber-500' }
-];
+const accentOptions = ACCENT_OPTIONS.map((a) => ({ ...a, bg: a.swatch }));
 
 const allMedia = [
   { id: 'audiobook', title: 'Audiobooks', desc: 'Chapters, bookmarks and resume.', icon: Headphones, formats: 'M4B, MP3, FLAC' },
