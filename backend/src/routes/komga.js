@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import mime from 'mime-types';
 import { config } from '../config/env.js';
 import { getDb } from '../config/database.js';
-import { userForApiKey, userForApiKeyId, basicAuthApiKey } from '../middleware/auth.js';
+import { userForApiKey, userForApiKeyId, basicAuthApiKey, blockedByNetwork } from '../middleware/auth.js';
 import { accessSql } from '../services/visibility.js';
 import { getMangaPagesList, extractMangaPage } from '../services/archive.js';
 import { sendError } from '../errors.js';
@@ -76,6 +76,7 @@ async function komgaAuth(req, res, next) {
       if (!found) return challenge(res);
     }
     if (found.expired) return sendError(req, res, 'P103');
+    if (await blockedByNetwork(req, res, found.user)) return;
     req.user = found.user;
     next();
   } catch (err) {

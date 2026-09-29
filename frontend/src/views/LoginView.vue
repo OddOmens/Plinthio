@@ -46,6 +46,80 @@
           </button>
         </div>
 
+        <!-- Home-only server, opened from outside: nothing to sign in to from here -->
+        <div v-else-if="isSetup && access && !access.allowed" class="flex flex-col items-center text-center py-2">
+          <div class="w-12 h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mb-3.5">
+            <House class="w-6 h-6" />
+          </div>
+          <h2 class="text-base font-bold text-foreground">Available at home only</h2>
+          <p class="text-sm text-muted-foreground mt-2 leading-relaxed">
+            This server can only be used from its home network, and this device is connecting from outside it.
+            Connect to your home Wi-Fi (or Tailscale, if you use it) and try again.
+          </p>
+        </div>
+
+        <!-- Two-factor: the second step of signing in -->
+        <form v-else-if="challenge" @submit.prevent="submitCode" class="flex flex-col gap-4">
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+              <ShieldCheck class="w-6 h-6" />
+            </div>
+            <h2 class="text-base font-bold text-foreground">{{ useBackup ? 'Enter a backup code' : 'Enter your code' }}</h2>
+            <p class="text-sm text-muted-foreground leading-relaxed">
+              {{ useBackup
+                ? 'One of the backup codes you saved when you turned on two-factor. Each works once.'
+                : 'Open your authenticator app and enter the 6-digit code for this server.' }}
+            </p>
+          </div>
+
+          <div v-if="error" class="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
+            <AlertCircle class="w-4 h-4 flex-shrink-0" />
+            <span>{{ error }}</span>
+          </div>
+
+          <input
+            v-if="!useBackup"
+            ref="codeInput"
+            v-model="code"
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            pattern="[0-9 ]*"
+            maxlength="7"
+            aria-label="Six-digit code"
+            class="w-full h-14 bg-background/70 border border-border rounded-xl text-center text-2xl font-mono tracking-[0.4em] text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition"
+            placeholder="000000"
+            @input="autoSubmit"
+          />
+          <input
+            v-else
+            ref="codeInput"
+            v-model="backupCode"
+            type="text"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+            aria-label="Backup code"
+            class="w-full h-12 bg-background/70 border border-border rounded-xl text-center text-lg font-mono tracking-widest text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition"
+            placeholder="xxxx-xxxx"
+          />
+
+          <button
+            type="submit"
+            :disabled="loading || (useBackup ? !backupCode.trim() : code.replace(/\s/g, '').length !== 6)"
+            class="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg text-sm shadow-lg shadow-primary/20 transition flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            <Loader2 v-if="loading" class="w-4 h-4 animate-spin" />
+            <span>Verify</span>
+          </button>
+          <div class="flex items-center justify-between text-xs">
+            <button type="button" @click="cancelChallenge" class="text-muted-foreground hover:text-foreground">Back</button>
+            <button type="button" @click="toggleBackup" class="text-primary font-medium hover:underline">
+              {{ useBackup ? 'Use the app instead' : 'Lost your phone? Use a backup code' }}
+            </button>
+          </div>
+        </form>
+
         <!-- Regular Login Form -->
         <template v-else>
           <!-- The admin's notice (Admin → Server Config → Server Branding), read before signing in -->
@@ -128,11 +202,12 @@
 
 <script setup>
 import AppLogo from '../components/AppLogo.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
-import { AlertCircle, Loader2, Lock, User, KeyRound, Eye, EyeOff, ArrowRight, Megaphone } from '@lucide/vue';
+import { AlertCircle, Loader2, Lock, User, KeyRound, Eye, EyeOff, ArrowRight, Megaphone, House, ShieldCheck } from '@lucide/vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -147,16 +222,36 @@ const isSetup = ref(true);
 const isExpired = ref(false);
 const showPassword = ref(false);
 
+// Whether this device may sign in from where it is (GET /api/auth/access): a home-only
+// server opened from outside shows a note instead of a form that could only fail.
+const access = ref(null);
 
+// Two-factor: the challenge from the password step, and the code or backup code for it.
+const challenge = ref('');
+const code = ref('');
+const backupCode = ref('');
+const useBackup = ref(false);
+const codeInput = ref(null);
 
 onMounted(async () => {
   isSetup.value = await authStore.checkSetupStatus();
+  try {
+    access.value = (await api.get('/auth/access')).data;
+  } catch (e) {
+    // An older server, or offline: just show the form.
+  }
 });
 
 function resetExpired() {
   isExpired.value = false;
   error.value = '';
   password.value = '';
+}
+
+function goOn() {
+  // Only an in-app path ("/party/K7Q2"), never another site.
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '';
+  router.push(/^\/(?!\/)/.test(redirect) ? redirect : '/');
 }
 
 async function handleSubmit() {
@@ -166,12 +261,19 @@ async function handleSubmit() {
   try {
     if (!isSetup.value) {
       await authStore.setup(username.value, password.value);
-    } else {
-      await authStore.login(username.value, password.value);
+      return goOn();
     }
-    // Only an in-app path ("/party/K7Q2"), never another site.
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '';
-    router.push(/^\/(?!\/)/.test(redirect) ? redirect : '/');
+    const result = await authStore.login(username.value, password.value);
+    if (result.twoFactorRequired) {
+      challenge.value = result.challenge;
+      code.value = '';
+      backupCode.value = '';
+      useBackup.value = false;
+      await nextTick();
+      codeInput.value?.focus();
+      return;
+    }
+    goOn();
   } catch (err) {
     if (err.response?.data?.code === 'P103') {
       isExpired.value = true;
@@ -181,6 +283,52 @@ async function handleSubmit() {
   } finally {
     loading.value = false;
   }
+}
+
+async function submitCode() {
+  if (loading.value) return;
+  error.value = '';
+  loading.value = true;
+  try {
+    await authStore.loginTwoFactor(challenge.value, useBackup.value
+      ? { recoveryCode: backupCode.value.trim() }
+      : { code: code.value.replace(/\s/g, '') });
+    goOn();
+  } catch (err) {
+    const data = err.response?.data || {};
+    // The challenge ran out (time, or tries): back to the password.
+    if (data.code === 'P113') {
+      cancelChallenge();
+      error.value = data.error || 'That took too long. Sign in again.';
+    } else {
+      error.value = data.error || 'That code did not work';
+      code.value = '';
+      await nextTick();
+      codeInput.value?.focus();
+    }
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Six digits typed (or filled in by the phone): go.
+function autoSubmit() {
+  if (code.value.replace(/\s/g, '').length === 6) submitCode();
+}
+
+async function toggleBackup() {
+  useBackup.value = !useBackup.value;
+  error.value = '';
+  await nextTick();
+  codeInput.value?.focus();
+}
+
+function cancelChallenge() {
+  challenge.value = '';
+  password.value = '';
+  code.value = '';
+  backupCode.value = '';
+  useBackup.value = false;
 }
 </script>
 

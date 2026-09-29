@@ -6,25 +6,26 @@
 #
 # 1. In the Tailscale admin console (login.tailscale.com/admin): DNS → turn on MagicDNS and
 #    HTTPS Certificates. Settings → Keys → Generate auth key.
-# 2. Next to docker-compose.yml, put this file and a .env with:  TS_AUTHKEY=tskey-auth-…
-#    (Or leave TS_AUTHKEY out and sign in with the link `docker logs plinthio-tailscale` shows.)
-# 3. Start both:
-#      docker compose -f docker-compose.yml -f docker-compose.tailscale.yml up -d
-#    and use the same two -f flags for every later `docker compose` command, including
-#    updates. (Or set COMPOSE_FILE=docker-compose.yml:docker-compose.tailscale.yml in .env.)
+# 2. Next to docker-compose.yml, put this file, and add to your .env:
+#      TS_AUTHKEY=tskey-auth-…
+#      COMPOSE_FILE=docker-compose.yml:docker-compose.tailscale.yml
+#    (No key? Leave TS_AUTHKEY out and sign in with the link `docker logs plinthio-tailscale`
+#    prints.) Using the public-address add-on too? List all three files in COMPOSE_FILE.
+# 3. docker compose up -d
 # 4. Install Tailscale on each phone or computer, sign in, and open
 #    https://plinthio.<your-tailnet>.ts.net  (the admin console lists the exact name).
 #
-# Plinthio shares this container's network, so http://<server>:8088 on your home network keeps
-# working as before. Tailscale reaches Plinthio from 127.0.0.1 and passes the device's real
-# address along, which is why TRUST_PROXY is set to loopback: only Tailscale's own connection
-# is believed, and nothing on your network can fake its address.
+# Tailscale runs in Plinthio's network, so http://<server>:8088 on your home network keeps
+# working, and Tailscale reaches Plinthio at 127.0.0.1 and passes each device's real address
+# along. That's why TRUST_PROXY is loopback: only a proxy running right next to Plinthio is
+# believed, and nothing on your network can fake its address. Tailscale devices count as
+# home unless you change that in Admin → Network.
 services:
   tailscale:
     image: tailscale/tailscale:stable
     container_name: plinthio-tailscale
-    hostname: ${TS_HOSTNAME:-plinthio}
     restart: unless-stopped
+    network_mode: service:plinthio
     environment:
       - TS_AUTHKEY=${TS_AUTHKEY:-}
       - TS_HOSTNAME=${TS_HOSTNAME:-plinthio}
@@ -35,16 +36,8 @@ services:
         target: /serve.json
     volumes:
       - ./tailscale:/var/lib/tailscale
-    # Plinthio's ports move here, because Plinthio now uses this container's network.
-    ports:
-      - "${BIND_ADDRESS:-0.0.0.0}:8088:8080"
-      - "${BIND_ADDRESS:-0.0.0.0}:8443:8443"
 
   plinthio:
-    network_mode: service:tailscale
-    ports: !reset []
-    depends_on:
-      - tailscale
     environment:
       - TRUST_PROXY=loopback
 

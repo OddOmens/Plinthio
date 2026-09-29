@@ -138,6 +138,41 @@ export const ERROR_CODES = {
     meaning: 'Sign-in is rate limited to slow down password guessing.',
     fix: 'Wait 15 minutes and try again.'
   },
+  P109: {
+    status: 403,
+    title: 'Not available away from home',
+    message: 'This server can only be used from its home network',
+    meaning: 'The request came from outside the home network (not a home or Tailscale address), and the server only allows home access.',
+    fix: 'Use Plinthio at home, or through Tailscale. An admin can allow outside access in Admin → Network.'
+  },
+  P110: {
+    status: 403,
+    title: 'This account is for home use only',
+    message: 'This account can only be used from the home network',
+    meaning: 'The server allows outside access, but not for this account.',
+    fix: 'Use Plinthio at home, or ask an admin to allow this account away from home (Admin → Users).'
+  },
+  P111: {
+    status: 401,
+    title: 'Wrong two-factor code',
+    message: 'That code is not right, or has already been used',
+    meaning: 'The six-digit code (or backup code) did not match. Codes change every 30 seconds and each works once.',
+    fix: "Enter the current code from your authenticator app. Check the phone's clock is set automatically. Lost the phone? Use a backup code, or ask an admin to reset two-factor."
+  },
+  P112: {
+    status: 403,
+    title: 'Two-factor needed away from home',
+    message: 'Signing in from outside the home network needs two-factor, which this account has not set up',
+    meaning: 'The server requires two-factor for sign-ins from outside the home network.',
+    fix: 'Sign in at home once and turn on two-factor in Settings → Security.'
+  },
+  P113: {
+    status: 401,
+    title: 'Sign-in step expired',
+    message: 'That sign-in took too long, start again',
+    meaning: 'The two-factor step of a sign-in has a few minutes to complete, or too many wrong codes were entered.',
+    fix: 'Enter your username and password again.'
+  },
 
   // ── Libraries & scanning ─────────────────────────────────────────────────────────────
   P200: {

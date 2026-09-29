@@ -137,6 +137,32 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_login_history_created ON login_history(created_at DESC);
   `);
 
+  // Two-factor sign-in (services/twoFactor.js), optional per account:
+  //   totp_secret / totp_pending — the authenticator secret, encrypted with a key derived
+  //     from the JWT secret; pending holds one being set up until its first code is checked
+  //   totp_enabled_at — when it was turned on (NULL = off)
+  //   totp_last_step — the 30-second step of the last code accepted, so a code can't be
+  //     used twice
+  //   totp_recovery — JSON list of backup codes, hashed, each with when it was used
+  // Away from home (services/network.js):
+  //   remote_access — 1 this account may use Plinthio from outside the home network
+  //   last_login_network — home / tailscale / outside, for Admin → Users
+  for (const col of [
+    'totp_secret TEXT', 'totp_pending TEXT', 'totp_enabled_at DATETIME', 'totp_last_step INTEGER',
+    'totp_recovery TEXT', 'remote_access INTEGER DEFAULT 1', 'last_login_network TEXT'
+  ]) {
+    try {
+      await db.exec(`ALTER TABLE users ADD COLUMN ${col}`);
+    } catch (e) {
+      // Column already exists
+    }
+  }
+  try {
+    await db.exec('ALTER TABLE login_history ADD COLUMN network TEXT');
+  } catch (e) {
+    // Column already exists
+  }
+
   // One "opened this item" → "closed this item" span per row, for the readers/players
   // (manga, book, video, audio). item_id carries no FK to items for the same reason as
   // user_progress/bookmarks — history must survive a library delete + re-scan — but the

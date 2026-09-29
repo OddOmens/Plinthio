@@ -118,6 +118,36 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 
 **What to do:** Wait 15 minutes and try again.
 
+### P109: Not available away from home
+
+*HTTP 403.* The request came from outside the home network (not a home or Tailscale address), and the server only allows home access.
+
+**What to do:** Use Plinthio at home, or through Tailscale. An admin can allow outside access in Admin → Network.
+
+### P110: This account is for home use only
+
+*HTTP 403.* The server allows outside access, but not for this account.
+
+**What to do:** Use Plinthio at home, or ask an admin to allow this account away from home (Admin → Users).
+
+### P111: Wrong two-factor code
+
+*HTTP 401.* The six-digit code (or backup code) did not match. Codes change every 30 seconds and each works once.
+
+**What to do:** Enter the current code from your authenticator app. Check the phone's clock is set automatically. Lost the phone? Use a backup code, or ask an admin to reset two-factor.
+
+### P112: Two-factor needed away from home
+
+*HTTP 403.* The server requires two-factor for sign-ins from outside the home network.
+
+**What to do:** Sign in at home once and turn on two-factor in Settings → Security.
+
+### P113: Sign-in step expired
+
+*HTTP 401.* The two-factor step of a sign-in has a few minutes to complete, or too many wrong codes were entered.
+
+**What to do:** Enter your username and password again.
+
 ## Libraries & scanning
 
 ### P200: Library folder not found

@@ -70,15 +70,33 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    storeSession(data) {
+      this.token = data.token;
+      this.user = data.user;
+      setMediaToken(data.mediaToken);
+      localStorage.setItem('plinthio_token', this.token);
+      localStorage.setItem('plinthio_user', JSON.stringify(this.user));
+    },
+
+    // Returns the server's answer. With two-factor on, that's { twoFactorRequired, challenge }
+    // and no session yet: the sign-in page asks for the code and calls loginTwoFactor.
     async login(username, password) {
       this.loading = true;
       try {
         const res = await api.post('/auth/login', { username, password });
-        this.token = res.data.token;
-        this.user = res.data.user;
-        setMediaToken(res.data.mediaToken);
-        localStorage.setItem('plinthio_token', this.token);
-        localStorage.setItem('plinthio_user', JSON.stringify(this.user));
+        if (!res.data.twoFactorRequired) this.storeSession(res.data);
+        return res.data;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // `answer` is { code } from the authenticator app, or { recoveryCode }.
+    async loginTwoFactor(challenge, answer) {
+      this.loading = true;
+      try {
+        const res = await api.post('/auth/login/2fa', { challenge, ...answer });
+        this.storeSession(res.data);
         return res.data;
       } finally {
         this.loading = false;

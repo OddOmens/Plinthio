@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { config } from '../config/env.js';
 import { getDb } from '../config/database.js';
 import { sendError } from '../errors.js';
+import { outsideAccessError } from '../services/network.js';
 
 const userAuthCache = new Map();
 const AUTH_CACHE_TTL = 60 * 1000; // 60 seconds
@@ -48,7 +49,7 @@ function isMediaRoute(req) {
   return (req.baseUrl || '').startsWith('/api/media');
 }
 
-const API_KEY_USER_COLUMNS = 'u.id, u.username, u.role, u.avatar, u.preferences, u.expires_at, u.max_age_rating, u.allow_unrated, u.kids_mode';
+const API_KEY_USER_COLUMNS = 'u.id, u.username, u.role, u.avatar, u.preferences, u.expires_at, u.max_age_rating, u.allow_unrated, u.kids_mode, u.remote_access';
 
 async function apiKeyUser(where, params) {
   const db = await getDb();
@@ -88,6 +89,16 @@ export function userForApiKeyMd5(username, md5) {
 
 export { basicAuthApiKey };
 
+// Away from home (services/network.js): a server that only allows home access, or an
+// account that's home-only, gets nothing from outside — not the API, not media, not the
+// reading apps. Sends the error and returns true when the request has to stop here.
+export async function blockedByNetwork(req, res, user) {
+  const code = await outsideAccessError(req, user);
+  if (!code) return false;
+  sendError(req, res, code);
+  return true;
+}
+
 export async function authenticateToken(req, res, next) {
   // 1. Support X-API-Key for developer/script integrations, and HTTP Basic (username +
   // API key as the password) for OPDS reader apps, which can't do Bearer tokens and
@@ -98,6 +109,7 @@ export async function authenticateToken(req, res, next) {
       const found = await userForApiKey(apiKey);
       if (found) {
         if (found.expired) return sendError(req, res, 'P103');
+        if (await blockedByNetwork(req, res, found.user)) return;
         req.user = found.user;
         req.isApiKey = true;
         req.apiKeyId = found.keyId;
@@ -147,7 +159,7 @@ export async function authenticateToken(req, res, next) {
       user = cached.user;
     } else {
       const db = await getDb();
-      user = await db.get('SELECT id, username, role, avatar, preferences, expires_at, token_version, max_age_rating, allow_unrated, kids_mode FROM users WHERE id = ?', [payload.userId]);
+      user = await db.get('SELECT id, username, role, avatar, preferences, expires_at, token_version, max_age_rating, allow_unrated, kids_mode, remote_access FROM users WHERE id = ?', [payload.userId]);
 
       if (!user) {
         return sendError(req, res, 'P101', { message: 'This account no longer exists' });
@@ -169,6 +181,7 @@ export async function authenticateToken(req, res, next) {
       return sendError(req, res, 'P101', { message: 'Session was signed out, please log in again' });
     }
 
+    if (await blockedByNetwork(req, res, user)) return;
     req.user = user;
     next();
   } catch (err) {

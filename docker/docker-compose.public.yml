@@ -1,0 +1,59 @@
+# Optional add-on: a public web address with a real certificate, for guests.
+#
+# Friends and family open https://media.yourdomain.com and sign in: no apps, no certificates
+# to install. Caddy (caddyserver.com) sits in front of Plinthio and gets and renews a free
+# Let's Encrypt certificate by itself.
+#
+# Before you start (docs/remote-access.md walks through each):
+#   - a domain, with a DNS "A" record pointing at your home's public IP address
+#   - ports 80 and 443 forwarded on your router to this machine
+#   - your internet provider lets you do that (no CGNAT) — the guide shows how to check
+#   - outside access switched on in Admin → Network (it's off unless you chose it at setup),
+#     ideally with two-factor required away from home
+#
+# Then, next to docker-compose.yml, put this file and add to your .env:
+#   PLINTHIO_DOMAIN=media.yourdomain.com
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.public.yml
+# (With the Tailscale add-on too: COMPOSE_FILE=docker-compose.yml:docker-compose.tailscale.yml:docker-compose.public.yml)
+# and run: docker compose up -d
+#
+# Caddy runs in Plinthio's network and reaches it at 127.0.0.1, passing each visitor's real
+# address along, which is why TRUST_PROXY is loopback: Plinthio believes only a proxy right
+# next to it, so outside visitors can't pretend to be at home. HTTP on 8088 keeps working on
+# your home network.
+services:
+  caddy:
+    image: caddy:2
+    container_name: plinthio-caddy
+    restart: unless-stopped
+    network_mode: service:plinthio
+    environment:
+      - PLINTHIO_DOMAIN=${PLINTHIO_DOMAIN:?Set PLINTHIO_DOMAIN in .env to the address guests will use, e.g. media.yourdomain.com}
+    configs:
+      - source: caddyfile
+        target: /etc/caddy/Caddyfile
+    volumes:
+      # Certificates and Caddy's state: keep these, or Caddy asks Let's Encrypt again on
+      # every restart and can hit its rate limits.
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+
+  plinthio:
+    environment:
+      - TRUST_PROXY=loopback
+    # Caddy shares Plinthio's network, so its ports are published here.
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:80:80"
+      - "${BIND_ADDRESS:-0.0.0.0}:443:443"
+      - "${BIND_ADDRESS:-0.0.0.0}:443:443/udp"
+
+configs:
+  caddyfile:
+    content: |
+      {$$PLINTHIO_DOMAIN} {
+        encode zstd gzip
+        # Browsers remember to use HTTPS for this name. Only for the public name: Plinthio's
+        # own addresses on your network keep working over plain HTTP.
+        header Strict-Transport-Security "max-age=31536000"
+        reverse_proxy 127.0.0.1:8080
+      }
