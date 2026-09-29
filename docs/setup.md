@@ -60,7 +60,7 @@ published on a host port of your choice, a folder mapped to `/config`, your medi
 | | Host | In the container |
 | --- | --- | --- |
 | Web app and API | port `8088` (on `BIND_ADDRESS`, default `0.0.0.0`) | port `8080` |
-| The same over HTTPS | port `8443` | port `8443` |
+| The same over HTTPS, with Plinthio's own certificate | port `8443` | port `8443` |
 | Database, settings, covers, caches, backups | `./config` | `/config` |
 | Your media (read-only use) | `MEDIA_DIR` (default `/media/library`) | `/media` |
 
@@ -127,11 +127,59 @@ for anything you've downloaded. See
 
 Installing as an app, and its offline features, need HTTPS, except on `localhost`. Plain
 `http://192.168…` works in the browser, but shows a "not secure" warning and won't work
-offline. See HTTPS on your network below.
+offline. See HTTPS below.
 
-## HTTPS on your network
+## HTTPS
 
-Plinthio serves HTTPS on port `8443` next to plain HTTP. Its certificate comes from a small
+Browsers only trust HTTPS without a warning when the certificate comes from an authority
+they already know, and no public authority issues one for a home address like
+`192.168.1.20`. So there are two ways to get it:
+
+- **Tailscale (recommended).** A trusted `https://plinthio.<your-tailnet>.ts.net` address,
+  at home and away, with nothing to install on devices except the Tailscale app. Free for
+  personal use, no domain, no router changes.
+- **Plinthio's own certificate.** HTTPS on your home network only, without Tailscale, but
+  each device has to install Plinthio's certificate once.
+
+Plain `http://<server>:8088` keeps working either way, for anything that doesn't need HTTPS.
+
+### Tailscale (recommended)
+
+First, in the [Tailscale admin console](https://login.tailscale.com/admin): **DNS** → turn
+on **MagicDNS** and **HTTPS Certificates**.
+
+**With Docker**, use the Tailscale add-on, which runs Tailscale next to Plinthio so there's
+nothing to install on the host:
+
+1. Download it next to `docker-compose.yml`:
+   ```bash
+   curl -fsSLO https://raw.githubusercontent.com/OddOmens/Plinthio/main/docker/docker-compose.tailscale.yml
+   ```
+2. In the admin console, **Settings → Keys → Generate auth key**, and add it to `.env`:
+   `TS_AUTHKEY=tskey-auth-…`. (Or skip the key and sign in with the link that
+   `docker logs plinthio-tailscale` prints on first start.)
+3. Tell Compose to use both files, so updates and restarts keep the add-on: add
+   `COMPOSE_FILE=docker-compose.yml:docker-compose.tailscale.yml` to `.env`, then run
+   `docker compose up -d`.
+4. On each phone or computer, install Tailscale, sign in to the same tailnet, and open
+   `https://plinthio.<your-tailnet>.ts.net`. The exact name is in the admin console under
+   **Machines**. Set `TS_HOSTNAME` in `.env` for a name other than `plinthio`.
+
+The add-on keeps Tailscale's state in `./tailscale`, next to `./config`. Plinthio uses the
+Tailscale container's network, so `http://<server>:8088` on your home network still works,
+and `TRUST_PROXY` is set to `loopback`: Plinthio believes the device address Tailscale
+passes along, and nothing else on your network can fake one.
+
+**Without Docker**, or with Tailscale already installed on the host: run
+`sudo tailscale serve --bg 8088` once (8088 being the port Plinthio is on), and Plinthio is
+at `https://<machine>.<tailnet>.ts.net`. Without Docker, also set `TRUST_PROXY=loopback`, so
+sign-in limits apply per device instead of to everyone at once. With Docker and Tailscale on the host, leave `TRUST_PROXY` unset:
+requests don't arrive from loopback there, so the setting would do nothing (use the add-on
+instead to get per-device limits).
+
+### Plinthio's own certificate
+
+Plinthio also serves HTTPS on port `8443` next to plain HTTP. Its certificate comes from a small
 certificate authority (CA) Plinthio creates on first start, in `/config/ssl`. Browsers don't
 know that CA, so install it once on each device and the warnings stop for good, including
 when the server re-issues its certificate for a new address or before it expires.
@@ -188,18 +236,18 @@ device.
 
 ## Remote access
 
-On your own network, the built-in HTTPS above is enough. To reach Plinthio from outside,
-put something with HTTPS in front of it. The in-app **Docs → Remote Access & Tailscale** has
-step-by-step versions of each option.
+To reach Plinthio away from home, put something with HTTPS in front of it. The in-app
+**Docs → Remote Access & Tailscale** has step-by-step versions of each option.
 
-- **Tailscale** (easiest and private): install it on the server and on your devices, then
-  use the server's Tailscale address. `tailscale serve` adds HTTPS.
+- **Tailscale** (easiest and private): see [HTTPS → Tailscale](#tailscale-recommended).
+  The same address works at home and away.
 - **Cloudflare Tunnel:** gives you a public HTTPS address without opening ports.
 - **Reverse proxy with TLS** (Caddy, nginx, Traefik): a Caddy config is just
   `media.example.com { reverse_proxy plinthio:8080 }`.
 
-Behind any proxy or tunnel, set `TRUST_PROXY=1` so rate limits see real client addresses.
-Don't set it without a proxy in front: clients could then fake their address. Watch parties
+Behind any other proxy or tunnel, set `TRUST_PROXY=1` so rate limits see real client
+addresses (the Tailscale add-on sets its own). Don't set it without a proxy in front:
+clients could then fake their address. Watch parties
 and the reading apps need friends' devices to reach the server the same way.
 
 ## Updating

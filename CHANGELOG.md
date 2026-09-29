@@ -9,6 +9,15 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **Tailscale add-on for Docker.** An optional `docker-compose.tailscale.yml` gives Plinthio a trusted `https://plinthio.<your-tailnet>.ts.net` address that works at home and away, with no certificate to install on phones (each device just needs the Tailscale app) and no router changes. It runs Tailscale next to Plinthio, so nothing needs installing on the server either. Plain `http://<server>:8088` keeps working. See docs/setup.md → HTTPS.
+
+### Changed
+- **Setting up HTTPS now starts with Tailscale.** Docs → PWA Mobile App Setup, Docs → Remote Access & Tailscale and the setup wizard recommend Tailscale first. Plinthio's own certificate is still there as the alternative for a home network without Tailscale.
+
+### Fixed
+- **The Tailscale guide in Docs** told people to open `http://…:8088` over Tailscale and implied it was already set up. It now has the actual steps for the server and for each device, over HTTPS.
+
 ## [1.2.0] - 2026-09-29
 
 ### Added

@@ -1539,7 +1539,7 @@ const offerHttpsForDownloads = computed(() => !downloads.supported && downloads.
 async function explainDownloadsNeedHttps() {
   const go = await dialog.confirm({
     title: 'Downloads need HTTPS',
-    message: 'Browsers only allow saving things for offline use on a secure connection, and this page was opened over plain http://. Plinthio has an HTTPS address too: set it up once on this device and downloads (and the installable app) will work.',
+    message: 'Browsers only allow saving things for offline use on a secure connection, and this page was opened over plain http://. Open Plinthio from an HTTPS address instead (Tailscale is the easiest way) and downloads, and the installable app, will work.',
     confirmText: 'Show me how',
     cancelText: 'Not now',
     type: 'info'
