@@ -25,3 +25,6 @@ docker/docker-compose.override.yml
 # Browser test output
 frontend/test-results/
 frontend/playwright-report/
+# Add-on state (Tailscale node keys, Caddy certificates): never commit
+docker/tailscale/
+docker/caddy/
