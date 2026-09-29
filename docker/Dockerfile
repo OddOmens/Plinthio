@@ -40,6 +40,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     gosu \
+    openssl \
     tzdata \
     ffmpeg \
     poppler-utils \
@@ -51,6 +52,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ENV NODE_ENV=production \
     PORT=8080 \
+    HTTPS_PORT=8443 \
     HOST=0.0.0.0 \
     DATA_DIR=/config
 
@@ -64,7 +66,7 @@ COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-EXPOSE 8080
+EXPOSE 8080 8443
 
 # Lets `docker ps` and orchestrators see a wedged server, not just a running process.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \

@@ -133,7 +133,11 @@ rebuildOfflineIndex();
 
 async function matchOffline(url) {
   const cache = await caches.open(OFFLINE_CACHE);
-  return cache.match(offlineKey(url));
+  const hit = await cache.match(offlineKey(url));
+  if (hit || !url.searchParams.has('w') || !/\/api\/media\/manga\//.test(url.pathname)) return hit;
+  // The reader asks for pages sized to the screen (?w=1080); a download stores the full-size
+  // page without it, which serves just as well offline.
+  return cache.match(`${url.origin}${url.pathname}`);
 }
 
 async function cacheFirst(request, cacheName, { trim = 0 } = {}) {

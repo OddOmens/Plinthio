@@ -189,30 +189,37 @@
         </div>
       </template>
 
-      <!-- Webtoon / Vertical Scroll -->
+      <!-- Webtoon / Vertical Scroll. Only pages near the one being read get an <img>; the
+           rest are empty boxes sized to the page's shape. Rendering every page of a
+           170-page volume at once decoded them all at full size, and on a phone that
+           exhausted memory until the browser reloaded the tab mid-chapter. -->
       <div
         v-else-if="mode === 'webtoon'"
         ref="webtoonContainer"
-        @scroll="onWebtoonScroll"
+        @scroll.passive="onWebtoonScroll"
         @pointerdown="touchStart"
         @pointerup="touchEnd"
         @click="toggleControls"
-        class="w-full h-full overflow-y-auto flex flex-col items-center"
+        class="webtoon-scroll relative w-full h-full overflow-y-auto flex flex-col items-center"
       >
         <div
           v-for="index in totalPages"
           :key="index"
-          class="w-full max-w-2xl flex justify-center"
+          :ref="(el) => setWebtoonPageEl(index - 1, el)"
+          class="w-full max-w-2xl flex-shrink-0 flex justify-center"
+          :style="{ aspectRatio: pageRatios[index - 1] || defaultPageRatio }"
         >
           <img
+            v-if="isInWebtoonWindow(index - 1)"
             :src="getPageUrl(index - 1)"
-            loading="lazy"
+            decoding="async"
             :alt="`Page ${index}`"
-            class="w-full h-auto object-contain"
+            class="w-full h-full object-contain"
+            @load="onWebtoonPageLoad(index - 1, $event)"
           />
         </div>
-        <!-- Bottom spacer so last page is reachable -->
-        <div class="h-20 flex-shrink-0" />
+        <!-- Bottom spacer so the last page can scroll clear of the scrubber -->
+        <div class="h-24 flex-shrink-0" />
       </div>
     </main>
 
@@ -334,11 +341,13 @@ import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
+import { useAuthStore } from '../stores/auth';
 import { useViewSession } from '../composables/useViewSession';
 import RatingBar from './RatingBar.vue';
 import { ArrowLeft, Loader2, Bookmark, Trash2, X, ChevronLeft, ChevronRight, Square, Columns2, Layers, BookOpen } from '@lucide/vue';
 
 const dialog = useDialogStore();
+const authStore = useAuthStore();
 const viewSession = useViewSession();
 
 const props = defineProps({
@@ -375,11 +384,14 @@ const readerEl = ref(null);
 const token = getMediaToken() || '';
 const loading = ref(true);
 const totalPages = ref(props.item.total_pages || 0);
-const currentPageIndex = ref(
-  props.item.initialPage !== undefined
-    ? Math.max(0, props.item.initialPage - 1)
-    : (props.item.current_page ? Math.max(0, props.item.current_page - 1) : 0)
-);
+// Where a volume opens: an explicit page (a bookmark), else where you left off — except a
+// finished volume, where "Read Again" should start from the beginning, not the last page.
+function startPageIndex(item) {
+  if (item.initialPage !== undefined) return Math.max(0, item.initialPage - 1);
+  if (item.is_finished || !item.current_page) return 0;
+  return Math.max(0, item.current_page - 1);
+}
+const currentPageIndex = ref(startPageIndex(props.item));
 
 // Manga opens right-to-left; comics and PDFs shelved as books read left-to-right. A series'
 // saved direction (loadSeriesSettings) wins over both.
@@ -390,18 +402,50 @@ const modes = [
   { id: 'webtoon', short: 'Scroll', label: 'Continuous Vertical Scroll (Webtoon)' },
 ];
 
-const spread = ref('single'); // 'single' | 'double'
+// ─── Remembered reader settings ──────────────────────────────────────────────
+// Spread and a series' reading mode depend on the screen (two pages suit a tablet, not a
+// phone; scroll suits a phone), so they're remembered on this device. The page-turn style is
+// a matter of taste, so it follows the person to every device via their preferences.
+const READER_PREFS_KEY = 'plinthio_reader';
+function loadLocalReaderPrefs() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(READER_PREFS_KEY) || '{}');
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+function saveLocalReaderPrefs(patch) {
+  try {
+    localStorage.setItem(READER_PREFS_KEY, JSON.stringify({ ...loadLocalReaderPrefs(), ...patch }));
+  } catch {
+    // Private mode / storage full — the setting just isn't remembered.
+  }
+}
+const localReaderPrefs = loadLocalReaderPrefs();
+const seriesModeKey = () => (props.item.series ? `${props.item.library_id}:${props.item.series}` : props.item.id);
+
+const spread = ref(localReaderPrefs.spread === 'double' ? 'double' : 'single'); // 'single' | 'double'
 function setSpread(s) {
   cancelFlip();
   spread.value = s;
+  saveLocalReaderPrefs({ spread: s });
   showControlsNow();
 }
 
 // ─── Page Turn Style: Fade vs realistic Flip ─────────────────────────────────
-const pageTurnStyle = ref('fade'); // 'fade' | 'flip'
-function setPageTurnStyle(s) {
+const pageTurnStyle = ref(authStore.user?.preferences?.readerPageTurn === 'flip' ? 'flip' : 'fade'); // 'fade' | 'flip'
+async function setPageTurnStyle(s) {
   pageTurnStyle.value = s;
   showControlsNow();
+  if (!authStore.user || authStore.user.preferences?.readerPageTurn === s) return;
+  authStore.user.preferences = { ...(authStore.user.preferences || {}), readerPageTurn: s };
+  try {
+    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+    await api.patch('/users/preferences', { readerPageTurn: s });
+  } catch (err) {
+    console.warn('Could not save the page-turn style:', err.message);
+  }
 }
 
 const secondPageIndex = computed(() => {
@@ -450,8 +494,8 @@ const displaySecondIndex = computed(() => {
   const next = displayIndex.value + 1;
   return next < totalPages.value ? next : null;
 });
-const displayCurrentUrl = computed(() => getPageUrl(displayIndex.value));
-const displaySecondUrl = computed(() => (displaySecondIndex.value != null ? getPageUrl(displaySecondIndex.value) : null));
+const displayCurrentUrl = computed(() => getPageUrl(displayIndex.value, fullResolution.value));
+const displaySecondUrl = computed(() => (displaySecondIndex.value != null ? getPageUrl(displaySecondIndex.value, fullResolution.value) : null));
 const displayLeftIndex = computed(() => (mode.value === 'rtl' ? displaySecondIndex.value : displayIndex.value));
 const displayRightIndex = computed(() => (mode.value === 'rtl' ? displayIndex.value : displaySecondIndex.value));
 const displayLeftUrl = computed(() => (mode.value === 'rtl' ? displaySecondUrl.value : displayCurrentUrl.value));
@@ -513,7 +557,16 @@ function pointMidpoint(p1, p2) {
   return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
 }
 
+// Zooming in past 1.5× swaps the page(s) on screen for the full-size original, so panel
+// detail stays sharp; it goes back to screen size when the zoom resets (e.g. a page turn).
+const fullResolution = ref(false);
+
+watch(zoomScale, (scale) => {
+  if (scale > 1.5) fullResolution.value = true;
+});
+
 function resetZoom() {
+  fullResolution.value = false;
   zoomScale.value = 1;
   zoomX.value = 0;
   zoomY.value = 0;
@@ -605,12 +658,31 @@ watch(mode, resetZoom);
 watch(spread, resetZoom);
 
 // ─── URLs ─────────────────────────────────────────────────────────────────────
-const currentPageUrl = computed(() =>
-  `/api/media/manga/${props.item.id}/page/${currentPageIndex.value}?token=${token}`
-);
-function getPageUrl(index) {
-  return `/api/media/manga/${props.item.id}/page/${index}?token=${token}`;
+// Pages are requested at the width they'll actually be shown at, in device pixels (the
+// server rounds up to a few standard sizes and caches them). A phone gets a ~1400px page
+// instead of a multi-MB full scan — less data, faster turns, and far less memory.
+const viewportWidth = ref(window.innerWidth);
+const pageRequestWidth = computed(() => {
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  const cell = mode.value === 'webtoon'
+    ? Math.min(viewportWidth.value, 672) // max-w-2xl column
+    : viewportWidth.value / (spread.value === 'double' ? 2 : 1);
+  return Math.ceil(cell * dpr);
+});
+let resizeTimer = null;
+function onViewportResize() {
+  clearTimeout(resizeTimer);
+  // Only a real change (rotation, a resized window) — not the URL bar sliding away.
+  resizeTimer = setTimeout(() => {
+    if (Math.abs(window.innerWidth - viewportWidth.value) > 50) viewportWidth.value = window.innerWidth;
+  }, 300);
 }
+
+function getPageUrl(index, full = false) {
+  const base = `/api/media/manga/${props.item.id}/page/${index}?token=${token}`;
+  return full ? base : `${base}&w=${pageRequestWidth.value}`;
+}
+const currentPageUrl = computed(() => getPageUrl(currentPageIndex.value));
 
 // ─── Controls auto-hide ───────────────────────────────────────────────────────
 function showControlsNow() {
@@ -653,6 +725,8 @@ function showControlsOnNavigate() {
 function setMode(m) {
   cancelFlip();
   mode.value = m;
+  const modes = { ...(loadLocalReaderPrefs().modes || {}), [seriesModeKey()]: m };
+  saveLocalReaderPrefs({ modes });
   showControlsNow();
 }
 
@@ -670,6 +744,7 @@ function navigateTo(target, isForward) {
 
   if (!canFlip) {
     currentPageIndex.value = target;
+    if (mode.value === 'webtoon') scrollToWebtoonPage(target);
     saveProgress();
     showControlsOnNavigate();
     return;
@@ -690,6 +765,7 @@ function prevPage() {
 function goToPage(index) {
   cancelFlip(); // scrubbing mid-flip abandons the in-progress animation rather than leaving orphaned leaves
   currentPageIndex.value = Math.max(0, Math.min(index, totalPages.value - 1));
+  if (mode.value === 'webtoon') scrollToWebtoonPage(currentPageIndex.value);
   saveProgress();
   showControlsOnNavigate();
 }
@@ -785,22 +861,107 @@ function touchEnd(e) {
   // Only treat as swipe if horizontal distance > 40px and > vertical distance (not a scroll)
   if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
     swipeHandled = true;
-    if (dx < 0) {
-      // Swipe left → go forward (next in LTR, prev in RTL)
-      mode.value === 'rtl' ? nextPage() : nextPage();
-    } else {
-      // Swipe right → go back
-      prevPage();
-    }
+    // Pages turn the way the book reads: in LTR the next page comes in from the right (swipe
+    // left), in RTL manga it comes in from the left (swipe right) — same as the tap zones.
+    const forward = mode.value === 'rtl' ? dx > 0 : dx < 0;
+    forward ? nextPage() : prevPage();
   }
 }
 
 // ─── Webtoon scroll tracking ──────────────────────────────────────────────────
-function onWebtoonScroll(e) {
-  const el = e.target;
-  const ratio = el.scrollTop / (el.scrollHeight - el.clientHeight || 1);
-  currentPageIndex.value = Math.min(totalPages.value - 1, Math.floor(ratio * totalPages.value));
+// Pages this far behind / ahead of the current one keep their image; everything else is an
+// empty box. Enough that scrolling at reading speed never meets a blank page.
+const WEBTOON_BEHIND = 3;
+const WEBTOON_AHEAD = 6;
+const webtoonPageEls = [];
+// width / height of each page once it has loaded (CSS aspect-ratio strings), so a page that
+// scrolls out of the window keeps its exact height and nothing below it jumps.
+const pageRatios = ref({});
+// Pages not seen yet are sized like the last one that loaded — a volume's pages nearly
+// always share a shape — or a typical manga page before any has.
+const defaultPageRatio = ref('2 / 3');
+let webtoonScrollFrame = 0;
+let webtoonSaveTimer = null;
+
+function setWebtoonPageEl(index, el) {
+  if (el) webtoonPageEls[index] = el;
 }
+
+function isInWebtoonWindow(index) {
+  return index >= currentPageIndex.value - WEBTOON_BEHIND && index <= currentPageIndex.value + WEBTOON_AHEAD;
+}
+
+function onWebtoonPageLoad(index, e) {
+  const img = e.target;
+  if (!img.naturalWidth || !img.naturalHeight) return;
+  const ratio = `${img.naturalWidth} / ${img.naturalHeight}`;
+  defaultPageRatio.value = ratio;
+  if (pageRatios.value[index] === ratio) return;
+
+  // A page above the viewport changing height would push what's being read down or up;
+  // shift the scroll position by the same amount so the reader never notices.
+  const container = webtoonContainer.value;
+  const box = webtoonPageEls[index];
+  const above = container && box && box.offsetTop + box.offsetHeight <= container.scrollTop;
+  const before = above ? box.offsetHeight : 0;
+  pageRatios.value = { ...pageRatios.value, [index]: ratio };
+  if (above) {
+    nextTick(() => {
+      container.scrollTop += box.offsetHeight - before;
+    });
+  }
+}
+
+function scrollToWebtoonPage(index) {
+  nextTick(() => {
+    const container = webtoonContainer.value;
+    const box = webtoonPageEls[index];
+    if (container && box) container.scrollTop = box.offsetTop;
+  });
+}
+
+// The page being read is the one under a line 30% down the screen — or the last page once
+// the end is reached, which a short final page might otherwise never cross.
+function webtoonPageAtScroll(container) {
+  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 4) {
+    return totalPages.value - 1;
+  }
+  const line = container.scrollTop + container.clientHeight * 0.3;
+  let lo = 0;
+  let hi = Math.min(totalPages.value, webtoonPageEls.length) - 1;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    if (webtoonPageEls[mid] && webtoonPageEls[mid].offsetTop <= line) lo = mid;
+    else hi = mid - 1;
+  }
+  return Math.max(0, lo);
+}
+
+function onWebtoonScroll(e) {
+  const container = e.target;
+  if (webtoonScrollFrame) return;
+  webtoonScrollFrame = requestAnimationFrame(() => {
+    webtoonScrollFrame = 0;
+    const index = webtoonPageAtScroll(container);
+    if (index === currentPageIndex.value) return;
+    currentPageIndex.value = index;
+    // Scroll mode never went through nextPage(), so progress was only saved on close — and
+    // a tab the browser discarded mid-chapter lost it all.
+    clearTimeout(webtoonSaveTimer);
+    webtoonSaveTimer = setTimeout(() => {
+      webtoonSaveTimer = null;
+      saveProgress();
+    }, 1000);
+  });
+}
+
+// Switching into scroll mode (or opening in it) starts at the page already being read.
+watch(mode, (m) => {
+  if (m === 'webtoon') scrollToWebtoonPage(currentPageIndex.value);
+});
+watch(loading, (isLoading) => {
+  if (!isLoading && mode.value === 'webtoon') scrollToWebtoonPage(currentPageIndex.value);
+});
 
 // ─── Keyboard ─────────────────────────────────────────────────────────────────
 function onKeyDown(e) {
@@ -832,16 +993,28 @@ function onKeyDown(e) {
   }
 }
 
+// Once the page on screen has loaded, warm the browser cache with the next few (and the one
+// before, for flicking back) so turning feels instant. Near the end of a volume, the next
+// volume's opening page too. Each is only fetched once per reader session.
+const PRELOAD_AHEAD = 3;
+const preloaded = new Set();
+function preload(url) {
+  if (!url || preloaded.has(url)) return;
+  preloaded.add(url);
+  const img = new Image();
+  img.decoding = 'async';
+  img.src = url;
+}
+
 function onPageLoad() {
-  // Preload upcoming pages
-  const nextIdx = currentPageIndex.value + (spread.value === 'double' ? 2 : 1);
-  if (nextIdx < totalPages.value) {
-    const next = new Image();
-    next.src = getPageUrl(nextIdx);
-    if (spread.value === 'double' && nextIdx + 1 < totalPages.value) {
-      const next2 = new Image();
-      next2.src = getPageUrl(nextIdx + 1);
-    }
+  const step = spread.value === 'double' ? 2 : 1;
+  const first = currentPageIndex.value + step;
+  for (let i = first; i < Math.min(totalPages.value, first + PRELOAD_AHEAD * step); i++) {
+    preload(getPageUrl(i));
+  }
+  if (currentPageIndex.value > 0) preload(getPageUrl(currentPageIndex.value - 1));
+  if (nextVolume.value && currentPageIndex.value >= totalPages.value - 3) {
+    preload(`/api/media/manga/${nextVolume.value.id}/page/0?token=${token}&w=${pageRequestWidth.value}`);
   }
 }
 
@@ -905,9 +1078,9 @@ function closeReader() {
 watch(() => props.item?.id, async (newId) => {
   if (!newId) return;
   cancelFlip(); // switching volumes mid-flip would otherwise strand the leaf overlay on screen
-  currentPageIndex.value = props.item.initialPage !== undefined
-    ? Math.max(0, props.item.initialPage - 1)
-    : (props.item.current_page ? Math.max(0, props.item.current_page - 1) : 0);
+  pageRatios.value = {};
+  webtoonPageEls.length = 0;
+  currentPageIndex.value = startPageIndex(props.item);
   totalPages.value = props.item.total_pages || 0;
   await loadSeriesSettings();
   await loadPages();
@@ -920,7 +1093,7 @@ watch(() => props.item?.id, async (newId) => {
 // leaves most of the screen empty — default to a 2-page spread there. Only
 // applied once at open so it never overrides a choice made mid-session.
 function applyTabletLandscapeDefault() {
-  if (mode.value === 'webtoon') return;
+  if (mode.value === 'webtoon' || localReaderPrefs.spread) return;
   const isCoarsePointer = window.matchMedia?.('(pointer: coarse)')?.matches ?? false;
   const isLandscape = window.innerWidth > window.innerHeight;
   const isTabletWidth = window.innerWidth >= 900;
@@ -932,6 +1105,12 @@ function applyTabletLandscapeDefault() {
 // Reading direction is a property of the series, not of this session — a Japanese manga
 // should open right-to-left every time without the reader having to flip it on each open.
 async function loadSeriesSettings() {
+  // A mode you picked for this series on this device beats the series' default direction.
+  const mine = loadLocalReaderPrefs().modes?.[seriesModeKey()];
+  if (mine && modes.some((m) => m.id === mine)) {
+    mode.value = mine;
+    return;
+  }
   const { library_id: libraryId, series } = props.item;
   if (!libraryId || !series) return;
 
@@ -947,7 +1126,26 @@ async function loadSeriesSettings() {
 }
 
 // ─── Lifecycle ─────────────────────────────────────────────────────────────────
+// The page underneath stays scrollable, so a swipe that reached the top of the reader
+// scrolled (or, in mobile Safari, pull-to-refreshed) it instead — reloading mid-chapter.
+// Lock it while the reader is open.
+const lockedStyles = [];
+function lockPageScroll() {
+  for (const el of [document.documentElement, document.body]) {
+    lockedStyles.push([el, el.style.overflow, el.style.overscrollBehavior]);
+    el.style.overflow = 'hidden';
+    el.style.overscrollBehavior = 'none';
+  }
+}
+function unlockPageScroll() {
+  for (const [el, overflow, overscroll] of lockedStyles.splice(0)) {
+    el.style.overflow = overflow;
+    el.style.overscrollBehavior = overscroll;
+  }
+}
+
 onMounted(async () => {
+  lockPageScroll();
   applyTabletLandscapeDefault();
   await loadSeriesSettings();
   await loadPages();
@@ -957,17 +1155,32 @@ onMounted(async () => {
   // Auto-hide controls on touch after 3s
   showControlsNow();
   window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('resize', onViewportResize);
   viewSession.open(props.item.id);
 });
 
 onUnmounted(() => {
+  unlockPageScroll();
   window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('resize', onViewportResize);
+  clearTimeout(resizeTimer);
   clearTimeout(hideTimer);
+  cancelAnimationFrame(webtoonScrollFrame);
+  if (webtoonSaveTimer) {
+    clearTimeout(webtoonSaveTimer);
+    saveProgress();
+  }
   viewSession.close();
 });
 </script>
 
 <style scoped>
+/* Keeps a fling at either end inside the reader instead of bouncing the page behind it. */
+.webtoon-scroll {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 .pt-safe { padding-top: max(1rem, env(safe-area-inset-top)); }
 .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 

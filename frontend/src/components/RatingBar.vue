@@ -18,11 +18,17 @@
     </div>
 
     <template v-if="summary">
-      <span v-if="ratings.showPersonal && (summary.community || summary.external)" :class="dividerClass" class="h-3.5 w-px" />
+      <span
+        v-if="ratings.showPersonal && (summary.community || summary.external)"
+        :class="[dividerClass, communityEmpty && !summary.external ? 'hidden sm:block' : '']"
+        class="h-3.5 w-px"
+      />
 
+      <!-- An unrated title's "Plinthio —" is noise on a phone, where it wraps under the stars. -->
       <div
         v-if="summary.community"
-        class="inline-flex items-center gap-1"
+        class="items-center gap-1"
+        :class="communityEmpty ? 'hidden sm:inline-flex' : 'inline-flex'"
         :title="summary.community.count > 0
           ? `${summary.community.average.toFixed(1)} average from ${summary.community.count} ${serverName} ${summary.community.count === 1 ? 'user' : 'users'}`
           : `No ${serverName} ratings yet`"
@@ -85,6 +91,7 @@ const justifyClass = computed(() => ({
 }[props.align] || 'justify-start'));
 const mutedClass = computed(() => (props.tone === 'dark' ? 'text-white/65' : 'text-muted-foreground'));
 const strongClass = computed(() => (props.tone === 'dark' ? 'text-white' : 'text-foreground'));
+const communityEmpty = computed(() => summary.value?.community?.count === 0);
 const dividerClass = computed(() => (props.tone === 'dark' ? 'bg-white/25' : 'bg-border'));
 
 let loadToken = 0;

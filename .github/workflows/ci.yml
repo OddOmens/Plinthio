@@ -51,6 +51,47 @@ jobs:
         working-directory: frontend
         run: npm run build
 
+  browser:
+    name: Browser tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          (cd backend && npm ci)
+          (cd frontend && npm ci)
+
+      # The tests drive the built app served by the real backend (frontend/e2e/serve.mjs),
+      # on a phone-sized screen: setup wizard, title page, and the manga reader.
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser tests
+        working-directory: frontend
+        run: npm run test:e2e
+
+      - name: Keep traces of failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: frontend/test-results/
+          retention-days: 7
+
   image:
     name: Docker image builds
     runs-on: ubuntu-latest

@@ -5,6 +5,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 import path from 'path';
 import fs from 'fs';
+import https from 'https';
 import { fileURLToPath } from 'url';
 
 import { config } from './config/env.js';
@@ -49,6 +50,8 @@ import { initAutoScan } from './services/autoScan.js';
 import { backfillMovieCredits } from './services/credits.js';
 import { sweepHlsCache } from './services/hls.js';
 import { sweepArchiveCache } from './services/archive/sevenZipBackend.js';
+import { sweepPageCache } from './services/pageImages.js';
+import { tlsSettings, loadTlsCredentials, tlsStatus, caCertificate, noteRequestHost } from './services/tls.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -97,9 +100,14 @@ const contentSecurityPolicy = cspMode === 'off' ? false : {
   }
 };
 
+// No HSTS when Plinthio serves HTTPS itself: it's pinned per host name, not per port, so a
+// browser that saw it on https://nas.local:8443 would then refuse plain http://nas.local:8088
+// — and with the local CA not yet installed there'd be no click-through either. A reverse
+// proxy that terminates TLS for a real domain can still send it.
 app.use(helmet({
   contentSecurityPolicy,
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  strictTransportSecurity: tlsSettings.port ? false : undefined
 }));
 // `credentials: true` only matters for cookie-based auth; Plinthio authenticates via a
 // Bearer JWT (header or query param) that the app puts in localStorage itself. The one
@@ -123,6 +131,18 @@ app.use(compression({
 }));
 
 app.use(express.json());
+
+// Built-in HTTPS learns the addresses devices use (see noteRequestHost in services/tls.js);
+// the re-issue is debounced so a burst of requests produces one new certificate.
+let httpsServer = null;
+let reissueTimer = null;
+app.use((req, res, next) => {
+  if (httpsServer && noteRequestHost(req.hostname)) {
+    clearTimeout(reissueTimer);
+    reissueTimer = setTimeout(refreshHttpsCertificate, 2000);
+  }
+  next();
+});
 
 // Every error response carries a Plinthio error code (see errors.js). Routes name specific
 // codes; this fills in a status-based one for any that don't.
@@ -225,6 +245,21 @@ app.get('/api/errors', (req, res) => {
   res.json({ codes: errorCatalog() });
 });
 
+// Built-in HTTPS (services/tls.js). Public on purpose: a phone needs the CA certificate
+// before it can trust the HTTPS address, and a CA certificate holds no secret.
+app.get('/api/tls', (req, res) => {
+  const status = tlsStatus();
+  res.json({ enabled: status.enabled, port: status.enabled ? tlsSettings.port : null, caAvailable: status.mode === 'generated' });
+});
+app.get('/api/tls/ca.crt', (req, res) => {
+  const ca = caCertificate();
+  if (!ca) return res.status(404).json({ error: 'Plinthio is not using its own certificate authority' });
+  // This content type is what makes iOS offer "Profile Downloaded" instead of showing text.
+  res.setHeader('Content-Type', 'application/x-x509-ca-cert');
+  res.setHeader('Content-Disposition', 'attachment; filename="plinthio-ca.crt"');
+  res.send(ca);
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', version: APP_VERSION, app: 'Plinthio' });
@@ -296,6 +331,7 @@ async function start() {
     const sweepCaches = () => {
       sweepHlsCache(cacheMaxAgeMs);
       sweepArchiveCache(cacheMaxAgeMs);
+      sweepPageCache(cacheMaxAgeMs);
     };
     sweepCaches();
     setInterval(sweepCaches, 60 * 60 * 1000).unref();
@@ -311,10 +347,50 @@ async function start() {
 =====================================================
       `);
     });
-    handleShutdown(server);
+    const servers = [server];
+    const secure = startHttps();
+    if (secure) servers.push(secure);
+    handleShutdown(servers);
   } catch (err) {
     console.error('Failed to start Plinthio:', err);
     process.exit(1);
+  }
+}
+
+// HTTPS alongside HTTP (HTTPS_PORT, on by default in the Docker image). Plain HTTP keeps
+// working, so enabling this never locks anyone out. The certificate is checked daily: a new
+// LAN address or an approaching expiry re-issues it without a restart.
+function startHttps() {
+  if (!tlsSettings.port) return null;
+  let credentials;
+  try {
+    credentials = loadTlsCredentials();
+  } catch (err) {
+    console.error('[tls] Could not prepare a certificate, HTTPS is off:', err.message);
+    return null;
+  }
+  if (!credentials) return null;
+
+  const server = https.createServer(credentials, app);
+  httpsServer = server;
+  server.on('error', (err) => console.error(`[tls] HTTPS server error on port ${tlsSettings.port}:`, err.message));
+  server.listen(tlsSettings.port, config.host, () => {
+    console.log(`  🔒 HTTPS:  https://localhost:${tlsSettings.port}`);
+    if (tlsStatus().mode === 'generated') {
+      console.log('     Install the CA from /api/tls/ca.crt on your devices to stop certificate warnings.');
+    }
+  });
+  setInterval(refreshHttpsCertificate, 24 * 60 * 60 * 1000).unref();
+  return server;
+}
+
+function refreshHttpsCertificate() {
+  if (!httpsServer) return;
+  try {
+    const fresh = loadTlsCredentials();
+    if (fresh) httpsServer.setSecureContext(fresh);
+  } catch (err) {
+    console.error('[tls] Certificate refresh failed:', err.message);
   }
 }
 
@@ -322,16 +398,18 @@ async function start() {
 // without this every `docker stop` / update waited out Docker's 10 s grace period and then
 // SIGKILLed the server mid-write. Stop taking requests, close the database (checkpointing
 // its WAL) and exit; a second signal, or a shutdown that hangs, exits straight away.
-function handleShutdown(server) {
+function handleShutdown(servers) {
   let stopping = false;
   const shutdown = (signal) => {
     if (stopping) process.exit(1);
     stopping = true;
     console.log(`[shutdown] ${signal} received, stopping Plinthio…`);
     setTimeout(() => process.exit(1), 8000).unref();
-    server.close();
-    // Streams and watch-party connections stay open indefinitely; don't wait on them.
-    server.closeIdleConnections?.();
+    for (const server of servers) {
+      server.close();
+      // Streams and watch-party connections stay open indefinitely; don't wait on them.
+      server.closeIdleConnections?.();
+    }
     closeDb()
       .catch((err) => console.error('[shutdown] closing the database failed:', err))
       .finally(() => process.exit(0));
