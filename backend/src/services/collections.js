@@ -71,15 +71,17 @@ export async function getFilmCollection(db, film, user) {
   // The library's copies: by TMDB id first, then by title + year for films matched before
   // TMDB ids were kept.
   const owned = await db.all(
-    `SELECT i.id, i.title, i.release_date, i.tmdb_id, i.library_id FROM items i
+    `SELECT i.id, i.title, i.release_date, i.tmdb_id, i.library_id, i.offloaded_at FROM items i
      WHERE i.media_type = 'movie' AND i.extra_type IS NULL
      AND NOT EXISTS (
        SELECT 1 FROM item_visibility v WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-     )${accessSql(user, 'i')}`,
+     )${accessSql(user, 'i', { includeOffloaded: true })}`,
     [user.id]
   );
-  // Prefer a copy in the film's own library when the same film sits in several.
-  owned.sort((a, b) => (b.library_id === film.library_id) - (a.library_id === film.library_id));
+  // Prefer a copy on the server over an offloaded one, then one in the film's own library.
+  owned.sort((a, b) => (!a.offloaded_at - !b.offloaded_at) * -1 ||
+    (b.library_id === film.library_id) - (a.library_id === film.library_id));
+  const offloadedIds = new Set(owned.filter((it) => it.offloaded_at).map((it) => it.id));
   const byTmdb = new Map();
   const byTitleYear = new Map();
   for (const it of owned) {
@@ -99,6 +101,8 @@ export async function getFilmCollection(db, film, user) {
     const self = parts.find((p) => p.tmdbId === film.tmdb_id);
     if (self) self.itemId = film.id;
   }
+  // A film the server had and offloaded: yours (with its history), not one to request.
+  for (const p of parts) p.offloaded = !!p.itemId && (offloadedIds.has(p.itemId) || (p.itemId === film.id && !!film.offloaded_at));
 
   const missing = parts.filter((p) => !p.itemId);
   const statuses = await latestRequestStatuses(db, missing.map((p) => ({ source: 'tmdb', external_id: p.tmdbId })));

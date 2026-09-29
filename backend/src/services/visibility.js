@@ -16,14 +16,18 @@ export function ratingRank(rating) {
 }
 
 // SQL fragment (starting with AND) restricting `alias` rows to what `user` may see:
-//   • never a title whose file has gone missing (kept for recovery, see missing_since)
+//   • never a title whose file has gone missing (kept for recovery, see missing_since), and
+//     never an offloaded one (kept as history, see offloaded_at). A title page passes
+//     { includeOffloaded: true } to show offloaded ones greyed with their progress.
 //   • Kids Mode: only kids-safe libraries, series and titles
 //   • parental controls: nothing above the account's age rating
 // It carries no bind parameters — every interpolated value is an integer or a fixed string
 // computed here, never user input — so it can be dropped into any existing query without
 // disturbing that query's parameter order.
-export function accessSql(user, alias = 'i') {
-  let sql = ` AND ${alias}.missing_since IS NULL`;
+export function accessSql(user, alias = 'i', { includeOffloaded = false } = {}) {
+  let sql = includeOffloaded
+    ? ` AND (${alias}.offloaded_at IS NOT NULL OR ${alias}.missing_since IS NULL)`
+    : ` AND ${alias}.missing_since IS NULL AND ${alias}.offloaded_at IS NULL`;
 
   if (user && (user.kids_mode === 1 || user.kids_mode === true)) {
     sql += ` AND (
