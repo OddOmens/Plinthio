@@ -109,6 +109,29 @@ describe('offloaded titles', () => {
     assert.equal((await show()).volumes.find((v) => v.id === s2e1.id).offloaded_at, null);
   });
 
+  test('an offloaded title stays in a list, flagged, and lists show preview covers', async () => {
+    const s1e2 = (await show()).volumes.find((v) => v.volume === 1.002);
+    assert.ok(s1e2.offloaded_at, 'still offloaded from the first test');
+    const created = await post('/collections', { name: 'Rewatch', type: 'readlist', category: 'shows' });
+    const listId = created.collection.id;
+    await post(`/collections/${listId}/items`, { itemId: s1e2.id });
+    await post(`/collections/${listId}/external`, {
+      mediaType: 'show', source: 'tmdb', externalId: '999', title: 'Not Here', coverUrl: 'https://image.tmdb.org/t/p/w342/x.jpg'
+    });
+
+    const list = (await getJson(server.baseUrl, `/collections/${listId}`, admin.token)).body;
+    const entry = list.entries.find((e) => e.kind === 'item');
+    assert.ok(entry, 'the offloaded episode is still in the list');
+    assert.ok(entry.item.offloaded_at);
+
+    const lists = (await getJson(server.baseUrl, '/collections?type=readlist&category=shows', admin.token)).body.collections;
+    const card = lists.find((l) => l.id === listId);
+    assert.equal(card.previews.length, 2);
+    assert.equal(card.previews[0].item.id, s1e2.id);
+    assert.equal(card.previews[0].item.offloaded, true);
+    assert.equal(card.previews[1].coverUrl, 'https://image.tmdb.org/t/p/w342/x.jpg');
+  });
+
   test('only admins offload, and ids are checked', async () => {
     const bad = await fetch(`${server.baseUrl}/api/admin/health/offload`, {
       method: 'POST', headers: { ...authed(admin.token), 'content-type': 'application/json' }, body: JSON.stringify({ itemIds: ['../etc'] })

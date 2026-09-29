@@ -46,6 +46,17 @@
         <component :is="tab.icon" class="w-5 h-5 flex-shrink-0" />
         <span class="truncate">{{ tab.label }}</span>
       </button>
+      <div class="h-px bg-border my-1.5 mx-1" aria-hidden="true" />
+      <router-link
+        to="/lists"
+        :class="[
+          'h-11 px-3.5 rounded-xl text-sm font-medium transition-all flex items-center gap-3 text-left',
+          onLists ? 'bg-muted text-foreground shadow-sm font-semibold' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+        ]"
+      >
+        <ListOrdered class="w-5 h-5 flex-shrink-0" />
+        <span class="truncate">Lists</span>
+      </router-link>
     </nav>
 
     <!-- Account -->
@@ -114,6 +125,17 @@
         <component :is="tab.icon" class="w-3.5 h-3.5" />
         <span>{{ tab.label }}</span>
       </button>
+      <span class="w-px h-5 bg-border mx-0.5 flex-shrink-0" aria-hidden="true" />
+      <router-link
+        to="/lists"
+        :class="[
+          'h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-1.5 sm:gap-2 flex-shrink-0 active:scale-95',
+          onLists ? 'bg-foreground text-background font-semibold shadow-sm' : 'bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/50'
+        ]"
+      >
+        <ListOrdered class="w-3.5 h-3.5" />
+        <span>Lists</span>
+      </router-link>
     </div>
   </header>
 
@@ -175,6 +197,18 @@
           <component :is="tab.icon" class="w-5 h-5 flex-shrink-0" />
           <span class="truncate">{{ tab.label }}</span>
         </button>
+        <div class="h-px bg-border my-1.5 mx-1" aria-hidden="true" />
+        <router-link
+          to="/lists"
+          @click="mobileOpen = false"
+          :class="[
+            'h-12 px-3.5 rounded-xl text-base font-medium transition-all flex items-center gap-3 text-left',
+            onLists ? 'bg-muted text-foreground shadow-sm font-semibold' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+          ]"
+        >
+          <ListOrdered class="w-5 h-5 flex-shrink-0" />
+          <span class="truncate">Lists</span>
+        </router-link>
       </nav>
 
       <div class="p-3 border-t border-border flex-shrink-0">
@@ -187,6 +221,7 @@
 <script setup>
 import AppLogo from './AppLogo.vue';
 import { ref, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { ALL_MEDIA_TYPES } from '../constants/media';
 import { useCustomizationStore } from '../stores/customization';
@@ -202,7 +237,8 @@ import {
   Menu,
   Tv,
   Film,
-  Sparkles
+  Sparkles,
+  ListOrdered
 } from '@lucide/vue';
 
 defineProps({
@@ -214,6 +250,8 @@ defineEmits(['filter-type', 'update:searchQuery', 'open-preferences']);
 
 const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
+const route = useRoute();
+const onLists = computed(() => route.path.startsWith('/lists'));
 
 const mobileOpen = ref(false);
 

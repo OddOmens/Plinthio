@@ -43,13 +43,18 @@ Error codes P600–P605 cover parties; see [Error codes](error-codes.md).
 
 ## Lists
 
-**Lists** (the replacement for Read Lists) are ordered collections anyone can make, grouped
-into **Movies**, **Shows**, **Anime**, **Read** and **Listen** tabs.
+**Lists** are ordered collections anyone can make, grouped into **Movies**, **Shows**,
+**Anime**, **Read** and **Listen** tabs. They're in the top bar, after the media types (or
+at the end of the sidebar).
 
+- Lists show as cards with their first few covers, and a list's titles as a poster grid,
+  like the shelf.
 - Add titles from the library, or titles found by searching TMDB, MangaDex, Google Books and
-  Open Library, all in one list. Searched titles show **In library** when you already have
-  them.
-- Drag to reorder.
+  Open Library, all in one list. That makes a list a **watchlist** for things the server
+  doesn't have: they're grey with a dashed outline and **Not in library**, and turn into
+  normal posters (linking to their page) once the library has them.
+- A film missing from a collection has an **Add to list** button next to **Request**.
+- Move titles earlier or later with the arrows on each poster.
 - A searched title you don't have can be **requested** straight from the list.
 - The old `/read-lists` address redirects to the Read tab.
 
