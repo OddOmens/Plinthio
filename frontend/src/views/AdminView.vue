@@ -785,216 +785,63 @@
         </div>
 
         <!-- Appearance: settings on the left, a live preview of them on the right -->
-        <div class="flex flex-col gap-1">
-          <h3 class="text-sm font-semibold text-foreground tracking-tight">Look &amp; feel</h3>
-          <p class="text-xs text-muted-foreground">Each change shows in the preview straight away and saves on its own. Only custom CSS waits for its Save button.</p>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div class="flex flex-col gap-1 min-w-0">
+            <h3 class="text-sm font-semibold text-foreground tracking-tight">Look &amp; feel</h3>
+            <p class="text-xs text-muted-foreground">The server's defaults. Each change shows in the preview straight away and saves on its own. Only custom CSS waits for its Save button.</p>
+          </div>
+          <label class="flex items-center gap-2.5 cursor-pointer select-none px-3 h-9 rounded-xl border border-border bg-card hover:bg-muted/30 transition" title="Let people set their own accent, layout, width and pause screen in Settings → Appearance">
+            <input
+              type="checkbox"
+              :checked="personalizationOn"
+              :disabled="savingUserCustomization"
+              @change="toggleUserCustomization('enabled', $event.target.checked)"
+              class="rounded border-border text-primary focus:ring-ring"
+            />
+            <span class="text-xs font-medium text-foreground">Let people personalize</span>
+          </label>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] gap-5 items-start">
           <div class="order-2 lg:order-1 flex flex-col gap-5 min-w-0">
-            <!-- User Interface Personalization Card -->
-            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+            <!-- The server's defaults for the things people can also set for themselves. Each
+                 card says whether users may pick their own (Settings → Appearance). -->
+            <div
+              v-for="card in personalCards"
+              :key="card.key"
+              class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4"
+              @focusin="previewView = card.preview"
+              @click="previewView = card.preview"
+            >
               <div class="border-b border-border pb-3 flex items-start justify-between gap-3">
-                <div>
-                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">User Personalization</h3>
-                  <p class="text-xs text-muted-foreground mt-0.5">Control which parts of the interface signed-in users can customize for their own account.</p>
+                <div class="min-w-0">
+                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">{{ card.title }}</h3>
+                  <p class="text-xs text-muted-foreground mt-0.5">{{ card.desc }}</p>
                 </div>
-                <label class="flex items-center gap-2 cursor-pointer select-none">
+                <label
+                  v-if="personalizationOn"
+                  class="flex items-center gap-2 cursor-pointer select-none flex-shrink-0 px-2.5 h-8 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition"
+                  :title="`Let each person choose their own ${card.title.toLowerCase()} in Settings → Appearance`"
+                >
                   <input
                     type="checkbox"
-                    :checked="customizationForm.userCustomization?.enabled !== false"
+                    :checked="customizationForm.userCustomization?.[card.key] !== false"
                     :disabled="savingUserCustomization"
-                    @change="toggleUserCustomization('enabled', $event.target.checked)"
+                    @change="toggleUserCustomization(card.key, $event.target.checked)"
                     class="rounded border-border text-primary focus:ring-ring"
                   />
-                  <span class="text-xs font-medium text-foreground">Allow user personalization</span>
+                  <span class="text-[12px] font-medium text-foreground whitespace-nowrap">Users can change</span>
                 </label>
               </div>
-
-              <div v-if="customizationForm.userCustomization?.enabled !== false" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    :checked="customizationForm.userCustomization?.accentColor !== false"
-                    :disabled="savingUserCustomization"
-                    @change="toggleUserCustomization('accentColor', $event.target.checked)"
-                    class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-                  />
-                  <div class="flex flex-col">
-                    <span class="text-xs font-semibold text-foreground">Accent Color</span>
-                    <span class="text-[12px] text-muted-foreground">Users can pick their own color palette</span>
-                  </div>
-                </label>
-
-                <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    :checked="customizationForm.userCustomization?.layoutMode !== false"
-                    :disabled="savingUserCustomization"
-                    @change="toggleUserCustomization('layoutMode', $event.target.checked)"
-                    class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-                  />
-                  <div class="flex flex-col">
-                    <span class="text-xs font-semibold text-foreground">Navigation Layout</span>
-                    <span class="text-[12px] text-muted-foreground">Users can switch between Top Navigation & Sidebar</span>
-                  </div>
-                </label>
-
-                <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    :checked="customizationForm.userCustomization?.pageWidth !== false"
-                    :disabled="savingUserCustomization"
-                    @change="toggleUserCustomization('pageWidth', $event.target.checked)"
-                    class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-                  />
-                  <div class="flex flex-col">
-                    <span class="text-xs font-semibold text-foreground">Page Width</span>
-                    <span class="text-[12px] text-muted-foreground">Users can toggle Full Width vs Contained (1440px)</span>
-                  </div>
-                </label>
-
-                <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    :checked="customizationForm.userCustomization?.pauseScreen !== false"
-                    :disabled="savingUserCustomization"
-                    @change="toggleUserCustomization('pauseScreen', $event.target.checked)"
-                    class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-                  />
-                  <div class="flex flex-col">
-                    <span class="text-xs font-semibold text-foreground">Pause Screen</span>
-                    <span class="text-[12px] text-muted-foreground">Users can choose what displays when video is paused</span>
-                  </div>
-                </label>
-              </div>
-              <p v-else class="text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg border border-border">
-                User personalization is currently disabled. All users will see the server default accent color, navigation layout, page width, and pause screen configured below.
-              </p>
-            </div>
-
-            <!-- Server Default Accent Theme Card -->
-            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
-              <div class="border-b border-border pb-3 flex items-center justify-between">
-                <div>
-                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Default Accent Color</h3>
-                  <p class="text-xs text-muted-foreground mt-0.5">Default primary color scheme across buttons, badges, and highlights for all users.</p>
-                </div>
-                <span class="text-xs font-mono capitalize px-2 py-0.5 rounded bg-muted text-foreground">
-                  {{ customizationForm.accentTheme }}
-                </span>
-              </div>
-
-              <div class="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-4 2xl:grid-cols-8 gap-2.5">
-                <button
-                  v-for="acc in accentPresets"
-                  :key="acc.id"
-                  type="button"
-                  @click="selectAccent(acc.id)"
-                  :class="[
-                    'p-3 rounded-xl border flex flex-col items-center gap-2 transition active:scale-95 text-center',
-                    customizationForm.accentTheme === acc.id
-                      ? 'border-primary ring-2 ring-primary/20 bg-muted/40 font-medium'
-                      : 'border-border hover:bg-muted/20'
-                  ]"
-                >
-                  <span :class="acc.bg" class="w-6 h-6 rounded-full border border-black/10 shadow-sm"></span>
-                  <span class="text-xs text-foreground capitalize">{{ acc.label }}</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Server Default Layout Mode Card -->
-            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'shelf'" @click="previewView = 'shelf'">
-              <div class="border-b border-border pb-3">
-                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Default Navigation Layout</h3>
-                <p class="text-xs text-muted-foreground mt-0.5">Default navigation layout across the server.</p>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  @click="selectLayoutMode('topnav')"
-                  :class="[
-                    'p-3.5 rounded-xl border flex items-center gap-3 text-left transition active:scale-95',
-                    customizationForm.layoutMode === 'topnav'
-                      ? 'border-primary ring-2 ring-primary/20 bg-muted/40'
-                      : 'border-border hover:bg-muted/20'
-                  ]"
-                >
-                  <div class="w-11 h-9 rounded-md border border-border/70 bg-background flex flex-col gap-0.5 p-1 flex-shrink-0">
-                    <div class="h-1.5 w-full rounded-sm bg-muted-foreground/40"></div>
-                    <div class="flex-1 rounded-sm bg-muted-foreground/15"></div>
-                  </div>
-                  <div>
-                    <span class="text-xs font-semibold text-foreground block">Top Navigation</span>
-                    <span class="text-[12px] text-muted-foreground">Classic horizontal header bar</span>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  @click="selectLayoutMode('sidebar')"
-                  :class="[
-                    'p-3.5 rounded-xl border flex items-center gap-3 text-left transition active:scale-95',
-                    customizationForm.layoutMode === 'sidebar'
-                      ? 'border-primary ring-2 ring-primary/20 bg-muted/40'
-                      : 'border-border hover:bg-muted/20'
-                  ]"
-                >
-                  <div class="w-11 h-9 rounded-md border border-border/70 bg-background flex gap-0.5 p-1 flex-shrink-0">
-                    <div class="w-2.5 h-full rounded-sm bg-muted-foreground/40"></div>
-                    <div class="flex-1 rounded-sm bg-muted-foreground/15"></div>
-                  </div>
-                  <div>
-                    <span class="text-xs font-semibold text-foreground block">Sidebar</span>
-                    <span class="text-[12px] text-muted-foreground">Vertical navigation on the left</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <!-- Server Default Page Width Card -->
-            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
-              <div class="border-b border-border pb-3">
-                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Default Page Width</h3>
-                <p class="text-xs text-muted-foreground mt-0.5">Default page width on wide screens for users who haven't set an override.</p>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  @click="selectPageWidth('full')"
-                  :class="[
-                    'p-3.5 rounded-xl border flex items-center gap-3 text-left transition active:scale-95',
-                    customizationForm.pageWidth === 'full'
-                      ? 'border-primary ring-2 ring-primary/20 bg-muted/40'
-                      : 'border-border hover:bg-muted/20'
-                  ]"
-                >
-                  <StretchHorizontal class="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                  <div>
-                    <span class="text-xs font-semibold text-foreground block">Full Width</span>
-                    <span class="text-[12px] text-muted-foreground">Use the whole screen, fitting more posters</span>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  @click="selectPageWidth('contained')"
-                  :class="[
-                    'p-3.5 rounded-xl border flex items-center gap-3 text-left transition active:scale-95',
-                    customizationForm.pageWidth === 'contained'
-                      ? 'border-primary ring-2 ring-primary/20 bg-muted/40'
-                      : 'border-border hover:bg-muted/20'
-                  ]"
-                >
-                  <RectangleHorizontal class="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                  <div>
-                    <span class="text-xs font-semibold text-foreground block">Contained</span>
-                    <span class="text-[12px] text-muted-foreground">Centred container, capped at 1440px wide</span>
-                  </div>
-                </button>
-              </div>
+              <OptionTiles
+                :label="card.title"
+                :options="card.options"
+                :model-value="serverDefault(card.field)"
+                @update:model-value="setServerDefault(card.field, $event)"
+                @hover="card.field === 'pauseScreen' && (hoverPauseScreen = $event ?? null, previewView = 'pause')"
+                :swatches="card.swatches"
+                :grid-class="card.grid"
+                :disabled="card.field === 'pauseScreen' && savingPauseScreen"
+              />
             </div>
 
             <!-- Ratings Display Card -->
@@ -1072,41 +919,6 @@
                   <span class="text-[12px] text-muted-foreground">Adds a "Watch Together" button to movies and episodes. Content limits still apply to everyone in a party. Turning this off ends any party in progress.</span>
                 </div>
               </label>
-            </div>
-
-            <!-- Server Default Pause Screen Card -->
-            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'pause'" @click="previewView = 'pause'">
-              <div class="border-b border-border pb-3">
-                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Default Pause Screen</h3>
-                <p class="text-xs text-muted-foreground mt-0.5">
-                  Default display after a couple of seconds paused. It fades away as soon as someone moves the mouse or touches the screen.
-                  Cast, crew and facts come from TMDB (needs a TMDB API key); without one, the file's own details are used.
-                </p>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <label
-                  v-for="opt in pauseScreenOptions"
-                  :key="opt.id"
-                  class="flex items-start gap-3 p-3 rounded-lg border transition cursor-pointer select-none"
-                  @pointerenter="hoverPauseScreen = opt.id; previewView = 'pause'"
-                  @pointerleave="hoverPauseScreen = null"
-                  :class="customizationStore.pauseScreen === opt.id ? 'border-primary bg-primary/5' : 'border-border bg-muted/20 hover:bg-muted/40'"
-                >
-                  <input
-                    type="radio"
-                    name="pause-screen"
-                    :value="opt.id"
-                    :checked="customizationStore.pauseScreen === opt.id"
-                    :disabled="savingPauseScreen"
-                    @change="setPauseScreen(opt.id)"
-                    class="mt-0.5 border-border text-primary focus:ring-ring"
-                  />
-                  <div class="flex flex-col">
-                    <span class="text-xs font-semibold text-foreground">{{ opt.label }}</span>
-                    <span class="text-[12px] text-muted-foreground">{{ opt.desc }}</span>
-                  </div>
-                </label>
-              </div>
             </div>
 
             <!-- Opening Sequence Card -->
@@ -1994,6 +1806,8 @@ import { useAuthStore } from '../stores/auth';
 import { useDialogStore } from '../stores/dialog';
 import { useCustomizationStore } from '../stores/customization';
 import CustomizationPreview from '../components/CustomizationPreview.vue';
+import OptionTiles from '../components/OptionTiles.vue';
+import { ACCENT_OPTIONS, LAYOUT_OPTIONS, PAGE_WIDTH_OPTIONS, PAUSE_SCREEN_OPTIONS } from '../constants/appearance';
 import Sidebar from '../components/Sidebar.vue';
 import AdminMetadataManager from '../components/AdminMetadataManager.vue';
 const LibraryHealth = defineAsyncComponent(() => import('../components/LibraryHealth.vue'));
@@ -2040,8 +1854,6 @@ import {
   X,
   Baby,
   Upload,
-  StretchHorizontal,
-  RectangleHorizontal,
 } from '@lucide/vue';
 import { getMediaToken } from '../utils/mediaToken';
 
@@ -2148,6 +1960,41 @@ const customizationForm = ref({
   ratings: { showPersonal: true, showCommunity: true, showExternal: true }
 });
 
+// Settings people can also choose for themselves: the server's default for each, and whether
+// users may override it (userCustomization[key]).
+const personalizationOn = computed(() => customizationForm.value.userCustomization?.enabled !== false);
+const personalCards = [
+  {
+    key: 'accentColor', field: 'accentTheme', title: 'Accent Color', preview: 'shelf',
+    desc: 'The highlight colour on buttons, badges and the current tab.',
+    options: ACCENT_OPTIONS, swatches: true, grid: 'grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-4 2xl:grid-cols-8 gap-2.5'
+  },
+  {
+    key: 'layoutMode', field: 'layoutMode', title: 'Navigation Layout', preview: 'shelf',
+    desc: 'Where the main navigation sits.', options: LAYOUT_OPTIONS
+  },
+  {
+    key: 'pageWidth', field: 'pageWidth', title: 'Page Width', preview: 'shelf',
+    desc: 'How wide pages get on a big screen.', options: PAGE_WIDTH_OPTIONS
+  },
+  {
+    key: 'pauseScreen', field: 'pauseScreen', title: 'Pause Screen', preview: 'pause',
+    desc: 'What appears after a couple of seconds paused; it fades as soon as someone moves the mouse or touches the screen. Cast, crew and facts come from TMDB when a key is set.',
+    options: PAUSE_SCREEN_OPTIONS
+  }
+];
+function serverDefault(field) {
+  return field === 'pauseScreen' ? customizationStore.pauseScreen : customizationForm.value[field];
+}
+function setServerDefault(field, value) {
+  return {
+    accentTheme: selectAccent,
+    layoutMode: selectLayoutMode,
+    pageWidth: selectPageWidth,
+    pauseScreen: setPauseScreen
+  }[field](value);
+}
+
 const savingUserCustomization = ref(false);
 async function toggleUserCustomization(key, value) {
   const current = customizationForm.value.userCustomization || { enabled: true, accentColor: true, layoutMode: true, pageWidth: true, pauseScreen: true };
@@ -2210,12 +2057,6 @@ async function toggleShowMissingFilms(checkbox) {
   }
 }
 
-const pauseScreenOptions = [
-  { id: 'simple', label: 'Simple', desc: 'Just the player controls — nothing covers the picture.' },
-  { id: 'details', label: 'Details', desc: 'Poster, title, tagline, synopsis, director and cast, and when it will end.' },
-  { id: 'cinematic', label: 'Cinematic', desc: 'The picture dims behind a full-screen title card with cast photos and facts from TMDB — box office, original title, keywords.' },
-  { id: 'bedtime', label: 'Bedtime', desc: 'A dim clock with the time it ends and, for shows, when the rest of the season would. Easy on the eyes in a dark room.' }
-];
 const savingPauseScreen = ref(false);
 async function setPauseScreen(id) {
   savingPauseScreen.value = true;
@@ -2301,17 +2142,6 @@ async function togglePartyMode(checkbox) {
   }
 }
 
-const accentPresets = [
-  { id: 'zinc', label: 'Zinc', bg: 'bg-zinc-500' },
-  { id: 'slate', label: 'Slate', bg: 'bg-slate-500' },
-  { id: 'emerald', label: 'Emerald', bg: 'bg-emerald-500' },
-  { id: 'violet', label: 'Violet', bg: 'bg-violet-500' },
-  { id: 'rose', label: 'Rose', bg: 'bg-rose-500' },
-  { id: 'amber', label: 'Amber', bg: 'bg-amber-500' },
-  { id: 'sky', label: 'Sky', bg: 'bg-sky-500' },
-  { id: 'indigo', label: 'Indigo', bg: 'bg-indigo-500' }
-];
-
 const updateInfo = ref(null);
 const checkingUpdates = ref(false);
 async function checkUpdates(force = true) {
@@ -2368,7 +2198,6 @@ async function loadCustomization() {
 
 async function selectAccent(accentId) {
   customizationForm.value.accentTheme = accentId;
-  document.documentElement.setAttribute('data-accent', accentId);
   try {
     await customizationStore.updateCustomization({ accentTheme: accentId });
   } catch (e) {

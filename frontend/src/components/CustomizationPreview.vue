@@ -1,5 +1,5 @@
 <template>
-  <!-- Admin → Server Config: a miniature of what users will see, redrawn as each setting
+  <!-- Admin → Server Config and Settings → Appearance: a miniature of what users will see, redrawn as each setting
        changes. Screens are laid out at a fixed "virtual" size and scaled to fit, so they look
        like the real thing rather than a squashed version of it. Posters come from this
        server's own movies when it has any. -->
@@ -12,9 +12,9 @@
         </span>
         <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Live preview</h3>
       </div>
-      <div class="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-lg border border-border text-[12px]">
+      <div v-if="shownViews.length > 1" class="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-lg border border-border text-[12px]">
         <button
-          v-for="v in views"
+          v-for="v in shownViews"
           :key="v.id"
           type="button"
           @click="$emit('update:view', v.id)"
@@ -26,7 +26,8 @@
       </div>
     </div>
 
-    <div ref="frameEl" class="relative w-full overflow-hidden rounded-lg border border-border bg-background" :style="{ height: `${frameHeight}px` }">
+    <!-- Its own accent, so it shows the colour being picked rather than the page's. -->
+    <div ref="frameEl" :data-accent="settings.accentTheme || 'zinc'" :class="{ dark: themeStore.isDark }" class="relative w-full overflow-hidden rounded-lg border border-border bg-background" :style="{ height: `${frameHeight}px` }">
       <div class="absolute top-0 left-0 origin-top-left" :style="{ width: `${VW}px`, height: `${virtualHeight}px`, transform: `scale(${scale})` }">
         <!-- Shelf: the navigation layout, branding and accent colour -->
         <div v-if="view === 'shelf'" class="w-full h-full bg-background text-foreground flex" :class="settings.layoutMode === 'sidebar' ? 'flex-row' : 'flex-col'">
@@ -194,11 +195,14 @@ import { Search, Play, Film, Tv, Headphones, Book, Users, Star, Plus, LayoutGrid
 import api from '../api/client';
 import { coverUrl } from '../utils/cover';
 import PauseScreen from './PauseScreen.vue';
+import { useThemeStore } from '../stores/theme';
 
 const props = defineProps({
   // { accentTheme, layoutMode, serverName, loginMessage, ratings, showMissingFilms, partyModeEnabled, pauseScreen }
   settings: { type: Object, required: true },
-  view: { type: String, default: 'shelf' }
+  view: { type: String, default: 'shelf' },
+  // Which screens to offer (ids from `views`); all of them by default.
+  only: { type: Array, default: null }
 });
 defineEmits(['update:view']);
 
@@ -208,6 +212,9 @@ const views = [
   { id: 'login', label: 'Sign-in' },
   { id: 'pause', label: 'Pause' }
 ];
+
+const themeStore = useThemeStore();
+const shownViews = computed(() => (props.only ? views.filter((v) => props.only.includes(v.id)) : views));
 
 // The virtual screen: app views at a laptop's 16:10, the player at 16:9.
 const VW = 1280;
