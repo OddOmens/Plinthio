@@ -25,6 +25,20 @@
           <component :is="tab.icon" class="w-3.5 h-3.5 lg:w-4 lg:h-4" />
           {{ tab.label }}
         </button>
+        <!-- Lists: a place of its own, not a media type, so it sits after a divider -->
+        <span class="w-px h-5 bg-border mx-1 flex-shrink-0" aria-hidden="true" />
+        <router-link
+          to="/lists"
+          :class="[
+            'h-8 lg:h-8.5 px-2.5 lg:px-3 rounded-lg text-xs lg:text-sm font-medium transition-all flex items-center gap-1.5 lg:gap-2 flex-shrink-0 whitespace-nowrap',
+            onLists
+              ? 'bg-background text-foreground shadow-sm font-semibold'
+              : 'text-muted-foreground hover:text-foreground'
+          ]"
+        >
+          <ListOrdered class="w-3.5 h-3.5 lg:w-4 lg:h-4" />
+          Lists
+        </router-link>
       </nav>
 
       <!-- Right Section: Search, User Menu -->
@@ -92,6 +106,19 @@
         <component :is="tab.icon" class="w-3.5 h-3.5" />
         <span>{{ tab.label }}</span>
       </button>
+      <span class="w-px h-5 bg-border mx-0.5 flex-shrink-0" aria-hidden="true" />
+      <router-link
+        to="/lists"
+        :class="[
+          'h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-1.5 sm:gap-2 flex-shrink-0 active:scale-95',
+          onLists
+            ? 'bg-foreground text-background font-semibold shadow-sm'
+            : 'bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/50'
+        ]"
+      >
+        <ListOrdered class="w-3.5 h-3.5" />
+        <span>Lists</span>
+      </router-link>
     </div>
   </header>
 </template>
@@ -99,6 +126,7 @@
 <script setup>
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { ALL_MEDIA_TYPES } from '../constants/media';
 import { useCustomizationStore } from '../stores/customization';
@@ -113,7 +141,8 @@ import {
   X,
   Tv,
   Film,
-  Sparkles
+  Sparkles,
+  ListOrdered
 } from '@lucide/vue';
 
 defineProps({
@@ -125,6 +154,8 @@ defineEmits(['filter-type', 'update:searchQuery', 'open-preferences']);
 
 const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
+const route = useRoute();
+const onLists = computed(() => route.path.startsWith('/lists'));
 
 const allTabs = [
   { label: 'All', value: 'all', icon: Layers },

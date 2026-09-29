@@ -9,7 +9,7 @@ Everything the web app hides from you — content limits, Kids Mode, hidden titl
 files — is hidden in these apps too.
 
 The apps need to reach the server. At home that's its LAN address. Away from home, see
-[Setup → Remote access](setup.md#remote-access).
+[Using Plinthio away from home](remote-access.md).
 
 ## Mihon (Android)
 

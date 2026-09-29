@@ -87,19 +87,54 @@
         id="health-missing"
         title="Missing files"
         :count="report.summary.missingFiles"
-        hint="Gone from disk. They're kept (hidden from everyone) so a drive that's briefly unavailable doesn't cost anyone their progress, and they come back on their own if the files return. Remove them for good once you're sure."
+        hint="Gone from disk. Deleted them on purpose to free space? Keep them as history: they stay on their title page, greyed, with everyone's progress. Otherwise they're kept hidden for now (a drive can be briefly unavailable) and come back on their own if the files return; remove them for good once you're sure."
       >
         <template #action>
-          <button
-            type="button"
-            @click="removeMissing"
-            :disabled="removingMissing"
-            class="h-8 px-3 rounded-lg border border-destructive/40 text-destructive text-xs font-medium hover:bg-destructive/10 transition disabled:opacity-50"
-          >
-            {{ removingMissing ? 'Removing…' : 'Remove from catalog' }}
-          </button>
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              @click="offloadGroups(report.missingGroups)"
+              :disabled="busy"
+              class="h-8 px-3 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-medium transition disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Archive class="w-3.5 h-3.5" /> Keep all as history
+            </button>
+            <button
+              type="button"
+              @click="removeMissing"
+              :disabled="busy"
+              class="h-8 px-3 rounded-lg border border-destructive/40 text-destructive text-xs font-medium hover:bg-destructive/10 transition disabled:opacity-50"
+            >
+              {{ removingMissing ? 'Removing…' : 'Remove all for good' }}
+            </button>
+          </div>
         </template>
-        <ItemRow v-for="item in report.missingFiles" :key="item.id" :item="item" show-path />
+        <GroupRow v-for="group in report.missingGroups" :key="group.key" :group="group">
+          <button type="button" @click="offloadGroups([group])" :disabled="busy" class="h-7 px-2.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 text-[12px] font-medium transition disabled:opacity-50 flex items-center gap-1">
+            <Archive class="w-3.5 h-3.5" /> Keep as history
+          </button>
+          <button type="button" @click="removeGroup(group)" :disabled="busy" class="h-7 px-2.5 rounded-lg text-destructive hover:bg-destructive/10 text-[12px] font-medium transition disabled:opacity-50">
+            Remove for good
+          </button>
+        </GroupRow>
+      </HealthSection>
+
+      <!-- Offloaded -->
+      <HealthSection
+        id="health-offloaded"
+        title="Offloaded (kept as history)"
+        :count="report.summary.offloaded || 0"
+        tone="info"
+        hint="Removed to free space and kept as history: hidden from shelves and search, shown greyed on their title page with everyone's progress. If the files come back, they're restored by themselves."
+      >
+        <GroupRow v-for="group in report.offloadedGroups" :key="group.key" :group="group" offloaded>
+          <button type="button" @click="unoffloadGroup(group)" :disabled="busy" class="h-7 px-2.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 text-[12px] font-medium transition disabled:opacity-50 flex items-center gap-1">
+            <Undo2 class="w-3.5 h-3.5" /> Undo
+          </button>
+          <button v-if="!group.awaitingDeletion" type="button" @click="removeGroup(group)" :disabled="busy" class="h-7 px-2.5 rounded-lg text-destructive hover:bg-destructive/10 text-[12px] font-medium transition disabled:opacity-50">
+            Remove for good
+          </button>
+        </GroupRow>
       </HealthSection>
 
       <!-- Duplicates -->
@@ -173,7 +208,7 @@
 import { ref, computed, onMounted, h, defineComponent } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
-import { HeartPulse, RefreshCw, CheckCircle2, AlertTriangle, ChevronDown } from '@lucide/vue';
+import { HeartPulse, RefreshCw, CheckCircle2, AlertTriangle, ChevronDown, Archive, Undo2 } from '@lucide/vue';
 
 defineEmits(['open-metadata']);
 
@@ -219,11 +254,71 @@ async function load() {
 }
 
 const removingMissing = ref(false);
+const working = ref(false);
+const busy = computed(() => working.value || removingMissing.value);
+
+function groupLabel(group) {
+  return group.season != null ? `${group.name}, season ${group.season}` : group.name;
+}
+
+async function offloadGroups(groups) {
+  const ids = groups.flatMap((g) => g.ids);
+  if (!ids.length) return;
+  const label = groups.length === 1 ? groupLabel(groups[0]) : `${groups.length} titles`;
+  const ok = await dialog.confirm({
+    title: 'Keep as history?',
+    message: `${label} will stay on ${groups.length === 1 ? 'its' : 'their'} title page, greyed, with everyone's progress, but can't be played. If the files come back, ${groups.length === 1 ? "it's" : "they're"} restored by ${groups.length === 1 ? 'itself' : 'themselves'}.`,
+    confirmText: 'Keep as history'
+  });
+  if (!ok) return;
+  working.value = true;
+  try {
+    await api.post('/admin/health/offload', { itemIds: ids });
+    await load();
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not keep those as history');
+  } finally {
+    working.value = false;
+  }
+}
+
+async function unoffloadGroup(group) {
+  working.value = true;
+  try {
+    await api.post('/admin/health/unoffload', { itemIds: group.ids });
+    await load();
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not undo that');
+  } finally {
+    working.value = false;
+  }
+}
+
+async function removeGroup(group) {
+  const ok = await dialog.confirm({
+    title: 'Remove for good?',
+    message: `Remove ${groupLabel(group)} from the catalog? Progress and ratings are kept in the database and re-attach if the same files are ever scanned again, but nothing shows it until then.`,
+    confirmText: 'Remove',
+    danger: true
+  });
+  if (!ok) return;
+  working.value = true;
+  try {
+    const res = await api.post('/admin/health/remove-missing', { itemIds: group.ids });
+    if (res.data.skipped) dialog.alert(`${res.data.skipped} kept: their files are back.`);
+    await load();
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not remove that');
+  } finally {
+    working.value = false;
+  }
+}
+
 async function removeMissing() {
   const count = report.value?.summary?.missingFiles || 0;
   const ok = await dialog.confirm({
     title: 'Remove missing titles?',
-    message: `Remove ${count} missing ${count === 1 ? 'title' : 'titles'} from the catalog for good? Anything whose file has come back is kept. Reading progress and ratings are kept too, and re-attach if the same files are ever scanned again.`,
+    message: `Remove ${count} missing ${count === 1 ? 'title' : 'titles'} from the catalog for good? Anything whose file has come back is kept, and so is anything kept as history. Reading progress and ratings are kept too, and re-attach if the same files are ever scanned again.`,
     confirmText: 'Remove',
     danger: true
   });
@@ -306,6 +401,37 @@ const ItemRow = defineComponent({
       ]),
       props.note ? h('span', { class: 'text-[11px] text-muted-foreground flex-shrink-0' }, props.note) : null
     ]);
+  }
+});
+
+// One film, book, series or season in the missing or offloaded list, with its actions.
+function formatSize(bytes) {
+  if (!bytes) return '';
+  const gb = bytes / 1024 ** 3;
+  return gb >= 1 ? `${gb.toFixed(1)} GB` : `${Math.max(1, Math.round(bytes / 1024 ** 2))} MB`;
+}
+const GroupRow = defineComponent({
+  props: { group: Object, offloaded: Boolean },
+  setup(props, { slots }) {
+    return () => {
+      const g = props.group;
+      const unit = ['show', 'anime'].includes(g.media_type) ? 'episode' : 'file';
+      const facts = [
+        `${g.count} ${unit}${g.count === 1 ? '' : 's'}`,
+        props.offloaded ? null : formatSize(g.size),
+        g.library_name
+      ].filter(Boolean).join(' · ');
+      return h('div', { class: 'px-4 py-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5' }, [
+        h('div', { class: 'min-w-0 flex-1 basis-[12rem]' }, [
+          h('p', { class: 'text-xs font-medium text-foreground truncate' }, groupLabel(g)),
+          h('p', { class: 'text-[11px] text-muted-foreground' }, facts),
+          props.offloaded && g.awaitingDeletion
+            ? h('p', { class: 'text-[11px] text-amber-600 dark:text-amber-400' }, `${g.awaitingDeletion} still on disk: delete ${g.awaitingDeletion === 1 ? 'it' : 'them'} to free the space.`)
+            : null
+        ]),
+        h('div', { class: 'flex items-center gap-1.5 flex-shrink-0' }, slots.default ? slots.default() : [])
+      ]);
+    };
   }
 });
 

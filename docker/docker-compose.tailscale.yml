@@ -1,0 +1,64 @@
+# Optional add-on: a trusted HTTPS address through Tailscale, at home and away.
+#
+# Gives Plinthio an address like https://plinthio.tail1234.ts.net that every device signed in
+# to your tailnet trusts: no certificates to install, no router ports to open. The installed
+# app's offline features work, and so do reading apps.
+#
+# 1. In the Tailscale admin console (login.tailscale.com/admin): DNS → turn on MagicDNS and
+#    HTTPS Certificates. Settings → Keys → Generate auth key.
+# 2. Next to docker-compose.yml, put this file, and add to your .env:
+#      TS_AUTHKEY=tskey-auth-…
+#      COMPOSE_FILE=docker-compose.yml:docker-compose.tailscale.yml
+#    (No key? Leave TS_AUTHKEY out and sign in with the link `docker logs plinthio-tailscale`
+#    prints.) Using the public-address add-on too? List all three files in COMPOSE_FILE.
+# 3. docker compose up -d
+# 4. Install Tailscale on each phone or computer, sign in, and open
+#    https://plinthio.<your-tailnet>.ts.net  (the admin console lists the exact name).
+#
+# Friends without Tailscale: Funnel. Add TS_FUNNEL=true to .env and the same address opens
+# in anyone's browser, with no domain and no router changes. Turn on outside access in
+# Admin → Network first (and consider requiring two-factor away from home), and read
+# docs/remote-access.md: Funnel goes through Tailscale's servers, which limit bandwidth.
+#
+# Tailscale runs in Plinthio's network, so http://<server>:8088 on your home network keeps
+# working, and Tailscale reaches Plinthio at 127.0.0.1 and passes each device's real address
+# along. That's why TRUST_PROXY is loopback: only a proxy running right next to Plinthio is
+# believed, and nothing on your network can fake its address. Tailscale devices count as
+# home unless you change that in Admin → Network; Funnel visitors come from the internet
+# and count as outside.
+services:
+  tailscale:
+    image: tailscale/tailscale:stable
+    container_name: plinthio-tailscale
+    restart: unless-stopped
+    network_mode: service:plinthio
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY:-}
+      - TS_HOSTNAME=${TS_HOSTNAME:-plinthio}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/serve.json
+    configs:
+      - source: tailscale-serve
+        target: /serve.json
+    volumes:
+      - ./tailscale:/var/lib/tailscale
+
+  plinthio:
+    environment:
+      - TRUST_PROXY=loopback
+
+configs:
+  # HTTPS on the tailnet name, handed to Plinthio. Funnel (the same address, open to the
+  # internet) only with TS_FUNNEL=true; it must be exactly true or false.
+  # $$ keeps Compose from filling in ${TS_CERT_DOMAIN}; Tailscale fills it in itself.
+  tailscale-serve:
+    content: |
+      {
+        "TCP": { "443": { "HTTPS": true } },
+        "Web": {
+          "$${TS_CERT_DOMAIN}:443": {
+            "Handlers": { "/": { "Proxy": "http://127.0.0.1:8080" } }
+          }
+        },
+        "AllowFunnel": { "$${TS_CERT_DOMAIN}:443": ${TS_FUNNEL:-false} }
+      }

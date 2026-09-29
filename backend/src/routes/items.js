@@ -292,7 +292,7 @@ router.get('/series/:name', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${accessSql(req.user, 'i')}
+      )${accessSql(req.user, 'i', { includeOffloaded: true })}
       ORDER BY
         CASE WHEN i.volume IS NULL THEN 1 ELSE 0 END,
         i.volume ASC,
@@ -339,9 +339,13 @@ router.get('/series/:name', async (req, res) => {
     // watched last: "Start Watching" begins at S1E1, not a behind-the-scenes special.
     const isSpecial = (i) => ['show', 'anime'].includes(i.media_type) && i.volume != null && i.volume < 1;
     const watchOrder = [...items.filter((i) => !isSpecial(i)), ...items.filter(isSpecial)];
-    const inProgressVol = watchOrder.find(i => !i.is_finished && !isSkipped(i) && i.progress_percent > 0);
-    const firstUnreadVol = watchOrder.find(i => !i.is_finished && !isSkipped(i));
-    const nextVolume = inProgressVol || firstUnreadVol || watchOrder[0];
+    // Offloaded ones are history, not something to play, so "next up" only looks at what's
+    // on the server — and a title that's all offloaded has nothing to play at all.
+    const playable = watchOrder.filter((i) => !i.offloaded_at);
+    const inProgressVol = playable.find(i => !i.is_finished && !isSkipped(i) && i.progress_percent > 0);
+    const firstUnreadVol = playable.find(i => !i.is_finished && !isSkipped(i));
+    const nextVolume = inProgressVol || firstUnreadVol || playable[0] || null;
+    const offloadedCount = items.filter((i) => i.offloaded_at).length;
 
     res.json({
       series: {
@@ -361,6 +365,7 @@ router.get('/series/:name', async (req, res) => {
         inProgressCount,
         unreadCount,
         overallProgress,
+        offloadedCount,
         libraryId: items[0].library_id || null,
         mediaType: items[0].media_type || null,
         libraryName: items[0].library_name || null,
@@ -392,7 +397,7 @@ router.post('/series/:name/mark-read', async (req, res) => {
       AND id NOT IN (
         SELECT item_id FROM item_visibility
         WHERE user_id = ? OR user_id IS NULL
-      )${accessSql(req.user, 'items')}
+      )${accessSql(req.user, 'items', { includeOffloaded: true })}
     `, [seriesName, ...scope.params, userId]);
 
     for (const item of items) {
@@ -433,7 +438,7 @@ router.post('/series/:name/mark-unread', async (req, res) => {
       AND id NOT IN (
         SELECT item_id FROM item_visibility
         WHERE user_id = ? OR user_id IS NULL
-      )${accessSql(req.user, 'items')}
+      )${accessSql(req.user, 'items', { includeOffloaded: true })}
     `, [seriesName, ...scope.params, userId]);
 
     for (const item of items) {
@@ -673,7 +678,7 @@ router.get('/:id', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${accessSql(req.user, 'i')}
+      )${accessSql(req.user, 'i', { includeOffloaded: true })}
     `, [userId, userId, req.params.id, userId]);
 
     if (!item) {
