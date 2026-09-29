@@ -10,7 +10,7 @@
 #      TS_AUTHKEY=tskey-auth-…
 #      COMPOSE_FILE=docker-compose.yml:docker-compose.tailscale.yml
 #    (No key? Leave TS_AUTHKEY out and sign in with the link `docker logs plinthio-tailscale`
-#    prints.) Using the public-address add-on too? List all three files in COMPOSE_FILE.
+#    prints.)
 # 3. docker compose up -d
 # 4. Install Tailscale on each phone or computer, sign in, and open
 #    https://plinthio.<your-tailnet>.ts.net  (the admin console lists the exact name).
@@ -18,8 +18,7 @@
 # Tailscale runs in Plinthio's network, so http://<server>:8088 on your home network keeps
 # working, and Tailscale reaches Plinthio at 127.0.0.1 and passes each device's real address
 # along. That's why TRUST_PROXY is loopback: only a proxy running right next to Plinthio is
-# believed, and nothing on your network can fake its address. Tailscale devices count as
-# home unless you change that in Admin → Network.
+# believed, and nothing on your network can fake its address.
 services:
   tailscale:
     image: tailscale/tailscale:stable
