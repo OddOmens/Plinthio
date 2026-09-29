@@ -9,6 +9,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-29
+
 ### Added
 - **Built-in HTTPS.** The Docker image now also serves HTTPS on port 8443, with a certificate from its own local certificate authority. Install that CA once per device (Docs → PWA Mobile App Setup has a download button and steps for iPhone, Android and desktop) and the "not secure" warning goes away, and the installed app gets offline reading, which browsers only allow over HTTPS. The certificate picks up the address your devices use by itself, and the setup wizard points new installs to it. The CA can only sign for private addresses and local names. Plain HTTP on 8088 keeps working. Bring your own certificate by putting `cert.pem` and `key.pem` in `/config/ssl`.
 - **Sharper, lighter manga pages on phones.** The reader asks for pages at the size your screen shows them, instead of full-resolution scans of several MB each: much less data and memory, and faster page turns. Zooming in swaps to the full-size original. Downloads keep full size.
@@ -16,6 +18,9 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Faster page turns.** The reader loads the next three pages ahead (and the one behind), plus the next volume's first page near the end.
 - **Report a problem.** Admins get a link (in the account menu and on Docs → Troubleshooting) that opens a GitHub bug report with the version and browser filled in.
 - **Title page actions on phones** sit in a labelled "⋯" menu beside the main button, instead of a row of icons you had to guess at.
+
+### Changed
+- **Updated libraries**, including the one that sets the server's security headers. Behind a reverse proxy that serves HTTPS, browsers are now told to stick to HTTPS for a year instead of six months; with Plinthio's own HTTPS (the Docker default) that header isn't sent at all, so the plain-HTTP address keeps working.
 
 ### Fixed
 - **The setup wizard stopped at step 5.** Continue did nothing on the Household step, so a new server couldn't finish setup from the wizard.

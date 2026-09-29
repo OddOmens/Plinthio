@@ -1,6 +1,6 @@
 {
   "name": "plinthio",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "All-in-one self-hosted media server & PWA for Audiobooks, Manga & Comics, Books, Movies, TV Shows, and Anime",
   "private": true,
   "scripts": {
