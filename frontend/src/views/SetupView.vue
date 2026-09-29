@@ -435,17 +435,22 @@
             </div>
           </div>
 
-          <!-- Built-in HTTPS: where it is, and that phones need its certificate once. -->
-          <div v-if="tls?.enabled" class="p-4 rounded-xl border border-border bg-muted/20 space-y-2 text-xs">
+          <!-- HTTPS: Tailscale is the easy way; the built-in certificate is the alternative. -->
+          <div class="p-4 rounded-xl border border-border bg-muted/20 space-y-2 text-xs">
             <div class="flex items-center gap-2 font-semibold text-foreground">
               <Lock class="w-4 h-4 text-primary" />
               <span>Secure connection</span>
             </div>
             <p class="text-muted-foreground leading-relaxed">
-              Plinthio is also at <code class="text-foreground bg-muted px-1 rounded break-all">{{ httpsUrl }}</code>.
-              Phones and other computers show a warning there until they trust this server's certificate, a one-time step per
-              device. After setup, open <strong class="text-foreground">Docs → PWA Mobile App Setup</strong> on each phone for a
-              download button and instructions. It's what makes the installed app and offline downloads work.
+              The installed app and offline downloads need HTTPS. The easiest way is
+              <strong class="text-foreground">Tailscale</strong>: a trusted address like
+              <code class="text-foreground bg-muted px-1 rounded break-all">https://plinthio.your-tailnet.ts.net</code>
+              that works at home and away, with nothing to install on phones but the Tailscale app. Setup is under
+              <strong class="text-foreground">Docs → Remote Access &amp; Tailscale</strong>.
+            </p>
+            <p v-if="tls?.enabled" class="text-muted-foreground leading-relaxed">
+              Without Tailscale, Plinthio is also at <code class="text-foreground bg-muted px-1 rounded break-all">{{ httpsUrl }}</code>
+              with its own certificate, which each device has to install once (<strong class="text-foreground">Docs → PWA Mobile App Setup</strong>).
             </p>
           </div>
 
