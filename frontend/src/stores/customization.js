@@ -8,6 +8,16 @@ export const useCustomizationStore = defineStore('customization', {
     accentTheme: 'zinc',
     loginMessage: '',
     layoutMode: 'topnav',
+    // Server default page width: full | contained
+    pageWidth: 'full',
+    // Granular permissions for user personalizations:
+    userCustomization: {
+      enabled: true,
+      accentColor: true,
+      layoutMode: true,
+      pageWidth: true,
+      pauseScreen: true
+    },
     // Admin display switches for the rating UI — mirrored from the server, all on by default.
     ratings: { showPersonal: true, showCommunity: true, showExternal: true },
     // Movie collections also list the films the library doesn't have (greyed, requestable).
@@ -29,7 +39,35 @@ export const useCustomizationStore = defineStore('customization', {
   }),
 
   getters: {
-    ratingsEnabled: (state) => state.ratings.showPersonal || state.ratings.showCommunity || state.ratings.showExternal
+    ratingsEnabled: (state) => state.ratings.showPersonal || state.ratings.showCommunity || state.ratings.showExternal,
+    isCustomizationAllowed: (state) => (feature) => {
+      if (!state.userCustomization || state.userCustomization.enabled === false) return false;
+      return state.userCustomization[feature] !== false;
+    },
+    effectiveAccentTheme: (state) => (user) => {
+      if (state.userCustomization?.enabled !== false && state.userCustomization?.accentColor !== false && user?.preferences?.accentTheme) {
+        return user.preferences.accentTheme;
+      }
+      return state.accentTheme || 'zinc';
+    },
+    effectiveLayoutMode: (state) => (user) => {
+      if (state.userCustomization?.enabled !== false && state.userCustomization?.layoutMode !== false && user?.preferences?.layoutMode) {
+        return user.preferences.layoutMode;
+      }
+      return state.layoutMode || 'topnav';
+    },
+    effectivePageWidth: (state) => (user) => {
+      if (state.userCustomization?.enabled !== false && state.userCustomization?.pageWidth !== false && user?.preferences?.pageWidth) {
+        return user.preferences.pageWidth;
+      }
+      return state.pageWidth || 'full';
+    },
+    effectivePauseScreen: (state) => (user) => {
+      if (state.userCustomization?.enabled !== false && state.userCustomization?.pauseScreen !== false && user?.preferences?.pauseScreen) {
+        return user.preferences.pauseScreen;
+      }
+      return state.pauseScreen || 'details';
+    }
   },
 
   actions: {
@@ -42,6 +80,10 @@ export const useCustomizationStore = defineStore('customization', {
           this.accentTheme = res.data.accentTheme || 'zinc';
           this.loginMessage = res.data.loginMessage || '';
           this.layoutMode = res.data.layoutMode || 'topnav';
+          if (res.data.pageWidth) this.pageWidth = res.data.pageWidth;
+          if (res.data.userCustomization) {
+            this.userCustomization = { ...this.userCustomization, ...res.data.userCustomization };
+          }
           if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
@@ -65,6 +107,10 @@ export const useCustomizationStore = defineStore('customization', {
           this.accentTheme = res.data.accentTheme || this.accentTheme;
           this.loginMessage = res.data.loginMessage !== undefined ? res.data.loginMessage : this.loginMessage;
           this.layoutMode = res.data.layoutMode || this.layoutMode;
+          if (res.data.pageWidth) this.pageWidth = res.data.pageWidth;
+          if (res.data.userCustomization) {
+            this.userCustomization = { ...this.userCustomization, ...res.data.userCustomization };
+          }
           if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;

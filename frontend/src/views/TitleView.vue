@@ -1258,7 +1258,7 @@ const dialog = useDialogStore();
 const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
 
-const isSidebarLayout = computed(() => customizationStore.layoutMode === 'sidebar');
+const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(authStore.user) === 'sidebar');
 
 const token = getMediaToken() || '';
 

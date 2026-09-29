@@ -238,27 +238,149 @@
           </div>
         </div>
 
-        <!-- Page Width Card (applies and saves on its own, so the page can be seen changing) -->
+        <!-- Accent Color Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
-          <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Page Width</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">How wide pages get on a big screen. Full width fits more posters in a row.</p>
+          <div class="border-b border-border pb-3 flex items-start justify-between gap-2">
+            <div>
+              <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Accent Color</h3>
+              <p class="text-xs text-muted-foreground mt-0.5">Choose your personal highlight color across buttons, badges, and accents.</p>
+            </div>
+            <span v-if="!canCustomizeAccent" class="text-[11px] text-muted-foreground font-medium flex-shrink-0">Set by your admin</span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl" role="radiogroup" aria-label="Page width">
+          <div class="flex flex-wrap items-center gap-2.5">
             <button
-              v-for="option in PAGE_WIDTHS"
-              :key="option.id"
+              type="button"
+              :disabled="!canCustomizeAccent"
+              @click="setAccentTheme(null)"
+              :class="[
+                'px-3 py-2 rounded-lg border text-xs font-medium transition flex items-center gap-2',
+                userAccent === null ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-muted/20 hover:bg-muted/40 text-foreground',
+                !canCustomizeAccent ? 'opacity-50 cursor-not-allowed' : ''
+              ]"
+            >
+              <span class="w-3.5 h-3.5 rounded-full border border-border bg-muted flex-shrink-0"></span>
+              <span>Server default ({{ customizationStore.accentTheme || 'zinc' }})</span>
+            </button>
+
+            <button
+              v-for="acc in ACCENT_PRESETS"
+              :key="acc.id"
+              type="button"
+              :disabled="!canCustomizeAccent"
+              @click="setAccentTheme(acc.id)"
+              :class="[
+                'px-3 py-2 rounded-lg border text-xs font-medium transition flex items-center gap-2 capitalize',
+                userAccent === acc.id || (!canCustomizeAccent && customizationStore.accentTheme === acc.id)
+                  ? 'border-primary ring-2 ring-primary/20 bg-muted/40 text-foreground'
+                  : 'border-border bg-muted/20 hover:bg-muted/40 text-foreground',
+                !canCustomizeAccent ? 'opacity-50 cursor-not-allowed' : ''
+              ]"
+            >
+              <span :class="acc.bg" class="w-3.5 h-3.5 rounded-full border border-black/10 shadow-sm flex-shrink-0"></span>
+              <span>{{ acc.label }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Layout Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
+          <div class="border-b border-border pb-3 flex items-start justify-between gap-2">
+            <div>
+              <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Navigation Layout</h3>
+              <p class="text-xs text-muted-foreground mt-0.5">Choose how the primary navigation is presented on your screen.</p>
+            </div>
+            <span v-if="!canCustomizeLayout" class="text-[11px] text-muted-foreground font-medium flex-shrink-0">Set by your admin</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl" role="radiogroup" aria-label="Navigation layout">
+            <button
+              v-for="option in layoutOptions"
+              :key="option.id || 'default'"
               type="button"
               role="radio"
-              :aria-checked="pageWidth === option.id"
+              :disabled="!canCustomizeLayout"
+              :aria-checked="userLayout === option.id"
+              @click="setLayoutMode(option.id)"
+              :class="[
+                'flex items-start gap-3 p-3 rounded-lg border text-left transition',
+                userLayout === option.id || (!canCustomizeLayout && (option.id === customizationStore.layoutMode || (option.id === null && !userLayout)))
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border bg-muted/20 hover:bg-muted/40',
+                !canCustomizeLayout ? 'opacity-50 cursor-not-allowed' : ''
+              ]"
+            >
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-foreground">{{ option.label }}</span>
+                <span class="text-[12px] text-muted-foreground">{{ option.desc }}</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Page Width Card (applies and saves on its own, so the page can be seen changing) -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
+          <div class="border-b border-border pb-3 flex items-start justify-between gap-2">
+            <div>
+              <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Page Width</h3>
+              <p class="text-xs text-muted-foreground mt-0.5">How wide pages get on a big screen. Full width fits more posters in a row.</p>
+            </div>
+            <span v-if="!canCustomizeWidth" class="text-[11px] text-muted-foreground font-medium flex-shrink-0">Set by your admin</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl" role="radiogroup" aria-label="Page width">
+            <button
+              v-for="option in pageWidthOptions"
+              :key="option.id || 'default'"
+              type="button"
+              role="radio"
+              :disabled="!canCustomizeWidth"
+              :aria-checked="userPageWidth === option.id"
               @click="setPageWidth(option.id)"
               :class="[
                 'flex items-start gap-3 p-3 rounded-lg border text-left transition',
-                pageWidth === option.id ? 'border-primary bg-primary/5' : 'border-border bg-muted/20 hover:bg-muted/40'
+                userPageWidth === option.id || (!canCustomizeWidth && (option.id === customizationStore.pageWidth || (option.id === null && !userPageWidth)))
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border bg-muted/20 hover:bg-muted/40',
+                !canCustomizeWidth ? 'opacity-50 cursor-not-allowed' : ''
               ]"
             >
               <component :is="option.icon" class="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-foreground">{{ option.label }}</span>
+                <span class="text-[12px] text-muted-foreground">{{ option.desc }}</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Video Pause Screen Card -->
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
+          <div class="border-b border-border pb-3 flex items-start justify-between gap-2">
+            <div>
+              <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Video Pause Screen</h3>
+              <p class="text-xs text-muted-foreground mt-0.5">What appears after a couple of seconds when pausing a movie or episode.</p>
+            </div>
+            <span v-if="!canCustomizePause" class="text-[11px] text-muted-foreground font-medium flex-shrink-0">Set by your admin</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-3xl" role="radiogroup" aria-label="Pause screen">
+            <button
+              v-for="option in pauseScreenOptions"
+              :key="option.id || 'default'"
+              type="button"
+              role="radio"
+              :disabled="!canCustomizePause"
+              :aria-checked="userPauseScreen === option.id"
+              @click="setUserPauseScreen(option.id)"
+              :class="[
+                'flex items-start gap-3 p-3 rounded-lg border text-left transition',
+                userPauseScreen === option.id || (!canCustomizePause && (option.id === customizationStore.pauseScreen || (option.id === null && !userPauseScreen)))
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border bg-muted/20 hover:bg-muted/40',
+                !canCustomizePause ? 'opacity-50 cursor-not-allowed' : ''
+              ]"
+            >
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground">{{ option.label }}</span>
                 <span class="text-[12px] text-muted-foreground">{{ option.desc }}</span>
@@ -777,9 +899,8 @@ import {
 const route = useRoute();
 const router = useRouter();
 const customizationStore = useCustomizationStore();
-// Global nav layout (topnav vs sidebar) is a server-wide admin setting; these pages keep
-// their own header either way, so the sidebar just sits alongside it.
-const isSidebarLayout = computed(() => customizationStore.layoutMode === 'sidebar');
+// Global nav layout (topnav vs sidebar) respects user preference when allowed, falling back to server default.
+const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(authStore.user) === 'sidebar');
 function goToShelf(type) {
   router.push({ path: '/', query: type && type !== 'all' ? { type } : {} });
 }
@@ -946,14 +1067,66 @@ async function loadData() {
   }
 }
 
-// Page width saves as soon as it's picked; App.vue applies it from the stored preferences.
-const PAGE_WIDTHS = [
+// User Personalizations: permission checks, options, and handlers
+const canCustomizeAccent = computed(() => customizationStore.isCustomizationAllowed('accentColor'));
+const canCustomizeLayout = computed(() => customizationStore.isCustomizationAllowed('layoutMode'));
+const canCustomizeWidth = computed(() => customizationStore.isCustomizationAllowed('pageWidth'));
+const canCustomizePause = computed(() => customizationStore.isCustomizationAllowed('pauseScreen'));
+
+const ACCENT_PRESETS = [
+  { id: 'zinc', label: 'Zinc', bg: 'bg-zinc-500' },
+  { id: 'slate', label: 'Slate', bg: 'bg-slate-600' },
+  { id: 'emerald', label: 'Emerald', bg: 'bg-emerald-500' },
+  { id: 'violet', label: 'Violet', bg: 'bg-violet-500' },
+  { id: 'rose', label: 'Rose', bg: 'bg-rose-500' },
+  { id: 'amber', label: 'Amber', bg: 'bg-amber-500' },
+  { id: 'sky', label: 'Sky', bg: 'bg-sky-500' },
+  { id: 'indigo', label: 'Indigo', bg: 'bg-indigo-500' }
+];
+
+const userAccent = computed(() => authStore.user?.preferences?.accentTheme || null);
+async function setAccentTheme(value) {
+  if (!authStore.user || value === userAccent.value) return;
+  const previous = authStore.user.preferences || {};
+  authStore.user.preferences = { ...previous, accentTheme: value };
+  try {
+    const { data } = await api.patch('/users/preferences', { accentTheme: value });
+    authStore.user.preferences = data.preferences || authStore.user.preferences;
+    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+  } catch (err) {
+    authStore.user.preferences = previous;
+    dialog.alert(err.response?.data?.error || 'Could not save the accent color');
+  }
+}
+
+const layoutOptions = computed(() => [
+  { id: null, label: 'Server default', desc: `Follows server default (${customizationStore.layoutMode === 'sidebar' ? 'Sidebar' : 'Top Navigation'})` },
+  { id: 'topnav', label: 'Top Navigation', desc: 'Classic horizontal header bar' },
+  { id: 'sidebar', label: 'Sidebar', desc: 'Vertical navigation on the left' }
+]);
+const userLayout = computed(() => authStore.user?.preferences?.layoutMode || null);
+async function setLayoutMode(value) {
+  if (!authStore.user || value === userLayout.value) return;
+  const previous = authStore.user.preferences || {};
+  authStore.user.preferences = { ...previous, layoutMode: value };
+  try {
+    const { data } = await api.patch('/users/preferences', { layoutMode: value });
+    authStore.user.preferences = data.preferences || authStore.user.preferences;
+    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+  } catch (err) {
+    authStore.user.preferences = previous;
+    dialog.alert(err.response?.data?.error || 'Could not save navigation layout');
+  }
+}
+
+const pageWidthOptions = computed(() => [
+  { id: null, label: 'Server default', desc: `Follows server default (${customizationStore.pageWidth === 'contained' ? 'Contained' : 'Full width'})`, icon: Sliders },
   { id: 'full', label: 'Full width', desc: 'Use the whole screen', icon: StretchHorizontal },
   { id: 'contained', label: 'Contained', desc: 'Centred, up to 1440px wide', icon: RectangleHorizontal }
-];
-const pageWidth = computed(() => authStore.user?.preferences?.pageWidth === 'contained' ? 'contained' : 'full');
+]);
+const userPageWidth = computed(() => authStore.user?.preferences?.pageWidth || null);
 async function setPageWidth(value) {
-  if (!authStore.user || value === pageWidth.value) return;
+  if (!authStore.user || value === userPageWidth.value) return;
   const previous = authStore.user.preferences || {};
   authStore.user.preferences = { ...previous, pageWidth: value };
   try {
@@ -963,6 +1136,28 @@ async function setPageWidth(value) {
   } catch (err) {
     authStore.user.preferences = previous;
     dialog.alert(err.response?.data?.error || 'Could not save the page width');
+  }
+}
+
+const pauseScreenOptions = computed(() => [
+  { id: null, label: 'Server default', desc: `Follows server default (${customizationStore.pauseScreen || 'details'})` },
+  { id: 'simple', label: 'Simple', desc: 'Just player controls' },
+  { id: 'details', label: 'Details', desc: 'Poster, title, synopsis, and cast' },
+  { id: 'cinematic', label: 'Cinematic', desc: 'Full-screen title card with cast photos and facts' },
+  { id: 'bedtime', label: 'Bedtime', desc: 'A dim clock with end times, easy on the eyes' }
+]);
+const userPauseScreen = computed(() => authStore.user?.preferences?.pauseScreen || null);
+async function setUserPauseScreen(value) {
+  if (!authStore.user || value === userPauseScreen.value) return;
+  const previous = authStore.user.preferences || {};
+  authStore.user.preferences = { ...previous, pauseScreen: value };
+  try {
+    const { data } = await api.patch('/users/preferences', { pauseScreen: value });
+    authStore.user.preferences = data.preferences || authStore.user.preferences;
+    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+  } catch (err) {
+    authStore.user.preferences = previous;
+    dialog.alert(err.response?.data?.error || 'Could not save the pause screen setting');
   }
 }
 

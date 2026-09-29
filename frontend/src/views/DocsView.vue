@@ -1165,12 +1165,13 @@ import {
   Bug
 } from '@lucide/vue';
 import { reportProblemUrl, serverVersion } from '../utils/reportProblem';
+import { useAuthStore } from '../stores/auth';
 
+const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
 const router = useRouter();
-// Global nav layout (topnav vs sidebar) is a server-wide admin setting; these pages keep
-// their own header either way, so the sidebar just sits alongside it.
-const isSidebarLayout = computed(() => customizationStore.layoutMode === 'sidebar');
+// Global nav layout (topnav vs sidebar) respects user preference when allowed, falling back to server default.
+const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(authStore.user) === 'sidebar');
 function goToShelf(type) {
   router.push({ path: '/', query: type && type !== 'all' ? { type } : {} });
 }

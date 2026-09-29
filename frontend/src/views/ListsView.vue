@@ -255,6 +255,7 @@ import { externalTitlePayload, SOURCE_LABELS } from '../utils/externalTitle';
 import { LIST_CATEGORIES, REQUEST_STATUSES } from '../constants/media';
 import { useDialogStore } from '../stores/dialog';
 import { useCustomizationStore } from '../stores/customization';
+import { useAuthStore } from '../stores/auth';
 import ExternalTitleSearch from '../components/ExternalTitleSearch.vue';
 import AvailabilityBadge from '../components/AvailabilityBadge.vue';
 import Navbar from '../components/Navbar.vue';
@@ -265,8 +266,9 @@ const CATEGORY_ICONS = { movies: Film, shows: Tv, anime: Sparkles, read: BookOpe
 const route = useRoute();
 const router = useRouter();
 const dialog = useDialogStore();
+const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
-const isSidebarLayout = computed(() => customizationStore.layoutMode === 'sidebar');
+const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(authStore.user) === 'sidebar');
 
 // The header's category tabs and search belong to the shelf.
 function goToShelf(type) {

@@ -17,13 +17,43 @@ const router = express.Router();
 const PAUSE_SCREENS = ['simple', 'details', 'cinematic', 'bedtime'];
 const DEFAULT_PAUSE_SCREEN = 'details';
 
+const PAGE_WIDTHS = ['full', 'contained'];
+const DEFAULT_PAGE_WIDTH = 'full';
+
+const DEFAULT_USER_CUSTOMIZATION = {
+  enabled: true,
+  accentColor: true,
+  layoutMode: true,
+  pageWidth: true,
+  pauseScreen: true
+};
+
+function parseUserCustomization(raw) {
+  if (!raw) return { ...DEFAULT_USER_CUSTOMIZATION };
+  try {
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return {
+        enabled: parsed.enabled !== false,
+        accentColor: parsed.accentColor !== false,
+        layoutMode: parsed.layoutMode !== false,
+        pageWidth: parsed.pageWidth !== false,
+        pauseScreen: parsed.pauseScreen !== false
+      };
+    }
+  } catch (e) {
+    // Malformed stored JSON — fall back to defaults
+  }
+  return { ...DEFAULT_USER_CUSTOMIZATION };
+}
+
 // GET /api/customization (Public - needed for login screen and dynamic UI theming)
 router.get('/', async (req, res) => {
   try {
     const db = await getDb();
     const rows = await db.all(`
       SELECT key, value FROM settings
-      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen')
+      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen', 'page_width', 'user_customization')
     `);
 
     const config = {
@@ -32,7 +62,9 @@ router.get('/', async (req, res) => {
       accentTheme: 'zinc',
       loginMessage: '',
       layoutMode: 'topnav',
-      pauseScreen: DEFAULT_PAUSE_SCREEN
+      pauseScreen: DEFAULT_PAUSE_SCREEN,
+      pageWidth: DEFAULT_PAGE_WIDTH,
+      userCustomization: { ...DEFAULT_USER_CUSTOMIZATION }
     };
 
     for (const row of rows) {
@@ -42,6 +74,8 @@ router.get('/', async (req, res) => {
       if (row.key === 'login_message') config.loginMessage = row.value;
       if (row.key === 'layout_mode') config.layoutMode = row.value;
       if (row.key === 'pause_screen' && PAUSE_SCREENS.includes(row.value)) config.pauseScreen = row.value;
+      if (row.key === 'page_width' && PAGE_WIDTHS.includes(row.value)) config.pageWidth = row.value;
+      if (row.key === 'user_customization') config.userCustomization = parseUserCustomization(row.value);
     }
 
     // Which parts of the rating UI are shown (personal stars, server average, TMDB score).
@@ -64,7 +98,22 @@ router.get('/', async (req, res) => {
 
 // PATCH /api/customization (Admin only)
 router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
-  const { serverName, customCss, accentTheme, loginMessage, layoutMode, ratings, showMissingFilms, partyModeEnabled, pauseScreen, introEnabled, introMovies, introShows } = req.body;
+  const {
+    serverName,
+    customCss,
+    accentTheme,
+    loginMessage,
+    layoutMode,
+    pageWidth,
+    userCustomization,
+    ratings,
+    showMissingFilms,
+    partyModeEnabled,
+    pauseScreen,
+    introEnabled,
+    introMovies,
+    introShows
+  } = req.body;
 
   try {
     const db = await getDb();
@@ -118,6 +167,17 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       );
     }
 
+    if (pageWidth !== undefined) {
+      if (!PAGE_WIDTHS.includes(pageWidth)) {
+        return res.status(400).json({ error: `pageWidth must be one of ${PAGE_WIDTHS.join(', ')}` });
+      }
+      await db.run(
+        `INSERT INTO settings (key, value, updated_at) VALUES ('page_width', ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+        [pageWidth]
+      );
+    }
+
     if (pauseScreen !== undefined) {
       if (!PAUSE_SCREENS.includes(pauseScreen)) {
         return res.status(400).json({ error: `pauseScreen must be one of ${PAUSE_SCREENS.join(', ')}` });
@@ -126,6 +186,26 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
         `INSERT INTO settings (key, value, updated_at) VALUES ('pause_screen', ?, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
         [pauseScreen]
+      );
+    }
+
+    if (userCustomization !== undefined) {
+      if (!userCustomization || typeof userCustomization !== 'object' || Array.isArray(userCustomization)) {
+        return res.status(400).json({ error: 'userCustomization must be an object' });
+      }
+      const currentRow = await db.get("SELECT value FROM settings WHERE key = 'user_customization'");
+      const current = parseUserCustomization(currentRow?.value);
+      const updated = {
+        enabled: userCustomization.enabled !== undefined ? !!userCustomization.enabled : current.enabled,
+        accentColor: userCustomization.accentColor !== undefined ? !!userCustomization.accentColor : current.accentColor,
+        layoutMode: userCustomization.layoutMode !== undefined ? !!userCustomization.layoutMode : current.layoutMode,
+        pageWidth: userCustomization.pageWidth !== undefined ? !!userCustomization.pageWidth : current.pageWidth,
+        pauseScreen: userCustomization.pauseScreen !== undefined ? !!userCustomization.pauseScreen : current.pauseScreen
+      };
+      await db.run(
+        `INSERT INTO settings (key, value, updated_at) VALUES ('user_customization', ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+        [JSON.stringify(updated)]
       );
     }
 
@@ -148,7 +228,7 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
 
     const rows = await db.all(`
       SELECT key, value FROM settings
-      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen')
+      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen', 'page_width', 'user_customization')
     `);
 
     const result = {
@@ -157,7 +237,9 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       accentTheme: 'zinc',
       loginMessage: '',
       layoutMode: 'topnav',
-      pauseScreen: DEFAULT_PAUSE_SCREEN
+      pauseScreen: DEFAULT_PAUSE_SCREEN,
+      pageWidth: DEFAULT_PAGE_WIDTH,
+      userCustomization: { ...DEFAULT_USER_CUSTOMIZATION }
     };
 
     for (const row of rows) {
@@ -167,6 +249,8 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       if (row.key === 'login_message') result.loginMessage = row.value;
       if (row.key === 'layout_mode') result.layoutMode = row.value;
       if (row.key === 'pause_screen' && PAUSE_SCREENS.includes(row.value)) result.pauseScreen = row.value;
+      if (row.key === 'page_width' && PAGE_WIDTHS.includes(row.value)) result.pageWidth = row.value;
+      if (row.key === 'user_customization') result.userCustomization = parseUserCustomization(row.value);
     }
     result.ratings = await getRatingSettings(db);
     result.showMissingFilms = await getShowMissingFilms(db);

@@ -17,9 +17,11 @@ import UpdateBanner from './components/UpdateBanner.vue';
 // Shown once per account, so it's fetched only when needed.
 const OnboardingFlow = defineAsyncComponent(() => import('./components/OnboardingFlow.vue'));
 import { useAuthStore } from './stores/auth';
+import { useCustomizationStore } from './stores/customization';
 
 const route = useRoute();
 const authStore = useAuthStore();
+const customizationStore = useCustomizationStore();
 const onboardingDone = ref(false);
 
 // Runs once per account, for everyone — the admin straight after the setup wizard, and any
@@ -33,10 +35,15 @@ onMounted(() => {
   authStore.keepMediaTokenFresh();
 });
 
-// Page width is each user's own choice (Settings → Preferences): full width unless they pick
-// contained, which caps pages at 1440px (the .page-width rules in assets/main.css).
+// Accent color and page width respect user preferences when permitted by the admin,
+// falling back to the admin's global server defaults.
 watchEffect(() => {
-  document.documentElement.classList.toggle('page-contained', authStore.user?.preferences?.pageWidth === 'contained');
+  const accent = customizationStore.effectiveAccentTheme(authStore.user);
+  if (accent) {
+    document.documentElement.setAttribute('data-accent', accent);
+  }
+  const width = customizationStore.effectivePageWidth(authStore.user);
+  document.documentElement.classList.toggle('page-contained', width === 'contained');
 });
 
 const showOnboarding = computed(() => {
