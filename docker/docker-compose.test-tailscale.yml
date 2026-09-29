@@ -1,0 +1,45 @@
+# The Tailscale add-on for the test server (docker-compose.test.yml): its own device on the
+# tailnet, separate from the real server's, so a test build can be tried over Tailscale and
+# Funnel too. Same design as docker-compose.tailscale.yml; its settings have TEST in the name
+# so they never touch the real server's.
+#
+# In docker/.env:
+#   TS_TEST_AUTHKEY=tskey-auth-…   (a key of its own; only needed for the first sign-in)
+#   TS_TEST_HOSTNAME=plinthio-test (optional, the default)
+#   TS_TEST_FUNNEL=true            (optional: also a public link)
+#
+#   docker compose -f docker/docker-compose.test.yml -f docker/docker-compose.test-tailscale.yml up -d --build
+services:
+  plinthio-test-tailscale:
+    image: tailscale/tailscale:stable
+    container_name: plinthio-test-tailscale
+    restart: unless-stopped
+    network_mode: service:plinthio-test
+    environment:
+      - TS_AUTHKEY=${TS_TEST_AUTHKEY:-}
+      - TS_HOSTNAME=${TS_TEST_HOSTNAME:-plinthio-test}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/serve.json
+    configs:
+      - source: plinthio-test-serve
+        target: /serve.json
+    volumes:
+      - ./tailscale-test:/var/lib/tailscale
+
+  plinthio-test:
+    environment:
+      - TRUST_PROXY=loopback
+
+configs:
+  # $$ keeps Compose from filling in ${TS_CERT_DOMAIN}; Tailscale fills it in itself.
+  plinthio-test-serve:
+    content: |
+      {
+        "TCP": { "443": { "HTTPS": true } },
+        "Web": {
+          "$${TS_CERT_DOMAIN}:443": {
+            "Handlers": { "/": { "Proxy": "http://127.0.0.1:8080" } }
+          }
+        },
+        "AllowFunnel": { "$${TS_CERT_DOMAIN}:443": ${TS_TEST_FUNNEL:-false} }
+      }

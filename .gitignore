@@ -27,4 +27,5 @@ frontend/test-results/
 frontend/playwright-report/
 # Add-on state (Tailscale node keys, Caddy certificates): never commit
 docker/tailscale/
+docker/tailscale-test/
 docker/caddy/
