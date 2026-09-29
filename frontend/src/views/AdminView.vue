@@ -791,12 +791,93 @@
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] gap-5 items-start">
           <div class="order-2 lg:order-1 flex flex-col gap-5 min-w-0">
-            <!-- Accent Theme Card -->
+            <!-- User Interface Personalization Card -->
+            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+              <div class="border-b border-border pb-3 flex items-start justify-between gap-3">
+                <div>
+                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">User Personalization</h3>
+                  <p class="text-xs text-muted-foreground mt-0.5">Control which parts of the interface signed-in users can customize for their own account.</p>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    :checked="customizationForm.userCustomization?.enabled !== false"
+                    :disabled="savingUserCustomization"
+                    @change="toggleUserCustomization('enabled', $event.target.checked)"
+                    class="rounded border-border text-primary focus:ring-ring"
+                  />
+                  <span class="text-xs font-medium text-foreground">Allow user personalization</span>
+                </label>
+              </div>
+
+              <div v-if="customizationForm.userCustomization?.enabled !== false" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    :checked="customizationForm.userCustomization?.accentColor !== false"
+                    :disabled="savingUserCustomization"
+                    @change="toggleUserCustomization('accentColor', $event.target.checked)"
+                    class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+                  />
+                  <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-foreground">Accent Color</span>
+                    <span class="text-[12px] text-muted-foreground">Users can pick their own color palette</span>
+                  </div>
+                </label>
+
+                <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    :checked="customizationForm.userCustomization?.layoutMode !== false"
+                    :disabled="savingUserCustomization"
+                    @change="toggleUserCustomization('layoutMode', $event.target.checked)"
+                    class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+                  />
+                  <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-foreground">Navigation Layout</span>
+                    <span class="text-[12px] text-muted-foreground">Users can switch between Top Navigation & Sidebar</span>
+                  </div>
+                </label>
+
+                <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    :checked="customizationForm.userCustomization?.pageWidth !== false"
+                    :disabled="savingUserCustomization"
+                    @change="toggleUserCustomization('pageWidth', $event.target.checked)"
+                    class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+                  />
+                  <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-foreground">Page Width</span>
+                    <span class="text-[12px] text-muted-foreground">Users can toggle Full Width vs Contained (1440px)</span>
+                  </div>
+                </label>
+
+                <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    :checked="customizationForm.userCustomization?.pauseScreen !== false"
+                    :disabled="savingUserCustomization"
+                    @change="toggleUserCustomization('pauseScreen', $event.target.checked)"
+                    class="mt-0.5 rounded border-border text-primary focus:ring-ring"
+                  />
+                  <div class="flex flex-col">
+                    <span class="text-xs font-semibold text-foreground">Pause Screen</span>
+                    <span class="text-[12px] text-muted-foreground">Users can choose what displays when video is paused</span>
+                  </div>
+                </label>
+              </div>
+              <p v-else class="text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg border border-border">
+                User personalization is currently disabled. All users will see the server default accent color, navigation layout, page width, and pause screen configured below.
+              </p>
+            </div>
+
+            <!-- Server Default Accent Theme Card -->
             <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
               <div class="border-b border-border pb-3 flex items-center justify-between">
                 <div>
-                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Accent Theme Preset</h3>
-                  <p class="text-xs text-muted-foreground mt-0.5">Select a primary color scheme across buttons, badges, and active highlights for all users.</p>
+                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Default Accent Color</h3>
+                  <p class="text-xs text-muted-foreground mt-0.5">Default primary color scheme across buttons, badges, and highlights for all users.</p>
                 </div>
                 <span class="text-xs font-mono capitalize px-2 py-0.5 rounded bg-muted text-foreground">
                   {{ customizationForm.accentTheme }}
@@ -822,11 +903,11 @@
               </div>
             </div>
 
-            <!-- Layout Mode Card -->
+            <!-- Server Default Layout Mode Card -->
             <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'shelf'" @click="previewView = 'shelf'">
               <div class="border-b border-border pb-3">
-                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Navigation Layout</h3>
-                <p class="text-xs text-muted-foreground mt-0.5">Choose how the primary navigation is presented for all users.</p>
+                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Default Navigation Layout</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">Default navigation layout across the server.</p>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -867,6 +948,50 @@
                   <div>
                     <span class="text-xs font-semibold text-foreground block">Sidebar</span>
                     <span class="text-[12px] text-muted-foreground">Vertical navigation on the left</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Server Default Page Width Card -->
+            <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+              <div class="border-b border-border pb-3">
+                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Default Page Width</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">Default page width on wide screens for users who haven't set an override.</p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  @click="selectPageWidth('full')"
+                  :class="[
+                    'p-3.5 rounded-xl border flex items-center gap-3 text-left transition active:scale-95',
+                    customizationForm.pageWidth === 'full'
+                      ? 'border-primary ring-2 ring-primary/20 bg-muted/40'
+                      : 'border-border hover:bg-muted/20'
+                  ]"
+                >
+                  <StretchHorizontal class="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <div>
+                    <span class="text-xs font-semibold text-foreground block">Full Width</span>
+                    <span class="text-[12px] text-muted-foreground">Use the whole screen, fitting more posters</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  @click="selectPageWidth('contained')"
+                  :class="[
+                    'p-3.5 rounded-xl border flex items-center gap-3 text-left transition active:scale-95',
+                    customizationForm.pageWidth === 'contained'
+                      ? 'border-primary ring-2 ring-primary/20 bg-muted/40'
+                      : 'border-border hover:bg-muted/20'
+                  ]"
+                >
+                  <RectangleHorizontal class="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <div>
+                    <span class="text-xs font-semibold text-foreground block">Contained</span>
+                    <span class="text-[12px] text-muted-foreground">Centred container, capped at 1440px wide</span>
                   </div>
                 </button>
               </div>
@@ -949,12 +1074,12 @@
               </label>
             </div>
 
-            <!-- Pause Screen Card -->
+            <!-- Server Default Pause Screen Card -->
             <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4" @focusin="previewView = 'pause'" @click="previewView = 'pause'">
               <div class="border-b border-border pb-3">
-                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Pause Screen</h3>
+                <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Server Default Pause Screen</h3>
                 <p class="text-xs text-muted-foreground mt-0.5">
-                  What movies and shows show after a couple of seconds paused. It fades away as soon as someone moves the mouse or touches the screen.
+                  Default display after a couple of seconds paused. It fades away as soon as someone moves the mouse or touches the screen.
                   Cast, crew and facts come from TMDB (needs a TMDB API key); without one, the file's own details are used.
                 </p>
               </div>
@@ -1915,6 +2040,8 @@ import {
   X,
   Baby,
   Upload,
+  StretchHorizontal,
+  RectangleHorizontal,
 } from '@lucide/vue';
 import { getMediaToken } from '../utils/mediaToken';
 
@@ -1923,9 +2050,8 @@ const authStore = useAuthStore();
 const dialog = useDialogStore();
 const customizationStore = useCustomizationStore();
 const router = useRouter();
-// Global nav layout (topnav vs sidebar) is a server-wide admin setting; these pages keep
-// their own header either way, so the sidebar just sits alongside it.
-const isSidebarLayout = computed(() => customizationStore.layoutMode === 'sidebar');
+// Global nav layout (topnav vs sidebar) respects user preference when allowed, falling back to server default.
+const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(authStore.user) === 'sidebar');
 function goToShelf(type) {
   router.push({ path: '/', query: type && type !== 'all' ? { type } : {} });
 }
@@ -2011,8 +2137,43 @@ const customizationForm = ref({
   accentTheme: 'zinc',
   loginMessage: '',
   layoutMode: 'topnav',
+  pageWidth: 'full',
+  userCustomization: {
+    enabled: true,
+    accentColor: true,
+    layoutMode: true,
+    pageWidth: true,
+    pauseScreen: true
+  },
   ratings: { showPersonal: true, showCommunity: true, showExternal: true }
 });
+
+const savingUserCustomization = ref(false);
+async function toggleUserCustomization(key, value) {
+  const current = customizationForm.value.userCustomization || { enabled: true, accentColor: true, layoutMode: true, pageWidth: true, pauseScreen: true };
+  const updated = { ...current, [key]: value };
+  customizationForm.value.userCustomization = updated;
+  savingUserCustomization.value = true;
+  try {
+    await customizationStore.updateCustomization({ userCustomization: updated });
+  } catch (e) {
+    customizationForm.value.userCustomization = current;
+    dialog.alert('Failed to save user personalization settings');
+  } finally {
+    savingUserCustomization.value = false;
+  }
+}
+
+async function selectPageWidth(width) {
+  const previous = customizationForm.value.pageWidth;
+  customizationForm.value.pageWidth = width;
+  try {
+    await customizationStore.updateCustomization({ pageWidth: width });
+  } catch (e) {
+    customizationForm.value.pageWidth = previous;
+    dialog.alert('Failed to save page width');
+  }
+}
 
 const ratingDisplayOptions = computed(() => [
   { id: 'showPersonal', label: 'Personal ratings', desc: 'Let each signed-in user give items 1–5 stars, and show their own rating.' },
@@ -2194,6 +2355,8 @@ async function loadCustomization() {
       accentTheme: customizationStore.accentTheme,
       loginMessage: customizationStore.loginMessage,
       layoutMode: customizationStore.layoutMode,
+      pageWidth: customizationStore.pageWidth || 'full',
+      userCustomization: { ...customizationStore.userCustomization },
       ratings: { ...customizationStore.ratings }
     };
     brandingSaved = { serverName: customizationStore.serverName, loginMessage: customizationStore.loginMessage };

@@ -78,7 +78,7 @@
             <header class="text-center space-y-2">
               <h2 class="text-2xl font-bold tracking-tight text-foreground">Choose an accent</h2>
               <p class="text-sm text-muted-foreground">
-                Buttons, highlights and progress bars use this. As an admin, this sets it for the whole server.
+                Buttons, highlights and progress bars use this. It's just for you; change it any time in Settings.
               </p>
             </header>
 
@@ -228,13 +228,13 @@ const customizationStore = useCustomizationStore();
 
 const serverName = computed(() => customizationStore.serverName || 'Plinthio');
 
-// Accent is a server-wide customization (the PATCH is admin-only), so only admins get that
-// step — showing it to a viewer would just hand them a control that 403s on save.
-const steps = computed(() =>
-  authStore.isAdmin
+// Accent color is offered to all users when allowed by the server admin.
+const steps = computed(() => {
+  const allowAccent = customizationStore.isCustomizationAllowed('accentColor');
+  return allowAccent
     ? ['welcome', 'theme', 'accent', 'interests', 'security', 'done']
-    : ['welcome', 'theme', 'interests', 'security', 'done']
-);
+    : ['welcome', 'theme', 'interests', 'security', 'done'];
+});
 
 const stepIndex = ref(0);
 const step = computed(() => steps.value[stepIndex.value]);
@@ -324,9 +324,11 @@ async function finish(skipped) {
   if (saving.value) return;
   saving.value = true;
   try {
+    const allowAccent = customizationStore.isCustomizationAllowed('accentColor');
     const preferences = {
       ...(authStore.user?.preferences || {}),
       theme: choices.theme,
+      ...(allowAccent && !skipped ? { accentTheme: choices.accent } : {}),
       // A skip shouldn't quietly narrow someone's shelf to whatever was pre-selected.
       enabledMediaTypes: skipped
         ? (authStore.user?.preferences?.enabledMediaTypes || ALL_MEDIA_TYPES)
@@ -338,9 +340,6 @@ async function finish(skipped) {
     authStore.user = { ...authStore.user, preferences };
     localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
 
-    if (!skipped && authStore.isAdmin && choices.accent !== customizationStore.accentTheme) {
-      await customizationStore.updateCustomization({ accentTheme: choices.accent });
-    }
   } catch (err) {
     console.error('Failed to save onboarding preferences:', err);
   } finally {
