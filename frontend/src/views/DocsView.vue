@@ -52,7 +52,7 @@
             <Radio class="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
             <span>Server Status</span>
           </div>
-          <p class="text-[12px] text-muted-foreground">Version 0.4.0 (PWA Ready)</p>
+          <p class="text-[12px] text-muted-foreground">Version {{ appVersion || '…' }}</p>
           <div class="text-[12px] font-mono text-muted-foreground truncate">
             API: /api/health
           </div>
@@ -334,6 +334,83 @@
             <h1 class="text-2xl font-bold tracking-tight text-foreground">Mobile App & PWA Installation</h1>
             <p class="text-sm text-muted-foreground mt-1.5">
               Install Plinthio directly to your iOS or Android home screen for a native app experience with offline shell, edge-to-edge layout, and full media lockscreen controls.
+            </p>
+          </div>
+
+          <!-- Secure connection: the built-in HTTPS and its local certificate authority -->
+          <div class="p-5 rounded-2xl border-2 border-primary/30 bg-primary/5 space-y-4">
+            <div class="flex items-center gap-2 text-foreground font-semibold text-sm">
+              <Lock class="w-4 h-4 text-primary" />
+              <span>Step 1: Secure connection (HTTPS)</span>
+            </div>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              Over plain <code class="text-foreground bg-muted px-1 rounded">http://</code> your browser warns that the connection isn't secure,
+              and phones won't run the app's offline features. Plinthio serves HTTPS as well, with its own certificate.
+              Install that certificate once on each device and the warning goes away for good.
+            </p>
+
+            <template v-if="tls?.enabled">
+              <div class="flex flex-col sm:flex-row gap-2">
+                <a
+                  v-if="tls.caAvailable"
+                  href="/api/tls/ca.crt"
+                  download="plinthio-ca.crt"
+                  class="h-10 px-4 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition"
+                >
+                  <ShieldCheck class="w-4 h-4" />
+                  Download certificate
+                </a>
+                <a
+                  v-if="!isSecurePage"
+                  :href="httpsUrl"
+                  class="h-10 px-4 rounded-xl border border-border bg-card text-foreground font-medium text-sm flex items-center justify-center gap-2 hover:bg-muted transition min-w-0"
+                >
+                  <Globe class="w-4 h-4 flex-shrink-0" />
+                  <span class="truncate">Open {{ httpsUrl }}</span>
+                </a>
+                <span v-else class="h-10 px-3 rounded-xl text-emerald-500 text-sm font-medium flex items-center gap-2">
+                  <ShieldCheck class="w-4 h-4" /> You're connected over HTTPS
+                </span>
+              </div>
+
+              <div v-if="tls.caAvailable" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-muted-foreground">
+                <div class="space-y-1.5">
+                  <div class="font-semibold text-foreground">iPhone & iPad</div>
+                  <ol class="list-decimal list-inside space-y-1 leading-relaxed">
+                    <li>Tap <strong>Download certificate</strong> in Safari and allow the profile download.</li>
+                    <li>Settings → <strong>Profile Downloaded</strong> → Install.</li>
+                    <li>Settings → General → About → <strong>Certificate Trust Settings</strong> → turn on "Plinthio Local CA".</li>
+                    <li>Open the HTTPS address above, then add it to your home screen (replacing an older http:// icon).</li>
+                  </ol>
+                </div>
+                <div class="space-y-1.5">
+                  <div class="font-semibold text-foreground">Android</div>
+                  <ol class="list-decimal list-inside space-y-1 leading-relaxed">
+                    <li>Tap <strong>Download certificate</strong>.</li>
+                    <li>Settings → Security → More security settings → Encryption & credentials → <strong>Install a certificate → CA certificate</strong>, and pick the downloaded file.</li>
+                    <li>Open the HTTPS address above in Chrome and install the app from there.</li>
+                  </ol>
+                </div>
+                <div class="space-y-1.5 sm:col-span-2">
+                  <div class="font-semibold text-foreground">Mac, Windows & Linux</div>
+                  <p class="leading-relaxed">
+                    Mac: open the file, then in Keychain Access set it to <strong>Always Trust</strong>. Windows: open it →
+                    Install Certificate → Local Machine → "Trusted Root Certification Authorities". Firefox keeps its own list:
+                    Settings → Privacy & Security → Certificates → View Certificates → Authorities → Import.
+                  </p>
+                </div>
+              </div>
+              <p class="text-[12px] text-muted-foreground leading-relaxed">
+                The certificate adds each address the moment a device first opens Plinthio at it over http://, so if the
+                browser says the certificate doesn't match the address, open the http:// version once, wait a few
+                seconds, and try HTTPS again. The certificate only works for private network addresses and local names,
+                so installing it can't be used to intercept any other website.
+              </p>
+            </template>
+            <p v-else-if="tls" class="text-xs text-muted-foreground leading-relaxed">
+              HTTPS isn't turned on for this server. Admins: set <code class="text-foreground bg-muted px-1 rounded">HTTPS_PORT=8443</code>
+              (already the default in the Docker image — make sure port 8443 is published), or use one of the options under
+              <strong class="text-foreground">Remote Access & Tailscale</strong>.
             </p>
           </div>
 
@@ -881,6 +958,19 @@ header input[type="text"] {
             </p>
           </div>
 
+          <a
+            :href="reportUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-muted/40 transition"
+          >
+            <Bug class="w-5 h-5 text-primary flex-shrink-0" />
+            <span class="text-xs text-muted-foreground leading-relaxed">
+              <strong class="text-foreground text-sm block">Still stuck? Report a problem</strong>
+              Opens a bug report on GitHub with your Plinthio version and browser already filled in. Nothing is sent until you submit it.
+            </span>
+          </a>
+
           <div class="space-y-3">
             <div class="p-4 rounded-xl border border-border bg-card space-y-1.5">
               <div class="font-semibold text-xs text-foreground">A library scan finished but items are missing</div>
@@ -988,8 +1078,10 @@ import {
   Hourglass,
   Lock,
   Clock,
-  CircleAlert
+  CircleAlert,
+  Bug
 } from '@lucide/vue';
+import { reportProblemUrl, serverVersion } from '../utils/reportProblem';
 
 const customizationStore = useCustomizationStore();
 const router = useRouter();
@@ -1001,6 +1093,29 @@ function goToShelf(type) {
 }
 
 const activeSection = ref('overview');
+
+const appVersion = ref('');
+const reportUrl = ref(reportProblemUrl());
+serverVersion().then((v) => {
+  appVersion.value = v;
+  reportUrl.value = reportProblemUrl(v);
+});
+
+// Built-in HTTPS status, for the "Secure connection" card on the app install page.
+const tls = ref(null);
+const isSecurePage = window.location.protocol === 'https:';
+const httpsUrl = computed(() => (tls.value?.port
+  ? `https://${window.location.hostname}${tls.value.port === 443 ? '' : `:${tls.value.port}`}`
+  : ''));
+async function loadTlsStatus() {
+  if (tls.value) return;
+  try {
+    const res = await fetch('/api/tls');
+    if (res.ok) tls.value = await res.json();
+  } catch (err) {
+    // Older server or offline — the card just shows nothing server-specific.
+  }
+}
 
 // Grouped so the nav stays a fixed, predictable width (w-64) no matter how many guides
 // get added — new topics join an existing group instead of growing a single flat list.
@@ -1044,10 +1159,16 @@ async function loadErrorCodes() {
 
 watch(activeSection, (section) => {
   if (section === 'errors') loadErrorCodes();
+  if (section === 'pwa') loadTlsStatus();
 });
 
 onMounted(async () => {
   const hash = decodeURIComponent(window.location.hash.slice(1));
+  // /docs#pwa, /docs#remote … open that guide directly (the app links to them).
+  if (navGroups.some((g) => g.items.some((i) => i.id === hash))) {
+    activeSection.value = hash;
+    return;
+  }
   if (hash !== 'error-codes' && !/^P\d{3}$/.test(hash)) return;
   activeSection.value = 'errors';
   await loadErrorCodes();

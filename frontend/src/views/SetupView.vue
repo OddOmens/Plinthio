@@ -9,11 +9,11 @@
             <AppLogo class="w-9 h-9 flex-shrink-0" />
             <div>
               <h1 class="text-base font-semibold text-foreground tracking-tight">Plinthio Setup Wizard</h1>
-              <p class="text-xs text-muted-foreground">Step {{ step }} of 6: {{ stepTitles[step - 1] }}</p>
+              <p class="text-xs text-muted-foreground">Step {{ step }} of {{ stepTitles.length }}: {{ stepTitles[step - 1] }}</p>
             </div>
           </div>
           <span class="text-xs font-mono font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
-            {{ Math.round((step / 5) * 100) }}%
+            {{ Math.round((step / stepTitles.length) * 100) }}%
           </span>
         </div>
 
@@ -21,7 +21,7 @@
         <div class="w-full h-1.5 bg-muted rounded-full overflow-hidden">
           <div 
             class="h-full bg-primary transition-all duration-300 rounded-full"
-            :style="{ width: `${(step / 5) * 100}%` }"
+            :style="{ width: `${(step / stepTitles.length) * 100}%` }"
           ></div>
         </div>
       </div>
@@ -435,6 +435,20 @@
             </div>
           </div>
 
+          <!-- Built-in HTTPS: where it is, and that phones need its certificate once. -->
+          <div v-if="tls?.enabled" class="p-4 rounded-xl border border-border bg-muted/20 space-y-2 text-xs">
+            <div class="flex items-center gap-2 font-semibold text-foreground">
+              <Lock class="w-4 h-4 text-primary" />
+              <span>Secure connection</span>
+            </div>
+            <p class="text-muted-foreground leading-relaxed">
+              Plinthio is also at <code class="text-foreground bg-muted px-1 rounded break-all">{{ httpsUrl }}</code>.
+              Phones and other computers show a warning there until they trust this server's certificate, a one-time step per
+              device. After setup, open <strong class="text-foreground">Docs → PWA Mobile App Setup</strong> on each phone for a
+              download button and instructions. It's what makes the installed app and offline downloads work.
+            </p>
+          </div>
+
           <div class="p-3 rounded-xl bg-primary/5 border border-primary/10 text-xs text-foreground flex items-center gap-2.5">
             <CheckCircle2 class="w-4 h-4 text-primary flex-shrink-0" />
             <span>Ready! You can access all documentation anytime from the top bar or via <strong>/docs</strong>.</span>
@@ -483,7 +497,7 @@
 
 <script setup>
 import AppLogo from '../components/AppLogo.vue';
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { ALL_MEDIA_TYPES } from '../constants/media';
@@ -518,6 +532,20 @@ const customizationStore = useCustomizationStore();
 const step = ref(1);
 const loading = ref(false);
 const error = ref('');
+
+// Built-in HTTPS status, shown on the Review step.
+const tls = ref(null);
+const httpsUrl = computed(() => (tls.value?.port
+  ? `https://${window.location.hostname}${tls.value.port === 443 ? '' : `:${tls.value.port}`}`
+  : ''));
+async function loadTlsStatus() {
+  try {
+    const res = await fetch('/api/tls');
+    if (res.ok) tls.value = await res.json();
+  } catch {
+    // Older server — the card just doesn't show.
+  }
+}
 
 const stepTitles = [
   'Appearance',
@@ -617,8 +645,10 @@ function nextStep() {
     }
   }
 
-  if (step.value < 5) {
+  // The last step (Review) has its own "Complete Setup" button instead of Continue.
+  if (step.value < stepTitles.length) {
     step.value++;
+    if (step.value === stepTitles.length) loadTlsStatus();
   }
 }
 

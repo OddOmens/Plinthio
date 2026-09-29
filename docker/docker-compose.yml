@@ -21,6 +21,10 @@ services:
       # punches through the host firewall on most Docker setups, so 0.0.0.0 really does mean
       # "anyone on the network", not just "anyone allowed by ufw".
       - "${BIND_ADDRESS:-0.0.0.0}:8088:8080"
+      # HTTPS, with a certificate Plinthio makes itself. Install its CA once per device
+      # (Docs → Installing the App → Secure connection) and the browser stops warning, and
+      # the PWA can work offline. Plain HTTP on 8088 keeps working either way.
+      - "${BIND_ADDRESS:-0.0.0.0}:8443:8443"
     environment:
       - TZ=${TZ:-UTC}
       # Files in ./config are owned by 1000:1000. Match your own user if that's different
@@ -32,6 +36,11 @@ services:
       # request and collapse into one shared bucket; with it set but no proxy in front,
       # clients can forge X-Forwarded-For and bypass rate limiting entirely.
       # - TRUST_PROXY=1
+      # Optional. The HTTPS certificate picks up the address your devices use on its own
+      # (the first time each one opens Plinthio over http://). Set this only to cover an
+      # address before anyone visits it, or a public domain, which only counts if it's set
+      # before the first start: comma-separated IPs and/or names, e.g. 192.168.1.20,nas.local
+      - TLS_HOSTNAMES=${TLS_HOSTNAMES:-}
       # JWT_SECRET intentionally not set here — the server auto-generates a strong random
       # secret on first boot and persists it to /config/jwt.secret. Do not hardcode a
       # literal secret in this file: anyone who reads it (repo history, a shared screenshot,

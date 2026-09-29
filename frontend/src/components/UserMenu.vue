@@ -103,6 +103,20 @@
           <span>Settings</span>
         </button>
 
+        <!-- Admins run the server, so bug reports come from them; the link pre-fills the
+             GitHub form with the version and browser. -->
+        <a
+          v-if="authStore.isAdmin"
+          :href="reportUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          @click="open = false"
+          class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3"
+        >
+          <Bug class="w-[18px] h-[18px] text-muted-foreground" />
+          <span>Report a problem</span>
+        </a>
+
         <button v-if="authStore.isAdmin" @click="go('/admin')" class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3">
           <ShieldCheck class="w-[18px] h-[18px] text-muted-foreground" />
           <span>Admin</span>
@@ -134,7 +148,8 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useThemeStore } from '../stores/theme';
-import { ChevronDown, HelpCircle, ListOrdered, Settings, ShieldCheck, Sun, Moon, LogOut, Download, Inbox } from '@lucide/vue';
+import { ChevronDown, HelpCircle, ListOrdered, Settings, ShieldCheck, Sun, Moon, LogOut, Download, Inbox, Bug } from '@lucide/vue';
+import { reportProblemUrl, serverVersion } from '../utils/reportProblem';
 import api from '../api/client';
 
 const props = defineProps({
@@ -149,6 +164,12 @@ const authStore = useAuthStore();
 const themeStore = useThemeStore();
 
 const open = ref(false);
+
+const reportUrl = ref('');
+// Rebuilt each time the menu opens, so it names the page the problem was seen on.
+watch(open, async (isOpen) => {
+  if (isOpen && authStore.isAdmin) reportUrl.value = reportProblemUrl(await serverVersion());
+});
 const rootEl = ref(null);
 const avatarLoadFailed = ref(false);
 
