@@ -4,6 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { userForApiKeyMd5 } from '../middleware/auth.js';
+import { outsideAccessError } from '../services/network.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
 import { logger } from '../services/logger.js';
 
@@ -44,6 +45,10 @@ router.use(async (req, res, next) => {
   try {
     const found = await userForApiKeyMd5(username, key);
     if (!found || found.expired) return unauthorized(res);
+    // Home-only server or account, reached from outside (services/network.js).
+    if (await outsideAccessError(req, found.user)) {
+      return res.status(403).json({ code: 2001, message: 'This Plinthio account can only be used from the home network' });
+    }
     req.user = found.user;
     next();
   } catch (err) {

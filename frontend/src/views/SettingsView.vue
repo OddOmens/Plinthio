@@ -701,6 +701,15 @@
           </form>
         </div>
 
+        <!-- Two-factor Card -->
+        <div id="two-factor" class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4 scroll-mt-24">
+          <div class="border-b border-border pb-2">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Two-Factor Sign-In</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">A code from your phone as well as your password. Optional, and worth it if you use Plinthio away from home.</p>
+          </div>
+          <TwoFactorSetup />
+        </div>
+
         <!-- Active Sessions Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-2">
@@ -733,6 +742,7 @@ import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
 import Sidebar from '../components/Sidebar.vue';
+import TwoFactorSetup from '../components/TwoFactorSetup.vue';
 import { ALL_MEDIA_TYPES } from '../constants/media';
 import { SHELF_MODES, normalizeShelfModes, userShelfModes } from '../utils/shelfModes';
 import { useDialogStore } from '../stores/dialog';

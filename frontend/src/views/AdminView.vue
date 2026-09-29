@@ -71,6 +71,19 @@
             <span class="hidden sm:inline">Users</span>
           </button>
           <button
+            @click="switchTab('network')"
+            :class="[
+              'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
+              activeTab === 'network'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            ]"
+            title="Network & Access"
+          >
+            <Globe class="w-4 h-4" />
+            <span class="hidden sm:inline">Network</span>
+          </button>
+          <button
             @click="switchTab('logs')"
             :class="[
               'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
@@ -233,6 +246,10 @@
         <LibraryHealth @open-metadata="switchTab('metadata')" />
       </section>
 
+      <section v-if="activeTab === 'network'">
+        <NetworkSettings />
+      </section>
+
       <section v-if="activeTab === 'metadata'">
         <AdminMetadataManager :libraries="libraries" />
       </section>
@@ -301,8 +318,20 @@
                   <span class="text-muted-foreground/50">&bull;</span>
                   <span class="flex items-center gap-1">
                     <Clock class="w-3 h-3" />
-                    {{ u.last_login_at ? `Last sign-in ${formatDateTime(u.last_login_at)}` : 'Never signed in' }}
+                    {{ u.last_login_at ? `Last sign-in ${formatDateTime(u.last_login_at)}` : 'Never signed in' }}<template v-if="u.last_login_at && u.last_login_network && u.last_login_network !== 'home'"> ({{ u.last_login_network === 'tailscale' ? 'Tailscale' : 'outside' }})</template>
                   </span>
+                  <template v-if="u.two_factor">
+                    <span class="text-muted-foreground/50">&bull;</span>
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/15 text-emerald-500" title="Signs in with a code from an authenticator app too">
+                      <ShieldCheck class="w-2.5 h-2.5" /> Two-factor
+                    </span>
+                  </template>
+                  <template v-if="u.remote_access === 0">
+                    <span class="text-muted-foreground/50">&bull;</span>
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground" title="Can only use Plinthio from the home network">
+                      <House class="w-2.5 h-2.5" /> Home only
+                    </span>
+                  </template>
                   <template v-if="u.expires_at">
                     <span class="text-muted-foreground/50">&bull;</span>
                     <span
@@ -1694,6 +1723,23 @@
             />
           </div>
 
+          <div class="pt-3 border-t border-border flex flex-col gap-2">
+            <label class="flex items-start gap-2 text-xs cursor-pointer">
+              <input v-model="editUser.remoteAccess" type="checkbox" class="mt-0.5 accent-primary" />
+              <span>
+                <span class="font-medium text-foreground flex items-center gap-1.5"><Globe class="w-3.5 h-3.5 text-muted-foreground" /> Can use Plinthio away from home</span>
+                <span class="block text-[12px] text-muted-foreground mt-0.5">When the server allows outside access (Network tab). Off: this account only works on the home network (and Tailscale).</span>
+              </span>
+            </label>
+            <div v-if="editUser.twoFactor" class="flex items-start justify-between gap-3 text-xs">
+              <span>
+                <span class="font-medium text-foreground flex items-center gap-1.5"><ShieldCheck class="w-3.5 h-3.5 text-emerald-500" /> Two-factor is on</span>
+                <span class="block text-[12px] text-muted-foreground mt-0.5">Lost their phone and backup codes? Reset it so they can sign in with just their password and set it up again.</span>
+              </span>
+              <button type="button" @click="resetTwoFactor(editUser)" class="h-7 px-2.5 rounded-md border border-destructive/40 text-destructive text-[12px] font-medium hover:bg-destructive/10 flex-shrink-0">Reset</button>
+            </div>
+          </div>
+
           <div v-if="editUser.id !== authStore.user?.id && editUser.role !== 'admin'" class="pt-3 border-t border-border">
             <label class="flex items-start gap-2 text-xs cursor-pointer">
               <input v-model="editUser.kidsMode" type="checkbox" class="mt-0.5 accent-primary" />
@@ -1826,6 +1872,7 @@ import CustomizationPreview from '../components/CustomizationPreview.vue';
 import Sidebar from '../components/Sidebar.vue';
 import AdminMetadataManager from '../components/AdminMetadataManager.vue';
 const LibraryHealth = defineAsyncComponent(() => import('../components/LibraryHealth.vue'));
+const NetworkSettings = defineAsyncComponent(() => import('../components/NetworkSettings.vue'));
 import {
   ArrowLeft,
   Folder,
@@ -1849,6 +1896,8 @@ import {
   Loader2,
   Download,
   ShieldCheck,
+  Globe,
+  House,
   PenSquare,
   Eye as EyeIcon,
   ExternalLink,
@@ -1882,7 +1931,7 @@ function goToShelf(type) {
 }
 
 
-const validTabs = ['libraries', 'health', 'metadata', 'users', 'logs', 'stats', 'activity', 'settings'];
+const validTabs = ['libraries', 'health', 'metadata', 'users', 'network', 'logs', 'stats', 'activity', 'settings'];
 const activeTab = ref(validTabs.includes(route.query.tab) ? route.query.tab : 'libraries');
 const libraries = ref([]);
 const users = ref([]);
@@ -2867,9 +2916,29 @@ function openEditUserModal(user) {
     maxAgeRating: user.max_age_rating || '',
     allowUnrated: user.allow_unrated !== 0,
     kidsMode: !!user.kids_mode,
+    remoteAccess: user.remote_access !== 0,
+    twoFactor: !!user.two_factor,
     role: user.role
   };
   showEditUserModal.value = true;
+}
+
+async function resetTwoFactor(user) {
+  const ok = await dialog.confirm({
+    title: 'Reset two-factor?',
+    message: `${user.username} will be signed out everywhere and can then sign in with just their password, and set two-factor up again in Settings → Security.`,
+    confirmText: 'Reset',
+    danger: true
+  });
+  if (!ok) return;
+  try {
+    const res = await api.post(`/users/${user.id}/two-factor/reset`);
+    editUser.value.twoFactor = false;
+    await loadData();
+    dialog.alert(res.data.message);
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not reset two-factor');
+  }
 }
 
 async function submitEditUser() {
@@ -2890,6 +2959,9 @@ async function submitEditUser() {
       if (editUser.value.kidsMode !== !!target.kids_mode) {
         updates.kidsMode = editUser.value.kidsMode;
       }
+    }
+    if (target && editUser.value.remoteAccess !== (target.remote_access !== 0)) {
+      updates.remoteAccess = editUser.value.remoteAccess;
     }
     if (editUser.value.duration !== 'unchanged') {
       updates.duration = editUser.value.duration === 'custom'

@@ -25,10 +25,20 @@ test('setup wizard creates the admin and the first library', async ({ page, requ
   await next.click();
 
   await next.click(); // Household
+
+  // Access: home only is the default.
+  await expect(page.getByRole('radio', { name: /At home only/ })).toHaveAttribute('aria-checked', 'true');
+  await next.click();
+
   await expect(page.getByText('Review & Launch Plinthio')).toBeVisible();
-  await expect(page.getByText('Step 6 of 6')).toBeVisible();
+  await expect(page.getByText('Step 7 of 7')).toBeVisible();
+  await expect(page.getByText('Home only')).toBeVisible();
 
   await page.getByRole('button', { name: 'Complete Setup & Launch' }).click();
+  // Optional two-factor for the new admin, then on to the app.
+  await expect(page.getByText('Plinthio is ready')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Turn on two-factor' })).toBeVisible();
+  await page.getByRole('button', { name: 'Not now' }).click();
   await expect(page).not.toHaveURL(/\/setup/);
 
   // The first scan runs in the background; wait until both volumes are in.

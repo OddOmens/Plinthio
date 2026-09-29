@@ -140,6 +140,20 @@
             </p>
           </section>
 
+          <!-- STEP: Security (optional two-factor) -->
+          <section v-else-if="step === 'security'" class="flex flex-col gap-6">
+            <header class="text-center space-y-2">
+              <h2 class="text-2xl font-bold tracking-tight text-foreground">Protect your account</h2>
+              <p class="text-sm text-muted-foreground max-w-md mx-auto">
+                Optional. Two-factor asks for a code from your phone when you sign in, so a password alone isn't enough.
+                You can turn it on now or later in Settings → Security.
+              </p>
+            </header>
+            <div class="rounded-2xl border border-border bg-card p-5">
+              <TwoFactorSetup @done="next" />
+            </div>
+          </section>
+
           <!-- STEP: Done -->
           <section v-else-if="step === 'done'" class="flex flex-col items-center text-center gap-5">
             <div class="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center">
@@ -181,7 +195,7 @@
                 class="h-11 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold transition shadow-md shadow-primary/20 active:scale-95 disabled:opacity-50 flex items-center gap-2"
               >
                 <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
-                <span>{{ step === 'done' ? 'Start browsing' : 'Continue' }}</span>
+                <span>{{ step === 'done' ? 'Start browsing' : step === 'security' ? 'Not now' : 'Continue' }}</span>
                 <ArrowRight v-if="step !== 'done' && !saving" class="w-4 h-4" />
               </button>
             </div>
@@ -194,6 +208,7 @@
 
 <script setup>
 import AppLogo from './AppLogo.vue';
+import TwoFactorSetup from './TwoFactorSetup.vue';
 import { ref, reactive, computed } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
@@ -217,8 +232,8 @@ const serverName = computed(() => customizationStore.serverName || 'Plinthio');
 // step — showing it to a viewer would just hand them a control that 403s on save.
 const steps = computed(() =>
   authStore.isAdmin
-    ? ['welcome', 'theme', 'accent', 'interests', 'done']
-    : ['welcome', 'theme', 'interests', 'done']
+    ? ['welcome', 'theme', 'accent', 'interests', 'security', 'done']
+    : ['welcome', 'theme', 'interests', 'security', 'done']
 );
 
 const stepIndex = ref(0);
