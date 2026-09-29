@@ -135,7 +135,7 @@
             <div class="title-text flex-1 min-w-0 max-w-4xl flex flex-col gap-3.5 text-center sm:text-left">
               <div>
                 <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
-                  <span class="text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                  <span class="text-[11px] uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
                     {{ series.standalone ? vocab.type.replace(/s$/, '') : vocab.series }}
                   </span>
                   <span v-if="shownStatus" class="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground capitalize">
@@ -171,13 +171,15 @@
                 <button
                   v-if="series.nextVolume"
                   @click="openVolumeReader(series.nextVolume)"
-                  class="h-10 px-5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 font-semibold text-sm transition shadow-md shadow-primary/20 flex items-center gap-2 group"
+                  class="w-full sm:w-auto min-w-0 h-11 sm:h-10 px-5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 font-semibold text-sm transition shadow-md shadow-primary/20 flex items-center justify-center gap-2 group"
                 >
                   <Play v-if="smartCtaState.isResume || isTimeBasedType" class="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
                   <Book v-else-if="!smartCtaState.isFinished" class="w-4 h-4 group-hover:scale-110 transition-transform" />
                   <BookOpen v-else class="w-4 h-4 group-hover:scale-110 transition-transform" />
-                  <span>{{ smartCtaState.label }}</span>
-                  <span v-if="smartCtaState.subLabel" class="text-xs font-normal opacity-85 font-mono">
+                  <span class="whitespace-nowrap">{{ smartCtaState.label }}</span>
+                  <!-- On a phone the button is full width, so the "Vol 1 · Page 98 of 172" detail
+                       truncates rather than wrapping the whole button onto two lines. -->
+                  <span v-if="smartCtaState.subLabel" class="min-w-0 truncate text-xs font-normal opacity-80 tabular-nums">
                     · {{ smartCtaState.subLabel }}
                   </span>
                 </button>
@@ -281,8 +283,9 @@
               <div v-if="!isSingle" class="w-full max-w-md mx-auto sm:mx-0">
                 <div class="flex items-center justify-between text-xs mb-1.5">
                   <span class="text-muted-foreground font-medium">Progress</span>
-                  <span class="font-mono font-semibold text-foreground">
-                    {{ series.readCount }}<template v-if="series.skippedCount"> + {{ series.skippedCount }} skipped</template> / {{ unitsLabel(series.volumeCount).toLowerCase() }} ({{ series.overallProgress }}%)
+                  <span class="font-medium text-foreground tabular-nums">
+                    {{ series.readCount }}<template v-if="series.skippedCount"> + {{ series.skippedCount }} skipped</template> of {{ unitsLabel(series.volumeCount).toLowerCase() }}
+                    <span class="text-muted-foreground">· {{ series.overallProgress }}%</span>
                   </span>
                 </div>
                 <div class="h-1.5 w-full bg-muted rounded-full overflow-hidden">
@@ -293,7 +296,7 @@
                   />
                 </div>
               </div>
-              <p v-else-if="hasStarted(single) && !single.is_finished" class="text-xs text-muted-foreground font-mono">
+              <p v-else-if="hasStarted(single) && !single.is_finished" class="text-xs text-muted-foreground tabular-nums">
                 {{ singleProgressLabel }}
               </p>
 

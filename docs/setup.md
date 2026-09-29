@@ -60,6 +60,7 @@ published on a host port of your choice, a folder mapped to `/config`, your medi
 | | Host | In the container |
 | --- | --- | --- |
 | Web app and API | port `8088` (on `BIND_ADDRESS`, default `0.0.0.0`) | port `8080` |
+| The same over HTTPS | port `8443` | port `8443` |
 | Database, settings, covers, caches, backups | `./config` | `/config` |
 | Your media (read-only use) | `MEDIA_DIR` (default `/media/library`) | `/media` |
 
@@ -68,6 +69,7 @@ Inside `/config`:
 | Path | What it is | Safe to delete? |
 | --- | --- | --- |
 | `plinthio.sqlite` (+ `-wal`, `-shm`) | The database: users, progress, settings, catalog | **No** |
+| `ssl/` | The local certificate authority and the HTTPS certificate | Deleting it makes a new CA, which every device then has to install again |
 | `jwt.secret` | The key that signs sign-in tokens, generated on first start | Deleting it signs everyone out |
 | `.version` | The last version that ran, used for the pre-upgrade backup | Yes |
 | `backups/` | Scheduled, manual and pre-upgrade database backups | Old ones, yes |
@@ -123,8 +125,42 @@ It opens full screen, puts audiobook controls on the lock screen, and keeps work
 for anything you've downloaded. See
 [Reading and listening → Offline](reading-and-listening.md#offline-downloads).
 
-Installing as an app needs HTTPS, except on `localhost`. Plain `http://192.168…` works in
-the browser but won't install as an app. See Remote access below.
+Installing as an app, and its offline features, need HTTPS, except on `localhost`. Plain
+`http://192.168…` works in the browser, but shows a "not secure" warning and won't work
+offline. See HTTPS on your network below.
+
+## HTTPS on your network
+
+Plinthio serves HTTPS on port `8443` next to plain HTTP. Its certificate comes from a small
+certificate authority (CA) Plinthio creates on first start, in `/config/ssl`. Browsers don't
+know that CA, so install it once on each device and the warnings stop for good, including
+when the server re-issues its certificate for a new address or before it expires.
+
+1. Set `TLS_HOSTNAMES` to the address your devices use for the server, in `.env` next to the
+   compose file, e.g. `TLS_HOSTNAMES=192.168.1.20,nas.local`, then `docker compose up -d`.
+   Inside Docker the container can't see the host's LAN address on its own.
+2. On each device, open **Docs → PWA Mobile App Setup** and tap **Download certificate**
+   (or open `http://<server>:8088/api/tls/ca.crt`), then:
+   - **iPhone / iPad:** Settings → Profile Downloaded → Install, then Settings → General →
+     About → Certificate Trust Settings → turn on "Plinthio Local CA".
+   - **Android:** Settings → Security → Encryption & credentials → Install a certificate →
+     CA certificate.
+   - **Mac:** open it and set it to Always Trust in Keychain Access. **Windows:** Install
+     Certificate → Local Machine → Trusted Root Certification Authorities. **Firefox** keeps
+     its own list: Settings → Certificates → Authorities → Import.
+3. Open `https://<server>:8443`. If you installed the app from the `http://` address before,
+   add it to the home screen again from the HTTPS one.
+
+The CA is name-constrained: it can only sign for private IP ranges (192.168.x, 10.x,
+172.16–31.x, Tailscale's 100.64/10, loopback) and local names (`.local`, `.lan`, `.home`,
+`.internal`, `.home.arpa`, `.ts.net`, `localhost`). So even someone who copied its key from
+`/config/ssl` couldn't use it to impersonate any other website on a device that trusts it.
+A public domain or IP in `TLS_HOSTNAMES` is allowed only if it's set before the CA is
+created. To add one later, delete `/config/ssl` and restart, then install the new CA.
+
+To use your own certificate instead (from `mkcert`, `tailscale cert`, or a real one for your
+domain), put `cert.pem` and `key.pem` in `/config/ssl`, or point `TLS_CERT` and `TLS_KEY` at
+them. To turn HTTPS off, set `HTTPS_PORT=` (empty).
 
 ## Hardware transcoding
 
@@ -145,8 +181,8 @@ device.
 
 ## Remote access
 
-Plinthio serves plain HTTP on your network. To reach it from outside, and to install it as
-an app, put something with HTTPS in front of it. The in-app **Docs → Remote Access & Tailscale** has
+On your own network, the built-in HTTPS above is enough. To reach Plinthio from outside,
+put something with HTTPS in front of it. The in-app **Docs → Remote Access & Tailscale** has
 step-by-step versions of each option.
 
 - **Tailscale** (easiest and private): install it on the server and on your devices, then

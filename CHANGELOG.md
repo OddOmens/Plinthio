@@ -9,6 +9,14 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **Built-in HTTPS.** The Docker image now also serves HTTPS on port 8443, with a certificate from its own local certificate authority. Install that CA once per device (Docs → PWA Mobile App Setup has a download button and steps for iPhone, Android and desktop) and the "not secure" warning goes away, and the installed app gets offline reading, which browsers only allow over HTTPS. Set `TLS_HOSTNAMES` to the address your devices use. The CA can only sign for private addresses and local names. Plain HTTP on 8088 keeps working. Bring your own certificate by putting `cert.pem` and `key.pem` in `/config/ssl`.
+
+### Fixed
+- **The manga reader reloading on phones in scroll mode.** Scroll mode loaded every page of a volume at full size at once, which ran phones out of memory until the browser reloaded the page. Now only the pages around the one you're reading are kept in memory. A swipe past the top of the reader also no longer pull-to-refreshes the page behind it.
+- **The page slider and buttons in scroll mode.** The slider, previous/next buttons and arrow keys now scroll to that page, the page counter follows what's on screen, reopening resumes at your page, and progress saves as you scroll instead of only when you close the reader.
+- **Title page on phones.** The Continue button stays on one line, an unrated title no longer shows an empty server rating, and the series badge and progress line are easier to read.
+
 ## [1.1.0] - 2026-09-28
 
 ### Added
