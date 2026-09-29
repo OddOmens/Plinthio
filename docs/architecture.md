@@ -86,7 +86,9 @@ Every place that returns titles or files applies the same rules, in one function
 `accessSql(user, alias)` in `services/visibility.js`. It returns an SQL fragment beginning
 with `AND` that excludes:
 
-- titles whose file is missing (`missing_since`)
+- titles whose file is missing (`missing_since`) or that were offloaded (`offloaded_at`);
+  title pages, a film's collection and lists pass `{ includeOffloaded: true }` to show
+  offloaded ones greyed
 - for Kids accounts, anything not in a kids library or `kids_titles`
 - anything above the account's content limit (the title's rating, else its series')
 

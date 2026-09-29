@@ -16,8 +16,8 @@ See [Libraries](libraries.md) for types, folder layouts and what a scan does.
 
 ## Health
 
-Checks for what needs attention: unreachable libraries, missing files (with **Remove from
-catalog**), likely duplicates, clashing volume numbers, titles with no cover, description,
+Checks for what needs attention: unreachable libraries, missing files (keep them as history
+or remove them for good), titles offloaded to free space, likely duplicates, clashing volume numbers, titles with no cover, description,
 author or age rating, and recent video conversion failures. See
 [Libraries → Library Health](libraries.md#library-health).
 

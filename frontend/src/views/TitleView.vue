@@ -536,7 +536,10 @@
                 </div>
                 <p class="mt-2 text-sm font-medium text-muted-foreground line-clamp-2">{{ part.title }}</p>
                 <p v-if="part.releaseDate" class="text-xs text-muted-foreground">{{ part.releaseDate.slice(0, 4) }}</p>
-                <div class="mt-1.5"><MissingFilmAction :part="part" compact /></div>
+                <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  <MissingFilmAction :part="part" compact />
+                  <AddToListButton :payload="partListPayload(part)" category="movies" compact />
+                </div>
               </div>
             </template>
           </div>
@@ -971,7 +974,10 @@
                 </div>
                 <p class="mt-2 text-sm font-medium text-muted-foreground line-clamp-2">{{ entry.title }}</p>
                 <p v-if="entry.year" class="text-xs text-muted-foreground">{{ entry.year }}</p>
-                <div class="mt-1.5"><MissingFilmAction :part="entry.part" compact /></div>
+                <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  <MissingFilmAction :part="entry.part" compact />
+                  <AddToListButton :payload="partListPayload(entry.part)" category="movies" compact />
+                </div>
               </div>
             </template>
           </div>
@@ -1201,6 +1207,7 @@ const MetadataSearchModal = defineAsyncComponent(() => import('../components/Met
 import RatingBar from '../components/RatingBar.vue';
 import MissingFilmAction from '../components/MissingFilmAction.vue';
 import AvailabilityBadge from '../components/AvailabilityBadge.vue';
+import AddToListButton from '../components/AddToListButton.vue';
 import { startParty } from '../utils/party';
 import { coverUrl as buildCoverUrl, stillUrl } from '../utils/cover';
 import {
@@ -1765,6 +1772,19 @@ const collectionRows = computed(() => {
 // A film page's "More in …" row: the rest of its TMDB collection, owned or not, in release
 // order — or, without TMDB data, the other films the library files under the same series.
 const moreInName = computed(() => filmCollection.value?.name || collection.value?.name || '');
+// A film from a TMDB collection, as a list entry (so it can go on a watchlist unowned).
+function partListPayload(part) {
+  return {
+    mediaType: 'movie',
+    source: 'tmdb',
+    externalId: String(part.tmdbId),
+    title: part.title,
+    releaseDate: part.releaseDate || null,
+    overview: part.overview || null,
+    coverUrl: part.posterUrl || null
+  };
+}
+
 const moreInEntries = computed(() => {
   if (!isSingle.value || single.value?.media_type !== 'movie') return [];
   const selfId = single.value.id;

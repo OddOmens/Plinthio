@@ -38,6 +38,33 @@ router.get('/', async (req, res) => {
       ORDER BY c.name ASC
     `, params);
 
+    // Lists show the first few entries' artwork on their card, like a shelf. Library items
+    // give an id (and updated_at, which versions the cover URL); external titles a URL.
+    if (type === 'readlist' && collections.length) {
+      const ids = collections.map((c) => c.id);
+      const marks = ids.map(() => '?').join(', ');
+      const [items, externals] = await Promise.all([
+        db.all(`
+          SELECT ci.collection_id, ci.position, ci.added_at, i.id, i.updated_at, i.cover_path, i.offloaded_at
+          FROM collection_items ci JOIN items i ON i.id = ci.item_id
+          WHERE ci.collection_id IN (${marks})
+          AND NOT EXISTS (
+            SELECT 1 FROM item_visibility v WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
+          )${accessSql(req.user, 'i', { includeOffloaded: true })}
+        `, [...ids, userId]),
+        db.all(`SELECT collection_id, position, added_at, cover_url FROM list_external_entries WHERE collection_id IN (${marks})`, ids)
+      ]);
+      const byList = new Map(ids.map((id) => [id, []]));
+      for (const it of items) byList.get(it.collection_id).push({ position: it.position, added_at: it.added_at, item: { id: it.id, updated_at: it.updated_at, cover_path: it.cover_path, offloaded: !!it.offloaded_at } });
+      for (const ext of externals) byList.get(ext.collection_id).push({ position: ext.position, added_at: ext.added_at, coverUrl: ext.cover_url || null, external: true });
+      for (const c of collections) {
+        c.previews = byList.get(c.id)
+          .sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || String(a.added_at).localeCompare(String(b.added_at)))
+          .slice(0, 4)
+          .map(({ item, coverUrl, external }) => (item ? { item } : { coverUrl, external }));
+      }
+    }
+
     res.json({ collections });
   } catch (err) {
     serverError(req, res, err);
@@ -203,7 +230,7 @@ router.get('/:id', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${accessSql(req.user, 'i')}
+      )${accessSql(req.user, 'i', { includeOffloaded: true })}
       ORDER BY ci.position ASC, ci.added_at ASC
     `, [userId, id, userId]);
 
@@ -282,7 +309,7 @@ router.post('/:id/items', async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
-      )${accessSql(req.user, 'i')}
+      )${accessSql(req.user, 'i', { includeOffloaded: true })}
     `, [itemId, userId]);
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });

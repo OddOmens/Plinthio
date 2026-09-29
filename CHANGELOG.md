@@ -9,6 +9,16 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **Offload titles and keep their history.** Short on space? Delete the files for, say, the five seasons of a show you've finished, and keep them as history: they stay on the title page, greyed, with everyone's progress and ratings, but leave the shelves, search and Continue Watching. In Admin → Health → Missing files choose **Keep as history**, or offload first from the title page's **Keep as History** and then delete the files. If the files come back, even re-downloaded under a different name, the title is restored with its history.
+- **Watchlists for things you don't have.** A film missing from a collection has an **Add to list** button next to **Request**, and any list can hold titles found by searching, whether the server has them or not.
+
+### Changed
+- **Easy to tell apart:** titles you had and offloaded keep their colour, dimmed, with an **Offloaded** badge; titles the server never had go grey with a dashed outline and **Not in library**.
+- **Lists are in the top bar**, after the media types (and at the end of the sidebar), instead of the account menu.
+- **Lists look like the shelf:** each list is a card with its first covers, and a list's titles are a poster grid with the same header and width as the rest of the app.
+- **Library Health groups missing files** by film, series or season, each with **Keep as history** or **Remove for good**. "Remove all" never removes offloaded titles.
+
 ## [1.2.0] - 2026-09-29
 
 ### Added

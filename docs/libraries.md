@@ -137,10 +137,42 @@ ratings, bookmarks and list entries stay. This covers a drive that didn't mount,
 that dropped, or a folder mid-reorganisation. If the file comes back, the title reappears on
 the next scan with everything intact.
 
-**Admin → Health → Missing files** lists them with when they went missing. Once you're
-sure, **Remove from catalog** deletes them for good, along with their covers and thumbnails.
-Anything whose file has come back is kept. Reading progress and ratings are keyed to the
-title's id, so if exactly the same file is scanned again later they re-attach.
+**Admin → Health → Missing files** lists them by film, book, series or season. For each,
+choose:
+
+- **Keep as history** if you deleted the files on purpose, to free space. The title becomes
+  *offloaded* (see below).
+- **Remove for good** once you're sure it's not coming back. This deletes it from the
+  catalog along with its covers and thumbnails. Anything whose file has come back is kept.
+  Reading progress and ratings are keyed to the title's id, so if exactly the same file is
+  scanned again later they re-attach.
+
+## Offloaded titles
+
+When space runs short, you can remove files and keep the history: say you've watched five
+seasons of a show and only want to keep the sixth on disk. Offloaded titles are:
+
+- **Hidden** from shelves, search, Continue Watching and the reading apps, like missing ones.
+- **Shown on their title page**, greyed, with everyone's progress, ratings and watched
+  marks. Their artwork keeps its colour, dimmed, with an **Offloaded** badge. Titles the
+  server never had (a film missing from a collection, a list entry) go grey with a dashed
+  outline and a **Not in library** badge instead, so the two are easy to tell apart.
+- **Not playable.** Opening one says it was offloaded. "Up next" skips them.
+- **Restored by themselves** if the files come back. A re-download under a different
+  file name counts too: a new file for the same show, season and episode (or a film with the
+  same title) takes over the offloaded entry, so its history comes back with it.
+
+Two ways to offload, both for admins:
+
+1. **Delete the files first**, then in **Admin → Health → Missing files** choose **Keep as
+   history** (or **Keep all as history**).
+2. **Offload first**, from the title page's **Keep as History** action (the film, the season
+   on screen, or a whole series), then delete the files. Until you do, Admin → Health lists
+   them as still on disk.
+
+**Admin → Health → Offloaded** lists everything kept as history, with **Undo** (it's back on
+the shelves if the files are still there, or missing again if not) and **Remove for good**.
+"Remove all" for missing files never removes offloaded titles.
 
 ## Metadata and artwork
 
