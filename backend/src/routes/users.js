@@ -11,6 +11,8 @@ import { authenticateToken, requireAdmin, invalidateUserCache } from '../middlew
 import { serverError } from '../utils/http.js';
 import { normalizeUsername, USERNAME_RULE } from '../utils/username.js';
 import { AGE_RATINGS } from '../services/visibility.js';
+import { requestLocation } from '../services/network.js';
+import { logger } from '../services/logger.js';
 
 const router = express.Router();
 const VALID_ROLES = ['admin', 'editor', 'viewer'];
@@ -260,9 +262,11 @@ export function parseExpiration(durationOrDate, fromDate = new Date()) {
 router.get('/', requireAdmin, async (req, res) => {
   try {
     const db = await getDb();
-    const users = await db.all('SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at, max_age_rating, allow_unrated, kids_mode FROM users ORDER BY created_at ASC');
-    const parsed = users.map(u => ({
+    const users = await db.all(`SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at,
+      last_login_network, max_age_rating, allow_unrated, kids_mode, remote_access, totp_enabled_at FROM users ORDER BY created_at ASC`);
+    const parsed = users.map(({ totp_enabled_at: totpOn, ...u }) => ({
       ...u,
+      two_factor: !!totpOn,
       preferences: u.preferences ? JSON.parse(u.preferences) : {}
     }));
     res.json({ users: parsed });
@@ -311,7 +315,7 @@ router.post('/', requireAdmin, async (req, res) => {
 
 // Edit another user's account info (Admin only) — username, role, or expiration.
 router.patch('/:id', requireAdmin, async (req, res) => {
-  const { username, role, expires_at, duration, maxAgeRating, allowUnrated, kidsMode } = req.body;
+  const { username, role, expires_at, duration, maxAgeRating, allowUnrated, kidsMode, remoteAccess } = req.body;
 
   try {
     const db = await getDb();
@@ -385,6 +389,17 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       params.push(kidsMode ? 1 : 0);
     }
 
+    // Away from home: whether this account may use Plinthio outside the home network (when
+    // the server allows that at all). Never switched off for your own account from outside,
+    // which would end the session you're using.
+    if (remoteAccess !== undefined) {
+      if (!remoteAccess && req.user.id === req.params.id && (await requestLocation(req)).away) {
+        return res.status(400).json({ error: "You're away from home right now, so that would sign you out. Change it from your home network." });
+      }
+      updates.push('remote_access = ?');
+      params.push(remoteAccess ? 1 : 0);
+    }
+
     if (updates.length === 0) {
       return res.status(400).json({ error: 'Nothing to update' });
     }
@@ -393,10 +408,34 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     await db.run(`UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, params);
     invalidateUserCache(req.params.id);
 
-    const updated = await db.get('SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at, max_age_rating, allow_unrated, kids_mode FROM users WHERE id = ?', [req.params.id]);
+    const updated = await db.get(`SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at,
+      last_login_network, max_age_rating, allow_unrated, kids_mode, remote_access, totp_enabled_at FROM users WHERE id = ?`, [req.params.id]);
+    updated.two_factor = !!updated.totp_enabled_at;
+    delete updated.totp_enabled_at;
     updated.preferences = updated.preferences ? JSON.parse(updated.preferences) : {};
 
     res.json({ message: 'User updated successfully', user: updated });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// Turn off someone's two-factor, for a lost phone with no backup codes left (Admin only).
+// Their sessions are signed out, so whoever has the account now has to sign in again.
+router.post('/:id/two-factor/reset', requireAdmin, async (req, res) => {
+  try {
+    const db = await getDb();
+    const target = await db.get('SELECT id, username, totp_enabled_at FROM users WHERE id = ?', [req.params.id]);
+    if (!target) return res.status(404).json({ error: 'User not found' });
+    if (!target.totp_enabled_at) return res.status(400).json({ error: "Two-factor isn't on for that account" });
+    await db.run(
+      `UPDATE users SET totp_secret = NULL, totp_pending = NULL, totp_enabled_at = NULL, totp_last_step = NULL,
+         totp_recovery = NULL, token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [target.id]
+    );
+    invalidateUserCache(target.id);
+    logger.warn('auth', `Two-factor for "${target.username}" was reset by admin ${req.user.username}`);
+    res.json({ message: 'Two-factor turned off. They can sign in with their password and set it up again.' });
   } catch (err) {
     serverError(req, res, err);
   }

@@ -422,7 +422,7 @@ const dialog = useDialogStore();
 const customizationStore = useCustomizationStore();
 const router = useRouter();
 
-const isSidebarLayout = computed(() => customizationStore.layoutMode === 'sidebar');
+const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(authStore.user) === 'sidebar');
 
 // ?type= lets other pages (e.g. the sidebar on Admin/Settings/Docs) deep-link straight into
 // a filtered shelf instead of always dumping you on "All".

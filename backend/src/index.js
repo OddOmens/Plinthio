@@ -44,6 +44,8 @@ import healthRoutes from './routes/health.js';
 import kidsRoutes from './routes/kids.js';
 import systemRoutes from './routes/system.js';
 import ratingRoutes from './routes/ratings.js';
+import networkRoutes from './routes/network.js';
+import { noteProxyHeaders, noteTailscale } from './services/network.js';
 import { warmThumbnailCache } from './services/thumbnails.js';
 import { initBackupScheduler } from './services/backup.js';
 import { initAutoScan } from './services/autoScan.js';
@@ -63,6 +65,8 @@ const app = express();
 if (config.trustProxy !== false) {
   app.set('trust proxy', config.trustProxy);
 }
+// Admin → Network warns when a proxy is in front but TRUST_PROXY isn't set (services/network.js).
+app.use((req, res, next) => { noteProxyHeaders(req, config.trustProxy); noteTailscale(req); next(); });
 
 // Security and utility middleware
 // Content-Security-Policy. The session token lives in localStorage, so any injected script
@@ -192,10 +196,14 @@ const apiLimiter = rateLimit({
   legacyHeaders: false
 });
 
-// Tighter limit specifically on password guessing, on top of the general auth limiter
+// Tighter limit specifically on password guessing, on top of the general auth limiter. It
+// covers /login and the two-factor step (/login/2fa). Only failures count: a two-factor
+// sign-in is two requests, and a household behind one IP signing in shouldn't lock itself
+// out, while guessing a password or a code still stops after ten tries.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 login attempts per 15 min per IP
+  max: 10, // 10 failed login attempts per 15 min per IP
+  skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many login attempts. Please wait before trying again.', code: 'P108' }
@@ -222,6 +230,7 @@ app.use('/api/progress', progressRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin/logs', logRoutes);
 app.use('/api/admin/health', healthRoutes);
+app.use('/api/admin/network', networkRoutes);
 app.use('/api/kids', kidsRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/stats', statRoutes);

@@ -9,6 +9,33 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-29
+
+### Added
+- **Two-factor sign-in, optional.** Anyone can turn it on in Settings → Security (it's also offered in onboarding and at the end of setup): scan a QR code with an authenticator app, confirm a code, and save ten single-use backup codes. Signing in then asks for the 6-digit code after the password. Admins can reset it for someone who lost their phone.
+- **Choose who can use Plinthio away from home.** Admin → Network: allow access from outside the home network or not, count Tailscale devices as home, and optionally require two-factor for sign-ins from outside. Per person, in Admin → Users: whether they can use it away from home. It's checked on every request, including the reading apps, and the page shows where the device you're using is connecting from, so you can check it from a phone on mobile data.
+- **Tailscale, guided.** The setup wizard and Admin → Network walk you through Tailscale step by step, with links to the right pages and the exact lines to paste, for private use or a public Funnel link. Admin → Network then shows when Tailscale and Funnel are working, and at which address.
+- **Your own look, if the admin allows it.** Everyone can pick their own accent colour, navigation layout, page width and video pause screen in Settings, each with a "Server default" choice. Admins decide what people can change (Admin → Server Config → User Personalization) and set the defaults.
+- **A link for friends, with no domain.** With the Tailscale add-on, `TS_FUNNEL=true` opens its `https://….ts.net` address to anyone through Tailscale Funnel: friends just open the link in a browser, with nothing to install and no router changes. Tailscale limits Funnel's bandwidth, so it suits reading and listening best.
+- **A web address for guests.** An optional `docker-compose.public.yml` add-on runs Caddy in front of Plinthio for a public address like `https://media.yourdomain.com` with a real, automatically renewed certificate. Guests need only a browser. It can be used together with the Tailscale add-on.
+- **Using Plinthio away from home, the guide** (docs/remote-access.md): Tailscale, a web address, how to check your internet connection allows it, who can use it from where, and keeping it safe.
+- **Offload titles and keep their history.** Short on space? Delete the files for, say, the five seasons of a show you've finished, and keep them as history: they stay on the title page, greyed, with everyone's progress and ratings, but leave the shelves, search and Continue Watching. In Admin → Health → Missing files choose **Keep as history**, or offload first from the title page's **Keep as History** and then delete the files. If the files come back, even re-downloaded under a different name, the title is restored with its history.
+- **Watchlists for things you don't have.** A film missing from a collection has an **Add to list** button next to **Request**, and any list can hold titles found by searching, whether the server has them or not.
+- **Tailscale add-on for Docker.** An optional `docker-compose.tailscale.yml` gives Plinthio a trusted `https://plinthio.<your-tailnet>.ts.net` address that works at home and away, with no certificate to install on phones (each device just needs the Tailscale app) and no router changes. It runs Tailscale next to Plinthio, so nothing needs installing on the server either. Plain `http://<server>:8088` keeps working. See docs/setup.md → HTTPS.
+
+### Changed
+- **The setup wizard is full screen**, with bigger text and a new step, "Where will you use Plinthio?": at home only, with Tailscale, or also from the internet. New servers start home-only; servers updated from an earlier version keep working from outside as before, and Admin → Network is where to close that off.
+- **Only failed sign-ins count toward the sign-in limit**, so a household behind one address never locks itself out, while guessing still stops after ten tries.
+- **Easy to tell apart:** titles you had and offloaded keep their colour, dimmed, with an **Offloaded** badge; titles the server never had go grey with a dashed outline and **Not in library**.
+- **Lists are in the top bar**, after the media types (and at the end of the sidebar), instead of the account menu.
+- **Lists look like the shelf:** each list is a card with its first covers, and a list's titles are a poster grid with the same header and width as the rest of the app.
+- **Library Health groups missing files** by film, series or season, each with **Keep as history** or **Remove for good**. "Remove all" never removes offloaded titles.
+- **Setting up HTTPS now starts with Tailscale.** Docs → PWA Mobile App Setup, Docs → Remote Access & Tailscale and the setup wizard recommend Tailscale first. Plinthio's own certificate is still there as the alternative for a home network without Tailscale.
+
+### Fixed
+- **Mistyping your password or a code in a form no longer signs you out.** Wrong answers used to look like an expired session to the app.
+- **The Tailscale guide in Docs** told people to open `http://…:8088` over Tailscale and implied it was already set up. It now has the actual steps for the server and for each device, over HTTPS.
+
 ## [1.2.0] - 2026-09-29
 
 ### Added

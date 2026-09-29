@@ -46,7 +46,11 @@ api.interceptors.response.use(
       queueProgress(cfg.url.startsWith('/') ? cfg.url : `/${cfg.url}`, data);
       return Promise.resolve({ data: { queued: true }, status: 202, config: cfg });
     }
-    if (error.response && error.response.status === 401) {
+    // A 401 about the session itself signs out. A wrong password (P107) or two-factor code
+    // (P111, P113) typed into a form is a 401 too, but the session is fine: don't end it.
+    const code = error.response?.data?.code;
+    const sessionProblem = !code || ['P100', 'P101', 'P102'].includes(code);
+    if (error.response && error.response.status === 401 && sessionProblem) {
       localStorage.removeItem('plinthio_token');
       localStorage.removeItem('plinthio_user');
       localStorage.removeItem('plinthio_media_token');

@@ -73,12 +73,15 @@
             </div>
           </section>
 
-          <!-- STEP: Accent (admins only — it's a server-wide setting) -->
+          <!-- STEP: Accent. An admin picks the server's default for everyone; anyone else picks
+               their own, and only sees this step when the admin allows personal accents. -->
           <section v-else-if="step === 'accent'" class="flex flex-col gap-6">
             <header class="text-center space-y-2">
               <h2 class="text-2xl font-bold tracking-tight text-foreground">Choose an accent</h2>
               <p class="text-sm text-muted-foreground">
-                Buttons, highlights and progress bars use this. As an admin, this sets it for the whole server.
+                Buttons, highlights and progress bars use this.
+                <template v-if="authStore.isAdmin">As an admin, this sets it for the whole server. People can pick their own in Settings if you allow it (Admin → Server Config).</template>
+                <template v-else>It's just for you; change it any time in Settings.</template>
               </p>
             </header>
 
@@ -140,6 +143,20 @@
             </p>
           </section>
 
+          <!-- STEP: Security (optional two-factor) -->
+          <section v-else-if="step === 'security'" class="flex flex-col gap-6">
+            <header class="text-center space-y-2">
+              <h2 class="text-2xl font-bold tracking-tight text-foreground">Protect your account</h2>
+              <p class="text-sm text-muted-foreground max-w-md mx-auto">
+                Optional. Two-factor asks for a code from your phone when you sign in, so a password alone isn't enough.
+                You can turn it on now or later in Settings → Security.
+              </p>
+            </header>
+            <div class="rounded-2xl border border-border bg-card p-5">
+              <TwoFactorSetup @done="next" />
+            </div>
+          </section>
+
           <!-- STEP: Done -->
           <section v-else-if="step === 'done'" class="flex flex-col items-center text-center gap-5">
             <div class="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center">
@@ -181,7 +198,7 @@
                 class="h-11 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold transition shadow-md shadow-primary/20 active:scale-95 disabled:opacity-50 flex items-center gap-2"
               >
                 <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
-                <span>{{ step === 'done' ? 'Start browsing' : 'Continue' }}</span>
+                <span>{{ step === 'done' ? 'Start browsing' : step === 'security' ? 'Not now' : 'Continue' }}</span>
                 <ArrowRight v-if="step !== 'done' && !saving" class="w-4 h-4" />
               </button>
             </div>
@@ -194,6 +211,7 @@
 
 <script setup>
 import AppLogo from './AppLogo.vue';
+import TwoFactorSetup from './TwoFactorSetup.vue';
 import { ref, reactive, computed } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
@@ -213,13 +231,13 @@ const customizationStore = useCustomizationStore();
 
 const serverName = computed(() => customizationStore.serverName || 'Plinthio');
 
-// Accent is a server-wide customization (the PATCH is admin-only), so only admins get that
-// step — showing it to a viewer would just hand them a control that 403s on save.
-const steps = computed(() =>
-  authStore.isAdmin
-    ? ['welcome', 'theme', 'accent', 'interests', 'done']
-    : ['welcome', 'theme', 'interests', 'done']
-);
+// Accent color is offered to all users when allowed by the server admin.
+const steps = computed(() => {
+  const allowAccent = authStore.isAdmin || customizationStore.isCustomizationAllowed('accentColor');
+  return allowAccent
+    ? ['welcome', 'theme', 'accent', 'interests', 'security', 'done']
+    : ['welcome', 'theme', 'interests', 'security', 'done'];
+});
 
 const stepIndex = ref(0);
 const step = computed(() => steps.value[stepIndex.value]);
@@ -309,9 +327,13 @@ async function finish(skipped) {
   if (saving.value) return;
   saving.value = true;
   try {
+    // Admins set the server's default accent (below), not a personal one; anyone else saves
+    // their own, if the admin allows it.
+    const personalAccent = !authStore.isAdmin && customizationStore.isCustomizationAllowed('accentColor');
     const preferences = {
       ...(authStore.user?.preferences || {}),
       theme: choices.theme,
+      ...(personalAccent && !skipped ? { accentTheme: choices.accent } : {}),
       // A skip shouldn't quietly narrow someone's shelf to whatever was pre-selected.
       enabledMediaTypes: skipped
         ? (authStore.user?.preferences?.enabledMediaTypes || ALL_MEDIA_TYPES)
@@ -326,6 +348,7 @@ async function finish(skipped) {
     if (!skipped && authStore.isAdmin && choices.accent !== customizationStore.accentTheme) {
       await customizationStore.updateCustomization({ accentTheme: choices.accent });
     }
+
   } catch (err) {
     console.error('Failed to save onboarding preferences:', err);
   } finally {

@@ -80,11 +80,6 @@
           <span>Downloads</span>
         </button>
 
-        <button @click="go('/lists')" class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3">
-          <ListOrdered class="w-[18px] h-[18px] text-muted-foreground" />
-          <span>Lists</span>
-        </button>
-
         <button @click="go(authStore.isEditor && pendingRequests ? '/requests?scope=all' : '/requests')" class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3">
           <Inbox class="w-[18px] h-[18px] text-muted-foreground" />
           <span class="flex-1 text-left">Requests</span>
@@ -148,7 +143,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useThemeStore } from '../stores/theme';
-import { ChevronDown, HelpCircle, ListOrdered, Settings, ShieldCheck, Sun, Moon, LogOut, Download, Inbox, Bug } from '@lucide/vue';
+import { ChevronDown, HelpCircle, Settings, ShieldCheck, Sun, Moon, LogOut, Download, Inbox, Bug } from '@lucide/vue';
 import { reportProblemUrl, serverVersion } from '../utils/reportProblem';
 import api from '../api/client';
 

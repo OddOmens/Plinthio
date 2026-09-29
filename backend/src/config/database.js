@@ -137,6 +137,32 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_login_history_created ON login_history(created_at DESC);
   `);
 
+  // Two-factor sign-in (services/twoFactor.js), optional per account:
+  //   totp_secret / totp_pending — the authenticator secret, encrypted with a key derived
+  //     from the JWT secret; pending holds one being set up until its first code is checked
+  //   totp_enabled_at — when it was turned on (NULL = off)
+  //   totp_last_step — the 30-second step of the last code accepted, so a code can't be
+  //     used twice
+  //   totp_recovery — JSON list of backup codes, hashed, each with when it was used
+  // Away from home (services/network.js):
+  //   remote_access — 1 this account may use Plinthio from outside the home network
+  //   last_login_network — home / tailscale / outside, for Admin → Users
+  for (const col of [
+    'totp_secret TEXT', 'totp_pending TEXT', 'totp_enabled_at DATETIME', 'totp_last_step INTEGER',
+    'totp_recovery TEXT', 'remote_access INTEGER DEFAULT 1', 'last_login_network TEXT'
+  ]) {
+    try {
+      await db.exec(`ALTER TABLE users ADD COLUMN ${col}`);
+    } catch (e) {
+      // Column already exists
+    }
+  }
+  try {
+    await db.exec('ALTER TABLE login_history ADD COLUMN network TEXT');
+  } catch (e) {
+    // Column already exists
+  }
+
   // One "opened this item" → "closed this item" span per row, for the readers/players
   // (manga, book, video, audio). item_id carries no FK to items for the same reason as
   // user_progress/bookmarks — history must survive a library delete + re-scan — but the
@@ -324,6 +350,10 @@ async function initSchema(db) {
     // ratings and custom art survive a drive being briefly unavailable; it's restored if the
     // file comes back, and only an admin removes it for good (Library Health).
     'missing_since DATETIME',
+    // offloaded_at: an admin chose to keep this as history after removing (or before
+    // removing) its file to free space. Hidden like a missing title, but shown on its title
+    // page, greyed, with everyone's progress; restored if the file comes back.
+    'offloaded_at DATETIME',
     'tmdb_id TEXT', 'credits_json TEXT', 'credits_checked_at DATETIME'
   ]) {
     try {
@@ -602,6 +632,7 @@ async function initSchema(db) {
     CREATE UNIQUE INDEX IF NOT EXISTS idx_kids_titles_item ON kids_titles(item_id) WHERE item_id IS NOT NULL;
   `);
   await db.exec('CREATE INDEX IF NOT EXISTS idx_items_missing ON items(missing_since)');
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_items_offloaded ON items(offloaded_at)');
 
   // Extras (trailers, featurettes…) hang off their film via extra_of; see services/extras.js.
   await db.exec('CREATE INDEX IF NOT EXISTS idx_items_extra_of ON items(extra_of)');

@@ -49,6 +49,9 @@ docs/               This documentation
 | `subtitles.js`, `chapters.js`, `trickplay.js` | Subtitle tracks and VTT, chapter probing, scrub preview sheets |
 | `party.js` | In-memory watch parties and their server-sent event streams |
 | `visibility.js` | **Access control** (see below) |
+| `network.js` | Home / Tailscale / outside, by request address; the away-from-home settings and checks (sign-in, `authenticateToken`, Komga, KOReader) |
+| `twoFactor.js` | TOTP (RFC 6238), sealed secrets, backup codes, and the sign-in challenge between password and code |
+| `tls.js` | Built-in HTTPS: the local certificate authority, certificates, addresses learned from requests |
 | `itemView.js` | Shapes item rows for responses (ratings, series settings) |
 | `backup.js`, `upgrade.js`, `updateCheck.js` | Scheduled/manual backups (`VACUUM INTO`), the pre-upgrade backup, the release check |
 | `logger.js` | Console + `system_logs` table (Admin → Logs) |
@@ -86,7 +89,9 @@ Every place that returns titles or files applies the same rules, in one function
 `accessSql(user, alias)` in `services/visibility.js`. It returns an SQL fragment beginning
 with `AND` that excludes:
 
-- titles whose file is missing (`missing_since`)
+- titles whose file is missing (`missing_since`) or that were offloaded (`offloaded_at`);
+  title pages, a film's collection and lists pass `{ includeOffloaded: true }` to show
+  offloaded ones greyed
 - for Kids accounts, anything not in a kids library or `kids_titles`
 - anything above the account's content limit (the title's rating, else its series')
 

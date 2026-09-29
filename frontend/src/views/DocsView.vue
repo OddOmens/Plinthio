@@ -283,11 +283,31 @@
               <li><strong class="text-foreground">Change role</strong> — use the role dropdown next to any user (you cannot change your own role, so the server always keeps at least one admin able to manage roles).</li>
               <li><strong class="text-foreground">Edit</strong> (pencil icon) — rename a user's account and/or reset their password on their behalf, without needing their current password. Resetting a password immediately signs that user out everywhere and requires them to log in again with the new one.</li>
               <li><strong class="text-foreground">Delete</strong> — permanently removes the account (you cannot delete your own account).</li>
+              <li><strong class="text-foreground">Away from home</strong> (in Edit) — whether the account can be used outside the home network, when the server allows that (Admin &rarr; Network).</li>
+              <li><strong class="text-foreground">Reset two-factor</strong> (in Edit) — for someone who lost their phone and backup codes. It signs them out; they then sign in with just their password and can set it up again.</li>
             </ul>
             <p class="text-xs text-muted-foreground leading-relaxed">
               Any user can change their own password from <strong class="text-foreground">Settings &rarr; Security</strong>, which
               does require their current password.
             </p>
+          </div>
+
+          <div class="space-y-3 pt-3 border-t border-border">
+            <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
+              <ShieldCheck class="w-4 h-4 text-primary" />
+              Two-Factor Sign-In (Optional)
+            </h2>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              With two-factor on, signing in asks for a 6-digit code from an authenticator app (Google Authenticator, Microsoft
+              Authenticator, 1Password, Bitwarden, Aegis…) as well as your password.
+            </p>
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <li><strong class="text-foreground">Turn it on</strong> in Settings &rarr; Security: scan the QR code (or copy the key into the app), then type the code it shows.</li>
+              <li><strong class="text-foreground">Save your backup codes.</strong> Ten one-time codes for a lost phone, shown once. Each signs you in once instead of a code.</li>
+              <li><strong class="text-foreground">Signing in:</strong> password, then the code. On the code screen, "Lost your phone?" switches to a backup code.</li>
+              <li><strong class="text-foreground">Turning it off</strong> needs your password and a current code. If you're locked out, an admin can reset it.</li>
+              <li>Admins can require it for sign-ins from <strong class="text-foreground">outside the home network</strong> (Admin &rarr; Network). It's never required at home.</li>
+            </ul>
           </div>
 
           <div class="space-y-3 pt-3 border-t border-border">
@@ -337,7 +357,7 @@
             </p>
           </div>
 
-          <!-- Secure connection: the built-in HTTPS and its local certificate authority -->
+          <!-- Secure connection: Tailscale first, Plinthio's own certificate as the alternative -->
           <div class="p-5 rounded-2xl border-2 border-primary/30 bg-primary/5 space-y-4">
             <div class="flex items-center gap-2 text-foreground font-semibold text-sm">
               <Lock class="w-4 h-4 text-primary" />
@@ -345,11 +365,32 @@
             </div>
             <p class="text-xs text-muted-foreground leading-relaxed">
               Over plain <code class="text-foreground bg-muted px-1 rounded">http://</code> your browser warns that the connection isn't secure,
-              and phones won't run the app's offline features. Plinthio serves HTTPS as well, with its own certificate.
-              Install that certificate once on each device and the warning goes away for good.
+              and phones won't run the app's offline features.
+            </p>
+            <p v-if="isSecurePage" class="text-sm text-emerald-500 font-medium flex items-center gap-2">
+              <ShieldCheck class="w-4 h-4" /> You're connected over HTTPS. Nothing to do here.
             </p>
 
-            <template v-if="tls?.enabled">
+            <div class="p-4 rounded-xl border border-border bg-card space-y-2">
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <div class="font-semibold text-sm text-foreground">The easy way: Tailscale</div>
+                <span class="text-[11px] bg-primary text-primary-foreground font-semibold px-2 py-0.5 rounded-full uppercase">Recommended</span>
+              </div>
+              <p class="text-xs text-muted-foreground leading-relaxed">
+                Tailscale gives Plinthio a trusted address like
+                <code class="text-foreground bg-muted px-1 rounded break-all">https://plinthio.your-tailnet.ts.net</code>
+                that works at home and away. There's no certificate to install: each device just needs the free Tailscale app,
+                signed in. Your admin sets it up once on the server; see
+                <button type="button" class="text-primary font-medium hover:underline" @click="activeSection = 'remote'">Remote Access &amp; Tailscale</button>.
+              </p>
+            </div>
+
+            <template v-if="tls?.enabled && !isSecurePage">
+              <div class="font-semibold text-sm text-foreground pt-1">Or, on your home network only: Plinthio's own certificate</div>
+              <p class="text-xs text-muted-foreground leading-relaxed">
+                Plinthio also serves HTTPS itself, with its own certificate. Install that certificate once on each device and
+                the warning goes away for that address.
+              </p>
               <div class="flex flex-col sm:flex-row gap-2">
                 <a
                   v-if="tls.caAvailable"
@@ -361,16 +402,12 @@
                   Download certificate
                 </a>
                 <a
-                  v-if="!isSecurePage"
                   :href="httpsUrl"
                   class="h-10 px-4 rounded-xl border border-border bg-card text-foreground font-medium text-sm flex items-center justify-center gap-2 hover:bg-muted transition min-w-0"
                 >
                   <Globe class="w-4 h-4 flex-shrink-0" />
                   <span class="truncate">Open {{ httpsUrl }}</span>
                 </a>
-                <span v-else class="h-10 px-3 rounded-xl text-emerald-500 text-sm font-medium flex items-center gap-2">
-                  <ShieldCheck class="w-4 h-4" /> You're connected over HTTPS
-                </span>
               </div>
 
               <div v-if="tls.caAvailable" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-muted-foreground">
@@ -407,10 +444,10 @@
                 so installing it can't be used to intercept any other website.
               </p>
             </template>
-            <p v-else-if="tls" class="text-xs text-muted-foreground leading-relaxed">
-              HTTPS isn't turned on for this server. Admins: set <code class="text-foreground bg-muted px-1 rounded">HTTPS_PORT=8443</code>
-              (already the default in the Docker image — make sure port 8443 is published), or use one of the options under
-              <strong class="text-foreground">Remote Access & Tailscale</strong>.
+            <p v-else-if="tls && !tls.enabled && !isSecurePage" class="text-xs text-muted-foreground leading-relaxed">
+              Plinthio's own HTTPS isn't turned on for this server. Admins who'd rather not use Tailscale: set
+              <code class="text-foreground bg-muted px-1 rounded">HTTPS_PORT=8443</code> (already the default in the Docker image; make
+              sure port 8443 is published).
             </p>
           </div>
 
@@ -470,9 +507,9 @@
         <!-- SECTION: Remote Access (Mobile Data / Outside Wi-Fi) -->
         <section v-if="activeSection === 'remote'" class="space-y-6">
           <div>
-            <h1 class="text-2xl font-bold tracking-tight text-foreground">Accessing Plinthio Outside Your Wi-Fi</h1>
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">Using Plinthio Away From Home</h1>
             <p class="text-sm text-muted-foreground mt-1.5">
-              Securely connect to your libraries while on mobile data or traveling without exposing vulnerable open ports to the public internet.
+              Tailscale for you and people you trust, privately; a web address for guests who shouldn't need an app. Both optional.
             </p>
           </div>
 
@@ -485,7 +522,7 @@
                 </div>
                 <div>
                   <h3 class="text-sm font-semibold text-foreground">Option 1: Tailscale (Recommended & Easiest)</h3>
-                  <p class="text-[12px] text-muted-foreground">Zero-config, encrypted WireGuard mesh VPN. No router port forwarding required.</p>
+                  <p class="text-[12px] text-muted-foreground">A private network between your devices, with a trusted HTTPS address. No router changes, no certificates to install.</p>
                 </div>
               </div>
               <span class="text-[11px] bg-primary text-primary-foreground font-semibold px-2 py-0.5 rounded-full uppercase">
@@ -493,64 +530,110 @@
               </span>
             </div>
 
-            <div class="text-xs text-foreground space-y-2">
-              <p>Your Plinthio server is already accessible on the host's Tailnet at:</p>
-              <div class="p-2.5 rounded-lg bg-background border border-border font-mono text-xs flex items-center justify-between gap-2 overflow-x-auto">
-                <span class="whitespace-nowrap">http://XXX.XXX.XXX.X:8088</span>
-                <span class="text-emerald-500 font-sans text-[12px] font-medium flex-shrink-0">Ready</span>
+            <div class="text-xs text-muted-foreground space-y-3 leading-relaxed">
+              <p>
+                Plinthio gets an address like <code class="text-foreground bg-muted px-1 rounded break-all">https://plinthio.your-tailnet.ts.net</code>
+                that every device signed in to your tailnet trusts, at home or on mobile data. Free for personal use.
+              </p>
+
+              <div class="space-y-1.5">
+                <div class="font-semibold text-foreground">On the server (admin, once)</div>
+                <ol class="list-decimal list-inside space-y-1">
+                  <li>In the <strong class="text-foreground">Tailscale admin console</strong>: DNS → turn on <strong class="text-foreground">MagicDNS</strong> and <strong class="text-foreground">HTTPS Certificates</strong>.</li>
+                  <li>
+                    <strong class="text-foreground">Docker:</strong> download <code class="text-foreground bg-muted px-1 rounded">docker-compose.tailscale.yml</code>
+                    next to your compose file, put <code class="text-foreground bg-muted px-1 rounded break-all">TS_AUTHKEY=tskey-auth-…</code> (Settings → Keys in the admin console) and
+                    <code class="text-foreground bg-muted px-1 rounded break-all">COMPOSE_FILE=docker-compose.yml:docker-compose.tailscale.yml</code>
+                    in <code class="text-foreground bg-muted px-1 rounded">.env</code>, then run <code class="text-foreground bg-muted px-1 rounded">docker compose up -d</code>.
+                  </li>
+                  <li>
+                    <strong class="text-foreground">Tailscale already on the server, or no Docker:</strong> run
+                    <code class="text-foreground bg-muted px-1 rounded">sudo tailscale serve --bg 8088</code>.
+                  </li>
+                </ol>
               </div>
-              <div class="pt-2 text-xs text-muted-foreground space-y-1.5">
-                <div>1. Install the free <strong>Tailscale</strong> app on your iPhone or Android phone.</div>
-                <div>2. Sign in with the same account used on your host machine.</div>
-                <div>3. Open Safari or Chrome on your phone and open <code class="text-foreground bg-muted px-1.5 py-0.5 rounded break-all">http://XXX.XXX.XXX.X:8088</code>. You will connect instantly over 5G/LTE just like local Wi-Fi!</div>
+
+              <div class="space-y-1.5">
+                <div class="font-semibold text-foreground">On each phone or computer</div>
+                <ol class="list-decimal list-inside space-y-1">
+                  <li>Install the free <strong class="text-foreground">Tailscale</strong> app and sign in to the same tailnet.</li>
+                  <li>Open the <code class="text-foreground bg-muted px-1 rounded">https://….ts.net</code> address (the admin console lists it under Machines).</li>
+                  <li>Add it to your home screen from there, replacing any older <code class="text-foreground bg-muted px-1 rounded">http://</code> icon.</li>
+                </ol>
               </div>
+
+              <p class="text-[12px]">
+                Step-by-step details, and how to share Plinthio with someone else's Tailscale, are in
+                <code class="text-foreground bg-muted px-1 rounded">docs/remote-access.md</code> on GitHub.
+              </p>
             </div>
           </div>
 
-          <!-- Method 2: Cloudflare Tunnels -->
+          <!-- Method 2: Tailscale Funnel, a public link with no domain -->
           <div class="p-5 rounded-2xl border border-border bg-card space-y-3">
-            <h3 class="text-sm font-semibold text-foreground">Option 2: Cloudflare Tunnels (Public Domain)</h3>
-            <p class="text-xs text-muted-foreground">
-              Map a custom domain (e.g. <code class="text-foreground bg-muted px-1 rounded">media.yourdomain.com</code>) to your home server without opening router ports.
+            <h3 class="text-sm font-semibold text-foreground">Option 2: Tailscale Funnel, a link for anyone (no domain)</h3>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              Opens the same <code class="text-foreground bg-muted px-1 rounded break-all">https://plinthio.your-tailnet.ts.net</code> address to
+              anyone, in a normal browser: no Tailscale for your friends, no domain, no router changes, and it works even where
+              your internet provider blocks incoming connections. It goes through Tailscale's servers, which limit bandwidth:
+              reading and listening are fine, video may buffer.
             </p>
-            <div class="bg-muted/40 border border-border rounded-lg p-3 font-mono text-xs space-y-1 overflow-x-auto">
-              <div class="text-muted-foreground whitespace-nowrap"># 1. Install cloudflared on the host</div>
-              <div class="whitespace-nowrap">curl -L https://pkg.cloudflare.com/cloudflared.deb -o cloudflared.deb && sudo dpkg -i cloudflared.deb</div>
-              <div class="text-muted-foreground pt-1 whitespace-nowrap"># 2. Authenticate & create a tunnel</div>
-              <div class="whitespace-nowrap">cloudflared tunnel login</div>
-              <div class="whitespace-nowrap">cloudflared tunnel create plinthio</div>
-              <div class="text-muted-foreground pt-1 whitespace-nowrap"># 3. Route tunnel to localhost:8088</div>
-              <div class="whitespace-nowrap">cloudflared tunnel run --url http://localhost:8088 plinthio</div>
-            </div>
-            <p class="text-[12px] text-muted-foreground">
-              Because this exposes Plinthio to the public internet, make sure every account has a strong password —
-              anyone with the URL can reach the login screen.
-            </p>
+            <ol class="text-xs text-muted-foreground list-decimal list-inside space-y-1 leading-relaxed">
+              <li>Set up Option 1 with the Docker add-on.</li>
+              <li><strong class="text-foreground">Admin → Network</strong> → allow access from outside (and consider requiring two-factor away from home).</li>
+              <li>Add <code class="text-foreground bg-muted px-1 rounded">TS_FUNNEL=true</code> to <code class="text-foreground bg-muted px-1 rounded">.env</code> and run <code class="text-foreground bg-muted px-1 rounded">docker compose up -d</code>.</li>
+              <li>Check it on a phone with Wi-Fi and Tailscale off, then send friends the link and make them accounts.</li>
+            </ol>
           </div>
 
-          <!-- Method 3: Caddy / Nginx -->
+          <!-- Method 3: a web address for guests (the public-address add-on) -->
           <div class="p-5 rounded-2xl border border-border bg-card space-y-3">
-            <h3 class="text-sm font-semibold text-foreground">Option 3: Reverse Proxy with SSL (Caddy)</h3>
-            <p class="text-xs text-muted-foreground">
-              If you have a static IP or dynamic DNS with ports 80/443 forwarded, Caddy provides automatic HTTPS:
+            <h3 class="text-sm font-semibold text-foreground">Option 3: Your own web address (full speed)</h3>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              Friends and family open something like <code class="text-foreground bg-muted px-1 rounded">https://media.yourdomain.com</code>
+              and sign in, with no apps or certificates to install. The public-address add-on runs Caddy, which gets and renews a real
+              certificate by itself. Your sign-in page is then on the internet, so use strong passwords and consider two-factor.
             </p>
-            <div class="bg-muted/40 border border-border rounded-lg p-3 font-mono text-xs overflow-x-auto">
-              <div class="text-muted-foreground whitespace-nowrap"># /etc/caddy/Caddyfile</div>
-              <div class="whitespace-nowrap">plinthio.yourdomain.com {</div>
-              <div class="pl-4 whitespace-nowrap">reverse_proxy localhost:8088</div>
-              <div class="whitespace-nowrap">}</div>
+            <div class="text-xs text-muted-foreground space-y-1.5 leading-relaxed">
+              <div class="font-semibold text-foreground">What it takes (admin, once)</div>
+              <ol class="list-decimal list-inside space-y-1">
+                <li><strong class="text-foreground">Check your internet connection allows it.</strong> 5G/4G home internet, Starlink and some providers ("CGNAT") don't; the guide shows how to check in a minute.</li>
+                <li>A domain, with a DNS <strong class="text-foreground">A record</strong> pointing at your home's public address.</li>
+                <li>Ports <strong class="text-foreground">80</strong> and <strong class="text-foreground">443</strong> forwarded on your router to the server.</li>
+                <li><strong class="text-foreground">Admin → Network</strong> → allow access from outside (and, optionally, require two-factor away from home).</li>
+                <li>
+                  Download <code class="text-foreground bg-muted px-1 rounded">docker-compose.public.yml</code> next to your compose file, add
+                  <code class="text-foreground bg-muted px-1 rounded break-all">PLINTHIO_DOMAIN=media.yourdomain.com</code> and
+                  <code class="text-foreground bg-muted px-1 rounded break-all">COMPOSE_FILE=docker-compose.yml:docker-compose.public.yml</code>
+                  to <code class="text-foreground bg-muted px-1 rounded">.env</code>, and run <code class="text-foreground bg-muted px-1 rounded">docker compose up -d</code>.
+                </li>
+                <li>Check it from a phone with Wi-Fi off, and open Admin → Network there: it should say "outside".</li>
+              </ol>
             </div>
+          </div>
+
+          <!-- Who can use it from where -->
+          <div class="p-5 rounded-2xl border border-border bg-card space-y-3">
+            <h3 class="text-sm font-semibold text-foreground">Who can use Plinthio from where</h3>
+            <ul class="text-xs text-muted-foreground space-y-1.5 list-disc list-inside leading-relaxed">
+              <li><strong class="text-foreground">Admin → Network:</strong> allow access from outside the home network (off for new servers), treat Tailscale as home, and optionally require two-factor away from home.</li>
+              <li><strong class="text-foreground">Admin → Users → Edit:</strong> whether each person can use Plinthio away from home, e.g. the kids only at home.</li>
+              <li><strong class="text-foreground">Settings → Security:</strong> anyone can turn on two-factor sign-in for their own account.</li>
+            </ul>
           </div>
 
           <div class="p-4 rounded-xl bg-muted/30 border border-border space-y-2">
             <div class="text-xs font-semibold text-foreground flex items-center gap-2">
               <AlertTriangle class="w-4 h-4 text-amber-500" />
-              <span>Avoid: Plain Port Forwarding</span>
+              <span>Avoid: forwarding port 8088, and tunnels for video</span>
             </div>
             <p class="text-xs text-muted-foreground leading-relaxed">
-              Forwarding port 8088 directly on your router without a VPN or reverse-proxy/TLS in front of it exposes
-              an unencrypted login form to the open internet. Prefer Tailscale (private) or a reverse proxy with
-              HTTPS (public) instead.
+              Forwarding 8088 straight to Plinthio puts an unencrypted sign-in page on the internet: use the add-on on 443 instead.
+              Tunnels such as Cloudflare Tunnel avoid router changes, but route all traffic through someone else's servers and
+              aren't meant for streaming video; they're fine for books and audiobooks.
+            </p>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              The full guide, with troubleshooting: <code class="text-foreground bg-muted px-1 rounded">docs/remote-access.md</code> on GitHub.
             </p>
           </div>
         </section>
@@ -1082,12 +1165,13 @@ import {
   Bug
 } from '@lucide/vue';
 import { reportProblemUrl, serverVersion } from '../utils/reportProblem';
+import { useAuthStore } from '../stores/auth';
 
+const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
 const router = useRouter();
-// Global nav layout (topnav vs sidebar) is a server-wide admin setting; these pages keep
-// their own header either way, so the sidebar just sits alongside it.
-const isSidebarLayout = computed(() => customizationStore.layoutMode === 'sidebar');
+// Global nav layout (topnav vs sidebar) respects user preference when allowed, falling back to server default.
+const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(authStore.user) === 'sidebar');
 function goToShelf(type) {
   router.push({ path: '/', query: type && type !== 'all' ? { type } : {} });
 }

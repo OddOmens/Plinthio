@@ -41,8 +41,45 @@ function publicRow(item) {
     library_name: item.library_name,
     path: item.path,
     missing_since: item.missing_since || null,
+    offloaded_at: item.offloaded_at || null,
     updated_at: item.updated_at
   };
+}
+
+// Missing and offloaded titles grouped the way people think about them: a film, a book, or
+// one season of a show (a whole series of books or comics). Each group carries its item ids
+// so the admin can keep it as history, undo that, or remove it, in one go.
+function groupTitles(items, goneNow) {
+  const groups = new Map();
+  for (const item of items) {
+    const episodic = ['show', 'anime'].includes(item.media_type);
+    const season = episodic && item.volume != null ? Math.floor(Number(item.volume)) : null;
+    const name = item.series || item.title;
+    const key = `${item.library_id}::${item.media_type}::${name}::${season ?? ''}`;
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        library_name: item.library_name,
+        media_type: item.media_type,
+        name,
+        season,
+        count: 0,
+        size: 0,
+        awaitingDeletion: 0,
+        since: null,
+        ids: []
+      });
+    }
+    const g = groups.get(key);
+    g.count++;
+    g.size += item.file_size || 0;
+    g.ids.push(item.id);
+    // Offloaded but its file is still there: the space isn't free until it's deleted.
+    if (item.offloaded_at && !item.missing_since && !goneNow.has(item.id)) g.awaitingDeletion++;
+    const since = item.offloaded_at || item.missing_since;
+    if (since && (!g.since || since < g.since)) g.since = since;
+  }
+  return [...groups.values()].sort((a, b) => a.name.localeCompare(b.name) || (a.season ?? -1) - (b.season ?? -1));
 }
 
 // A one-page "what needs attention" report: libraries that can't be reached, catalog rows
@@ -67,7 +104,7 @@ router.get('/', async (req, res) => {
     const items = await db.all(`
       SELECT i.id, i.title, i.series, i.volume, i.media_type, i.path, i.updated_at,
              i.cover_path, i.description, i.author, i.age_rating, i.library_id, i.missing_since,
-             l.name AS library_name
+             i.offloaded_at, i.file_size, l.name AS library_name
       FROM items i
       JOIN libraries l ON l.id = i.library_id
     `);
@@ -78,7 +115,9 @@ router.get('/', async (req, res) => {
     // Missing = the last scan flagged it (kept, hidden, waiting for an admin), or its file is
     // gone right now even though no scan has run since.
     const goneNow = new Set((await findMissingFiles(items.filter((i) => reachableLibIds.has(i.library_id)))).map((i) => i.id));
-    const missingFiles = items.filter((i) => i.missing_since || goneNow.has(i.id));
+    // Offloaded titles were removed on purpose and kept as history, so they're not missing.
+    const missingFiles = items.filter((i) => !i.offloaded_at && (i.missing_since || goneNow.has(i.id)));
+    const offloaded = items.filter((i) => i.offloaded_at);
 
     // Same title + same byte size in the same media type is almost always the same file
     // twice (a copy in two folders, or in two libraries).
@@ -129,6 +168,7 @@ router.get('/', async (req, res) => {
         totalItems: items.length,
         unreachableLibraries: libraries.filter((l) => !l.path_exists).length,
         missingFiles: missingFiles.length,
+        offloaded: offloaded.length,
         duplicateGroups: duplicateGroups.length,
         volumeClashes: volumeClashes.length,
         noCover: noCover.length,
@@ -139,6 +179,8 @@ router.get('/', async (req, res) => {
       },
       libraries,
       missingFiles: missingFiles.slice(0, LIST_LIMIT).map(publicRow),
+      missingGroups: groupTitles(missingFiles, goneNow),
+      offloadedGroups: groupTitles(offloaded, goneNow),
       duplicates: duplicateGroups.map((g) => ({ copies: g.copies, items: expand(g.ids) })),
       volumeClashes: volumeClashes.map((g) => ({
         library_id: g.library_id,
@@ -160,14 +202,19 @@ router.get('/', async (req, res) => {
 // has flagged missing and whose file is still gone are removed — so a drive that came back
 // since is never emptied out. Reading progress, ratings and bookmarks are kept (they're
 // keyed by item id and re-attach if the same file is ever scanned again).
+//
+// Offloaded titles are only removed when asked for by id: "remove everything missing" must
+// never take history someone chose to keep.
 router.post('/remove-missing', async (req, res) => {
   const { itemIds } = req.body || {};
   try {
     const db = await getDb();
-    let rows = await db.all('SELECT id, path, cover_path, title FROM items WHERE missing_since IS NOT NULL');
+    let rows = await db.all('SELECT id, path, cover_path, title, offloaded_at FROM items WHERE missing_since IS NOT NULL');
     if (Array.isArray(itemIds)) {
       const wanted = new Set(itemIds);
       rows = rows.filter((r) => wanted.has(r.id));
+    } else {
+      rows = rows.filter((r) => !r.offloaded_at);
     }
     let removed = 0;
     for (const row of rows) {
@@ -188,5 +235,50 @@ router.post('/remove-missing', async (req, res) => {
     serverError(req, res, err);
   }
 });
+
+// Keep titles as history: hidden from shelves, search and playback, shown greyed on their
+// title page with everyone's progress. Usually for titles already gone from disk (Library
+// Health's missing list), but it also works ahead of deleting the files.
+router.post('/offload', async (req, res) => {
+  const itemIds = validIds(req.body?.itemIds);
+  if (!itemIds) return res.status(400).json({ error: 'itemIds must be a list of item ids' });
+  try {
+    const db = await getDb();
+    const result = await db.run(
+      `UPDATE items SET offloaded_at = CURRENT_TIMESTAMP
+       WHERE offloaded_at IS NULL AND id IN (${itemIds.map(() => '?').join(', ')})`,
+      itemIds
+    );
+    logger.info('library', `${result.changes} title(s) offloaded (kept as history) by ${req.user.username}`);
+    res.json({ offloaded: result.changes });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// Undo that. A title whose file is still there is back on the shelves; one whose file is
+// gone goes back to being missing.
+router.post('/unoffload', async (req, res) => {
+  const itemIds = validIds(req.body?.itemIds);
+  if (!itemIds) return res.status(400).json({ error: 'itemIds must be a list of item ids' });
+  try {
+    const db = await getDb();
+    const result = await db.run(
+      `UPDATE items SET offloaded_at = NULL
+       WHERE offloaded_at IS NOT NULL AND id IN (${itemIds.map(() => '?').join(', ')})`,
+      itemIds
+    );
+    logger.info('library', `${result.changes} title(s) no longer offloaded, by ${req.user.username}`);
+    res.json({ restored: result.changes });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+const ITEM_ID_RE = /^[a-f0-9]{32}$/;
+function validIds(ids) {
+  if (!Array.isArray(ids) || ids.length === 0 || ids.length > 5000) return null;
+  return ids.every((id) => typeof id === 'string' && ITEM_ID_RE.test(id)) ? [...new Set(ids)] : null;
+}
 
 export default router;

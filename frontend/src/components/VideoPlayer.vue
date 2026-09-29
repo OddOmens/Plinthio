@@ -573,11 +573,11 @@ async function setSkip(dir, seconds) {
 }
 
 // ── Pause screen ────────────────────────────────────────────────────────────────────────
-// After a few idle seconds paused, the admin's chosen pause screen (see PauseScreen.vue)
+// After a few idle seconds paused, the pause screen (see PauseScreen.vue)
 // fades in; any movement, touch or key hides it again.
 const customizationStore = useCustomizationStore();
 const PAUSE_IDLE_MS = 2500;
-const pauseMode = computed(() => customizationStore.pauseScreen || 'simple');
+const pauseMode = computed(() => customizationStore.effectivePauseScreen(authStore.user));
 const pauseIdle = ref(false);
 const pauseCredits = ref(null);
 const seasonRest = ref(null);

@@ -82,13 +82,55 @@ extends it.
   week.
 - **Changing your password**, or **Settings → Security → Sign out of all devices**, ends
   every other session immediately.
-- Sign-in attempts are rate limited: 10 per 15 minutes per address (see `TRUST_PROXY` in
-  [Configuration](configuration.md)).
+- Failed sign-in attempts are rate limited: 10 per 15 minutes per address (see
+  `TRUST_PROXY` in [Configuration](configuration.md)). Successful ones don't count, so a
+  household behind one address never locks itself out.
 - Image, audio and video URLs carry a separate **media token**. It's valid for 24 hours,
   only opens media, and is never the sign-in token itself, so a copied media link can't be
   used to drive the account.
 - **Admin → Activity** shows each person's sign-in history and what they've been reading and
   watching.
+
+## Two-factor sign-in
+
+Optional, for anyone. With it on, signing in asks for a 6-digit code from an authenticator
+app as well as the password: Google Authenticator, Microsoft Authenticator, 1Password,
+Bitwarden, Aegis, or any other app that does "TOTP".
+
+- **Turning it on:** Settings → Security → Two-Factor Sign-In (it's also offered at the end
+  of onboarding and the setup wizard). Scan the QR code, or copy the key into the app, then
+  type the code it shows to confirm.
+- **Backup codes:** ten one-time codes for a lost phone, shown once when you turn it on.
+  Download or copy them somewhere safe. Each one signs you in instead of a code, once. Make
+  new ones any time (Settings → Security → New backup codes).
+- **Signing in:** username and password, then the code. Six digits typed (or filled in by
+  the phone) and it goes. "Lost your phone?" switches to a backup code.
+- **Turning it off**, or making new backup codes, needs your password and a current code
+  (or a backup code). API keys can't change it.
+- **Locked out?** An admin can reset it: Admin → Users → the account → Two-factor → Reset.
+  That signs the account out everywhere; its owner then signs in with just the password and
+  can set two-factor up again.
+- A code works once, even within its 30 seconds, and a phone clock a little off still works.
+  The secret is stored encrypted with a key derived from the server's JWT secret
+  (`/config/jwt.secret`), so changing that secret means everyone sets two-factor up again.
+- Admins can require it for sign-ins from outside the home network (Admin → Network, see
+  below). It's never required at home.
+
+## Away from home
+
+Whether an account can be used outside the home network. See
+[Using Plinthio away from home](remote-access.md) for the whole picture.
+
+- **Admin → Network → Allow access from outside the home network** is the server-wide
+  switch. Off, only home devices and Tailscale can sign in or use anything. New servers
+  choose it in the setup wizard.
+- **Admin → Users → Edit → Can use Plinthio away from home**, per account (on by default).
+  Off, that account only works at home, including its sessions, its reading apps and its API
+  keys. Admins can't switch it off for themselves while away.
+- **Admin → Network → Require two-factor away from home**: accounts without two-factor can
+  then only sign in at home, where they can set it up.
+- Admin → Users shows who has two-factor, who's home-only, and where each person last signed
+  in from (home, Tailscale or outside). Admin → Network lists recent sign-ins from outside.
 
 ## API keys
 
