@@ -210,6 +210,7 @@
 </template>
 
 <script setup>
+import { ACCENT_OPTIONS } from '../constants/appearance';
 import AppLogo from './AppLogo.vue';
 import TwoFactorSetup from './TwoFactorSetup.vue';
 import { ref, reactive, computed } from 'vue';
@@ -266,16 +267,7 @@ const themeOptions = [
   }
 ];
 
-const accentOptions = [
-  { id: 'zinc', label: 'Zinc', swatch: 'bg-zinc-500' },
-  { id: 'slate', label: 'Slate', swatch: 'bg-slate-600' },
-  { id: 'emerald', label: 'Emerald', swatch: 'bg-emerald-500' },
-  { id: 'violet', label: 'Violet', swatch: 'bg-violet-500' },
-  { id: 'rose', label: 'Rose', swatch: 'bg-rose-500' },
-  { id: 'amber', label: 'Amber', swatch: 'bg-amber-500' },
-  { id: 'sky', label: 'Sky', swatch: 'bg-sky-500' },
-  { id: 'indigo', label: 'Indigo', swatch: 'bg-indigo-500' }
-];
+const accentOptions = ACCENT_OPTIONS;
 
 const mediaOptions = [
   { id: 'manga', label: 'Manga', hint: 'Comics & graphic novels', icon: FileImage },

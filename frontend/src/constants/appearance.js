@@ -3,15 +3,24 @@
 // `swatch`, `diagram` and `icon` are how OptionTiles draws each one.
 import { StretchHorizontal, RectangleHorizontal } from '@lucide/vue';
 
+// Ordered around the colour wheel, greys first.
 export const ACCENT_OPTIONS = [
   { id: 'zinc', label: 'Zinc', swatch: 'bg-zinc-500' },
   { id: 'slate', label: 'Slate', swatch: 'bg-slate-500' },
-  { id: 'emerald', label: 'Emerald', swatch: 'bg-emerald-500' },
-  { id: 'violet', label: 'Violet', swatch: 'bg-violet-500' },
-  { id: 'rose', label: 'Rose', swatch: 'bg-rose-500' },
+  { id: 'red', label: 'Red', swatch: 'bg-red-500' },
+  { id: 'orange', label: 'Orange', swatch: 'bg-orange-500' },
   { id: 'amber', label: 'Amber', swatch: 'bg-amber-500' },
+  { id: 'lime', label: 'Lime', swatch: 'bg-lime-500' },
+  { id: 'emerald', label: 'Emerald', swatch: 'bg-emerald-500' },
+  { id: 'teal', label: 'Teal', swatch: 'bg-teal-500' },
   { id: 'sky', label: 'Sky', swatch: 'bg-sky-500' },
-  { id: 'indigo', label: 'Indigo', swatch: 'bg-indigo-500' }
+  { id: 'blue', label: 'Blue', swatch: 'bg-blue-500' },
+  { id: 'indigo', label: 'Indigo', swatch: 'bg-indigo-500' },
+  { id: 'violet', label: 'Violet', swatch: 'bg-violet-500' },
+  { id: 'purple', label: 'Purple', swatch: 'bg-purple-500' },
+  { id: 'fuchsia', label: 'Fuchsia', swatch: 'bg-fuchsia-500' },
+  { id: 'pink', label: 'Pink', swatch: 'bg-pink-500' },
+  { id: 'rose', label: 'Rose', swatch: 'bg-rose-500' }
 ];
 
 export const LAYOUT_OPTIONS = [

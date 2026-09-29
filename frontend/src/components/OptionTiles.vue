@@ -1,11 +1,10 @@
 <template>
   <!-- A row of choice tiles (accent colours, layouts, page widths, pause screens), used by
-       both Admin → Server Config and Settings → Appearance so they look the same. An option
-       with `id: null` is "Server default" on a person's own settings. -->
+       both Admin → Server Config and Settings → Appearance so they look the same. -->
   <div role="radiogroup" :aria-label="label" :class="gridClass">
     <button
       v-for="opt in options"
-      :key="opt.id ?? 'default'"
+      :key="opt.id"
       type="button"
       role="radio"
       :aria-checked="modelValue === opt.id"
@@ -20,14 +19,7 @@
         disabled ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'
       ]"
     >
-      <!-- Swatch: a colour dot, or a split dot for "Server default" -->
-      <span
-        v-if="swatches"
-        class="w-6 h-6 rounded-full border border-black/10 shadow-sm flex items-center justify-center"
-        :class="opt.swatch || 'bg-muted'"
-      >
-        <span v-if="opt.id === null" class="w-2.5 h-2.5 rounded-full" :class="opt.defaultSwatch" />
-      </span>
+      <span v-if="swatches" class="w-6 h-6 rounded-full border border-black/10 shadow-sm" :class="opt.swatch"></span>
 
       <!-- Layout diagram -->
       <div v-else-if="opt.diagram" class="w-11 h-9 rounded-md border border-border/70 bg-background flex p-1 flex-shrink-0" :class="opt.diagram === 'sidebar' ? 'gap-0.5' : 'flex-col gap-0.5'">
@@ -53,9 +45,9 @@
 
 <script setup>
 const props = defineProps({
-  // [{ id, label, desc?, swatch?, defaultSwatch?, diagram?, icon? }]
+  // [{ id, label, desc?, swatch?, diagram?, icon? }]
   options: { type: Array, required: true },
-  modelValue: { type: [String, null], default: null },
+  modelValue: { type: String, default: null },
   label: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   // Colour dots in a compact grid, rather than tiles with a description.

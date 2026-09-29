@@ -629,7 +629,7 @@ import Sidebar from '../components/Sidebar.vue';
 import TwoFactorSetup from '../components/TwoFactorSetup.vue';
 import OptionTiles from '../components/OptionTiles.vue';
 import CustomizationPreview from '../components/CustomizationPreview.vue';
-import { ACCENT_OPTIONS, LAYOUT_OPTIONS, PAGE_WIDTH_OPTIONS, PAUSE_SCREEN_OPTIONS, optionLabel } from '../constants/appearance';
+import { ACCENT_OPTIONS, LAYOUT_OPTIONS, PAGE_WIDTH_OPTIONS, PAUSE_SCREEN_OPTIONS } from '../constants/appearance';
 import { ALL_MEDIA_TYPES } from '../constants/media';
 import { SHELF_MODES, normalizeShelfModes, userShelfModes } from '../utils/shelfModes';
 import { useDialogStore } from '../stores/dialog';
@@ -657,7 +657,6 @@ import {
   ExternalLink,
   LogIn,
   Upload,
-  Server,
   LayoutGrid,
   Loader2
 } from '@lucide/vue';
@@ -857,21 +856,20 @@ async function loadData() {
 }
 
 // Appearance: each setting is the person's own when the admin allows it, otherwise the
-// server's (shown, locked). `null` means "use the server default".
+// server's (shown, locked).
 const personalizationOn = computed(() => customizationStore.userCustomization?.enabled !== false);
 const previewView = ref('shelf');
 const hoverPreview = ref({});
 
 const appearanceCards = computed(() => {
   const prefsNow = authStore.user?.preferences || {};
-  const serverAccent = ACCENT_OPTIONS.find((a) => a.id === (customizationStore.accentTheme || 'zinc'));
   const cards = [
     {
       field: 'accentTheme', key: 'accentColor', title: 'Accent Color', preview: 'shelf',
       desc: 'Your highlight colour on buttons, badges and the current tab.',
       serverValue: customizationStore.accentTheme || 'zinc',
-      options: [{ id: null, label: 'Server default', swatch: 'bg-muted', defaultSwatch: serverAccent?.swatch }, ...ACCENT_OPTIONS],
-      swatches: true, grid: 'grid grid-cols-3 sm:grid-cols-9 lg:grid-cols-3 2xl:grid-cols-9 gap-2.5'
+      options: ACCENT_OPTIONS,
+      swatches: true, grid: 'grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-4 2xl:grid-cols-8 gap-2.5'
     },
     {
       field: 'layoutMode', key: 'layoutMode', title: 'Navigation Layout', preview: 'shelf',
@@ -892,17 +890,12 @@ const appearanceCards = computed(() => {
       options: PAUSE_SCREEN_OPTIONS
     }
   ];
-  return cards.map((card) => {
-    const options = card.field === 'accentTheme'
-      ? card.options
-      : [{ id: null, label: 'Server default', desc: `Currently ${optionLabel(card.options, card.serverValue)}`, icon: Server }, ...card.options];
-    return {
-      ...card,
-      options,
-      allowed: customizationStore.isCustomizationAllowed(card.key),
-      value: prefsNow[card.field] || null
-    };
-  });
+  // Each shows what's in effect: the person's own choice, else the server's.
+  return cards.map((card) => ({
+    ...card,
+    allowed: customizationStore.isCustomizationAllowed(card.key),
+    value: prefsNow[card.field] || card.serverValue
+  }));
 });
 
 // What the preview shows: the effective look, or the option under the pointer.
@@ -923,8 +916,7 @@ const previewSettings = computed(() => {
 
 function hoverAppearance(card, id) {
   if (!card.allowed || card.field === 'pageWidth') return;
-  // Hovering "Server default" previews the server's value.
-  const value = id === undefined ? undefined : (id ?? card.serverValue);
+  const value = id;
   hoverPreview.value = { ...hoverPreview.value, [card.field]: value };
   if (value !== undefined) previewView.value = card.preview;
 }
