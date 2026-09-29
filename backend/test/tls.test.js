@@ -1,5 +1,7 @@
 import { test, before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'fs';
+import path from 'path';
 import http from 'http';
 import https from 'https';
 import { execFileSync } from 'child_process';
@@ -36,7 +38,7 @@ describe('built-in HTTPS', { skip: !hasOpenssl && 'openssl is not installed' }, 
 
   before(async () => {
     httpsPort = 30000 + Math.floor(Math.random() * 20000);
-    server = await startTestServer({ env: { HTTPS_PORT: String(httpsPort), TLS_HOSTNAMES: 'media.lan' } });
+    server = await startTestServer({ env: { HTTPS_PORT: String(httpsPort), TLS_HOSTNAMES: 'media.lan,not a name' } });
     // The HTTPS listener starts just after HTTP.
     for (let i = 0; i < 50 && !(await fetch(`${server.baseUrl}/api/tls`).then((r) => r.json())).enabled; i++) {
       await new Promise((r) => setTimeout(r, 100));
@@ -56,6 +58,10 @@ describe('built-in HTTPS', { skip: !hasOpenssl && 'openssl is not installed' }, 
     assert.equal(await httpsGet(httpsPort, ca, 'media.lan'), 200);
   });
 
+  test('ignores a TLS_HOSTNAMES entry that isn\'t a name, rather than writing it into the certificate', () => {
+    assert.match(server.output(), /Ignoring "not a name" in TLS_HOSTNAMES/);
+  });
+
   test('no HSTS, which would lock browsers out of the plain-HTTP port', async () => {
     const res = await fetch(`${server.baseUrl}/api/health`);
     assert.equal(res.headers.get('strict-transport-security'), null);
@@ -72,5 +78,21 @@ describe('built-in HTTPS', { skip: !hasOpenssl && 'openssl is not installed' }, 
     }
     assert.ok(ok, 'nas.local was added to the certificate');
     await assert.rejects(httpsGet(httpsPort, ca, 'example.com'));
+  });
+
+  test('never learns a ts.net name: that domain belongs to every Tailscale user', async () => {
+    await httpVisitAs(server.baseUrl, 'box.tail1234.ts.net');
+    await new Promise((r) => setTimeout(r, 2500));
+    await assert.rejects(httpsGet(httpsPort, ca, 'box.tail1234.ts.net'));
+  });
+
+  test('stops learning at the cap instead of pushing out addresses devices already use', async () => {
+    const file = path.join(server.dataDir, 'ssl', 'learned-names.json');
+    for (let i = 0; i < 20; i++) await httpVisitAs(server.baseUrl, `flood${i}.local`);
+    const learned = JSON.parse(fs.readFileSync(file, 'utf8'));
+    assert.equal(learned.length, 16);
+    assert.ok(learned.includes('nas.local'), 'the address a real device used is kept');
+    assert.ok(!learned.includes('flood19.local'), 'nothing past the cap is learned');
+    assert.match(server.output(), /addresses are already learned/);
   });
 });

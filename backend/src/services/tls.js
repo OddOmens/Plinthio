@@ -38,7 +38,9 @@ const CA_DAYS = 3650;
 const RENEW_BEFORE_MS = 30 * 24 * 60 * 60 * 1000;
 
 // What the CA may ever sign for: loopback, RFC 1918, Tailscale's CGNAT range, IPv6 ULA /
-// link-local, and the host names used on home networks.
+// link-local, and the host names used on home networks. Only names nobody can register
+// publicly: not ts.net, which covers every Tailscale user's machines, so a leaked CA key
+// could impersonate all of them. A tailnet name goes in TLS_HOSTNAMES instead.
 const PERMITTED_IPS = [
   '127.0.0.0/255.0.0.0',
   '10.0.0.0/255.0.0.0',
@@ -50,7 +52,13 @@ const PERMITTED_IPS = [
   'FC00:0:0:0:0:0:0:0/FE00:0:0:0:0:0:0:0',
   'FE80:0:0:0:0:0:0:0/FFC0:0:0:0:0:0:0:0'
 ];
-const PERMITTED_DNS = ['localhost', 'local', 'lan', 'home', 'internal', 'home.arpa', 'ts.net'];
+const PERMITTED_DNS = ['localhost', 'local', 'lan', 'home', 'internal', 'home.arpa'];
+
+// A host name or IP safe to put in a certificate (and in the openssl config that makes it).
+const HOST_NAME_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/;
+function isValidName(name) {
+  return net.isIP(name) ? true : name.length <= 253 && HOST_NAME_RE.test(name);
+}
 
 function parsePort(raw) {
   const port = parseInt(raw || '', 10);
@@ -61,7 +69,15 @@ export const tlsSettings = {
   port: parsePort(process.env.HTTPS_PORT),
   // Extra names the certificate should cover, e.g. the host's LAN IP — inside Docker's
   // default bridge network the container can't see the address phones actually use.
-  extraNames: (process.env.TLS_HOSTNAMES || '').split(',').map((s) => s.trim()).filter(Boolean)
+  extraNames: (process.env.TLS_HOSTNAMES || '').split(',')
+    .map((s) => s.trim())
+    .map((s) => (net.isIP(s) ? s : s.toLowerCase()))
+    .filter((s) => {
+      if (!s) return false;
+      if (isValidName(s)) return true;
+      console.warn(`[tls] Ignoring "${s}" in TLS_HOSTNAMES: not an IP address or host name.`);
+      return false;
+    })
 };
 
 let state = { enabled: false, mode: null, names: [], caExtras: [] };
@@ -97,9 +113,7 @@ const CA_NAMES = path.join(SSL_DIR, 'plinthio-ca.names.json');
 // Names outside the built-in ranges (a public IP, a real domain) that TLS_HOSTNAMES asked
 // for are added to the CA's constraints — but only when the CA is created.
 function extraConstraintNames() {
-  return tlsSettings.extraNames
-    .map((n) => (net.isIP(n) ? n : n.toLowerCase()))
-    .filter((n) => !withinBuiltInConstraints(n));
+  return tlsSettings.extraNames.filter((n) => !withinBuiltInConstraints(n));
 }
 
 function withinBuiltInConstraints(name) {
@@ -109,7 +123,8 @@ function withinBuiltInConstraints(name) {
 
 function caExtraNames() {
   try {
-    return JSON.parse(fs.readFileSync(CA_NAMES, 'utf8'));
+    const list = JSON.parse(fs.readFileSync(CA_NAMES, 'utf8'));
+    return Array.isArray(list) ? list.filter((n) => typeof n === 'string' && isValidName(n)) : [];
   } catch {
     return [];
   }
@@ -135,7 +150,7 @@ export function certificateNames() {
       if (iface.family === 'IPv4' || iface.family === 4) names.add(iface.address);
     }
   }
-  for (const name of tlsSettings.extraNames) names.add(net.isIP(name) ? name : name.toLowerCase());
+  for (const name of tlsSettings.extraNames) names.add(name);
   for (const name of learnedNames()) names.add(name);
   return [...names].sort();
 }
@@ -252,7 +267,7 @@ export function loadTlsCredentials() {
   const extras = caExtraNames();
   const wanted = certificateNames();
   const names = wanted.filter((n) => coveredByCa(n, extras));
-  const skipped = tlsSettings.extraNames.filter((n) => !coveredByCa(net.isIP(n) ? n : n.toLowerCase(), extras));
+  const skipped = tlsSettings.extraNames.filter((n) => !coveredByCa(n, extras));
   if (!serverCertIsCurrent(names)) {
     if (skipped.length) {
       console.warn(`[tls] Left ${skipped.join(', ')} off the certificate: the local CA was made before ` +
@@ -271,15 +286,18 @@ export function loadTlsCredentials() {
 // set TLS_HOSTNAMES is exactly the step people miss. But each plain-HTTP visit says which
 // address it used (the Host header), so the certificate simply learns it: the next time that
 // device switches to HTTPS, its address is already covered. Only names the CA may sign for
-// anyway (private IPs, .local-style names) are learned, and only the most recent few kept,
-// so a stray or forged Host header can at worst add a harmless private name.
+// anyway (private IPs, .local-style names) are learned, so a stray or forged Host header can
+// at worst add a harmless private name. Anyone can send a request, so the list is capped and
+// never rotates: once it's full nothing more is learned, which keeps a flood of made-up names
+// from pushing out the addresses real devices use or re-issuing the certificate over and over.
 const LEARNED_NAMES = path.join(SSL_DIR, 'learned-names.json');
 const MAX_LEARNED = 16;
+let warnedFull = false;
 
 function learnedNames() {
   try {
     const list = JSON.parse(fs.readFileSync(LEARNED_NAMES, 'utf8'));
-    return Array.isArray(list) ? list.filter((n) => typeof n === 'string') : [];
+    return Array.isArray(list) ? list.filter((n) => typeof n === 'string' && isValidName(n)) : [];
   } catch {
     return [];
   }
@@ -290,12 +308,20 @@ export function noteRequestHost(rawHost) {
   if (state.mode !== 'generated' || !rawHost) return false;
   const host = String(rawHost).replace(/^\[|\]$/g, '').toLowerCase();
   if (state.names.includes(host)) return false;
-  if (!net.isIP(host) && (host.length > 253 || !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/.test(host))) return false;
+  if (!isValidName(host)) return false;
   if (!coveredByCa(host, state.caExtras)) return false;
   const learned = learnedNames();
   if (learned.includes(host)) return false;
+  if (learned.length >= MAX_LEARNED) {
+    if (!warnedFull) {
+      warnedFull = true;
+      console.warn(`[tls] Not adding ${host} to the certificate: ${MAX_LEARNED} addresses are already learned. ` +
+        `Add it to TLS_HOSTNAMES, or delete ${LEARNED_NAMES} and restart to learn again.`);
+    }
+    return false;
+  }
   try {
-    fs.writeFileSync(LEARNED_NAMES, JSON.stringify([...learned, host].slice(-MAX_LEARNED)));
+    fs.writeFileSync(LEARNED_NAMES, JSON.stringify([...learned, host]));
   } catch {
     return false;
   }

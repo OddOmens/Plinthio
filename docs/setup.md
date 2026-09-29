@@ -154,10 +154,16 @@ when the server re-issues its certificate for a new address or before it expires
 
 The CA is name-constrained: it can only sign for private IP ranges (192.168.x, 10.x,
 172.16–31.x, Tailscale's 100.64/10, loopback) and local names (`.local`, `.lan`, `.home`,
-`.internal`, `.home.arpa`, `.ts.net`, `localhost`). So even someone who copied its key from
+`.internal`, `.home.arpa`, `localhost`). So even someone who copied its key from
 `/config/ssl` couldn't use it to impersonate any other website on a device that trusts it.
 A public domain or IP in `TLS_HOSTNAMES` is allowed only if it's set before the CA is
-created. To add one later, delete `/config/ssl` and restart, then install the new CA.
+created. To add one later, delete `/config/ssl` and restart, then install the new CA. That
+includes a Tailscale name (`nas.tail1234.ts.net`): `.ts.net` isn't allowed by default, since
+it covers every Tailscale user's machines. Its 100.x address works without it.
+
+Up to 16 addresses are learned this way. After that nothing more is learned (the log says
+so), which stops anyone on the network from filling the certificate with made-up names. To
+start over, delete `/config/ssl/learned-names.json` and restart.
 
 To use your own certificate instead (from `mkcert`, `tailscale cert`, or a real one for your
 domain), put `cert.pem` and `key.pem` in `/config/ssl`, or point `TLS_CERT` and `TLS_KEY` at
