@@ -9,6 +9,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-29
+
 ### Added
 - **Two-factor sign-in, optional.** Anyone can turn it on in Settings → Security (it's also offered in onboarding and at the end of setup): scan a QR code with an authenticator app, confirm a code, and save ten single-use backup codes. Signing in then asks for the 6-digit code after the password. Admins can reset it for someone who lost their phone.
 - **Choose who can use Plinthio away from home.** Admin → Network: allow access from outside the home network or not, count Tailscale devices as home, and optionally require two-factor for sign-ins from outside. Per person, in Admin → Users: whether they can use it away from home. It's checked on every request, including the reading apps, and the page shows where the device you're using is connecting from, so you can check it from a phone on mobile data.
