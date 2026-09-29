@@ -76,17 +76,19 @@ troubleshooting and the API in depth.
 A factual summary; details in [docs/accounts-and-access.md](docs/accounts-and-access.md).
 
 * **Passwords:** bcrypt (cost 10), minimum 8 characters.
+* **Two-factor sign-in (optional):** authenticator-app codes (TOTP) with single-use backup codes, per person. Admins can require it for sign-ins from outside the home network.
+* **Away from home:** home-only by default for new servers. Admins choose whether the server can be used from outside the home network, and per person who may; checked on every request, including the reading apps.
 * **Sessions:** JWTs signed with a per-install secret generated on first boot (`/config/jwt.secret`). 7-day lifetime, renewed on use; a password change or **Sign out of all devices** revokes every token at once.
 * **Media URLs** carry a separate 24-hour media-only token, never the session token.
 * **API keys:** shown once; stored as SHA-256 (plus an MD5 for KOReader's protocol). Apps sign in with a key, never your password.
 * **Roles, content limits and Kids Mode** are enforced on every request, including direct file and page URLs, watch parties and the sync APIs.
 * **Path checks:** file-serving routes verify the resolved path is inside its library.
-* **Rate limits:** 10 sign-ins / 15 min per address, 600 API requests / min, 1200 media requests / min, 6 backups / 15 min.
+* **Rate limits:** 10 failed sign-ins / 15 min per address, 600 API requests / min, 1200 media requests / min, 6 backups / 15 min.
 * **Headers:** Helmet, with a Content-Security-Policy on by default (`CSP=report-only` or `off` to diagnose).
 * **Cookies:** none for the web app. Mihon's Komga tracker uses a session cookie honoured only on `/api/v1` and `/api/v2`, SameSite=Lax, ended by deleting its API key.
 * **Logs** strip `?token=` from URLs.
-* **Proxies:** `TRUST_PROXY` is opt-in, for use behind a reverse proxy only.
-* **TLS:** the recommended way is the optional Tailscale add-on: a trusted `https://….ts.net` address at home and away, with no certificates to install. Without it, HTTPS on port 8443 with a local certificate authority you install on your devices (name-constrained to private addresses and local names).
+* **Proxies:** `TRUST_PROXY` is opt-in, for use behind a reverse proxy only. The Tailscale and public-address add-ons set it to `loopback`, so only a proxy running right next to Plinthio is believed.
+* **TLS:** optional add-ons: Tailscale (a trusted `https://….ts.net` address, private) or a public web address with Caddy and Let's Encrypt, for guests. Without either, HTTPS on port 8443 with a local certificate authority you install on your devices (name-constrained to private addresses and local names).
 * **Network calls:** only metadata lookups you trigger (MangaDex, Google Books, Open Library, TMDB with your key) and a twice-daily anonymous release check (`UPDATE_CHECK=false` turns it off). No telemetry.
 
 Plinthio is built for trusted-network self-hosting (your home, and people you invite). It has not been audited for hostile multi-tenant or public-internet deployment, and has no 2FA.
@@ -115,11 +117,13 @@ MEDIA_DIR=/path/to/your/media docker compose up -d
 account and adds your media folders (they appear under `/media`). On a phone, use
 **Add to Home Screen** to install the app.
 
-**4. Optional: HTTPS and access away from home with Tailscale.** Add
-[`docker-compose.tailscale.yml`](docker/docker-compose.tailscale.yml) for a trusted
-`https://plinthio.<your-tailnet>.ts.net` address. The installed app's offline features need
-HTTPS, and this way there's nothing to install on phones but the Tailscale app. Steps are in
-[docs/setup.md → HTTPS](docs/setup.md#https).
+**4. Optional: away from home.** Two add-ons, each one file next to `docker-compose.yml`:
+[`docker-compose.tailscale.yml`](docker/docker-compose.tailscale.yml) for a private, trusted
+`https://plinthio.<your-tailnet>.ts.net` address (each device needs the Tailscale app), and
+[`docker-compose.public.yml`](docker/docker-compose.public.yml) for a public web address like
+`https://media.yourdomain.com`, so guests need nothing but a browser. Plinthio starts
+home-only; you choose who can use it from where. Steps, and how to check your internet
+connection allows a public address: [docs/remote-access.md](docs/remote-access.md).
 
 Settings can live in a `.env` file next to `docker-compose.yml` instead of on the command line:
 

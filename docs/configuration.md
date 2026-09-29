@@ -16,6 +16,9 @@ the compose-level ones.
 | `BIND_ADDRESS` | `0.0.0.0` | Host address the ports are published on. `127.0.0.1` makes Plinthio reachable only from the host itself |
 | `PLINTHIO_TAG` | `latest` | Image tag, which chooses the update channel (see [Setup → Updating](setup.md#updating)) |
 | `TZ` | `UTC` | Time zone for logs and scheduled jobs |
+| `TS_AUTHKEY`, `TS_HOSTNAME` | none, `plinthio` | Tailscale add-on: an auth key, and the machine's name on your tailnet ([Remote access](remote-access.md#tailscale)) |
+| `PLINTHIO_DOMAIN` | none | Public-address add-on: the name guests use, e.g. `media.yourdomain.com` ([Remote access](remote-access.md#a-web-address-for-guests)) |
+| `COMPOSE_FILE` | `docker-compose.yml` | Which files make up the stack, e.g. `docker-compose.yml:docker-compose.tailscale.yml` to keep an add-on across updates |
 
 ### Container
 
@@ -25,10 +28,10 @@ the compose-level ones.
 | `PORT` | `8080` | Port inside the container. Leave it alone and change the published port instead |
 | `HOST` | `0.0.0.0` | Interface the server listens on inside the container |
 | `DATA_DIR` | `/config` (Docker), `./data` (bare metal) | Where the database, covers, caches and backups live |
-| `HTTPS_PORT` | `8443` (Docker), off (bare metal) | Port for the built-in HTTPS server, next to plain HTTP on `PORT`. Empty turns it off. See [Setup → HTTPS on your network](setup.md#https-on-your-network) |
+| `HTTPS_PORT` | `8443` (Docker), off (bare metal) | Port for the built-in HTTPS server, next to plain HTTP on `PORT`. Empty turns it off. See [Setup → Plinthio's own certificate](setup.md#plinthios-own-certificate) |
 | `TLS_HOSTNAMES` | none | Extra IPs and host names for the HTTPS certificate, comma-separated, e.g. `192.168.1.20,nas.local`. Usually unneeded: private addresses and local names are added automatically when a device first visits over http://. A public domain must be set here before the first start |
 | `TLS_CERT` / `TLS_KEY` | `/config/ssl/cert.pem` / `key.pem` if present | Your own certificate and key instead of the generated ones |
-| `TRUST_PROXY` | off | Set to `1` behind **one** reverse proxy or tunnel, so rate limits and logs see real client addresses. Also accepts a hop count, `true`, or an IP/subnet list ([Express's rules](https://expressjs.com/en/guide/behind-proxies.html)). Never set it without a proxy: clients could fake their address and get round rate limits |
+| `TRUST_PROXY` | off (`loopback` with the add-ons) | Set when Plinthio sits behind a reverse proxy or tunnel, so rate limits, logs and the away-from-home controls see real client addresses. The add-ons set `loopback` (only a proxy in the same container network is believed). For your own proxy, prefer its address or subnet over `1`. Also accepts a hop count, `true`, or an IP/subnet list ([Express's rules](https://expressjs.com/en/guide/behind-proxies.html)). Never set it without a proxy: clients could fake their address and get round rate limits |
 | `JWT_SECRET` | generated | Secret that signs sign-in tokens. By default a random one is made on first start and kept in `/config/jwt.secret`. Don't put a literal secret in the compose file |
 | `JWT_EXPIRES_IN` | `7d` | How long a sign-in lasts without the app being opened. The app refreshes it on every load, so regular users stay signed in |
 | `MEDIA_TOKEN_EXPIRES_IN` | `24h` | Lifetime of the short-lived media-only token used in image, audio and video URLs. The player renews it when it expires |
@@ -88,7 +91,8 @@ are using, and hovering a pause screen style shows it before you choose.
 - **My Activity:** what you've read, watched and listened to.
 - **Hidden:** titles you've hidden from your own shelves, with a way to bring them back.
 - **API Keys:** keys for scripts and reading apps, and the **Reading Apps** setup guide.
-- **Security:** profile picture, change password, and sign out of every device.
+- **Security:** profile picture, change password, two-factor sign-in, and sign out of
+  every device.
 - **In the video player:** skip-back and skip-forward amounts (follow you across devices).
 - **In the readers:** reading direction, page layout, page turn style; EPUB font, size and
   layout.
@@ -96,4 +100,17 @@ are using, and hovering a pause screen style shows it before you choose.
 ### Per user (Admin → Users → Edit, admins)
 
 Name, role, content limit (and whether unrated titles are allowed), Kids account, access
-expiry, password reset. See [Accounts and access](accounts-and-access.md).
+expiry, whether it can be used away from home, resetting two-factor, and password reset. See
+[Accounts and access](accounts-and-access.md).
+
+### Admin → Network
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| **Allow access from outside the home network** | off for new servers (chosen in the setup wizard); on for servers upgraded from before 1.4.0 | Off: only home and Tailscale addresses can sign in or use anything |
+| **Tailscale devices count as home** | on | Off treats Tailscale addresses as outside |
+| **Require two-factor away from home** | off | Sign-ins from outside need a two-factor code |
+
+The page also shows where the device you're using connects from, warns about a proxy that
+isn't trusted (`TRUST_PROXY`), and lists recent sign-ins from outside. See
+[Using Plinthio away from home](remote-access.md).

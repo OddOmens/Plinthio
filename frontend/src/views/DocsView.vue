@@ -283,11 +283,31 @@
               <li><strong class="text-foreground">Change role</strong> — use the role dropdown next to any user (you cannot change your own role, so the server always keeps at least one admin able to manage roles).</li>
               <li><strong class="text-foreground">Edit</strong> (pencil icon) — rename a user's account and/or reset their password on their behalf, without needing their current password. Resetting a password immediately signs that user out everywhere and requires them to log in again with the new one.</li>
               <li><strong class="text-foreground">Delete</strong> — permanently removes the account (you cannot delete your own account).</li>
+              <li><strong class="text-foreground">Away from home</strong> (in Edit) — whether the account can be used outside the home network, when the server allows that (Admin &rarr; Network).</li>
+              <li><strong class="text-foreground">Reset two-factor</strong> (in Edit) — for someone who lost their phone and backup codes. It signs them out; they then sign in with just their password and can set it up again.</li>
             </ul>
             <p class="text-xs text-muted-foreground leading-relaxed">
               Any user can change their own password from <strong class="text-foreground">Settings &rarr; Security</strong>, which
               does require their current password.
             </p>
+          </div>
+
+          <div class="space-y-3 pt-3 border-t border-border">
+            <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
+              <ShieldCheck class="w-4 h-4 text-primary" />
+              Two-Factor Sign-In (Optional)
+            </h2>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              With two-factor on, signing in asks for a 6-digit code from an authenticator app (Google Authenticator, Microsoft
+              Authenticator, 1Password, Bitwarden, Aegis…) as well as your password.
+            </p>
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <li><strong class="text-foreground">Turn it on</strong> in Settings &rarr; Security: scan the QR code (or copy the key into the app), then type the code it shows.</li>
+              <li><strong class="text-foreground">Save your backup codes.</strong> Ten one-time codes for a lost phone, shown once. Each signs you in once instead of a code.</li>
+              <li><strong class="text-foreground">Signing in:</strong> password, then the code. On the code screen, "Lost your phone?" switches to a backup code.</li>
+              <li><strong class="text-foreground">Turning it off</strong> needs your password and a current code. If you're locked out, an admin can reset it.</li>
+              <li>Admins can require it for sign-ins from <strong class="text-foreground">outside the home network</strong> (Admin &rarr; Network). It's never required at home.</li>
+            </ul>
           </div>
 
           <div class="space-y-3 pt-3 border-t border-border">
@@ -487,9 +507,9 @@
         <!-- SECTION: Remote Access (Mobile Data / Outside Wi-Fi) -->
         <section v-if="activeSection === 'remote'" class="space-y-6">
           <div>
-            <h1 class="text-2xl font-bold tracking-tight text-foreground">Accessing Plinthio Outside Your Wi-Fi</h1>
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">Using Plinthio Away From Home</h1>
             <p class="text-sm text-muted-foreground mt-1.5">
-              Securely connect to your libraries while on mobile data or traveling without exposing vulnerable open ports to the public internet.
+              Tailscale for you and people you trust, privately; a web address for guests who shouldn't need an app. Both optional.
             </p>
           </div>
 
@@ -543,55 +563,60 @@
               </div>
 
               <p class="text-[12px]">
-                Step-by-step details, including the proxy settings, are in <code class="text-foreground bg-muted px-1 rounded">docs/setup.md</code> on GitHub under HTTPS.
+                Step-by-step details, and how to share Plinthio with someone else's Tailscale, are in
+                <code class="text-foreground bg-muted px-1 rounded">docs/remote-access.md</code> on GitHub.
               </p>
             </div>
           </div>
 
-          <!-- Method 2: Cloudflare Tunnels -->
+          <!-- Method 2: a web address for guests (the public-address add-on) -->
           <div class="p-5 rounded-2xl border border-border bg-card space-y-3">
-            <h3 class="text-sm font-semibold text-foreground">Option 2: Cloudflare Tunnels (Public Domain)</h3>
-            <p class="text-xs text-muted-foreground">
-              Map a custom domain (e.g. <code class="text-foreground bg-muted px-1 rounded">media.yourdomain.com</code>) to your home server without opening router ports.
+            <h3 class="text-sm font-semibold text-foreground">Option 2: A web address for guests</h3>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              Friends and family open something like <code class="text-foreground bg-muted px-1 rounded">https://media.yourdomain.com</code>
+              and sign in, with no apps or certificates to install. The public-address add-on runs Caddy, which gets and renews a real
+              certificate by itself. Your sign-in page is then on the internet, so use strong passwords and consider two-factor.
             </p>
-            <div class="bg-muted/40 border border-border rounded-lg p-3 font-mono text-xs space-y-1 overflow-x-auto">
-              <div class="text-muted-foreground whitespace-nowrap"># 1. Install cloudflared on the host</div>
-              <div class="whitespace-nowrap">curl -L https://pkg.cloudflare.com/cloudflared.deb -o cloudflared.deb && sudo dpkg -i cloudflared.deb</div>
-              <div class="text-muted-foreground pt-1 whitespace-nowrap"># 2. Authenticate & create a tunnel</div>
-              <div class="whitespace-nowrap">cloudflared tunnel login</div>
-              <div class="whitespace-nowrap">cloudflared tunnel create plinthio</div>
-              <div class="text-muted-foreground pt-1 whitespace-nowrap"># 3. Route tunnel to localhost:8088</div>
-              <div class="whitespace-nowrap">cloudflared tunnel run --url http://localhost:8088 plinthio</div>
+            <div class="text-xs text-muted-foreground space-y-1.5 leading-relaxed">
+              <div class="font-semibold text-foreground">What it takes (admin, once)</div>
+              <ol class="list-decimal list-inside space-y-1">
+                <li><strong class="text-foreground">Check your internet connection allows it.</strong> 5G/4G home internet, Starlink and some providers ("CGNAT") don't; the guide shows how to check in a minute.</li>
+                <li>A domain, with a DNS <strong class="text-foreground">A record</strong> pointing at your home's public address.</li>
+                <li>Ports <strong class="text-foreground">80</strong> and <strong class="text-foreground">443</strong> forwarded on your router to the server.</li>
+                <li><strong class="text-foreground">Admin → Network</strong> → allow access from outside (and, optionally, require two-factor away from home).</li>
+                <li>
+                  Download <code class="text-foreground bg-muted px-1 rounded">docker-compose.public.yml</code> next to your compose file, add
+                  <code class="text-foreground bg-muted px-1 rounded break-all">PLINTHIO_DOMAIN=media.yourdomain.com</code> and
+                  <code class="text-foreground bg-muted px-1 rounded break-all">COMPOSE_FILE=docker-compose.yml:docker-compose.public.yml</code>
+                  to <code class="text-foreground bg-muted px-1 rounded">.env</code>, and run <code class="text-foreground bg-muted px-1 rounded">docker compose up -d</code>.
+                </li>
+                <li>Check it from a phone with Wi-Fi off, and open Admin → Network there: it should say "outside".</li>
+              </ol>
             </div>
-            <p class="text-[12px] text-muted-foreground">
-              Because this exposes Plinthio to the public internet, make sure every account has a strong password —
-              anyone with the URL can reach the login screen.
-            </p>
           </div>
 
-          <!-- Method 3: Caddy / Nginx -->
+          <!-- Who can use it from where -->
           <div class="p-5 rounded-2xl border border-border bg-card space-y-3">
-            <h3 class="text-sm font-semibold text-foreground">Option 3: Reverse Proxy with SSL (Caddy)</h3>
-            <p class="text-xs text-muted-foreground">
-              If you have a static IP or dynamic DNS with ports 80/443 forwarded, Caddy provides automatic HTTPS:
-            </p>
-            <div class="bg-muted/40 border border-border rounded-lg p-3 font-mono text-xs overflow-x-auto">
-              <div class="text-muted-foreground whitespace-nowrap"># /etc/caddy/Caddyfile</div>
-              <div class="whitespace-nowrap">plinthio.yourdomain.com {</div>
-              <div class="pl-4 whitespace-nowrap">reverse_proxy localhost:8088</div>
-              <div class="whitespace-nowrap">}</div>
-            </div>
+            <h3 class="text-sm font-semibold text-foreground">Who can use Plinthio from where</h3>
+            <ul class="text-xs text-muted-foreground space-y-1.5 list-disc list-inside leading-relaxed">
+              <li><strong class="text-foreground">Admin → Network:</strong> allow access from outside the home network (off for new servers), treat Tailscale as home, and optionally require two-factor away from home.</li>
+              <li><strong class="text-foreground">Admin → Users → Edit:</strong> whether each person can use Plinthio away from home, e.g. the kids only at home.</li>
+              <li><strong class="text-foreground">Settings → Security:</strong> anyone can turn on two-factor sign-in for their own account.</li>
+            </ul>
           </div>
 
           <div class="p-4 rounded-xl bg-muted/30 border border-border space-y-2">
             <div class="text-xs font-semibold text-foreground flex items-center gap-2">
               <AlertTriangle class="w-4 h-4 text-amber-500" />
-              <span>Avoid: Plain Port Forwarding</span>
+              <span>Avoid: forwarding port 8088, and tunnels for video</span>
             </div>
             <p class="text-xs text-muted-foreground leading-relaxed">
-              Forwarding port 8088 directly on your router without a VPN or reverse-proxy/TLS in front of it exposes
-              an unencrypted login form to the open internet. Prefer Tailscale (private) or a reverse proxy with
-              HTTPS (public) instead.
+              Forwarding 8088 straight to Plinthio puts an unencrypted sign-in page on the internet: use the add-on on 443 instead.
+              Tunnels such as Cloudflare Tunnel avoid router changes, but route all traffic through someone else's servers and
+              aren't meant for streaming video; they're fine for books and audiobooks.
+            </p>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              The full guide, with troubleshooting: <code class="text-foreground bg-muted px-1 rounded">docs/remote-access.md</code> on GitHub.
             </p>
           </div>
         </section>
