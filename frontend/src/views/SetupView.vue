@@ -305,34 +305,49 @@
           </button>
         </div>
 
-        <div v-if="form.access === 'tailscale'" class="p-4 rounded-2xl bg-muted/30 border border-border text-sm text-muted-foreground leading-relaxed">
-          <p class="text-foreground font-medium mb-1">After setup</p>
-          Add the Tailscale add-on (or run <code class="font-mono text-foreground">tailscale serve</code>) to get a trusted
-          <code class="font-mono text-foreground break-all">https://….ts.net</code> address. Step by step: <strong class="text-foreground">Docs → Remote Access &amp; Tailscale</strong>.
-          Tailscale devices count as home, so nothing is open to the internet.
-        </div>
-
-        <div v-if="form.access === 'internet'" class="flex flex-col gap-3">
-          <label class="flex items-start gap-3 p-4 rounded-2xl border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-            <input v-model="form.require2faOutside" type="checkbox" class="mt-1 rounded border-border text-primary focus:ring-ring" />
-            <div class="flex flex-col gap-0.5">
-              <span class="text-sm font-semibold flex items-center gap-1.5"><ShieldCheck class="w-4 h-4 text-primary" /> Require two-factor away from home</span>
-              <span class="text-xs text-muted-foreground">
-                Optional, recommended. Signing in from outside the home network then needs a code from a phone app; at home a
-                password is enough. Anyone without two-factor can still sign in at home and set it up there.
-              </span>
-            </div>
-          </label>
-          <div class="p-4 rounded-2xl bg-muted/30 border border-border text-sm text-muted-foreground leading-relaxed">
-            <p class="text-foreground font-medium mb-1">After setup: give guests a link</p>
-            <span class="block"><strong class="text-foreground">No domain?</strong> Tailscale Funnel gives a permanent
-            <code class="font-mono text-foreground break-all">https://….ts.net</code> link anyone can open, with no router changes.
-            Great for reading and listening; video may be slower.</span>
-            <span class="block mt-1"><strong class="text-foreground">Have a domain?</strong> The Caddy add-on gives
-            <code class="font-mono text-foreground">https://media.yourdomain.com</code> at full speed; it needs a port opened on your router.</span>
-            <span class="block mt-1">Step by step: <strong class="text-foreground">Docs → Remote Access &amp; Tailscale</strong>. Until then, nothing changes.</span>
+        <!-- Opening to the internet: through Funnel (no domain) or a web address of your own -->
+        <div v-if="form.access === 'internet'" class="flex flex-col gap-2">
+          <p class="text-sm font-medium">How will guests reach it?</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="How guests reach it">
+            <button type="button" role="radio" :aria-checked="form.internetVia === 'funnel'" @click="form.internetVia = 'funnel'"
+              class="p-4 rounded-2xl border-2 text-left transition" :class="form.internetVia === 'funnel' ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/20'">
+              <span class="text-sm font-semibold block">No domain: Tailscale Funnel</span>
+              <span class="text-xs text-muted-foreground">A permanent link, no router changes. Best for reading and listening; video may be slower.</span>
+            </button>
+            <button type="button" role="radio" :aria-checked="form.internetVia === 'domain'" @click="form.internetVia = 'domain'"
+              class="p-4 rounded-2xl border-2 text-left transition" :class="form.internetVia === 'domain' ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/20'">
+              <span class="text-sm font-semibold block">My own domain</span>
+              <span class="text-xs text-muted-foreground">Full speed, like media.yourdomain.com. Needs ports opened on your router.</span>
+            </button>
           </div>
         </div>
+
+        <!-- Tailscale, step by step: for Tailscale itself, or for Funnel -->
+        <div v-if="showTailscaleGuide" class="p-4 sm:p-5 rounded-2xl border border-border bg-card flex flex-col gap-3">
+          <div>
+            <p class="text-base font-semibold">Set up Tailscale</p>
+            <p class="text-xs text-muted-foreground">Now, or any time after setup: Admin → Network has this same guide, and shows when it's working.</p>
+          </div>
+          <TailscaleGuide context="setup" :funnel="funnelChosen" @update:funnel="setFunnel" />
+        </div>
+
+        <div v-if="form.access === 'internet' && form.internetVia === 'domain'" class="p-4 rounded-2xl bg-muted/30 border border-border text-sm text-muted-foreground leading-relaxed">
+          <p class="text-foreground font-medium mb-1">After setup: give it a web address</p>
+          The Caddy add-on gives <code class="font-mono text-foreground">https://media.yourdomain.com</code> with a real certificate. It
+          needs a domain and ports 80 and 443 forwarded on your router. Step by step, including how to check your internet
+          connection allows it: <strong class="text-foreground">Docs → Remote Access &amp; Tailscale</strong>. Until then, nothing changes.
+        </div>
+
+        <label v-if="opensToInternet" class="flex items-start gap-3 p-4 rounded-2xl border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+          <input v-model="form.require2faOutside" type="checkbox" class="mt-1 rounded border-border text-primary focus:ring-ring" />
+          <div class="flex flex-col gap-0.5">
+            <span class="text-sm font-semibold flex items-center gap-1.5"><ShieldCheck class="w-4 h-4 text-primary" /> Require two-factor away from home</span>
+            <span class="text-xs text-muted-foreground">
+              Optional, recommended. Signing in from outside the home network then needs a code from a phone app; at home a
+              password is enough. Anyone without two-factor can still sign in at home and set it up there.
+            </span>
+          </div>
+        </label>
       </section>
 
       <!-- STEP 7: Review & Ready -->
@@ -405,6 +420,7 @@
 <script setup>
 import AppLogo from '../components/AppLogo.vue';
 import TwoFactorSetup from '../components/TwoFactorSetup.vue';
+import TailscaleGuide from '../components/TailscaleGuide.vue';
 import { ref, reactive, computed, h } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
@@ -479,7 +495,7 @@ const allMedia = [
 const accessOptions = [
   { id: 'home', title: 'At home only', badge: 'Start here', icon: House, text: 'Phones, tablets and computers on your home network. Nothing is reachable from the internet.' },
   { id: 'tailscale', title: 'At home, and away with Tailscale', icon: Waypoints, text: 'For you and people you invite to your Tailscale: private, with nothing opened on your router. Each device needs the free Tailscale app.' },
-  { id: 'internet', title: 'Also from the internet, for guests', icon: Globe, text: 'Friends and family open a link and sign in, with no apps to install. Through Tailscale Funnel (no domain, no router changes) or your own web address.' }
+  { id: 'internet', title: 'Also from the internet, for guests', icon: Globe, text: 'Friends and family open a link and sign in, with no apps to install: through Tailscale Funnel (no domain, no router changes) or a web address of your own.' }
 ];
 
 const form = reactive({
@@ -494,8 +510,24 @@ const form = reactive({
   extraUsers: [],
   partyModeEnabled: false,
   access: 'home',
+  // With access 'internet': through Tailscale Funnel or a domain of your own.
+  internetVia: 'funnel',
   require2faOutside: false
 });
+
+// Funnel is chosen either as the way to the internet, or by switching it on in the Tailscale
+// guide; both open the server to the outside.
+const funnelChosen = computed(() => form.access === 'internet' && form.internetVia === 'funnel');
+const showTailscaleGuide = computed(() => form.access === 'tailscale' || funnelChosen.value);
+const opensToInternet = computed(() => form.access === 'internet');
+function setFunnel(on) {
+  if (on) {
+    form.access = 'internet';
+    form.internetVia = 'funnel';
+  } else if (funnelChosen.value) {
+    form.access = 'tailscale';
+  }
+}
 
 const reviewRows = computed(() => [
   { label: 'Server name', value: form.serverName },
@@ -508,7 +540,7 @@ const reviewRows = computed(() => [
   {
     label: 'Access',
     value: form.access === 'internet'
-      ? `Home and the internet${form.require2faOutside ? ', two-factor away from home' : ''}`
+      ? `Home and the internet${form.internetVia === 'funnel' ? ' (Tailscale Funnel)' : ' (your own domain)'}${form.require2faOutside ? ', two-factor away from home' : ''}`
       : form.access === 'tailscale' ? 'Home and Tailscale' : 'Home only'
   }
 ]);

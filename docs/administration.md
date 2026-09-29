@@ -48,7 +48,9 @@ The last sign-in says when it was away from home (Tailscale or outside).
 ## Network
 
 Who can use Plinthio from where: allow access from outside the home network, whether
-Tailscale devices count as home, and whether two-factor is required away from home. It shows
+Tailscale devices count as home, and whether two-factor is required away from home. The
+**Tailscale** section says whether Tailscale (and Funnel) are reaching Plinthio, and has a
+step-by-step guide with the lines to paste, for private use or a public Funnel link. It shows
 where the device you're using is connecting from (open it on a phone with Wi-Fi off to check
 outside access), warns about a proxy that Plinthio isn't trusting, and lists recent sign-ins
 from outside. See [Using Plinthio away from home](remote-access.md).

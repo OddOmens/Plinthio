@@ -23,7 +23,9 @@ server at full speed, but needs a domain and router access. You can combine them
 for you, Funnel or a web address for everyone else.
 
 Whichever you pick, **Admin → Network** decides who's allowed in from where (below), and shows
-where the device you're using is connecting from, so you can check it works.
+where the device you're using is connecting from, so you can check it works. For Tailscale
+and Funnel it also has a step-by-step guide that writes your `.env` lines, and tells you when
+it sees Tailscale and Funnel working. The setup wizard offers the same guide.
 
 ## Who's allowed in from where
 

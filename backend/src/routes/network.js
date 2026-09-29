@@ -4,7 +4,7 @@ import { config } from '../config/env.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { serverError } from '../utils/http.js';
 import { logger } from '../services/logger.js';
-import { getNetworkSettings, saveNetworkSettings, requestLocation, proxyWarning } from '../services/network.js';
+import { getNetworkSettings, saveNetworkSettings, requestLocation, proxyWarning, tailscaleStatus } from '../services/network.js';
 
 // Admin → Network: who can reach the server from where, and a way to check it's working.
 const router = express.Router();
@@ -37,7 +37,9 @@ async function report(req, db) {
       withTwoFactor: accounts.filter((a) => a.totp_enabled_at).length,
       adminsWithoutTwoFactor: accounts.filter((a) => a.role === 'admin' && !a.totp_enabled_at).length
     },
-    recentOutsideSignIns: recentOutside
+    recentOutsideSignIns: recentOutside,
+    // Whether Tailscale and Funnel are seen reaching Plinthio (services/network.js).
+    tailscale: await tailscaleStatus(db)
   };
 }
 

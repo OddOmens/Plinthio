@@ -144,6 +144,37 @@ export function proxyWarning() {
   return proxySeen;
 }
 
+// ─── Tailscale, seen working ────────────────────────────────────────────────
+// Admin → Network shows whether Tailscale (and Funnel) actually reach Plinthio, from the
+// requests that come through it: tailscale serve connects from loopback and says which name
+// it was asked for (X-Forwarded-Host, …ts.net); Funnel also marks its requests. Only trusted
+// when the connection really comes from loopback, so nobody else can fake "it works".
+// The name is kept in settings so the page can show the address after a restart.
+const seen = { tailscale: null, funnel: null };
+let savedHost = null;
+
+export function noteTailscale(req) {
+  const peer = normalizeIp(req.socket?.remoteAddress);
+  if (peer !== '127.0.0.1' && peer !== '::1') return;
+  const host = String(req.headers['x-forwarded-host'] || '').toLowerCase().replace(/:\d+$/, '');
+  if (!/^[a-z0-9-]+(\.[a-z0-9-]+)*\.ts\.net$/.test(host)) return;
+  const now = new Date().toISOString();
+  if (req.headers['tailscale-funnel-request'] === '?1') seen.funnel = { at: now, from: normalizeIp(req.ip) };
+  else seen.tailscale = { at: now };
+  if (host !== savedHost) {
+    savedHost = host;
+    getDb().then((db) => setSetting(db, 'tailscale_host', host)).catch(() => {});
+  }
+}
+
+export async function tailscaleStatus(db) {
+  if (!savedHost) {
+    const row = await db.get("SELECT value FROM settings WHERE key = 'tailscale_host'");
+    savedHost = row?.value || null;
+  }
+  return { host: savedHost, lastSeen: seen.tailscale?.at || null, funnelLastSeen: seen.funnel?.at || null };
+}
+
 // Test hook: settings are cached in memory.
 export function resetNetworkCache() {
   cache = null;
