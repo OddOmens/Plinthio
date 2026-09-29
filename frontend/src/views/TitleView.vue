@@ -120,7 +120,8 @@
                 />
               </template>
               <div class="absolute inset-0 rounded-xl overflow-hidden bg-card border border-border/80 shadow-2xl" style="z-index: 3">
-                <img :src="primaryCoverUrl" :alt="series.name" class="w-full h-full object-cover" />
+                <img :src="primaryCoverUrl" :alt="series.name" class="w-full h-full object-cover" :class="isSingle && single.offloaded_at ? 'art-offloaded' : ''" />
+                <AvailabilityBadge v-if="isSingle && single.offloaded_at" kind="offloaded" :since="single.offloaded_at" class="absolute top-3 left-3" />
                 <div v-if="isSingle && (single.progress_percent > 0 || single.is_finished)" class="absolute bottom-0 inset-x-0 h-1.5 bg-black/50">
                   <div
                     class="h-full"
@@ -251,6 +252,16 @@
                 {{ singleProgressLabel }}
               </p>
 
+              <!-- Offloaded: removed to free space, history kept -->
+              <p v-if="isSingle && single.offloaded_at" class="text-xs text-muted-foreground leading-relaxed max-w-xl mx-auto sm:mx-0 flex items-start gap-2 text-left">
+                <Archive class="w-4 h-4 flex-shrink-0 mt-px" />
+                <span>Removed from the server to free space. Your history and ratings are kept, and it comes back by itself if the file is put back.</span>
+              </p>
+              <p v-else-if="!isSingle && series.offloadedCount" class="text-xs text-muted-foreground flex items-center gap-2 justify-center sm:justify-start">
+                <Archive class="w-4 h-4 flex-shrink-0" />
+                <span>{{ series.offloadedCount === series.volumeCount ? 'All' : series.offloadedCount }} of these {{ series.offloadedCount === series.volumeCount ? '' : `${series.volumeCount} ` }}{{ vocab.units.toLowerCase() }} {{ series.offloadedCount === 1 ? 'was' : 'were' }} offloaded to free space; they're kept as history.</span>
+              </p>
+
               <!-- Tagline + overview -->
               <p v-if="credits?.tagline" class="text-base italic text-foreground/80">{{ credits.tagline }}</p>
               <!-- A collection's "description" is just its first film's plot; each film lists its own below. -->
@@ -331,8 +342,9 @@
                   decoding="async"
                   @error="seasonPosterFailed[s.key] = true"
                   class="w-full h-full object-cover"
-                  :class="activeSeason?.key === s.key ? '' : 'opacity-80 group-hover:opacity-100 transition'"
+                  :class="s.offloaded === s.episodes.length ? 'art-offloaded' : activeSeason?.key === s.key ? '' : 'opacity-80 group-hover:opacity-100 transition'"
                 />
+                <AvailabilityBadge v-if="s.offloaded === s.episodes.length" kind="offloaded" :since="s.episodes[0].offloaded_at" small class="absolute top-2 left-2" />
                 <span v-if="s.watched === s.episodes.length" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
                   <Check class="w-3.5 h-3.5 stroke-[3]" />
                 </span>
@@ -345,7 +357,7 @@
                 :class="activeSeason?.key === s.key ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'"
               >{{ s.label }}</p>
               <p class="text-xs text-muted-foreground">
-                {{ s.watched && s.watched < s.episodes.length ? `${s.watched} of ` : '' }}{{ s.episodes.length }} {{ s.episodes.length === 1 ? 'episode' : 'episodes' }}
+                {{ s.watched && s.watched < s.episodes.length ? `${s.watched} of ` : '' }}{{ s.episodes.length }} {{ s.episodes.length === 1 ? 'episode' : 'episodes' }}<template v-if="s.offloaded && s.offloaded < s.episodes.length"> · {{ s.offloaded }} offloaded</template>
               </p>
             </button>
           </div>
@@ -372,9 +384,10 @@
                   decoding="async"
                   @error="stillFailed[ep.id] = true"
                   class="w-full h-full object-cover"
-                  :class="isSkipped(ep) ? 'opacity-45 grayscale' : ''"
+                  :class="ep.offloaded_at ? 'art-offloaded' : isSkipped(ep) ? 'opacity-45 grayscale' : ''"
                 />
-                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                <AvailabilityBadge v-if="ep.offloaded_at" kind="offloaded" :since="ep.offloaded_at" small class="absolute top-2 left-2" />
+                <div v-else class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                   <div class="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl">
                     <Play class="w-5 h-5 fill-current ml-0.5" />
                   </div>
@@ -399,6 +412,7 @@
 
                 <p class="text-xs flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span v-if="ep.id === series.nextVolume?.id && !ep.is_finished" class="px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-semibold">Up next</span>
+                  <span v-if="ep.offloaded_at" class="text-muted-foreground font-medium">Offloaded</span>
                   <span v-if="ep.is_finished" class="text-emerald-500 font-semibold">Watched<template v-if="ep.progress_updated_at"> · {{ formatDate(ep.progress_updated_at) }}</template></span>
                   <span v-else-if="isSkipped(ep)" class="text-sky-500 font-semibold">Skipped</span>
                   <span v-else-if="hasStarted(ep)" class="text-primary font-medium font-mono">{{ positionLabel(ep, true) }}</span>
@@ -427,7 +441,7 @@
                     <FastForward class="w-4 h-4" />
                   </button>
                   <button
-                    v-if="downloads.canDownload(ep)"
+                    v-if="!ep.offloaded_at && downloads.canDownload(ep)"
                     @click="toggleVolumeDownload(ep)"
                     class="ep-btn"
                     :title="downloadLabel(ep)"
@@ -478,7 +492,8 @@
                   :to="`/title/${film.id}`"
                   class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-border group-hover:border-muted-foreground/40 transition"
                 >
-                  <img :src="volumeCoverUrl(film, 480)" :alt="film.title" loading="lazy" decoding="async" class="w-full h-full object-cover" />
+                  <img :src="volumeCoverUrl(film, 480)" :alt="film.title" loading="lazy" decoding="async" class="w-full h-full object-cover" :class="film.offloaded_at ? 'art-offloaded' : ''" />
+                  <AvailabilityBadge v-if="film.offloaded_at" kind="offloaded" :since="film.offloaded_at" small class="absolute top-2 left-2" />
                   <span v-if="film.is_finished" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow">
                     <Check class="w-3.5 h-3.5 stroke-[3]" />
                   </span>
@@ -489,7 +504,7 @@
                   <div v-if="film.progress_percent > 0 && !film.is_finished" class="absolute bottom-0 inset-x-0 h-1.5 bg-black/50">
                     <div class="h-full bg-primary" :style="{ width: `${film.progress_percent}%` }" />
                   </div>
-                  <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                  <div v-if="!film.offloaded_at" class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                     <button
                       type="button"
                       @click.prevent.stop="openVolumeReader(film)"
@@ -510,14 +525,14 @@
                   </span>
                 </p>
               </div>
-              <!-- A film this server doesn't have: greyed out, requestable -->
+              <!-- A film this server has never had: grey, dashed, requestable (unlike an
+                   offloaded one, which keeps its colour and your history) -->
               <div v-else class="flex flex-col min-w-0">
-                <div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-dashed border-border">
-                  <img v-if="part.posterUrl" :src="part.posterUrl" :alt="part.title" loading="lazy" class="w-full h-full object-cover grayscale opacity-50" />
+                <div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border-2 border-dashed border-muted-foreground/30">
+                  <img v-if="part.posterUrl" :src="part.posterUrl" :alt="part.title" loading="lazy" class="w-full h-full object-cover art-not-owned" />
                   <div v-else class="w-full h-full flex items-center justify-center text-2xl font-semibold text-muted-foreground/50">{{ initials(part.title) }}</div>
-                  <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-semibold">
-                    {{ part.upcoming ? 'Coming soon' : 'Not in library' }}
-                  </span>
+                  <span v-if="part.upcoming" class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-semibold">Coming soon</span>
+                  <AvailabilityBadge v-else kind="not-owned" small class="absolute top-2 left-2" />
                 </div>
                 <p class="mt-2 text-sm font-medium text-muted-foreground line-clamp-2">{{ part.title }}</p>
                 <p v-if="part.releaseDate" class="text-xs text-muted-foreground">{{ part.releaseDate.slice(0, 4) }}</p>
@@ -614,8 +629,9 @@
                 :alt="vol.title"
                 loading="lazy"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                :class="isSkipped(vol) ? 'opacity-45 grayscale' : ''"
+                :class="vol.offloaded_at ? 'art-offloaded' : isSkipped(vol) ? 'opacity-45 grayscale' : ''"
               />
+              <AvailabilityBadge v-if="vol.offloaded_at" kind="offloaded" :since="vol.offloaded_at" small class="absolute bottom-2 left-2 z-10" />
 
               <!-- Volume Pill -->
               <div class="absolute top-2 left-2 z-10 pointer-events-none">
@@ -784,7 +800,7 @@
                   :alt="vol.title"
                   loading="lazy"
                   class="w-full h-full object-cover"
-                  :class="isSkipped(vol) ? 'opacity-45 grayscale' : ''"
+                  :class="vol.offloaded_at ? 'art-offloaded' : isSkipped(vol) ? 'opacity-45 grayscale' : ''"
                 />
                 <div
                   v-if="vol.is_finished"
@@ -936,22 +952,22 @@
           <div class="flex gap-4 overflow-x-auto no-scrollbar -mx-1 px-1 pb-2">
             <template v-for="entry in moreInEntries" :key="entry.key">
               <router-link v-if="entry.to" :to="entry.to" class="w-36 sm:w-44 flex-shrink-0 group">
-                <div class="aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-border group-hover:border-muted-foreground/40 transition">
-                  <img :src="entry.cover" :alt="entry.title" loading="lazy" class="w-full h-full object-cover" />
+                <div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-border group-hover:border-muted-foreground/40 transition">
+                  <img :src="entry.cover" :alt="entry.title" loading="lazy" class="w-full h-full object-cover" :class="entry.offloaded ? 'art-offloaded' : ''" />
+                  <AvailabilityBadge v-if="entry.offloaded" kind="offloaded" :since="typeof entry.offloaded === 'string' ? entry.offloaded : null" small class="absolute top-2 left-2" />
                 </div>
                 <p class="mt-2 text-sm font-medium text-foreground line-clamp-2">{{ entry.title }}</p>
                 <p class="text-xs text-muted-foreground">
                   {{ entry.year }}<span v-if="entry.finished" class="text-emerald-500 font-semibold"><template v-if="entry.year"> · </template>{{ vocab.done }}</span>
                 </p>
               </router-link>
-              <!-- A film this server doesn't have -->
+              <!-- A film this server has never had -->
               <div v-else class="w-36 sm:w-44 flex-shrink-0">
-                <div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border border-dashed border-border">
-                  <img v-if="entry.part.posterUrl" :src="entry.part.posterUrl" :alt="entry.title" loading="lazy" class="w-full h-full object-cover grayscale opacity-50" />
+                <div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border-2 border-dashed border-muted-foreground/30">
+                  <img v-if="entry.part.posterUrl" :src="entry.part.posterUrl" :alt="entry.title" loading="lazy" class="w-full h-full object-cover art-not-owned" />
                   <div v-else class="w-full h-full flex items-center justify-center text-2xl font-semibold text-muted-foreground/50">{{ initials(entry.title) }}</div>
-                  <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-semibold">
-                    {{ entry.part.upcoming ? 'Coming soon' : 'Not in library' }}
-                  </span>
+                  <span v-if="entry.part.upcoming" class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-semibold">Coming soon</span>
+                  <AvailabilityBadge v-else kind="not-owned" small class="absolute top-2 left-2" />
                 </div>
                 <p class="mt-2 text-sm font-medium text-muted-foreground line-clamp-2">{{ entry.title }}</p>
                 <p v-if="entry.year" class="text-xs text-muted-foreground">{{ entry.year }}</p>
@@ -1184,6 +1200,7 @@ const BookmarksModal = defineAsyncComponent(() => import('../components/Bookmark
 const MetadataSearchModal = defineAsyncComponent(() => import('../components/MetadataSearchModal.vue'));
 import RatingBar from '../components/RatingBar.vue';
 import MissingFilmAction from '../components/MissingFilmAction.vue';
+import AvailabilityBadge from '../components/AvailabilityBadge.vue';
 import { startParty } from '../utils/party';
 import { coverUrl as buildCoverUrl, stillUrl } from '../utils/cover';
 import {
@@ -1220,6 +1237,8 @@ import {
   Info,
   PartyPopper,
   Baby,
+  Archive,
+  Undo2,
   X,
   MoreHorizontal
 } from '@lucide/vue';
@@ -1519,6 +1538,16 @@ const heroActions = computed(() => {
       icon: Search, iconClass: 'text-muted-foreground', run: openSeriesMetadataSearch
     });
   }
+  // Admins: keep a film, or the season on screen, as history ahead of deleting its files
+  // (or undo that). Library Health does the same for files already gone.
+  if (authStore.isAdmin) {
+    const target = offloadTarget.value;
+    if (target) {
+      actions.push(target.offloaded
+        ? { key: 'unoffload', label: 'Undo Offload', title: `Show ${target.label} as on the server again`, icon: Undo2, iconClass: 'text-muted-foreground', disabled: actionLoading.value, run: () => setOffloaded(target, false) }
+        : { key: 'offload', label: 'Keep as History', title: `Offload ${target.label}: keep its history after you delete the files`, icon: Archive, iconClass: 'text-muted-foreground', disabled: actionLoading.value, run: () => setOffloaded(target, true) });
+    }
+  }
   if (authStore.isEditor && kidsStatus.value) {
     const k = kidsStatus.value;
     actions.push({
@@ -1532,6 +1561,45 @@ const heroActions = computed(() => {
   return actions;
 });
 const phoneMenuActions = computed(() => heroActions.value.filter((a) => !a.onPhone));
+
+// What the admin "Keep as History" action applies to: this film or book, the season on
+// screen, or (a series without seasons) every volume.
+const offloadTarget = computed(() => {
+  if (!series.value) return null;
+  let items; let label;
+  if (isSingle.value) {
+    items = [single.value];
+    label = `"${single.value.title}"`;
+  } else if (isEpisodic.value && activeSeason.value) {
+    items = activeSeason.value.episodes;
+    label = `${series.value.name}, ${activeSeason.value.label.toLowerCase()}`;
+  } else {
+    items = series.value.volumes || [];
+    label = `all of ${series.value.name}`;
+  }
+  if (!items.length) return null;
+  return { ids: items.map((i) => i.id), label, offloaded: items.every((i) => i.offloaded_at) };
+});
+
+async function setOffloaded(target, offload) {
+  if (offload) {
+    const ok = await dialog.confirm({
+      title: 'Keep as history?',
+      message: `${target.label.charAt(0).toUpperCase()}${target.label.slice(1)} will be hidden from shelves and search and can't be played, but stays here, greyed, with everyone's progress. Then delete the files to free the space. If they come back, it's restored by itself.`,
+      confirmText: 'Keep as history'
+    });
+    if (!ok) return;
+  }
+  actionLoading.value = true;
+  try {
+    await api.post(`/admin/health/${offload ? 'offload' : 'unoffload'}`, { itemIds: target.ids });
+    await fetchSeriesData();
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || 'Could not change that');
+  } finally {
+    actionLoading.value = false;
+  }
+}
 
 const offerHttpsForDownloads = computed(() => !downloads.supported && downloads.needsHttps &&
   (series.value?.volumes || []).some((v) => downloadKind(v)));
@@ -1706,7 +1774,8 @@ const moreInEntries = computed(() => {
     year: yearOf(it),
     to: `/title/${it.id}`,
     cover: volumeCoverUrl(it),
-    finished: !!it.is_finished
+    finished: !!it.is_finished,
+    offloaded: it.offloaded_at || null
   });
   const fc = filmCollection.value;
   if (fc?.parts?.length) {
@@ -1714,7 +1783,7 @@ const moreInEntries = computed(() => {
     return fc.parts
       .filter((p) => p.itemId !== selfId)
       .map((p) => (p.itemId
-        ? { ...ownedEntry(known.get(p.itemId) || { id: p.itemId, title: p.title, release_date: p.releaseDate, cover_path: 'tmdb' }), key: p.itemId }
+        ? { ...ownedEntry(known.get(p.itemId) || { id: p.itemId, title: p.title, release_date: p.releaseDate, cover_path: 'tmdb', offloaded_at: p.offloaded || null }), key: p.itemId }
         : { key: `tmdb-${p.tmdbId}`, title: p.title, year: p.releaseDate?.slice(0, 4) || null, part: p }));
   }
   return collectionSiblings.value.map(ownedEntry);
@@ -1826,7 +1895,8 @@ const seasons = computed(() => {
       seasonNumber: n,
       label: n == null ? 'Other' : n === 0 ? 'Specials' : `Season ${n}`,
       episodes: eps,
-      watched: eps.filter((e) => e.is_finished).length
+      watched: eps.filter((e) => e.is_finished).length,
+      offloaded: eps.filter((e) => e.offloaded_at).length
     };
   });
 });
@@ -2057,7 +2127,9 @@ async function fetchSeriesData() {
           overallProgress: item.is_finished ? 100 : (item.progress_percent || 0),
           libraryName: item.library_name || null,
           format: item.format || null,
-          nextVolume: item,
+          // An offloaded title has nothing to play.
+          nextVolume: item.offloaded_at ? null : item,
+          offloadedCount: item.offloaded_at ? 1 : 0,
           volumes: [item]
         };
         // Its extras, and the collection it's part of (if any), load alongside.
@@ -2289,6 +2361,14 @@ function openEntry(vol) {
 // One entry point for every type: comics page-by-page, EPUBs in the book reader, audio in
 // the global player, video in the player here, and anything else in a new tab.
 function openVolumeReader(vol) {
+  // Offloaded: its file was removed to free space. Say so instead of a player error.
+  if (vol.offloaded_at) {
+    dialog.alert({
+      title: 'Offloaded',
+      message: `"${vol.title}" was removed from the server to free space. Your history is kept, and it comes back by itself if the file is put back.`
+    });
+    return;
+  }
   const kind = downloadKind(vol);
   if (vol.media_type === 'audiobook') {
     player.playItem(vol);
