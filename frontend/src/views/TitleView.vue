@@ -171,112 +171,63 @@
                 <button
                   v-if="series.nextVolume"
                   @click="openVolumeReader(series.nextVolume)"
-                  class="w-full sm:w-auto min-w-0 h-11 sm:h-10 px-5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 font-semibold text-sm transition shadow-md shadow-primary/20 flex items-center justify-center gap-2 group"
+                  class="flex-1 sm:flex-none min-w-0 h-11 sm:h-10 px-5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 font-semibold text-sm transition shadow-md shadow-primary/20 flex items-center justify-center gap-2 group"
                 >
                   <Play v-if="smartCtaState.isResume || isTimeBasedType" class="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
                   <Book v-else-if="!smartCtaState.isFinished" class="w-4 h-4 group-hover:scale-110 transition-transform" />
                   <BookOpen v-else class="w-4 h-4 group-hover:scale-110 transition-transform" />
                   <span class="whitespace-nowrap">{{ smartCtaState.label }}</span>
-                  <!-- On a phone the button is full width, so the "Vol 1 · Page 98 of 172" detail
+                  <!-- On a phone the button fills the row, so the "Vol 1 · Page 98 of 172" detail
                        truncates rather than wrapping the whole button onto two lines. -->
                   <span v-if="smartCtaState.subLabel" class="min-w-0 truncate text-xs font-normal opacity-80 tabular-nums">
                     · {{ smartCtaState.subLabel }}
                   </span>
                 </button>
 
-                <!-- Watch party on whatever the play button would start -->
+                <!-- Secondary actions. Wider screens get a row of labelled buttons. A phone only had
+                     room for their icons, which nobody could tell apart, so there they sit in a
+                     labelled "⋯" menu beside the main button instead. -->
                 <button
-                  v-if="canStartParty"
-                  @click="startWatchParty"
-                  :disabled="startingParty"
+                  v-for="action in heroActions"
+                  :key="action.key"
+                  @click="action.run"
+                  :disabled="action.disabled"
+                  :aria-pressed="action.pressed"
                   class="hero-btn"
-                  title="Watch this together with people in other places"
+                  :class="[action.onPhone ? 'flex' : 'hidden sm:flex', action.btnClass]"
+                  :title="action.title"
                 >
-                  <Loader2 v-if="startingParty" class="w-4 h-4 animate-spin" />
-                  <PartyPopper v-else class="w-4 h-4 text-primary" />
-                  <span>Watch Together</span>
+                  <component :is="action.icon" class="w-4 h-4" :class="[action.iconClass, action.spin ? 'animate-spin' : '']" />
+                  <span>{{ action.label }}</span>
                 </button>
 
-                <button
-                  @click="markAllAsRead"
-                  :disabled="series.readCount === series.volumeCount || actionLoading"
-                  class="hero-btn"
-                  :title="`Mark everything as ${vocab.done.toLowerCase()}`"
-                >
-                  <Check class="w-4 h-4 text-emerald-500" />
-                  <span class="hidden sm:inline">Mark {{ series.volumeCount > 1 ? 'All ' : '' }}{{ vocab.done }}</span>
-                </button>
-                <button
-                  @click="markAllAsUnread"
-                  :disabled="series.readCount === 0 && series.inProgressCount === 0 || actionLoading"
-                  class="hero-btn"
-                  title="Reset your history for this"
-                >
-                  <RotateCcw class="w-4 h-4 text-muted-foreground" />
-                  <span class="hidden sm:inline">Reset History</span>
-                </button>
-                <button
-                  v-if="series.volumeCount > 1"
-                  @click="openSkipDialog"
-                  :disabled="actionLoading"
-                  class="hero-btn"
-                  :title="`Skip ${vocab.units.toLowerCase()} you've already covered`"
-                >
-                  <FastForward class="w-4 h-4 text-sky-500" />
-                  <span class="hidden sm:inline">Skip {{ vocab.units }}…</span>
-                </button>
-                <button
-                  v-if="isSingle && downloads.canDownload(single)"
-                  @click="toggleVolumeDownload(single)"
-                  class="hero-btn"
-                  :title="downloadLabel(single)"
-                  :aria-label="downloadLabel(single)"
-                >
-                  <CheckCircle2 v-if="downloads.isDownloaded(single.id)" class="w-4 h-4 text-emerald-500" />
-                  <Loader2 v-else-if="downloads.isDownloading(single.id)" class="w-4 h-4 animate-spin" />
-                  <Download v-else class="w-4 h-4 text-muted-foreground" />
-                  <span class="hidden sm:inline">{{ downloads.isDownloaded(single.id) ? 'Downloaded' : (downloads.isDownloading(single.id) ? 'Downloading…' : 'Download') }}</span>
-                </button>
-                <button
-                  v-if="isSingle"
-                  @click="openBookmarks(single)"
-                  class="hero-btn"
-                  title="Bookmarks & Notes"
-                  aria-label="Bookmarks & Notes"
-                >
-                  <Bookmark class="w-4 h-4 text-muted-foreground" />
-                  <span class="hidden sm:inline">Bookmarks</span>
-                </button>
-                <button
-                  v-if="!isSingle && downloads.supported && undownloadedUnread.length"
-                  @click="downloadUnread"
-                  class="hero-btn"
-                  :title="`Download ${undownloadedUnread.length} ${vocab.units.toLowerCase()} you haven't finished, for offline use`"
-                >
-                  <Download class="w-4 h-4 text-muted-foreground" />
-                  <span class="hidden sm:inline">Download Remaining ({{ undownloadedUnread.length }})</span>
-                </button>
-                <button
-                  v-if="authStore.isEditor"
-                  @click="openSeriesMetadataSearch"
-                  class="hero-btn"
-                  :title="`Search metadata providers and apply to ${series.volumeCount > 1 ? `all ${vocab.units.toLowerCase()}` : 'this title'}`"
-                >
-                  <Search class="w-4 h-4 text-muted-foreground" />
-                  <span class="hidden sm:inline">Edit Metadata</span>
-                </button>
-                <button
-                  v-if="authStore.isEditor && kidsStatus"
-                  @click="toggleKids"
-                  :disabled="kidsStatus.via === 'library' || (kidsStatus.via === 'series' && series.standalone) || kidsBusy"
-                  :aria-pressed="String(kidsStatus.allowed)"
-                  class="hero-btn disabled:opacity-70"
-                  :class="kidsStatus.allowed ? '!text-sky-500 !border-sky-500/40' : ''"
-                  :title="kidsTitle"
-                >
-                  <Baby class="w-4 h-4" :class="kidsStatus.allowed ? 'text-sky-500' : 'text-muted-foreground'" />
-                  <span class="hidden sm:inline">{{ kidsStatus.allowed ? 'In Kids Mode' : 'Kids' }}</span>
-                </button>
+                <div v-if="phoneMenuActions.length" class="relative sm:hidden">
+                  <button
+                    @click="showActionMenu = !showActionMenu"
+                    class="hero-btn !h-11 !w-11 !px-0 justify-center"
+                    aria-label="More actions"
+                    aria-haspopup="menu"
+                    :aria-expanded="String(showActionMenu)"
+                  >
+                    <MoreHorizontal class="w-5 h-5" />
+                  </button>
+                  <template v-if="showActionMenu">
+                    <div class="fixed inset-0 z-40" @click="showActionMenu = false" />
+                    <div role="menu" class="absolute right-0 top-full mt-2 z-50 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-card shadow-2xl py-1.5 text-left">
+                      <button
+                        v-for="action in phoneMenuActions"
+                        :key="action.key"
+                        role="menuitem"
+                        :disabled="action.disabled"
+                        @click="showActionMenu = false; action.run()"
+                        class="w-full h-11 px-3.5 flex items-center gap-3 text-sm font-medium text-foreground hover:bg-muted/70 disabled:opacity-50 transition"
+                      >
+                        <component :is="action.icon" class="w-4 h-4 flex-shrink-0" :class="[action.iconClass, action.spin ? 'animate-spin' : '']" />
+                        <span class="truncate">{{ action.label }}</span>
+                      </button>
+                    </div>
+                  </template>
+                </div>
               </div>
 
               <!-- Progress through a series (a single title shows it on the poster) -->
@@ -1269,7 +1220,8 @@ import {
   Info,
   PartyPopper,
   Baby,
-  X
+  X,
+  MoreHorizontal
 } from '@lucide/vue';
 import { useDownloadsStore } from '../stores/downloads';
 
@@ -1493,6 +1445,107 @@ function toggleVolumeDownload(vol) {
 const undownloadedUnread = computed(() => (series.value?.volumes || []).filter(
   (v) => !v.is_finished && !isSkipped(v) && downloads.canDownload(v) && !downloads.isDownloaded(v.id) && !downloads.isDownloading(v.id)
 ));
+
+// ─── Hero actions ────────────────────────────────────────────────────────────
+// Everything beside the main play/read button, in one list so the same actions render as a
+// row of buttons on wider screens and as a labelled menu on phones.
+const showActionMenu = ref(false);
+
+const heroActions = computed(() => {
+  const s = series.value;
+  if (!s) return [];
+  const v = vocab.value;
+  const units = v.units.toLowerCase();
+  const actions = [];
+
+  if (canStartParty.value) {
+    actions.push({
+      key: 'party', label: 'Watch Together', title: 'Watch this together with people in other places',
+      icon: startingParty.value ? Loader2 : PartyPopper, spin: startingParty.value, iconClass: 'text-primary',
+      disabled: startingParty.value, run: startWatchParty, onPhone: true
+    });
+  }
+  actions.push({
+    key: 'done', label: `Mark ${s.volumeCount > 1 ? 'All ' : ''}${v.done}`, title: `Mark everything as ${v.done.toLowerCase()}`,
+    icon: Check, iconClass: 'text-emerald-500',
+    disabled: s.readCount === s.volumeCount || actionLoading.value, run: markAllAsRead
+  });
+  actions.push({
+    key: 'reset', label: 'Reset History', title: 'Reset your history for this',
+    icon: RotateCcw, iconClass: 'text-muted-foreground',
+    disabled: (s.readCount === 0 && s.inProgressCount === 0) || actionLoading.value, run: markAllAsUnread
+  });
+  if (s.volumeCount > 1) {
+    actions.push({
+      key: 'skip', label: `Skip ${v.units}…`, title: `Skip ${units} you've already covered`,
+      icon: FastForward, iconClass: 'text-sky-500', disabled: actionLoading.value, run: openSkipDialog
+    });
+  }
+  if (isSingle.value && downloads.canDownload(single.value)) {
+    const it = single.value;
+    const done = downloads.isDownloaded(it.id);
+    const busy = downloads.isDownloading(it.id);
+    actions.push({
+      key: 'download', label: done ? 'Downloaded' : (busy ? 'Downloading…' : 'Download'), title: downloadLabel(it),
+      icon: done ? CheckCircle2 : (busy ? Loader2 : Download), spin: busy,
+      iconClass: done ? 'text-emerald-500' : 'text-muted-foreground', run: () => toggleVolumeDownload(it)
+    });
+  }
+  // Over plain http:// the browser won't allow downloads at all; say why instead of leaving
+  // the button silently missing.
+  if (offerHttpsForDownloads.value) {
+    actions.push({
+      key: 'download-https', label: 'Download', title: 'Download for offline',
+      icon: Download, iconClass: 'text-muted-foreground', run: explainDownloadsNeedHttps
+    });
+  }
+  if (isSingle.value) {
+    actions.push({
+      key: 'bookmarks', label: 'Bookmarks', title: 'Bookmarks & Notes',
+      icon: Bookmark, iconClass: 'text-muted-foreground', run: () => openBookmarks(single.value)
+    });
+  }
+  if (!isSingle.value && downloads.supported && undownloadedUnread.value.length) {
+    const n = undownloadedUnread.value.length;
+    actions.push({
+      key: 'download-rest', label: `Download Remaining (${n})`, title: `Download ${n} ${units} you haven't finished, for offline use`,
+      icon: Download, iconClass: 'text-muted-foreground', run: downloadUnread
+    });
+  }
+  if (authStore.isEditor) {
+    actions.push({
+      key: 'metadata', label: 'Edit Metadata',
+      title: `Search metadata providers and apply to ${s.volumeCount > 1 ? `all ${units}` : 'this title'}`,
+      icon: Search, iconClass: 'text-muted-foreground', run: openSeriesMetadataSearch
+    });
+  }
+  if (authStore.isEditor && kidsStatus.value) {
+    const k = kidsStatus.value;
+    actions.push({
+      key: 'kids', label: k.allowed ? 'In Kids Mode' : 'Kids', title: kidsTitle.value,
+      icon: Baby, iconClass: k.allowed ? 'text-sky-500' : 'text-muted-foreground',
+      btnClass: ['disabled:opacity-70', k.allowed ? '!text-sky-500 !border-sky-500/40' : ''],
+      pressed: String(k.allowed),
+      disabled: k.via === 'library' || (k.via === 'series' && s.standalone) || kidsBusy.value, run: toggleKids
+    });
+  }
+  return actions;
+});
+const phoneMenuActions = computed(() => heroActions.value.filter((a) => !a.onPhone));
+
+const offerHttpsForDownloads = computed(() => !downloads.supported && downloads.needsHttps &&
+  (series.value?.volumes || []).some((v) => downloadKind(v)));
+
+async function explainDownloadsNeedHttps() {
+  const go = await dialog.confirm({
+    title: 'Downloads need HTTPS',
+    message: 'Browsers only allow saving things for offline use on a secure connection, and this page was opened over plain http://. Plinthio has an HTTPS address too: set it up once on this device and downloads (and the installable app) will work.',
+    confirmText: 'Show me how',
+    cancelText: 'Not now',
+    type: 'info'
+  });
+  if (go) router.push('/docs#pwa');
+}
 
 // One at a time, in reading order, so the next volume is usable as soon as possible.
 async function downloadUnread() {

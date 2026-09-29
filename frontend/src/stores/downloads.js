@@ -78,6 +78,9 @@ export const useDownloadsStore = defineStore('downloads', {
 
   getters: {
     supported: () => typeof window !== 'undefined' && 'caches' in window && 'serviceWorker' in navigator,
+    // Browsers hide Cache Storage and service workers on plain http:// (anything but
+    // localhost), so downloads are unavailable there for a reason the user can fix.
+    needsHttps: () => typeof window !== 'undefined' && window.isSecureContext === false,
     list: (state) => Object.values(state.entries).sort((a, b) => (b.downloadedAt || '').localeCompare(a.downloadedAt || '')),
     totalBytes: (state) => Object.values(state.entries).reduce((sum, e) => sum + (e.bytes || 0), 0)
   },

@@ -21,3 +21,7 @@ cache/
 
 # Per-machine compose settings (e.g. GPU passthrough)
 docker/docker-compose.override.yml
+
+# Browser test output
+frontend/test-results/
+frontend/playwright-report/

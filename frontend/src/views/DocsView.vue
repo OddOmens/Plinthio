@@ -52,7 +52,7 @@
             <Radio class="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
             <span>Server Status</span>
           </div>
-          <p class="text-[12px] text-muted-foreground">Version 0.4.0 (PWA Ready)</p>
+          <p class="text-[12px] text-muted-foreground">Version {{ appVersion || '…' }}</p>
           <div class="text-[12px] font-mono text-muted-foreground truncate">
             API: /api/health
           </div>
@@ -401,9 +401,9 @@
                 </div>
               </div>
               <p class="text-[12px] text-muted-foreground leading-relaxed">
-                If the browser still warns about the address itself, the certificate doesn't list it yet: the admin adds the
-                address phones use (e.g. <code class="text-foreground bg-muted px-1 rounded">TLS_HOSTNAMES=192.168.1.20</code>)
-                to the Docker settings and restarts. The certificate only works for private network addresses and local names,
+                The certificate adds each address the moment a device first opens Plinthio at it over http://, so if the
+                browser says the certificate doesn't match the address, open the http:// version once, wait a few
+                seconds, and try HTTPS again. The certificate only works for private network addresses and local names,
                 so installing it can't be used to intercept any other website.
               </p>
             </template>
@@ -958,6 +958,19 @@ header input[type="text"] {
             </p>
           </div>
 
+          <a
+            :href="reportUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-muted/40 transition"
+          >
+            <Bug class="w-5 h-5 text-primary flex-shrink-0" />
+            <span class="text-xs text-muted-foreground leading-relaxed">
+              <strong class="text-foreground text-sm block">Still stuck? Report a problem</strong>
+              Opens a bug report on GitHub with your Plinthio version and browser already filled in. Nothing is sent until you submit it.
+            </span>
+          </a>
+
           <div class="space-y-3">
             <div class="p-4 rounded-xl border border-border bg-card space-y-1.5">
               <div class="font-semibold text-xs text-foreground">A library scan finished but items are missing</div>
@@ -1065,8 +1078,10 @@ import {
   Hourglass,
   Lock,
   Clock,
-  CircleAlert
+  CircleAlert,
+  Bug
 } from '@lucide/vue';
+import { reportProblemUrl, serverVersion } from '../utils/reportProblem';
 
 const customizationStore = useCustomizationStore();
 const router = useRouter();
@@ -1078,6 +1093,13 @@ function goToShelf(type) {
 }
 
 const activeSection = ref('overview');
+
+const appVersion = ref('');
+const reportUrl = ref(reportProblemUrl());
+serverVersion().then((v) => {
+  appVersion.value = v;
+  reportUrl.value = reportProblemUrl(v);
+});
 
 // Built-in HTTPS status, for the "Secure connection" card on the app install page.
 const tls = ref(null);
@@ -1142,6 +1164,11 @@ watch(activeSection, (section) => {
 
 onMounted(async () => {
   const hash = decodeURIComponent(window.location.hash.slice(1));
+  // /docs#pwa, /docs#remote … open that guide directly (the app links to them).
+  if (navGroups.some((g) => g.items.some((i) => i.id === hash))) {
+    activeSection.value = hash;
+    return;
+  }
   if (hash !== 'error-codes' && !/^P\d{3}$/.test(hash)) return;
   activeSection.value = 'errors';
   await loadErrorCodes();

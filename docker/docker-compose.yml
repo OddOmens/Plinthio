@@ -36,11 +36,10 @@ services:
       # request and collapse into one shared bucket; with it set but no proxy in front,
       # clients can forge X-Forwarded-For and bypass rate limiting entirely.
       # - TRUST_PROXY=1
-      # The address(es) your devices use to reach this machine, so the HTTPS certificate
-      # covers them — the container can't see the host's LAN IP on its own. Comma-separated
-      # IPs and/or host names, e.g. 192.168.1.20,nas.local. Private IPs and .local/.lan
-      # names can be added any time; anything else (a public domain) only counts if it's
-      # set before the first start, when the certificate authority is made.
+      # Optional. The HTTPS certificate picks up the address your devices use on its own
+      # (the first time each one opens Plinthio over http://). Set this only to cover an
+      # address before anyone visits it, or a public domain, which only counts if it's set
+      # before the first start: comma-separated IPs and/or names, e.g. 192.168.1.20,nas.local
       - TLS_HOSTNAMES=${TLS_HOSTNAMES:-}
       # JWT_SECRET intentionally not set here — the server auto-generates a strong random
       # secret on first boot and persists it to /config/jwt.secret. Do not hardcode a

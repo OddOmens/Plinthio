@@ -136,9 +136,10 @@ certificate authority (CA) Plinthio creates on first start, in `/config/ssl`. Br
 know that CA, so install it once on each device and the warnings stop for good, including
 when the server re-issues its certificate for a new address or before it expires.
 
-1. Set `TLS_HOSTNAMES` to the address your devices use for the server, in `.env` next to the
-   compose file, e.g. `TLS_HOSTNAMES=192.168.1.20,nas.local`, then `docker compose up -d`.
-   Inside Docker the container can't see the host's LAN address on its own.
+1. Open Plinthio on the device over plain `http://<server>:8088` as usual. The certificate
+   adds that address automatically (a private IP or a `.local`-style name), since inside
+   Docker the server can't see its own LAN address. To cover an address in advance, set
+   `TLS_HOSTNAMES=192.168.1.20,nas.local` in `.env` next to the compose file.
 2. On each device, open **Docs → PWA Mobile App Setup** and tap **Download certificate**
    (or open `http://<server>:8088/api/tls/ca.crt`), then:
    - **iPhone / iPad:** Settings → Profile Downloaded → Install, then Settings → General →

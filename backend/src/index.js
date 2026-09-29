@@ -50,7 +50,8 @@ import { initAutoScan } from './services/autoScan.js';
 import { backfillMovieCredits } from './services/credits.js';
 import { sweepHlsCache } from './services/hls.js';
 import { sweepArchiveCache } from './services/archive/sevenZipBackend.js';
-import { tlsSettings, loadTlsCredentials, tlsStatus, caCertificate } from './services/tls.js';
+import { sweepPageCache } from './services/pageImages.js';
+import { tlsSettings, loadTlsCredentials, tlsStatus, caCertificate, noteRequestHost } from './services/tls.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -130,6 +131,18 @@ app.use(compression({
 }));
 
 app.use(express.json());
+
+// Built-in HTTPS learns the addresses devices use (see noteRequestHost in services/tls.js);
+// the re-issue is debounced so a burst of requests produces one new certificate.
+let httpsServer = null;
+let reissueTimer = null;
+app.use((req, res, next) => {
+  if (httpsServer && noteRequestHost(req.hostname)) {
+    clearTimeout(reissueTimer);
+    reissueTimer = setTimeout(refreshHttpsCertificate, 2000);
+  }
+  next();
+});
 
 // Every error response carries a Plinthio error code (see errors.js). Routes name specific
 // codes; this fills in a status-based one for any that don't.
@@ -318,6 +331,7 @@ async function start() {
     const sweepCaches = () => {
       sweepHlsCache(cacheMaxAgeMs);
       sweepArchiveCache(cacheMaxAgeMs);
+      sweepPageCache(cacheMaxAgeMs);
     };
     sweepCaches();
     setInterval(sweepCaches, 60 * 60 * 1000).unref();
@@ -358,6 +372,7 @@ function startHttps() {
   if (!credentials) return null;
 
   const server = https.createServer(credentials, app);
+  httpsServer = server;
   server.on('error', (err) => console.error(`[tls] HTTPS server error on port ${tlsSettings.port}:`, err.message));
   server.listen(tlsSettings.port, config.host, () => {
     console.log(`  🔒 HTTPS:  https://localhost:${tlsSettings.port}`);
@@ -365,15 +380,18 @@ function startHttps() {
       console.log('     Install the CA from /api/tls/ca.crt on your devices to stop certificate warnings.');
     }
   });
-  setInterval(() => {
-    try {
-      const fresh = loadTlsCredentials();
-      if (fresh) server.setSecureContext(fresh);
-    } catch (err) {
-      console.error('[tls] Certificate refresh failed:', err.message);
-    }
-  }, 24 * 60 * 60 * 1000).unref();
+  setInterval(refreshHttpsCertificate, 24 * 60 * 60 * 1000).unref();
   return server;
+}
+
+function refreshHttpsCertificate() {
+  if (!httpsServer) return;
+  try {
+    const fresh = loadTlsCredentials();
+    if (fresh) httpsServer.setSecureContext(fresh);
+  } catch (err) {
+    console.error('[tls] Certificate refresh failed:', err.message);
+  }
 }
 
 // In the Docker image Node runs as PID 1, which ignores SIGTERM unless it handles it — so

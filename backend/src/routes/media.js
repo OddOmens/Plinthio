@@ -6,6 +6,7 @@ import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { getMangaPagesList, extractMangaPage } from '../services/archive.js';
+import { pickPageWidth, resizedMangaPage } from '../services/pageImages.js';
 import { getThumbnailPath, getOrCreateThumbnail } from '../services/thumbnails.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
 import { escapeXml } from '../utils/xml.js';
@@ -241,7 +242,12 @@ router.get('/manga/:id/page/:pageIndex', authenticateToken, async (req, res) => 
     if (!Number.isInteger(pageIndex) || pageIndex < 0) {
       return sendError(req, res, 'P306', { message: 'Invalid page index' });
     }
-    const page = await extractMangaPage(item.path, pageIndex);
+    // ?w= asks for a copy sized to the screen (services/pageImages.js); without it, the
+    // original page as stored in the archive (downloads, Mihon, OPDS readers).
+    const width = pickPageWidth(req.query.w);
+    const page = width
+      ? await resizedMangaPage(req.params.id, item.path, pageIndex, width)
+      : await extractMangaPage(item.path, pageIndex);
 
     if (!page) {
       return res.status(404).json({ error: 'Page not found' });

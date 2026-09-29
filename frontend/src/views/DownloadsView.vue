@@ -22,8 +22,13 @@
       You're offline. Downloads still open; reading progress syncs when you're back online.
     </p>
 
-    <p v-if="!downloads.supported" class="text-sm text-muted-foreground">
-      This browser can't store downloads (it needs Service Worker and Cache Storage support, and a secure https:// or localhost address).
+    <p v-if="!downloads.supported && downloads.needsHttps" class="text-sm text-muted-foreground">
+      Downloads need a secure connection, and this page was opened over plain http://.
+      <router-link to="/docs#pwa" class="text-primary font-medium hover:underline">Switch to HTTPS</router-link>
+      to download things for offline reading and listening.
+    </p>
+    <p v-else-if="!downloads.supported" class="text-sm text-muted-foreground">
+      This browser can't store downloads (it needs Service Worker and Cache Storage support).
     </p>
 
     <!-- Storage -->

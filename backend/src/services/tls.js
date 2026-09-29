@@ -64,7 +64,7 @@ export const tlsSettings = {
   extraNames: (process.env.TLS_HOSTNAMES || '').split(',').map((s) => s.trim()).filter(Boolean)
 };
 
-let state = { enabled: false, mode: null, names: [] };
+let state = { enabled: false, mode: null, names: [], caExtras: [] };
 export function tlsStatus() {
   return { ...state };
 }
@@ -136,6 +136,7 @@ export function certificateNames() {
     }
   }
   for (const name of tlsSettings.extraNames) names.add(net.isIP(name) ? name : name.toLowerCase());
+  for (const name of learnedNames()) names.add(name);
   return [...names].sort();
 }
 
@@ -261,8 +262,45 @@ export function loadTlsCredentials() {
     issueServerCert(names);
   }
 
-  state = { enabled: true, mode: 'generated', names };
+  state = { enabled: true, mode: 'generated', names, caExtras: extras };
   return { cert: fs.readFileSync(SERVER_CERT), key: fs.readFileSync(SERVER_KEY) };
+}
+
+// ─── Addresses learned from requests ─────────────────────────────────────────
+// Inside Docker the server can't see the LAN address phones use, and asking every admin to
+// set TLS_HOSTNAMES is exactly the step people miss. But each plain-HTTP visit says which
+// address it used (the Host header), so the certificate simply learns it: the next time that
+// device switches to HTTPS, its address is already covered. Only names the CA may sign for
+// anyway (private IPs, .local-style names) are learned, and only the most recent few kept,
+// so a stray or forged Host header can at worst add a harmless private name.
+const LEARNED_NAMES = path.join(SSL_DIR, 'learned-names.json');
+const MAX_LEARNED = 16;
+
+function learnedNames() {
+  try {
+    const list = JSON.parse(fs.readFileSync(LEARNED_NAMES, 'utf8'));
+    return Array.isArray(list) ? list.filter((n) => typeof n === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+// Returns true when `host` is new and the certificate should be re-issued to include it.
+export function noteRequestHost(rawHost) {
+  if (state.mode !== 'generated' || !rawHost) return false;
+  const host = String(rawHost).replace(/^\[|\]$/g, '').toLowerCase();
+  if (state.names.includes(host)) return false;
+  if (!net.isIP(host) && (host.length > 253 || !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/.test(host))) return false;
+  if (!coveredByCa(host, state.caExtras)) return false;
+  const learned = learnedNames();
+  if (learned.includes(host)) return false;
+  try {
+    fs.writeFileSync(LEARNED_NAMES, JSON.stringify([...learned, host].slice(-MAX_LEARNED)));
+  } catch {
+    return false;
+  }
+  console.log(`[tls] Adding ${host} to the certificate (a device reached the server at that address).`);
+  return true;
 }
 
 export function caCertificate() {

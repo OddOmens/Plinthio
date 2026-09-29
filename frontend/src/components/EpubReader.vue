@@ -413,8 +413,10 @@ async function createRendition() {
   // Start at saved position or beginning
   // Start at the saved position. A book last read in KOReader has no position Plinthio can
   // use (KOReader's are XPointers), only a percentage — so go to that point instead.
-  const savedCfi = props.item.current_page_cfi;
-  const savedPercent = Number(props.item.progress_percent) || 0;
+  // A finished book ("Read Again") starts over rather than reopening on its last page.
+  const finished = !!props.item.is_finished;
+  const savedCfi = finished ? null : props.item.current_page_cfi;
+  const savedPercent = finished ? 0 : (Number(props.item.progress_percent) || 0);
   if (savedCfi) {
     await rendition.display(savedCfi);
   } else if (savedPercent > 0 && savedPercent < 100) {

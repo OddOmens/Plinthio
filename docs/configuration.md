@@ -26,7 +26,7 @@ the compose-level ones.
 | `HOST` | `0.0.0.0` | Interface the server listens on inside the container |
 | `DATA_DIR` | `/config` (Docker), `./data` (bare metal) | Where the database, covers, caches and backups live |
 | `HTTPS_PORT` | `8443` (Docker), off (bare metal) | Port for the built-in HTTPS server, next to plain HTTP on `PORT`. Empty turns it off. See [Setup → HTTPS on your network](setup.md#https-on-your-network) |
-| `TLS_HOSTNAMES` | none | Comma-separated IPs and host names the HTTPS certificate should cover, e.g. `192.168.1.20,nas.local`. In Docker, set this to the host's LAN address: the container can't see it |
+| `TLS_HOSTNAMES` | none | Extra IPs and host names for the HTTPS certificate, comma-separated, e.g. `192.168.1.20,nas.local`. Usually unneeded: private addresses and local names are added automatically when a device first visits over http://. A public domain must be set here before the first start |
 | `TLS_CERT` / `TLS_KEY` | `/config/ssl/cert.pem` / `key.pem` if present | Your own certificate and key instead of the generated ones |
 | `TRUST_PROXY` | off | Set to `1` behind **one** reverse proxy or tunnel, so rate limits and logs see real client addresses. Also accepts a hop count, `true`, or an IP/subnet list ([Express's rules](https://expressjs.com/en/guide/behind-proxies.html)). Never set it without a proxy: clients could fake their address and get round rate limits |
 | `JWT_SECRET` | generated | Secret that signs sign-in tokens. By default a random one is made on first start and kept in `/config/jwt.secret`. Don't put a literal secret in the compose file |

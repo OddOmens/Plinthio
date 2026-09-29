@@ -4,6 +4,9 @@ Suggestions and fixes are welcome.
 
 1. **Fork** the repository and make your change on a branch in your fork.
 2. Run the checks locally: `npm test` in `backend/`, and `npm run build` in `frontend/`.
+   For anything touching the web app, also run the browser tests: `npm run build && npm run
+   test:e2e` in `frontend/` (the first time, `npx playwright install chromium`). They start a
+   throwaway server with a generated manga library and drive it on a phone-sized screen.
 3. Open a **pull request** against `main`, saying what it changes and why. Add a line to
    `CHANGELOG.md` under **Unreleased** for anything a user would notice.
 

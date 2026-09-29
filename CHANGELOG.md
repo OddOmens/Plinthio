@@ -10,9 +10,18 @@ the admin update banner. Add entries under **Unreleased** as you go.
 ## [Unreleased]
 
 ### Added
-- **Built-in HTTPS.** The Docker image now also serves HTTPS on port 8443, with a certificate from its own local certificate authority. Install that CA once per device (Docs → PWA Mobile App Setup has a download button and steps for iPhone, Android and desktop) and the "not secure" warning goes away, and the installed app gets offline reading, which browsers only allow over HTTPS. Set `TLS_HOSTNAMES` to the address your devices use. The CA can only sign for private addresses and local names. Plain HTTP on 8088 keeps working. Bring your own certificate by putting `cert.pem` and `key.pem` in `/config/ssl`.
+- **Built-in HTTPS.** The Docker image now also serves HTTPS on port 8443, with a certificate from its own local certificate authority. Install that CA once per device (Docs → PWA Mobile App Setup has a download button and steps for iPhone, Android and desktop) and the "not secure" warning goes away, and the installed app gets offline reading, which browsers only allow over HTTPS. The certificate picks up the address your devices use by itself, and the setup wizard points new installs to it. The CA can only sign for private addresses and local names. Plain HTTP on 8088 keeps working. Bring your own certificate by putting `cert.pem` and `key.pem` in `/config/ssl`.
+- **Sharper, lighter manga pages on phones.** The reader asks for pages at the size your screen shows them, instead of full-resolution scans of several MB each: much less data and memory, and faster page turns. Zooming in swaps to the full-size original. Downloads keep full size.
+- **Reader settings are remembered.** One- or two-page spread, and scroll mode per series, are remembered on each device; the fade or flip page turn follows you to every device.
+- **Faster page turns.** The reader loads the next three pages ahead (and the one behind), plus the next volume's first page near the end.
+- **Report a problem.** Admins get a link (in the account menu and on Docs → Troubleshooting) that opens a GitHub bug report with the version and browser filled in.
+- **Title page actions on phones** sit in a labelled "⋯" menu beside the main button, instead of a row of icons you had to guess at.
 
 ### Fixed
+- **The setup wizard stopped at step 5.** Continue did nothing on the Household step, so a new server couldn't finish setup from the wizard.
+- **Swiping went the wrong way in right-to-left manga.** Swiping right now turns to the next page, as tapping the left side already did.
+- **"Read Again" opened a finished volume or book on its last page.** It now starts from the beginning.
+- **Downloads silently missing over http://.** The Download button now explains that downloads need HTTPS and how to set it up, instead of not appearing.
 - **The manga reader reloading on phones in scroll mode.** Scroll mode loaded every page of a volume at full size at once, which ran phones out of memory until the browser reloaded the page. Now only the pages around the one you're reading are kept in memory. A swipe past the top of the reader also no longer pull-to-refreshes the page behind it.
 - **The page slider and buttons in scroll mode.** The slider, previous/next buttons and arrow keys now scroll to that page, the page counter follows what's on screen, reopening resumes at your page, and progress saves as you scroll instead of only when you close the reader.
 - **Title page on phones.** The Continue button stays on one line, an unrated title no longer shows an empty server rating, and the series badge and progress line are easier to read.
