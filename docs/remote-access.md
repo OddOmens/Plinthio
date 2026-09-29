@@ -108,7 +108,8 @@ may buffer, especially in HD or with several people watching. For full-speed vid
    ```ini
    TS_FUNNEL=true
    ```
-   and run `docker compose up -d`.
+   and run `docker compose up -d --force-recreate`. (`--force-recreate` matters when
+   Tailscale is already running: Compose doesn't notice a changed `TS_FUNNEL` on its own.)
 4. The first time, Tailscale may need Funnel allowed for your tailnet. If
    `docker logs plinthio-tailscale` mentions Funnel not being enabled, follow the link it
    gives, or in the admin console open **Access controls** and allow the `funnel` attribute
@@ -118,7 +119,7 @@ may buffer, especially in HD or with several people watching. For full-speed vid
    admin and open Admin → Network: it should say you're connecting from outside.
 
 Send friends that link, and make them Plinthio accounts (Admin → Users). To close it again,
-set `TS_FUNNEL=false` (or remove the line) and run `docker compose up -d`. Your own Tailscale
+set `TS_FUNNEL=false` (or remove the line) and run `docker compose up -d --force-recreate`. Your own Tailscale
 devices keep working either way.
 
 ## A web address for guests
@@ -230,7 +231,7 @@ how to report a problem.
 
 | Problem | Fix |
 | --- | --- |
-| The Funnel link doesn't load for friends | Check `TS_FUNNEL=true` (exactly), that Funnel is allowed for your tailnet (`docker logs plinthio-tailscale`), and test with Tailscale turned off on the phone. Funnel can take a minute to start after `docker compose up -d` |
+| The Funnel link doesn't load for friends | `docker exec plinthio-tailscale tailscale funnel status` should say "Funnel on". If it says "tailnet only", check `TS_FUNNEL=true` (exactly) and run `docker compose up -d --force-recreate`. Also check that Funnel is allowed for your tailnet (`docker logs plinthio-tailscale`), and test with Tailscale turned off on the phone. Funnel can take a minute to start after `docker compose up -d` |
 | Video buffers over Funnel | Tailscale limits Funnel's bandwidth. Try a lower quality in the player, or use [a web address](#a-web-address-for-guests) for full speed |
 | The web address doesn't load from outside | Check step 1 (CGNAT), that the A record shows your current IP (`nslookup media.yourdomain.com`), and that ports 80 and 443 are forwarded to the right machine. Some providers block port 80 or 443: ask them, or use Tailscale |
 | It works from outside but not at home | Some routers can't loop back to your own public address ("NAT loopback"). At home, keep using `http://<server>:8088`, or add the name to your router's local DNS pointing at the server's home address |

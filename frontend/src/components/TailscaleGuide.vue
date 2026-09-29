@@ -84,8 +84,8 @@
             with your key in place of <code class="font-mono text-foreground">tskey-auth-…</code>:
           </p>
           <CopyBlock :text="envLines" />
-          <p class="text-xs text-muted-foreground">Then start it:</p>
-          <CopyBlock text="docker compose up -d" />
+          <p class="text-xs text-muted-foreground">Then start it. <code class="font-mono text-foreground">--force-recreate</code> makes a changed setting take effect; Plinthio restarts for a few seconds:</p>
+          <CopyBlock text="docker compose up -d --force-recreate" />
           <details class="text-xs text-muted-foreground">
             <summary class="cursor-pointer hover:text-foreground">Not using Docker, or Tailscale is already on the server?</summary>
             <div class="mt-2 flex flex-col gap-2">
