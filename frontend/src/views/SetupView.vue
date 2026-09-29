@@ -324,11 +324,13 @@
             </div>
           </label>
           <div class="p-4 rounded-2xl bg-muted/30 border border-border text-sm text-muted-foreground leading-relaxed">
-            <p class="text-foreground font-medium mb-1">After setup: give it a web address</p>
-            Guests open something like <code class="font-mono text-foreground">https://media.yourdomain.com</code>. That needs a
-            domain and a port opened on your router; the Caddy add-on does the rest, including the certificate. Step by step,
-            including how to check your internet connection allows it: <strong class="text-foreground">Docs → Remote Access &amp; Tailscale</strong>.
-            Until then, nothing changes.
+            <p class="text-foreground font-medium mb-1">After setup: give guests a link</p>
+            <span class="block"><strong class="text-foreground">No domain?</strong> Tailscale Funnel gives a permanent
+            <code class="font-mono text-foreground break-all">https://….ts.net</code> link anyone can open, with no router changes.
+            Great for reading and listening; video may be slower.</span>
+            <span class="block mt-1"><strong class="text-foreground">Have a domain?</strong> The Caddy add-on gives
+            <code class="font-mono text-foreground">https://media.yourdomain.com</code> at full speed; it needs a port opened on your router.</span>
+            <span class="block mt-1">Step by step: <strong class="text-foreground">Docs → Remote Access &amp; Tailscale</strong>. Until then, nothing changes.</span>
           </div>
         </div>
       </section>
@@ -477,7 +479,7 @@ const allMedia = [
 const accessOptions = [
   { id: 'home', title: 'At home only', badge: 'Start here', icon: House, text: 'Phones, tablets and computers on your home network. Nothing is reachable from the internet.' },
   { id: 'tailscale', title: 'At home, and away with Tailscale', icon: Waypoints, text: 'For you and people you invite to your Tailscale: private, with nothing opened on your router. Each device needs the free Tailscale app.' },
-  { id: 'internet', title: 'Also from the internet, for guests', icon: Globe, text: 'Friends and family open a normal web address and sign in, with no apps to install. Needs a domain and a port opened on your router.' }
+  { id: 'internet', title: 'Also from the internet, for guests', icon: Globe, text: 'Friends and family open a link and sign in, with no apps to install. Through Tailscale Funnel (no domain, no router changes) or your own web address.' }
 ];
 
 const form = reactive({

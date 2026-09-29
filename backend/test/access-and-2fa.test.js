@@ -68,6 +68,13 @@ describe('away from home, and two-factor', () => {
     assert.equal((await req('GET', '/items', { token: adminToken })).status, 200);
   });
 
+  test('a Tailscale Funnel request counts as outside, whatever its address', async () => {
+    const res = await fetch(`${base}/api/auth/access`, { headers: { 'x-forwarded-for': TAILSCALE, 'tailscale-funnel-request': '?1' } });
+    const body = await res.json();
+    assert.equal(body.where, 'outside');
+    assert.equal(body.allowed, false, 'home-only server');
+  });
+
   test('Tailscale counts as home by default', async () => {
     assert.equal((await req('GET', '/auth/access', { from: TAILSCALE })).body.allowed, true);
     assert.equal((await login(GUEST.username, GUEST.password, TAILSCALE)).status, 200);

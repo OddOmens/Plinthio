@@ -17,6 +17,7 @@ the compose-level ones.
 | `PLINTHIO_TAG` | `latest` | Image tag, which chooses the update channel (see [Setup → Updating](setup.md#updating)) |
 | `TZ` | `UTC` | Time zone for logs and scheduled jobs |
 | `TS_AUTHKEY`, `TS_HOSTNAME` | none, `plinthio` | Tailscale add-on: an auth key, and the machine's name on your tailnet ([Remote access](remote-access.md#tailscale)) |
+| `TS_FUNNEL` | `false` | Tailscale add-on: `true` opens the `.ts.net` address to anyone on the internet, no domain needed ([Funnel](remote-access.md#tailscale-funnel-a-link-for-anyone-no-domain)). Exactly `true` or `false` |
 | `PLINTHIO_DOMAIN` | none | Public-address add-on: the name guests use, e.g. `media.yourdomain.com` ([Remote access](remote-access.md#a-web-address-for-guests)) |
 | `COMPOSE_FILE` | `docker-compose.yml` | Which files make up the stack, e.g. `docker-compose.yml:docker-compose.tailscale.yml` to keep an add-on across updates |
 
