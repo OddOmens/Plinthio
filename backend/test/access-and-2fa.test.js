@@ -75,6 +75,19 @@ describe('away from home, and two-factor', () => {
     assert.equal(body.allowed, false, 'home-only server');
   });
 
+  test('Admin → Network sees Tailscale and Funnel working, and only from the local proxy', async () => {
+    // As tailscale serve would send them: from loopback, with the .ts.net name.
+    await fetch(`${base}/api/health`, { headers: { 'x-forwarded-for': TAILSCALE, 'x-forwarded-host': 'plinthio.tail1234.ts.net' } });
+    await fetch(`${base}/api/health`, { headers: { 'x-forwarded-for': '198.51.100.7', 'x-forwarded-host': 'plinthio.tail1234.ts.net', 'tailscale-funnel-request': '?1' } });
+    const net = (await req('GET', '/admin/network', { token: adminToken })).body.tailscale;
+    assert.equal(net.host, 'plinthio.tail1234.ts.net');
+    assert.ok(net.lastSeen);
+    assert.ok(net.funnelLastSeen);
+    // A made-up name that isn't a Tailscale one is ignored.
+    await fetch(`${base}/api/health`, { headers: { 'x-forwarded-host': 'evil.example.com' } });
+    assert.equal((await req('GET', '/admin/network', { token: adminToken })).body.tailscale.host, 'plinthio.tail1234.ts.net');
+  });
+
   test('Tailscale counts as home by default', async () => {
     assert.equal((await req('GET', '/auth/access', { from: TAILSCALE })).body.allowed, true);
     assert.equal((await login(GUEST.username, GUEST.password, TAILSCALE)).status, 200);

@@ -31,6 +31,47 @@
         </div>
       </div>
 
+      <!-- Tailscale: is it working, and how to set it up -->
+      <section class="rounded-xl border border-border bg-card">
+        <header class="px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-sm font-semibold flex items-center gap-2"><Waypoints class="w-4 h-4 text-primary" /> Tailscale</h3>
+          <button type="button" @click="showGuide = !showGuide" class="h-8 px-3 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-medium">
+            {{ showGuide ? 'Hide setup guide' : (report.tailscale.host ? 'Setup guide' : 'Set up Tailscale') }}
+          </button>
+        </header>
+        <div class="p-4 flex flex-col gap-2 text-sm">
+          <p v-if="report.tailscale.lastSeen" class="flex items-start gap-2 text-foreground">
+            <CheckCircle2 class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+            <span>
+              Working at <a :href="`https://${report.tailscale.host}`" target="_blank" rel="noopener" class="font-mono text-primary hover:underline break-all">https://{{ report.tailscale.host }}</a>
+              <span class="text-xs text-muted-foreground"> · last used {{ formatTime(report.tailscale.lastSeen) }}</span>
+            </span>
+          </p>
+          <p v-else-if="report.tailscale.host" class="flex items-start gap-2 text-muted-foreground">
+            <Waypoints class="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>Set up at <span class="font-mono break-all">https://{{ report.tailscale.host }}</span>, not used since Plinthio last started. Open it from a Tailscale device to check.</span>
+          </p>
+          <p v-else class="text-muted-foreground text-xs leading-relaxed">
+            Not set up, as far as Plinthio can tell. Tailscale gives you a trusted <code class="font-mono">https://….ts.net</code> address at home and
+            away; with Funnel, it's also a link anyone can open, with no domain. Open the guide to set it up.
+          </p>
+
+          <p v-if="report.tailscale.funnelLastSeen" class="flex items-start gap-2 text-foreground">
+            <CheckCircle2 class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+            <span>Funnel is working: a visitor from the internet, {{ formatTime(report.tailscale.funnelLastSeen) }}.</span>
+          </p>
+          <p v-if="(guideFunnel || report.tailscale.funnelLastSeen) && !report.settings.remoteAccess" class="flex flex-wrap items-center gap-2 text-xs rounded-lg border border-amber-500/40 bg-amber-500/5 p-2.5">
+            <AlertTriangle class="w-4 h-4 text-amber-500 flex-shrink-0" />
+            <span class="flex-1 min-w-[12rem] text-muted-foreground">Funnel visitors come from the internet, and outside access is off, so they'll see "available at home only".</span>
+            <button type="button" @click="save({ remoteAccess: true })" :disabled="saving" class="h-7 px-2.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50">Allow outside access</button>
+          </p>
+
+          <div v-if="showGuide" class="pt-3 mt-1 border-t border-border">
+            <TailscaleGuide context="admin" v-model:funnel="guideFunnel" />
+          </div>
+        </div>
+      </section>
+
       <!-- Warnings -->
       <div v-if="report.proxyWithoutTrust" class="rounded-xl border border-amber-500/40 bg-amber-500/5 p-4 text-sm flex items-start gap-3">
         <AlertTriangle class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -119,7 +160,8 @@
 import { ref, computed, onMounted, h } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
-import { Globe, RefreshCw, AlertTriangle, ShieldAlert, House, Waypoints, Earth } from '@lucide/vue';
+import { Globe, RefreshCw, AlertTriangle, ShieldAlert, House, Waypoints, Earth, CheckCircle2 } from '@lucide/vue';
+import TailscaleGuide from './TailscaleGuide.vue';
 
 const dialog = useDialogStore();
 const report = ref(null);
@@ -129,6 +171,8 @@ const error = ref('');
 // Redraws the switches when a change is refused or cancelled, so a checkbox never shows a
 // state that wasn't saved.
 const rev = ref(0);
+const showGuide = ref(false);
+const guideFunnel = ref(false);
 
 const whereLabel = computed(() => ({
   home: 'your home network',

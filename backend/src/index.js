@@ -45,7 +45,7 @@ import kidsRoutes from './routes/kids.js';
 import systemRoutes from './routes/system.js';
 import ratingRoutes from './routes/ratings.js';
 import networkRoutes from './routes/network.js';
-import { noteProxyHeaders } from './services/network.js';
+import { noteProxyHeaders, noteTailscale } from './services/network.js';
 import { warmThumbnailCache } from './services/thumbnails.js';
 import { initBackupScheduler } from './services/backup.js';
 import { initAutoScan } from './services/autoScan.js';
@@ -66,7 +66,7 @@ if (config.trustProxy !== false) {
   app.set('trust proxy', config.trustProxy);
 }
 // Admin → Network warns when a proxy is in front but TRUST_PROXY isn't set (services/network.js).
-app.use((req, res, next) => { noteProxyHeaders(req, config.trustProxy); next(); });
+app.use((req, res, next) => { noteProxyHeaders(req, config.trustProxy); noteTailscale(req); next(); });
 
 // Security and utility middleware
 // Content-Security-Policy. The session token lives in localStorage, so any injected script

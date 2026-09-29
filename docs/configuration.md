@@ -55,12 +55,14 @@ are using, and hovering a pause screen style shows it before you choose.
 | Card | Default | What it controls |
 | --- | --- | --- |
 | **Shelf Views** | all on | Whether **Disk Folders** and **Custom Folders** views are offered to everyone. Alphabetical and Creator are always there |
-| **Accent Theme Preset** | `zinc` | Accent colour for everyone: zinc, slate, emerald, violet, rose, amber, sky, indigo |
-| **Navigation Layout** | top bar | Top navigation bar or sidebar |
+| **User Personalization** | all allowed | Whether people can choose their own accent colour, navigation layout, page width and pause screen (Settings → Preferences). One switch for all of it, and one for each. Anything not allowed follows the server defaults below |
+| **Server Default Accent Color** | `zinc` | Accent colour for anyone who hasn't picked their own: zinc, slate, emerald, violet, rose, amber, sky, indigo |
+| **Server Default Navigation Layout** | top bar | Top navigation bar or sidebar, for anyone who hasn't picked their own |
+| **Server Default Page Width** | full width | Full width, or contained (centred, up to 1440px), for anyone who hasn't picked their own |
 | **Ratings** | all on | Which ratings are shown: personal stars, the server average, TMDB's world score. A switched-off rating isn't sent by the API either |
 | **Movie Collections** | on | Whether a collection also lists the films the server doesn't have, greyed out with a Request button. They never appear on the shelf |
 | **Watch Parties** | off | Adds "Watch Together" to movies and episodes. Turning it off ends any party in progress |
-| **Pause Screen** | Details | What movies and shows show after a couple of seconds paused: Simple, Details, Cinematic or Bedtime. See [Movies and shows](video.md#pause-screens) |
+| **Server Default Pause Screen** | Details | What movies and shows show after a couple of seconds paused: Simple, Details, Cinematic or Bedtime, for anyone who hasn't picked their own. See [Movies and shows](video.md#pause-screens) |
 | **Opening Sequence** | off, built-in clip | A short clip played before movies and/or episodes when someone presses Play. Replace it with your own 1–10 second MP4 (H.264, under 20 MB). See [Movies and shows](video.md#opening-sequence) |
 | **Server Branding & Notices** | "Plinthio", no notice | Server name (shown everywhere and in the browser tab) and a message on the sign-in page |
 | **Custom CSS Injection** | empty | CSS applied for every user, live. Docs → Custom CSS Styling lists the variables |
@@ -85,9 +87,11 @@ are using, and hovering a pause screen style shows it before you choose.
 
 ### Per user (Settings, everyone)
 
-- **Preferences:** which media categories you see, which shelf views you use, the view you
-  land on, and **page width**: full width (the default, with more posters in a row on big
-  screens) or contained (centred, up to 1440px). Light or dark mode is the sun/moon button
+- **Preferences:** which media categories you see, which shelf views you use, and the view
+  you land on. When the admin allows it (Admin → Server Config → User Personalization), also
+  your own **accent colour**, **navigation layout** (top bar or sidebar), **page width**
+  (full width, or contained at up to 1440px) and **video pause screen**; each has a "Server
+  default" choice that follows the admin's setting. Light or dark mode is the sun/moon button
   in the top bar.
 - **My Activity:** what you've read, watched and listened to.
 - **Hidden:** titles you've hidden from your own shelves, with a way to bring them back.
@@ -112,6 +116,8 @@ expiry, whether it can be used away from home, resetting two-factor, and passwor
 | **Tailscale devices count as home** | on | Off treats Tailscale addresses as outside |
 | **Require two-factor away from home** | off | Sign-ins from outside need a two-factor code |
 
-The page also shows where the device you're using connects from, warns about a proxy that
-isn't trusted (`TRUST_PROXY`), and lists recent sign-ins from outside. See
+The page also shows where the device you're using connects from, whether Tailscale and
+Funnel are reaching Plinthio (with the `.ts.net` address), a step-by-step Tailscale guide
+that writes the `.env` lines for you, warns about a proxy that isn't trusted
+(`TRUST_PROXY`), and lists recent sign-ins from outside. See
 [Using Plinthio away from home](remote-access.md).

@@ -28,6 +28,19 @@ test('setup wizard creates the admin and the first library', async ({ page, requ
 
   // Access: home only is the default.
   await expect(page.getByRole('radio', { name: /At home only/ })).toHaveAttribute('aria-checked', 'true');
+  // Tailscale shows its step-by-step guide with the lines to paste…
+  await page.getByRole('radio', { name: /away with Tailscale/ }).click();
+  await expect(page.getByText('Set up Tailscale')).toBeVisible();
+  await expect(page.getByText(/COMPOSE_FILE=docker-compose.yml:docker-compose.tailscale.yml/)).toBeVisible();
+  await expect(page.getByText('TS_FUNNEL=true')).toBeHidden();
+  // …and a link for friends (Funnel) opens the server to the internet.
+  await page.getByRole('button', { name: /link for friends without Tailscale/ }).click();
+  await expect(page.getByRole('radio', { name: /Also from the internet/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByText(/TS_FUNNEL=true/)).toBeVisible();
+  await expect(page.getByText('Require two-factor away from home')).toBeVisible();
+  // Back to home only for the rest of the tests.
+  await page.getByRole('radio', { name: /At home only/ }).click();
+  await expect(page.getByText('Set up Tailscale')).toBeHidden();
   await next.click();
 
   await expect(page.getByText('Review & Launch Plinthio')).toBeVisible();
