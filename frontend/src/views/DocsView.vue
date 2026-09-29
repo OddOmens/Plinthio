@@ -569,9 +569,26 @@
             </div>
           </div>
 
-          <!-- Method 2: a web address for guests (the public-address add-on) -->
+          <!-- Method 2: Tailscale Funnel, a public link with no domain -->
           <div class="p-5 rounded-2xl border border-border bg-card space-y-3">
-            <h3 class="text-sm font-semibold text-foreground">Option 2: A web address for guests</h3>
+            <h3 class="text-sm font-semibold text-foreground">Option 2: Tailscale Funnel, a link for anyone (no domain)</h3>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              Opens the same <code class="text-foreground bg-muted px-1 rounded break-all">https://plinthio.your-tailnet.ts.net</code> address to
+              anyone, in a normal browser: no Tailscale for your friends, no domain, no router changes, and it works even where
+              your internet provider blocks incoming connections. It goes through Tailscale's servers, which limit bandwidth:
+              reading and listening are fine, video may buffer.
+            </p>
+            <ol class="text-xs text-muted-foreground list-decimal list-inside space-y-1 leading-relaxed">
+              <li>Set up Option 1 with the Docker add-on.</li>
+              <li><strong class="text-foreground">Admin → Network</strong> → allow access from outside (and consider requiring two-factor away from home).</li>
+              <li>Add <code class="text-foreground bg-muted px-1 rounded">TS_FUNNEL=true</code> to <code class="text-foreground bg-muted px-1 rounded">.env</code> and run <code class="text-foreground bg-muted px-1 rounded">docker compose up -d</code>.</li>
+              <li>Check it on a phone with Wi-Fi and Tailscale off, then send friends the link and make them accounts.</li>
+            </ol>
+          </div>
+
+          <!-- Method 3: a web address for guests (the public-address add-on) -->
+          <div class="p-5 rounded-2xl border border-border bg-card space-y-3">
+            <h3 class="text-sm font-semibold text-foreground">Option 3: Your own web address (full speed)</h3>
             <p class="text-xs text-muted-foreground leading-relaxed">
               Friends and family open something like <code class="text-foreground bg-muted px-1 rounded">https://media.yourdomain.com</code>
               and sign in, with no apps or certificates to install. The public-address add-on runs Caddy, which gets and renews a real

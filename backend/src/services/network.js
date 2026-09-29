@@ -107,7 +107,12 @@ export async function saveNetworkSettings(db, { remoteAccess, tailscaleIsHome, r
 // "home" or "outside" once the Tailscale setting is applied — the only distinction access
 // rules care about. `where` keeps the three-way answer for display.
 export async function requestLocation(req) {
-  const where = classifyAddress(req.ip);
+  // Tailscale Funnel marks requests from the internet with this header (and strips any copy a
+  // visitor sends). It also passes the visitor's real address, but the header settles it even
+  // if that ever changed. Anyone can send it direct, but it only ever makes a request count
+  // as outside, never as home, so there's nothing to gain by faking it.
+  const funnel = req.headers?.['tailscale-funnel-request'] === '?1';
+  const where = funnel ? 'outside' : classifyAddress(req.ip);
   const settings = await getNetworkSettings();
   const away = where === 'outside' || (where === 'tailscale' && !settings.tailscaleIsHome);
   return { where, away, ip: normalizeIp(req.ip), settings };

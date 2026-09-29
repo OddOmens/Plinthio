@@ -15,11 +15,17 @@
 # 4. Install Tailscale on each phone or computer, sign in, and open
 #    https://plinthio.<your-tailnet>.ts.net  (the admin console lists the exact name).
 #
+# Friends without Tailscale: Funnel. Add TS_FUNNEL=true to .env and the same address opens
+# in anyone's browser, with no domain and no router changes. Turn on outside access in
+# Admin → Network first (and consider requiring two-factor away from home), and read
+# docs/remote-access.md: Funnel goes through Tailscale's servers, which limit bandwidth.
+#
 # Tailscale runs in Plinthio's network, so http://<server>:8088 on your home network keeps
 # working, and Tailscale reaches Plinthio at 127.0.0.1 and passes each device's real address
 # along. That's why TRUST_PROXY is loopback: only a proxy running right next to Plinthio is
 # believed, and nothing on your network can fake its address. Tailscale devices count as
-# home unless you change that in Admin → Network.
+# home unless you change that in Admin → Network; Funnel visitors come from the internet
+# and count as outside.
 services:
   tailscale:
     image: tailscale/tailscale:stable
@@ -42,7 +48,8 @@ services:
       - TRUST_PROXY=loopback
 
 configs:
-  # HTTPS on the tailnet name, handed to Plinthio. Funnel (public internet) stays off.
+  # HTTPS on the tailnet name, handed to Plinthio. Funnel (the same address, open to the
+  # internet) only with TS_FUNNEL=true; it must be exactly true or false.
   # $$ keeps Compose from filling in ${TS_CERT_DOMAIN}; Tailscale fills it in itself.
   tailscale-serve:
     content: |
@@ -53,5 +60,5 @@ configs:
             "Handlers": { "/": { "Proxy": "http://127.0.0.1:8080" } }
           }
         },
-        "AllowFunnel": { "$${TS_CERT_DOMAIN}:443": false }
+        "AllowFunnel": { "$${TS_CERT_DOMAIN}:443": ${TS_FUNNEL:-false} }
       }

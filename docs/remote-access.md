@@ -10,12 +10,17 @@ people in. All of it is optional.
 | --- | --- | --- | --- |
 | Just home | Nothing to do | A browser | None |
 | You (and a few people you trust), anywhere | [Tailscale](#tailscale) | The free Tailscale app, signed in | None |
-| Friends and family, anywhere, no apps | [A web address](#a-web-address-for-guests) | A browser | Two ports forwarded, and a domain |
+| Friends and family, no apps, **no domain** | [Tailscale Funnel](#tailscale-funnel-a-link-for-anyone-no-domain) | A browser | None |
+| Friends and family, no apps, full speed | [A web address](#a-web-address-for-guests) | A browser | Two ports forwarded, and a domain |
 
 Tailscale is private: nothing is reachable from the internet, and it works with any internet
-connection. A web address is the easiest for guests, but your sign-in page is on the internet,
-so read [Keeping it safe](#keeping-it-safe) first. You can use both: Tailscale for you, a web
-address for everyone else.
+connection. Funnel and a web address both put your sign-in page on the internet, so read
+[Keeping it safe](#keeping-it-safe) first. **Funnel** is the easiest: a permanent link with no
+domain and no router changes, and it works even where your provider blocks incoming
+connections, but it goes through Tailscale's servers, which limit bandwidth. That's fine for
+books, comics and audiobooks; video may stutter. **A web address** goes straight to your
+server at full speed, but needs a domain and router access. You can combine them: Tailscale
+for you, Funnel or a web address for everyone else.
 
 Whichever you pick, **Admin → Network** decides who's allowed in from where (below), and shows
 where the device you're using is connecting from, so you can check it works.
@@ -78,7 +83,41 @@ there are no certificates to install and the installed app works offline.
 
 **Letting someone else in:** in the admin console, open the Plinthio machine's **⋯ → Share**
 and send them the link. They sign in to Tailscale with their own account and see only
-Plinthio, not your other devices. Then make them a Plinthio account.
+Plinthio, not your other devices. Then make them a Plinthio account. Or, so they don't need
+Tailscale at all, use Funnel (next).
+
+## Tailscale Funnel: a link for anyone, no domain
+
+Funnel opens the same `https://plinthio.<your-tailnet>.ts.net` address to the whole internet.
+Friends just open the link in a browser and sign in: no Tailscale, no app, nothing to install.
+You don't need a domain or any router changes, and it works even behind CGNAT (5G home
+internet, Starlink and so on). Only you need a Tailscale account.
+
+**The trade-off:** Funnel traffic goes through Tailscale's servers, and Tailscale limits its
+bandwidth (the limit isn't published or adjustable). Reading and listening are fine; video
+may buffer, especially in HD or with several people watching. For full-speed video, use
+[a web address](#a-web-address-for-guests) instead.
+
+1. Set up [Tailscale](#tailscale) with the Docker add-on first.
+2. **Admin → Network → Allow access from outside the home network.** Funnel visitors come from
+   the internet, so without this they get "available at home only". While you're there,
+   consider **Require two-factor away from home**, and set up two-factor for yourself.
+3. Add to `.env` (exactly `true`):
+   ```ini
+   TS_FUNNEL=true
+   ```
+   and run `docker compose up -d`.
+4. The first time, Tailscale may need Funnel allowed for your tailnet. If
+   `docker logs plinthio-tailscale` mentions Funnel not being enabled, follow the link it
+   gives, or in the admin console open **Access controls** and allow the `funnel` attribute
+   (Tailscale's [Funnel docs](https://tailscale.com/kb/1223/funnel) show the exact lines).
+5. Check it: on a phone with **Wi-Fi off** and **without Tailscale running**, open
+   `https://plinthio.<your-tailnet>.ts.net`. You should get the sign-in page. Sign in as an
+   admin and open Admin → Network: it should say you're connecting from outside.
+
+Send friends that link, and make them Plinthio accounts (Admin → Users). To close it again,
+set `TS_FUNNEL=false` (or remove the line) and run `docker compose up -d`. Your own Tailscale
+devices keep working either way.
 
 ## A web address for guests
 
@@ -166,8 +205,8 @@ reading apps need nothing extra.
 
 ## Keeping it safe
 
-A web address puts your sign-in page on the internet. Plinthio is built for that to be
-reasonable, but it's worth a few minutes:
+Funnel and a web address both put your sign-in page on the internet. Plinthio is built for
+that to be reasonable, but it's worth a few minutes:
 
 - **Nobody can sign up.** Only an admin makes accounts.
 - **Strong passwords**, especially for admins. Longer beats clever.
@@ -189,6 +228,8 @@ how to report a problem.
 
 | Problem | Fix |
 | --- | --- |
+| The Funnel link doesn't load for friends | Check `TS_FUNNEL=true` (exactly), that Funnel is allowed for your tailnet (`docker logs plinthio-tailscale`), and test with Tailscale turned off on the phone. Funnel can take a minute to start after `docker compose up -d` |
+| Video buffers over Funnel | Tailscale limits Funnel's bandwidth. Try a lower quality in the player, or use [a web address](#a-web-address-for-guests) for full speed |
 | The web address doesn't load from outside | Check step 1 (CGNAT), that the A record shows your current IP (`nslookup media.yourdomain.com`), and that ports 80 and 443 are forwarded to the right machine. Some providers block port 80 or 443: ask them, or use Tailscale |
 | It works from outside but not at home | Some routers can't loop back to your own public address ("NAT loopback"). At home, keep using `http://<server>:8088`, or add the name to your router's local DNS pointing at the server's home address |
 | Caddy says it can't get a certificate | Port 80 or 443 isn't reaching Caddy, or the DNS record is wrong or new (wait a few minutes). `docker logs plinthio-caddy` says which |

@@ -59,8 +59,8 @@
         >
           Off: only devices at home (and on Tailscale, below) can sign in or use anything; the internet gets
           "available at home only". On: anyone with an account allowed away from home can sign in from anywhere.
-          This only decides who's let in: reaching the server from the internet also needs a web address
-          (the public-address add-on) or a tunnel.
+          This only decides who's let in: reaching the server from the internet also needs Tailscale Funnel
+          (no domain needed) or a web address (the public-address add-on).
         </SettingRow>
         <SettingRow
           :checked="report.settings.tailscaleIsHome"
