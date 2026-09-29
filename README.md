@@ -86,7 +86,7 @@ A factual summary; details in [docs/accounts-and-access.md](docs/accounts-and-ac
 * **Cookies:** none for the web app. Mihon's Komga tracker uses a session cookie honoured only on `/api/v1` and `/api/v2`, SameSite=Lax, ended by deleting its API key.
 * **Logs** strip `?token=` from URLs.
 * **Proxies:** `TRUST_PROXY` is opt-in, for use behind a reverse proxy only.
-* **TLS:** HTTPS on port 8443 with a local certificate authority you install on your devices (name-constrained to private addresses and local names). For access beyond your LAN, use a reverse proxy, Cloudflare Tunnel or Tailscale.
+* **TLS:** the recommended way is the optional Tailscale add-on: a trusted `https://….ts.net` address at home and away, with no certificates to install. Without it, HTTPS on port 8443 with a local certificate authority you install on your devices (name-constrained to private addresses and local names).
 * **Network calls:** only metadata lookups you trigger (MangaDex, Google Books, Open Library, TMDB with your key) and a twice-daily anonymous release check (`UPDATE_CHECK=false` turns it off). No telemetry.
 
 Plinthio is built for trusted-network self-hosting (your home, and people you invite). It has not been audited for hostile multi-tenant or public-internet deployment, and has no 2FA.
@@ -114,6 +114,12 @@ MEDIA_DIR=/path/to/your/media docker compose up -d
 **3. Open `http://<your-server-ip>:8088`** and follow the setup wizard: it creates your admin
 account and adds your media folders (they appear under `/media`). On a phone, use
 **Add to Home Screen** to install the app.
+
+**4. Optional: HTTPS and access away from home with Tailscale.** Add
+[`docker-compose.tailscale.yml`](docker/docker-compose.tailscale.yml) for a trusted
+`https://plinthio.<your-tailnet>.ts.net` address. The installed app's offline features need
+HTTPS, and this way there's nothing to install on phones but the Tailscale app. Steps are in
+[docs/setup.md → HTTPS](docs/setup.md#https).
 
 Settings can live in a `.env` file next to `docker-compose.yml` instead of on the command line:
 

@@ -12,12 +12,17 @@ the admin update banner. Add entries under **Unreleased** as you go.
 ### Added
 - **Offload titles and keep their history.** Short on space? Delete the files for, say, the five seasons of a show you've finished, and keep them as history: they stay on the title page, greyed, with everyone's progress and ratings, but leave the shelves, search and Continue Watching. In Admin → Health → Missing files choose **Keep as history**, or offload first from the title page's **Keep as History** and then delete the files. If the files come back, even re-downloaded under a different name, the title is restored with its history.
 - **Watchlists for things you don't have.** A film missing from a collection has an **Add to list** button next to **Request**, and any list can hold titles found by searching, whether the server has them or not.
+- **Tailscale add-on for Docker.** An optional `docker-compose.tailscale.yml` gives Plinthio a trusted `https://plinthio.<your-tailnet>.ts.net` address that works at home and away, with no certificate to install on phones (each device just needs the Tailscale app) and no router changes. It runs Tailscale next to Plinthio, so nothing needs installing on the server either. Plain `http://<server>:8088` keeps working. See docs/setup.md → HTTPS.
 
 ### Changed
 - **Easy to tell apart:** titles you had and offloaded keep their colour, dimmed, with an **Offloaded** badge; titles the server never had go grey with a dashed outline and **Not in library**.
 - **Lists are in the top bar**, after the media types (and at the end of the sidebar), instead of the account menu.
 - **Lists look like the shelf:** each list is a card with its first covers, and a list's titles are a poster grid with the same header and width as the rest of the app.
 - **Library Health groups missing files** by film, series or season, each with **Keep as history** or **Remove for good**. "Remove all" never removes offloaded titles.
+- **Setting up HTTPS now starts with Tailscale.** Docs → PWA Mobile App Setup, Docs → Remote Access & Tailscale and the setup wizard recommend Tailscale first. Plinthio's own certificate is still there as the alternative for a home network without Tailscale.
+
+### Fixed
+- **The Tailscale guide in Docs** told people to open `http://…:8088` over Tailscale and implied it was already set up. It now has the actual steps for the server and for each device, over HTTPS.
 
 ## [1.2.0] - 2026-09-29
 
