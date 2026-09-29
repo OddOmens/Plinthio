@@ -24,6 +24,8 @@ services:
       # HTTPS, with a certificate Plinthio makes itself. Install its CA once per device
       # (Docs → Installing the App → Secure connection) and the browser stops warning, and
       # the PWA can work offline. Plain HTTP on 8088 keeps working either way.
+      # Easier: docker-compose.tailscale.yml gives a trusted https://….ts.net address with
+      # nothing to install on devices but Tailscale (see docs/setup.md → HTTPS).
       - "${BIND_ADDRESS:-0.0.0.0}:8443:8443"
     environment:
       - TZ=${TZ:-UTC}
@@ -32,7 +34,7 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       # Set TRUST_PROXY=1 ONLY when Plinthio sits behind a reverse proxy (nginx, Caddy,
-      # Cloudflare tunnel). Without it, per-IP rate limits see the proxy's IP for every
+      # Cloudflare tunnel). The Tailscale add-on sets its own, so leave this alone for that. Without it, per-IP rate limits see the proxy's IP for every
       # request and collapse into one shared bucket; with it set but no proxy in front,
       # clients can forge X-Forwarded-For and bypass rate limiting entirely.
       # - TRUST_PROXY=1

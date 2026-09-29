@@ -337,7 +337,7 @@
             </p>
           </div>
 
-          <!-- Secure connection: the built-in HTTPS and its local certificate authority -->
+          <!-- Secure connection: Tailscale first, Plinthio's own certificate as the alternative -->
           <div class="p-5 rounded-2xl border-2 border-primary/30 bg-primary/5 space-y-4">
             <div class="flex items-center gap-2 text-foreground font-semibold text-sm">
               <Lock class="w-4 h-4 text-primary" />
@@ -345,11 +345,32 @@
             </div>
             <p class="text-xs text-muted-foreground leading-relaxed">
               Over plain <code class="text-foreground bg-muted px-1 rounded">http://</code> your browser warns that the connection isn't secure,
-              and phones won't run the app's offline features. Plinthio serves HTTPS as well, with its own certificate.
-              Install that certificate once on each device and the warning goes away for good.
+              and phones won't run the app's offline features.
+            </p>
+            <p v-if="isSecurePage" class="text-sm text-emerald-500 font-medium flex items-center gap-2">
+              <ShieldCheck class="w-4 h-4" /> You're connected over HTTPS. Nothing to do here.
             </p>
 
-            <template v-if="tls?.enabled">
+            <div class="p-4 rounded-xl border border-border bg-card space-y-2">
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <div class="font-semibold text-sm text-foreground">The easy way: Tailscale</div>
+                <span class="text-[11px] bg-primary text-primary-foreground font-semibold px-2 py-0.5 rounded-full uppercase">Recommended</span>
+              </div>
+              <p class="text-xs text-muted-foreground leading-relaxed">
+                Tailscale gives Plinthio a trusted address like
+                <code class="text-foreground bg-muted px-1 rounded break-all">https://plinthio.your-tailnet.ts.net</code>
+                that works at home and away. There's no certificate to install: each device just needs the free Tailscale app,
+                signed in. Your admin sets it up once on the server; see
+                <button type="button" class="text-primary font-medium hover:underline" @click="activeSection = 'remote'">Remote Access &amp; Tailscale</button>.
+              </p>
+            </div>
+
+            <template v-if="tls?.enabled && !isSecurePage">
+              <div class="font-semibold text-sm text-foreground pt-1">Or, on your home network only: Plinthio's own certificate</div>
+              <p class="text-xs text-muted-foreground leading-relaxed">
+                Plinthio also serves HTTPS itself, with its own certificate. Install that certificate once on each device and
+                the warning goes away for that address.
+              </p>
               <div class="flex flex-col sm:flex-row gap-2">
                 <a
                   v-if="tls.caAvailable"
@@ -361,16 +382,12 @@
                   Download certificate
                 </a>
                 <a
-                  v-if="!isSecurePage"
                   :href="httpsUrl"
                   class="h-10 px-4 rounded-xl border border-border bg-card text-foreground font-medium text-sm flex items-center justify-center gap-2 hover:bg-muted transition min-w-0"
                 >
                   <Globe class="w-4 h-4 flex-shrink-0" />
                   <span class="truncate">Open {{ httpsUrl }}</span>
                 </a>
-                <span v-else class="h-10 px-3 rounded-xl text-emerald-500 text-sm font-medium flex items-center gap-2">
-                  <ShieldCheck class="w-4 h-4" /> You're connected over HTTPS
-                </span>
               </div>
 
               <div v-if="tls.caAvailable" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-muted-foreground">
@@ -407,10 +424,10 @@
                 so installing it can't be used to intercept any other website.
               </p>
             </template>
-            <p v-else-if="tls" class="text-xs text-muted-foreground leading-relaxed">
-              HTTPS isn't turned on for this server. Admins: set <code class="text-foreground bg-muted px-1 rounded">HTTPS_PORT=8443</code>
-              (already the default in the Docker image — make sure port 8443 is published), or use one of the options under
-              <strong class="text-foreground">Remote Access & Tailscale</strong>.
+            <p v-else-if="tls && !tls.enabled && !isSecurePage" class="text-xs text-muted-foreground leading-relaxed">
+              Plinthio's own HTTPS isn't turned on for this server. Admins who'd rather not use Tailscale: set
+              <code class="text-foreground bg-muted px-1 rounded">HTTPS_PORT=8443</code> (already the default in the Docker image; make
+              sure port 8443 is published).
             </p>
           </div>
 
@@ -485,7 +502,7 @@
                 </div>
                 <div>
                   <h3 class="text-sm font-semibold text-foreground">Option 1: Tailscale (Recommended & Easiest)</h3>
-                  <p class="text-[12px] text-muted-foreground">Zero-config, encrypted WireGuard mesh VPN. No router port forwarding required.</p>
+                  <p class="text-[12px] text-muted-foreground">A private network between your devices, with a trusted HTTPS address. No router changes, no certificates to install.</p>
                 </div>
               </div>
               <span class="text-[11px] bg-primary text-primary-foreground font-semibold px-2 py-0.5 rounded-full uppercase">
@@ -493,17 +510,41 @@
               </span>
             </div>
 
-            <div class="text-xs text-foreground space-y-2">
-              <p>Your Plinthio server is already accessible on the host's Tailnet at:</p>
-              <div class="p-2.5 rounded-lg bg-background border border-border font-mono text-xs flex items-center justify-between gap-2 overflow-x-auto">
-                <span class="whitespace-nowrap">http://XXX.XXX.XXX.X:8088</span>
-                <span class="text-emerald-500 font-sans text-[12px] font-medium flex-shrink-0">Ready</span>
+            <div class="text-xs text-muted-foreground space-y-3 leading-relaxed">
+              <p>
+                Plinthio gets an address like <code class="text-foreground bg-muted px-1 rounded break-all">https://plinthio.your-tailnet.ts.net</code>
+                that every device signed in to your tailnet trusts, at home or on mobile data. Free for personal use.
+              </p>
+
+              <div class="space-y-1.5">
+                <div class="font-semibold text-foreground">On the server (admin, once)</div>
+                <ol class="list-decimal list-inside space-y-1">
+                  <li>In the <strong class="text-foreground">Tailscale admin console</strong>: DNS → turn on <strong class="text-foreground">MagicDNS</strong> and <strong class="text-foreground">HTTPS Certificates</strong>.</li>
+                  <li>
+                    <strong class="text-foreground">Docker:</strong> download <code class="text-foreground bg-muted px-1 rounded">docker-compose.tailscale.yml</code>
+                    next to your compose file, put <code class="text-foreground bg-muted px-1 rounded break-all">TS_AUTHKEY=tskey-auth-…</code> (Settings → Keys in the admin console) and
+                    <code class="text-foreground bg-muted px-1 rounded break-all">COMPOSE_FILE=docker-compose.yml:docker-compose.tailscale.yml</code>
+                    in <code class="text-foreground bg-muted px-1 rounded">.env</code>, then run <code class="text-foreground bg-muted px-1 rounded">docker compose up -d</code>.
+                  </li>
+                  <li>
+                    <strong class="text-foreground">Tailscale already on the server, or no Docker:</strong> run
+                    <code class="text-foreground bg-muted px-1 rounded">sudo tailscale serve --bg 8088</code>.
+                  </li>
+                </ol>
               </div>
-              <div class="pt-2 text-xs text-muted-foreground space-y-1.5">
-                <div>1. Install the free <strong>Tailscale</strong> app on your iPhone or Android phone.</div>
-                <div>2. Sign in with the same account used on your host machine.</div>
-                <div>3. Open Safari or Chrome on your phone and open <code class="text-foreground bg-muted px-1.5 py-0.5 rounded break-all">http://XXX.XXX.XXX.X:8088</code>. You will connect instantly over 5G/LTE just like local Wi-Fi!</div>
+
+              <div class="space-y-1.5">
+                <div class="font-semibold text-foreground">On each phone or computer</div>
+                <ol class="list-decimal list-inside space-y-1">
+                  <li>Install the free <strong class="text-foreground">Tailscale</strong> app and sign in to the same tailnet.</li>
+                  <li>Open the <code class="text-foreground bg-muted px-1 rounded">https://….ts.net</code> address (the admin console lists it under Machines).</li>
+                  <li>Add it to your home screen from there, replacing any older <code class="text-foreground bg-muted px-1 rounded">http://</code> icon.</li>
+                </ol>
               </div>
+
+              <p class="text-[12px]">
+                Step-by-step details, including the proxy settings, are in <code class="text-foreground bg-muted px-1 rounded">docs/setup.md</code> on GitHub under HTTPS.
+              </p>
             </div>
           </div>
 

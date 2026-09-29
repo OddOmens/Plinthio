@@ -25,5 +25,6 @@ test('the app install guide opens from a /docs#pwa link and shows HTTPS status',
   await page.goto('/docs#pwa');
   await expect(page.getByText('Step 1: Secure connection (HTTPS)')).toBeVisible();
   // The test server runs without HTTPS.
-  await expect(page.getByText("HTTPS isn't turned on for this server.")).toBeVisible();
+  await expect(page.getByText('The easy way: Tailscale')).toBeVisible();
+  await expect(page.getByText("Plinthio's own HTTPS isn't turned on for this server.")).toBeVisible();
 });
