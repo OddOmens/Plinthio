@@ -73,8 +73,15 @@ This page starts from what you see instead.
 | Symptom | Cause and fix |
 | --- | --- |
 | P107 | Wrong username or password. Admins can reset passwords in Admin → Users |
-| P108 | Too many sign-in attempts (10 per 15 min per address). Wait. Behind a proxy without `TRUST_PROXY=1`, everyone shares one limit |
-| Everyone is locked out after one person's typos | Set `TRUST_PROXY=1` behind a reverse proxy or tunnel |
+| P108 | Too many failed sign-in attempts (10 per 15 min per address). Wait. Behind a proxy without `TRUST_PROXY`, everyone shares one limit |
+| Everyone is locked out after one person's typos | Set `TRUST_PROXY` behind a reverse proxy or tunnel (the add-ons do). See [Away from home](remote-access.md#already-have-a-reverse-proxy) |
+| P109 "can only be used from its home network" | Outside access is off. Use it at home or over Tailscale, or turn it on in Admin → Network |
+| P110 "for home use only" | The server allows outside access, but not for this account. Admin → Users → Edit → Can use Plinthio away from home |
+| P111 "code is not right" | Use the current code from the app (they change every 30 seconds and work once). Check the phone's clock is set automatically. Or use a backup code |
+| P112 "two-factor needed away from home" | Sign in at home once and turn on two-factor in Settings → Security |
+| P113 "sign-in step expired" | More than five minutes, or five wrong codes. Enter your password again |
+| Lost the phone with the authenticator app | Sign in with a backup code. None left? An admin can reset two-factor in Admin → Users → Edit |
+| Admin → Network says "home" from a phone on mobile data | Plinthio can't see real addresses: Docker Desktop never can, and your own proxy needs `TRUST_PROXY`. See [Away from home](remote-access.md#troubleshooting) |
 | P103 | The account has expired. An admin can extend it |
 | A user can't see a title others can | Their content limit, unrated setting, Kids Mode, or they hid it themselves (Settings → Hidden) |
 | A kids account sees nothing | Nothing is kids-safe yet. Turn on Kids for a library, or add series from their pages |
@@ -92,7 +99,7 @@ See [Reading apps → Troubleshooting](sync-apps.md#troubleshooting).
 | P601 "Party not found" | The party ended, or the server restarted. Ask the host for a new link |
 | P603, P604 | A member's content limit or Kids Mode blocks that title |
 | P605 | 20 people is the limit |
-| Friends outside can't join | They need to reach the server. See [Setup → Remote access](setup.md#remote-access) |
+| Friends outside can't join | They need to reach the server. See [Using Plinthio away from home](remote-access.md) |
 
 ## Updates and data
 

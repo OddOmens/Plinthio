@@ -9,7 +9,7 @@ do. Everything is JSON under `/api`.
 | --- | --- | --- |
 | API key | `X-API-Key: plinthio_…` | Scripts, dashboards, Home Assistant |
 | API key over HTTP Basic | `Authorization: Basic base64(username:key)` | Apps that only do username/password: OPDS readers, Mihon |
-| Session token | `POST /api/auth/login` → `{ token }`, then `Authorization: Bearer <token>` | The web app. Lasts 7 days, renewed by `POST /api/auth/refresh` |
+| Session token | `POST /api/auth/login` → `{ token }` (or, with two-factor on, `{ twoFactorRequired, challenge }` and then `POST /api/auth/login/2fa` with `{ challenge, code }` or `{ challenge, recoveryCode }`), then `Authorization: Bearer <token>` | The web app. Lasts 7 days, renewed by `POST /api/auth/refresh` |
 | Media token | `POST /api/auth/media-token` → `{ mediaToken }`, then `?token=<mediaToken>` | URLs that can't carry headers (`<img>`, `<video>`). Only accepted on `/api/media/*`, valid 24 h |
 | Komga session cookie | Set by `/api/v1` and `/api/v2` after a key sign-in | Mihon's tracker. Only honoured on those paths |
 | kosync headers | `x-auth-user: <username>`, `x-auth-key: md5(key)` | KOReader. Only on `/api/kosync` |
@@ -37,7 +37,7 @@ catalog (no sign-in needed). See [Error codes](error-codes.md).
 
 | Scope | Limit |
 | --- | --- |
-| `/api/auth/login` | 10 per 15 min per address |
+| `/api/auth/login`, `/api/auth/login/2fa` | 10 failed attempts per 15 min per address |
 | rest of `/api/auth` | 60 per 15 min |
 | general API | 600 per minute |
 | `/api/media`, `/api/opds`, `/api/v1`, `/api/v2`, `/api/kosync` | 1200 per minute |
@@ -55,10 +55,13 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 
 | Route | Who | |
 | --- | --- | --- |
-| `GET /auth/setup-status` · `POST /auth/setup` | public | First-run wizard (only while no users exist) |
+| `GET /auth/setup-status` · `POST /auth/setup` | public | First-run wizard (only while no users exist, and only from the home network). `access: { remoteAccess, tailscaleIsHome, require2faOutside }` sets Admin → Network |
 | `POST /auth/login` · `GET /auth/me` · `POST /auth/refresh` | public / V | Sign in, who am I, renew |
 | `POST /auth/media-token` | V | Media token for URLs |
 | `POST /auth/sign-out-everywhere` | V | Revoke every token for your account |
+| `POST /auth/login/2fa` | public | Second step of a two-factor sign-in: `{ challenge, code }` or `{ challenge, recoveryCode }`. Five tries per challenge (P111, then P113) |
+| `GET /auth/access` | public | Whether this device is home, Tailscale or outside, and whether it may sign in from there |
+| `GET /auth/2fa` · `POST /auth/2fa/setup` · `/2fa/enable` · `/2fa/disable` · `/2fa/recovery-codes` | V (session only, not API keys) | Two-factor for your own account: status, start (returns the `otpauth://` link and key), confirm with `{ code }`, turn off or make new backup codes with `{ password, code }` (or `recoveryCode`) |
 | `PATCH /users/preferences` · `PATCH /users/password` | V | Your preferences (merged, not replaced) and password |
 | `POST /users/avatar` · `DELETE /users/avatar` · `GET /users/:id/avatar` | V | Profile picture |
 | `GET /keys` · `POST /keys` · `DELETE /keys/:id` | V | Your API keys (a new key is returned once) |
@@ -137,7 +140,9 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `GET /admin/health` · `POST /admin/health/remove-missing` | A | Library Health (with missing and offloaded titles grouped by film, series or season), removing missing titles |
 | `POST /admin/health/offload` · `/unoffload` | A | Keep titles as history (`{ itemIds }`), or undo that |
 | `GET /admin/logs` · `DELETE` | A | Server log |
-| `GET /users` · `POST /users` · `PATCH /users/:id` · `/:id/role` · `/:id/password` · `/:id/extend` · `DELETE /users/:id` | A | Accounts |
+| `GET /users` · `POST /users` · `PATCH /users/:id` · `/:id/role` · `/:id/password` · `/:id/extend` · `DELETE /users/:id` | A | Accounts. `PATCH` takes `remoteAccess` (may use Plinthio away from home) |
+| `POST /users/:id/two-factor/reset` | A | Turn off someone's two-factor and sign them out |
+| `GET /admin/network` · `PATCH` | A | Away-from-home settings (`remoteAccess`, `tailscaleIsHome`, `require2faOutside`), where this device connects from, proxy warning, recent outside sign-ins |
 | `GET /system/update` | A | Update check status |
 | `GET /health` · `GET /errors` | public | Health check (with version) and the error catalog |
 

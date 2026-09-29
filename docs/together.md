@@ -37,7 +37,7 @@ In a party:
   P604).
 - Turning watch parties off ends every party in progress.
 - Friends outside your home network need to reach the server. See
-  [Setup → Remote access](setup.md#remote-access).
+  [Using Plinthio away from home](remote-access.md).
 
 Error codes P600–P605 cover parties; see [Error codes](error-codes.md).
 

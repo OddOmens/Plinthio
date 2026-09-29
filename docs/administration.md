@@ -37,11 +37,21 @@ TMDB matches need the TMDB key (P400 without it).
 
 - **Add user:** username, password, role, and an optional access expiry.
 - **Edit:** rename, role, content limit (plus whether unrated titles are allowed), Kids
-  account, and reset password.
+  account, whether the account can be used away from home, reset two-factor (for a lost
+  phone), and reset password.
 - **Extend:** push back an expiring account's end date.
 - **Delete:** removes the account, its progress, ratings, lists and keys.
 
-Badges on each user show role, Kids and content limit, and expiry.
+Badges on each user show role, Kids and content limit, expiry, two-factor, and home only.
+The last sign-in says when it was away from home (Tailscale or outside).
+
+## Network
+
+Who can use Plinthio from where: allow access from outside the home network, whether
+Tailscale devices count as home, and whether two-factor is required away from home. It shows
+where the device you're using is connecting from (open it on a phone with Wi-Fi off to check
+outside access), warns about a proxy that Plinthio isn't trusting, and lists recent sign-ins
+from outside. See [Using Plinthio away from home](remote-access.md).
 
 ## Logs
 
