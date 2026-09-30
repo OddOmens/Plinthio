@@ -29,3 +29,6 @@ frontend/playwright-report/
 docker/tailscale/
 docker/tailscale-test/
 docker/caddy/
+
+# Private notes about this computer's own server (links, device names)
+docker/SERVER-NOTES.md
