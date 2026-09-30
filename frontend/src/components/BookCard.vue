@@ -95,18 +95,33 @@
             <MoreVertical class="w-4 h-4" />
           </button>
 
-          <!-- Dropdown Menu -->
+          <!-- Menu: a dropdown beside the button, or on a phone a sheet from the bottom of the
+               screen (a dropdown from a left-column card ran off the screen's left edge). -->
+          <Teleport to="body" :disabled="!isPhone">
+          <Transition :name="isPhone ? 'sheet' : ''" :duration="isPhone ? 260 : 0">
           <div
             v-if="showMenu"
-            v-click-outside="() => showMenu = false"
-            @click.stop
-            class="absolute right-0 top-8 z-30 w-48 bg-popover/95 backdrop-blur-md border border-border rounded-xl shadow-2xl py-1.5 text-xs text-foreground divide-y divide-border/40"
+            :class="isPhone ? 'fixed inset-0 z-[60] bg-black/50 flex items-end' : 'contents'"
+            @click.self="showMenu = false"
           >
+          <div
+            v-click-outside="() => { if (!isPhone) showMenu = false; }"
+            @click.stop
+            :role="isPhone ? 'dialog' : 'menu'"
+            :aria-label="`${item.title} options`"
+            :class="isPhone
+              ? 'sheet-panel w-full rounded-t-2xl border-t border-border bg-card shadow-2xl px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm text-foreground'
+              : 'absolute right-0 top-8 z-30 w-48 bg-popover/95 backdrop-blur-md border border-border rounded-xl shadow-2xl py-1.5 text-xs text-foreground divide-y divide-border/40'"
+          >
+            <template v-if="isPhone">
+              <div class="mx-auto mb-2 h-1 w-10 rounded-full bg-muted-foreground/30" aria-hidden="true" />
+              <p class="px-2 pb-2 text-sm font-semibold truncate border-b border-border/60">{{ item.title }}</p>
+            </template>
             <div class="pb-1">
               <button
                 type="button"
                 @click="toggleFinished"
-                class="w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5"
+                :class="menuItemClass"
               >
                 <component :is="item.is_finished ? inProgressIcon : finishedIcon" class="w-4 h-4 text-muted-foreground" />
                 <span>{{ item.is_finished ? 'Mark In Progress' : 'Mark as Finished' }}</span>
@@ -114,7 +129,7 @@
               <button
                 type="button"
                 @click="openFolderDialog"
-                class="w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5"
+                :class="menuItemClass"
               >
                 <FolderPlus class="w-4 h-4 text-muted-foreground" />
                 <span>Add to Folder...</span>
@@ -123,7 +138,7 @@
                 v-if="inCustomFolder"
                 type="button"
                 @click="$emit('remove-from-folder', item)"
-                class="w-full text-left px-3.5 py-2 hover:bg-muted/70 text-destructive transition flex items-center gap-2.5"
+                :class="[menuItemClass, 'text-destructive']"
               >
                 <FolderMinus class="w-4 h-4" />
                 <span>Remove from Folder</span>
@@ -131,7 +146,7 @@
               <button
                 type="button"
                 @click="openBookmarksDialog"
-                class="w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5"
+                :class="menuItemClass"
               >
                 <Bookmark class="w-4 h-4 text-muted-foreground" />
                 <span>Bookmarks & Notes...</span>
@@ -140,7 +155,7 @@
                 v-if="downloads.canDownload(item)"
                 type="button"
                 @click="toggleDownload"
-                class="w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5"
+                :class="menuItemClass"
               >
                 <component :is="isDownloaded ? Trash2 : (isDownloading ? X : Download)" class="w-4 h-4 text-muted-foreground" />
                 <span>{{ isDownloaded ? 'Remove Download' : (isDownloading ? 'Cancel Download' : 'Download for Offline') }}</span>
@@ -149,7 +164,7 @@
                 v-if="authStore.isEditor"
                 type="button"
                 @click="openMetadataDialog"
-                class="w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5"
+                :class="menuItemClass"
               >
                 <Search class="w-4 h-4 text-muted-foreground" />
                 <span>Edit Metadata...</span>
@@ -159,13 +174,16 @@
               <button
                 type="button"
                 @click="hideItem"
-                class="w-full text-left px-3.5 py-2 hover:bg-muted/70 text-destructive transition flex items-center gap-2.5"
+                :class="[menuItemClass, 'text-destructive']"
               >
                 <EyeOff class="w-4 h-4" />
                 <span>Hide from Shelf</span>
               </button>
             </div>
           </div>
+          </div>
+          </Transition>
+          </Teleport>
         </div>
       </div>
 
@@ -201,6 +219,7 @@
 <script setup>
 import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
+import { useIsPhone } from '../composables/useIsPhone';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
@@ -244,6 +263,10 @@ const customizationStore = useCustomizationStore();
 const emit = defineEmits(['select', 'refresh', 'add-to-folder', 'remove-from-folder', 'open-bookmarks', 'edit-metadata']);
 
 const showMenu = ref(false);
+const isPhone = useIsPhone();
+const menuItemClass = computed(() => isPhone.value
+  ? 'sheet-item'
+  : 'w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5');
 const imgLoaded = ref(false);
 
 function openFolderDialog() {

@@ -33,7 +33,7 @@
               v-model="newPositionInput"
               :placeholder="item.media_type === 'audiobook' ? 'e.g. 01:15:30 or 4500' : 'e.g. 42'"
               required
-              class="w-36 bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring font-mono"
+              class="w-28 sm:w-36 flex-shrink-0 bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring font-mono"
             />
             <input
               v-model="newTitleInput"

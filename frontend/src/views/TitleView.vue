@@ -21,7 +21,7 @@
         <div class="flex items-center gap-2.5 min-w-0">
           <button
             @click="goBack"
-            class="h-7 px-2.5 rounded-lg bg-background hover:bg-muted text-foreground transition active:scale-95 flex items-center gap-1.5 text-xs font-medium border border-border flex-shrink-0 shadow-sm"
+            class="h-9 sm:h-7 px-3 sm:px-2.5 rounded-lg bg-background hover:bg-muted text-foreground transition active:scale-95 flex items-center gap-1.5 text-xs font-medium border border-border flex-shrink-0 shadow-sm"
             title="Back to shelf"
           >
             <ArrowLeft class="w-3.5 h-3.5" />
@@ -560,7 +560,7 @@
                   :key="tab.id"
                   @click="activeFilterTab = tab.id"
                   :class="[
-                    'px-2.5 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 flex-shrink-0',
+                    'px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 flex-shrink-0',
                     activeFilterTab === tab.id
                       ? 'bg-background text-foreground shadow-sm font-semibold'
                       : 'text-muted-foreground hover:text-foreground'
@@ -574,7 +574,7 @@
               <div class="flex items-center gap-1.5">
                 <button
                   @click="sortAscending = !sortAscending"
-                  class="h-7 px-2.5 rounded-lg bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition flex items-center gap-1.5"
+                  class="h-9 sm:h-7 px-2.5 rounded-lg bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition flex items-center gap-1.5"
                   :title="sortAscending ? 'Order: first to last' : 'Order: last to first'"
                 >
                   <ArrowUpDown class="w-3 h-3 text-muted-foreground" />

@@ -249,3 +249,16 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .sheet-enter-active .sheet-panel, .sheet-leave-active .sheet-panel { transition: none; }
 }
+
+/* Form fields on phones. iOS zooms the whole page into any text field under 16px the
+   moment it's tapped (the shelf search, every settings field), and doesn't zoom back
+   out — so on narrow screens they're all 16px, whatever their utility class says.
+   min-width: 0 lets a field shrink inside a flex row instead of pushing out of its box. */
+input, select, textarea { min-width: 0; }
+@media (max-width: 639px) {
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
