@@ -20,6 +20,27 @@ test('title page on a phone: one-line main button, labelled actions menu', async
   await expect(menu.getByRole('menuitem', { name: /Mark All/ })).toBeVisible();
 });
 
+test('volume cards on a phone: main button plus a sheet of labelled actions', async ({ page, request }) => {
+  const token = await signIn(page, request);
+  const [vol1] = await volumes(request, token);
+  await setProgress(request, token, vol1.id, 0);
+  await page.goto(seriesUrl);
+
+  // Each card fits on screen: no action row spilling past the viewport's edge.
+  const more = page.getByRole('button', { name: /^More for/ }).first();
+  await more.scrollIntoViewIfNeeded();
+  const box = await more.boundingBox();
+  expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize().width);
+
+  await more.click();
+  const sheet = page.getByRole('dialog');
+  await expect(sheet.getByRole('button', { name: /Skip this/ })).toBeVisible();
+  await expect(sheet.getByRole('button', { name: 'Bookmarks & notes' })).toBeVisible();
+  await sheet.getByRole('button', { name: /Skip this/ }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.getByText('Skipped').first()).toBeVisible();
+});
+
 test('the app install guide opens from a /docs#pwa link and shows HTTPS status', async ({ page, request }) => {
   await signIn(page, request);
   await page.goto('/docs#pwa');
