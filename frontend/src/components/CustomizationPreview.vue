@@ -28,8 +28,9 @@
 
     <!-- Its own accent, so it shows the colour being picked rather than the page's. -->
     <div ref="frameEl" :data-accent="settings.accentTheme || 'zinc'" :class="{ dark: themeStore.isDark }" class="relative w-full overflow-hidden rounded-lg border border-border bg-background" :style="{ height: `${frameHeight}px` }">
-      <div class="absolute top-0 left-0 origin-top-left" :style="{ width: `${VW}px`, height: `${virtualHeight}px`, transform: `scale(${scale})` }">
-        <!-- Shelf: the navigation layout, branding and accent colour -->
+      <div class="absolute top-0 left-0 origin-top-left" :style="{ width: `${virtualWidth}px`, height: `${virtualHeight}px`, transform: `scale(${scale})` }">
+        <!-- Shelf: the navigation layout, page width, branding and accent colour. Drawn on a
+             big monitor, where Contained visibly stops at 1440px and Full width doesn't. -->
         <div v-if="view === 'shelf'" class="w-full h-full bg-background text-foreground flex" :class="settings.layoutMode === 'sidebar' ? 'flex-row' : 'flex-col'">
           <aside v-if="settings.layoutMode === 'sidebar'" class="w-[230px] shrink-0 border-r border-border bg-card/40 p-4 flex flex-col gap-1">
             <div class="flex items-center gap-2.5 mb-5 px-1">
@@ -44,7 +45,8 @@
               <component :is="tab.icon" class="w-4 h-4" />{{ tab.label }}
             </div>
           </aside>
-          <header v-else class="h-[60px] shrink-0 border-b border-border px-8 flex items-center justify-between gap-4">
+          <header v-else class="h-[60px] shrink-0 border-b border-border">
+            <div class="h-full mx-auto px-8 flex items-center justify-between gap-4" :style="widthStyle">
             <div class="flex items-center gap-3">
               <AppLogo class="w-9 h-9" />
               <span class="text-lg font-semibold tracking-tight">{{ brand }}</span>
@@ -60,9 +62,10 @@
               <div class="w-44 h-9 rounded-lg border border-border bg-muted/30 flex items-center gap-2 px-3 text-sm text-muted-foreground"><Search class="w-4 h-4" />Search</div>
               <div class="w-9 h-9 rounded-full bg-secondary"></div>
             </div>
+            </div>
           </header>
 
-          <main class="flex-1 min-w-0 px-8 py-6 flex flex-col gap-4 overflow-hidden">
+          <main class="flex-1 min-w-0 w-full mx-auto px-8 py-6 flex flex-col gap-4 overflow-hidden" :style="widthStyle">
             <div class="flex items-end justify-between">
               <div>
                 <h1 class="text-2xl font-semibold tracking-tight">Movies</h1>
@@ -70,7 +73,7 @@
               </div>
               <span class="px-3 h-9 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1.5 shadow-sm"><Play class="w-4 h-4" />Continue watching</span>
             </div>
-            <div class="grid gap-5" :class="settings.layoutMode === 'sidebar' ? 'grid-cols-5' : 'grid-cols-6'">
+            <div class="grid gap-5" :style="{ gridTemplateColumns: `repeat(${shelfColumns}, minmax(0, 1fr))` }">
               <div v-for="(card, i) in shelfCards" :key="i" class="flex flex-col gap-2 min-w-0">
                 <div class="aspect-[2/3] rounded-lg overflow-hidden bg-muted border border-border relative">
                   <img v-if="card.cover" :src="card.cover" alt="" class="w-full h-full object-cover" />
@@ -198,7 +201,7 @@ import PauseScreen from './PauseScreen.vue';
 import { useThemeStore } from '../stores/theme';
 
 const props = defineProps({
-  // { accentTheme, layoutMode, serverName, loginMessage, ratings, showMissingFilms, partyModeEnabled, pauseScreen }
+  // { accentTheme, layoutMode, pageWidth, serverName, loginMessage, ratings, showMissingFilms, partyModeEnabled, pauseScreen }
   settings: { type: Object, required: true },
   view: { type: String, default: 'shelf' },
   // Which screens to offer (ids from `views`); all of them by default.
@@ -216,12 +219,21 @@ const views = [
 const themeStore = useThemeStore();
 const shownViews = computed(() => (props.only ? views.filter((v) => props.only.includes(v.id)) : views));
 
-// The virtual screen: app views at a laptop's 16:10, the player at 16:9.
-const VW = 1280;
-const virtualHeight = computed(() => (props.view === 'pause' ? 720 : 800));
+// The virtual screen: app views at a laptop's 16:10, the player at 16:9, and the shelf on a
+// 1920px monitor so the page width setting shows (Contained only differs past 1440px).
+const virtualWidth = computed(() => (props.view === 'shelf' ? 1920 : 1280));
+const virtualHeight = computed(() => ({ shelf: 1200, pause: 720 }[props.view] || 800));
+const contained = computed(() => props.settings.pageWidth === 'contained');
+const widthStyle = computed(() => (contained.value ? { maxWidth: '1440px' } : {}));
+// Roughly what the real shelf fits: more posters per row when it uses the whole screen.
+const shelfColumns = computed(() => {
+  const sidebar = props.settings.layoutMode === 'sidebar';
+  if (contained.value) return sidebar ? 5 : 6;
+  return sidebar ? 8 : 9;
+});
 const frameEl = ref(null);
 const frameWidth = ref(640);
-const scale = computed(() => frameWidth.value / VW);
+const scale = computed(() => frameWidth.value / virtualWidth.value);
 const frameHeight = computed(() => Math.round(virtualHeight.value * scale.value));
 let observer = null;
 
@@ -265,12 +277,13 @@ const SAMPLE_CREDITS = {
 };
 const sampleDescription = 'A lighthouse keeper on a remote island finds a message in a bottle that pulls her back into the life she left behind.';
 
-const shelfCards = computed(() => Array.from({ length: 12 }, (_, i) => {
-  const item = samples.value[i];
+const shelfCards = computed(() => Array.from({ length: shelfColumns.value * 3 }, (_, i) => {
+  // A small library repeats rather than leaving gaps.
+  const item = samples.value.length ? samples.value[i % samples.value.length] : null;
   return item
     ? { title: item.title, cover: coverUrl(item, { width: 300 }) }
     : { title: PLACEHOLDER_TITLES[i % PLACEHOLDER_TITLES.length], cover: samplePoster(PLACEHOLDER_TITLES[i % PLACEHOLDER_TITLES.length], i) };
-}).slice(0, props.settings.layoutMode === 'sidebar' ? 10 : 12));
+}));
 
 const hero = computed(() => {
   const item = heroItem.value;
@@ -332,13 +345,13 @@ const caption = computed(() => {
       cinematic: 'Cinematic: cast photos and facts come from TMDB when a key is set.',
       bedtime: 'Bedtime: a dim clock and when it ends.'
     }[pauseMode.value] || '';
-    default: return `The home shelf with the ${props.settings.layoutMode === 'sidebar' ? 'sidebar' : 'top navigation'} layout and the ${props.settings.accentTheme || 'zinc'} accent.`;
+    default: return `The home shelf on a big screen: ${props.settings.layoutMode === 'sidebar' ? 'sidebar' : 'top navigation'} layout, ${contained.value ? 'contained' : 'full'} width and the ${props.settings.accentTheme || 'zinc'} accent.`;
   }
 });
 
 async function loadSamples() {
   try {
-    const res = await api.get('/items', { params: { mediaType: 'movie', sort: 'added', limit: 12 } });
+    const res = await api.get('/items', { params: { mediaType: 'movie', sort: 'added', limit: 30 } });
     samples.value = (res.data.items || []).filter((i) => i.cover_path);
     const first = samples.value[0];
     if (!first) return;

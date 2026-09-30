@@ -837,7 +837,7 @@
                 :options="card.options"
                 :model-value="serverDefault(card.field)"
                 @update:model-value="setServerDefault(card.field, $event)"
-                @hover="card.field === 'pauseScreen' && (hoverPauseScreen = $event ?? null, previewView = 'pause')"
+                @hover="hoverDefault(card, $event)"
                 :swatches="card.swatches"
                 :grid-class="card.grid"
                 :disabled="card.field === 'pauseScreen' && savingPauseScreen"
@@ -1934,15 +1934,25 @@ const extendDuration = ref('7d');
 const extendingUser = ref(false);
 
 const savingCustomization = ref(false);
-// Live preview (CustomizationPreview): which screen it shows, and a pause style being hovered.
+// Live preview (CustomizationPreview): which screen it shows, and an option being hovered.
 const previewView = ref('shelf');
-const hoverPauseScreen = ref(null);
+const hoverDefaults = ref({});
 const previewSettings = computed(() => ({
   ...customizationForm.value,
   showMissingFilms: customizationStore.showMissingFilms,
   partyModeEnabled: customizationStore.partyModeEnabled,
-  pauseScreen: hoverPauseScreen.value || customizationStore.pauseScreen
+  pauseScreen: customizationStore.pauseScreen,
+  ...hoverDefaults.value
 }));
+function hoverDefault(card, id) {
+  const next = { ...hoverDefaults.value };
+  if (id === undefined) delete next[card.field];
+  else {
+    next[card.field] = id;
+    previewView.value = card.preview;
+  }
+  hoverDefaults.value = next;
+}
 const customizationForm = ref({
   serverName: 'Plinthio',
   customCss: '',
