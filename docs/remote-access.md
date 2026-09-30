@@ -108,7 +108,8 @@ may buffer, especially in HD or with several people watching. For full-speed vid
    ```ini
    TS_FUNNEL=true
    ```
-   and run `docker compose up -d`.
+   and run `docker compose up -d --force-recreate`. (`--force-recreate` matters when
+   Tailscale is already running: Compose doesn't notice a changed `TS_FUNNEL` on its own.)
 4. The first time, Tailscale may need Funnel allowed for your tailnet. If
    `docker logs plinthio-tailscale` mentions Funnel not being enabled, follow the link it
    gives, or in the admin console open **Access controls** and allow the `funnel` attribute
@@ -118,8 +119,63 @@ may buffer, especially in HD or with several people watching. For full-speed vid
    admin and open Admin → Network: it should say you're connecting from outside.
 
 Send friends that link, and make them Plinthio accounts (Admin → Users). To close it again,
-set `TS_FUNNEL=false` (or remove the line) and run `docker compose up -d`. Your own Tailscale
+set `TS_FUNNEL=false` (or remove the line) and run `docker compose up -d --force-recreate`. Your own Tailscale
 devices keep working either way.
+
+### How Funnel forwards to Plinthio
+
+```
+friend's browser ──HTTPS──▶ Tailscale's Funnel relays ──encrypted──▶ plinthio-tailscale ──▶ Plinthio
+  (anywhere)                (public DNS: *.ts.net)                    (its own device)      127.0.0.1:8080
+```
+
+- The Tailscale add-on is **its own device** on your tailnet (named by `TS_HOSTNAME`, default
+  `plinthio`). It shares Plinthio's container network and forwards only to Plinthio's port
+  8080. Nothing else on the computer, including other apps and the computer's own Tailscale
+  device, is reachable through the link.
+- HTTPS ends inside that container, with a certificate Tailscale gets for you. Tailscale's
+  relays pass the encrypted traffic along; they can't read it.
+- Tailscale marks Funnel visits (`Tailscale-Funnel-Request`), so Plinthio always counts them
+  as **outside**, even when the friend is on your Wi-Fi. Visits from your own Tailscale devices
+  count as Tailscale.
+- Plinthio trusts forwarding headers only from the add-on (`TRUST_PROXY=loopback`, set by the
+  add-on), so nobody can pretend to be at home by sending a fake address.
+- The settings behind it: `TS_HOSTNAME` and `TS_FUNNEL` in `docker/.env`, and the add-on's
+  saved sign-in in `docker/tailscale/` (never share or commit that folder). `TS_AUTHKEY` is
+  only needed for the first sign-in; delete it from `.env` afterwards.
+
+**Funnel names are public.** Every certificate is published in public logs, so anyone can
+find that `plinthio.<your-tailnet>.ts.net` exists. That's fine: the link only leads to the
+sign-in page. Your passwords and two-factor are what keep people out, not a secret name.
+
+### A shorter link
+
+Funnel only works on `ts.net` names; you can't point your own domain at it. If you already own
+a domain, you can make a short link that **redirects** to it (e.g. `watch.yourdomain.com` →
+`https://plinthio.<your-tailnet>.ts.net`). With Cloudflare DNS: add a proxied record for the
+name (an `AAAA` record to `100::` works) and a **Redirect Rule** sending it to your Funnel
+link. The address bar ends up on the `ts.net` link; the short one is just easier to share.
+Cloudflare doesn't give away domains, but its registrar sells them at cost (usually around
+$10 a year for a `.com`).
+
+### A test server with its own link
+
+`docker-compose.test-tailscale.yml` gives the test server (`docker-compose.test.yml`) its own
+device, `plinthio-test`, with settings named `TS_TEST_*` so they never touch the real
+server's:
+
+```ini
+TS_TEST_AUTHKEY=tskey-auth-…   # first sign-in only
+TS_TEST_HOSTNAME=plinthio-test
+TS_TEST_FUNNEL=false           # true for a public link too
+```
+
+```bash
+docker compose -f docker/docker-compose.test.yml -f docker/docker-compose.test-tailscale.yml up -d --build
+```
+
+A test server copied from your real one has the same accounts and passwords. Leave its Funnel
+off unless you need it, and turn it off again when you're done testing.
 
 ## A web address for guests
 
@@ -230,7 +286,7 @@ how to report a problem.
 
 | Problem | Fix |
 | --- | --- |
-| The Funnel link doesn't load for friends | Check `TS_FUNNEL=true` (exactly), that Funnel is allowed for your tailnet (`docker logs plinthio-tailscale`), and test with Tailscale turned off on the phone. Funnel can take a minute to start after `docker compose up -d` |
+| The Funnel link doesn't load for friends | `docker exec plinthio-tailscale tailscale funnel status` should say "Funnel on". If it says "tailnet only", check `TS_FUNNEL=true` (exactly) and run `docker compose up -d --force-recreate`. Also check that Funnel is allowed for your tailnet (`docker logs plinthio-tailscale`), and test with Tailscale turned off on the phone. Funnel can take a minute to start after `docker compose up -d` |
 | Video buffers over Funnel | Tailscale limits Funnel's bandwidth. Try a lower quality in the player, or use [a web address](#a-web-address-for-guests) for full speed |
 | The web address doesn't load from outside | Check step 1 (CGNAT), that the A record shows your current IP (`nslookup media.yourdomain.com`), and that ports 80 and 443 are forwarded to the right machine. Some providers block port 80 or 443: ask them, or use Tailscale |
 | It works from outside but not at home | Some routers can't loop back to your own public address ("NAT loopback"). At home, keep using `http://<server>:8088`, or add the name to your router's local DNS pointing at the server's home address |

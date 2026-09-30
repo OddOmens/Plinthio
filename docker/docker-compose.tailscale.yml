@@ -15,7 +15,8 @@
 # 4. Install Tailscale on each phone or computer, sign in, and open
 #    https://plinthio.<your-tailnet>.ts.net  (the admin console lists the exact name).
 #
-# Friends without Tailscale: Funnel. Add TS_FUNNEL=true to .env and the same address opens
+# Friends without Tailscale: Funnel. Add TS_FUNNEL=true to .env (then run
+# `docker compose up -d --force-recreate` if it's already running) and the same address opens
 # in anyone's browser, with no domain and no router changes. Turn on outside access in
 # Admin → Network first (and consider requiring two-factor away from home), and read
 # docs/remote-access.md: Funnel goes through Tailscale's servers, which limit bandwidth.
