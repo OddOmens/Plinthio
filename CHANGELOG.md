@@ -9,6 +9,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-09-30
+
 ### Added
 - **Twice the accent colours:** red, orange, lime, teal, blue, purple, fuchsia and pink join the original eight, everywhere an accent is picked (setup, onboarding, Settings and Admin).
 
@@ -17,6 +19,9 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Settings → Shelves** (media categories, shelf views, and which shelf to start on) saves as you go, with no Save button. Movies, TV shows and anime can now be the shelf you start on.
 - **Admin → Server Config → Look & feel:** each default (accent, layout, page width, pause screen) has its own "Users can change" switch, with one "Let people personalize" switch above them, in place of the separate User Personalization card.
 - The live preview shows the accent colour being chosen, even when your own accent is different, and now shows page width too: the shelf is drawn on a big screen, so Contained visibly centres the page while Full width fills it. Hovering an option previews it before you pick.
+
+### Fixed
+- **Turning Funnel on or off now takes effect.** Changing `TS_FUNNEL` while the Tailscale add-on is already running needs `docker compose up -d --force-recreate`; the add-on file, the Tailscale guide and docs/remote-access.md now say so, and troubleshooting shows how to check with `tailscale funnel status`.
 
 ## [1.3.0] - 2026-09-29
 
