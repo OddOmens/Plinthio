@@ -9,6 +9,15 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **Twice the accent colours:** red, orange, lime, teal, blue, purple, fuchsia and pink join the original eight, everywhere an accent is picked (setup, onboarding, Settings and Admin).
+
+### Changed
+- **Settings → Appearance.** Your own accent colour, navigation layout, page width and pause screen now have their own tab, with the same tiles as the admin's settings and a live preview of your choices. Each shows what's in effect for you; anything the admin has locked shows the server's choice, marked "Set by your admin".
+- **Settings → Shelves** (media categories, shelf views, and which shelf to start on) saves as you go, with no Save button. Movies, TV shows and anime can now be the shelf you start on.
+- **Admin → Server Config → Look & feel:** each default (accent, layout, page width, pause screen) has its own "Users can change" switch, with one "Let people personalize" switch above them, in place of the separate User Personalization card.
+- The live preview shows the accent colour being chosen, even when your own accent is different, and now shows page width too: the shelf is drawn on a big screen, so Contained visibly centres the page while Full width fills it. Hovering an option previews it before you pick.
+
 ## [1.3.0] - 2026-09-29
 
 ### Added
