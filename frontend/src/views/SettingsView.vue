@@ -25,182 +25,131 @@
         <!-- Settings Navigation Tabs (Matching AdminView tabs styling) -->
         <nav class="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border text-xs flex-shrink-0">
           <button
-            @click="switchTab('preferences')"
+            v-for="tab in tabs"
+            :key="tab.id"
+            @click="switchTab(tab.id)"
+            :title="tab.label"
             :class="[
               'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
-              activeTab === 'preferences'
+              activeTab === tab.id
                 ? 'bg-card text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             ]"
           >
-            <Sliders class="w-4 h-4" />
-            <span class="hidden sm:inline">Preferences</span>
-          </button>
-
-          <button
-            @click="switchTab('stats')"
-            :class="[
-              'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
-              activeTab === 'stats'
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            ]"
-          >
-            <BarChart3 class="w-4 h-4" />
-            <span class="hidden sm:inline">My Activity</span>
-          </button>
-
-          <button
-            @click="switchTab('hidden')"
-            :class="[
-              'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
-              activeTab === 'hidden'
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            ]"
-          >
-            <EyeOff class="w-4 h-4" />
-            <span class="hidden sm:inline">Hidden</span>
-          </button>
-
-          <button
-            @click="switchTab('apikeys')"
-            :class="[
-              'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
-              activeTab === 'apikeys'
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            ]"
-          >
-            <Key class="w-4 h-4" />
-            <span class="hidden sm:inline">API Keys</span>
-          </button>
-
-          <button
-            @click="switchTab('account')"
-            :class="[
-              'h-9 min-w-[36px] sm:min-w-0 px-2.5 sm:px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 active:scale-95',
-              activeTab === 'account'
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            ]"
-          >
-            <Lock class="w-4 h-4" />
-            <span class="hidden sm:inline">Security</span>
+            <component :is="tab.icon" class="w-4 h-4" />
+            <span class="hidden sm:inline">{{ tab.label }}</span>
           </button>
         </nav>
       </div>
     </header>
 
     <main class="page-width mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 flex flex-col gap-6">
-      <!-- TAB 1: PREFERENCES -->
+      <!-- TAB: APPEARANCE (your own look, where the admin allows it) -->
+      <section v-if="activeTab === 'appearance'" class="flex flex-col gap-5">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div class="min-w-0">
+            <h2 class="text-base font-semibold text-foreground tracking-tight flex items-center gap-2">
+              <Palette class="w-4 h-4 text-muted-foreground" />
+              Appearance
+            </h2>
+            <p class="text-xs text-muted-foreground mt-0.5">How Plinthio looks for you. Changes show in the preview and save straight away; they only affect your account.</p>
+          </div>
+          <router-link
+            v-if="authStore.isAdmin"
+            to="/admin?tab=settings"
+            class="text-xs text-primary hover:underline flex items-center gap-1 font-medium flex-shrink-0"
+          >
+            <span>Server defaults &amp; branding in Admin</span>
+            <ExternalLink class="w-3.5 h-3.5" />
+          </router-link>
+        </div>
+
+        <div v-if="!personalizationOn" class="flex items-start gap-3 p-4 rounded-xl border border-border bg-muted/30">
+          <Lock class="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+          <p class="text-xs text-muted-foreground leading-relaxed">
+            Your admin sets how Plinthio looks on this server, so these can't be changed here. The preview shows what everyone sees.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] gap-5 items-start">
+          <div class="order-2 lg:order-1 flex flex-col gap-5 min-w-0">
+            <div
+              v-for="card in appearanceCards"
+              :key="card.field"
+              class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4"
+              @focusin="previewView = card.preview"
+              @click="previewView = card.preview"
+            >
+              <div class="border-b border-border pb-3 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">{{ card.title }}</h3>
+                  <p class="text-xs text-muted-foreground mt-0.5">{{ card.desc }}</p>
+                </div>
+                <span v-if="!card.allowed" class="text-[11px] text-muted-foreground font-medium flex-shrink-0 flex items-center gap-1 px-2 h-6 rounded-md bg-muted">
+                  <Lock class="w-3 h-3" /> Set by your admin
+                </span>
+              </div>
+              <OptionTiles
+                :label="card.title"
+                :options="card.options"
+                :model-value="card.allowed ? card.value : card.serverValue"
+                @update:model-value="setPersonal(card.field, $event)"
+                @hover="hoverAppearance(card, $event)"
+                :disabled="!card.allowed"
+                :swatches="card.swatches"
+                :grid-class="card.grid"
+              />
+            </div>
+          </div>
+          <div class="order-1 lg:order-2 lg:sticky lg:top-[76px] min-w-0">
+            <CustomizationPreview v-model:view="previewView" :settings="previewSettings" :only="['shelf', 'pause']" />
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: SHELVES (what's on your shelves; saves as you go) -->
       <section v-if="activeTab === 'preferences'" class="flex flex-col gap-5">
-        <div>
-          <h2 class="text-base font-semibold text-foreground tracking-tight flex items-center gap-2">
-            <Sliders class="w-4 h-4 text-muted-foreground" />
-            Personal Preferences
-          </h2>
-          <p class="text-xs text-muted-foreground mt-0.5">Customize your visible content, layout filters, and startup view</p>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div class="min-w-0">
+            <h2 class="text-base font-semibold text-foreground tracking-tight flex items-center gap-2">
+              <LayoutGrid class="w-4 h-4 text-muted-foreground" />
+              Shelves
+            </h2>
+            <p class="text-xs text-muted-foreground mt-0.5">What shows on your shelves and where you start. Saves as you go.</p>
+          </div>
+          <span v-if="prefsStatus" class="text-[12px] font-medium flex-shrink-0 flex items-center gap-1" :class="prefsStatus === 'error' ? 'text-destructive' : 'text-muted-foreground'">
+            <Loader2 v-if="prefsStatus === 'saving'" class="w-3 h-3 animate-spin" />
+            <CheckCircle v-else-if="prefsStatus === 'saved'" class="w-3 h-3 text-emerald-500" />
+            {{ { saving: 'Saving…', saved: 'Saved', error: 'Couldn\'t save' }[prefsStatus] }}
+          </span>
         </div>
 
         <!-- Visible Media Categories Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Visible Media Categories</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">Choose which types of content appear on your personal dashboard.</p>
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Media Categories</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">Which kinds of media appear on your shelves. Keep at least one.</p>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            <label
+              v-for="cat in mediaCategories"
+              :key="cat.id"
+              :class="[
+                'flex items-start gap-3 p-3.5 rounded-xl border transition cursor-pointer select-none',
+                prefs.enabledMediaTypes.includes(cat.id) ? 'border-primary ring-2 ring-primary/20 bg-muted/40' : 'border-border hover:bg-muted/20'
+              ]"
+            >
               <input
                 type="checkbox"
-                value="audiobook"
+                :value="cat.id"
                 v-model="prefs.enabledMediaTypes"
                 class="mt-0.5 rounded border-border text-primary focus:ring-ring"
               />
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Headphones class="w-3.5 h-3.5 text-muted-foreground" /> Audiobooks
-                </span>
-                <span class="text-[12px] text-muted-foreground">Spoken word, audio dramas, & audio files</span>
-              </div>
-            </label>
-
-            <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-              <input
-                type="checkbox"
-                value="manga"
-                v-model="prefs.enabledMediaTypes"
-                class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-              />
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <FileImage class="w-3.5 h-3.5 text-muted-foreground" /> Manga & Comics
-                </span>
-                <span class="text-[12px] text-muted-foreground">CBZ, CBR, & digital graphic novels</span>
-              </div>
-            </label>
-
-            <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-              <input
-                type="checkbox"
-                value="book"
-                v-model="prefs.enabledMediaTypes"
-                class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-              />
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Book class="w-3.5 h-3.5 text-muted-foreground" /> Books & Documents
-                </span>
-                <span class="text-[12px] text-muted-foreground">EPUB, PDF, and text volumes</span>
-              </div>
-            </label>
-
-            <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-              <input
-                type="checkbox"
-                value="show"
-                v-model="prefs.enabledMediaTypes"
-                class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-              />
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Tv class="w-3.5 h-3.5 text-muted-foreground" /> TV Shows
-                  <span class="text-[10px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.2 rounded font-medium">Video</span>
-                </span>
-                <span class="text-[12px] text-muted-foreground">Episodic series streaming (MP4, MKV)</span>
-              </div>
-            </label>
-
-            <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-              <input
-                type="checkbox"
-                value="movie"
-                v-model="prefs.enabledMediaTypes"
-                class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-              />
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Film class="w-3.5 h-3.5 text-muted-foreground" /> Movies
-                  <span class="text-[10px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.2 rounded font-medium">Video</span>
-                </span>
-                <span class="text-[12px] text-muted-foreground">Feature films & movies</span>
-              </div>
-            </label>
-
-            <label class="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition cursor-pointer select-none">
-              <input
-                type="checkbox"
-                value="anime"
-                v-model="prefs.enabledMediaTypes"
-                class="mt-0.5 rounded border-border text-primary focus:ring-ring"
-              />
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Sparkles class="w-3.5 h-3.5 text-muted-foreground" /> Anime
-                  <span class="text-[10px] bg-primary/10 text-primary border border-primary/20 px-1 py-0.2 rounded font-medium">Video</span>
-                </span>
-                <span class="text-[12px] text-muted-foreground">Anime series & movies</span>
+              <component :is="cat.icon" class="w-5 h-5 mt-0.5 text-muted-foreground flex-shrink-0" />
+              <div class="flex flex-col min-w-0">
+                <span class="text-xs font-semibold text-foreground">{{ cat.label }}</span>
+                <span class="text-[12px] text-muted-foreground">{{ cat.desc }}</span>
               </div>
             </label>
           </div>
@@ -210,7 +159,7 @@
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
             <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Views</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">Choose which views appear above your shelf. Every view shows one card per series; Alphabetical is always there.</p>
+            <p class="text-xs text-muted-foreground mt-0.5">The views above your shelf. Every view shows one card per series; Alphabetical is always there.</p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -218,8 +167,9 @@
               v-for="mode in availableFilterModes"
               :key="mode.id"
               :class="[
-                'flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/20 transition select-none',
-                mode.allowed && !mode.always ? 'cursor-pointer hover:bg-muted/40' : (mode.allowed ? '' : 'opacity-40 cursor-not-allowed')
+                'flex items-start gap-3 p-3.5 rounded-xl border transition select-none',
+                prefs.enabledGroupingModes.includes(mode.id) && mode.allowed ? 'border-primary ring-2 ring-primary/20 bg-muted/40' : 'border-border',
+                mode.allowed && !mode.always ? 'cursor-pointer hover:bg-muted/20' : (mode.allowed ? '' : 'opacity-50 cursor-not-allowed')
               ]"
             >
               <input
@@ -231,195 +181,25 @@
               />
               <div class="flex flex-col">
                 <span class="text-xs font-semibold text-foreground">{{ mode.label }}</span>
-                <span v-if="!mode.allowed" class="text-[11px] text-destructive">Turned off by your administrator</span>
-                <span v-else class="text-[12px] text-muted-foreground">{{ mode.desc }}</span>
+                <span v-if="!mode.allowed" class="text-[12px] text-muted-foreground flex items-center gap-1"><Lock class="w-3 h-3" /> Turned off by your admin</span>
+                <span v-else class="text-[12px] text-muted-foreground">{{ mode.always ? 'Always on. ' : '' }}{{ mode.desc }}</span>
               </div>
             </label>
           </div>
         </div>
 
-        <!-- Accent Color Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
-          <div class="border-b border-border pb-3 flex items-start justify-between gap-2">
-            <div>
-              <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Accent Color</h3>
-              <p class="text-xs text-muted-foreground mt-0.5">Choose your personal highlight color across buttons, badges, and accents.</p>
-            </div>
-            <span v-if="!canCustomizeAccent" class="text-[11px] text-muted-foreground font-medium flex-shrink-0">Set by your admin</span>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2.5">
-            <button
-              type="button"
-              :disabled="!canCustomizeAccent"
-              @click="setAccentTheme(null)"
-              :class="[
-                'px-3 py-2 rounded-lg border text-xs font-medium transition flex items-center gap-2',
-                userAccent === null ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-muted/20 hover:bg-muted/40 text-foreground',
-                !canCustomizeAccent ? 'opacity-50 cursor-not-allowed' : ''
-              ]"
-            >
-              <span class="w-3.5 h-3.5 rounded-full border border-border bg-muted flex-shrink-0"></span>
-              <span>Server default ({{ customizationStore.accentTheme || 'zinc' }})</span>
-            </button>
-
-            <button
-              v-for="acc in ACCENT_PRESETS"
-              :key="acc.id"
-              type="button"
-              :disabled="!canCustomizeAccent"
-              @click="setAccentTheme(acc.id)"
-              :class="[
-                'px-3 py-2 rounded-lg border text-xs font-medium transition flex items-center gap-2 capitalize',
-                userAccent === acc.id || (!canCustomizeAccent && customizationStore.accentTheme === acc.id)
-                  ? 'border-primary ring-2 ring-primary/20 bg-muted/40 text-foreground'
-                  : 'border-border bg-muted/20 hover:bg-muted/40 text-foreground',
-                !canCustomizeAccent ? 'opacity-50 cursor-not-allowed' : ''
-              ]"
-            >
-              <span :class="acc.bg" class="w-3.5 h-3.5 rounded-full border border-black/10 shadow-sm flex-shrink-0"></span>
-              <span>{{ acc.label }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Navigation Layout Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
-          <div class="border-b border-border pb-3 flex items-start justify-between gap-2">
-            <div>
-              <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Navigation Layout</h3>
-              <p class="text-xs text-muted-foreground mt-0.5">Choose how the primary navigation is presented on your screen.</p>
-            </div>
-            <span v-if="!canCustomizeLayout" class="text-[11px] text-muted-foreground font-medium flex-shrink-0">Set by your admin</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl" role="radiogroup" aria-label="Navigation layout">
-            <button
-              v-for="option in layoutOptions"
-              :key="option.id || 'default'"
-              type="button"
-              role="radio"
-              :disabled="!canCustomizeLayout"
-              :aria-checked="userLayout === option.id"
-              @click="setLayoutMode(option.id)"
-              :class="[
-                'flex items-start gap-3 p-3 rounded-lg border text-left transition',
-                userLayout === option.id || (!canCustomizeLayout && (option.id === customizationStore.layoutMode || (option.id === null && !userLayout)))
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border bg-muted/20 hover:bg-muted/40',
-                !canCustomizeLayout ? 'opacity-50 cursor-not-allowed' : ''
-              ]"
-            >
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-foreground">{{ option.label }}</span>
-                <span class="text-[12px] text-muted-foreground">{{ option.desc }}</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Page Width Card (applies and saves on its own, so the page can be seen changing) -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
-          <div class="border-b border-border pb-3 flex items-start justify-between gap-2">
-            <div>
-              <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Page Width</h3>
-              <p class="text-xs text-muted-foreground mt-0.5">How wide pages get on a big screen. Full width fits more posters in a row.</p>
-            </div>
-            <span v-if="!canCustomizeWidth" class="text-[11px] text-muted-foreground font-medium flex-shrink-0">Set by your admin</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl" role="radiogroup" aria-label="Page width">
-            <button
-              v-for="option in pageWidthOptions"
-              :key="option.id || 'default'"
-              type="button"
-              role="radio"
-              :disabled="!canCustomizeWidth"
-              :aria-checked="userPageWidth === option.id"
-              @click="setPageWidth(option.id)"
-              :class="[
-                'flex items-start gap-3 p-3 rounded-lg border text-left transition',
-                userPageWidth === option.id || (!canCustomizeWidth && (option.id === customizationStore.pageWidth || (option.id === null && !userPageWidth)))
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border bg-muted/20 hover:bg-muted/40',
-                !canCustomizeWidth ? 'opacity-50 cursor-not-allowed' : ''
-              ]"
-            >
-              <component :is="option.icon" class="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-foreground">{{ option.label }}</span>
-                <span class="text-[12px] text-muted-foreground">{{ option.desc }}</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Video Pause Screen Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
-          <div class="border-b border-border pb-3 flex items-start justify-between gap-2">
-            <div>
-              <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Video Pause Screen</h3>
-              <p class="text-xs text-muted-foreground mt-0.5">What appears after a couple of seconds when pausing a movie or episode.</p>
-            </div>
-            <span v-if="!canCustomizePause" class="text-[11px] text-muted-foreground font-medium flex-shrink-0">Set by your admin</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-3xl" role="radiogroup" aria-label="Pause screen">
-            <button
-              v-for="option in pauseScreenOptions"
-              :key="option.id || 'default'"
-              type="button"
-              role="radio"
-              :disabled="!canCustomizePause"
-              :aria-checked="userPauseScreen === option.id"
-              @click="setUserPauseScreen(option.id)"
-              :class="[
-                'flex items-start gap-3 p-3 rounded-lg border text-left transition',
-                userPauseScreen === option.id || (!canCustomizePause && (option.id === customizationStore.pauseScreen || (option.id === null && !userPauseScreen)))
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border bg-muted/20 hover:bg-muted/40',
-                !canCustomizePause ? 'opacity-50 cursor-not-allowed' : ''
-              ]"
-            >
-              <div class="flex flex-col">
-                <span class="text-xs font-semibold text-foreground">{{ option.label }}</span>
-                <span class="text-[12px] text-muted-foreground">{{ option.desc }}</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
         <!-- Default Startup View Card -->
-        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
+        <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-3">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Default View on Startup</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">Select which media category displays automatically when you log in.</p>
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Start On</h3>
+            <p class="text-xs text-muted-foreground mt-0.5">The shelf Plinthio opens to.</p>
           </div>
-
-          <div class="max-w-xs">
-            <select
-              v-model="prefs.defaultView"
-              class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-            >
-              <option value="all">All Media (Default)</option>
-              <option value="audiobook">Audiobooks Only</option>
-              <option value="manga">Manga Only</option>
-              <option value="book">Books Only</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Save Button -->
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-muted-foreground">Changes are saved to your user account profile.</span>
-          <button
-            @click="savePreferences"
-            :disabled="savingPrefs"
-            class="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm disabled:opacity-50 flex items-center gap-1.5"
-          >
-            <CheckCircle v-if="!savingPrefs" class="w-3.5 h-3.5" />
-            <span>{{ savingPrefs ? 'Saving...' : 'Save Preferences' }}</span>
-          </button>
+          <OptionTiles
+            label="Start on"
+            :options="startupOptions"
+            v-model="prefs.defaultView"
+            grid-class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7 gap-2.5"
+          />
         </div>
       </section>
 
@@ -766,24 +546,6 @@
           </div>
         </div>
 
-        <!-- Admin pointer: server-wide branding/theme/CSS now lives in Admin, not here -->
-        <router-link
-          v-if="authStore.isAdmin"
-          to="/admin?tab=settings"
-          class="bg-card border border-border rounded-xl p-4 flex items-center justify-between gap-3 hover:border-primary/40 hover:bg-muted/20 transition group"
-        >
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-              <Palette class="w-4 h-4" />
-            </div>
-            <div class="min-w-0">
-              <h3 class="text-xs font-semibold text-foreground">Server branding, theme & custom CSS</h3>
-              <p class="text-[12px] text-muted-foreground">These are server-wide, so they now live in Admin → Server Config.</p>
-            </div>
-          </div>
-          <ExternalLink class="w-4 h-4 text-muted-foreground group-hover:text-primary transition flex-shrink-0" />
-        </router-link>
-
         <!-- Password Change Card -->
         <div class="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
           <div class="border-b border-border pb-2">
@@ -865,6 +627,9 @@ import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
 import Sidebar from '../components/Sidebar.vue';
 import TwoFactorSetup from '../components/TwoFactorSetup.vue';
+import OptionTiles from '../components/OptionTiles.vue';
+import CustomizationPreview from '../components/CustomizationPreview.vue';
+import { ACCENT_OPTIONS, LAYOUT_OPTIONS, PAGE_WIDTH_OPTIONS, PAUSE_SCREEN_OPTIONS } from '../constants/appearance';
 import { ALL_MEDIA_TYPES } from '../constants/media';
 import { SHELF_MODES, normalizeShelfModes, userShelfModes } from '../utils/shelfModes';
 import { useDialogStore } from '../stores/dialog';
@@ -892,8 +657,8 @@ import {
   ExternalLink,
   LogIn,
   Upload,
-  StretchHorizontal,
-  RectangleHorizontal
+  LayoutGrid,
+  Loader2
 } from '@lucide/vue';
 
 const route = useRoute();
@@ -908,7 +673,16 @@ function goToShelf(type) {
 const authStore = useAuthStore();
 const dialog = useDialogStore();
 
-const activeTab = ref(route.query.tab || 'preferences');
+// 'preferences' is the Shelves tab (the id older links use).
+const tabs = [
+  { id: 'appearance', label: 'Appearance', icon: Palette },
+  { id: 'preferences', label: 'Shelves', icon: LayoutGrid },
+  { id: 'stats', label: 'My Activity', icon: BarChart3 },
+  { id: 'hidden', label: 'Hidden', icon: EyeOff },
+  { id: 'apikeys', label: 'API Keys', icon: Key },
+  { id: 'account', label: 'Security', icon: Lock }
+];
+const activeTab = ref(tabs.some((t) => t.id === route.query.tab) ? route.query.tab : 'appearance');
 
 function switchTab(tab) {
   activeTab.value = tab;
@@ -948,7 +722,20 @@ const prefs = ref({
   enabledGroupingModes: [...SHELF_MODES],
   defaultView: 'all'
 });
-const savingPrefs = ref(false);
+
+const mediaCategories = [
+  { id: 'movie', label: 'Movies', desc: 'Feature films', icon: Film },
+  { id: 'show', label: 'TV Shows', desc: 'Series and episodes', icon: Tv },
+  { id: 'anime', label: 'Anime', desc: 'Anime series and films', icon: Sparkles },
+  { id: 'book', label: 'Books', desc: 'EPUB, PDF and text', icon: Book },
+  { id: 'manga', label: 'Manga & Comics', desc: 'CBZ, CBR and graphic novels', icon: FileImage },
+  { id: 'audiobook', label: 'Audiobooks', desc: 'Spoken word and audio dramas', icon: Headphones }
+];
+// "All" plus each category that's switched on.
+const startupOptions = computed(() => [
+  { id: 'all', label: 'All media', icon: LayoutGrid },
+  ...mediaCategories.filter((c) => prefs.value.enabledMediaTypes.includes(c.id)).map((c) => ({ id: c.id, label: c.label, icon: c.icon }))
+]);
 
 const allowedFilters = ref([...SHELF_MODES]);
 
@@ -1062,127 +849,133 @@ async function loadData() {
         defaultView: authStore.user.preferences.defaultView || 'all'
       };
     }
+    savedPrefs = JSON.stringify(prefs.value);
   } catch (err) {
     console.error('Failed to load user settings data:', err);
   }
 }
 
-// User Personalizations: permission checks, options, and handlers
-const canCustomizeAccent = computed(() => customizationStore.isCustomizationAllowed('accentColor'));
-const canCustomizeLayout = computed(() => customizationStore.isCustomizationAllowed('layoutMode'));
-const canCustomizeWidth = computed(() => customizationStore.isCustomizationAllowed('pageWidth'));
-const canCustomizePause = computed(() => customizationStore.isCustomizationAllowed('pauseScreen'));
+// Appearance: each setting is the person's own when the admin allows it, otherwise the
+// server's (shown, locked).
+const personalizationOn = computed(() => customizationStore.userCustomization?.enabled !== false);
+const previewView = ref('shelf');
+const hoverPreview = ref({});
 
-const ACCENT_PRESETS = [
-  { id: 'zinc', label: 'Zinc', bg: 'bg-zinc-500' },
-  { id: 'slate', label: 'Slate', bg: 'bg-slate-600' },
-  { id: 'emerald', label: 'Emerald', bg: 'bg-emerald-500' },
-  { id: 'violet', label: 'Violet', bg: 'bg-violet-500' },
-  { id: 'rose', label: 'Rose', bg: 'bg-rose-500' },
-  { id: 'amber', label: 'Amber', bg: 'bg-amber-500' },
-  { id: 'sky', label: 'Sky', bg: 'bg-sky-500' },
-  { id: 'indigo', label: 'Indigo', bg: 'bg-indigo-500' }
-];
+const appearanceCards = computed(() => {
+  const prefsNow = authStore.user?.preferences || {};
+  const cards = [
+    {
+      field: 'accentTheme', key: 'accentColor', title: 'Accent Color', preview: 'shelf',
+      desc: 'Your highlight colour on buttons, badges and the current tab.',
+      serverValue: customizationStore.accentTheme || 'zinc',
+      options: ACCENT_OPTIONS,
+      swatches: true, grid: 'grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-4 2xl:grid-cols-8 gap-2.5'
+    },
+    {
+      field: 'layoutMode', key: 'layoutMode', title: 'Navigation Layout', preview: 'shelf',
+      desc: 'Where the main navigation sits.',
+      serverValue: customizationStore.layoutMode || 'topnav',
+      options: LAYOUT_OPTIONS
+    },
+    {
+      field: 'pageWidth', key: 'pageWidth', title: 'Page Width', preview: 'shelf',
+      desc: 'How wide pages get on a big screen. Full width fits more posters in a row.',
+      serverValue: customizationStore.pageWidth || 'full',
+      options: PAGE_WIDTH_OPTIONS
+    },
+    {
+      field: 'pauseScreen', key: 'pauseScreen', title: 'Pause Screen', preview: 'pause',
+      desc: 'What appears after a couple of seconds paused on a movie or episode.',
+      serverValue: customizationStore.pauseScreen || 'details',
+      options: PAUSE_SCREEN_OPTIONS
+    }
+  ];
+  // Each shows what's in effect: the person's own choice, else the server's.
+  return cards.map((card) => ({
+    ...card,
+    allowed: customizationStore.isCustomizationAllowed(card.key),
+    value: prefsNow[card.field] || card.serverValue
+  }));
+});
 
-const userAccent = computed(() => authStore.user?.preferences?.accentTheme || null);
-async function setAccentTheme(value) {
-  if (!authStore.user || value === userAccent.value) return;
+// What the preview shows: the effective look, or the option under the pointer.
+const previewSettings = computed(() => {
+  const user = authStore.user;
+  const pick = (field, effective) => hoverPreview.value[field] ?? effective;
+  return {
+    serverName: customizationStore.serverName,
+    loginMessage: customizationStore.loginMessage,
+    ratings: customizationStore.ratings,
+    showMissingFilms: customizationStore.showMissingFilms,
+    partyModeEnabled: customizationStore.partyModeEnabled,
+    accentTheme: pick('accentTheme', customizationStore.effectiveAccentTheme(user)),
+    layoutMode: pick('layoutMode', customizationStore.effectiveLayoutMode(user)),
+    pageWidth: pick('pageWidth', customizationStore.effectivePageWidth(user)),
+    pauseScreen: pick('pauseScreen', customizationStore.effectivePauseScreen(user))
+  };
+});
+
+function hoverAppearance(card, id) {
+  if (!card.allowed) return;
+  const value = id;
+  hoverPreview.value = { ...hoverPreview.value, [card.field]: value };
+  if (value !== undefined) previewView.value = card.preview;
+}
+
+async function setPersonal(field, value) {
+  if (!authStore.user) return;
   const previous = authStore.user.preferences || {};
-  authStore.user.preferences = { ...previous, accentTheme: value };
+  authStore.user.preferences = { ...previous, [field]: value };
   try {
-    const { data } = await api.patch('/users/preferences', { accentTheme: value });
+    const { data } = await api.patch('/users/preferences', { [field]: value });
     authStore.user.preferences = data.preferences || authStore.user.preferences;
     localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
   } catch (err) {
     authStore.user.preferences = previous;
-    dialog.alert(err.response?.data?.error || 'Could not save the accent color');
+    dialog.alert(err.response?.data?.error || 'Could not save that setting');
   }
 }
 
-const layoutOptions = computed(() => [
-  { id: null, label: 'Server default', desc: `Follows server default (${customizationStore.layoutMode === 'sidebar' ? 'Sidebar' : 'Top Navigation'})` },
-  { id: 'topnav', label: 'Top Navigation', desc: 'Classic horizontal header bar' },
-  { id: 'sidebar', label: 'Sidebar', desc: 'Vertical navigation on the left' }
-]);
-const userLayout = computed(() => authStore.user?.preferences?.layoutMode || null);
-async function setLayoutMode(value) {
-  if (!authStore.user || value === userLayout.value) return;
-  const previous = authStore.user.preferences || {};
-  authStore.user.preferences = { ...previous, layoutMode: value };
-  try {
-    const { data } = await api.patch('/users/preferences', { layoutMode: value });
-    authStore.user.preferences = data.preferences || authStore.user.preferences;
-    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
-  } catch (err) {
-    authStore.user.preferences = previous;
-    dialog.alert(err.response?.data?.error || 'Could not save navigation layout');
+// Shelves save a moment after each change.
+const prefsStatus = ref('');
+let savedPrefs = '';
+let prefsTimer = null;
+watch(prefs, (value) => {
+  if (!value.enabledMediaTypes?.length) {
+    // Keep at least one category: undo the last untick.
+    prefs.value.enabledMediaTypes = JSON.parse(savedPrefs || '{}').enabledMediaTypes || ALL_MEDIA_TYPES;
+    return;
   }
-}
-
-const pageWidthOptions = computed(() => [
-  { id: null, label: 'Server default', desc: `Follows server default (${customizationStore.pageWidth === 'contained' ? 'Contained' : 'Full width'})`, icon: Sliders },
-  { id: 'full', label: 'Full width', desc: 'Use the whole screen', icon: StretchHorizontal },
-  { id: 'contained', label: 'Contained', desc: 'Centred, up to 1440px wide', icon: RectangleHorizontal }
-]);
-const userPageWidth = computed(() => authStore.user?.preferences?.pageWidth || null);
-async function setPageWidth(value) {
-  if (!authStore.user || value === userPageWidth.value) return;
-  const previous = authStore.user.preferences || {};
-  authStore.user.preferences = { ...previous, pageWidth: value };
-  try {
-    const { data } = await api.patch('/users/preferences', { pageWidth: value });
-    authStore.user.preferences = data.preferences || authStore.user.preferences;
-    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
-  } catch (err) {
-    authStore.user.preferences = previous;
-    dialog.alert(err.response?.data?.error || 'Could not save the page width');
+  if (value.defaultView !== 'all' && !value.enabledMediaTypes.includes(value.defaultView)) {
+    prefs.value.defaultView = 'all';
+    return;
   }
-}
-
-const pauseScreenOptions = computed(() => [
-  { id: null, label: 'Server default', desc: `Follows server default (${customizationStore.pauseScreen || 'details'})` },
-  { id: 'simple', label: 'Simple', desc: 'Just player controls' },
-  { id: 'details', label: 'Details', desc: 'Poster, title, synopsis, and cast' },
-  { id: 'cinematic', label: 'Cinematic', desc: 'Full-screen title card with cast photos and facts' },
-  { id: 'bedtime', label: 'Bedtime', desc: 'A dim clock with end times, easy on the eyes' }
-]);
-const userPauseScreen = computed(() => authStore.user?.preferences?.pauseScreen || null);
-async function setUserPauseScreen(value) {
-  if (!authStore.user || value === userPauseScreen.value) return;
-  const previous = authStore.user.preferences || {};
-  authStore.user.preferences = { ...previous, pauseScreen: value };
-  try {
-    const { data } = await api.patch('/users/preferences', { pauseScreen: value });
-    authStore.user.preferences = data.preferences || authStore.user.preferences;
-    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
-  } catch (err) {
-    authStore.user.preferences = previous;
-    dialog.alert(err.response?.data?.error || 'Could not save the pause screen setting');
-  }
-}
+  if (JSON.stringify(value) === savedPrefs) return;
+  clearTimeout(prefsTimer);
+  prefsTimer = setTimeout(savePreferences, 400);
+}, { deep: true });
 
 async function savePreferences() {
   // Series can't be switched off (the checkbox is locked on), so there's always a view.
-  prefs.value.enabledGroupingModes = [...new Set(['series', ...(prefs.value.enabledGroupingModes || [])])];
-  if (!prefs.value.enabledMediaTypes || prefs.value.enabledMediaTypes.length === 0) {
-    dialog.alert('Please enable at least one media category.');
-    return;
-  }
-  savingPrefs.value = true;
+  const body = {
+    ...prefs.value,
+    enabledGroupingModes: [...new Set(['series', ...(prefs.value.enabledGroupingModes || [])])]
+  };
+  prefsStatus.value = 'saving';
   try {
-    // Cache what the server actually stored (the merge of these three keys into the rest),
-    // not just the keys this screen owns — overwriting the local copy with `prefs.value`
-    // would drop `onboardingComplete` and pop the onboarding flow open on the spot.
-    const { data } = await api.patch('/users/preferences', prefs.value);
+    // Cache what the server actually stored (the merge of these keys into the rest), not
+    // just the keys this screen owns — overwriting the local copy with `prefs.value` would
+    // drop `onboardingComplete` and pop the onboarding flow open on the spot.
+    const { data } = await api.patch('/users/preferences', body);
     if (authStore.user) {
-      authStore.user.preferences = data.preferences || { ...authStore.user.preferences, ...prefs.value };
+      authStore.user.preferences = data.preferences || { ...authStore.user.preferences, ...body };
       localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
     }
-    dialog.alert('Preferences saved successfully');
+    savedPrefs = JSON.stringify(prefs.value);
+    prefsStatus.value = 'saved';
   } catch (err) {
+    prefsStatus.value = 'error';
     dialog.alert(err.response?.data?.error || 'Failed to save preferences');
-  } finally {
-    savingPrefs.value = false;
   }
 }
 

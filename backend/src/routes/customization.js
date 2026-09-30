@@ -140,7 +140,7 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
     }
 
     if (accentTheme !== undefined) {
-      const allowedThemes = ['zinc', 'slate', 'emerald', 'violet', 'rose', 'amber', 'sky', 'indigo'];
+      const allowedThemes = ['zinc', 'slate', 'red', 'orange', 'amber', 'lime', 'emerald', 'teal', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
       const theme = allowedThemes.includes(accentTheme) ? accentTheme : 'zinc';
       await db.run(
         `INSERT INTO settings (key, value, updated_at) VALUES ('accent_theme', ?, CURRENT_TIMESTAMP)
