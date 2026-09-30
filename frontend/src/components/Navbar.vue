@@ -90,11 +90,20 @@
       </div>
     </div>
 
-    <!-- Mobile Category Pills (Horizontally Scrollable iOS Segmented Style) -->
-    <div class="lg:hidden px-4 pb-2.5 sm:pb-2 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar">
+    <!-- Mobile Category Pills (Horizontally Scrollable iOS Segmented Style). The edges fade
+         where more pills are hidden, so it's clear the row scrolls; the chosen one is
+         scrolled into view (a link straight to Movies used to leave it off screen). -->
+    <div
+      ref="pillsEl"
+      @scroll.passive="updatePillEdges"
+      class="lg:hidden px-4 pb-2.5 sm:pb-2 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar"
+      :style="pillsMask"
+    >
       <button
         v-for="tab in visibleMediaTabs"
         :key="tab.value"
+        :data-active="activeType === tab.value || undefined"
+        :aria-pressed="String(activeType === tab.value)"
         @click="$emit('filter-type', tab.value)"
         :class="[
           'h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-1.5 sm:gap-2 flex-shrink-0 active:scale-95',
@@ -125,7 +134,7 @@
 
 <script setup>
 import AppLogo from './AppLogo.vue';
-import { computed } from 'vue';
+import { computed, ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { ALL_MEDIA_TYPES } from '../constants/media';
@@ -145,7 +154,7 @@ import {
   ListOrdered
 } from '@lucide/vue';
 
-defineProps({
+const props = defineProps({
   activeType: { type: String, default: 'all' },
   searchQuery: { type: String, default: '' }
 });
@@ -171,4 +180,42 @@ const visibleMediaTabs = computed(() => {
   const enabled = authStore.user?.preferences?.enabledMediaTypes || ALL_MEDIA_TYPES;
   return allTabs.filter(tab => tab.value === 'all' || enabled.includes(tab.value));
 });
+
+const pillsEl = ref(null);
+const pillsAtStart = ref(true);
+const pillsAtEnd = ref(true);
+
+function updatePillEdges() {
+  const el = pillsEl.value;
+  if (!el) return;
+  pillsAtStart.value = el.scrollLeft <= 2;
+  pillsAtEnd.value = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
+}
+
+const pillsMask = computed(() => {
+  if (pillsAtStart.value && pillsAtEnd.value) return {};
+  const left = pillsAtStart.value ? 'black 0' : 'transparent 0, black 28px';
+  const right = pillsAtEnd.value ? 'black 100%' : 'black calc(100% - 36px), transparent 100%';
+  const mask = `linear-gradient(to right, ${left}, ${right})`;
+  return { maskImage: mask, WebkitMaskImage: mask };
+});
+
+function revealActivePill(smooth) {
+  const el = pillsEl.value;
+  const pill = el?.querySelector('[data-active]');
+  if (!el || !pill) return updatePillEdges();
+  const pillLeft = pill.offsetLeft;
+  const pillRight = pillLeft + pill.offsetWidth;
+  if (pillLeft < el.scrollLeft + 16 || pillRight > el.scrollLeft + el.clientWidth - 16) {
+    el.scrollTo({ left: pillLeft - (el.clientWidth - pill.offsetWidth) / 2, behavior: smooth ? 'smooth' : 'auto' });
+  }
+  updatePillEdges();
+}
+
+watch(() => props.activeType, () => nextTick(() => revealActivePill(true)));
+onMounted(() => {
+  nextTick(() => revealActivePill(false));
+  window.addEventListener('resize', updatePillEdges, { passive: true });
+});
+onBeforeUnmount(() => window.removeEventListener('resize', updatePillEdges));
 </script>

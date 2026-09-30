@@ -13,10 +13,17 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Switching shelves is smoother.** Picking a category, filter or sort order fades the new shelf in instead of flashing a grid of placeholders first, and an empty category no longer blinks. Categories you've already opened show instantly and refresh quietly behind the scenes.
 - **Faster page loads.** The app's files are now cached by the browser between visits (they were rechecked every time), and the title page is fetched in the background while you browse the shelf, so the first tap on a title opens it without waiting.
 - **Shelf filters on a phone** sit in a tidy two-column grid instead of being squeezed into blank boxes, the Collections / All movies switch gets its own row, and the shelf views (A–Z, Author, Disk, Custom) share the row evenly instead of scrolling off the edge.
+- **No more zooming in when you tap a text box on an iPhone.** The search bar, settings and admin fields, and the bookmark form were all small enough that iOS zoomed the page in on tap and left it there.
+- **A title's ⋯ menu on the shelf** opens as a sheet from the bottom on a phone. From a card in the left column it used to open partly off the screen.
+- **The category bar on a phone** fades at the edge when more categories are hidden off to the side, and scrolls the one you've picked into view.
+- **The reader's top bar on a phone** has a solid background, so its buttons stay readable over a white page, and its buttons are easier to tap. Rating stars everywhere, the title page's back button, and the volume filter tabs are easier to tap too.
 - **Volume and chapter cards on a phone** show the Read button plus a "⋯" that opens every action (mark as read, skip, bookmarks, download, rate), labelled, in a sheet from the bottom of the screen. The row of small icons used to spill out of the card. On wider screens the icons get their own row under the Read button.
 
 ### Fixed
 - The Movies, Shows and Anime shelves were headed "All Media".
+- In the bookmarks window on a phone, the title box ran past the edge of the window.
+- While a video was still being prepared, the skip buttons on a phone covered the "Converting for your browser…" message.
+- Series cards on a phone no longer break "18/32 watched" across two lines.
 
 ## [1.3.1] - 2026-09-30
 

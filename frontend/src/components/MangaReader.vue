@@ -5,10 +5,12 @@
     @pointermove="onPointerMove"
     tabindex="0"
   >
-    <!-- Top Controls — always visible on desktop (hover), auto-hide on touch -->
+    <!-- Top Controls — always visible on desktop (hover), auto-hide on touch. On a phone the
+         controls take two rows, which ran past the fade into the page itself (unreadable on
+         a white page), so there the bar is solid. -->
     <header
       :class="[
-        'absolute top-0 inset-x-0 z-30 transition-all duration-300 bg-gradient-to-b from-black/90 via-black/60 to-transparent pt-safe pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-4 flex flex-col gap-2 sm:flex-row landscape:flex-row sm:items-center landscape:items-center sm:justify-between landscape:justify-between sm:gap-3',
+        'absolute top-0 inset-x-0 z-30 transition-all duration-300 bg-black/80 backdrop-blur-md sm:backdrop-blur-none sm:bg-transparent sm:bg-gradient-to-b sm:from-black/90 sm:via-black/60 sm:to-transparent pt-safe pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-4 flex flex-col gap-2 sm:flex-row landscape:flex-row sm:items-center landscape:items-center sm:justify-between landscape:justify-between sm:gap-3',
         controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
       ]"
     >
@@ -17,7 +19,7 @@
       <div class="flex items-center gap-3 min-w-0 flex-1">
         <button aria-label="Back to shelf"
           @click="closeReader"
-          class="p-2 rounded-lg bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-200 active:scale-95 transition flex-shrink-0"
+          class="p-2.5 sm:p-2 rounded-lg bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-200 active:scale-95 transition flex-shrink-0"
           title="Back to shelf"
         >
           <ArrowLeft class="w-4 h-4" />
@@ -36,7 +38,7 @@
         <button
           @click.stop="showBookmarksModal = !showBookmarksModal"
           :class="[
-            'px-2.5 py-1.5 rounded-lg border text-xs transition flex items-center gap-1.5 flex-shrink-0',
+            'px-2.5 py-2 sm:py-1.5 rounded-lg border text-xs transition flex items-center gap-1.5 flex-shrink-0',
             showBookmarksModal
               ? 'bg-zinc-100 text-zinc-900 border-zinc-100 font-semibold'
               : 'bg-zinc-900/80 text-zinc-300 border-zinc-800 hover:text-white'
@@ -54,7 +56,7 @@
         <div v-if="mode !== 'webtoon'" class="flex items-center gap-0.5 bg-zinc-900/80 p-1 rounded-lg border border-zinc-800 flex-shrink-0">
           <button
             @click="setSpread('single')"
-            :class="['px-2 py-1 rounded-md text-xs font-medium transition flex items-center gap-1', spread === 'single' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
+            :class="['px-2 py-1.5 sm:py-1 rounded-md text-xs font-medium transition flex items-center gap-1', spread === 'single' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
             title="Single Page view"
           >
             <Square class="w-3.5 h-3.5" />
@@ -62,7 +64,7 @@
           </button>
           <button
             @click="setSpread('double')"
-            :class="['px-2 py-1 rounded-md text-xs font-medium transition flex items-center gap-1', spread === 'double' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
+            :class="['px-2 py-1.5 sm:py-1 rounded-md text-xs font-medium transition flex items-center gap-1', spread === 'double' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
             title="2-Page Spread view"
           >
             <Columns2 class="w-3.5 h-3.5" />
@@ -74,7 +76,7 @@
         <div v-if="mode !== 'webtoon'" class="flex items-center gap-0.5 bg-zinc-900/80 p-1 rounded-lg border border-zinc-800 flex-shrink-0">
           <button
             @click="setPageTurnStyle('fade')"
-            :class="['px-2 py-1 rounded-md text-xs font-medium transition flex items-center gap-1', pageTurnStyle === 'fade' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
+            :class="['px-2 py-1.5 sm:py-1 rounded-md text-xs font-medium transition flex items-center gap-1', pageTurnStyle === 'fade' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
             title="Fade page transition"
           >
             <Layers class="w-3.5 h-3.5" />
@@ -82,7 +84,7 @@
           </button>
           <button
             @click="setPageTurnStyle('flip')"
-            :class="['px-2 py-1 rounded-md text-xs font-medium transition flex items-center gap-1', pageTurnStyle === 'flip' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
+            :class="['px-2 py-1.5 sm:py-1 rounded-md text-xs font-medium transition flex items-center gap-1', pageTurnStyle === 'flip' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
             title="Realistic page-flip transition"
           >
             <BookOpen class="w-3.5 h-3.5" />
@@ -96,7 +98,7 @@
             v-for="m in modes"
             :key="m.id"
             @click="setMode(m.id)"
-            :class="['px-2.5 py-1 rounded-md text-xs font-medium transition', mode === m.id ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
+            :class="['px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium transition', mode === m.id ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
             :title="m.label"
           >{{ m.short }}</button>
         </div>
