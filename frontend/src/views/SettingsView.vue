@@ -910,12 +910,13 @@ const previewSettings = computed(() => {
     partyModeEnabled: customizationStore.partyModeEnabled,
     accentTheme: pick('accentTheme', customizationStore.effectiveAccentTheme(user)),
     layoutMode: pick('layoutMode', customizationStore.effectiveLayoutMode(user)),
+    pageWidth: pick('pageWidth', customizationStore.effectivePageWidth(user)),
     pauseScreen: pick('pauseScreen', customizationStore.effectivePauseScreen(user))
   };
 });
 
 function hoverAppearance(card, id) {
-  if (!card.allowed || card.field === 'pageWidth') return;
+  if (!card.allowed) return;
   const value = id;
   hoverPreview.value = { ...hoverPreview.value, [card.field]: value };
   if (value !== undefined) previewView.value = card.preview;
