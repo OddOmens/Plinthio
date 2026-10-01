@@ -405,10 +405,31 @@ const modes = [
 ];
 
 // ─── Remembered reader settings ──────────────────────────────────────────────
-// Spread and a series' reading mode depend on the screen (two pages suit a tablet, not a
-// phone; scroll suits a phone), so they're remembered on this device. The page-turn style is
-// a matter of taste, so it follows the person to every device via their preferences.
+// Everything picked here belongs to the person and follows them to every device, like the
+// ebook reader's settings: spread and each series' reading mode live in their preferences
+// as `mangaReader`, the page-turn style as `readerPageTurn`. Earlier versions kept spread
+// and modes on the device only; those are still read as a fallback, so nothing set before
+// is lost, and are kept up to date for offline use.
 const READER_PREFS_KEY = 'plinthio_reader';
+const SERIES_MODES_LIMIT = 300;
+function accountReaderPrefs() {
+  const stored = authStore.user?.preferences?.mangaReader;
+  return stored && typeof stored === 'object' ? stored : {};
+}
+async function saveAccountReaderPrefs(patch) {
+  if (!authStore.user) return;
+  const mangaReader = { ...accountReaderPrefs(), ...patch };
+  authStore.user.preferences = { ...(authStore.user.preferences || {}), mangaReader };
+  try {
+    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+    await api.patch('/users/preferences', { mangaReader });
+  } catch (err) {
+    console.warn('Could not save reader settings:', err.message);
+  }
+}
+function savedSeriesMode() {
+  return accountReaderPrefs().seriesModes?.[seriesModeKey()] || loadLocalReaderPrefs().modes?.[seriesModeKey()];
+}
 function loadLocalReaderPrefs() {
   try {
     const parsed = JSON.parse(localStorage.getItem(READER_PREFS_KEY) || '{}');
@@ -427,11 +448,13 @@ function saveLocalReaderPrefs(patch) {
 const localReaderPrefs = loadLocalReaderPrefs();
 const seriesModeKey = () => (props.item.series ? `${props.item.library_id}:${props.item.series}` : props.item.id);
 
-const spread = ref(localReaderPrefs.spread === 'double' ? 'double' : 'single'); // 'single' | 'double'
+const savedSpread = accountReaderPrefs().spread || localReaderPrefs.spread;
+const spread = ref(savedSpread === 'double' ? 'double' : 'single'); // 'single' | 'double'
 function setSpread(s) {
   cancelFlip();
   spread.value = s;
   saveLocalReaderPrefs({ spread: s });
+  saveAccountReaderPrefs({ spread: s });
   showControlsNow();
 }
 
@@ -729,6 +752,10 @@ function setMode(m) {
   mode.value = m;
   const modes = { ...(loadLocalReaderPrefs().modes || {}), [seriesModeKey()]: m };
   saveLocalReaderPrefs({ modes });
+  // Most recently set last, so the oldest series drop off first once the map is full.
+  const { [seriesModeKey()]: _old, ...rest } = accountReaderPrefs().seriesModes || {};
+  const entries = Object.entries({ ...rest, [seriesModeKey()]: m }).slice(-SERIES_MODES_LIMIT);
+  saveAccountReaderPrefs({ seriesModes: Object.fromEntries(entries) });
   showControlsNow();
 }
 
@@ -1095,7 +1122,7 @@ watch(() => props.item?.id, async (newId) => {
 // leaves most of the screen empty — default to a 2-page spread there. Only
 // applied once at open so it never overrides a choice made mid-session.
 function applyTabletLandscapeDefault() {
-  if (mode.value === 'webtoon' || localReaderPrefs.spread) return;
+  if (mode.value === 'webtoon' || savedSpread) return;
   const isCoarsePointer = window.matchMedia?.('(pointer: coarse)')?.matches ?? false;
   const isLandscape = window.innerWidth > window.innerHeight;
   const isTabletWidth = window.innerWidth >= 900;
@@ -1107,8 +1134,8 @@ function applyTabletLandscapeDefault() {
 // Reading direction is a property of the series, not of this session — a Japanese manga
 // should open right-to-left every time without the reader having to flip it on each open.
 async function loadSeriesSettings() {
-  // A mode you picked for this series on this device beats the series' default direction.
-  const mine = loadLocalReaderPrefs().modes?.[seriesModeKey()];
+  // A mode you picked for this series beats the series' default direction.
+  const mine = savedSeriesMode();
   if (mine && modes.some((m) => m.id === mine)) {
     mode.value = mine;
     return;
