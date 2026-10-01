@@ -36,7 +36,9 @@ export async function getBackupSettings() {
   );
   const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
   return {
-    enabled: map.backup_enabled === 'true',
+    // On unless an admin turned it off: a server nobody configured still keeps a week of
+    // daily snapshots of everyone's progress, bookmarks and highlights.
+    enabled: map.backup_enabled === undefined ? true : map.backup_enabled === 'true',
     intervalHours: map.backup_interval_hours ? parseInt(map.backup_interval_hours, 10) : 24,
     retentionCount: map.backup_retention ? parseInt(map.backup_retention, 10) : 7
   };
@@ -77,9 +79,21 @@ export async function createBackup(reason = 'manual') {
   return { filename, size: stat.size, createdAt: stat.mtime.toISOString() };
 }
 
+// The snapshots taken before an upgrade (services/upgrade.js) are how a version is rolled
+// back, so they're kept apart from the schedule: the retention count applies to scheduled
+// and manual backups only, and the newest few pre-upgrade ones are always kept. (They used
+// to count against the same limit, so a week of daily backups deleted them all.)
+const UPGRADE_PREFIX = `${BACKUP_PREFIX}before-`;
+const UPGRADE_BACKUPS_KEPT = 5;
+
 async function pruneOldBackups(retentionCount) {
   const files = listBackupFiles(); // newest first
-  const toDelete = files.slice(Math.max(retentionCount, 0));
+  const upgrades = files.filter((f) => f.filename.startsWith(UPGRADE_PREFIX));
+  const regular = files.filter((f) => !f.filename.startsWith(UPGRADE_PREFIX));
+  const toDelete = [
+    ...regular.slice(Math.max(retentionCount, 0)),
+    ...upgrades.slice(UPGRADE_BACKUPS_KEPT)
+  ];
   for (const f of toDelete) {
     try {
       fs.unlinkSync(path.join(backupsDir(), f.filename));
