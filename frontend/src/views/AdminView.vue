@@ -1309,9 +1309,8 @@
               reader settings, libraries and metadata. Automatic backups are on unless you turn them off, and a
               snapshot is also taken before every upgrade (the newest five of those are always kept). Backups are
               saved in <code class="text-foreground bg-muted px-1 rounded">/config/backups</code>, on the same disk as
-              the server, so copy that folder somewhere else too (another drive, or a cloud folder) to survive a disk
-              failure. Not included: uploaded profile pictures (<code class="text-foreground bg-muted px-1 rounded">/config/avatars</code>),
-              covers you uploaded yourself (found and fetched covers come back with a rescan) and your media files.
+              the server, so also have them copied to a second place below (another drive, a NAS, a synced cloud
+              folder) to survive a disk failure. Your media files aren't included.
             </p>
           </div>
 
@@ -1352,13 +1351,82 @@
               </div>
             </div>
 
+            <!-- Second place -->
+            <div class="flex flex-col gap-2 pt-1">
+              <label class="block text-[12px] font-medium text-muted-foreground" for="backup-destination">Also copy backups to</label>
+              <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                <input
+                  id="backup-destination"
+                  v-model.trim="backupConfig.destination"
+                  @input="destinationCheck = null"
+                  placeholder="Not copied anywhere else"
+                  class="flex-1 min-w-0 basis-full sm:basis-auto bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+                <button type="button" aria-label="Browse for a backup folder" @click="showDestinationPicker = true" class="h-8 px-3 rounded-md border border-border bg-card hover:bg-muted text-xs font-medium flex items-center gap-1.5 flex-shrink-0">
+                  <FolderOpen class="w-3.5 h-3.5" /> Browse
+                </button>
+                <button type="button" aria-label="Test backup folder" @click="testDestination" :disabled="!backupConfig.destination || checkingDestination" class="h-8 px-3 rounded-md border border-border bg-card hover:bg-muted text-xs font-medium disabled:opacity-50 flex-shrink-0">
+                  {{ checkingDestination ? 'Checking…' : 'Test' }}
+                </button>
+                <button v-if="backupConfig.destination" type="button" @click="backupConfig.destination = ''; destinationCheck = null" class="h-8 px-2.5 rounded-md text-xs text-muted-foreground hover:text-foreground flex-shrink-0">Clear</button>
+              </div>
+              <p v-if="destinationCheck && !destinationCheck.ok" class="text-xs text-destructive flex items-start gap-1.5">
+                <AlertTriangle class="w-3.5 h-3.5 mt-px flex-shrink-0" />{{ destinationCheck.error }}
+              </p>
+              <p v-else-if="destinationCheck?.ok" class="text-xs flex items-start gap-1.5" :class="destinationCheck.sameDisk ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'">
+                <AlertTriangle v-if="destinationCheck.sameDisk" class="w-3.5 h-3.5 mt-px flex-shrink-0" />
+                <CheckCircle v-else class="w-3.5 h-3.5 mt-px flex-shrink-0" />
+                <span>
+                  The server can write there{{ destinationCheck.freeBytes != null ? ` · ${formatBytes(destinationCheck.freeBytes)} free` : '' }}.
+                  <template v-if="destinationCheck.sameDisk">It's on the same disk as the server's data, so it guards against mistakes but not a failed disk. A folder on another drive is better.</template>
+                  <template v-else>It's on a different disk from the server's data.</template>
+                </span>
+              </p>
+              <p class="text-[12px] text-muted-foreground">
+                A folder as the server sees it. In Docker that's a folder mounted into the container: anywhere under
+                <code class="bg-muted px-1 rounded">/media</code> that isn't read-only, or another drive mounted at
+                <code class="bg-muted px-1 rounded">/backups</code> (see Docs → Backups & Data Safety).
+              </p>
+              <div v-if="backupConfig.destination" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label class="block text-[12px] font-medium text-muted-foreground mb-1" for="backup-copy-retention">Keep there</label>
+                  <input
+                    id="backup-copy-retention"
+                    type="number" min="1" max="365"
+                    v-model.number="backupConfig.copyRetentionCount"
+                    class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
+                <label class="flex items-start gap-2.5 cursor-pointer select-none sm:pt-5">
+                  <input type="checkbox" v-model="backupConfig.copyFiles" class="mt-0.5 rounded border-border text-primary focus:ring-ring" />
+                  <span class="text-xs text-foreground">Also copy profile pictures, covers, the sign-in key and HTTPS certificates</span>
+                </label>
+              </div>
+            </div>
+
             <button
+              aria-label="Save backup settings"
               @click="saveBackupConfig"
               :disabled="savingBackupConfig"
               class="self-start px-3.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm disabled:opacity-50 flex items-center gap-1.5"
             >
               <CheckCircle v-if="!savingBackupConfig" class="w-3.5 h-3.5" />
-              <span>{{ savingBackupConfig ? 'Saving...' : 'Save Schedule' }}</span>
+              <span>{{ savingBackupConfig ? 'Saving...' : 'Save' }}</span>
+            </button>
+          </div>
+
+          <!-- Copy status -->
+          <div v-if="savedDestination" class="flex flex-wrap items-center gap-x-3 gap-y-2 pb-4 border-b border-border text-xs">
+            <span v-if="backupCopyError" class="flex-1 min-w-0 text-destructive flex items-start gap-1.5">
+              <AlertTriangle class="w-3.5 h-3.5 mt-px flex-shrink-0" />
+              <span>Copying to <code class="bg-muted px-1 rounded">{{ savedDestination }}</code> failed: {{ backupCopyError }}. It's retried every 15 minutes.</span>
+            </span>
+            <span v-else class="flex-1 min-w-0 text-muted-foreground">
+              Copied to <code class="bg-muted px-1 rounded text-foreground">{{ savedDestination }}</code>
+              {{ backupLastCopyAt ? formatBackupDate(backupLastCopyAt) : '— not yet' }}
+            </span>
+            <button type="button" @click="copyBackupsNow" :disabled="copyingBackups" class="h-8 px-3 rounded-md border border-border bg-card hover:bg-muted text-xs font-medium disabled:opacity-50 flex items-center gap-1.5">
+              <Copy class="w-3.5 h-3.5" /> {{ copyingBackups ? 'Copying…' : 'Copy now' }}
             </button>
           </div>
 
@@ -1422,6 +1490,14 @@
         </div>
       </section>
     </main>
+
+    <FolderPicker
+      :open="showDestinationPicker"
+      :start="backupConfig.destination || '/media'"
+      title="Copy backups to"
+      @close="showDestinationPicker = false"
+      @select="(p) => { backupConfig.destination = p; showDestinationPicker = false; testDestination(); }"
+    />
 
     <!-- Modal: Add Library -->
     <div v-if="showAddLibraryModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1810,6 +1886,7 @@ import { useDialogStore } from '../stores/dialog';
 import { useCustomizationStore } from '../stores/customization';
 import CustomizationPreview from '../components/CustomizationPreview.vue';
 import OptionTiles from '../components/OptionTiles.vue';
+import FolderPicker from '../components/FolderPicker.vue';
 import { ACCENT_OPTIONS, LAYOUT_OPTIONS, PAGE_WIDTH_OPTIONS, PAUSE_SCREEN_OPTIONS } from '../constants/appearance';
 import Sidebar from '../components/Sidebar.vue';
 import AdminMetadataManager from '../components/AdminMetadataManager.vue';
@@ -1857,6 +1934,8 @@ import {
   X,
   Baby,
   Upload,
+  AlertTriangle,
+  Copy
 } from '@lucide/vue';
 import { getMediaToken } from '../utils/mediaToken';
 
@@ -2418,7 +2497,7 @@ async function downloadBackup() {
   }
 }
 
-const backupConfig = ref({ enabled: true, intervalHours: 24, retentionCount: 7 });
+const backupConfig = ref({ enabled: true, intervalHours: 24, retentionCount: 7, destination: '', copyRetentionCount: 30, copyFiles: true });
 const autoScanConfig = ref({ enabled: true, intervalMinutes: 60, watchEnabled: true });
 const savingAutoScanConfig = ref(false);
 
@@ -2455,16 +2534,61 @@ const savingBackupConfig = ref(false);
 const creatingBackup = ref(false);
 const storedBackups = ref([]);
 
+// What the server has saved for copying to a second place, and how the last copy went.
+const savedDestination = ref('');
+const backupLastCopyAt = ref(null);
+const backupCopyError = ref('');
+const destinationCheck = ref(null);
+const checkingDestination = ref(false);
+const copyingBackups = ref(false);
+const showDestinationPicker = ref(false);
+
+function applyBackupConfig(data) {
+  backupConfig.value = {
+    enabled: !!data.enabled,
+    intervalHours: data.intervalHours || 24,
+    retentionCount: data.retentionCount || 7,
+    destination: data.destination || '',
+    copyRetentionCount: data.copyRetentionCount || 30,
+    copyFiles: data.copyFiles !== false
+  };
+  savedDestination.value = data.destination || '';
+  backupLastCopyAt.value = data.lastCopyAt || null;
+  // Stored as "<time> <message>".
+  backupCopyError.value = (data.lastCopyError || '').replace(/^\S+\s/, '');
+}
+
 async function loadBackupConfig() {
   try {
     const res = await api.get('/settings/backup/config');
-    backupConfig.value = {
-      enabled: !!res.data.enabled,
-      intervalHours: res.data.intervalHours || 24,
-      retentionCount: res.data.retentionCount || 7
-    };
+    applyBackupConfig(res.data);
   } catch (err) {
     console.warn('Failed to load backup schedule:', err);
+  }
+}
+
+async function testDestination() {
+  if (!backupConfig.value.destination) return;
+  checkingDestination.value = true;
+  try {
+    const res = await api.post('/settings/backup/destination/check', { path: backupConfig.value.destination });
+    destinationCheck.value = res.data;
+  } catch (err) {
+    destinationCheck.value = { ok: false, error: err.response?.data?.error || "Couldn't check that folder" };
+  } finally {
+    checkingDestination.value = false;
+  }
+}
+
+async function copyBackupsNow() {
+  copyingBackups.value = true;
+  try {
+    await api.post('/settings/backup/copy');
+  } catch (err) {
+    // The failure is recorded on the server; loadBackupConfig shows it.
+  } finally {
+    await loadBackupConfig();
+    copyingBackups.value = false;
   }
 }
 
@@ -2481,12 +2605,17 @@ async function saveBackupConfig() {
   savingBackupConfig.value = true;
   try {
     const res = await api.put('/settings/backup/config', backupConfig.value);
-    backupConfig.value = {
-      enabled: !!res.data.enabled,
-      intervalHours: res.data.intervalHours,
-      retentionCount: res.data.retentionCount
-    };
-    dialog.alert({ title: 'Backup schedule saved', message: 'Automatic backups are configured.', type: 'success' });
+    const newPlace = res.data.destination && res.data.destination !== savedDestination.value;
+    applyBackupConfig(res.data);
+    dialog.alert({
+      title: 'Backups saved',
+      message: newPlace
+        ? `Backups will also be copied to ${res.data.destination}. The ones you have now are being copied there.`
+        : 'Your backup settings are saved.',
+      type: 'success'
+    });
+    // The first copy runs in the background; pick up how it went.
+    if (newPlace) setTimeout(loadBackupConfig, 4000);
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to save backup schedule');
   } finally {
@@ -2499,6 +2628,7 @@ async function createBackupNow() {
   try {
     const res = await api.post('/settings/backup/create');
     storedBackups.value = res.data.backups || [];
+    if (savedDestination.value) loadBackupConfig();
     dialog.alert({ title: 'Backup created', message: 'A new backup has been saved on the server.', type: 'success' });
   } catch (err) {
     dialog.alert(err.response?.data?.error || 'Failed to create backup');
