@@ -56,6 +56,10 @@ services:
     volumes:
       - ./config:/config
       - ${MEDIA_DIR:-/media/library}:/media
+      # Optional: a second place for backups, on another drive, a NAS share or a synced cloud
+      # folder. Set BACKUP_DIR in .env, uncomment, `docker compose up -d`, then choose /backups
+      # in Admin → Server Config → Database Backup → "Also copy backups to".
+      # - ${BACKUP_DIR}:/backups
     # Hardware transcoding (optional). Off by default so the file starts anywhere — with
     # these lines active, `docker compose up` refuses to start on machines without a GPU
     # device (Macs, most VPSs, some Pis). Without them, video still plays; ffmpeg just

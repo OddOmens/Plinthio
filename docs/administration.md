@@ -95,9 +95,29 @@ the catalog. It doesn't hold covers, avatars or caches. Covers found in folders 
 from providers come back with a rescan. Uploaded covers and avatars don't, so include
 `/config` in your own backups for those.
 
+### A second place for backups
+
 `/config/backups` sits on the same disk as the server, so it protects against mistakes and
-bad upgrades but not a failed disk. Copy the folder somewhere else as well: another drive,
-another machine, or a synced cloud folder.
+bad upgrades but not a failed disk. In **Server Config → Database Backup → Also copy backups
+to**, choose a folder on another drive, a NAS share or a synced cloud folder (**Browse**, then
+**Test**: it checks the server can write there and warns if it's on the same disk). Then:
+
+- every backup is copied there as it's made, laid out as `database/plinthio-backup-*.sqlite`
+  plus `files/` (avatars, covers, `ssl/`, `jwt.secret`, `.version` — turn this off with the
+  checkbox if you only want the database);
+- **Keep there** sets how many regular backups stay (30 by default); the newest five
+  pre-upgrade ones always stay;
+- a failed copy shows on the card with the reason and is retried every 15 minutes, and
+  anything missed is copied once the folder is back (and on every start).
+
+**In Docker** the folder has to be mounted into the container. Anywhere under `/media`
+works if your media volume isn't read-only. For another drive, set `BACKUP_DIR` in `.env`,
+uncomment the `/backups` line in `docker-compose.yml`, run `docker compose up -d`, and
+choose `/backups`.
+
+**To restore from the second place:** use a file from `database/` as the backup in the
+steps below, and copy the contents of `files/` back into `config/` while the server is
+stopped.
 
 **To restore:**
 
