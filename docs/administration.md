@@ -82,17 +82,22 @@ Three kinds, all in `/config/backups/`:
 
 | Kind | Made | Name |
 | --- | --- | --- |
-| Scheduled | every 1–168 h when turned on (off by default); the newest N are kept | `plinthio-backup-<time>.sqlite` |
+| Scheduled | every 1–168 h (on by default: daily, newest 7 kept); the newest N scheduled and manual ones are kept | `plinthio-backup-<time>.sqlite` |
 | Manual | **Back up now** in Server Config → Database Backup | `plinthio-backup-<time>.sqlite` |
-| Pre-upgrade | automatically, before a new version first opens the database | `plinthio-backup-before-<new>-from-<old>-<time>.sqlite` |
+| Pre-upgrade | automatically, before a new version first opens the database; the newest 5 are always kept, whatever the retention setting | `plinthio-backup-before-<new>-from-<old>-<time>.sqlite` |
 
 Backups are consistent snapshots, safe to take while the server is running. They can be
 downloaded and deleted from the Database Backup card.
 
-A backup holds everything in the database: accounts, progress, ratings, lists, settings,
+A backup holds everything in the database: accounts, progress, bookmarks, highlights and
+their notes, ratings, lists, each person's reader and display settings, server settings,
 the catalog. It doesn't hold covers, avatars or caches. Covers found in folders or fetched
 from providers come back with a rescan. Uploaded covers and avatars don't, so include
 `/config` in your own backups for those.
+
+`/config/backups` sits on the same disk as the server, so it protects against mistakes and
+bad upgrades but not a failed disk. Copy the folder somewhere else as well: another drive,
+another machine, or a synced cloud folder.
 
 **To restore:**
 

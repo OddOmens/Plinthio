@@ -17,6 +17,9 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **More ways to read:** six page colours (Auto, White, Sepia, Green, Gray, Black), the book's own font or Serif, Sans, Readable and Mono, text from 12 to 34 px, line spacing, margins, alignment, and two columns on wide screens or always one.
 
 ### Changed
+- **Automatic backups are on by default** (daily, keeping the newest 7) on any server where they were never set. A server where an admin turned them off keeps them off. Backups hold everyone's bookmarks, highlights, notes and reader settings along with everything else in the database.
+- **Pre-upgrade backups are no longer deleted by the backup schedule.** They used to count against the same "keep the newest N" limit, so a week of daily backups removed them; the newest five are now always kept.
+- **Signing in as someone else on the same browser** clears what the previous account left on the device (downloads, queued offline progress, the manga reader's remembered series), even when that account's session had simply expired.
 - **Reader settings follow you, not the book or the device.** Everything you set in the ebook reader applies to every book you read, on all your devices. In the manga reader, single or two-page spreads and the direction you pick for each series are now saved to your account too (they were kept on one device only; settings from before carry over).
 
 ### Fixed
