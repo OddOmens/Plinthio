@@ -84,7 +84,7 @@ function isDownloadableMedia(url) {
 // JSON the readers fetch on open. Always tried on the network first (it can change); the
 // downloaded copy is only a fallback for when there is no network.
 function isOfflineJson(url) {
-  return /^\/api\/(media\/manga\/[^/]+\/pages|items\/[^/]+\/chapters|series\/[^/]+\/[^/]+\/settings|bookmarks\/[^/]+)$/.test(url.pathname);
+  return /^\/api\/(media\/manga\/[^/]+\/pages|items\/[^/]+\/chapters|series\/[^/]+\/[^/]+\/settings|bookmarks\/[^/]+|highlights\/[^/]+)$/.test(url.pathname);
 }
 
 // <audio> seeks with Range requests, and Safari won't play at all without 206 support,
