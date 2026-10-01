@@ -92,6 +92,7 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `POST /progress/finish` `{ itemIds, finished }` | V | Mark several finished or not started (mark read up to here) |
 | `POST /progress/skip` `{ itemIds, skipped }` | V | Skip or unskip volumes |
 | `GET /bookmarks/:itemId` · `POST /bookmarks` · `PATCH`/`DELETE /bookmarks/:id` | V | Bookmarks and notes |
+| `GET /highlights/:itemId` · `POST /highlights` · `PATCH`/`DELETE /highlights/:id` | V | EPUB highlights: `cfiRange`, `text`, `color` (yellow, green, blue, pink, orange), optional `note`. Each person sees only their own |
 | `GET /ratings/:itemId` · `PUT` `{ rating }` · `DELETE` | V | Your stars, the community average and TMDB's score (as enabled) |
 | `POST /activity/start` · `/end` · `GET /activity/me` · `GET /activity/admin` | V / A | Reading and watching sessions, sign-in history |
 | `GET /stats/me` · `GET /stats/admin` | V / A | Statistics |

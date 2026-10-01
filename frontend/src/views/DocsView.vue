@@ -90,7 +90,7 @@
             <div class="p-4 rounded-xl border border-border bg-card">
               <BookOpen class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Books & Documents</div>
-              <p class="text-[12px] text-muted-foreground mt-1">Standard EPUB and PDF reader with bookmarking, notes, and cross-device reading progress synchronization.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">EPUB reader with page colours, fonts and layouts that follow you to every book, highlights in five colours with notes, bookmarks, and your place synced across devices.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
@@ -685,6 +685,7 @@
                 <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&rarr;</kbd><span class="text-muted-foreground">Next page</span></div>
                 <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Space</kbd><span class="text-muted-foreground">Next page</span></div>
                 <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Esc</kbd><span class="text-muted-foreground">Close settings / reader</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Ctrl F</kbd><span class="text-muted-foreground">Search the book</span></div>
               </div>
             </div>
 
