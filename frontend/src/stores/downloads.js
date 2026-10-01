@@ -191,6 +191,7 @@ export const useDownloadsStore = defineStore('downloads', {
           }
         }
         await this.putJson(cache, `/api/bookmarks/${id}`, signal).catch(() => {});
+        if ((item.format || '').toLowerCase() === 'epub') await this.putJson(cache, `/api/highlights/${id}`, signal).catch(() => {});
 
         this.entries[id] = {
           id,
