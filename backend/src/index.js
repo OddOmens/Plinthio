@@ -214,7 +214,7 @@ const loginLimiter = rateLimit({
 // an admin token being replayed shouldn't be able to trigger them back-to-back.
 const backupLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 6, // 6 backup operations per 15 min is generous for manual + scheduled use
+  max: 12, // making, downloading or copying a backup 12 times in 15 min is plenty by hand
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many backup requests. Please wait before trying again.', code: 'P005' }
@@ -224,7 +224,10 @@ const backupLimiter = rateLimit({
 app.use('/api/', apiLimiter);
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/settings/backup', backupLimiter);
+// Only the operations that write or stream a whole snapshot; reading the schedule, the
+// list, or checking a destination folder from the Admin page mustn't use up the allowance.
+app.get('/api/settings/backup', backupLimiter);
+app.use(['/api/settings/backup/create', '/api/settings/backup/copy'], backupLimiter);
 app.use('/api/libraries', libraryRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/progress', progressRoutes);

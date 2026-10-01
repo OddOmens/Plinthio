@@ -100,6 +100,65 @@ describe('reading notes are private, and backups keep them', () => {
     assert.equal(files.filter((f) => !f.startsWith('plinthio-backup-before-')).length, 1, 'retention applies to the rest');
   });
 
+  test('a backup destination must be a writable folder outside the data folder', async () => {
+    const check = (p) => sendJson(server.baseUrl, 'POST', '/settings/backup/destination/check', adminToken, { path: p });
+    assert.equal((await check('relative/folder')).body.ok, false);
+    assert.match((await check(path.join(server.dataDir, 'elsewhere'))).body.error, /data folder/);
+    assert.match((await check('/definitely/not/here/plinthio')).body.error, /exists/);
+    const good = fs.mkdtempSync(path.join(path.dirname(server.dataDir), 'plinthio-dest-'));
+    const ok = (await check(path.join(good, 'new-subfolder'))).body;
+    assert.equal(ok.ok, true, 'a missing last folder is created');
+    assert.equal(typeof ok.sameDisk, 'boolean');
+    const rejected = await sendJson(server.baseUrl, 'PUT', '/settings/backup/config', adminToken, { enabled: true, intervalHours: 24, retentionCount: 7, destination: 'not/absolute' });
+    assert.equal(rejected.status, 400);
+  });
+
+  test('backups are copied to the destination, with the files a restore needs, and trimmed there', async () => {
+    const dest = fs.mkdtempSync(path.join(path.dirname(server.dataDir), 'plinthio-dest-'));
+    const saved = await sendJson(server.baseUrl, 'PUT', '/settings/backup/config', adminToken, {
+      enabled: true, intervalHours: 24, retentionCount: 7, destination: dest, copyRetentionCount: 2, copyFiles: true
+    });
+    assert.equal(saved.status, 200);
+    assert.equal(saved.body.destination, dest);
+
+    // What a docker install has in /config besides the database.
+    fs.writeFileSync(path.join(server.dataDir, 'jwt.secret'), 'secret-for-the-copy-test', { mode: 0o600 });
+    fs.mkdirSync(path.join(server.dataDir, 'avatars'), { recursive: true });
+    fs.writeFileSync(path.join(server.dataDir, 'avatars', 'someone.webp'), 'img');
+
+    for (let i = 0; i < 3; i++) {
+      assert.equal((await sendJson(server.baseUrl, 'POST', '/settings/backup/create', adminToken)).status, 200);
+    }
+    const copies = fs.readdirSync(path.join(dest, 'database'));
+    assert.equal(copies.filter((f) => !f.includes('-before-')).length, 2, 'the destination keeps its own count');
+    assert.equal(copies.filter((f) => f.includes('-before-')).length, 3, 'pre-upgrade snapshots go too');
+    const secret = path.join(dest, 'files', 'jwt.secret');
+    assert.equal(fs.readFileSync(secret, 'utf8'), 'secret-for-the-copy-test');
+    assert.equal(fs.statSync(secret).mode & 0o777, 0o600);
+    assert.equal(fs.readFileSync(path.join(dest, 'files', 'avatars', 'someone.webp'), 'utf8'), 'img');
+    const { body: cfg } = await getJson(server.baseUrl, '/settings/backup/config', adminToken);
+    assert.ok(cfg.lastCopyAt);
+    assert.equal(cfg.lastCopyError, null);
+  });
+
+  test("an unreachable destination doesn't stop the backup, and says why", async () => {
+    const { body: cfg } = await getJson(server.baseUrl, '/settings/backup/config', adminToken);
+    fs.chmodSync(path.join(cfg.destination, 'database'), 0o555);
+    fs.chmodSync(cfg.destination, 0o555);
+    try {
+      const made = await sendJson(server.baseUrl, 'POST', '/settings/backup/create', adminToken);
+      assert.equal(made.status, 200, 'the backup itself still happens');
+      const { body: after } = await getJson(server.baseUrl, '/settings/backup/config', adminToken);
+      assert.match(after.lastCopyError || '', /write/);
+    } finally {
+      fs.chmodSync(cfg.destination, 0o755);
+      fs.chmodSync(path.join(cfg.destination, 'database'), 0o755);
+    }
+    const retry = await sendJson(server.baseUrl, 'POST', '/settings/backup/copy', adminToken);
+    assert.equal(retry.status, 200);
+    assert.equal((await getJson(server.baseUrl, '/settings/backup/config', adminToken)).body.lastCopyError, null);
+  });
+
   test("deleting a user deletes their bookmarks and highlights", async () => {
     assert.ok(aliceId, 'user id from the create response');
     const res = await sendJson(server.baseUrl, 'DELETE', `/users/${aliceId}`, adminToken);
