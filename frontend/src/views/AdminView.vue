@@ -1305,10 +1305,13 @@
           <div class="border-b border-border pb-3">
             <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Database Backup</h3>
             <p class="text-xs text-muted-foreground mt-0.5">
-              Snapshots the database (users, libraries, progress, bookmarks, metadata). This does not include cover
-              images or your media files — back those up separately from wherever your library folders and the
-              server's config volume live. Deleting a library removes its catalog data immediately and permanently;
-              a recent backup is the only way to undo that.
+              Snapshots the database: accounts, everyone's progress, bookmarks, highlights and notes, ratings, lists,
+              reader settings, libraries and metadata. Automatic backups are on unless you turn them off, and a
+              snapshot is also taken before every upgrade (the newest five of those are always kept). Backups are
+              saved in <code class="text-foreground bg-muted px-1 rounded">/config/backups</code>, on the same disk as
+              the server, so copy that folder somewhere else too (another drive, or a cloud folder) to survive a disk
+              failure. Not included: uploaded profile pictures (<code class="text-foreground bg-muted px-1 rounded">/config/avatars</code>),
+              covers you uploaded yourself (found and fetched covers come back with a rescan) and your media files.
             </p>
           </div>
 
@@ -2415,7 +2418,7 @@ async function downloadBackup() {
   }
 }
 
-const backupConfig = ref({ enabled: false, intervalHours: 24, retentionCount: 7 });
+const backupConfig = ref({ enabled: true, intervalHours: 24, retentionCount: 7 });
 const autoScanConfig = ref({ enabled: true, intervalMinutes: 60, watchEnabled: true });
 const savingAutoScanConfig = ref(false);
 

@@ -12,6 +12,17 @@ function clearOfflineMediaCache() {
   }
 }
 
+// What one account leaves on a device: its downloads, its queued offline progress, and the
+// manga reader's per-device memory of series it has read. Cleared on sign-out, and when a
+// different account signs in on the same browser (a session that simply expired never
+// went through sign-out).
+function clearAccountDeviceData() {
+  clearOfflineMediaCache();
+  for (const key of ['plinthio_downloads', 'plinthio_progress_queue', 'plinthio_reader']) {
+    try { localStorage.removeItem(key); } catch (e) { /* storage unavailable */ }
+  }
+}
+
 function loadStoredUser() {
   try {
     return JSON.parse(localStorage.getItem('plinthio_user') || 'null');
@@ -71,6 +82,8 @@ export const useAuthStore = defineStore('auth', {
     },
 
     storeSession(data) {
+      const previous = loadStoredUser();
+      if (previous?.id && data.user?.id && previous.id !== data.user.id) clearAccountDeviceData();
       this.token = data.token;
       this.user = data.user;
       setMediaToken(data.mediaToken);
@@ -179,10 +192,8 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('plinthio_token');
       localStorage.removeItem('plinthio_user');
       setMediaToken(null);
-      clearOfflineMediaCache();
       // Downloads belong to the account that made them; the worker deletes the files.
-      try { localStorage.removeItem('plinthio_downloads'); } catch (e) { /* ignore */ }
-      try { localStorage.removeItem('plinthio_progress_queue'); } catch (e) { /* ignore */ }
+      clearAccountDeviceData();
       window.location.href = '/login';
     }
   }
