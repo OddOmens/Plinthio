@@ -10,6 +10,8 @@ import {
   getBackupSettings,
   saveBackupSettings,
   runManualBackupAndPrune,
+  checkDestination,
+  copyToDestination,
   getBackupFilePath,
   deleteBackupFile
 } from '../services/backup.js';
@@ -210,7 +212,7 @@ router.get('/backup/config', authenticateToken, requireAdmin, async (req, res) =
 
 // Admin endpoint: update the automatic backup schedule
 router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) => {
-  const { enabled, intervalHours, retentionCount } = req.body;
+  const { enabled, intervalHours, retentionCount, destination, copyRetentionCount, copyFiles } = req.body;
 
   const parsedInterval = parseInt(intervalHours, 10);
   const parsedRetention = parseInt(retentionCount, 10);
@@ -221,13 +223,37 @@ router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) =
   if (!Number.isFinite(parsedRetention) || parsedRetention < 1 || parsedRetention > 30) {
     return res.status(400).json({ error: 'Retention must be between 1 and 30 backups' });
   }
+  let parsedCopyRetention;
+  if (copyRetentionCount !== undefined) {
+    parsedCopyRetention = parseInt(copyRetentionCount, 10);
+    if (!Number.isFinite(parsedCopyRetention) || parsedCopyRetention < 1 || parsedCopyRetention > 365) {
+      return res.status(400).json({ error: 'Copies kept must be between 1 and 365' });
+    }
+  }
+  let cleanDestination;
+  if (destination !== undefined) {
+    cleanDestination = destination === null ? '' : String(destination).trim();
+    if (cleanDestination) {
+      const check = await checkDestination(cleanDestination);
+      if (!check.ok) return res.status(400).json({ error: check.error });
+      cleanDestination = check.path;
+    }
+  }
 
   try {
+    const before = await getBackupSettings();
     const settings = await saveBackupSettings({
       enabled: !!enabled,
       intervalHours: parsedInterval,
-      retentionCount: parsedRetention
+      retentionCount: parsedRetention,
+      destination: cleanDestination,
+      copyRetentionCount: parsedCopyRetention,
+      copyFiles: copyFiles === undefined ? undefined : !!copyFiles
     });
+    // A new destination gets the existing backups straight away, not at the next backup.
+    if (settings.destination && settings.destination !== before.destination) {
+      copyToDestination().catch(() => {});
+    }
     res.json({ message: 'Backup schedule updated', ...settings });
   } catch (err) {
     serverError(req, res, err);
@@ -256,6 +282,28 @@ router.put('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const settings = await saveAutoScanSettings({ enabled, intervalMinutes, watchEnabled });
     res.json({ message: 'Automatic scanning updated', ...settings });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// Admin endpoint: can this folder take backups? (exists or can be made, writable, and
+// whether it's on the same disk as the server's data)
+router.post('/backup/destination/check', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    res.json(await checkDestination(req.body?.path));
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// Admin endpoint: copy backups to the destination now
+router.post('/backup/copy', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await copyToDestination();
+    if (!result) return res.status(400).json({ error: 'No backup destination is set' });
+    if (!result.ok) return res.status(500).json({ error: result.error });
+    res.json(result);
   } catch (err) {
     serverError(req, res, err);
   }
