@@ -553,14 +553,32 @@
               <span class="count-pill">{{ filteredVolumes.length }}</span>
             </h2>
 
-            <div class="flex flex-wrap items-center justify-between sm:justify-end gap-2">
-              <div class="flex items-center bg-muted/50 p-0.5 rounded-lg border border-border overflow-x-auto no-scrollbar max-w-full">
+            <!-- Filter, order and layout. On a phone the status tabs collapse into one button
+                 that opens them as a sheet (five tabs didn't fit across), and all three
+                 controls share one height. -->
+            <div class="flex items-center justify-between sm:justify-end gap-2">
+              <button
+                type="button"
+                @click="showFilterSheet = true"
+                class="sm:hidden h-9 min-w-0 flex-1 px-3 rounded-lg bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition flex items-center gap-1.5 active:scale-95"
+                :class="activeFilterTab !== 'all' ? '!border-primary/60 bg-primary/5' : ''"
+                aria-haspopup="dialog"
+                :aria-label="`Filter: ${activeFilterLabel}`"
+              >
+                <ListFilter class="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
+                <span class="truncate">{{ activeFilterLabel }}</span>
+                <span class="font-mono text-[11px] opacity-75 flex-shrink-0">({{ activeFilterCount }})</span>
+                <ChevronDown class="w-3.5 h-3.5 ml-auto flex-shrink-0 text-muted-foreground" />
+              </button>
+
+              <div class="hidden sm:flex items-center bg-muted/50 p-0.5 rounded-lg border border-border overflow-x-auto no-scrollbar max-w-full">
                 <button
                   v-for="tab in filterTabs"
                   :key="tab.id"
                   @click="activeFilterTab = tab.id"
+                  :aria-pressed="String(activeFilterTab === tab.id)"
                   :class="[
-                    'px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 flex-shrink-0',
+                    'h-[22px] px-2.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 flex-shrink-0',
                     activeFilterTab === tab.id
                       ? 'bg-background text-foreground shadow-sm font-semibold'
                       : 'text-muted-foreground hover:text-foreground'
@@ -571,28 +589,31 @@
                 </button>
               </div>
 
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 flex-shrink-0">
                 <button
                   @click="sortAscending = !sortAscending"
-                  class="h-9 sm:h-7 px-2.5 rounded-lg bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition flex items-center gap-1.5"
+                  class="h-9 sm:h-7 px-2.5 rounded-lg bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition flex items-center gap-1.5 active:scale-95"
                   :title="sortAscending ? 'Order: first to last' : 'Order: last to first'"
                 >
                   <ArrowUpDown class="w-3 h-3 text-muted-foreground" />
                   <span class="font-mono text-xs">{{ sortAscending ? '1 → N' : 'N → 1' }}</span>
                 </button>
-                <div class="flex items-center bg-muted/50 p-0.5 rounded-lg border border-border">
+                <!-- Same outer height as the order button: 2px border + 2px padding + button. -->
+                <div class="h-9 sm:h-7 flex items-center bg-muted/50 p-0.5 rounded-lg border border-border" role="group" aria-label="Layout">
                   <button
                     aria-label="Grid view"
+                    :aria-pressed="String(viewLayout === 'grid')"
                     @click="viewLayout = 'grid'"
-                    :class="['p-1 rounded-md transition', viewLayout === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+                    :class="['h-full aspect-square rounded-md transition flex items-center justify-center', viewLayout === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
                     title="Grid view"
                   >
                     <LayoutGrid class="w-3.5 h-3.5" />
                   </button>
                   <button
                     aria-label="List view"
+                    :aria-pressed="String(viewLayout === 'list')"
                     @click="viewLayout = 'list'"
-                    :class="['p-1 rounded-md transition', viewLayout === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+                    :class="['h-full aspect-square rounded-md transition flex items-center justify-center', viewLayout === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
                     title="List view"
                   >
                     <List class="w-3.5 h-3.5" />
@@ -1070,6 +1091,43 @@
 
     </div>
 
+    <!-- Status filter on a phone, as a bottom sheet -->
+    <Teleport to="body">
+      <Transition name="sheet" :duration="260">
+        <div
+          v-if="showFilterSheet"
+          class="fixed inset-0 z-[60] bg-black/50 flex items-end"
+          @click.self="showFilterSheet = false"
+          @keydown.esc="showFilterSheet = false"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            :aria-label="`Show ${vocab.units.toLowerCase()}`"
+            class="sheet-panel w-full rounded-t-2xl border-t border-border bg-card shadow-2xl px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+          >
+            <div class="mx-auto mb-2 h-1 w-10 rounded-full bg-muted-foreground/30" aria-hidden="true" />
+            <p class="px-2 pb-2 text-sm font-semibold text-foreground border-b border-border/60">Show {{ vocab.units.toLowerCase() }}</p>
+            <div class="flex flex-col py-1.5">
+              <button
+                v-for="tab in filterTabs"
+                :key="tab.id"
+                type="button"
+                class="sheet-item"
+                :class="activeFilterTab === tab.id ? 'bg-muted/60 font-semibold' : ''"
+                :aria-pressed="String(activeFilterTab === tab.id)"
+                @click="activeFilterTab = tab.id; showFilterSheet = false"
+              >
+                <Check class="w-5 h-5 flex-shrink-0" :class="activeFilterTab === tab.id ? 'text-primary' : 'invisible'" />
+                <span class="flex-1">{{ tab.label }}</span>
+                <span class="font-mono text-xs text-muted-foreground">{{ tab.count }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- One volume's actions on a phone, as a bottom sheet: the card only has room for the
          main button, and bare icons side by side were impossible to tell apart. -->
     <Teleport to="body">
@@ -1324,6 +1382,8 @@ import {
   RotateCcw,
   ArrowUpDown,
   LayoutGrid,
+  ListFilter,
+  ChevronDown,
   List,
   BookX,
   Bookmark,
@@ -2539,6 +2599,12 @@ function handleRated({ itemId, rating }) {
   if (vol) vol.user_rating = rating;
   if (series.value?.nextVolume?.id === itemId) series.value.nextVolume.user_rating = rating;
 }
+
+// ─── Phone status filter ────────────────────────────────────────────────────
+const showFilterSheet = ref(false);
+const activeFilterTabEntry = computed(() => filterTabs.value.find((t) => t.id === activeFilterTab.value) || filterTabs.value[0]);
+const activeFilterLabel = computed(() => activeFilterTabEntry.value?.label || 'All');
+const activeFilterCount = computed(() => activeFilterTabEntry.value?.count ?? 0);
 
 // ─── Phone action sheet for one volume ──────────────────────────────────────
 const sheetVolume = ref(null);

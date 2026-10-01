@@ -17,9 +17,11 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **A title's ⋯ menu on the shelf** opens as a sheet from the bottom on a phone. From a card in the left column it used to open partly off the screen.
 - **The category bar on a phone** fades at the edge when more categories are hidden off to the side, and scrolls the one you've picked into view.
 - **The reader's top bar on a phone** has a solid background, so its buttons stay readable over a white page, and its buttons are easier to tap. Rating stars everywhere, the title page's back button, and the volume filter tabs are easier to tap too.
+- **A series' volumes on a phone:** the All / Not Started / In Progress / Completed tabs are one filter button that opens them in a sheet, and it sits in one row with the order button and the grid/list switch, all the same size.
 - **Volume and chapter cards on a phone** show the Read button plus a "⋯" that opens every action (mark as read, skip, bookmarks, download, rate), labelled, in a sheet from the bottom of the screen. The row of small icons used to spill out of the card. On wider screens the icons get their own row under the Read button.
 
 ### Fixed
+- **The shelf grew endlessly while scrolling** once it had more than 16 cards (most visibly Movies with "All movies" on), so you could never reach the bottom.
 - The Movies, Shows and Anime shelves were headed "All Media".
 - In the bookmarks window on a phone, the title box ran past the edge of the window.
 - While a video was still being prepared, the skip buttons on a phone covered the "Converting for your browser…" message.

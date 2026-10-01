@@ -199,10 +199,13 @@
         <!-- Mode 1: Series — one card per series (any media type), plus standalone titles.
              Every card opens a detail page; nothing plays straight from the shelf. -->
         <div v-else-if="groupBy === 'series'" class="flex flex-col gap-3">
+          <!-- Spacers stand in for the rows unmounted above and below the window, so the
+               page keeps the height it would have with every card rendered. They sit outside
+               the grid: inside it, auto-rows-fr stretched every row to the spacer's height,
+               the next measurement doubled the spacer, and the page grew without end. -->
+          <div ref="gridWrapEl">
+          <div v-if="padTopHeight > 0" :style="{ height: padTopHeight + 'px' }"></div>
           <div ref="gridEl" class="poster-grid auto-rows-fr gap-3 sm:gap-4">
-            <!-- Spacers stand in for the rows unmounted above and below the window, so
-                 the page keeps the height it would have with every card rendered. -->
-            <div v-if="padTopHeight > 0" :style="{ gridColumn: '1 / -1', height: padTopHeight + 'px' }"></div>
             <template v-for="entry in displayedEntries" :key="entry.key">
               <SeriesCard
                 v-if="entry.kind === 'series'"
@@ -223,7 +226,8 @@
                 @edit-metadata="openMetadataModal"
               />
             </template>
-            <div v-if="padBottomHeight > 0" :style="{ gridColumn: '1 / -1', height: padBottomHeight + 'px' }"></div>
+          </div>
+          <div v-if="padBottomHeight > 0" :style="{ height: padBottomHeight + 'px' }"></div>
           </div>
 
           <div v-if="hasMoreServerItems" class="py-4 text-center text-xs text-muted-foreground">
@@ -650,9 +654,9 @@ const shelfEntries = computed(() => buildShelfEntries(filteredItems.value, shelf
 // scrollbar and scroll position stay honest while the DOM stays small no matter how far
 // down a 50,000-item library you are.
 const gridEl = ref(null);
+const gridWrapEl = ref(null);
 const gridColumns = ref(6);
 const rowHeight = ref(300);
-const rowGap = ref(16);
 const windowStartRow = ref(0);
 const windowEndRow = ref(BUFFER_ROWS * 2);
 
@@ -665,15 +669,15 @@ const displayedEntries = computed(() =>
   )
 );
 
-// rowHeight already includes one row gap, and the grid adds another gap between a spacer
-// and the row after it — so a spacer standing in for N rows is N*rowHeight minus one gap,
-// or the page grows slightly taller every time the window moves.
+// rowHeight includes one row gap. The spacers sit outside the grid, so a spacer for N rows
+// is exactly N*rowHeight: N cards' heights plus the N gaps that would separate them from
+// the rendered rows.
 const padTopHeight = computed(() =>
-  windowStartRow.value > 0 ? windowStartRow.value * rowHeight.value - rowGap.value : 0
+  windowStartRow.value > 0 ? windowStartRow.value * rowHeight.value : 0
 );
 const padBottomHeight = computed(() => {
   const rowsBelow = totalGridRows.value - windowEndRow.value;
-  return rowsBelow > 0 ? rowsBelow * rowHeight.value - rowGap.value : 0;
+  return rowsBelow > 0 ? rowsBelow * rowHeight.value : 0;
 });
 
 function resetGridWindow() {
@@ -694,7 +698,6 @@ function measureGrid() {
   const card = el.querySelector('[data-grid-card]');
   if (card) {
     const gap = parseFloat(getComputedStyle(el).rowGap) || 0;
-    rowGap.value = gap;
     const measured = card.getBoundingClientRect().height + gap;
     // Sub-pixel jitter between measurements would re-trigger the render watcher forever;
     // only a real change in card size counts.
@@ -703,9 +706,10 @@ function measureGrid() {
 }
 
 function updateGridWindow() {
-  const el = gridEl.value;
+  const el = gridWrapEl.value;
   if (!el || rowHeight.value <= 0) return;
 
+  // Measured from the wrapper, whose top doesn't move as the top spacer grows.
   const gridTop = el.getBoundingClientRect().top + window.scrollY;
   const scrolledIntoGrid = window.scrollY - gridTop;
   const firstVisibleRow = Math.floor(scrolledIntoGrid / rowHeight.value);
