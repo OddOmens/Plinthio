@@ -3,7 +3,7 @@
 ## Watch parties
 
 Watch a movie or show with people in other places, in sync. Watch parties are **off** until
-an admin turns them on in **Admin → Server Config → Watch Parties** (or in the setup
+an admin turns them on in **Admin → Features → Watch parties** (or in the setup
 wizard).
 
 ### Using them
@@ -78,5 +78,5 @@ collection's missing films.
 - **World:** TMDB's score for movies, shows and anime (needs a TMDB key). It's refreshed
   from time to time, not on every view.
 
-Admins choose which of the three are shown in **Admin → Server Config → Ratings**. A
+Admins choose which of the three are shown in **Admin → Features → Ratings**. A
 switched-off rating isn't sent by the API either, not just hidden.

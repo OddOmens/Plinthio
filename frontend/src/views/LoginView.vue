@@ -122,7 +122,7 @@
 
         <!-- Regular Login Form -->
         <template v-else>
-          <!-- The admin's notice (Admin → Server Config → Server Branding), read before signing in -->
+          <!-- The admin's notice (Admin → Appearance → Name and sign-in notice), read before signing in -->
           <div
             v-if="isSetup && customizationStore.loginMessage"
             class="mb-5 flex items-start gap-2.5 p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-foreground leading-relaxed"

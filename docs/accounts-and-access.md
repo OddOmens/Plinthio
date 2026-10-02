@@ -42,13 +42,13 @@ A **Kids account** sees only what an admin or editor has made kids-safe. Everyth
 disappears, as if it weren't on the server.
 
 1. Make titles kids-safe, either:
-   - a whole library: **Kids** on the library in **Admin → Libraries**, or
+   - a whole library: switch it on in **Admin → Kids Mode**, or
    - a series or single title: **Kids** on its page (editors and admins). A series is added
      whole, including volumes or episodes added later.
 
-   **Admin → Libraries → Kids Mode** lists the series and titles added one by one, with
+   **Admin → Kids Mode** also lists the series and titles added one by one, with
    a remove button.
-2. Tick **Kids account** in **Admin → Users → Edit** for the child's account.
+2. Turn on **Kids account** in **Admin → Users** (tap the account) for the child's account.
 
 Rules:
 
@@ -97,7 +97,7 @@ Optional, for anyone. With it on, signing in asks for a 6-digit code from an aut
 app as well as the password: Google Authenticator, Microsoft Authenticator, 1Password,
 Bitwarden, Aegis, or any other app that does "TOTP".
 
-- **Turning it on:** Settings → Security → Two-Factor Sign-In (it's also offered at the end
+- **Turning it on:** Settings → Security → Two-factor sign-in (it's also offered at the end
   of onboarding and the setup wizard). Scan the QR code, or copy the key into the app, then
   type the code it shows to confirm.
 - **Backup codes:** ten one-time codes for a lost phone, shown once when you turn it on.
@@ -134,7 +134,7 @@ Whether an account can be used outside the home network. See
 
 ## API keys
 
-Made in **Settings → API Keys**. A key acts as its owner, with their role and limits.
+Made in **Settings → Apps & API keys**. A key acts as its owner, with their role and limits.
 
 - Shown once, when made. The server stores only a SHA-256 hash, plus an MD5 used by
   KOReader, so a leaked database can't be turned back into working keys.

@@ -92,7 +92,7 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 
 *HTTP 401.* The X-API-Key (or HTTP Basic password) does not match any key.
 
-**What to do:** Create a new key in Settings → API Keys. Keys are shown only once, when created.
+**What to do:** Create a new key in Settings → Apps & API keys. Keys are shown only once, when created.
 
 ### P105: Admin only
 
@@ -204,7 +204,7 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 
 *HTTP 500.* ffmpeg started but exited with an error while converting the video. Usually a corrupt file, an unsupported codec, or a hardware transcoding problem.
 
-**What to do:** Admin → Logs shows the ffmpeg error. If it mentions VAAPI/QSV/NVENC, turn hardware transcoding off in Admin → Server Settings and try again.
+**What to do:** Admin → Logs shows the ffmpeg error. If it mentions VAAPI/QSV/NVENC, turn hardware transcoding off in Admin → Playback and try again.
 
 ### P305: Still preparing
 
@@ -260,13 +260,13 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 
 *HTTP 409.* Movie, show and anime metadata comes from TMDB, which needs a free API key.
 
-**What to do:** Create a key at themoviedb.org → Settings → API and paste it into Admin → Server Settings.
+**What to do:** Create a key at themoviedb.org → Settings → API and paste it into Admin → Metadata.
 
 ### P401: Provider rejected the API key
 
 *HTTP 502.* The server reached the provider, but the provider refused the key.
 
-**What to do:** For TMDB, paste either the "API Key" or the "API Read Access Token" from your TMDB account into Server Settings.
+**What to do:** For TMDB, paste either the "API Key" or the "API Read Access Token" from your TMDB account into Admin → Metadata.
 
 ### P402: Provider rate limit
 
@@ -330,7 +330,7 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 
 *HTTP 403.* An admin has not enabled watch parties.
 
-**What to do:** An admin can turn them on in Admin → Server Config → Watch Parties.
+**What to do:** An admin can turn them on in Admin → Features → Watch parties.
 
 ### P601: Party not found
 

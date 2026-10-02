@@ -340,7 +340,7 @@ async function start() {
     initBackupScheduler();
 
     // Pick up new media on its own: a periodic re-scan plus (where the filesystem supports
-    // it) a watcher, both configurable under Admin → Server Settings.
+    // it) a watcher, both configurable under Admin → Libraries.
     initAutoScan();
 
     // Watch parties: drop ones everyone has left, release anyone stuck buffering.

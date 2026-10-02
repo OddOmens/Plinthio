@@ -1,4 +1,4 @@
-// The look-and-feel choices, shared by Admin → Server Config (the server's defaults) and
+// The look-and-feel choices, shared by Admin → Appearance (the server's defaults) and
 // Settings → Appearance (a person's own), so both show the same options the same way.
 // `swatch`, `diagram` and `icon` are how OptionTiles draws each one.
 import { StretchHorizontal, RectangleHorizontal } from '@lucide/vue';

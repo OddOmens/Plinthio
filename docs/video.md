@@ -96,7 +96,7 @@ screens use the file's own details: title, year, runtime, genres, description.
 A short clip can play full-screen when someone presses Play on a movie or episode, before
 the title starts. Plinthio comes with its own, off until an admin switches it on. They can
 also replace it with their own clip (a logo sting, say) and limit it to movies or to shows
-and anime: **Admin → Server Config → Opening Sequence**.
+and anime: **Admin → Playback → Opening sequence**.
 
 - The title loads behind the clip, so it starts as soon as the clip ends.
 - Your own clip must be an **MP4 with H.264 video**, **1–10 seconds** long and **under
