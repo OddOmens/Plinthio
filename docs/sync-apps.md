@@ -1,8 +1,8 @@
 # Reading apps
 
 Plinthio works with three kinds of outside reader. All of them sign in with your
-**username** and a **Plinthio API key as the password**. Make keys in **Settings → API
-Keys**, where the **Reading Apps** card shows the exact address for your server. Make one key
+**username** and a **Plinthio API key as the password**. Make keys in **Settings → Apps & API
+keys**, where the **Reading apps** card shows the exact address for your server. Make one key
 per app, so deleting a key signs out just that app.
 
 Everything the web app hides from you — content limits, Kids Mode, hidden titles, missing

@@ -2,19 +2,12 @@
   <!-- Admin → Network: who can use the server from where, and a live check of how this
        device is seen, so an admin can confirm it from a phone on mobile data. -->
   <div class="flex flex-col gap-5">
-    <div class="flex flex-wrap items-start justify-between gap-3">
-      <div class="min-w-0">
-        <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
-          <Globe class="w-4.5 h-4.5 text-primary" />
-          Network &amp; Access
-        </h2>
-        <p class="text-xs text-muted-foreground mt-0.5">Where Plinthio can be used from, and two-factor away from home.</p>
-      </div>
-      <button type="button" @click="load" :disabled="loading" class="h-9 px-3.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-medium flex items-center gap-1.5 transition disabled:opacity-50">
+    <SectionHeader title="Network" description="Where Plinthio can be used from, and two-factor away from home.">
+      <button type="button" @click="load" :disabled="loading" class="btn btn-secondary">
         <RefreshCw class="w-3.5 h-3.5" :class="loading ? 'animate-spin' : ''" />
         Check again
       </button>
-    </div>
+    </SectionHeader>
 
     <p v-if="error" class="text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-lg px-3 py-2">{{ error }}</p>
 
@@ -162,6 +155,7 @@ import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
 import { Globe, RefreshCw, AlertTriangle, ShieldAlert, House, Waypoints, Earth, CheckCircle2 } from '@lucide/vue';
 import TailscaleGuide from './TailscaleGuide.vue';
+import SectionHeader from './settings/SectionHeader.vue';
 
 const dialog = useDialogStore();
 const report = ref(null);

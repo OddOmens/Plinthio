@@ -23,7 +23,7 @@ This page starts from what you see instead.
 | P200 "Library folder not found" | The folder doesn't exist inside the container. Check the volume mount in `docker-compose.yml` |
 | P201 on scan, "folder is empty but the catalog has N items" | The drive or share isn't mounted, so the mount point is an empty folder. Plinthio refuses to treat that as "everything was deleted". Mount it and scan again |
 | P202 "permission denied" | The container user (`PUID`/`PGID`, default 1000) can't read the folder. Fix ownership or permissions on the host, or set `PUID`/`PGID` |
-| New files don't appear | The watcher can miss events on network shares. The periodic scan (every 60 min by default) picks them up, or press Scan Now. Check Automatic Scanning is on |
+| New files don't appear | The watcher can miss events on network shares. The periodic scan (every 60 min by default) picks them up, or press Scan. Check automatic scanning is on (Admin → Libraries) |
 | A title vanished | Its file is missing: renamed, moved to another library, or its drive dropped. It's in Admin → Health → Missing files. Put the file back and it returns with progress intact |
 | Series split in two, or volumes in the wrong series | File names or `ComicInfo.xml` disagree. Admin → Health → Clashing volume numbers helps. Fix the names, or set the series in Edit Metadata |
 | Episodes in the wrong order, or specials mixed in | Use `S01E02`-style names. Specials are season 0 (`S00E01`) |
@@ -36,7 +36,7 @@ This page starts from what you see instead.
 | --- | --- |
 | Blank covers | Add a `cover.jpg`/`folder.jpg`/`poster.jpg` next to the files, or match metadata. Every scan retries titles with no cover |
 | A cover won't update | Hard-refresh. Covers are versioned, but an installed app may hold the old one until it reloads |
-| P400 on metadata search | Add a TMDB key in Server Config → External Metadata Providers |
+| P400 on metadata search | Add a TMDB key in Admin → Metadata |
 | P401 | The provider refused the key. For TMDB, paste either the "API Key" or the "API Read Access Token" |
 | P402, P403 | Rate-limited or unreachable. Wait and retry, and check the server has internet access |
 | No cast, crew or facts on title pages | Needs a TMDB key. They're fetched when a page first opens and cached for 30 days |
@@ -51,7 +51,7 @@ This page starts from what you see instead.
 | P350 "This browser cannot play this video" | Even the converted stream was rejected. Try Chrome, Edge or Safari. If every browser fails, the file may be damaged |
 | P351 | The connection to the server dropped. Press Retry |
 | P352 | The media link expired and couldn't be renewed. Reload the page, or sign out and in |
-| Hardware transcoding not detected | Pass `/dev/dri` through, with the right render group GID, or use the NVIDIA toolkit for NVENC. Use **Test** in Server Config. See [Setup → Hardware transcoding](setup.md#hardware-transcoding) |
+| Hardware transcoding not detected | Pass `/dev/dri` through, with the right render group GID, or use the NVIDIA toolkit for NVENC. Use **Test** in Admin → Playback. See [Setup → Hardware transcoding](setup.md#hardware-transcoding) |
 | No subtitle track listed | Picture-based subtitles (PGS, VobSub) can't be shown. Add an `.srt` next to the file |
 | No scrub previews | They're generated in the background on first play. They're only shown on computers |
 | Casting button missing | Chromecast needs Chrome, Plinthio opened over HTTPS, and a Cast device on the same network. AirPlay needs Safari |
@@ -95,7 +95,7 @@ See [Reading apps → Troubleshooting](sync-apps.md#troubleshooting).
 
 | Symptom | Cause and fix |
 | --- | --- |
-| No Watch Together button | Watch parties are off: Admin → Server Config → Watch Parties |
+| No Watch Together button | Watch parties are off: Admin → Features → Watch parties |
 | P601 "Party not found" | The party ended, or the server restarted. Ask the host for a new link |
 | P603, P604 | A member's content limit or Kids Mode blocks that title |
 | P605 | 20 people is the limit |

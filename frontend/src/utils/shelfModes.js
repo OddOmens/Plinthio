@@ -11,7 +11,7 @@ export function normalizeShelfModes(list) {
   return SHELF_MODES.filter((m) => !OPTIONAL_SHELF_MODES.includes(m) || wanted.has(m));
 }
 
-// A user's own choice (Settings → Shelf Views): old names mapped, Series always kept, and
+// A user's own choice (Settings → Shelves): old names mapped, Series always kept, and
 // anything they never saved defaults to everything.
 export function userShelfModes(list) {
   if (!Array.isArray(list) || list.length === 0) return [...SHELF_MODES];

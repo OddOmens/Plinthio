@@ -196,7 +196,7 @@
                 Formats: <code class="text-foreground bg-muted px-1 rounded">.mp4</code>, <code class="text-foreground bg-muted px-1 rounded">.mkv</code>, <code class="text-foreground bg-muted px-1 rounded">.webm</code>.
                 Streaming uses HTTP range requests for scrubbing; content that a browser can't play natively is transcoded on the fly.
                 Metadata and artwork use <strong class="text-foreground">TMDB (The Movie Database)</strong>, which needs a free personal API key
-                configured once by an admin under <strong class="text-foreground">Admin &rarr; Server Config &rarr; External Metadata Providers</strong>.
+                configured once by an admin under <strong class="text-foreground">Admin &rarr; Metadata</strong>.
                 Without a key configured, these three libraries still scan and stream fine — they simply won't get automatic
                 posters, summaries, or cast/season data.
               </p>
@@ -718,7 +718,7 @@
           <div class="space-y-3">
             <h2 class="text-base font-semibold text-foreground">Automatic backups (on by default)</h2>
             <p class="text-xs text-muted-foreground leading-relaxed">
-              In <strong class="text-foreground">Admin &rarr; Server Config &rarr; Database Backup</strong>:
+              In <strong class="text-foreground">Admin &rarr; Backups</strong>:
             </p>
             <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
               <li><strong class="text-foreground">Frequency</strong>: every 6 or 12 hours, daily (the default), every 3 days, or weekly.</li>
@@ -1012,7 +1012,7 @@ header input[type="text"] {
             </div>
 
             <p class="text-xs text-muted-foreground">
-              To apply custom CSS, go to <strong>Admin &rarr; Server Config &rarr; Custom CSS Injection</strong> (Admin only), paste your rules into the editor, use <strong>Test Preview</strong> to check it live in your current tab before saving, then <strong>Save Branding & CSS</strong> to push it to every connected client.
+              To apply custom CSS, go to <strong>Admin &rarr; Appearance &rarr; Custom CSS</strong> (Admin only), paste your rules into the editor, use <strong>Test Preview</strong> to check it live in your current tab before saving, then <strong>Save Branding & CSS</strong> to push it to every connected client.
             </p>
           </div>
         </section>
@@ -1097,7 +1097,7 @@ header input[type="text"] {
               <div class="font-semibold text-xs text-foreground">Movies/Shows/Anime have no posters or descriptions</div>
               <p class="text-xs text-muted-foreground">
                 These three types use TMDB for metadata, which needs a free API key set by an admin under
-                <strong class="text-foreground">Admin &rarr; Server Config &rarr; External Metadata Providers</strong>. Without a
+                <strong class="text-foreground">Admin &rarr; Metadata</strong>. Without a
                 key, content still scans and streams — it just won't be auto-matched.
               </p>
             </div>

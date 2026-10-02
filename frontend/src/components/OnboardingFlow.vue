@@ -80,7 +80,7 @@
               <h2 class="text-2xl font-bold tracking-tight text-foreground">Choose an accent</h2>
               <p class="text-sm text-muted-foreground">
                 Buttons, highlights and progress bars use this.
-                <template v-if="authStore.isAdmin">As an admin, this sets it for the whole server. People can pick their own in Settings if you allow it (Admin → Server Config).</template>
+                <template v-if="authStore.isAdmin">As an admin, this sets it for the whole server. People can pick their own in Settings if you allow it (Admin → Playback).</template>
                 <template v-else>It's just for you; change it any time in Settings.</template>
               </p>
             </header>

@@ -1,28 +1,16 @@
 <template>
   <div class="flex flex-col gap-5">
-    <!-- Header & Description -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <h2 class="text-base font-semibold text-foreground tracking-tight flex items-center gap-2">
-          <Sparkles class="w-4 h-4 text-primary" />
-          Title Cleanup & Metadata Matcher
-        </h2>
+    <div class="flex flex-wrap items-start justify-between gap-3 pt-2">
+      <div class="min-w-0 flex-1 basis-64">
+        <h3 class="text-sm font-semibold text-foreground">Title cleanup and matching</h3>
         <p class="text-xs text-muted-foreground mt-0.5">
-          Clean release tags from filenames and automatically match official posters, overviews, cast, and release dates via TMDB.
+          Clean release tags from file names, and match posters, overviews, cast and release dates from TMDB.
         </p>
       </div>
-
-      <!-- Quick Scan / Refresh Button -->
-      <div class="flex items-center gap-2">
-        <button
-          @click="fetchItems"
-          :disabled="loading"
-          class="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-medium transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
-        >
-          <RefreshCw :class="['w-3.5 h-3.5', loading ? 'animate-spin' : '']" />
-          <span>{{ loading ? 'Loading...' : 'Refresh List' }}</span>
-        </button>
-      </div>
+      <button @click="fetchItems" :disabled="loading" class="btn btn-secondary">
+        <RefreshCw :class="['w-3.5 h-3.5', loading ? 'animate-spin' : '']" />
+        {{ loading ? 'Loading…' : 'Refresh' }}
+      </button>
     </div>
 
     <!-- Overview Stat Cards -->
@@ -273,7 +261,7 @@
       <p class="flex-1 text-foreground">
         <span>Matched <strong>{{ batchSummary.matched }}</strong> of {{ batchSummary.total }}<template v-if="batchSummary.stopped"> before you stopped it</template>.</span>
         <span v-if="batchSummary.notFound" class="ml-1">{{ batchSummary.notFound }} had no match — they're marked below; try <em>Edit / Search</em> on those.</span>
-        <span v-if="batchSummary.needsKey" class="ml-1">{{ batchSummary.needsKey }} {{ batchSummary.needsKey === 1 ? 'is a video' : 'are videos' }}, which need a TMDB key — add one under <em>Server Config → External Metadata Providers</em> and run it again.</span>
+        <span v-if="batchSummary.needsKey" class="ml-1">{{ batchSummary.needsKey }} {{ batchSummary.needsKey === 1 ? 'is a video' : 'are videos' }}, which need a TMDB key — add one under <em>Admin → Metadata</em> and run it again.</span>
         <span v-if="batchSummary.failed" class="ml-1">{{ batchSummary.failed }} failed (see the row for why).</span>
       </p>
       <button type="button" @click="batchSummary = null" class="text-muted-foreground hover:text-foreground" aria-label="Dismiss">
@@ -649,7 +637,7 @@ async function performMatch(item) {
     const data = err.response?.data || {};
     if (data.code === 'P400') {
       // Not a failure of this title — the server has no TMDB key yet.
-      matchResults.value[item.id] = { status: 'none', message: 'Needs a TMDB key — add one in Server Config' };
+      matchResults.value[item.id] = { status: 'none', message: 'Needs a TMDB key — add one above' };
       return 'needsKey';
     }
     if (err.response?.status === 404) {

@@ -221,6 +221,29 @@ html {
   }
 }
 
+/* Settings and Admin (components/settings, components/admin): one look for every field and
+   button, so each screen doesn't spell out the same dozen utilities. */
+@layer components {
+  .field {
+    @apply w-full h-9 bg-background border border-border rounded-lg px-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring disabled:opacity-50 transition;
+  }
+  textarea.field { @apply h-auto py-2.5; }
+  .field-label {
+    @apply block text-xs font-medium text-foreground mb-1.5;
+  }
+  .field-hint {
+    @apply text-[12px] text-muted-foreground mt-1.5 leading-relaxed;
+  }
+  .btn {
+    @apply h-9 px-3.5 rounded-lg text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap transition active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary { @apply bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm; }
+  .btn-secondary { @apply bg-card text-foreground border border-border hover:bg-muted; }
+  .btn-ghost { @apply text-muted-foreground hover:text-foreground hover:bg-muted; }
+  .btn-danger { @apply text-destructive border border-destructive/30 hover:bg-destructive/10; }
+  .btn-icon { @apply w-9 px-0; }
+}
+
 /* Hide scrollbars for touch/mobile tabs while preserving momentum scroll */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

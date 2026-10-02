@@ -4,14 +4,14 @@ import os from 'os';
 import path from 'path';
 import { signIn } from './helpers.js';
 
-// Admin → Server Config → Database Backup: copying backups to a second folder, chosen and
+// Admin → Backups: copying backups to a second folder, chosen and
 // checked from the browser.
 test('backups can be copied to a folder chosen in the browser', async ({ page, request }) => {
   await signIn(page, request);
   const root = path.join(os.tmpdir(), `plinthio-e2e-${process.env.E2E_PORT || '18090'}`);
   const dest = path.join(root, 'second-place');
 
-  await page.goto('/admin?tab=settings');
+  await page.goto('/admin?tab=backups');
   const field = page.getByLabel('Also copy backups to');
   await field.scrollIntoViewIfNeeded();
 
@@ -31,12 +31,10 @@ test('backups can be copied to a folder chosen in the browser', async ({ page, r
   await expect(page.getByText(/The server can write there/)).toBeVisible();
 
   await page.getByRole('button', { name: 'Save backup settings' }).click();
-  await expect(page.getByText('Backups saved')).toBeVisible();
-  await page.getByRole('button', { name: 'OK' }).click();
+  await expect(page.getByText(/Saved\. The backups you have are being copied/)).toBeVisible();
 
   // The backups that already exist arrive there, and the card says so.
-  await page.getByRole('button', { name: 'Backup Now' }).click();
-  await page.getByRole('button', { name: 'OK' }).click();
+  await page.getByRole('button', { name: 'Back up now' }).click();
   await expect.poll(() => (fs.existsSync(path.join(dest, 'database'))
     ? fs.readdirSync(path.join(dest, 'database')).filter((f) => f.endsWith('.sqlite')).length
     : 0)).toBeGreaterThan(0);
