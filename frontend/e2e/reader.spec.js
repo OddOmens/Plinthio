@@ -43,7 +43,11 @@ test('scroll mode keeps only nearby pages loaded, and the slider scrolls', async
   }, { timeout: 10_000 }).toBe(40);
   await expect(pageLabel(page)).toHaveText('Page 40 of 40');
 
-  // Scroll mode is remembered for this series on this device.
+  // Scroll mode is remembered for this series, on the account (so on every device).
+  await expect.poll(async () => {
+    const me = await (await request.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })).json();
+    return Object.values(me.user?.preferences?.mangaReader?.seriesModes || {});
+  }).toContain('webtoon');
   await page.keyboard.press('Escape');
   await expect(page.locator('.webtoon-scroll')).toBeHidden();
   await openReader(page);
@@ -52,6 +56,8 @@ test('scroll mode keeps only nearby pages loaded, and the slider scrolls', async
 
 test('swiping follows the reading direction in right-to-left manga', async ({ page }) => {
   await openReader(page);
+  // The scroll test above left this series in Scroll mode on the account.
+  await page.getByRole('button', { name: 'RTL' }).click();
   await expect(pageLabel(page)).toHaveText('Page 1 of 40');
   const zone = page.locator('.touch-none').first();
   const box = await zone.boundingBox();

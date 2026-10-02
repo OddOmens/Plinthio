@@ -685,6 +685,27 @@ async function initSchema(db) {
   }
   await finishItemsCascadeMigration(db, 'bookmarks', 'id, user_id, item_id, type, position, title, notes, cfi, created_at');
 
+  // Highlighted passages in EPUBs, each with a colour and an optional note. Like bookmarks,
+  // item_id carries no FK/cascade to items: highlights survive a library wipe and re-attach
+  // via the path-derived item id on re-scan. `progress` (0–100) orders them through the book.
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS highlights (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      cfi_range TEXT NOT NULL,
+      text TEXT,
+      color TEXT NOT NULL DEFAULT 'yellow',
+      note TEXT,
+      chapter TEXT,
+      progress REAL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_highlights_user_item ON highlights(user_id, item_id);
+  `);
+
   // Internal 1–5 star ratings, one per user per item. item_id carries no FK/cascade for the
   // same reason as user_progress and bookmarks — a rating should survive a library wipe and
   // re-attach via the path-derived item id on re-scan. The item_id index serves the

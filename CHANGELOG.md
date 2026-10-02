@@ -9,6 +9,26 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **A new ebook reader that gets out of the way.** Tap the middle of the page to bring up the controls and tap again to hide them; tap the edges or swipe to turn pages. The chapter and your progress sit along the bottom; tap the progress to show percent, pages left in the chapter, location, or nothing.
+- **Highlights in five colours, with notes.** Select text in an EPUB to highlight it yellow, green, blue, pink or orange, or to add a note. Tap a highlight to recolour it, edit its note, copy it or remove it. Highlights are kept with downloaded books for reading offline.
+- **Copy backups to a second place.** Admin → Server Config → Database Backup → *Also copy backups to*: browse to a folder on another drive, a NAS share or a synced cloud folder, test it (it warns if it's on the same disk as the server), and every backup is copied there, along with profile pictures, covers, the sign-in key and the HTTPS certificates. It keeps its own number of backups, shows when it last copied or why it couldn't, and retries until it can. Docker installs can mount another drive at `/backups` (see the comment in `docker-compose.yml`).
+- **The Notebook:** a book's contents, bookmarks and highlights in one place (highlights can be filtered by colour), each a tap away from its page.
+- **One-tap bookmarks:** the ribbon at the top right bookmarks the page you're on, and shows when a page is already bookmarked.
+- **More ways to read:** six page colours (Auto, White, Sepia, Green, Gray, Black), the book's own font or Serif, Sans, Readable and Mono, text from 12 to 34 px, line spacing, margins, alignment, and two columns on wide screens or always one.
+
+### Changed
+- **Automatic backups are on by default** (daily, keeping the newest 7) on any server where they were never set. A server where an admin turned them off keeps them off. Backups hold everyone's bookmarks, highlights, notes and reader settings along with everything else in the database.
+- **Pre-upgrade backups are no longer deleted by the backup schedule.** They used to count against the same "keep the newest N" limit, so a week of daily backups removed them; the newest five are now always kept.
+- **Signing in as someone else on the same browser** clears what the previous account left on the device (downloads, queued offline progress, the manga reader's remembered series), even when that account's session had simply expired.
+- **Reader settings follow you, not the book or the device.** Everything you set in the ebook reader applies to every book you read, on all your devices. In the manga reader, single or two-page spreads and the direction you pick for each series are now saved to your account too (they were kept on one device only; settings from before carry over).
+
+### Fixed
+- Reading the backup settings or listing backups in Admin counted against the backup rate limit (6 per 15 minutes), so simply using the page could lock out **Backup Now**. Only making, downloading and copying backups count now (12 per 15 minutes).
+- The Docs' storage overview listed paths from an old layout (`/app/data/plinthio.db`); it now shows `/config`.
+- The ebook reader's font, size and page colour choices didn't reach the book's text, and were forgotten each time a book was closed.
+- Progress through a book that hadn't been opened before often showed 0% until it was reopened.
+
 ### Changed
 - **Switching shelves is smoother.** Picking a category, filter or sort order fades the new shelf in instead of flashing a grid of placeholders first, and an empty category no longer blinks. Categories you've already opened show instantly and refresh quietly behind the scenes.
 - **Faster page loads.** The app's files are now cached by the browser between visits (they were rechecked every time), and the title page is fetched in the background while you browse the shelf, so the first tap on a title opens it without waiting.

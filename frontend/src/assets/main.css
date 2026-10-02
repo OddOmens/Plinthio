@@ -262,3 +262,9 @@ input, select, textarea { min-width: 0; }
     font-size: 16px !important;
   }
 }
+
+/* Reader popovers on wide screens (components/ReaderPanel.vue): a quick fade and drop. */
+.panel-slide-enter-active, .panel-slide-leave-active { transition: opacity 150ms ease; }
+.panel-slide-enter-active .panel-slide-panel, .panel-slide-leave-active .panel-slide-panel { transition: transform 150ms ease; }
+.panel-slide-enter-from, .panel-slide-leave-to { opacity: 0; }
+.panel-slide-enter-from .panel-slide-panel, .panel-slide-leave-to .panel-slide-panel { transform: scale(0.97) translateY(-6px); }

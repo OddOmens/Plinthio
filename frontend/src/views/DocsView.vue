@@ -90,7 +90,7 @@
             <div class="p-4 rounded-xl border border-border bg-card">
               <BookOpen class="w-5 h-5 text-primary mb-2" />
               <div class="font-semibold text-xs text-foreground">Books & Documents</div>
-              <p class="text-[12px] text-muted-foreground mt-1">Standard EPUB and PDF reader with bookmarking, notes, and cross-device reading progress synchronization.</p>
+              <p class="text-[12px] text-muted-foreground mt-1">EPUB reader with page colours, fonts and layouts that follow you to every book, highlights in five colours with notes, bookmarks, and your place synced across devices.</p>
             </div>
 
             <div class="p-4 rounded-xl border border-border bg-card">
@@ -136,11 +136,13 @@
               files live wherever you mount them and are never modified.
             </p>
             <div class="bg-muted/40 border border-border rounded-xl p-4 font-mono text-xs text-foreground space-y-1 overflow-x-auto">
-              <div class="whitespace-nowrap"><span class="text-primary">/app/data/plinthio.db</span> <span class="text-muted-foreground"># SQLite database with WAL mode</span></div>
-              <div class="whitespace-nowrap"><span class="text-primary">/app/data/covers/</span> <span class="text-muted-foreground"># Extracted album art & book/show covers</span></div>
-              <div class="whitespace-nowrap"><span class="text-primary">/app/data/thumbnails/</span> <span class="text-muted-foreground"># Cached video thumbnail previews</span></div>
-              <div class="whitespace-nowrap"><span class="text-primary">/app/data/backups/</span> <span class="text-muted-foreground"># Scheduled & manual database snapshots</span></div>
-              <div class="whitespace-nowrap"><span class="text-primary">/app/data/jwt.secret</span> <span class="text-muted-foreground"># High-entropy random JWT encryption key</span></div>
+              <div class="whitespace-nowrap"><span class="text-primary">/config/plinthio.sqlite</span> <span class="text-muted-foreground"># SQLite database with WAL mode</span></div>
+              <div class="whitespace-nowrap"><span class="text-primary">/config/backups/</span> <span class="text-muted-foreground"># Scheduled, manual and pre-upgrade database snapshots</span></div>
+              <div class="whitespace-nowrap"><span class="text-primary">/config/covers/</span> <span class="text-muted-foreground"># Book, show and film covers</span></div>
+              <div class="whitespace-nowrap"><span class="text-primary">/config/avatars/</span> <span class="text-muted-foreground"># Uploaded profile pictures</span></div>
+              <div class="whitespace-nowrap"><span class="text-primary">/config/cache/</span> <span class="text-muted-foreground"># Rendered pages and video segments (safe to delete)</span></div>
+              <div class="whitespace-nowrap"><span class="text-primary">/config/ssl/</span> <span class="text-muted-foreground"># The built-in HTTPS certificates</span></div>
+              <div class="whitespace-nowrap"><span class="text-primary">/config/jwt.secret</span> <span class="text-muted-foreground"># High-entropy random sign-in key</span></div>
               <div class="whitespace-nowrap"><span class="text-primary">/media/...</span> <span class="text-muted-foreground"># Mounted media directories on your host (read-only is fine)</span></div>
             </div>
 
@@ -685,6 +687,7 @@
                 <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">&rarr;</kbd><span class="text-muted-foreground">Next page</span></div>
                 <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Space</kbd><span class="text-muted-foreground">Next page</span></div>
                 <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Esc</kbd><span class="text-muted-foreground">Close settings / reader</span></div>
+                <div class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px]">Ctrl F</kbd><span class="text-muted-foreground">Search the book</span></div>
               </div>
             </div>
 
@@ -706,41 +709,67 @@
           <div>
             <h1 class="text-2xl font-bold tracking-tight text-foreground">Backups & Data Safety</h1>
             <p class="text-sm text-muted-foreground mt-1.5">
-              Everything Plinthio knows — users, libraries, reading/watching progress, bookmarks, custom folders, and
-              settings — lives in one SQLite database. Back it up regularly.
+              Everything Plinthio knows lives in one SQLite database: accounts, everyone's progress, bookmarks,
+              highlights and notes, ratings, lists, reader settings, libraries and settings. Plinthio backs it up by
+              itself, and can copy those backups to a second place you choose.
             </p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">Automatic backups (on by default)</h2>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              In <strong class="text-foreground">Admin &rarr; Server Config &rarr; Database Backup</strong>:
+            </p>
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <li><strong class="text-foreground">Frequency</strong>: every 6 or 12 hours, daily (the default), every 3 days, or weekly.</li>
+              <li><strong class="text-foreground">Keep last</strong>: how many of these stay in <code class="text-foreground bg-muted px-1 rounded">/config/backups</code> (7 by default).</li>
+              <li>A snapshot is also taken <strong class="text-foreground">before every upgrade</strong>; the newest five of those are always kept, so you can roll back.</li>
+            </ul>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">A second place for backups</h2>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              <code class="text-foreground bg-muted px-1 rounded">/config/backups</code> is on the same disk as the server: it
+              covers mistakes and bad upgrades, not a failed disk. Under <strong class="text-foreground">Also copy backups to</strong>,
+              pick a folder on another drive, a NAS share or a synced cloud folder (<strong class="text-foreground">Browse</strong>,
+              then <strong class="text-foreground">Test</strong> to check the server can write there and whether it's on a different
+              disk). Every backup is then copied there as it's made, and anything missed while it was unreachable is
+              copied when it's back.
+            </p>
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <li><strong class="text-foreground">Keep there</strong>: how many to keep in the second place (30 by default), separately from the server's own count.</li>
+              <li>Also copied, unless you turn it off: profile pictures, covers, the sign-in key (so nobody is signed out after a restore) and the HTTPS certificates (so devices keep trusting the server).</li>
+              <li>The copy is laid out as <code class="text-foreground bg-muted px-1 rounded">database/</code> and <code class="text-foreground bg-muted px-1 rounded">files/</code>. If a copy fails, the card says why and it's tried again every 15 minutes.</li>
+            </ul>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              <strong class="text-foreground">In Docker</strong> the folder must be mounted into the container. Any folder under
+              <code class="text-foreground bg-muted px-1 rounded">/media</code> works if your media isn't mounted read-only. For a
+              different drive, uncomment the <code class="text-foreground bg-muted px-1 rounded">/backups</code> line in
+              <code class="text-foreground bg-muted px-1 rounded">docker-compose.yml</code>, set <code class="text-foreground bg-muted px-1 rounded">BACKUP_DIR</code>
+              in <code class="text-foreground bg-muted px-1 rounded">.env</code>, recreate the container, and choose
+              <code class="text-foreground bg-muted px-1 rounded">/backups</code>.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">Manual backups</h2>
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <li><strong class="text-foreground">Backup Now</strong>: takes a snapshot straight away (and copies it to the second place).</li>
+              <li><strong class="text-foreground">Download a Snapshot</strong>: a fresh snapshot straight to your browser, handy before a risky change.</li>
+              <li>Any stored backup can be downloaded or deleted from the list.</li>
+            </ul>
           </div>
 
           <div class="p-4 rounded-xl bg-muted/30 border border-border space-y-2">
             <div class="text-xs font-semibold text-foreground flex items-center gap-2">
               <AlertTriangle class="w-4 h-4 text-amber-500" />
-              <span>What a Backup Does and Doesn't Cover</span>
+              <span>Not in any backup</span>
             </div>
             <p class="text-xs text-muted-foreground leading-relaxed">
-              A database backup captures the catalog and every user's data. It does <strong class="text-foreground">not</strong>
-              include cover images on disk or your media files themselves — back those up separately from wherever your
-              library folders and the server's <code class="text-foreground bg-muted px-1 rounded">/app/data</code> volume live.
-              Deleting a library removes its catalog data immediately and permanently; a recent backup is the only way
-              to undo that.
+              Your media files themselves. Deleting a library removes its catalog data straight away; a recent backup is
+              the way to undo that. To restore, see the restore steps in <code class="text-foreground bg-muted px-1 rounded">docs/administration.md</code>.
             </p>
-          </div>
-
-          <div class="space-y-3">
-            <h2 class="text-base font-semibold text-foreground">Automatic Backups (Admin Only)</h2>
-            <p class="text-xs text-muted-foreground leading-relaxed">
-              From <strong class="text-foreground">Admin &rarr; Server Config &rarr; Database Backup</strong>, enable automatic
-              backups and choose:
-            </p>
-            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
-              <li><strong class="text-foreground">Frequency</strong> — every 6 or 12 hours, daily, every 3 days, or weekly.</li>
-              <li><strong class="text-foreground">Retention</strong> — how many recent backups to keep on disk (older ones are pruned automatically as new ones are created).</li>
-            </ul>
-            <h2 class="text-base font-semibold text-foreground pt-2">Manual Backups</h2>
-            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
-              <li><strong class="text-foreground">Backup Now</strong> — takes an immediate snapshot and adds it to the stored backups list.</li>
-              <li><strong class="text-foreground">Download a Snapshot</strong> — takes a fresh snapshot and downloads it straight to your browser, useful before a risky change (deleting a library, a version upgrade).</li>
-              <li>Any stored backup can be downloaded or deleted individually from the list.</li>
-            </ul>
           </div>
         </section>
 
