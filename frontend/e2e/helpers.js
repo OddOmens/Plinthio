@@ -9,6 +9,11 @@ export function libraryPath() {
   return path.join(os.tmpdir(), `plinthio-e2e-${process.env.E2E_PORT || '18090'}`, 'media', 'manga');
 }
 
+// Where e2e/serve.mjs wrote the EPUB used by the ebook reader tests.
+export function booksPath() {
+  return path.join(os.tmpdir(), `plinthio-e2e-${process.env.E2E_PORT || '18090'}`, 'media', 'books');
+}
+
 // Signs in through the API and puts the session where the app looks for it, so each test
 // starts signed in without replaying the login form.
 export async function signIn(page, request) {

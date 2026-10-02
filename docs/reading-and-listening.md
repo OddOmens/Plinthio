@@ -26,11 +26,12 @@ titles, authors, descriptions, genres, cast and publishers.
 ## Comics, manga and PDFs: the page reader
 
 - **Direction:** right-to-left (manga), left-to-right (comics, PDFs, books) or **Scroll**
-  (webtoon, continuous vertical). The direction is saved per series on the server, so a
-  series always opens the right way. Manga libraries start right-to-left; everything else
-  starts left-to-right.
-- **Single or double-page spreads.** Double is the default on a tablet in landscape.
-- **Page turn:** fade, or a page-flip animation.
+  (webtoon, continuous vertical). Manga libraries start right-to-left, everything else
+  left-to-right, and an editor can set a series' default. A direction you pick for a series
+  is saved to your account, so it opens that way for you on every device.
+- **Single or double-page spreads.** Double is the default on a tablet in landscape until
+  you pick one; your choice is saved to your account.
+- **Page turn:** fade, or a page-flip animation (also saved to your account).
 - **Zoom:** pinch on touch screens.
 - **Keys:** ← → turn pages (mirrored for right-to-left), ↓ or Space next, ↑ previous,
   Esc closes.
@@ -44,12 +45,25 @@ damaged or password-protected PDF).
 
 ## EPUBs: the book reader
 
-- Paged or scrolling layout.
-- Font family and size (12–28 px).
-- Default, Sepia or Dark page theme.
+Tap the middle of the page to show or hide the top bar and the position slider; tap the left
+or right edge (or swipe) to turn the page. The chapter and your progress stay along the
+bottom; tap the progress to switch between percent, pages left in the chapter, location,
+or nothing.
+
+- **Display (Aa):** page colour (Auto, White, Sepia, Green, Gray, Black), font (the book's
+  own, Serif, Sans, Readable, Mono), text size (12–34 px), line spacing, margins, alignment,
+  pages or continuous scroll, and two columns on wide screens or always one. **These are
+  yours, not the book's:** set them once and every book opens the same way, on all your
+  devices.
+- **Highlights:** select text and pick one of five colours, or add a note. Tap a highlight to
+  recolour it, change its note, copy it or remove it.
+- **Bookmarks:** the ribbon at the top right bookmarks the page you're on (tap again to
+  remove it). A book can have as many as you like.
+- **Notebook:** the contents, your bookmarks and your highlights (filter them by colour),
+  each a tap away from its page.
 - **Search inside the book** (Ctrl+F).
-- Bookmarks and notes.
-- Your place is saved precisely and follows you between devices.
+- Your place is saved precisely and follows you between devices. Downloaded books keep
+  their highlights and bookmarks offline.
 
 When KOReader was the last to read a book, the reader opens at KOReader's percentage (see
 [Reading apps](sync-apps.md)).
