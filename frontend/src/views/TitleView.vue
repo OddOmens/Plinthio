@@ -2705,7 +2705,7 @@ async function loadKidsStatus() {
 const kidsTitle = computed(() => {
   const st = kidsStatus.value;
   if (!st) return '';
-  if (st.via === 'library') return 'Its whole library is in Kids Mode (change that in Admin → Libraries)';
+  if (st.via === 'library') return 'Its whole library is in Kids Mode (change that in Admin → Kids Mode)';
   if (st.via === 'series' && series.value?.standalone) return 'Its series is in Kids Mode — change it on the series page';
   return st.allowed ? 'Kids accounts can see this — click to remove it from Kids Mode' : 'Let Kids Mode accounts see this';
 });

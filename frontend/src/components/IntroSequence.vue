@@ -1,5 +1,5 @@
 <template>
-  <!-- The opening sequence (Admin → Server Config): a short clip played full-screen before a
+  <!-- The opening sequence (Admin → Playback): a short clip played full-screen before a
        movie or episode starts. It can always be skipped, and anything that stops it playing
        (a network hiccup, a browser refusing to play it) goes straight to the title. -->
   <div

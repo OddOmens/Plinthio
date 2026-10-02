@@ -1,7 +1,7 @@
 <template>
   <!-- Shown by VideoPlayer after a few idle seconds paused; it never takes clicks (any movement
        or touch hides it), so the controls underneath keep working. The style is the admin's
-       choice (Admin → Server Config → Pause Screen). Everything is sized from the player's own
+       choice (Admin → Appearance → Pause screen). Everything is sized from the player's own
        box (container units), so it fills a TV as well as a phone, and the admin preview can
        render it at a fixed size and scale it down. -->
   <div class="pause-root absolute inset-0 z-20 pointer-events-none text-white overflow-hidden" aria-live="polite">

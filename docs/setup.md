@@ -108,10 +108,10 @@ sign-in: theme, and which media types they want to see.
 
 Next steps worth taking:
 
-- **Admin → Server Config → External Metadata Providers:** add the TMDB key.
-- **Admin → Server Config → Video Transcoding & Hardware Acceleration:** press **Test** to check hardware
+- **Admin → Metadata:** add the TMDB key.
+- **Admin → Playback → Hardware acceleration:** press **Test** to check hardware
   acceleration.
-- **Admin → Server Config → Database Backup:** scheduled backups are **off** until you turn them on.
+- **Admin → Backups:** daily backups are on; add a second place to copy them to.
 - **Admin → Users:** add the rest of the household, with content limits or Kids Mode where
   needed. See [Accounts and access](accounts-and-access.md).
 
@@ -191,8 +191,8 @@ them. To turn HTTPS off, set `HTTPS_PORT=` (empty).
 ## Hardware transcoding
 
 Most video plays without transcoding (see [Movies and shows](video.md)). When a file does need
-it, a GPU makes it far cheaper. Detection is automatic. **Admin → Server Config → Video
-Transcoding & Hardware Acceleration** shows what was found, lets you force a method or turn it off, and has a
+it, a GPU makes it far cheaper. Detection is automatic. **Admin → Playback → Hardware
+acceleration** shows what was found, lets you force a method or turn it off, and has a
 **Test** button that runs a real encode.
 
 - **Intel QuickSync or AMD (VAAPI):** the drivers are in the image. Uncomment the

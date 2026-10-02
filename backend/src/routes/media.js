@@ -47,7 +47,7 @@ const ALLOWED_THUMB_WIDTHS = [180, 360, 720];
 // A still from a video (an episode's thumbnail in a show's episode list). Grabbed on first
 // request and cached; 404 when the file can't be read, and the page falls back to the cover.
 const STILL_TYPES = new Set(['show', 'anime', 'movie']);
-// The opening sequence (Admin → Server Config): an uploaded clip, or the built-in one. Any
+// The opening sequence (Admin → Playback): an uploaded clip, or the built-in one. Any
 // signed-in user may fetch it; URLs carry ?v=<version>, so it's safe to cache hard.
 router.get('/intro', authenticateToken, (req, res) => {
   const file = activeIntroFile();

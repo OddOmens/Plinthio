@@ -1,26 +1,15 @@
 <template>
   <div class="flex flex-col gap-5">
-    <div class="flex flex-wrap items-start justify-between gap-3">
-      <div class="min-w-0">
-        <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
-          <HeartPulse class="w-4.5 h-4.5 text-primary" />
-          Library Health
-        </h2>
-        <p class="text-xs text-muted-foreground mt-0.5">
-          What needs attention across your libraries.
-          <span v-if="report">Checked {{ formatTime(report.generatedAt) }}.</span>
-        </p>
-      </div>
-      <button
-        type="button"
-        @click="load"
-        :disabled="loading"
-        class="h-9 px-3.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-medium flex items-center gap-1.5 transition active:scale-95 disabled:opacity-50"
-      >
+    <SectionHeader title="Health">
+      <template #description>
+        What needs attention across your libraries.
+        <span v-if="report">Checked {{ formatTime(report.generatedAt) }}.</span>
+      </template>
+      <button type="button" @click="load" :disabled="loading" class="btn btn-secondary">
         <RefreshCw class="w-3.5 h-3.5" :class="loading ? 'animate-spin' : ''" />
         {{ loading ? 'Checking…' : 'Run check' }}
       </button>
-    </div>
+    </SectionHeader>
 
     <p v-if="error" class="text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-lg px-3 py-2">{{ error }}</p>
 
@@ -193,7 +182,7 @@
         id="health-transcode"
         title="Recent playback encode failures"
         :count="report.summary.transcodeFailures"
-        hint="ffmpeg errors while preparing video. Often a hardware-acceleration driver problem — try Server Config → Transcoding → Test."
+        hint="ffmpeg errors while preparing video. Often a hardware-acceleration driver problem — try Admin → Playback → Test."
       >
         <div v-for="(entry, idx) in report.transcodeFailures" :key="idx" class="px-4 py-2 text-[12px]">
           <p class="text-muted-foreground">{{ formatTime(entry.timestamp) }}</p>
@@ -208,7 +197,8 @@
 import { ref, computed, onMounted, h, defineComponent } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
-import { HeartPulse, RefreshCw, CheckCircle2, AlertTriangle, ChevronDown, Archive, Undo2 } from '@lucide/vue';
+import SectionHeader from './settings/SectionHeader.vue';
+import { RefreshCw, CheckCircle2, AlertTriangle, ChevronDown, Archive, Undo2 } from '@lucide/vue';
 
 defineEmits(['open-metadata']);
 

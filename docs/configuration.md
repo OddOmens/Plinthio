@@ -46,36 +46,31 @@ the compose-level ones.
 
 ## Settings in the app
 
-### Admin → Server Config
+Admin settings save as you change them, except backups and custom CSS, which have a Save
+button. Sections are listed in [Administration](administration.md).
 
-The look-and-feel cards (theme through custom CSS) sit next to a **live preview** of the
-shelf, a title page, the sign-in screen and the pause screen. It follows whichever card you
-are using, and hovering a pause screen style shows it before you choose.
+| Where | Setting | Default | What it controls |
+| --- | --- | --- | --- |
+| Libraries | **Automatic scanning** | on, every 60 min, watcher on | Periodic rescan of every library (15 minutes to a day) and the file watcher, which picks up new files about 30 s after they appear |
+| Metadata | **TMDB key** | none | Checked against TMDB when saved. MangaDex, Google Books and Open Library need no key |
+| Kids Mode | **Whole libraries** | off | Makes everything in a library visible to Kids Mode accounts |
+| Appearance | **Let people personalize** | on, each allowed | Whether people can choose their own accent colour, navigation, page width and pause screen (Settings → Appearance). One switch for all, and **Users can change** on each. Anything not allowed follows the server's choice |
+| Appearance | **Accent colour** | `zinc` | Accent colour for anyone who hasn't picked their own |
+| Appearance | **Navigation** | top bar | Top navigation bar or sidebar |
+| Appearance | **Page width** | full width | Full width, or contained (centred, up to 1440px) |
+| Appearance | **Pause screen** | Details | What movies and shows show after a couple of seconds paused: Simple, Details, Cinematic or Bedtime. See [Movies and shows](video.md#pause-screens) |
+| Appearance | **Name and sign-in notice** | "Plinthio", no notice | Server name (shown everywhere and in the browser tab) and a message on the sign-in page |
+| Appearance | **Custom CSS** | empty | CSS applied for every user. Docs → Custom CSS Styling lists the variables |
+| Features | **Shelf views** | all on | Whether **Disk folders** and **Custom folders** are offered to everyone. Alphabetical and Creator are always there |
+| Features | **Ratings** | all on | Personal stars, the server average, TMDB's world score. A switched-off rating isn't sent by the API either |
+| Features | **Show missing films in collections** | on | A collection also lists the films the server doesn't have, greyed out with a Request button. They never appear on the shelf |
+| Features | **Watch parties** | off | Adds "Watch Together" to movies and episodes. Turning it off ends any party in progress |
+| Playback | **Hardware acceleration** | auto | Auto-detect, a specific method (VAAPI, QuickSync, NVENC), or the CPU only. **Test** runs a real encode |
+| Playback | **Opening sequence** | off, built-in clip | A short clip played before movies and/or episodes when someone presses Play. Replace it with your own 1–10 second MP4 (H.264, under 20 MB). See [Movies and shows](video.md#opening-sequence) |
+| Backups | **Automatic backups** | on, daily, keep 7 | Scheduled backups (every 6 h to weekly, keep 1–30), a second place to copy them to, **Back up now**, and download or delete existing backups |
 
-| Card | Default | What it controls |
-| --- | --- | --- |
-| **Shelf Views** | all on | Whether **Disk Folders** and **Custom Folders** views are offered to everyone. Alphabetical and Creator are always there |
-| **User Personalization** | all allowed | Whether people can choose their own accent colour, navigation layout, page width and pause screen (Settings → Preferences). One switch for all of it, and one for each. Anything not allowed follows the server defaults below |
-| **Server Default Accent Color** | `zinc` | Accent colour for anyone who hasn't picked their own: zinc, slate, emerald, violet, rose, amber, sky, indigo |
-| **Server Default Navigation Layout** | top bar | Top navigation bar or sidebar, for anyone who hasn't picked their own |
-| **Server Default Page Width** | full width | Full width, or contained (centred, up to 1440px), for anyone who hasn't picked their own |
-| **Ratings** | all on | Which ratings are shown: personal stars, the server average, TMDB's world score. A switched-off rating isn't sent by the API either |
-| **Movie Collections** | on | Whether a collection also lists the films the server doesn't have, greyed out with a Request button. They never appear on the shelf |
-| **Watch Parties** | off | Adds "Watch Together" to movies and episodes. Turning it off ends any party in progress |
-| **Server Default Pause Screen** | Details | What movies and shows show after a couple of seconds paused: Simple, Details, Cinematic or Bedtime, for anyone who hasn't picked their own. See [Movies and shows](video.md#pause-screens) |
-| **Opening Sequence** | off, built-in clip | A short clip played before movies and/or episodes when someone presses Play. Replace it with your own 1–10 second MP4 (H.264, under 20 MB). See [Movies and shows](video.md#opening-sequence) |
-| **Server Branding & Notices** | "Plinthio", no notice | Server name (shown everywhere and in the browser tab) and a message on the sign-in page |
-| **Custom CSS Injection** | empty | CSS applied for every user, live. Docs → Custom CSS Styling lists the variables |
-| **External Metadata Providers** | no TMDB key | The TMDB key, checked against TMDB when saved. MangaDex, Google Books and Open Library need no key |
-| **Video Transcoding & Hardware Acceleration** | auto | Auto-detect, a specific method (VAAPI, QuickSync, NVENC), or software only. **Test** runs a real encode |
-| **Automatic Scanning** | on, every 60 min, watcher on | Periodic rescan of every library (5 minutes to 7 days) and the file watcher, which picks up new files about 30 s after they appear |
-| **Database Backup** | **off**, every 24 h, keep 7 | Scheduled backups (every 1–168 h, keep 1–30), plus **Back up now** and download or delete existing backups |
-
-### Per library (Admin → Libraries)
-
-- **Kids:** makes everything in the library visible to Kids Mode accounts.
-- **Scan Now:** a full scan.
-- **Delete:** removes the library from Plinthio. Files on disk are untouched.
+The Appearance section shows a **live preview** of the shelf, a title page, the sign-in screen
+and the pause screen beside its settings; hovering a choice shows it before you pick.
 
 ### Per series and title (the title page, editors and admins)
 
@@ -87,17 +82,15 @@ are using, and hovering a pause screen style shows it before you choose.
 
 ### Per user (Settings, everyone)
 
-- **Preferences:** which media categories you see, which shelf views you use, and the view
-  you land on. When the admin allows it (Admin → Server Config → User Personalization), also
-  your own **accent colour**, **navigation layout** (top bar or sidebar), **page width**
-  (full width, or contained at up to 1440px) and **video pause screen**; each has a "Server
-  default" choice that follows the admin's setting. Light or dark mode is the sun/moon button
-  in the top bar.
-- **My Activity:** what you've read, watched and listened to.
-- **Hidden:** titles you've hidden from your own shelves, with a way to bring them back.
-- **API Keys:** keys for scripts and reading apps, and the **Reading Apps** setup guide.
-- **Security:** profile picture, change password, two-factor sign-in, and sign out of
-  every device.
+- **Profile:** your picture and role.
+- **Security:** change password, two-factor sign-in, and sign out of every device.
+- **Appearance:** when the admin allows it (Admin → Appearance), your own **accent colour**,
+  **navigation** (top bar or sidebar), **page width** (full width, or contained at up to
+  1440px) and **video pause screen**. Light or dark mode is the sun/moon button in the top bar.
+- **Shelves:** which media types you see, the shelf you start on, and which shelf views you use.
+- **Hidden titles:** titles you've hidden from your own shelves, with a way to bring them back.
+- **Activity:** what you've read, watched and listened to, and your recent sign-ins.
+- **Apps & API keys:** the **reading apps** setup guide, and keys for apps and scripts.
 - **In the video player:** skip-back and skip-forward amounts (follow you across devices).
 - **In the readers:** reading direction, page layout, page turn style; EPUB font, size and
   layout.
