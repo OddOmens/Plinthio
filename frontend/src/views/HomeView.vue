@@ -27,7 +27,7 @@
         <span class="font-semibold whitespace-nowrap">Open Downloads →</span>
       </router-link>
       <!-- Continue Watching (video only, shown as its own row on the "All" view) -->
-      <section v-if="continueWatchingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="flex flex-col gap-3">
+      <section :key="`watching-${activeType}`" v-if="continueWatchingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="shelf-fade-in flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-semibold tracking-tight text-foreground flex items-center gap-1.5">
             <MonitorPlay class="w-4 h-4 text-muted-foreground" />
@@ -50,7 +50,7 @@
       </section>
 
       <!-- Continue Reading / Listening Section (Filtered to All or specific category) -->
-      <section v-if="continueReadingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="flex flex-col gap-3">
+      <section :key="`reading-${activeType}`" v-if="continueReadingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="shelf-fade-in flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-semibold tracking-tight text-foreground flex items-center gap-1.5">
             <Clock class="w-4 h-4 text-muted-foreground" />
@@ -84,49 +84,51 @@
             </span>
           </div>
 
-          <!-- Grouping Selector (Horizontal scrollable segmented pills for iOS/mobile) -->
-          <div class="w-full lg:w-auto overflow-x-auto no-scrollbar flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl border border-border flex-nowrap">
+          <!-- Grouping selector. On a phone the modes share the row equally under short
+               names, so none of them hides off the edge behind a sideways scroll. -->
+          <div class="w-full lg:w-auto overflow-x-auto no-scrollbar flex items-center gap-1 sm:gap-1.5 p-1 bg-muted/40 rounded-xl border border-border flex-nowrap">
             <button
               v-for="mode in groupingModes"
               :key="mode.id"
               @click="setGrouping(mode.id)"
+              :aria-pressed="String(groupBy === mode.id)"
               :class="[
-                'h-9 min-h-[36px] px-3.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 active:scale-95',
+                'h-9 min-h-[36px] px-2 sm:px-3.5 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none min-w-0 active:scale-95',
                 groupBy === mode.id
                   ? 'bg-background text-foreground shadow-sm font-semibold'
                   : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
               ]"
             >
               <component :is="mode.icon" class="w-3.5 h-3.5 flex-shrink-0" />
-              <span>{{ mode.label }}</span>
+              <span class="sm:hidden truncate">{{ mode.short }}</span>
+              <span class="hidden sm:inline">{{ mode.label }}</span>
             </button>
           </div>
         </div>
 
-        <!-- Filters: progress, genre, recency, sort. Wraps to two lines on a phone. -->
-        <div v-if="groupBy !== 'custom_folder'" class="flex flex-wrap items-center gap-2">
-          <label class="sr-only" for="filter-progress">Progress</label>
-          <select id="filter-progress" v-model="progressFilter" :class="filterSelectClass(progressFilter)">
+        <!-- Filters: progress, genre, recency, sort. A phone gets a tidy two-column grid (the
+             old wrapping row squeezed every select down to an empty chip), with the movie
+             collections switch on its own full-width row below. -->
+        <div v-if="groupBy !== 'custom_folder'" class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+          <select v-model="progressFilter" aria-label="Progress" :class="filterSelectClass(progressFilter)">
             <option value="">Status</option>
             <option value="unread">Not started</option>
             <option value="in_progress">In progress</option>
             <option value="finished">Finished</option>
             <option value="skipped">Skipped</option>
           </select>
-          <label class="sr-only" for="filter-genre">Genre</label>
-          <select v-if="genres.length" id="filter-genre" v-model="genreFilter" :class="filterSelectClass(genreFilter)">
+          <select v-if="genres.length" v-model="genreFilter" aria-label="Genre" :class="filterSelectClass(genreFilter)">
             <option value="">Genre</option>
             <option v-for="g in genres" :key="g.name" :value="g.name">{{ g.name }} ({{ g.count }})</option>
           </select>
-          <label class="sr-only" for="filter-added">Added</label>
-          <select id="filter-added" v-model="addedWithin" :class="filterSelectClass(addedWithin)">
+          <select v-model="addedWithin" aria-label="Added" :class="filterSelectClass(addedWithin)">
             <option value="">Added</option>
-            <option value="7">Added this week</option>
-            <option value="30">Added this month</option>
-            <option value="90">Added in 3 months</option>
+            <option value="7">This week</option>
+            <option value="30">This month</option>
+            <option value="90">Last 3 months</option>
           </select>
-          <label class="sr-only" for="filter-sort">Sort</label>
-          <select id="filter-sort" v-model="sortBy" title="Sort order" :class="filterSelectClass(sortBy === 'title' ? '' : sortBy)">
+          <!-- Without a genre list there are three selects; sort takes the whole last row. -->
+          <select v-model="sortBy" aria-label="Sort order" title="Sort order" :class="[filterSelectClass(sortBy === 'title' ? '' : sortBy), genres.length ? '' : 'col-span-2']">
             <option value="title">A–Z</option>
             <option value="added">Newest</option>
             <option value="recent">Recently opened</option>
@@ -135,7 +137,7 @@
           <!-- Movie collections: one card per collection, or every film -->
           <div
             v-if="hasMovieCollections && (activeType === 'movie' || activeType === 'all')"
-            class="flex items-center p-0.5 rounded-lg border border-border bg-muted/40 text-xs"
+            class="col-span-2 flex items-center p-0.5 rounded-lg border border-border bg-muted/40 text-sm sm:text-xs"
             role="group"
             aria-label="Movie collections"
           >
@@ -143,26 +145,35 @@
               type="button"
               @click="expandCollections = false"
               :aria-pressed="String(!expandCollections)"
-              :class="['h-8 px-2.5 rounded-md font-medium transition', !expandCollections ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+              :class="['flex-1 sm:flex-none h-9 sm:h-8 px-2.5 rounded-md font-medium transition', !expandCollections ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
             >Collections</button>
             <button
               type="button"
               @click="expandCollections = true"
               :aria-pressed="String(expandCollections)"
-              :class="['h-8 px-2.5 rounded-md font-medium transition', expandCollections ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+              :class="['flex-1 sm:flex-none h-9 sm:h-8 px-2.5 rounded-md font-medium transition', expandCollections ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
             >All movies</button>
           </div>
           <button
             v-if="filtersActive || sortBy !== 'title'"
             type="button"
             @click="clearFilters"
-            class="h-9 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition flex items-center gap-1"
+            class="col-span-2 h-9 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition flex items-center justify-center gap-1"
           >
-            <X class="w-3.5 h-3.5" /> Clear
+            <X class="w-3.5 h-3.5" /> Clear filters
           </button>
         </div>
 
-        <!-- Loading Skeleton -->
+        <!-- Results. Keyed by the view on screen, so a new category or filter fades in
+             instead of blinking through a skeleton; while a slow one loads, the old view
+             stays put, dimmed. -->
+        <div
+          :key="shelfKey"
+          class="shelf-fade-in transition-opacity duration-200"
+          :class="refreshing ? 'opacity-40 pointer-events-none' : ''"
+          :aria-busy="String(loading || refreshing)"
+        >
+        <!-- Loading Skeleton (first visit only) -->
         <div v-if="loading" class="poster-grid gap-3 sm:gap-4">
           <div v-for="i in 12" :key="i" class="aspect-[2/3] bg-muted/40 animate-pulse rounded-xl border border-border"></div>
         </div>
@@ -188,10 +199,13 @@
         <!-- Mode 1: Series — one card per series (any media type), plus standalone titles.
              Every card opens a detail page; nothing plays straight from the shelf. -->
         <div v-else-if="groupBy === 'series'" class="flex flex-col gap-3">
+          <!-- Spacers stand in for the rows unmounted above and below the window, so the
+               page keeps the height it would have with every card rendered. They sit outside
+               the grid: inside it, auto-rows-fr stretched every row to the spacer's height,
+               the next measurement doubled the spacer, and the page grew without end. -->
+          <div ref="gridWrapEl">
+          <div v-if="padTopHeight > 0" :style="{ height: padTopHeight + 'px' }"></div>
           <div ref="gridEl" class="poster-grid auto-rows-fr gap-3 sm:gap-4">
-            <!-- Spacers stand in for the rows unmounted above and below the window, so
-                 the page keeps the height it would have with every card rendered. -->
-            <div v-if="padTopHeight > 0" :style="{ gridColumn: '1 / -1', height: padTopHeight + 'px' }"></div>
             <template v-for="entry in displayedEntries" :key="entry.key">
               <SeriesCard
                 v-if="entry.kind === 'series'"
@@ -212,7 +226,8 @@
                 @edit-metadata="openMetadataModal"
               />
             </template>
-            <div v-if="padBottomHeight > 0" :style="{ gridColumn: '1 / -1', height: padBottomHeight + 'px' }"></div>
+          </div>
+          <div v-if="padBottomHeight > 0" :style="{ height: padBottomHeight + 'px' }"></div>
           </div>
 
           <div v-if="hasMoreServerItems" class="py-4 text-center text-xs text-muted-foreground">
@@ -339,6 +354,7 @@
             </div>
           </div>
         </div>
+        </div>
       </section>
     </main>
     </div>
@@ -446,7 +462,8 @@ const filtersActive = computed(() => !!(progressFilter.value || genreFilter.valu
 
 function filterSelectClass(value) {
   return [
-    'h-9 pl-2.5 pr-1.5 rounded-lg border text-xs font-medium bg-background transition focus:outline-none focus:ring-2 focus:ring-ring/40 flex-1 sm:flex-none min-w-0 sm:min-w-[7rem] max-w-[11rem]',
+    // 16px text on a phone: iOS zooms the page into any smaller form control on focus.
+    'h-10 sm:h-9 w-full sm:w-auto min-w-0 sm:min-w-[7rem] sm:max-w-[11rem] pl-3 sm:pl-2.5 pr-2 sm:pr-1.5 rounded-lg border text-base sm:text-xs font-medium bg-background transition focus:outline-none focus:ring-2 focus:ring-ring/40',
     value ? 'border-primary/60 text-foreground bg-primary/5' : 'border-border text-muted-foreground'
   ];
 }
@@ -458,10 +475,18 @@ function clearFilters() {
   sortBy.value = 'title';
 }
 
+// Genres per category, so switching back shows the Genre select straight away rather than
+// popping it in (and shifting the filter row) after a round trip.
+const genresCache = new Map();
+
 async function loadGenres() {
+  const type = activeType.value;
+  if (genresCache.has(type)) genres.value = genresCache.get(type);
   try {
-    const params = activeType.value !== 'all' ? { mediaType: activeType.value } : {};
+    const params = type !== 'all' ? { mediaType: type } : {};
     const res = await api.get('/items/genres', { params });
+    genresCache.set(type, res.data.genres || []);
+    if (type !== activeType.value) return;
     genres.value = res.data.genres || [];
     if (genreFilter.value && !genres.value.some((g) => g.name === genreFilter.value)) genreFilter.value = '';
   } catch (err) {
@@ -520,10 +545,10 @@ const groupingModes = computed(() => {
   const all = [
     // Internally still "series": every view shows series cards now, and this one is simply
     // all of them A–Z (the stored preference name is kept so saved choices carry over).
-    { id: 'series', label: 'Alphabetical', icon: ArrowDownAZ },
-    { id: 'creator', label: creatorLabel(activeType.value), icon: User },
-    { id: 'disk_folder', label: 'Disk Folders', icon: HardDrive },
-    { id: 'custom_folder', label: 'Custom Folders', icon: FolderHeart }
+    { id: 'series', label: 'Alphabetical', short: 'A–Z', icon: ArrowDownAZ },
+    { id: 'creator', label: creatorLabel(activeType.value), short: creatorLabel(activeType.value), icon: User },
+    { id: 'disk_folder', label: 'Disk Folders', short: 'Disk', icon: HardDrive },
+    { id: 'custom_folder', label: 'Custom Folders', short: 'Custom', icon: FolderHeart }
   ];
   return all.filter((m) => serverModes.includes(m.id) && userModes.includes(m.id));
 });
@@ -577,6 +602,9 @@ const sectionTitle = computed(() => {
     case 'audiobook': return 'Audiobooks';
     case 'manga': return 'Manga & Comics';
     case 'book': return 'eBooks & Documents';
+    case 'movie': return 'Movies';
+    case 'show': return 'Shows';
+    case 'anime': return 'Anime';
     default: return 'All Media';
   }
 });
@@ -626,9 +654,9 @@ const shelfEntries = computed(() => buildShelfEntries(filteredItems.value, shelf
 // scrollbar and scroll position stay honest while the DOM stays small no matter how far
 // down a 50,000-item library you are.
 const gridEl = ref(null);
+const gridWrapEl = ref(null);
 const gridColumns = ref(6);
 const rowHeight = ref(300);
-const rowGap = ref(16);
 const windowStartRow = ref(0);
 const windowEndRow = ref(BUFFER_ROWS * 2);
 
@@ -641,15 +669,15 @@ const displayedEntries = computed(() =>
   )
 );
 
-// rowHeight already includes one row gap, and the grid adds another gap between a spacer
-// and the row after it — so a spacer standing in for N rows is N*rowHeight minus one gap,
-// or the page grows slightly taller every time the window moves.
+// rowHeight includes one row gap. The spacers sit outside the grid, so a spacer for N rows
+// is exactly N*rowHeight: N cards' heights plus the N gaps that would separate them from
+// the rendered rows.
 const padTopHeight = computed(() =>
-  windowStartRow.value > 0 ? windowStartRow.value * rowHeight.value - rowGap.value : 0
+  windowStartRow.value > 0 ? windowStartRow.value * rowHeight.value : 0
 );
 const padBottomHeight = computed(() => {
   const rowsBelow = totalGridRows.value - windowEndRow.value;
-  return rowsBelow > 0 ? rowsBelow * rowHeight.value - rowGap.value : 0;
+  return rowsBelow > 0 ? rowsBelow * rowHeight.value : 0;
 });
 
 function resetGridWindow() {
@@ -670,7 +698,6 @@ function measureGrid() {
   const card = el.querySelector('[data-grid-card]');
   if (card) {
     const gap = parseFloat(getComputedStyle(el).rowGap) || 0;
-    rowGap.value = gap;
     const measured = card.getBoundingClientRect().height + gap;
     // Sub-pixel jitter between measurements would re-trigger the render watcher forever;
     // only a real change in card size counts.
@@ -679,9 +706,10 @@ function measureGrid() {
 }
 
 function updateGridWindow() {
-  const el = gridEl.value;
+  const el = gridWrapEl.value;
   if (!el || rowHeight.value <= 0) return;
 
+  // Measured from the wrapper, whose top doesn't move as the top spacer grows.
   const gridTop = el.getBoundingClientRect().top + window.scrollY;
   const scrolledIntoGrid = window.scrollY - gridTop;
   const firstVisibleRow = Math.floor(scrolledIntoGrid / rowHeight.value);
@@ -756,14 +784,56 @@ async function fetchItemPage(offset) {
   return res.data.items || [];
 }
 
+// The last few views (category + filters + sort) are kept in memory, so going back to one
+// shows it instantly and then quietly refreshes it. Searches aren't kept: they're one-offs.
+const SHELF_CACHE_LIMIT = 12;
+const shelfCache = new Map();
+// What's on screen, and a counter that bumps whenever that changes to a different view —
+// it keys the results block, which is what plays the fade-in.
+const shelfKey = ref(0);
+const refreshing = ref(false);
+let shownView = null;
+let dimTimer = null;
+
+function currentView() {
+  return JSON.stringify([activeType.value, searchQuery.value, progressFilter.value, genreFilter.value, addedWithin.value, sortBy.value]);
+}
+
+function rememberShelf(view) {
+  if (searchQuery.value) return;
+  shelfCache.delete(view);
+  shelfCache.set(view, { items: items.value, hasMore: hasMoreServerItems.value });
+  if (shelfCache.size > SHELF_CACHE_LIMIT) shelfCache.delete(shelfCache.keys().next().value);
+}
+
+function showItems(list, hasMore, view) {
+  items.value = list;
+  hasMoreServerItems.value = hasMore;
+  if (view !== shownView) {
+    shownView = view;
+    shelfKey.value++;
+  }
+}
+
 async function fetchLibraryItems() {
   const seq = ++fetchSeq;
-  loading.value = true;
+  const view = currentView();
+  const cached = view !== shownView && shelfCache.get(view);
+  clearTimeout(dimTimer);
+  if (cached) {
+    showItems(cached.items, cached.hasMore, view);
+  } else if (shownView === null) {
+    // Nothing to show yet (first visit): the skeleton.
+    loading.value = true;
+  } else if (view !== shownView) {
+    // Keep the current view up; only dim it if the answer is slow enough to notice.
+    dimTimer = setTimeout(() => { if (seq === fetchSeq) refreshing.value = true; }, 150);
+  }
   try {
     const page = await fetchItemPage(0);
     if (seq !== fetchSeq) return; // A newer fetch already started — discard this one.
-    items.value = page;
-    hasMoreServerItems.value = page.length === PAGE_SIZE;
+    showItems(page, page.length === PAGE_SIZE, view);
+    rememberShelf(view);
     // Recompute from wherever the page is actually scrolled rather than assuming the top:
     // a refresh after editing an item shouldn't yank the reader back to row 0, and a new
     // search landing on a shorter list shouldn't leave the window pointing past its end.
@@ -779,7 +849,11 @@ async function fetchLibraryItems() {
   } catch (err) {
     console.error('Failed to fetch items:', err);
   } finally {
-    if (seq === fetchSeq) loading.value = false;
+    if (seq === fetchSeq) {
+      clearTimeout(dimTimer);
+      loading.value = false;
+      refreshing.value = false;
+    }
   }
 }
 
@@ -795,6 +869,7 @@ async function loadMoreItems() {
     const known = new Set(items.value.map((i) => i.id));
     items.value = items.value.concat(page.filter((i) => !known.has(i.id)));
     hasMoreServerItems.value = page.length === PAGE_SIZE;
+    rememberShelf(shownView);
   } catch (err) {
     console.error('Failed to load more items:', err);
   } finally {
@@ -975,6 +1050,10 @@ onMounted(() => {
   loadFilterSettings();
   fetchLibraryItems();
   fetchContinueItems();
+  // Every card opens a title page, so fetch that code while the shelf sits idle; the first
+  // tap then doesn't wait on a download.
+  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1500));
+  idle(() => import('./TitleView.vue').catch(() => {}));
 });
 
 onUnmounted(() => {
@@ -984,5 +1063,6 @@ onUnmounted(() => {
   window.removeEventListener('offline', updateOnline);
   if (scrollFrame) cancelAnimationFrame(scrollFrame);
   clearTimeout(searchDebounce);
+  clearTimeout(dimTimer);
 });
 </script>

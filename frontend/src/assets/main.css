@@ -215,6 +215,10 @@ html {
   .ep-btn {
     @apply h-8 w-8 rounded-lg border border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95 text-xs;
   }
+  /* A row in a phone bottom sheet (views/TitleView.vue): big enough to hit with a thumb. */
+  .sheet-item {
+    @apply w-full h-12 px-2 rounded-xl flex items-center gap-3 text-sm text-foreground text-left hover:bg-muted/70 active:bg-muted transition;
+  }
 }
 
 /* Hide scrollbars for touch/mobile tabs while preserving momentum scroll */
@@ -225,4 +229,36 @@ html {
   -ms-overflow-style: none;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+}
+
+/* The shelf's results fade in when the category or filters change (views/HomeView.vue). */
+@keyframes shelf-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.shelf-fade-in { animation: shelf-fade-in 220ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .shelf-fade-in { animation: none; }
+}
+
+/* Bottom sheets: the backdrop fades while the panel slides up from the bottom edge. */
+.sheet-enter-active, .sheet-leave-active { transition: opacity 200ms ease; }
+.sheet-enter-active .sheet-panel, .sheet-leave-active .sheet-panel { transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sheet-enter-from, .sheet-leave-to { opacity: 0; }
+.sheet-enter-from .sheet-panel, .sheet-leave-to .sheet-panel { transform: translateY(100%); }
+@media (prefers-reduced-motion: reduce) {
+  .sheet-enter-active .sheet-panel, .sheet-leave-active .sheet-panel { transition: none; }
+}
+
+/* Form fields on phones. iOS zooms the whole page into any text field under 16px the
+   moment it's tapped (the shelf search, every settings field), and doesn't zoom back
+   out — so on narrow screens they're all 16px, whatever their utility class says.
+   min-width: 0 lets a field shrink inside a flex row instead of pushing out of its box. */
+input, select, textarea { min-width: 0; }
+@media (max-width: 639px) {
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }

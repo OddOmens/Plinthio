@@ -98,12 +98,14 @@
       <p class="text-xs text-muted-foreground truncate mt-0.5">
         {{ realCreator(series.author, series.name) || vocab.series }}
       </p>
-      <div class="mt-auto pt-2 flex items-center justify-between text-xs text-muted-foreground">
-        <span class="font-mono">{{ countLabel }}</span>
-        <span v-if="finishedCount + skippedCount === series.volumes.length" class="text-emerald-500 font-semibold flex items-center gap-1">
+      <!-- One line, always: on a narrow phone card the count gives way to the progress (the
+           poster's badge already shows the count) instead of both wrapping into a jumble. -->
+      <div class="mt-auto pt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground whitespace-nowrap">
+        <span class="font-mono truncate min-w-0" :class="finishedCount + skippedCount > 0 ? 'hidden sm:block' : ''">{{ countLabel }}</span>
+        <span v-if="finishedCount + skippedCount === series.volumes.length" class="text-emerald-500 font-semibold flex items-center gap-1 flex-shrink-0">
           <BookCheck class="w-3 h-3" /> {{ skippedCount ? 'Caught up' : `All ${vocab.done.toLowerCase()}` }}
         </span>
-        <span v-else-if="finishedCount + skippedCount > 0" class="font-mono" :title="skippedCount ? `${skippedCount} skipped` : undefined">
+        <span v-else-if="finishedCount + skippedCount > 0" class="font-mono flex-shrink-0" :title="skippedCount ? `${skippedCount} skipped` : undefined">
           {{ finishedCount + skippedCount }}/{{ series.volumes.length }} {{ skippedCount ? 'done' : vocab.done.toLowerCase() }}
         </span>
       </div>
