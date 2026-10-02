@@ -502,7 +502,7 @@ export async function searchExternalMetadata(mediaType, query, year = null) {
     case 'anime': {
       const apiKey = await getTmdbApiKey();
       if (!apiKey) {
-        const err = new Error('TMDB API key is not configured. An admin must add one in Server Settings.');
+        const err = new Error('TMDB API key is not configured. An admin must add one in Admin → Metadata.');
         err.code = 'MISSING_API_KEY';
         throw err;
       }

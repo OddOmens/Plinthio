@@ -1,6 +1,6 @@
 <template>
   <!-- A row of choice tiles (accent colours, layouts, page widths, pause screens), used by
-       both Admin → Server Config and Settings → Appearance so they look the same. -->
+       both Admin → Appearance and Settings → Appearance so they look the same. -->
   <div role="radiogroup" :aria-label="label" :class="gridClass">
     <button
       v-for="opt in options"

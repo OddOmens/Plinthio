@@ -1,5 +1,5 @@
 <template>
-  <!-- Admin → Server Config and Settings → Appearance: a miniature of what users will see, redrawn as each setting
+  <!-- Admin → Appearance and Settings → Appearance: a miniature of what users will see, redrawn as each setting
        changes. Screens are laid out at a fixed "virtual" size and scaled to fit, so they look
        like the real thing rather than a squashed version of it. Posters come from this
        server's own movies when it has any. -->

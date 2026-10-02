@@ -185,7 +185,7 @@
           </div>
           <h3 class="text-sm font-medium text-foreground">No media found</h3>
           <p class="text-xs text-muted-foreground max-w-sm mt-1 mb-4">
-            {{ searchQuery || filtersActive ? 'Nothing matches — try a different search or clear the filters' : 'Add a library in Server Settings and scan your folders to populate your shelf' }}
+            {{ searchQuery || filtersActive ? 'Nothing matches — try a different search or clear the filters' : 'Add a library in Admin → Libraries and scan your folders to populate your shelf' }}
           </p>
           <router-link
             v-if="authStore.isAdmin && !searchQuery && !filtersActive"
@@ -240,7 +240,7 @@
             </div>
             <h3 class="text-sm font-medium text-foreground">No media found</h3>
             <p class="text-xs text-muted-foreground max-w-sm mt-1 mb-4">
-              {{ searchQuery || filtersActive ? 'Nothing matches — try a different search or clear the filters' : 'Add a library in Server Settings and scan your folders to populate your shelf' }}
+              {{ searchQuery || filtersActive ? 'Nothing matches — try a different search or clear the filters' : 'Add a library in Admin → Libraries and scan your folders to populate your shelf' }}
             </p>
           </div>
         </div>

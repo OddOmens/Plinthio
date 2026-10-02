@@ -14,7 +14,7 @@ Security fixes go into the latest release. Stay on `latest` (or on the major ver
 
 Please **don't open a public issue** for a security problem. Report it privately through
 GitHub: the repository's **Security** tab → **Report a vulnerability**. Include the version
-(Admin → Server Config, or `GET /api/health`), what an attacker needs (an account? which
+(Admin → Overview, or `GET /api/health`), what an attacker needs (an account? which
 role? network access only?), and steps to reproduce.
 
 You'll get an acknowledgement within a week. Fixes ship as a patch release, and the release

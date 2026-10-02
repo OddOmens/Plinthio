@@ -15,9 +15,9 @@ title), never loose volumes:
 - **Custom Folders:** your own folders, independent of the disk. Anything not sorted yet is
   under "Unorganized".
 
-Admins can turn off Disk Folders and Custom Folders for everyone (**Admin → Server Config →
-Shelf Views**). Each person picks which of the allowed views they use under **Settings →
-Preferences**.
+Admins can turn off Disk Folders and Custom Folders for everyone (**Admin → Features →
+Shelf views**). Each person picks which of the allowed views they use under **Settings →
+Shelves**.
 
 Filters and sorting work across views: progress (unread, in progress, finished, skipped),
 genre, date added, and sort by title, newest, recently opened or release date. Search covers

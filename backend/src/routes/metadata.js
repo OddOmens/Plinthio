@@ -176,7 +176,7 @@ router.get('/search', async (req, res) => {
 
     if (err.status === 401 || err.status === 403) {
       return sendError(req, res, 'P401', {
-        message: 'The metadata provider rejected the configured API key. For TMDB, copy either the "API Key" or the "API Read Access Token" from your TMDB account settings into Server Settings. The server reached the provider fine, so this is the credential, not the network.'
+        message: 'The metadata provider rejected the configured API key. For TMDB, copy either the "API Key" or the "API Read Access Token" from your TMDB account settings into Admin → Metadata. The server reached the provider fine, so this is the credential, not the network.'
       });
     }
     if (err.status === 429) {

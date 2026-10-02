@@ -108,7 +108,7 @@ export const ERROR_CODES = {
     title: 'Invalid API key',
     message: 'Invalid API key',
     meaning: 'The X-API-Key (or HTTP Basic password) does not match any key.',
-    fix: 'Create a new key in Settings → API Keys. Keys are shown only once, when created.'
+    fix: 'Create a new key in Settings → Apps & API keys. Keys are shown only once, when created.'
   },
   P105: {
     status: 403,
@@ -238,7 +238,7 @@ export const ERROR_CODES = {
     title: 'Conversion failed',
     message: 'Converting this video failed on the server',
     meaning: 'ffmpeg started but exited with an error while converting the video. Usually a corrupt file, an unsupported codec, or a hardware transcoding problem.',
-    fix: 'Admin → Logs shows the ffmpeg error. If it mentions VAAPI/QSV/NVENC, turn hardware transcoding off in Admin → Server Settings and try again.'
+    fix: 'Admin → Logs shows the ffmpeg error. If it mentions VAAPI/QSV/NVENC, turn hardware transcoding off in Admin → Playback and try again.'
   },
   P305: {
     status: 503,
@@ -304,16 +304,16 @@ export const ERROR_CODES = {
   P400: {
     status: 409,
     title: 'TMDB key not configured',
-    message: 'TMDB API key is not configured. An admin must add one in Server Settings.',
+    message: 'TMDB API key is not configured. An admin must add one in Admin → Metadata.',
     meaning: 'Movie, show and anime metadata comes from TMDB, which needs a free API key.',
-    fix: 'Create a key at themoviedb.org → Settings → API and paste it into Admin → Server Settings.'
+    fix: 'Create a key at themoviedb.org → Settings → API and paste it into Admin → Metadata.'
   },
   P401: {
     status: 502,
     title: 'Provider rejected the API key',
     message: 'The metadata provider rejected the configured API key',
     meaning: 'The server reached the provider, but the provider refused the key.',
-    fix: 'For TMDB, paste either the "API Key" or the "API Read Access Token" from your TMDB account into Server Settings.'
+    fix: 'For TMDB, paste either the "API Key" or the "API Read Access Token" from your TMDB account into Admin → Metadata.'
   },
   P402: {
     status: 502,
@@ -387,7 +387,7 @@ export const ERROR_CODES = {
     title: 'Watch parties are turned off',
     message: 'Watch parties are turned off on this server',
     meaning: 'An admin has not enabled watch parties.',
-    fix: 'An admin can turn them on in Admin → Server Config → Watch Parties.'
+    fix: 'An admin can turn them on in Admin → Features → Watch parties.'
   },
   P601: {
     status: 404,
