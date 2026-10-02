@@ -277,9 +277,22 @@ app.get('/api/health', (req, res) => {
 // Serve frontend build if present
 const frontendDist = path.resolve(__dirname, '../../frontend/dist');
 if (fs.existsSync(frontendDist)) {
-  app.use(express.static(frontendDist));
+  // Build output under /assets/ has a content hash in every filename, so the browser can
+  // keep it for a year without asking again. Everything else (index.html, sw.js, the
+  // manifest) must be rechecked each time, or a deployed update wouldn't be picked up.
+  // Over plain http:// there's no service worker to cache the app, so this is what spares
+  // each visit a round trip per file.
+  app.use(express.static(frontendDist, {
+    setHeaders(res, filePath) {
+      const rel = path.relative(frontendDist, filePath);
+      res.setHeader('Cache-Control', rel.startsWith(`assets${path.sep}`)
+        ? 'public, max-age=31536000, immutable'
+        : 'no-cache');
+    }
+  }));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
+    res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.join(frontendDist, 'index.html'));
   });
 }

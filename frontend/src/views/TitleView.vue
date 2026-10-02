@@ -21,7 +21,7 @@
         <div class="flex items-center gap-2.5 min-w-0">
           <button
             @click="goBack"
-            class="h-7 px-2.5 rounded-lg bg-background hover:bg-muted text-foreground transition active:scale-95 flex items-center gap-1.5 text-xs font-medium border border-border flex-shrink-0 shadow-sm"
+            class="h-9 sm:h-7 px-3 sm:px-2.5 rounded-lg bg-background hover:bg-muted text-foreground transition active:scale-95 flex items-center gap-1.5 text-xs font-medium border border-border flex-shrink-0 shadow-sm"
             title="Back to shelf"
           >
             <ArrowLeft class="w-3.5 h-3.5" />
@@ -553,14 +553,32 @@
               <span class="count-pill">{{ filteredVolumes.length }}</span>
             </h2>
 
-            <div class="flex flex-wrap items-center justify-between sm:justify-end gap-2">
-              <div class="flex items-center bg-muted/50 p-0.5 rounded-lg border border-border overflow-x-auto no-scrollbar max-w-full">
+            <!-- Filter, order and layout. On a phone the status tabs collapse into one button
+                 that opens them as a sheet (five tabs didn't fit across), and all three
+                 controls share one height. -->
+            <div class="flex items-center justify-between sm:justify-end gap-2">
+              <button
+                type="button"
+                @click="showFilterSheet = true"
+                class="sm:hidden h-9 min-w-0 flex-1 px-3 rounded-lg bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition flex items-center gap-1.5 active:scale-95"
+                :class="activeFilterTab !== 'all' ? '!border-primary/60 bg-primary/5' : ''"
+                aria-haspopup="dialog"
+                :aria-label="`Filter: ${activeFilterLabel}`"
+              >
+                <ListFilter class="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
+                <span class="truncate">{{ activeFilterLabel }}</span>
+                <span class="font-mono text-[11px] opacity-75 flex-shrink-0">({{ activeFilterCount }})</span>
+                <ChevronDown class="w-3.5 h-3.5 ml-auto flex-shrink-0 text-muted-foreground" />
+              </button>
+
+              <div class="hidden sm:flex items-center bg-muted/50 p-0.5 rounded-lg border border-border overflow-x-auto no-scrollbar max-w-full">
                 <button
                   v-for="tab in filterTabs"
                   :key="tab.id"
                   @click="activeFilterTab = tab.id"
+                  :aria-pressed="String(activeFilterTab === tab.id)"
                   :class="[
-                    'px-2.5 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 flex-shrink-0',
+                    'h-[22px] px-2.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 flex-shrink-0',
                     activeFilterTab === tab.id
                       ? 'bg-background text-foreground shadow-sm font-semibold'
                       : 'text-muted-foreground hover:text-foreground'
@@ -571,28 +589,31 @@
                 </button>
               </div>
 
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 flex-shrink-0">
                 <button
                   @click="sortAscending = !sortAscending"
-                  class="h-7 px-2.5 rounded-lg bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition flex items-center gap-1.5"
+                  class="h-9 sm:h-7 px-2.5 rounded-lg bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition flex items-center gap-1.5 active:scale-95"
                   :title="sortAscending ? 'Order: first to last' : 'Order: last to first'"
                 >
                   <ArrowUpDown class="w-3 h-3 text-muted-foreground" />
                   <span class="font-mono text-xs">{{ sortAscending ? '1 → N' : 'N → 1' }}</span>
                 </button>
-                <div class="flex items-center bg-muted/50 p-0.5 rounded-lg border border-border">
+                <!-- Same outer height as the order button: 2px border + 2px padding + button. -->
+                <div class="h-9 sm:h-7 flex items-center bg-muted/50 p-0.5 rounded-lg border border-border" role="group" aria-label="Layout">
                   <button
                     aria-label="Grid view"
+                    :aria-pressed="String(viewLayout === 'grid')"
                     @click="viewLayout = 'grid'"
-                    :class="['p-1 rounded-md transition', viewLayout === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+                    :class="['h-full aspect-square rounded-md transition flex items-center justify-center', viewLayout === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
                     title="Grid view"
                   >
                     <LayoutGrid class="w-3.5 h-3.5" />
                   </button>
                   <button
                     aria-label="List view"
+                    :aria-pressed="String(viewLayout === 'list')"
                     @click="viewLayout = 'list'"
-                    :class="['p-1 rounded-md transition', viewLayout === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+                    :class="['h-full aspect-square rounded-md transition flex items-center justify-center', viewLayout === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
                     title="List view"
                   >
                     <List class="w-3.5 h-3.5" />
@@ -721,64 +742,79 @@
                 </span>
               </div>
 
-              <!-- Bottom Quick Action Row -->
-              <div class="mt-auto pt-2.5 flex items-center gap-1.5 border-t border-border/50">
-                <button
-                  @click="openVolumeReader(vol)"
-                  class="flex-1 h-8 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground text-xs font-medium transition flex items-center justify-center gap-1"
-                >
-                  <Book v-if="!vol.is_finished && !hasStarted(vol)" class="w-3.5 h-3.5" />
-                  <BookOpen v-else class="w-3.5 h-3.5" />
-                  <span>{{ vol.is_finished ? 'Again' : (hasStarted(vol) ? 'Resume' : vocab.verb) }}</span>
-                </button>
+              <!-- Actions. A phone card is too narrow for six buttons in a row, so there it's
+                   the main button plus a "⋯" that opens every action, labelled, in a sheet.
+                   Wider cards put the main button on its own row and share the next one
+                   evenly between the icon buttons. -->
+              <div class="mt-auto pt-2.5 flex flex-col gap-1.5 border-t border-border/50">
+                <div class="flex items-center gap-1.5">
+                  <button
+                    @click="openVolumeReader(vol)"
+                    class="flex-1 min-w-0 h-9 sm:h-8 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground text-xs font-semibold transition flex items-center justify-center gap-1 active:scale-95"
+                  >
+                    <Book v-if="!vol.is_finished && !hasStarted(vol)" class="w-3.5 h-3.5 flex-shrink-0" />
+                    <BookOpen v-else class="w-3.5 h-3.5 flex-shrink-0" />
+                    <span class="truncate">{{ vol.is_finished ? 'Again' : (hasStarted(vol) ? 'Resume' : vocab.verb) }}</span>
+                  </button>
+                  <button
+                    @click="openVolumeSheet(vol)"
+                    class="sm:hidden w-9 h-9 flex-shrink-0 rounded-lg border border-border hover:bg-muted text-muted-foreground flex items-center justify-center transition active:scale-95"
+                    :aria-label="`More for ${entryLabel(vol)}`"
+                    aria-haspopup="dialog"
+                  >
+                    <MoreHorizontal class="w-4 h-4" />
+                  </button>
+                </div>
 
-                <!-- Mark Read / Unread 1-Click Toggle -->
-                <button :aria-label="vol.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}`"
-                  @click="toggleVolumeReadStatus(vol)"
-                  class="w-8 h-8 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
-                  :title="vol.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}`"
-                >
-                  <BookCheck v-if="vol.is_finished" class="w-4 h-4 text-emerald-500" />
-                  <Book v-else class="w-4 h-4" />
-                </button>
+                <div class="hidden sm:grid grid-flow-col auto-cols-fr gap-1.5">
+                  <!-- Mark Read / Unread 1-Click Toggle -->
+                  <button :aria-label="vol.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}`"
+                    @click="toggleVolumeReadStatus(vol)"
+                    class="h-8 min-w-0 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
+                    :title="vol.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}`"
+                  >
+                    <BookCheck v-if="vol.is_finished" class="w-4 h-4 text-emerald-500" />
+                    <Book v-else class="w-4 h-4" />
+                  </button>
 
-                <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? `Unskip ${vocab.unit.toLowerCase()}` : `Skip ${vocab.unit.toLowerCase()}`"
-                  @click="toggleVolumeSkipped(vol)"
-                  class="w-8 h-8 rounded-lg border hover:bg-muted flex items-center justify-center transition active:scale-95"
-                  :class="isSkipped(vol) ? 'border-sky-500/50 text-sky-500' : 'border-border text-muted-foreground hover:text-foreground'"
-                  :title="isSkipped(vol) ? 'Skipped — tap to unskip' : `Skip this ${vocab.unit.toLowerCase()}`"
-                >
-                  <FastForward class="w-3.5 h-3.5" />
-                </button>
+                  <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? `Unskip ${vocab.unit.toLowerCase()}` : `Skip ${vocab.unit.toLowerCase()}`"
+                    @click="toggleVolumeSkipped(vol)"
+                    class="h-8 min-w-0 rounded-lg border hover:bg-muted flex items-center justify-center transition active:scale-95"
+                    :class="isSkipped(vol) ? 'border-sky-500/50 text-sky-500' : 'border-border text-muted-foreground hover:text-foreground'"
+                    :title="isSkipped(vol) ? 'Skipped — tap to unskip' : `Skip this ${vocab.unit.toLowerCase()}`"
+                  >
+                    <FastForward class="w-3.5 h-3.5" />
+                  </button>
 
-                <!-- Bookmarks button -->
-                <button aria-label="Bookmarks & Notes"
-                  @click="openBookmarks(vol)"
-                  class="w-8 h-8 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
-                  title="Bookmarks & Notes"
-                >
-                  <Bookmark class="w-3.5 h-3.5" />
-                </button>
+                  <!-- Bookmarks button -->
+                  <button aria-label="Bookmarks & Notes"
+                    @click="openBookmarks(vol)"
+                    class="h-8 min-w-0 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
+                    title="Bookmarks & Notes"
+                  >
+                    <Bookmark class="w-3.5 h-3.5" />
+                  </button>
 
-                <button v-if="downloads.canDownload(vol)" :aria-label="downloadLabel(vol)"
-                  @click="toggleVolumeDownload(vol)"
-                  class="w-8 h-8 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
-                  :title="downloadLabel(vol)"
-                >
-                  <CheckCircle2 v-if="downloads.isDownloaded(vol.id)" class="w-3.5 h-3.5 text-emerald-500" />
-                  <Loader2 v-else-if="downloads.isDownloading(vol.id)" class="w-3.5 h-3.5 animate-spin" />
-                  <Download v-else class="w-3.5 h-3.5" />
-                </button>
+                  <button v-if="downloads.canDownload(vol)" :aria-label="downloadLabel(vol)"
+                    @click="toggleVolumeDownload(vol)"
+                    class="h-8 min-w-0 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
+                    :title="downloadLabel(vol)"
+                  >
+                    <CheckCircle2 v-if="downloads.isDownloaded(vol.id)" class="w-3.5 h-3.5 text-emerald-500" />
+                    <Loader2 v-else-if="downloads.isDownloading(vol.id)" class="w-3.5 h-3.5 animate-spin" />
+                    <Download v-else class="w-3.5 h-3.5" />
+                  </button>
 
-                <!-- Rate — shows your stars once you've rated it; the stars themselves are in the header -->
-                <button v-if="customizationStore.ratings.showPersonal" :aria-label="`Rate this ${vocab.unit.toLowerCase()}`"
-                  @click="openRating(vol)"
-                  class="h-8 min-w-8 px-1.5 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center gap-0.5 transition active:scale-95 text-[12px] font-semibold"
-                  :title="vol.user_rating ? `You rated this ${vol.user_rating}/5 — change it in the header` : `Rate this ${vocab.unit.toLowerCase()} in the header`"
-                >
-                  <Star class="w-3.5 h-3.5" :class="vol.user_rating ? 'text-amber-400 fill-amber-400' : ''" />
-                  <span v-if="vol.user_rating" class="text-foreground">{{ vol.user_rating }}</span>
-                </button>
+                  <!-- Rate — shows your stars once you've rated it; the stars themselves are in the header -->
+                  <button v-if="customizationStore.ratings.showPersonal" :aria-label="`Rate this ${vocab.unit.toLowerCase()}`"
+                    @click="openRating(vol)"
+                    class="h-8 min-w-0 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center gap-0.5 transition active:scale-95 text-[12px] font-semibold"
+                    :title="vol.user_rating ? `You rated this ${vol.user_rating}/5 — change it in the header` : `Rate this ${vocab.unit.toLowerCase()} in the header`"
+                  >
+                    <Star class="w-3.5 h-3.5 flex-shrink-0" :class="vol.user_rating ? 'text-amber-400 fill-amber-400' : ''" />
+                    <span v-if="vol.user_rating" class="text-foreground">{{ vol.user_rating }}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -872,12 +908,12 @@
               </div>
             </div>
 
-            <!-- Right: Actions -->
-            <div class="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
+            <!-- Right: Actions. On a phone: the main button across the row and a "⋯" sheet. -->
+            <div class="flex items-center gap-2 w-full sm:w-auto sm:self-center flex-shrink-0">
               <!-- Read / Resume Button -->
               <button
                 @click="openVolumeReader(vol)"
-                class="h-9 px-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm"
+                class="flex-1 sm:flex-none justify-center h-10 sm:h-9 px-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-sm sm:text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm"
               >
                 <Play v-if="(isTimeBasedType || hasStarted(vol)) && !vol.is_finished" class="w-3.5 h-3.5 fill-current" />
                 <Book v-else-if="!vol.is_finished" class="w-3.5 h-3.5" />
@@ -885,10 +921,19 @@
                 <span>{{ vol.is_finished ? `${vocab.verb} Again` : (hasStarted(vol) ? 'Resume' : vocab.verb) }}</span>
               </button>
 
+              <button
+                @click="openVolumeSheet(vol)"
+                class="sm:hidden w-10 h-10 flex-shrink-0 rounded-xl border border-border hover:bg-muted text-muted-foreground flex items-center justify-center transition active:scale-95"
+                :aria-label="`More for ${entryLabel(vol)}`"
+                aria-haspopup="dialog"
+              >
+                <MoreHorizontal class="w-4 h-4" />
+              </button>
+
               <!-- Mark Read / Unread Button -->
               <button
                 @click="toggleVolumeReadStatus(vol)"
-                class="h-9 px-3 rounded-xl border border-border hover:bg-muted text-foreground text-xs font-medium transition active:scale-95 flex items-center gap-1.5"
+                class="hidden sm:flex h-9 px-3 rounded-xl border border-border hover:bg-muted text-foreground text-xs font-medium transition active:scale-95 items-center gap-1.5"
                 :title="vol.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}`"
               >
                 <BookCheck v-if="vol.is_finished" class="w-4 h-4 text-emerald-500" />
@@ -898,7 +943,7 @@
 
               <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? `Unskip ${vocab.unit.toLowerCase()}` : `Skip ${vocab.unit.toLowerCase()}`"
                 @click="toggleVolumeSkipped(vol)"
-                class="h-9 px-3 rounded-xl border hover:bg-muted text-xs font-medium transition active:scale-95 flex items-center gap-1.5"
+                class="hidden sm:flex h-9 px-3 rounded-xl border hover:bg-muted text-xs font-medium transition active:scale-95 items-center gap-1.5"
                 :class="isSkipped(vol) ? 'border-sky-500/50 text-sky-500' : 'border-border text-foreground'"
                 :title="isSkipped(vol) ? 'Skipped — tap to unskip' : `Skip this ${vocab.unit.toLowerCase()}`"
               >
@@ -909,7 +954,7 @@
               <!-- Bookmarks Button -->
               <button aria-label="Bookmarks & Notes"
                 @click="openBookmarks(vol)"
-                class="w-9 h-9 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
+                class="hidden sm:flex w-9 h-9 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground items-center justify-center transition active:scale-95"
                 title="Bookmarks & Notes"
               >
                 <Bookmark class="w-4 h-4" />
@@ -917,7 +962,7 @@
 
               <button v-if="downloads.canDownload(vol)" :aria-label="downloadLabel(vol)"
                 @click="toggleVolumeDownload(vol)"
-                class="w-9 h-9 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
+                class="hidden sm:flex w-9 h-9 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground items-center justify-center transition active:scale-95"
                 :title="downloadLabel(vol)"
               >
                 <CheckCircle2 v-if="downloads.isDownloaded(vol.id)" class="w-4 h-4 text-emerald-500" />
@@ -928,7 +973,7 @@
               <!-- Rate — shows your stars once you've rated it; the stars themselves are in the header -->
               <button v-if="customizationStore.ratings.showPersonal" :aria-label="`Rate this ${vocab.unit.toLowerCase()}`"
                 @click="openRating(vol)"
-                class="h-9 min-w-9 px-2 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 transition active:scale-95 text-xs font-semibold"
+                class="hidden sm:flex h-9 min-w-9 px-2 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground items-center justify-center gap-1 transition active:scale-95 text-xs font-semibold"
                 :title="vol.user_rating ? `You rated this ${vol.user_rating}/5 — change it in the header` : `Rate this ${vocab.unit.toLowerCase()} in the header`"
               >
                 <Star class="w-4 h-4" :class="vol.user_rating ? 'text-amber-400 fill-amber-400' : ''" />
@@ -1045,6 +1090,115 @@
   </main>
 
     </div>
+
+    <!-- Status filter on a phone, as a bottom sheet -->
+    <Teleport to="body">
+      <Transition name="sheet" :duration="260">
+        <div
+          v-if="showFilterSheet"
+          class="fixed inset-0 z-[60] bg-black/50 flex items-end"
+          @click.self="showFilterSheet = false"
+          @keydown.esc="showFilterSheet = false"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            :aria-label="`Show ${vocab.units.toLowerCase()}`"
+            class="sheet-panel w-full rounded-t-2xl border-t border-border bg-card shadow-2xl px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+          >
+            <div class="mx-auto mb-2 h-1 w-10 rounded-full bg-muted-foreground/30" aria-hidden="true" />
+            <p class="px-2 pb-2 text-sm font-semibold text-foreground border-b border-border/60">Show {{ vocab.units.toLowerCase() }}</p>
+            <div class="flex flex-col py-1.5">
+              <button
+                v-for="tab in filterTabs"
+                :key="tab.id"
+                type="button"
+                class="sheet-item"
+                :class="activeFilterTab === tab.id ? 'bg-muted/60 font-semibold' : ''"
+                :aria-pressed="String(activeFilterTab === tab.id)"
+                @click="activeFilterTab = tab.id; showFilterSheet = false"
+              >
+                <Check class="w-5 h-5 flex-shrink-0" :class="activeFilterTab === tab.id ? 'text-primary' : 'invisible'" />
+                <span class="flex-1">{{ tab.label }}</span>
+                <span class="font-mono text-xs text-muted-foreground">{{ tab.count }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- One volume's actions on a phone, as a bottom sheet: the card only has room for the
+         main button, and bare icons side by side were impossible to tell apart. -->
+    <Teleport to="body">
+      <Transition name="sheet" :duration="260">
+        <div
+          v-if="sheetVolume"
+          class="sheet-backdrop fixed inset-0 z-[60] bg-black/50 flex items-end"
+          @click.self="closeVolumeSheet"
+          @keydown.esc="closeVolumeSheet"
+        >
+          <div
+            ref="sheetEl"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="`${entryLabel(sheetVolume)} actions`"
+            tabindex="-1"
+            class="sheet-panel w-full max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-border bg-card shadow-2xl px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] focus:outline-none"
+          >
+            <div class="mx-auto mb-2 h-1 w-10 rounded-full bg-muted-foreground/30" aria-hidden="true" />
+            <div class="flex items-center gap-3 px-1 pb-3 border-b border-border/60">
+              <img :src="volumeCoverUrl(sheetVolume)" alt="" class="w-10 h-14 rounded-md object-cover bg-muted flex-shrink-0" />
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-foreground truncate">{{ sheetVolume.title }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ entryLabel(sheetVolume) }} ·
+                  <span v-if="sheetVolume.is_finished" class="text-emerald-500 font-medium">{{ vocab.done }}</span>
+                  <span v-else-if="isSkipped(sheetVolume)" class="text-sky-500 font-medium">Skipped</span>
+                  <span v-else-if="hasStarted(sheetVolume)" class="text-primary font-medium">{{ positionLabel(sheetVolume, true) }}</span>
+                  <span v-else>Not started</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-col py-1.5">
+              <button type="button" class="sheet-item" @click="sheetRun(openVolumeReader)">
+                <Play v-if="hasStarted(sheetVolume) && !sheetVolume.is_finished" class="w-5 h-5 text-primary fill-current" />
+                <BookOpen v-else class="w-5 h-5 text-primary" />
+                <span class="font-semibold">{{ sheetVolume.is_finished ? `${vocab.verb} again` : (hasStarted(sheetVolume) ? 'Resume' : vocab.verb) }}</span>
+              </button>
+              <button type="button" class="sheet-item" @click="sheetRun(toggleVolumeReadStatus)">
+                <BookCheck v-if="!sheetVolume.is_finished" class="w-5 h-5 text-emerald-500" />
+                <RotateCcw v-else class="w-5 h-5 text-muted-foreground" />
+                <span>{{ sheetVolume.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}` }}</span>
+              </button>
+              <button v-if="!sheetVolume.is_finished" type="button" class="sheet-item" @click="sheetRun(toggleVolumeSkipped)">
+                <FastForward class="w-5 h-5 text-sky-500" />
+                <span>{{ isSkipped(sheetVolume) ? 'Unskip' : `Skip this ${vocab.unit.toLowerCase()}` }}</span>
+              </button>
+              <button type="button" class="sheet-item" @click="sheetRun(openBookmarks)">
+                <Bookmark class="w-5 h-5 text-muted-foreground" />
+                <span>Bookmarks &amp; notes</span>
+              </button>
+              <button v-if="downloads.canDownload(sheetVolume)" type="button" class="sheet-item" @click="sheetRun(toggleVolumeDownload)">
+                <CheckCircle2 v-if="downloads.isDownloaded(sheetVolume.id)" class="w-5 h-5 text-emerald-500" />
+                <Loader2 v-else-if="downloads.isDownloading(sheetVolume.id)" class="w-5 h-5 animate-spin text-muted-foreground" />
+                <Download v-else class="w-5 h-5 text-muted-foreground" />
+                <span>{{ downloadLabel(sheetVolume) }}</span>
+              </button>
+              <button v-if="customizationStore.ratings.showPersonal" type="button" class="sheet-item" @click="sheetRun(openRating)">
+                <Star class="w-5 h-5" :class="sheetVolume.user_rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'" />
+                <span>{{ sheetVolume.user_rating ? `Your rating: ${sheetVolume.user_rating}/5 — change` : `Rate this ${vocab.unit.toLowerCase()}` }}</span>
+              </button>
+            </div>
+
+            <button type="button" @click="closeVolumeSheet" class="w-full h-11 rounded-xl bg-muted text-sm font-medium text-foreground active:scale-[0.98] transition">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Skip volumes dialog -->
     <!-- "Mark the earlier ones too?" -->
@@ -1184,7 +1338,7 @@
 <script setup>
 import { placeholderCover } from '../utils/placeholder';
 import { getMediaToken } from '../utils/mediaToken';
-import { ref, reactive, computed, onMounted, watch, defineAsyncComponent } from 'vue';
+import { ref, reactive, computed, onMounted, watch, nextTick, defineAsyncComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../api/client';
 import { useThemeStore } from '../stores/theme';
@@ -1228,6 +1382,8 @@ import {
   RotateCcw,
   ArrowUpDown,
   LayoutGrid,
+  ListFilter,
+  ChevronDown,
   List,
   BookX,
   Bookmark,
@@ -2442,6 +2598,33 @@ function handleRated({ itemId, rating }) {
   const vol = series.value?.volumes?.find((v) => v.id === itemId);
   if (vol) vol.user_rating = rating;
   if (series.value?.nextVolume?.id === itemId) series.value.nextVolume.user_rating = rating;
+}
+
+// ─── Phone status filter ────────────────────────────────────────────────────
+const showFilterSheet = ref(false);
+const activeFilterTabEntry = computed(() => filterTabs.value.find((t) => t.id === activeFilterTab.value) || filterTabs.value[0]);
+const activeFilterLabel = computed(() => activeFilterTabEntry.value?.label || 'All');
+const activeFilterCount = computed(() => activeFilterTabEntry.value?.count ?? 0);
+
+// ─── Phone action sheet for one volume ──────────────────────────────────────
+const sheetVolume = ref(null);
+const sheetEl = ref(null);
+
+function openVolumeSheet(vol) {
+  sheetVolume.value = vol;
+  nextTick(() => sheetEl.value?.focus());
+}
+
+function closeVolumeSheet() {
+  sheetVolume.value = null;
+}
+
+// Close first, so the sheet slides away while the action (a reader, a modal, the rating
+// bar scrolling into view) takes over. The volume is read before closing clears it.
+function sheetRun(action) {
+  const vol = sheetVolume.value;
+  closeVolumeSheet();
+  if (vol) action(vol);
 }
 
 // ─── Bookmarks ──────────────────────────────────────────────────────────────

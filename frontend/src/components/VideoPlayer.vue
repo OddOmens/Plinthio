@@ -131,8 +131,10 @@
       Skip {{ activeMarker.type === 'intro' ? 'Intro' : 'Credits' }}
     </button>
 
-    <!-- Touch: skip buttons either side of the native controls' play button -->
-    <template v-if="!useCustomScrubber && !locked && modeResolved && !errorMessage && !nextEpisode">
+    <!-- Touch: skip buttons either side of the native controls' play button. Not while the
+         stream is still preparing: there's nothing to skip yet, and on a phone they sat on
+         top of the "Converting for your browser…" message. -->
+    <template v-if="!useCustomScrubber && !locked && modeResolved && !errorMessage && !nextEpisode && !preparing">
       <button
         v-for="dir in ['back', 'forward']"
         :key="dir"

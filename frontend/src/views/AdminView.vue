@@ -206,7 +206,7 @@
               </button>
               <button aria-label="Delete Library"
                 @click="deleteLibrary(lib)"
-                class="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted transition"
+                class="p-2 sm:p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-muted transition"
                 title="Delete Library"
               >
                 <Trash2 class="w-4 h-4" />
@@ -392,7 +392,7 @@
               <button aria-label="Extend or set account limit"
                 v-if="u.id !== authStore.user?.id"
                 @click="openExtendUserModal(u)"
-                class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition"
+                class="p-2 sm:p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition"
                 :title="u.expires_at ? 'Extend or change account limit' : 'Set account access limit'"
               >
                 <Hourglass class="w-4 h-4 text-primary" />
@@ -400,7 +400,7 @@
 
               <button aria-label="Edit user"
                 @click="openEditUserModal(u)"
-                class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition"
+                class="p-2 sm:p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition"
                 title="Edit user"
               >
                 <Pencil class="w-4 h-4" />
@@ -409,7 +409,7 @@
               <button aria-label="Delete user"
                 v-if="u.id !== authStore.user?.id"
                 @click="deleteUser(u)"
-                class="p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded-md transition"
+                class="p-2 sm:p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded-md transition"
                 title="Delete user"
               >
                 <Trash2 class="w-4 h-4" />
@@ -444,7 +444,7 @@
             </button>
             <button aria-label="Refresh now"
               @click="loadLogs"
-              class="p-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border text-xs transition"
+              class="p-2 sm:p-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border text-xs transition"
               title="Refresh now"
             >
               <RefreshCw class="w-3.5 h-3.5" :class="loadingLogs ? 'animate-spin' : ''" />
@@ -476,7 +476,7 @@
               :key="lvl"
               @click="setLogLevel(lvl)"
               :class="[
-                'px-2.5 py-0.5 rounded text-[12px] font-medium capitalize transition',
+                'px-2.5 py-1.5 sm:py-0.5 rounded text-[12px] font-medium capitalize transition',
                 selectedLogLevel === lvl
                   ? 'bg-secondary text-foreground font-semibold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
@@ -653,7 +653,7 @@
             </select>
             <button aria-label="Refresh now"
               @click="loadActivity"
-              class="p-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border text-xs transition"
+              class="p-2 sm:p-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border text-xs transition"
               title="Refresh now"
             >
               <RefreshCw class="w-3.5 h-3.5" :class="loadingActivity ? 'animate-spin' : ''" />
@@ -1400,14 +1400,14 @@
                 <div class="flex items-center gap-1 flex-shrink-0">
                   <button aria-label="Download this backup"
                     @click="downloadStoredBackup(b)"
-                    class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition"
+                    class="p-2 sm:p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition"
                     title="Download this backup"
                   >
                     <Download class="w-3.5 h-3.5" />
                   </button>
                   <button aria-label="Delete this backup"
                     @click="deleteStoredBackup(b)"
-                    class="p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded-md transition"
+                    class="p-2 sm:p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded-md transition"
                     title="Delete this backup"
                   >
                     <Trash2 class="w-3.5 h-3.5" />

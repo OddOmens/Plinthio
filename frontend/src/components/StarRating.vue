@@ -17,15 +17,17 @@
       :aria-checked="readonly ? undefined : modelValue === n"
       :aria-label="readonly ? undefined : `${n} star${n === 1 ? '' : 's'}`"
       :title="readonly ? undefined : (modelValue === n ? 'Clear rating' : `${n} star${n === 1 ? '' : 's'}`)"
-      class="relative inline-flex"
-      :class="readonly ? '' : 'rounded transition active:scale-90 hover:scale-110 disabled:opacity-50 disabled:pointer-events-none'"
+      class="inline-flex"
+      :class="readonly ? '' : 'p-1 rounded transition active:scale-90 hover:scale-110 disabled:opacity-50 disabled:pointer-events-none'"
       :disabled="readonly ? undefined : disabled"
       @mouseenter="!readonly && (hover = n)"
       @click="!readonly && select(n)"
     >
-      <Star :class="[sizeClass, 'text-muted-foreground/40']" />
-      <span class="absolute inset-y-0 left-0 flex overflow-hidden" :style="{ width: fillWidth(n) }">
-        <Star :class="[sizeClass, 'text-amber-400 fill-amber-400 flex-shrink-0']" />
+      <span class="relative inline-flex">
+        <Star :class="[sizeClass, 'text-muted-foreground/40']" />
+        <span class="absolute inset-y-0 left-0 flex overflow-hidden" :style="{ width: fillWidth(n) }">
+          <Star :class="[sizeClass, 'text-amber-400 fill-amber-400 flex-shrink-0']" />
+        </span>
       </span>
     </component>
   </div>
@@ -53,10 +55,12 @@ const sizeClass = computed(() => ({
   lg: 'w-7 h-7'
 }[props.size] || 'w-5 h-5'));
 
-// Interactive stars get wider gaps so each one is a comfortable touch target.
+// Interactive stars pad each button out to a comfortable touch target (a bare 20px star
+// was hard to hit on a phone), and a negative margin keeps the row lined up with the
+// text around it.
 const gapClass = computed(() => {
   if (props.size === 'xs') return 'gap-px';
-  return props.readonly ? 'gap-0.5' : 'gap-1.5';
+  return props.readonly ? 'gap-0.5' : 'gap-0.5 -m-1';
 });
 
 const displayValue = computed(() => (hover.value || props.modelValue || 0));
