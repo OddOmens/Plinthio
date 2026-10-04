@@ -9,6 +9,9 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Fixed
+- **Tailscale no longer goes offline when Plinthio restarts.** The Tailscale add-ons now restart along with Plinthio instead of keeping a dead network connection, so your tailnet and Funnel links come back by themselves after an update or rebuild.
+
 ## [1.4.0] - 2026-10-02
 
 ### Added
