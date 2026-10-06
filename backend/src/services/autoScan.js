@@ -7,8 +7,8 @@ import { logger } from './logger.js';
 // Admin panel and clicked Scan — the thing every other media server does for you. Two
 // mechanisms, either of which can be turned off:
 //
-//   * a periodic sweep, which re-scans any library whose last scan is older than the
-//     configured interval (the reliable floor — works on network shares, bind mounts and
+//   * a scheduled sweep, which re-scans a library every N minutes or at set times of day
+//     (the reliable floor — works on network shares, bind mounts and
 //     filesystems that emit no events at all), and
 //   * a filesystem watcher, which reacts within seconds of a file appearing.
 //
@@ -22,21 +22,42 @@ const TICK_MS = 60 * 1000;
 // one scan per file when a whole season is dropped in at once.
 const WATCH_QUIET_MS = 30 * 1000;
 
+// `enabled` is the scheduled sweep and `watchEnabled` the file watcher; they're independent,
+// so either can run without the other. With both off, scanning is manual only.
 export const DEFAULT_AUTO_SCAN = {
   enabled: true,
+  mode: 'interval', // 'interval' = every N minutes, 'times' = at set times of day
   intervalMinutes: 60,
+  times: ['03:00'], // HH:MM in the server's local time, used when mode is 'times'
   watchEnabled: true
 };
+
+const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+const MAX_TIMES = 12;
+
+export function normalizeTimes(value) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.filter((t) => typeof t === 'string' && TIME_PATTERN.test(t)))]
+    .sort()
+    .slice(0, MAX_TIMES);
+}
 
 export async function getAutoScanSettings() {
   try {
     const db = await getDb();
     const row = await db.get('SELECT value FROM settings WHERE key = ?', [SETTINGS_KEY]);
-    if (!row) return { ...DEFAULT_AUTO_SCAN };
-    return { ...DEFAULT_AUTO_SCAN, ...JSON.parse(row.value) };
+    if (!row) return { ...DEFAULT_AUTO_SCAN, times: [...DEFAULT_AUTO_SCAN.times] };
+    const stored = JSON.parse(row.value);
+    const merged = { ...DEFAULT_AUTO_SCAN, ...stored };
+    // Before the two switches were independent, `enabled: false` turned the watcher off too.
+    // Keep that meaning for settings saved back then rather than waking the watcher on upgrade.
+    if (stored.mode === undefined && stored.enabled === false) merged.watchEnabled = false;
+    merged.times = normalizeTimes(merged.times);
+    if (merged.mode !== 'times') merged.mode = 'interval';
+    return merged;
   } catch (err) {
     // Unreadable or malformed settings shouldn't disable scanning outright.
-    return { ...DEFAULT_AUTO_SCAN };
+    return { ...DEFAULT_AUTO_SCAN, times: [...DEFAULT_AUTO_SCAN.times] };
   }
 }
 
@@ -47,6 +68,8 @@ export async function saveAutoScanSettings(patch) {
   const next = {
     enabled: patch.enabled === undefined ? current.enabled : !!patch.enabled,
     watchEnabled: patch.watchEnabled === undefined ? current.watchEnabled : !!patch.watchEnabled,
+    mode: patch.mode === undefined ? current.mode : (patch.mode === 'times' ? 'times' : 'interval'),
+    times: patch.times === undefined ? current.times : normalizeTimes(patch.times),
     intervalMinutes: clampInterval(
       patch.intervalMinutes === undefined ? current.intervalMinutes : patch.intervalMinutes
     )
@@ -83,17 +106,43 @@ async function triggerScan(libraryId, reason) {
 
 // ---------------------------------------------------------------- periodic sweep
 
+// The latest scheduled time that has already passed (today's, or yesterday's if none of
+// today's have arrived yet). A library last scanned before it is overdue — which also means a
+// slot missed while the server was down is made up once on the next tick, not skipped.
+export function latestSlot(times, now = new Date()) {
+  let latest = null;
+  for (const time of times) {
+    const [hours, minutes] = time.split(':').map(Number);
+    const slot = new Date(now);
+    slot.setHours(hours, minutes, 0, 0);
+    if (slot > now) slot.setDate(slot.getDate() - 1);
+    if (latest === null || slot > latest) latest = slot;
+  }
+  return latest;
+}
+
+export function isScanDue(settings, lastScannedMs, now = new Date()) {
+  if (!settings.enabled) return false;
+  if (settings.mode === 'times') {
+    const slot = latestSlot(settings.times, now);
+    if (!slot) return false;
+    return lastScannedMs === null || lastScannedMs < slot.getTime();
+  }
+  return lastScannedMs === null || now.getTime() - lastScannedMs >= settings.intervalMinutes * 60 * 1000;
+}
+
 async function runDueScans() {
   const settings = await getAutoScanSettings();
   if (!settings.enabled) return;
 
   const db = await getDb();
   const libraries = await db.all('SELECT id, name, last_scanned_at FROM libraries');
-  const intervalMs = settings.intervalMinutes * 60 * 1000;
+  const now = new Date();
 
   for (const library of libraries) {
-    const last = library.last_scanned_at ? Date.parse(`${library.last_scanned_at}Z`) : null;
-    if (last !== null && Number.isFinite(last) && Date.now() - last < intervalMs) continue;
+    const parsed = library.last_scanned_at ? Date.parse(`${library.last_scanned_at}Z`) : null;
+    const last = parsed !== null && Number.isFinite(parsed) ? parsed : null;
+    if (!isScanDue(settings, last, now)) continue;
     await triggerScan(library.id, 'scheduled');
   }
 }
@@ -143,7 +192,7 @@ function startWatching(library) {
 export async function syncWatchers() {
   const settings = await getAutoScanSettings();
 
-  if (!settings.enabled || !settings.watchEnabled) {
+  if (!settings.watchEnabled) {
     for (const id of [...watchers.keys()]) stopWatching(id);
     return;
   }

@@ -270,7 +270,14 @@ router.get('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 router.put('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
-  const { enabled, intervalMinutes, watchEnabled } = req.body;
+  const { enabled, intervalMinutes, watchEnabled, mode, times } = req.body;
+
+  if (mode !== undefined && mode !== 'interval' && mode !== 'times') {
+    return res.status(400).json({ error: 'Scan mode must be "interval" or "times"' });
+  }
+  if (times !== undefined && (!Array.isArray(times) || !times.every((t) => typeof t === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(t)))) {
+    return res.status(400).json({ error: 'Scan times must be a list of HH:MM times' });
+  }
 
   if (intervalMinutes !== undefined) {
     const parsed = parseInt(intervalMinutes, 10);
@@ -280,7 +287,7 @@ router.put('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
   }
 
   try {
-    const settings = await saveAutoScanSettings({ enabled, intervalMinutes, watchEnabled });
+    const settings = await saveAutoScanSettings({ enabled, intervalMinutes, watchEnabled, mode, times });
     res.json({ message: 'Automatic scanning updated', ...settings });
   } catch (err) {
     serverError(req, res, err);
