@@ -9,6 +9,13 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **Scan at set times.** Automatic scanning can now run at one or more times each day (server time zone) instead of only every so often. A time missed while the server was off is made up once when it's back.
+
+### Changed
+- **The schedule and the folder watcher are now separate switches.** You can watch folders without a schedule, or schedule without watching. If you turned automatic scanning off before, the watcher stays off.
+- Turning automatic scanning off entirely now says so in Admin → Libraries, with a reminder to press Scan for new media.
+
 ## [1.4.0] - 2026-10-02
 
 ### Added

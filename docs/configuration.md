@@ -51,7 +51,7 @@ button. Sections are listed in [Administration](administration.md).
 
 | Where | Setting | Default | What it controls |
 | --- | --- | --- | --- |
-| Libraries | **Automatic scanning** | on, every 60 min, watcher on | Periodic rescan of every library (15 minutes to a day) and the file watcher, which picks up new files about 30 s after they appear |
+| Libraries | **Automatic scanning** | on, every 60 min, watcher on | Rescan of every library at an interval (15 minutes to a day) or at set times each day, and the file watcher, which picks up new files about 30 s after they appear. The schedule and the watcher are independent switches |
 | Metadata | **TMDB key** | none | Checked against TMDB when saved. MangaDex, Google Books and Open Library need no key |
 | Kids Mode | **Whole libraries** | off | Makes everything in a library visible to Kids Mode accounts |
 | Appearance | **Let people personalize** | on, each allowed | Whether people can choose their own accent colour, navigation, page width and pause screen (Settings → Appearance). One switch for all, and **Users can change** on each. Anything not allowed follows the server's choice |
