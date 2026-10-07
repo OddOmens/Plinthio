@@ -1470,7 +1470,11 @@ const metadataApplyIds = ref([]);
 
 function openSeriesMetadataSearch() {
   if (!series.value) return;
+  const firstVol = series.value.volumes?.[0];
   metadataTargetItem.value = {
+    id: firstVol?.id,
+    library_id: firstVol?.library_id,
+    cover_path: firstVol?.cover_path,
     media_type: mediaType.value,
     title: series.value.name,
     series: series.value.name,

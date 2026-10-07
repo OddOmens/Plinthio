@@ -21,8 +21,9 @@ const hasFfmpeg = (() => {
   }
 })();
 
-const { findCoverInFolder, looksLikeImage, isJunkFilename } = await import('../src/utils/imageFile.js');
+const { findCoverInFolder, looksLikeImage, looksLikeImageBuffer, isJunkFilename } = await import('../src/utils/imageFile.js');
 const { extractVideoFrameCover } = await import('../src/services/videoFrame.js');
+const { isAllowedCoverHost, saveCoverJpeg } = await import('../src/services/artwork.js');
 const { config } = await import('../src/config/env.js');
 const { getDb } = await import('../src/config/database.js');
 const { scanLibrary } = await import('../src/services/scanner.js');
@@ -180,3 +181,52 @@ describe('video frame extraction', () => {
     assert.equal(await extractVideoFrameCover('/nope/missing.mkv', 'missing-item', 10), null);
   });
 });
+
+describe('remote cover download security & normalization', () => {
+  test('validates image buffers in memory', () => {
+    assert.equal(looksLikeImageBuffer(JPEG), true);
+    assert.equal(looksLikeImageBuffer(PNG), true);
+    assert.equal(looksLikeImageBuffer(APPLE_DOUBLE), false);
+    assert.equal(looksLikeImageBuffer(Buffer.from('not an image')), false);
+    assert.equal(looksLikeImageBuffer(null), false);
+  });
+
+  test('allows verified metadata provider hosts and subdomains', () => {
+    assert.equal(isAllowedCoverHost('books.googleusercontent.com'), true);
+    assert.equal(isAllowedCoverHost('lh3.googleusercontent.com'), true);
+    assert.equal(isAllowedCoverHost('lh6.googleusercontent.com'), true);
+    assert.equal(isAllowedCoverHost('image.tmdb.org'), true);
+    assert.equal(isAllowedCoverHost('uploads.mangadex.org'), true);
+    assert.equal(isAllowedCoverHost('covers.openlibrary.org'), true);
+    assert.equal(isAllowedCoverHost('ia800101.us.archive.org'), true);
+    assert.equal(isAllowedCoverHost('archive.org'), true);
+  });
+
+  test('rejects unauthorized or deceptive hosts (SSRF prevention)', () => {
+    assert.equal(isAllowedCoverHost('evil.com'), false);
+    assert.equal(isAllowedCoverHost('attackergoogleusercontent.com'), false);
+    assert.equal(isAllowedCoverHost('localhost'), false);
+    assert.equal(isAllowedCoverHost('127.0.0.1'), false);
+    assert.equal(isAllowedCoverHost('169.254.169.254'), false);
+    assert.equal(isAllowedCoverHost(''), false);
+  });
+
+  test('normalizes an image buffer to JPEG and saves to coversDir', async () => {
+    // Generate a valid PNG buffer using sharp
+    const sharp = (await import('sharp')).default;
+    const testBuffer = await sharp({
+      create: { width: 100, height: 100, channels: 3, background: { r: 255, g: 0, b: 0 } }
+    }).png().toBuffer();
+
+    const itemId = 'testcover123456789012345678901234';
+    const filename = await saveCoverJpeg(testBuffer, itemId);
+    assert.equal(filename, `${itemId}.jpg`);
+
+    const savedPath = path.join(config.coversDir, filename);
+    assert.equal(fs.existsSync(savedPath), true);
+    assert.equal(looksLikeImage(savedPath), true);
+
+    try { fs.unlinkSync(savedPath); } catch (e) { /* clean up */ }
+  });
+});
+
