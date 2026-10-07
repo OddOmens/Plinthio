@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { config } from '../config/env.js';
-import { getThumbnailPath } from './thumbnails.js';
+import { getThumbnailPath, THUMB_WIDTHS } from './thumbnails.js';
 import { invalidateCoverCache } from '../routes/media.js';
 import { searchExternalMetadata, getTmdbApiKey } from './externalMetadata.js';
 import { logger } from './logger.js';
@@ -94,7 +94,7 @@ export async function saveCoverJpeg(buffer, itemId) {
     .jpeg({ quality: 88 })
     .toFile(fullPath);
 
-  for (const width of [180, 360, 720]) {
+  for (const width of THUMB_WIDTHS) {
     const thumbPath = getThumbnailPath(itemId, width);
     if (fs.existsSync(thumbPath)) {
       try { fs.unlinkSync(thumbPath); } catch (e) { /* ignore */ }

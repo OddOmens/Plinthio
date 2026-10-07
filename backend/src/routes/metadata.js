@@ -10,7 +10,7 @@ import {
   fetchTmdbEpisode,
   fetchMangaDexVolumeCovers
 } from '../services/externalMetadata.js';
-import { getThumbnailPath } from '../services/thumbnails.js';
+import { getThumbnailPath, THUMB_WIDTHS } from '../services/thumbnails.js';
 import { invalidateCoverCache } from './media.js';
 import { downloadCover, downloadCoverBuffer, saveCoverJpeg, cleanSearchTitle } from '../services/artwork.js';
 import { parseMediaTitle } from '../services/titleCleaner.js';
@@ -65,7 +65,7 @@ async function writeCoverJpeg(buffer, coverFilename) {
 }
 
 function clearCachedThumbnails(itemId) {
-  for (const width of [180, 360, 720]) {
+  for (const width of THUMB_WIDTHS) {
     const thumbPath = getThumbnailPath(itemId, width);
     if (fs.existsSync(thumbPath)) {
       try { fs.unlinkSync(thumbPath); } catch (e) { /* ignore */ }
