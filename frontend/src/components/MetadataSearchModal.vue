@@ -383,14 +383,13 @@ const artistsLabel = computed(() => isVideoType.value ? 'Cast / Actors' : 'Artis
 
 const previewCoverUrl = computed(() => {
   if (pickedCoverUrl.value) return pickedCoverUrl.value;
-  // Series-wide edits pass a synthetic item with no id, so there's nothing to preview —
-  // the upload button still works, since that path keys off the series name.
-  if (!props.item?.id) return null;
+  const targetId = props.item?.id || (isBulk.value && props.applyToIds?.[0]);
+  if (!targetId) return null;
   // Always fetch from the server — it returns a styled placeholder SVG when no artwork
   // exists yet, which is far better than showing the ImageOff icon. coverCacheBust forces
   // a fresh fetch after a user upload so the old art isn't served from the browser cache.
   const bust = coverCacheBust.value ? `&v=${coverCacheBust.value}` : '';
-  return `/api/media/cover/${props.item.id}?token=${token}${bust}`;
+  return `/api/media/cover/${targetId}?token=${token}${bust}`;
 });
 
 const providerLabel = computed(() => {
@@ -426,7 +425,7 @@ const PICK_FIELDS = computed(() => [
   { key: 'genres', label: 'Genres' },
   { key: 'themes', label: 'Themes' },
   { key: 'overview', label: 'Description', formKey: 'description' },
-  { key: 'coverUrl', label: 'Cover', bulkHidden: true }
+  { key: 'coverUrl', label: 'Cover' }
 ]);
 
 function hasValue(val) {
@@ -546,17 +545,18 @@ async function saveForm() {
     };
 
     if (isBulk.value) {
-      const outcomes = await Promise.allSettled(
-        props.applyToIds.map((id) => api.post(`/metadata/apply/${id}`, sharedFields))
-      );
-      const failed = outcomes.filter((o) => o.status === 'rejected');
-      const succeeded = outcomes.length - failed.length;
-      if (failed.length > 0) {
-        failed.forEach((f) => console.error('Metadata save failed for a volume:', f.reason));
-        dialog.alert(`Saved to ${succeeded} of ${outcomes.length} volumes. ${failed.length} failed — see browser console for details.`);
-      } else {
-        dialog.alert({ title: 'Metadata saved', message: `Updated all ${outcomes.length} volumes.`, type: 'success' });
-      }
+      const payload = {
+        ...sharedFields,
+        applyToIds: props.applyToIds,
+        series: form.series.trim() || props.item?.series || null,
+        title: form.series.trim() || props.item?.series || undefined,
+        mediaType: props.item?.media_type,
+        libraryId: props.item?.library_id
+      };
+      if (pickedCoverUrl.value) payload.coverUrl = pickedCoverUrl.value;
+      const res = await api.post('/metadata/apply-series', payload);
+      const count = res.data.updatedCount ?? props.applyToIds.length;
+      dialog.alert({ title: 'Metadata saved', message: `Updated all ${count} items in the series.`, type: 'success' });
     } else {
       if (!props.item) return;
       const payload = {

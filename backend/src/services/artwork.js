@@ -6,31 +6,47 @@ import { invalidateCoverCache } from '../routes/media.js';
 import { searchExternalMetadata, getTmdbApiKey } from './externalMetadata.js';
 import { logger } from './logger.js';
 
+import sharp from 'sharp';
+import { looksLikeImageBuffer } from '../utils/imageFile.js';
+
 // Only fetch covers from the CDN hosts our own metadata providers actually return —
 // `coverUrl` can be client-supplied, and without this the server would happily turn it into
 // an arbitrary outbound HTTP request (SSRF against internal services / cloud metadata
 // endpoints).
 const ALLOWED_COVER_HOSTS = new Set([
   'uploads.mangadex.org',
+  'mangadex.org',
   'books.google.com',
   'books.googleusercontent.com',
   'covers.openlibrary.org',
-  'image.tmdb.org'
+  'openlibrary.org',
+  'image.tmdb.org',
+  'themoviedb.org'
 ]);
 // Open Library covers 302 through archive.org to a numbered `iaNNNNNN.us.archive.org`
-// mirror that varies per request, so it can't be pinned to one exact hostname.
-const ALLOWED_COVER_HOST_SUFFIXES = ['.archive.org'];
+// mirror that varies per request. Google Books redirects to `lh*.googleusercontent.com`.
+const ALLOWED_COVER_HOST_SUFFIXES = [
+  '.archive.org',
+  '.googleusercontent.com',
+  '.mangadex.org',
+  '.tmdb.org',
+  '.themoviedb.org'
+];
 const ALLOWED_COVER_EXACT_HOSTS = new Set(['archive.org']);
 const MAX_COVER_BYTES = 15 * 1024 * 1024; // 15MB
 const COVER_FETCH_TIMEOUT_MS = 15000;
 
 export function isAllowedCoverHost(hostname) {
-  return ALLOWED_COVER_HOSTS.has(hostname) ||
-    ALLOWED_COVER_EXACT_HOSTS.has(hostname) ||
-    ALLOWED_COVER_HOST_SUFFIXES.some((suffix) => hostname.endsWith(suffix));
+  const host = String(hostname || '').toLowerCase();
+  return ALLOWED_COVER_HOSTS.has(host) ||
+    ALLOWED_COVER_EXACT_HOSTS.has(host) ||
+    ALLOWED_COVER_HOST_SUFFIXES.some((suffix) => host.endsWith(suffix));
 }
 
-export async function downloadCover(coverUrl, itemId) {
+/**
+ * Downloads and verifies image bytes from an approved metadata provider.
+ */
+export async function downloadCoverBuffer(coverUrl) {
   let parsed;
   try {
     parsed = new URL(coverUrl);
@@ -41,25 +57,16 @@ export async function downloadCover(coverUrl, itemId) {
     throw new Error('Cover URL is not from an approved metadata provider');
   }
 
-  // Bounded, like every other outbound call: the scanner downloads covers one item at a
-  // time while holding the scan lock, so a CDN that accepts the connection and then stalls
-  // would hang the whole library scan rather than just losing one poster.
-  const res = await fetch(parsed.toString(), { signal: AbortSignal.timeout(COVER_FETCH_TIMEOUT_MS) });
+  const res = await fetch(parsed.toString(), {
+    headers: { 'User-Agent': 'Plinthio/1.4.1 (https://github.com/OddOmens/Plinthio)' },
+    signal: AbortSignal.timeout(COVER_FETCH_TIMEOUT_MS)
+  });
   if (!res.ok) {
     throw new Error(`Cover download failed with status ${res.status}`);
   }
-  // Re-check after redirects: a provider host could 30x to somewhere off the allowlist.
-  const finalHost = new URL(res.url).hostname;
+  const finalHost = res.url ? new URL(res.url).hostname : parsed.hostname;
   if (!isAllowedCoverHost(finalHost)) {
     throw new Error('Cover URL redirected off the approved provider host');
-  }
-  const contentType = res.headers.get('content-type') || '';
-  if (!contentType.startsWith('image/')) {
-    throw new Error('Cover URL did not return an image');
-  }
-  const contentLength = parseInt(res.headers.get('content-length') || '0', 10);
-  if (contentLength > MAX_COVER_BYTES) {
-    throw new Error('Cover image is too large');
   }
 
   const buffer = Buffer.from(await res.arrayBuffer());
@@ -67,21 +74,40 @@ export async function downloadCover(coverUrl, itemId) {
     throw new Error('Cover image is too large');
   }
 
-  const coverFilename = `${itemId}.jpg`;
-  fs.writeFileSync(path.join(config.coversDir, coverFilename), buffer);
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.startsWith('image/') && !looksLikeImageBuffer(buffer)) {
+    throw new Error('Cover URL did not return an image');
+  }
 
-  // Invalidate any cached thumbnails so the new cover is regenerated on next request
+  return buffer;
+}
+
+/**
+ * Normalizes an image buffer with sharp and saves as standardized JPEG for an item.
+ */
+export async function saveCoverJpeg(buffer, itemId) {
+  const coverFilename = `${itemId}.jpg`;
+  const fullPath = path.join(config.coversDir, coverFilename);
+  await sharp(buffer)
+    .rotate()
+    .resize(1200, 1800, { fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 88 })
+    .toFile(fullPath);
+
   for (const width of [180, 360, 720]) {
     const thumbPath = getThumbnailPath(itemId, width);
     if (fs.existsSync(thumbPath)) {
       try { fs.unlinkSync(thumbPath); } catch (e) { /* ignore */ }
     }
   }
-  // Also drop the in-memory cover_path lookup cache in media.js — otherwise /cover/:id
-  // keeps serving the old cover_path (and thus the old image) until the process restarts.
   invalidateCoverCache(itemId);
 
   return coverFilename;
+}
+
+export async function downloadCover(coverUrl, itemId) {
+  const buffer = await downloadCoverBuffer(coverUrl);
+  return await saveCoverJpeg(buffer, itemId);
 }
 
 export { cleanSearchTitle } from './titleCleaner.js';

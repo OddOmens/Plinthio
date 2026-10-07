@@ -319,6 +319,12 @@
               >
                 TMDB
               </span>
+              <span
+                v-else-if="item.cover_source === 'frame'"
+                class="absolute bottom-0 inset-x-0 bg-amber-600/90 text-[10px] font-bold text-white text-center py-0.5 leading-none"
+              >
+                FRAME
+              </span>
             </div>
 
             <!-- Title & Proposed Clean Title -->
@@ -380,13 +386,16 @@
               v-if="item.hasCover"
               :class="[
                 'text-[11px] px-1.5 py-0.5 rounded flex items-center gap-1 font-medium',
-                item.cover_source === 'tmdb'
+                item.cover_source === 'tmdb' || item.cover_source === 'mangadex' || item.cover_source === 'provider'
                   ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                   : 'bg-muted text-muted-foreground'
               ]"
             >
               <Check class="w-3 h-3" />
               Poster
+            </span>
+            <span v-else-if="item.isFrame" class="text-[11px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 font-medium" title="Provisional video frame — run Auto Match to fetch official poster">
+              Frame
             </span>
             <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20 font-medium">
               No Poster

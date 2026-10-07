@@ -6,7 +6,8 @@ async function fetchJson(url, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(url, { ...options, signal: controller.signal });
+    const headers = { 'User-Agent': 'Plinthio/1.4.1 (https://github.com/OddOmens/Plinthio)', ...(options.headers || {}) };
+    const res = await fetch(url, { ...options, headers, signal: controller.signal });
     if (!res.ok) {
       // The status is attached, not just interpolated into the message, so callers can tell
       // "your key is wrong" (401/403) apart from "the server can't get out" — advice that
@@ -513,3 +514,77 @@ export async function searchExternalMetadata(mediaType, query, year = null) {
       throw new Error(`No metadata provider available for media type "${mediaType}"`);
   }
 }
+
+/**
+ * Fetch season details from TMDB (includes all episodes for that season).
+ */
+export async function fetchTmdbSeason(tmdbId, seasonNumber, apiKey = null) {
+  const key = apiKey || await getTmdbApiKey();
+  if (!key) return null;
+  try {
+    const req = tmdbRequest(
+      `https://api.themoviedb.org/3/tv/${encodeURIComponent(tmdbId)}/season/${encodeURIComponent(seasonNumber)}`,
+      key
+    );
+    return await fetchJson(req.url, req.options);
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Fetch episode details from TMDB.
+ */
+export async function fetchTmdbEpisode(tmdbId, seasonNumber, episodeNumber, apiKey = null) {
+  const seasonData = await fetchTmdbSeason(tmdbId, seasonNumber, apiKey);
+  if (!seasonData || !Array.isArray(seasonData.episodes)) return null;
+
+  const ep = seasonData.episodes.find((e) => Number(e.episode_number) === Number(episodeNumber));
+  if (!ep) return null;
+
+  const directors = (ep.crew || [])
+    .filter((c) => c.job === 'Director')
+    .map((c) => c.name)
+    .filter(Boolean);
+
+  const cast = (ep.guest_stars || [])
+    .slice(0, 5)
+    .map((c) => c.name)
+    .filter(Boolean);
+
+  return {
+    episodeNumber: ep.episode_number,
+    seasonNumber: ep.season_number,
+    name: ep.name || null,
+    overview: ep.overview || null,
+    airDate: ep.air_date || null,
+    stillUrl: ep.still_path ? `https://image.tmdb.org/t/p/w500${ep.still_path}` : null,
+    rating: ep.vote_count > 0 && typeof ep.vote_average === 'number' ? ep.vote_average : null,
+    ratingVotes: ep.vote_count > 0 ? ep.vote_count : null,
+    director: directors.join(', ') || null,
+    cast: cast.join(', ') || null
+  };
+}
+
+/**
+ * Fetch volume covers from MangaDex for a manga ID.
+ * Returns a Map of volumeString -> coverUrl.
+ */
+export async function fetchMangaDexVolumeCovers(mangaId) {
+  try {
+    const url = `https://api.mangadex.org/cover?manga[]=${encodeURIComponent(mangaId)}&limit=100`;
+    const data = await fetchJson(url);
+    const map = new Map();
+    for (const item of data.data || []) {
+      const vol = item.attributes?.volume;
+      const fileName = item.attributes?.fileName;
+      if (vol && fileName && !map.has(vol)) {
+        map.set(vol, `https://uploads.mangadex.org/covers/${mangaId}/${fileName}.512.jpg`);
+      }
+    }
+    return map;
+  } catch (e) {
+    return new Map();
+  }
+}
+
