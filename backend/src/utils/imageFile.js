@@ -19,6 +19,24 @@ const MAGIC = [
 ];
 
 /**
+ * Whether a byte buffer starts with magic bytes of a decodable image.
+ */
+export function looksLikeImageBuffer(buf) {
+  if (!buf || buf.length < 12) return false;
+  for (const { bytes } of MAGIC) {
+    if (bytes.every((b, i) => buf[i] === b)) return true;
+  }
+  // RIFF....WEBP
+  if (buf.subarray(0, 4).toString('latin1') === 'RIFF' && buf.subarray(8, 12).toString('latin1') === 'WEBP') return true;
+  // ....ftyp(avif|heic|mif1)
+  if (buf.subarray(4, 8).toString('latin1') === 'ftyp') {
+    const brand = buf.subarray(8, 12).toString('latin1');
+    if (['avif', 'avis', 'heic', 'mif1'].includes(brand)) return true;
+  }
+  return false;
+}
+
+/**
  * Whether a file is really a decodable image, judged by its first bytes rather than its
  * extension. Cheap enough to run over a folder listing.
  */
@@ -29,18 +47,7 @@ export function looksLikeImage(filePath) {
     const buf = Buffer.alloc(16);
     const read = fs.readSync(fd, buf, 0, 16, 0);
     if (read < 12) return false;
-
-    for (const { bytes } of MAGIC) {
-      if (bytes.every((b, i) => buf[i] === b)) return true;
-    }
-    // RIFF....WEBP
-    if (buf.subarray(0, 4).toString('latin1') === 'RIFF' && buf.subarray(8, 12).toString('latin1') === 'WEBP') return true;
-    // ....ftyp(avif|heic|mif1)
-    if (buf.subarray(4, 8).toString('latin1') === 'ftyp') {
-      const brand = buf.subarray(8, 12).toString('latin1');
-      if (['avif', 'avis', 'heic', 'mif1'].includes(brand)) return true;
-    }
-    return false;
+    return looksLikeImageBuffer(buf);
   } catch (err) {
     return false;
   } finally {
