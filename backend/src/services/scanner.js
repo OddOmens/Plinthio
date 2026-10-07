@@ -7,10 +7,11 @@ import { extractAudiobookMetadata, extractMangaMetadata, extractBookMetadata, ex
 import { logger } from './logger.js';
 import { PlinthioError, codeForFsError } from '../errors.js';
 import { config } from '../config/env.js';
-import { getThumbnailPath } from './thumbnails.js';
+import { getThumbnailPath, THUMB_WIDTHS } from './thumbnails.js';
 import { invalidateCoverCache } from '../routes/media.js';
 import { fetchVideoArtwork, isVideoArtworkAvailable } from './artwork.js';
-import { extractVideoFrameCover } from './videoFrame.js';
+import sharp from 'sharp';
+import { extractVideoFrameCover, FRAME_LEGACY_WIDTH } from './videoFrame.js';
 import { backfillMovieCredits } from './credits.js';
 import { findCoverInFolder, looksLikeImage } from '../utils/imageFile.js';
 import { parseMediaTitle } from './titleCleaner.js';
@@ -243,7 +244,7 @@ export async function scanLibrary(libraryId) {
         // The file changed (that's why we're here — see the size-unchanged skip above),
         // so its cover may have too. Bust both the thumbnail cache and media.js's in-memory
         // cover_path cache, or a changed cover would silently keep serving the old image.
-        for (const width of [180, 360, 720]) {
+        for (const width of THUMB_WIDTHS) {
           const thumbPath = getThumbnailPath(itemId, width);
           if (fs.existsSync(thumbPath)) {
             try { fs.unlinkSync(thumbPath); } catch (e) { /* ignore */ }
@@ -431,6 +432,18 @@ async function applyExtras(db, libraryId, extras) {
   }
 }
 
+// Frames grabbed before 1.5 are exactly FRAME_LEGACY_WIDTH wide and look soft on large
+// cards; a new grab is never that width, so this finds old ones once and only once.
+async function isLegacyFrame(item) {
+  if (item.cover_source !== 'frame') return false;
+  try {
+    const meta = await sharp(path.join(config.coversDir, item.cover_path)).metadata();
+    return meta.width === FRAME_LEGACY_WIDTH;
+  } catch (e) {
+    return false;
+  }
+}
+
 async function backfillArtwork(db, library) {
   const items = await db.all(
     'SELECT id, path, title, series, media_type, duration, cover_path, cover_source, extra_type FROM items WHERE library_id = ?',
@@ -460,7 +473,8 @@ async function backfillArtwork(db, library) {
     // An extra scanned before extras were recognised got its film's poster (from the folder
     // or TMDB); swap that for a frame of its own. Art someone uploaded by hand is kept.
     const extraWithFilmArt = usable && item.extra_type && ['folder', 'tmdb'].includes(item.cover_source);
-    if (usable && !provisional && !extraWithFilmArt) continue;
+    const legacyFrame = usable && await isLegacyFrame(item);
+    if (usable && !provisional && !extraWithFilmArt && !legacyFrame) continue;
 
     let coverPath = null;
     let coverSource = null;
@@ -498,7 +512,7 @@ async function backfillArtwork(db, library) {
     //    would otherwise show a blank card for every movie it has.
     // A frame is only worth grabbing if nothing better exists — and never worth re-grabbing
     // for an item that already has one.
-    if (!coverPath && !provisional && VIDEO_MEDIA_TYPES.includes(item.media_type)) {
+    if (!coverPath && (!provisional || legacyFrame) && VIDEO_MEDIA_TYPES.includes(item.media_type)) {
       coverPath = await extractVideoFrameCover(item.path, item.id, item.duration);
       if (coverPath) coverSource = 'frame';
     }
@@ -528,7 +542,7 @@ function hasUsableCover(coverPath) {
 }
 
 function dropCachedImages(itemId) {
-  for (const width of [180, 360, 720]) {
+  for (const width of THUMB_WIDTHS) {
     const thumbPath = getThumbnailPath(itemId, width);
     try { fs.unlinkSync(thumbPath); } catch (e) { /* nothing cached */ }
   }

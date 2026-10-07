@@ -2,7 +2,7 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { config } from '../config/env.js';
-import { getThumbnailPath } from '../services/thumbnails.js';
+import { getThumbnailPath, THUMB_WIDTHS } from '../services/thumbnails.js';
 import { logger } from '../services/logger.js';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
@@ -225,7 +225,7 @@ router.post('/remove-missing', async (req, res) => {
       if (row.cover_path) {
         try { fs.unlinkSync(path.join(config.coversDir, row.cover_path)); } catch (e) { /* already gone */ }
       }
-      for (const width of [180, 360, 720]) {
+      for (const width of THUMB_WIDTHS) {
         try { fs.unlinkSync(getThumbnailPath(row.id, width)); } catch (e) { /* not cached */ }
       }
     }

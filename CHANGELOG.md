@@ -9,6 +9,11 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-10-07
+
+### Changed
+- **Sharper stills and banners for titles without a poster match.** Titles that have no TMDB match use a frame from the video as their artwork. Those frames were only 480–600 px wide, so large cards and banners (Continue Watching, Recently Added, the native apps' big cards) looked soft. New frames and episode stills are 1280 px wide, and frames grabbed by earlier versions are redone on the next library scan. Covers can also be requested at 1280 px (`/api/media/cover/<id>?w=1280`), and the pause screen now uses the sharper size it was always asking for.
+
 ## [1.4.1] - 2026-10-07
 
 ### Fixed
