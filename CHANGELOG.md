@@ -9,6 +9,10 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Fixed
+- **Shows in season folders no longer split into one "show" per season.** A file with no `S01E05` in its name, such as `Bumble Nums/Season 02/03 - Title.mp4`, was filed under a show called "Season 02". It now belongs to "Bumble Nums", and the leading number in a season folder is read as the episode number. Rescan the library to fix existing shows.
+- **Episode numbers are no longer found inside other words.** A YouTube id like `[6a6x0WQn_ic]` in a filename was read as season 6, episode 0, and "Sleep 3" as an episode.
+
 ## [1.4.0] - 2026-10-02
 
 ### Added
