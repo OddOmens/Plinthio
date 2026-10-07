@@ -7,7 +7,7 @@ import { config } from '../config/env.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { getMangaPagesList, extractMangaPage } from '../services/archive.js';
 import { pickPageWidth, resizedMangaPage } from '../services/pageImages.js';
-import { getThumbnailPath, getOrCreateThumbnail } from '../services/thumbnails.js';
+import { getThumbnailPath, getOrCreateThumbnail, THUMB_WIDTHS } from '../services/thumbnails.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
 import { escapeXml } from '../utils/xml.js';
 import { sendRangedFile, streamFile } from '../utils/fileStream.js';
@@ -42,7 +42,7 @@ const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 // no amount of requests can make the server cache more than a handful of thumbnail variants
 // per item, instead of trusting an open 100-1200 range that trivially lets a single client
 // force ~1100 distinct sharp() resizes per cover.
-const ALLOWED_THUMB_WIDTHS = [180, 360, 720];
+const ALLOWED_THUMB_WIDTHS = THUMB_WIDTHS;
 
 // A still from a video (an episode's thumbnail in a show's episode list). Grabbed on first
 // request and cached; 404 when the file can't be read, and the page falls back to the cover.

@@ -12,6 +12,12 @@ import { config } from '../config/env.js';
 const GRAB_AT_FRACTION = 0.2;
 const FALLBACK_SECONDS = 300;
 const TIMEOUT_MS = 30000;
+// Wide enough for a big card or banner on a retina screen; `min(…, iw)` never enlarges a
+// smaller video. Frames were 600px (stills 480px) before 1.5, which looked soft once cards
+// grew past ~300px — FRAME_LEGACY_WIDTH lets the scanner find and redo those.
+export const FRAME_WIDTH = 1280;
+export const FRAME_LEGACY_WIDTH = 600;
+const scaleTo = (w) => `scale=min(${w}\\,iw):-2`;
 
 function runFfmpeg(args) {
   return new Promise((resolve) => {
@@ -68,8 +74,8 @@ export async function extractVideoFrameCover(filePath, itemId, durationSeconds =
     '-ss', String(seekTo),
     '-i', filePath,
     '-frames:v', '1',
-    '-vf', 'scale=600:-2',
-    '-q:v', '4',
+    '-vf', scaleTo(FRAME_WIDTH),
+    '-q:v', '3',
     // ffmpeg picks the output format from the file extension, and the temp file's is
     // `.tmp` — so the format has to be stated outright or it exits with "Unable to find a
     // suitable output format".
@@ -95,9 +101,9 @@ export async function extractVideoFrameCover(filePath, itemId, durationSeconds =
 // ─── Episode stills ──────────────────────────────────────────────────────────
 // A show's episodes usually share the show's poster (folder artwork), which makes an
 // episode list a column of identical pictures. A still per episode is grabbed the first
-// time the list asks for it — small (480px, ~25 KB), cached on disk, and never more than
+// time the list asks for it — 1280px, cached on disk, and never more than
 // two ffmpeg processes at once, so opening a 24-episode season doesn't flood the server.
-const STILL_WIDTH = 480;
+const STILL_WIDTH = 1280;
 const STILL_AT_FRACTION = 0.3; // past the cold open and title sequence
 const MAX_CONCURRENT_STILLS = 2;
 const stillsDir = path.join(config.cacheDir, 'stills');
@@ -125,7 +131,7 @@ function runQueued(task) {
 // Keyed on the file size so replacing the file makes a new still rather than serving the
 // old episode's.
 export function stillPath(item) {
-  return path.join(stillsDir, `${item.id}-${item.file_size || 0}.jpg`);
+  return path.join(stillsDir, `${item.id}-${item.file_size || 0}-w${STILL_WIDTH}.jpg`);
 }
 
 /**
@@ -149,8 +155,8 @@ export async function getOrCreateStill(item) {
         '-ss', String(seekTo),
         '-i', item.path,
         '-frames:v', '1',
-        '-vf', `scale=${STILL_WIDTH}:-2`,
-        '-q:v', '6',
+        '-vf', scaleTo(STILL_WIDTH),
+        '-q:v', '3',
         '-f', 'image2',
         '-y', tempPath
       ]);
