@@ -15,6 +15,11 @@ services:
     container_name: plinthio-test-tailscale
     restart: unless-stopped
     network_mode: service:plinthio-test
+    # Restart this container whenever plinthio-test restarts, so it never keeps a dead network.
+    depends_on:
+      plinthio-test:
+        condition: service_started
+        restart: true
     environment:
       - TS_AUTHKEY=${TS_TEST_AUTHKEY:-}
       - TS_HOSTNAME=${TS_TEST_HOSTNAME:-plinthio-test}

@@ -4,6 +4,11 @@ import sharp from 'sharp';
 import { config } from '../config/env.js';
 import { getDb } from '../config/database.js';
 
+// The widths /api/media/cover will build (anything else snaps to 360), so a client can't make
+// the server cache a new variant per request. 1280 is for big cards and banners (a 900px-wide
+// card on a 2x display); sharp never enlarges, so a small cover is simply served as it is.
+export const THUMB_WIDTHS = [180, 360, 720, 1280];
+
 const THUMB_DIR = path.join(config.cacheDir, 'thumbnails');
 if (!fs.existsSync(THUMB_DIR)) {
   fs.mkdirSync(THUMB_DIR, { recursive: true });

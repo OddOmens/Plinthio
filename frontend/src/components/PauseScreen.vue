@@ -96,7 +96,7 @@ const props = defineProps({
   posterUrl: { type: String, default: '' }
 });
 
-const posterFor = () => props.posterUrl || coverUrl(props.item, { width: 780 });
+const posterFor = () => props.posterUrl || coverUrl(props.item, { width: 1280 });
 const poster = ref(posterFor());
 watch(() => [props.item.id, props.posterUrl], () => { poster.value = posterFor(); });
 
