@@ -21,6 +21,8 @@ export async function startTestServer({ env = {}, dataDir: existingDataDir = nul
       PORT: String(port),
       HOST: '127.0.0.1',
       JWT_SECRET: 'test-secret-not-used-anywhere-real',
+      // A developer's own built-in key must not send the suite to TMDB.
+      PLINTHIO_BUILTIN_TMDB_KEY: '',
       ...env
     },
     stdio: ['ignore', 'pipe', 'pipe']

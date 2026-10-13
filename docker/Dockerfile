@@ -66,6 +66,12 @@ COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# The release workflow passes Plinthio's own TMDB key (a repository secret), so new servers get
+# movie and show details with no setup. It is readable from the image, as Jellyfin's is from its
+# source; a key saved in Admin → Metadata or TMDB_API_KEY wins. Kept last so it doesn't bust the cache.
+ARG PLINTHIO_BUILTIN_TMDB_KEY=
+ENV PLINTHIO_BUILTIN_TMDB_KEY=${PLINTHIO_BUILTIN_TMDB_KEY}
+
 EXPOSE 8080 8443
 
 # Lets `docker ps` and orchestrators see a wedged server, not just a running process.

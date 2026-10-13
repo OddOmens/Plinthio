@@ -41,7 +41,9 @@ author or age rating, and recent video conversion failures. See
 
 ## Metadata
 
-The **TMDB key** (checked against TMDB when saved), then every title in one table with
+The **TMDB key**. Release images come with a key built in, so this works with no setup;
+paste your own (checked against TMDB when saved) to use it instead, and **Use built-in key**
+goes back. Then every title in one table with
 filters, for fixing metadata in bulk:
 
 - **Auto Match** per row, with the result shown inline, so you can work down a list.
@@ -50,7 +52,7 @@ filters, for fixing metadata in bulk:
 - **Clean titles:** strip scene junk from titles taken from file names.
 - **Search** providers manually, and apply a result to a title or a whole series.
 
-TMDB matches need the TMDB key (P400 without it).
+TMDB matches need a TMDB key, built in or your own (P400 without one).
 
 ## Kids Mode
 
