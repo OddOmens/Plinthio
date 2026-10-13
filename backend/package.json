@@ -5,7 +5,7 @@
   "description": "Plinthio API and streaming server",
   "main": "src/index.js",
   "engines": {
-    "node": ">=20.17.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "start": "node src/index.js",
@@ -27,7 +27,7 @@
     "mime-types": "^3.0.2",
     "morgan": "^1.10.0",
     "multer": "^2.4.0",
-    "music-metadata": "^11.16.1",
+    "music-metadata": "^12.1.0",
     "node-unrar-js": "^2.0.2",
     "sharp": "^0.35.5",
     "sqlite": "^5.1.1",
