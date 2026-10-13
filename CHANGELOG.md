@@ -13,6 +13,25 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Shows in season folders no longer split into one "show" per season.** A file with no `S01E05` in its name, such as `Bumble Nums/Season 02/03 - Title.mp4`, was filed under a show called "Season 02". It now belongs to "Bumble Nums", and the leading number in a season folder is read as the episode number. Rescan the library to fix existing shows.
 - **Episode numbers are no longer found inside other words.** A YouTube id like `[6a6x0WQn_ic]` in a filename was read as season 6, episode 0, and "Sleep 3" as an episode.
 
+## [1.4.2] - 2026-10-07
+
+### Changed
+- **Sharper stills and banners for titles without a poster match.** Titles that have no TMDB match use a frame from the video as their artwork. Those frames were only 480–600 px wide, so large cards and banners (Continue Watching, Recently Added, the native apps' big cards) looked soft. New frames and episode stills are 1280 px wide, and frames grabbed by earlier versions are redone on the next library scan. Covers can also be requested at 1280 px (`/api/media/cover/<id>?w=1280`), and the pause screen now uses the sharper size it was always asking for.
+
+## [1.4.1] - 2026-10-07
+
+### Fixed
+- **Poster metadata syncing and artwork reliability:**
+  - Expanded the cover download allowlist to permit Google Books redirects (`lh*.googleusercontent.com`), MangaDex (`uploads.mangadex.org`), and TMDB (`image.tmdb.org`, `tmdb.org`, `themoviedb.org`), preventing cover download failures on external redirects.
+  - Normalized all remote cover downloads through `sharp` to produce standardized, high-quality JPEGs while validating image buffers directly in memory.
+  - Fixed bulk and series metadata edits so picked poster artwork can be saved and applied across all volumes and episodes in a single optimized request (`POST /metadata/apply-series`).
+  - Provisional video frame covers (`cover_source = 'frame'`) are now correctly recognized as missing official artwork in Admin filters and are automatically upgraded to official posters during Auto Match without requiring manual cover overwrites.
+- **Granular metadata synchronization across media types:**
+  - **TV Shows & Anime:** Auto-matching now syncs at the episode level. It queries TMDB season and episode data to set specific episode names, overviews, air dates, and episode still captures, rather than overwriting episode titles with the show name.
+  - **Manga:** Auto-matching preserves volume numbers and volume titles (e.g. `Series, Vol. X`) while fetching authentic per-volume cover artwork from MangaDex.
+  - **Movies:** Syncs movie titles, overviews, release dates, cast/crew credits, TMDB ratings, and official posters.
+- **Tailscale no longer goes offline when Plinthio restarts.** The Tailscale add-ons now restart along with Plinthio instead of keeping a dead network connection, so your tailnet and Funnel links come back by themselves after an update or rebuild.
+
 ## [1.4.0] - 2026-10-02
 
 ### Added
