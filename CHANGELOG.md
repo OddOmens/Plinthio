@@ -10,7 +10,12 @@ the admin update banner. Add entries under **Unreleased** as you go.
 ## [Unreleased]
 
 ### Added
+- **Scan at set times.** Automatic scanning can now run at one or more times each day (server time zone) instead of only every so often. A time missed while the server was off is made up once when it's back.
 - **Movie and show details with no setup.** The Docker images now come with a TMDB key built in, so posters, descriptions, cast, world ratings and missing films in a collection work on a new server straight away. Admin → Metadata shows which key is in use; paste your own to use it instead, and **Use built-in key** goes back. A key in `TMDB_API_KEY` still wins over the built-in one. If TMDB ever stops accepting the built-in key, the server says it needs a key, as before.
+
+### Changed
+- **The schedule and the folder watcher are now separate switches.** You can watch folders without a schedule, or schedule without watching. If you turned automatic scanning off before, the watcher stays off.
+- Turning automatic scanning off entirely now says so in Admin → Libraries, with a reminder to press Scan for new media.
 
 ### Fixed
 - **Shows in season folders no longer split into one "show" per season.** A file with no `S01E05` in its name, such as `Bumble Nums/Season 02/03 - Title.mp4`, was filed under a show called "Season 02". It now belongs to "Bumble Nums", and the leading number in a season folder is read as the episode number. Rescan the library to fix existing shows.
