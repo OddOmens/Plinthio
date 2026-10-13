@@ -108,7 +108,8 @@ sign-in: theme, and which media types they want to see.
 
 Next steps worth taking:
 
-- **Admin → Metadata:** add the TMDB key.
+- **Admin → Metadata:** nothing to do with the release images, which have a TMDB key built in.
+  Built from source, add your own TMDB key here.
 - **Admin → Playback → Hardware acceleration:** press **Test** to check hardware
   acceleration.
 - **Admin → Backups:** daily backups are on; add a second place to copy them to.

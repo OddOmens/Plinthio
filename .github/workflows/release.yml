@@ -101,7 +101,9 @@ jobs:
           file: docker/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          build-args: APP_VERSION=${{ needs.verify.outputs.version }}
+          build-args: |
+            APP_VERSION=${{ needs.verify.outputs.version }}
+            PLINTHIO_BUILTIN_TMDB_KEY=${{ secrets.TMDB_BUILTIN_KEY }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

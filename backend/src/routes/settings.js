@@ -16,7 +16,7 @@ import {
   deleteBackupFile
 } from '../services/backup.js';
 import { getAutoScanSettings, saveAutoScanSettings } from '../services/autoScan.js';
-import { verifyTmdbApiKey } from '../services/externalMetadata.js';
+import { verifyTmdbApiKey, getTmdbKeyInfo, hasBuiltinTmdbKey } from '../services/externalMetadata.js';
 import { serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 
@@ -76,12 +76,17 @@ router.patch('/filters', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// Admin endpoint to check whether a TMDB API key is configured (never returns the key itself)
+// Which TMDB key is in use, never the key itself. tmdbSource is "custom", "environment",
+// "builtin" or null; tmdbBuiltIn says whether this build has a key to fall back to.
+async function tmdbStatus() {
+  const { key, source } = await getTmdbKeyInfo();
+  return { tmdbConfigured: !!key, tmdbSource: source, tmdbBuiltIn: hasBuiltinTmdbKey() };
+}
+
+// Admin endpoint to check whether a TMDB API key is configured
 router.get('/metadata-providers', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const db = await getDb();
-    const row = await db.get("SELECT value FROM settings WHERE key = 'tmdb_api_key'");
-    res.json({ tmdbConfigured: !!(row && row.value) || !!process.env.TMDB_API_KEY });
+    res.json(await tmdbStatus());
   } catch (err) {
     serverError(req, res, err);
   }
@@ -144,7 +149,11 @@ router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, asyn
     const db = await getDb();
     if (!apiKey || !apiKey.trim()) {
       await db.run("DELETE FROM settings WHERE key = 'tmdb_api_key'");
-      return res.json({ message: 'TMDB API key cleared', tmdbConfigured: !!process.env.TMDB_API_KEY });
+      const status = await tmdbStatus();
+      return res.json({
+        message: status.tmdbSource === 'builtin' ? 'Your TMDB key was removed. Using the built-in key.' : 'TMDB API key cleared',
+        ...status
+      });
     }
 
     // Verify before storing. A key that doesn't work should say so here, not silently do
@@ -164,7 +173,7 @@ router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, asyn
       message: check.authStyle === 'read-access-token'
         ? 'TMDB Read Access Token saved and verified'
         : 'TMDB API key saved and verified',
-      tmdbConfigured: true
+      ...await tmdbStatus()
     });
   } catch (err) {
     serverError(req, res, err);
