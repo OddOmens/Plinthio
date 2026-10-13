@@ -258,7 +258,7 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 
 ### P400: TMDB key not configured
 
-*HTTP 409.* Movie, show and anime metadata comes from TMDB, which needs a free API key.
+*HTTP 409.* Movie, show and anime metadata comes from TMDB, which needs an API key. Release images have one built in; you see this on a build from source, or if TMDB stopped accepting the built-in key.
 
 **What to do:** Create a key at themoviedb.org → Settings → API and paste it into Admin → Metadata.
 

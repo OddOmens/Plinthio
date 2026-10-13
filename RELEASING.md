@@ -50,6 +50,12 @@ section for the version.
   tags** lets only admins create, move or delete `v*` tags. Admins can bypass both, so a
   release commit and tag can still be pushed straight to `main`. If a CI job is renamed or
   added, update the required checks in the ruleset.
+- **Built-in TMDB key:** the release workflow builds the image with the repository secret
+  `TMDB_BUILTIN_KEY` (Settings → Secrets and variables → Actions). Use a TMDB key registered
+  for Plinthio itself, not a personal one. It can be read from the published image, the same
+  as Jellyfin's, and is only allowed under TMDB's non-commercial terms while Plinthio is free.
+  To replace it, update the secret and cut a release; servers with their own key are
+  unaffected. Without the secret, images have no built-in key and admins must paste one.
 
 ## If a release is bad
 
