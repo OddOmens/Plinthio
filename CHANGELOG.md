@@ -14,6 +14,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Movie and show details with no setup.** The Docker images now come with a TMDB key built in, so posters, descriptions, cast, world ratings and missing films in a collection work on a new server straight away. Admin → Metadata shows which key is in use; paste your own to use it instead, and **Use built-in key** goes back. A key in `TMDB_API_KEY` still wins over the built-in one. If TMDB ever stops accepting the built-in key, the server says it needs a key, as before.
 
 ### Changed
+- **Running without Docker now needs Node.js 22 or newer** (was 20.17). The audio metadata library needs it, and Node 20 no longer gets security fixes. Docker installs already run Node 24 and aren't affected.
 - **The schedule and the folder watcher are now separate switches.** You can watch folders without a schedule, or schedule without watching. If you turned automatic scanning off before, the watcher stays off.
 - Turning automatic scanning off entirely now says so in Admin → Libraries, with a reminder to press Scan for new media.
 
