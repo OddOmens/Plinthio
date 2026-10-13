@@ -5,7 +5,7 @@
   "description": "Plinthio API and streaming server",
   "main": "src/index.js",
   "engines": {
-    "node": ">=20.17.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "start": "node src/index.js",

@@ -280,7 +280,7 @@ docker compose -f docker/docker-compose.yml -f docker/docker-compose.build.yml u
 
 Supported for development, and it works for installs too. You need:
 
-- Node.js 24 (20.17 or newer works)
+- Node.js 24 (22 or newer works)
 - `ffmpeg` and `ffprobe` for all video: probing, remuxing, transcoding, subtitles, trickplay,
   episode stills and video covers. Without them video that needs converting fails with P303.
 - `pdfinfo` and `pdftoppm` (poppler) for PDFs. Without them PDFs fail with P308.

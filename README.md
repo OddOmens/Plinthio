@@ -212,7 +212,7 @@ A build from source has no built-in TMDB key: add your own under Admin → Metad
 
 ## 🛠️ Development
 
-You need Node.js 24 (20.17 or newer works), **ffmpeg/ffprobe** (video) and **poppler** (`pdfinfo`/`pdftoppm`, PDFs):
+You need Node.js 24 (22 or newer works), **ffmpeg/ffprobe** (video) and **poppler** (`pdfinfo`/`pdftoppm`, PDFs):
 
 ```bash
 sudo apt install ffmpeg poppler-utils     # Debian/Ubuntu
