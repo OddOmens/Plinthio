@@ -39,18 +39,55 @@
     <template #actions><SaveStatus :status="scanSave.status.value" :message="scanSave.message.value" /></template>
     <div class="divide-y divide-border">
       <ToggleRow v-model="autoScan.enabled" label="Re-scan on a schedule" description="The dependable one: works on network shares and mounts that report no changes." />
-      <div v-if="autoScan.enabled" class="py-3 flex flex-wrap items-center justify-between gap-3">
-        <label for="auto-scan-interval" class="text-xs font-semibold text-foreground">Re-scan every</label>
-        <select id="auto-scan-interval" v-model.number="autoScan.intervalMinutes" class="field w-auto min-w-[10rem]">
-          <option :value="15">15 minutes</option>
-          <option :value="30">30 minutes</option>
-          <option :value="60">hour</option>
-          <option :value="360">6 hours</option>
-          <option :value="1440">day</option>
-        </select>
-      </div>
-      <ToggleRow v-if="autoScan.enabled" v-model="autoScan.watchEnabled" label="Watch folders for changes" description="Scans about 30 seconds after a file appears, where the filesystem reports it." />
+      <template v-if="autoScan.enabled">
+        <div class="py-3 flex flex-wrap items-center justify-between gap-3">
+          <label for="auto-scan-mode" class="text-xs font-semibold text-foreground">Schedule</label>
+          <select id="auto-scan-mode" v-model="autoScan.mode" class="field w-auto min-w-[10rem]">
+            <option value="interval">At regular intervals</option>
+            <option value="times">At set times each day</option>
+          </select>
+        </div>
+        <div v-if="autoScan.mode === 'interval'" class="py-3 flex flex-wrap items-center justify-between gap-3">
+          <label for="auto-scan-interval" class="text-xs font-semibold text-foreground">Re-scan every</label>
+          <select id="auto-scan-interval" v-model.number="autoScan.intervalMinutes" class="field w-auto min-w-[10rem]">
+            <option :value="15">15 minutes</option>
+            <option :value="30">30 minutes</option>
+            <option :value="60">hour</option>
+            <option :value="360">6 hours</option>
+            <option :value="1440">day</option>
+          </select>
+        </div>
+        <div v-else class="py-3 flex flex-col gap-2">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <span class="text-xs font-semibold text-foreground">Re-scan at</span>
+            <div class="flex flex-wrap items-center gap-2">
+              <div v-for="(time, index) in autoScan.times" :key="index" class="flex items-center gap-1">
+                <input type="time" v-model="autoScan.times[index]" :aria-label="`Scan time ${index + 1}`" class="field w-auto" />
+                <button type="button" @click="autoScan.times.splice(index, 1)" class="btn btn-ghost btn-icon hover:text-destructive" :aria-label="`Remove ${time || 'this time'}`">
+                  <X class="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <button v-if="autoScan.times.length < 12" type="button" @click="autoScan.times.push('03:00')" class="btn btn-secondary">
+                <Plus class="w-3.5 h-3.5" /> Add time
+              </button>
+            </div>
+          </div>
+          <p class="field-hint">In the server's time zone. If the server was off at a set time, it scans once when it's back.</p>
+        </div>
+      </template>
+      <ToggleRow v-model="autoScan.watchEnabled" label="Watch folders for changes" description="Scans about 30 seconds after a file appears, where the filesystem reports it. Works with or without the schedule." />
     </div>
+    <p v-if="scanningIsManual" class="mt-3 text-xs flex items-start gap-1.5 text-amber-600 dark:text-amber-400" role="status">
+      <TriangleAlert class="w-3.5 h-3.5 mt-px flex-shrink-0" />
+      Automatic scanning is off. New media won't show up until an admin presses Scan on a library.
+    </p>
+    <p v-else-if="!autoScan.enabled" class="mt-3 text-xs text-muted-foreground">
+      Without a schedule, changes on network shares or mounts that send no file events won't be noticed until you press Scan.
+    </p>
+    <p v-else-if="autoScan.mode === 'times' && !autoScan.times.length" class="mt-3 text-xs flex items-start gap-1.5 text-amber-600 dark:text-amber-400" role="status">
+      <TriangleAlert class="w-3.5 h-3.5 mt-px flex-shrink-0" />
+      No times set, so the schedule never runs. Add a time, or switch to regular intervals.
+    </p>
   </SettingsCard>
 
   <!-- Add a library -->
@@ -121,8 +158,8 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
-import { Plus, RefreshCw, Trash2, FolderOpen, Baby, Headphones, FileImage, Book, Film, Tv, Sparkles } from '@lucide/vue';
+import { ref, computed, watch, onMounted } from 'vue';
+import { Plus, RefreshCw, Trash2, FolderOpen, Baby, Headphones, FileImage, Book, Film, Tv, Sparkles, X, TriangleAlert } from '@lucide/vue';
 import api from '../../api/client';
 import { useDialogStore } from '../../stores/dialog';
 import { useSaveStatus } from '../../composables/useSaveStatus';
@@ -189,12 +226,19 @@ async function deleteLibrary(lib) {
 
 // ─── Automatic scanning (saves as it changes) ─────────────────────────────
 const scanSave = useSaveStatus();
-const autoScan = ref({ enabled: true, intervalMinutes: 60, watchEnabled: true });
+const autoScan = ref({ enabled: true, mode: 'interval', intervalMinutes: 60, times: ['03:00'], watchEnabled: true });
+const scanningIsManual = computed(() => !autoScan.value.enabled && !autoScan.value.watchEnabled);
 let autoScanLoaded = false;
 onMounted(async () => {
   try {
     const res = await api.get('/settings/auto-scan');
-    autoScan.value = { enabled: !!res.data.enabled, intervalMinutes: res.data.intervalMinutes || 60, watchEnabled: !!res.data.watchEnabled };
+    autoScan.value = {
+      enabled: !!res.data.enabled,
+      mode: res.data.mode === 'times' ? 'times' : 'interval',
+      intervalMinutes: res.data.intervalMinutes || 60,
+      times: Array.isArray(res.data.times) ? [...res.data.times] : [],
+      watchEnabled: !!res.data.watchEnabled
+    };
   } catch (err) {
     console.warn('Could not load automatic scanning:', err);
   }
@@ -202,7 +246,9 @@ onMounted(async () => {
 });
 watch(autoScan, (value) => {
   if (!autoScanLoaded) return;
-  scanSave.run(() => api.put('/settings/auto-scan', value));
+  // A time input is briefly empty while it's being edited; only send complete ones.
+  const times = value.times.filter((t) => /^\d{2}:\d{2}$/.test(t));
+  scanSave.run(() => api.put('/settings/auto-scan', { ...value, times }));
 }, { deep: true });
 
 // ─── Adding a library ──────────────────────────────────────────────────────

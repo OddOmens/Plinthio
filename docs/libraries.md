@@ -117,9 +117,12 @@ A folder holding several full-length films isn't collapsed. They stay films.
 ## Scanning
 
 - **When:** on adding a library; on **Scan**; every 60 minutes by default; and about
-  30 seconds after the file watcher sees a change. Admins set the schedule in **Admin →
-  Libraries → Automatic scanning**. The periodic scan is the dependable one for network
-  shares, which often send no change events.
+  30 seconds after the file watcher sees a change. Admins set this in **Admin → Libraries →
+  Automatic scanning**: the schedule (every 15 minutes to a day, or at one or more set times
+  each day in the server's time zone) and the file watcher are separate switches, so either
+  can be on without the other. With both off, libraries only scan when you press **Scan**.
+  The schedule is the dependable one for network shares, which often send no change events.
+  A set time missed while the server was off is made up once when it's back.
 - **Unchanged files** (same path and size) are skipped, so rescans are quick.
 - **Moved files:** a file with the same name and size that turns up in another folder is the
   same title, so progress, ratings, bookmarks and list entries follow it. A renamed file
