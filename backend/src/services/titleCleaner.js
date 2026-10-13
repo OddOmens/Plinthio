@@ -44,7 +44,9 @@ export function parseMediaTitle(rawInput) {
   let working = str.replace(/[._]/g, ' ');
 
   // Check for TV / Episode patterns: S01E02, 1x02, Ep 02, Episode 2
-  const tvPattern = /(?:s(\d+)\s*e(\d+)|(\d+)x(\d+)|(?:ep|episode)\.?\s*(\d+))/i;
+  // Word boundaries matter: without them "x" matches inside an id like "6a6x0WQn" (a YouTube
+  // download) and "ep" inside "Sleep 3".
+  const tvPattern = /(?:\bs(\d+)\s*e(\d+)|\b(\d+)x(\d+)\b|\b(?:ep|episode)\.?\s*(\d+))/i;
   const tvMatch = working.match(tvPattern);
 
   if (tvMatch) {

@@ -17,6 +17,10 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **The schedule and the folder watcher are now separate switches.** You can watch folders without a schedule, or schedule without watching. If you turned automatic scanning off before, the watcher stays off.
 - Turning automatic scanning off entirely now says so in Admin → Libraries, with a reminder to press Scan for new media.
 
+### Fixed
+- **Shows in season folders no longer split into one "show" per season.** A file with no `S01E05` in its name, such as `Bumble Nums/Season 02/03 - Title.mp4`, was filed under a show called "Season 02". It now belongs to "Bumble Nums", and the leading number in a season folder is read as the episode number. Rescan the library to fix existing shows.
+- **Episode numbers are no longer found inside other words.** A YouTube id like `[6a6x0WQn_ic]` in a filename was read as season 6, episode 0, and "Sleep 3" as an episode.
+
 ## [1.4.2] - 2026-10-07
 
 ### Changed

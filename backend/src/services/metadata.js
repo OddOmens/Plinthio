@@ -297,12 +297,31 @@ export async function extractBookMetadata(filePath, itemId) {
 }
 
 
+// "Season 01", "Series 2", "S03", "Specials": a folder that splits a show up, not the show.
+const SEASON_FOLDER = /^(?:(?:season|series|staffel|saison|temporada)[\s._-]*(\d{1,3})|s(\d{1,3})|(specials?))$/i;
+
+/**
+ * The show a video file belongs to and, when it sits in a season folder, which season:
+ * `Bumble Nums/Season 02/01 - Pancakes.mp4` is show "Bumble Nums", season 2 — not a show
+ * called "Season 02".
+ */
+function showFolderInfo(filePath) {
+  const dir = path.dirname(filePath);
+  const folder = path.basename(dir);
+  const match = folder.match(SEASON_FOLDER);
+  if (!match) return { show: folder, season: null };
+  const grandparent = path.basename(path.dirname(dir));
+  // A season folder straight under the library root has no show folder to fall back on.
+  const show = grandparent && grandparent !== '.' && grandparent !== path.sep ? grandparent : folder;
+  return { show, season: match[3] ? 0 : parseInt(match[1] || match[2], 10) };
+}
+
 /**
  * Extract metadata and cover for a Video file (Shows, Movies, Anime)
  */
 export async function extractVideoMetadata(filePath, itemId, mediaType = 'movie') {
   const filename = path.basename(filePath, path.extname(filePath));
-  const parentFolder = path.basename(path.dirname(filePath));
+  const { show: parentFolder, season: folderSeason } = showFolderInfo(filePath);
 
   const result = {
     title: filename,
@@ -331,6 +350,12 @@ export async function extractVideoMetadata(filePath, itemId, mediaType = 'movie'
     result.author = parentFolder !== '.' && parentFolder !== 'Movies' ? parentFolder : 'Unknown';
     if (mediaType === 'show' || mediaType === 'anime') {
       result.series = parentFolder;
+      // "01 - Title.mp4" in a season folder: the number is the episode.
+      const numbered = folderSeason !== null && filename.match(/^(\d{1,3})\s*[-–.)]\s*(\S.*)$/);
+      if (numbered) {
+        result.volume = folderSeason + parseInt(numbered[1], 10) / 1000;
+        result.title = parseMediaTitle(numbered[2]).cleanTitle || result.title;
+      }
     }
   }
 
