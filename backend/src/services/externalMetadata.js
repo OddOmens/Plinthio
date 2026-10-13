@@ -297,7 +297,7 @@ export async function verifyTmdbApiKey(apiKey) {
     return { ok: true, authStyle: isReadAccessToken(key) ? 'read-access-token' : 'api-key' };
   } catch (err) {
     if (err.status === 401 || err.status === 403) {
-      return { ok: false, reason: 'TMDB rejected this key. Copy either the "API Key" or the "API Read Access Token" from your TMDB account settings.' };
+      return { ok: false, rejected: true, reason: 'TMDB rejected this key. Copy either the "API Key" or the "API Read Access Token" from your TMDB account settings.' };
     }
     if (err.name === 'AbortError') {
       return { ok: false, reason: 'Timed out reaching TMDB — check the container has outbound internet access.' };
@@ -306,10 +306,53 @@ export async function verifyTmdbApiKey(apiKey) {
   }
 }
 
-export async function getTmdbApiKey() {
+// Release images carry a key of their own (a GitHub secret passed in as a build argument), so a
+// new server gets movie and show details with no setup, the way Jellyfin's does. Builds from
+// source have none. Read per call so tests can turn it off with an empty variable.
+function builtinTmdbKey() {
+  return (process.env.PLINTHIO_BUILTIN_TMDB_KEY || '').trim();
+}
+
+// If TMDB ever revokes the built-in key, every lookup would fail as "something went wrong".
+// Checking it once (and again every few hours) turns that into the usual "needs a TMDB key",
+// which tells the admin to paste their own. Only TMDB saying no counts: a server that can't
+// get out keeps the key.
+const BUILTIN_RECHECK_MS = 6 * 60 * 60 * 1000;
+let builtinCheck = null; // { usable: Promise<boolean>, at }
+
+function builtinKeyUsable(key) {
+  if (!builtinCheck || Date.now() - builtinCheck.at > BUILTIN_RECHECK_MS) {
+    builtinCheck = {
+      at: Date.now(),
+      usable: verifyTmdbApiKey(key).then((check) => {
+        if (check.rejected) console.warn('TMDB rejected the built-in key. Add your own under Admin → Metadata.');
+        return !check.rejected;
+      })
+    };
+  }
+  return builtinCheck.usable;
+}
+
+/**
+ * The TMDB key in use and where it came from: "custom" (saved in Admin → Metadata), then
+ * "environment" (TMDB_API_KEY), then "builtin". { key: null, source: null } when there's none.
+ */
+export async function getTmdbKeyInfo() {
   const db = await getDb();
   const row = await db.get("SELECT value FROM settings WHERE key = 'tmdb_api_key'");
-  return row?.value || process.env.TMDB_API_KEY || null;
+  if (row?.value) return { key: row.value, source: 'custom' };
+  if (process.env.TMDB_API_KEY) return { key: process.env.TMDB_API_KEY, source: 'environment' };
+  const builtin = builtinTmdbKey();
+  if (builtin && await builtinKeyUsable(builtin)) return { key: builtin, source: 'builtin' };
+  return { key: null, source: null };
+}
+
+export function hasBuiltinTmdbKey() {
+  return !!builtinTmdbKey();
+}
+
+export async function getTmdbApiKey() {
+  return (await getTmdbKeyInfo()).key;
 }
 
 /**

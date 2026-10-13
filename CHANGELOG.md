@@ -9,6 +9,9 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **Movie and show details with no setup.** The Docker images now come with a TMDB key built in, so posters, descriptions, cast, world ratings and missing films in a collection work on a new server straight away. Admin → Metadata shows which key is in use; paste your own to use it instead, and **Use built-in key** goes back. A key in `TMDB_API_KEY` still wins over the built-in one. If TMDB ever stops accepting the built-in key, the server says it needs a key, as before.
+
 ## [1.4.0] - 2026-10-02
 
 ### Added
