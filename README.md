@@ -89,7 +89,7 @@ A factual summary; details in [docs/accounts-and-access.md](docs/accounts-and-ac
 * **Logs** strip `?token=` from URLs.
 * **Proxies:** `TRUST_PROXY` is opt-in, for use behind a reverse proxy only. The Tailscale and public-address add-ons set it to `loopback`, so only a proxy running right next to Plinthio is believed.
 * **TLS:** optional add-ons: Tailscale (a trusted `https://….ts.net` address, private) or a public web address with Caddy and Let's Encrypt, for guests. Without either, HTTPS on port 8443 with a local certificate authority you install on your devices (name-constrained to private addresses and local names).
-* **Network calls:** only metadata lookups you trigger (MangaDex, Google Books, Open Library, TMDB with your key) and a twice-daily anonymous release check (`UPDATE_CHECK=false` turns it off). No telemetry.
+* **Network calls:** only metadata lookups you trigger (MangaDex, Google Books, Open Library, TMDB, with the built-in key or your own) and a twice-daily anonymous release check (`UPDATE_CHECK=false` turns it off). No telemetry.
 
 Plinthio is built for trusted-network self-hosting (your home, and people you invite). It has not been audited for hostile multi-tenant or public-internet deployment, and has no 2FA.
 
@@ -206,6 +206,8 @@ git clone https://github.com/OddOmens/Plinthio.git && cd Plinthio
 docker compose -f docker/docker-compose.yml -f docker/docker-compose.build.yml up -d --build
 ```
 
+A build from source has no built-in TMDB key: add your own under Admin → Metadata.
+
 ---
 
 ## 🛠️ Development
@@ -228,3 +230,5 @@ How the code is organised, the data model, access control and conventions are in
 
 ## 📄 License
 Plinthio is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE). You're free to use, fork, modify, and self-host it for any noncommercial purpose. Selling it, hosting it as a paid service, or otherwise using it (or a derivative) for commercial gain is not permitted without a separate license from Odd Omens LLC.
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.

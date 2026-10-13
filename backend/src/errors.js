@@ -305,7 +305,7 @@ export const ERROR_CODES = {
     status: 409,
     title: 'TMDB key not configured',
     message: 'TMDB API key is not configured. An admin must add one in Admin → Metadata.',
-    meaning: 'Movie, show and anime metadata comes from TMDB, which needs a free API key.',
+    meaning: 'Movie, show and anime metadata comes from TMDB, which needs an API key. Release images have one built in; you see this on a build from source, or if TMDB stopped accepting the built-in key.',
     fix: 'Create a key at themoviedb.org → Settings → API and paste it into Admin → Metadata.'
   },
   P401: {
