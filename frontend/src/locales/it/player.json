@@ -1,0 +1,140 @@
+{
+  "unknownAuthor": "Autore sconosciuto",
+  "untitledAudiobook": "Audiolibro Plinthio",
+  "coverOf": "Copertina di {title}",
+  "units": {
+    "secondsShort": "{count} s",
+    "minutesShort": "{count} min"
+  },
+  "video": {
+    "backToShelf": "Torna allo scaffale",
+    "castToTv": "Trasmetti alla TV",
+    "playbackSettings": "Impostazioni di riproduzione",
+    "skipBack": "Indietro",
+    "skipForward": "Avanti",
+    "quality": "Qualità",
+    "auto": "Auto",
+    "audio": "Audio",
+    "subtitles": "Sottotitoli",
+    "noAlternateTracks": "Nessuna traccia alternativa per questo video.",
+    "track": "Traccia {number}",
+    "channels": "{count} canali",
+    "forced": "forzati",
+    "skipIntro": "Salta intro",
+    "skipCredits": "Salta titoli di coda",
+    "skipAria": {
+      "backSeconds": {
+        "one": "Indietro di {count} secondo",
+        "other": "Indietro di {count} secondi"
+      },
+      "backMinutes": {
+        "one": "Indietro di {count} minuto",
+        "other": "Indietro di {count} minuti"
+      },
+      "forwardSeconds": {
+        "one": "Avanti di {count} secondo",
+        "other": "Avanti di {count} secondi"
+      },
+      "forwardMinutes": {
+        "one": "Avanti di {count} minuto",
+        "other": "Avanti di {count} minuti"
+      }
+    },
+    "skipHint": "{action}: clic destro per cambiare",
+    "toggleFullscreen": "Schermo intero",
+    "preparing": {
+      "transcode": "Conversione per il tuo browser…",
+      "remux": "Streaming diretto…",
+      "direct": "Avvio della riproduzione…"
+    },
+    "resumedFrom": "Ripreso da {time}",
+    "startOver": "Ricomincia",
+    "upNext": "A seguire",
+    "playNow": "Riproduci ora ({seconds})",
+    "cantPlay": "Impossibile riprodurre questo video",
+    "errorHelp": "Errore {code}: cosa significa",
+    "retry": "Riprova",
+    "errors": {
+      "P350": "Questo browser non riesce a riprodurre questo video, nemmeno dopo la conversione.",
+      "P351": "Connessione al server persa. Controlla la rete e premi Riprova.",
+      "P352": "L'accesso ai contenuti è scaduto e non è stato possibile rinnovarlo. Ricarica la pagina, oppure esci e accedi di nuovo.",
+      "failed": "Riproduzione non riuscita."
+    }
+  },
+  "pause": {
+    "youreWatching": "Stai guardando",
+    "paused": "In pausa",
+    "starring": "Con",
+    "createdBy": "Creato da",
+    "directedBy": "Regia di",
+    "leftEndsAt": "{remaining} rimanenti · finisce alle {time}",
+    "seasonRest": {
+      "one": "Il resto della stagione ({count} altro episodio) finirebbe alle {time}",
+      "other": "Il resto della stagione ({count} altri episodi) finirebbe alle {time}"
+    },
+    "runtimeMinutes": "{minutes} min",
+    "runtimeHours": "{hours} h {minutes} min",
+    "dollars": "{amount} $",
+    "timesBudget": "{amount} ({multiple}× il budget)",
+    "seasons": {
+      "one": "{count} stagione",
+      "other": "{count} stagioni"
+    },
+    "episodes": {
+      "one": "{count} episodio",
+      "other": "{count} episodi"
+    },
+    "seasonsAndEpisodes": "{seasons}, {episodes}",
+    "since": "dal {year}",
+    "facts": {
+      "originalTitle": "Titolo originale",
+      "budget": "Budget",
+      "boxOffice": "Incassi",
+      "series": "Serie",
+      "onAir": "In onda",
+      "partOf": "Fa parte di",
+      "network": "Rete",
+      "studio": "Studio",
+      "music": "Musiche",
+      "cinematography": "Fotografia"
+    }
+  },
+  "audio": {
+    "openNowPlaying": "Apri In riproduzione",
+    "skipBack": "Indietro di {count} s",
+    "skipForward": "Avanti di {count} s",
+    "closePlayer": "Chiudi lettore",
+    "fullscreen": "In riproduzione a schermo intero",
+    "playbackSpeed": "Velocità di riproduzione",
+    "sleepTimer": "Timer di spegnimento",
+    "rate": "{rate}x",
+    "chapterShort": "Cap."
+  },
+  "nowPlaying": {
+    "minimize": "Riduci lettore",
+    "playingAudiobook": "Audiolibro in riproduzione",
+    "chapters": "Capitoli",
+    "bookmarks": "Segnalibri",
+    "bookmarksAndNotes": "Segnalibri e note",
+    "backToPlayer": "Torna al lettore",
+    "addBookmark": "Aggiungi segnalibro",
+    "notePlaceholder": "Nota facoltativa (es. citazione chiave, indizio)...",
+    "saveBookmark": "Salva segnalibro",
+    "deleteBookmark": "Elimina segnalibro",
+    "noBookmarks": "Ancora nessun segnalibro salvato per questo audiolibro.",
+    "bookmarkTitle": "Segnalibro @ {time}",
+    "leftInChapter": "{time} alla fine del capitolo",
+    "previousChapter": "Capitolo precedente",
+    "nextChapter": "Capitolo successivo",
+    "speed": "Velocità",
+    "sleep": "Timer",
+    "endOfChapter": "Fine cap.",
+    "stoppingAtChapterEnd": "Si ferma alla fine di questo capitolo",
+    "stoppingIn": "Si ferma tra {time}",
+    "saveFailed": "Impossibile salvare il segnalibro",
+    "deleteFailed": "Impossibile eliminare il segnalibro"
+  },
+  "intro": {
+    "label": "Sigla iniziale"
+  }
+}

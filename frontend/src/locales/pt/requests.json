@@ -1,0 +1,56 @@
+{
+  "title": "Pedidos",
+  "intro": "Peça filmes, séries, animes, livros e audiolivros que a biblioteca ainda não tem.",
+  "newRequest": "Novo pedido",
+  "request": "Pedir",
+  "mine": "Meus pedidos",
+  "reviewQueue": "Fila de revisão",
+  "filterByStatus": "Filtrar por status",
+  "allStatuses": "Todos os status",
+  "emptyReview": "Nenhum pedido para revisar",
+  "emptyMine": "Você ainda não pediu nada",
+  "emptyMineHint": "Pesquise acima, ou use o botão Pedir em um título de uma das suas Listas.",
+  "requestedBy": "Pedido por {name}",
+  "deletedUser": "usuário excluído",
+  "quotedNote": "“{note}”",
+  "notePlaceholder": "Nota para quem pediu (opcional)",
+  "deleteRequest": "Excluir pedido",
+  "withdraw": "Retirar",
+  "status": {
+    "pending": "Pendente",
+    "accepted_pending": "Aceito · Aguardando adição",
+    "accepted_added": "Aceito · Adicionado",
+    "rejected": "Recusado"
+  },
+  "actions": {
+    "acceptPending": "Aceitar · Aguardando adição",
+    "acceptAdded": "Aceitar · Adicionado",
+    "reject": "Recusar",
+    "backToPending": "Voltar para pendente"
+  },
+  "confirm": {
+    "withdrawTitle": "Retirar pedido?",
+    "deleteTitle": "Excluir pedido?",
+    "withdrawMessage": "Seu pedido de \"{title}\" será retirado.",
+    "deleteMessage": "O pedido de \"{title}\" será excluído para todos."
+  },
+  "errors": {
+    "load": "Não foi possível carregar os pedidos.",
+    "send": "Não foi possível enviar esse pedido.",
+    "update": "Não foi possível atualizar esse pedido.",
+    "remove": "Não foi possível remover esse pedido."
+  },
+  "search": {
+    "placeholder": {
+      "movie": "Pesquisar filmes…",
+      "show": "Pesquisar séries…",
+      "anime": "Pesquisar animes…",
+      "book": "Pesquisar livros…",
+      "manga": "Pesquisar mangás…",
+      "audiobook": "Pesquisar audiolivros…",
+      "titles": "Pesquisar títulos…"
+    },
+    "noResults": "Nenhum resultado para “{query}”.",
+    "failed": "A pesquisa falhou. Tente de novo em instantes."
+  }
+}

@@ -714,7 +714,7 @@ header input[type="text"] {
               </div>
             </div>
 
-            <DocText keypath="docs.css.apply" tag="p" plain class="text-xs text-muted-foreground" />
+            <DocText keypath="docs.css.apply" :params="{ tryIt: t('admin.appearance.css.tryIt'), save: t('admin.appearance.css.save') }" tag="p" plain class="text-xs text-muted-foreground" />
           </div>
         </section>
 

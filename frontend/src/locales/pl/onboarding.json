@@ -1,0 +1,60 @@
+{
+  "welcome": {
+    "title": "Witaj w {name}",
+    "text": "Ustawmy wszystko tak, jak lubisz. Zajmie to około trzydziestu sekund, a wszystko możesz później zmienić w Ustawieniach."
+  },
+  "theme": {
+    "title": "Wybierz wygląd",
+    "text": "To ustawienie jest tylko dla ciebie — nie zmienia tego, co widzą inni."
+  },
+  "accent": {
+    "title": "Wybierz kolor akcentu",
+    "text": "Używają go przyciski, wyróżnienia i paski postępu.",
+    "admin": "Jako administrator ustawiasz go dla całego serwera. Inni mogą wybrać własny w Ustawieniach, jeśli na to pozwolisz (Administracja → Odtwarzanie).",
+    "personal": "Jest tylko dla ciebie; zmienisz go w każdej chwili w Ustawieniach."
+  },
+  "interests": {
+    "title": "Co cię tu sprowadza?",
+    "text": "Pokażemy to na twojej półce, a resztę ukryjemy. Wybierz, ile chcesz.",
+    "pickOne": "Wybierz co najmniej jedno, aby półka nie była pusta.",
+    "types": {
+      "manga": {
+        "label": "Manga",
+        "hint": "Komiksy i powieści graficzne"
+      },
+      "book": {
+        "label": "Książki",
+        "hint": "Czytanie EPUB i PDF"
+      },
+      "audiobook": {
+        "label": "Audiobooki",
+        "hint": "Słuchanie od miejsca przerwania"
+      },
+      "movie": {
+        "label": "Filmy",
+        "hint": "Oglądanie w przeglądarce"
+      },
+      "show": {
+        "label": "Seriale",
+        "hint": "Sezony i odcinki"
+      },
+      "anime": {
+        "label": "Anime",
+        "hint": "Serie z napisami i dubbingiem"
+      }
+    }
+  },
+  "security": {
+    "title": "Chroń swoje konto",
+    "text": "Opcjonalne. Weryfikacja dwuetapowa prosi przy logowaniu o kod z telefonu, więc samo hasło nie wystarczy. Możesz ją włączyć teraz lub później w Ustawienia → Bezpieczeństwo."
+  },
+  "done": {
+    "title": "Wszystko gotowe",
+    "everything": "Twoja półka pokazuje wszystko. Zaczynaj.",
+    "tuned": "Twoja półka jest dopasowana do: {list}. W każdej chwili możesz dodać więcej w Ustawieniach."
+  },
+  "nav": {
+    "startBrowsing": "Zacznij przeglądać",
+    "notNow": "Nie teraz"
+  }
+}

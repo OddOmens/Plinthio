@@ -1,0 +1,43 @@
+{
+  "lists": "Liste",
+  "searchLibrary": "Cerca nella libreria...",
+  "searchEverything": "Cerca titoli, autori, serie...",
+  "clearSearch": "Cancella ricerca",
+  "openMenu": "Apri menu",
+  "closeMenu": "Chiudi menu",
+  "backToShelves": "Torna agli scaffali",
+  "account": {
+    "menuTitle": "Menu account ({name})",
+    "menuLabel": "Menu account di {name}",
+    "someone": "utente",
+    "avatar": "Avatar",
+    "expires": "L'account scade: {date}",
+    "expired": "Scaduto",
+    "hoursLeft": "{count} h rimaste",
+    "daysLeft": "{count} g rimasti"
+  },
+  "roles": {
+    "admin": "amministratore",
+    "editor": "editor",
+    "viewer": "spettatore"
+  },
+  "menu": {
+    "downloads": "Download",
+    "requests": "Richieste",
+    "docs": "Documentazione",
+    "reportProblem": "Segnala un problema",
+    "lightMode": "Modalità chiara",
+    "darkMode": "Modalità scura",
+    "logOut": "Esci"
+  },
+  "update": {
+    "available": "È disponibile {release}",
+    "current": "— tu hai la {version}.",
+    "whatsNew": "Novità",
+    "howToUpdate": "Come aggiornare",
+    "dismissLabel": "Ignora l'avviso di aggiornamento {version}",
+    "dismissTitle": "Ignora fino alla prossima versione",
+    "where": "Sulla macchina su cui gira Plinthio, nella cartella con il tuo {file}:",
+    "backup": "Prima che la nuova versione parta, viene fatto in automatico un backup del database in {folder}."
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "welcome": {
+    "title": "Boas-vindas ao {name}",
+    "text": "Vamos deixar tudo do seu jeito. Leva uns trinta segundos, e você pode mudar qualquer coisa depois em Configurações."
+  },
+  "theme": {
+    "title": "Escolha o visual",
+    "text": "Isto é só para você — não muda o que os outros veem."
+  },
+  "accent": {
+    "title": "Escolha uma cor de destaque",
+    "text": "Botões, destaques e barras de progresso usam esta cor.",
+    "admin": "Como administrador, você define isto para o servidor inteiro. As pessoas podem escolher a delas em Configurações, se você permitir (Administração → Reprodução).",
+    "personal": "É só para você; mude quando quiser em Configurações."
+  },
+  "interests": {
+    "title": "O que você veio fazer aqui?",
+    "text": "Vamos mostrar estes na sua estante e esconder o resto. Escolha quantos quiser.",
+    "pickOne": "Escolha pelo menos um para a sua estante não ficar vazia.",
+    "types": {
+      "manga": { "label": "Mangá", "hint": "Quadrinhos e graphic novels" },
+      "book": { "label": "Livros", "hint": "Leitura de EPUB e PDF" },
+      "audiobook": { "label": "Audiolivros", "hint": "Ouça e retome de onde parou" },
+      "movie": { "label": "Filmes", "hint": "Assista no navegador" },
+      "show": { "label": "Séries de TV", "hint": "Temporadas e episódios" },
+      "anime": { "label": "Anime", "hint": "Séries legendadas e dubladas" }
+    }
+  },
+  "security": {
+    "title": "Proteja sua conta",
+    "text": "Opcional. A verificação em duas etapas pede um código do seu celular quando você entra, então só a senha não basta. Você pode ativar agora ou depois em Configurações → Segurança."
+  },
+  "done": {
+    "title": "Tudo pronto",
+    "everything": "Sua estante está mostrando tudo. Pode começar.",
+    "tuned": "Sua estante está ajustada para {list}. Você pode adicionar mais quando quiser em Configurações."
+  },
+  "nav": {
+    "startBrowsing": "Começar a explorar",
+    "notNow": "Agora não"
+  }
+}

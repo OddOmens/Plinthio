@@ -1,0 +1,56 @@
+{
+  "title": "Richieste",
+  "intro": "Chiedi film, serie, anime, libri e audiolibri che la libreria non ha ancora.",
+  "newRequest": "Nuova richiesta",
+  "request": "Richiedi",
+  "mine": "Le mie richieste",
+  "reviewQueue": "Da esaminare",
+  "filterByStatus": "Filtra per stato",
+  "allStatuses": "Tutti gli stati",
+  "emptyReview": "Nessuna richiesta da esaminare",
+  "emptyMine": "Non hai ancora richiesto nulla",
+  "emptyMineHint": "Cerca qui sopra, oppure usa il pulsante Richiedi su un titolo in una delle tue Liste.",
+  "requestedBy": "Richiesto da {name}",
+  "deletedUser": "utente eliminato",
+  "quotedNote": "“{note}”",
+  "notePlaceholder": "Nota per chi ha fatto la richiesta (facoltativa)",
+  "deleteRequest": "Elimina richiesta",
+  "withdraw": "Ritira",
+  "status": {
+    "pending": "In attesa",
+    "accepted_pending": "Accettata · Da aggiungere",
+    "accepted_added": "Accettata · Aggiunta",
+    "rejected": "Rifiutata"
+  },
+  "actions": {
+    "acceptPending": "Accetta · Da aggiungere",
+    "acceptAdded": "Accetta · Aggiunta",
+    "reject": "Rifiuta",
+    "backToPending": "Rimetti in attesa"
+  },
+  "confirm": {
+    "withdrawTitle": "Ritirare la richiesta?",
+    "deleteTitle": "Eliminare la richiesta?",
+    "withdrawMessage": "La tua richiesta per “{title}” verrà ritirata.",
+    "deleteMessage": "La richiesta per “{title}” verrà eliminata per tutti."
+  },
+  "errors": {
+    "load": "Impossibile caricare le richieste.",
+    "send": "Impossibile inviare la richiesta.",
+    "update": "Impossibile aggiornare la richiesta.",
+    "remove": "Impossibile rimuovere la richiesta."
+  },
+  "search": {
+    "placeholder": {
+      "movie": "Cerca film…",
+      "show": "Cerca serie…",
+      "anime": "Cerca anime…",
+      "book": "Cerca libri…",
+      "manga": "Cerca manga…",
+      "audiobook": "Cerca audiolibri…",
+      "titles": "Cerca titoli…"
+    },
+    "noResults": "Nessun risultato per “{query}”.",
+    "failed": "Ricerca non riuscita. Riprova tra un momento."
+  }
+}

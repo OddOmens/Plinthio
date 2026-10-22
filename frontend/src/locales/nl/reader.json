@@ -1,0 +1,198 @@
+{
+  "percent": "{percent}%",
+  "pageN": "Pagina {page}",
+  "closeBook": "Boek sluiten",
+  "opening": "Boek openen…",
+  "couldNotOpen": "Dit boek kon niet worden geopend.",
+  "notebookButton": "Inhoud, bladwijzers en markeringen",
+  "notebookTooltip": "Inhoud & notitieboek",
+  "searchButton": "Zoeken in boek",
+  "searchTooltip": "Zoeken (Ctrl+F)",
+  "displaySettings": "Weergave-instellingen",
+  "position": "Positie in boek",
+  "positionMeasuring": "Positie in boek (boek wordt nog gemeten)",
+  "progressShowing": "Toont: {option}. Tik om te wijzigen.",
+  "progress": {
+    "lastPageInChapter": "Laatste pagina van hoofdstuk",
+    "pagesLeftInChapter": {
+      "one": "Nog {count} pagina in hoofdstuk",
+      "other": "Nog {count} pagina's in hoofdstuk"
+    },
+    "location": "Loc. {current} van {total}"
+  },
+  "copyFailed": "Kopiëren lukt hier niet",
+  "bookmark": {
+    "label": "Bladwijzer",
+    "bookmarks": "Bladwijzers",
+    "thisPage": "Bladwijzer op deze pagina",
+    "removeFromPage": "Bladwijzer van deze pagina weghalen",
+    "remove": "Bladwijzer weghalen",
+    "delete": "Bladwijzer verwijderen",
+    "deleteNamed": "Bladwijzer {title} verwijderen",
+    "close": "Bladwijzers sluiten",
+    "added": "Bladwijzer toegevoegd",
+    "percentThrough": "{percent}% gelezen",
+    "noneYet": "Nog geen bladwijzers.",
+    "noneYetRibbon": "Nog geen bladwijzers. Tik op het lint rechtsboven om een bladwijzer op een pagina te zetten.",
+    "couldNotSave": "Kon de bladwijzer niet opslaan",
+    "couldNotRemove": "Kon de bladwijzer niet weghalen"
+  },
+  "highlight": {
+    "toolbar": "Markeren",
+    "edit": "Markering bewerken",
+    "inColor": "Markeren in {color}",
+    "recolor": "Maak het {color}",
+    "onlyColor": "Alleen markeringen in {color}",
+    "withNote": "Markeren en notitie toevoegen",
+    "remove": "Markering weghalen",
+    "noneYet": "Nog geen markeringen. Selecteer tekst om die in een kleur te markeren, of voeg een notitie toe.",
+    "noneInColor": "Geen markeringen in deze kleur.",
+    "couldNotSave": "Kon de markering niet opslaan",
+    "couldNotRecolor": "Kon de kleur niet wijzigen",
+    "couldNotRemove": "Kon de markering niet weghalen"
+  },
+  "note": {
+    "title": "Notitie",
+    "close": "Notitie sluiten",
+    "add": "Notitie toevoegen",
+    "edit": "Notitie bewerken",
+    "placeholder": "Je notitie…",
+    "save": "Notitie opslaan",
+    "couldNotSave": "Kon de notitie niet opslaan"
+  },
+  "display": {
+    "title": "Weergave",
+    "close": "Weergave sluiten",
+    "pageColour": "Paginakleur",
+    "themePage": "Pagina: {theme}",
+    "font": "Lettertype",
+    "textSize": "Tekstgrootte",
+    "smaller": "Kleinere tekst",
+    "larger": "Grotere tekst",
+    "lineSpacing": "Regelafstand",
+    "margins": "Marges",
+    "alignment": "Uitlijning",
+    "layout": "Indeling",
+    "pages": "Pagina's",
+    "scroll": "Scrollen",
+    "twoOnWide": "Twee op brede schermen",
+    "alwaysOne": "Altijd één",
+    "cornerShows": "Hoek onderaan toont",
+    "appliesEverywhere": "Geldt voor elk boek dat je leest, op al je apparaten."
+  },
+  "notebook": {
+    "title": "Notitieboek",
+    "close": "Notitieboek sluiten",
+    "contents": "Inhoud",
+    "highlights": "Markeringen",
+    "noContents": "Dit boek heeft geen inhoudsopgave."
+  },
+  "search": {
+    "close": "Zoeken sluiten",
+    "placeholder": "Zoeken in dit boek…",
+    "find": "Zoeken",
+    "matches": {
+      "one": "{count} resultaat",
+      "other": "{count} resultaten"
+    },
+    "matchesCapped": "{count}+ resultaten",
+    "noMatches": "Geen resultaten"
+  },
+  "themes": {
+    "auto": "Auto",
+    "white": "Wit",
+    "sepia": "Sepia",
+    "green": "Groen",
+    "gray": "Grijs",
+    "black": "Zwart"
+  },
+  "fonts": {
+    "publisher": "Origineel",
+    "serif": "Serif",
+    "sans": "Sans",
+    "readable": "Leesbaar",
+    "mono": "Mono"
+  },
+  "lineHeights": {
+    "compact": "Compact",
+    "normal": "Normaal",
+    "loose": "Ruim"
+  },
+  "margins": {
+    "narrow": "Smal",
+    "normal": "Normaal",
+    "wide": "Breed"
+  },
+  "align": {
+    "publisher": "Origineel",
+    "left": "Links",
+    "justify": "Uitgevuld"
+  },
+  "progressOptions": {
+    "percent": "Percentage van boek",
+    "chapter": "Pagina's over in hoofdstuk",
+    "location": "Locatie",
+    "none": "Niets"
+  },
+  "highlightColors": {
+    "yellow": "geel",
+    "green": "groen",
+    "blue": "blauw",
+    "pink": "roze",
+    "orange": "oranje"
+  },
+  "manga": {
+    "backToShelf": "Terug naar plank",
+    "loadingPages": "Pagina's laden...",
+    "pageOf": "Pagina {page} van {total}",
+    "pagesOf": "Pagina's {from}–{to} van {total}",
+    "singlePageView": "Eén pagina tegelijk",
+    "onePage": "1 pagina",
+    "spreadView": "Spread van 2 pagina's",
+    "twoPage": "2 pagina's",
+    "fadeTransition": "Overgang met vervagen",
+    "fade": "Vervagen",
+    "flipTransition": "Realistische bladerovergang",
+    "flip": "Bladeren",
+    "modes": {
+      "rtl": {
+        "short": "RNL",
+        "label": "Rechts naar links (Japanse manga)"
+      },
+      "ltr": {
+        "short": "LNR",
+        "label": "Links naar rechts (strips)"
+      },
+      "webtoon": {
+        "short": "Scrollen",
+        "label": "Doorlopend verticaal scrollen (webtoon)"
+      }
+    },
+    "previousPage": "Vorige pagina",
+    "nextPage": "Volgende pagina",
+    "volumeComplete": "Deel uit!",
+    "nextTitle": "Volgende: {title}",
+    "nextVolume": "Volgend deel",
+    "pageBookmarks": "Paginabladwijzers",
+    "bookmarkPage": "Bladwijzer op pagina",
+    "optionalNote": "Optionele notitie...",
+    "couldNotSaveBookmark": "Bladwijzer opslaan mislukt"
+  },
+  "bookmarksModal": {
+    "title": "Bladwijzers: {title}",
+    "newBookmark": "Nieuwe bladwijzer",
+    "timestampHint": "Tijdstip (uu:mm:ss of seconden)",
+    "pageNumber": "Paginanummer",
+    "timestampPlaceholder": "bijv. 01:15:30 of 4500",
+    "pagePlaceholder": "bijv. 42",
+    "titlePlaceholder": "Titel / label (optioneel)",
+    "notesPlaceholder": "Voeg notities, citaten of gedachten toe (optioneel)...",
+    "add": "Bladwijzer toevoegen",
+    "loading": "Bladwijzers laden...",
+    "empty": "Nog geen bladwijzers opgeslagen. Gebruik het formulier hierboven om een bladwijzer bij een positie of pagina te zetten.",
+    "jumpTooltip": "Naar positie springen",
+    "jump": "Ga naar",
+    "couldNotCreate": "Bladwijzer aanmaken mislukt",
+    "couldNotDelete": "Bladwijzer verwijderen mislukt"
+  }
+}

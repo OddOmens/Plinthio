@@ -1,0 +1,85 @@
+{
+  "section": {
+    "title": "Aspetto",
+    "description": "Come ti appare Plinthio. Le modifiche si vedono nell'anteprima e si salvano subito, solo per il tuo account.",
+    "locked": "L'aspetto di Plinthio su questo server lo decide il tuo amministratore, quindi qui non si può cambiare. L'anteprima mostra quello che vedono tutti."
+  },
+  "language": {
+    "auto": "Automatica",
+    "desc": "La lingua in cui Plinthio ti parla. Automatica segue il browser."
+  },
+  "cards": {
+    "accent": {
+      "title": "Colore principale",
+      "desc": "Il tuo colore di evidenziazione su pulsanti, badge e scheda attiva."
+    },
+    "layout": {
+      "title": "Navigazione",
+      "desc": "Dove si trova la navigazione principale."
+    },
+    "pageWidth": {
+      "title": "Larghezza pagina",
+      "desc": "Quanto si allargano le pagine su uno schermo grande. A tutta larghezza ci stanno più locandine per riga."
+    },
+    "pauseScreen": {
+      "title": "Schermata di pausa",
+      "desc": "Cosa appare dopo un paio di secondi di pausa su un film o un episodio."
+    }
+  },
+  "accents": {
+    "zinc": "Zinco",
+    "slate": "Ardesia",
+    "red": "Rosso",
+    "orange": "Arancione",
+    "amber": "Ambra",
+    "lime": "Lime",
+    "emerald": "Smeraldo",
+    "teal": "Verde acqua",
+    "sky": "Cielo",
+    "blue": "Blu",
+    "indigo": "Indaco",
+    "violet": "Viola",
+    "purple": "Porpora",
+    "fuchsia": "Fucsia",
+    "pink": "Rosa",
+    "rose": "Rosa antico"
+  },
+  "layouts": {
+    "topnav": {
+      "label": "Barra in alto",
+      "desc": "Classica barra orizzontale in testa"
+    },
+    "sidebar": {
+      "label": "Barra laterale",
+      "desc": "Navigazione verticale a sinistra"
+    }
+  },
+  "pageWidths": {
+    "full": {
+      "label": "Tutta larghezza",
+      "desc": "Usa tutto lo schermo, con più locandine"
+    },
+    "contained": {
+      "label": "Contenuta",
+      "desc": "Centrata, al massimo 1440px"
+    }
+  },
+  "pauseScreens": {
+    "simple": {
+      "label": "Semplice",
+      "desc": "Solo i controlli del lettore: niente copre l'immagine."
+    },
+    "details": {
+      "label": "Dettagli",
+      "desc": "Locandina, titolo, slogan, trama, regia e cast, e quando finirà."
+    },
+    "cinematic": {
+      "label": "Cinematografica",
+      "desc": "L'immagine si scurisce dietro una scheda a schermo intero con le foto del cast e i dati di TMDB: incassi, titolo originale, parole chiave."
+    },
+    "bedtime": {
+      "label": "Buonanotte",
+      "desc": "Un orologio soffuso con l'ora di fine e, per le serie, quando finirebbe il resto della stagione. Riposante per gli occhi in una stanza buia."
+    }
+  }
+}

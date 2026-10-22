@@ -1,0 +1,44 @@
+{
+  "live": "Prévia ao vivo",
+  "views": {
+    "shelf": "Estante",
+    "title": "Título",
+    "login": "Login",
+    "pause": "Pausa"
+  },
+  "titles": {
+    "one": "{count}+ título",
+    "other": "{count}+ títulos"
+  },
+  "yourLibrary": "Sua biblioteca",
+  "continueWatching": "Continuar assistindo",
+  "runtime": "{hours} h {minutes} min",
+  "yourRating": "Sua avaliação",
+  "ratingsHidden": "As avaliações estão ocultas",
+  "watchTogether": "Assistir juntos",
+  "collection": "Parte da coleção",
+  "request": "Pedir",
+  "sample": {
+    "tagline": "Algumas mensagens levam uma vida inteira para chegar.",
+    "description": "A guardiã de um farol em uma ilha remota encontra uma mensagem numa garrafa que a puxa de volta para a vida que ela deixou para trás."
+  },
+  "captions": {
+    "shelf": "A estante inicial em uma tela grande: layout {layout}, largura {width} e destaque {accent}.",
+    "title": "A página de um filme com as configurações de avaliação, sessão conjunta e coleção acima.",
+    "login": "A tela de login, com o nome e o aviso do seu servidor.",
+    "pause": {
+      "simple": "Simples: nada cobre a imagem. Escolha outro estilo para vê-lo aqui.",
+      "details": "Detalhes: aparece depois de alguns segundos em pausa. Passe o mouse sobre um estilo para comparar.",
+      "cinematic": "Cinematográfica: fotos do elenco e informações vêm do TMDB quando há uma chave definida.",
+      "bedtime": "Hora de dormir: um relógio discreto e quando termina."
+    }
+  },
+  "layouts": {
+    "sidebar": "barra lateral",
+    "topnav": "navegação superior"
+  },
+  "widths": {
+    "contained": "limitada",
+    "full": "total"
+  }
+}

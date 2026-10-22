@@ -1,0 +1,144 @@
+{
+  "offline": {
+    "message": "Je bent offline. Je gedownloade boeken, strips en luisterboeken zijn nog steeds beschikbaar.",
+    "openDownloads": "Downloads openen →"
+  },
+  "continue": {
+    "watching": "Verder kijken",
+    "all": "Verdergaan",
+    "audiobook": "Verder luisteren",
+    "manga": "Verder met manga",
+    "book": "Verder lezen",
+    "movie": "Verder met films",
+    "show": "Verder met series",
+    "anime": "Verder met anime"
+  },
+  "sectionTitle": {
+    "results": "Resultaten voor ‘{query}’",
+    "audiobook": "Luisterboeken",
+    "manga": "Manga & strips",
+    "book": "E-books & documenten",
+    "movie": "Films",
+    "show": "Series",
+    "anime": "Anime",
+    "all": "Alle media"
+  },
+  "counts": {
+    "folders": {
+      "one": "{count} map",
+      "other": "{count} mappen"
+    },
+    "series": "{count} series",
+    "titles": {
+      "one": "{count} titel",
+      "other": "{count} titels"
+    },
+    "seriesAndTitles": "{series}, {titles}",
+    "items": {
+      "one": "{count} item",
+      "other": "{count} items"
+    }
+  },
+  "modes": {
+    "alphabetical": "Alfabetisch",
+    "alphabeticalShort": "A–Z",
+    "diskFolders": "Schijfmappen",
+    "diskFoldersShort": "Schijf",
+    "customFolders": "Eigen mappen",
+    "customFoldersShort": "Eigen"
+  },
+  "filters": {
+    "progress": "Voortgang",
+    "status": "Status",
+    "notStarted": "Niet begonnen",
+    "inProgress": "Bezig",
+    "finished": "Voltooid",
+    "skipped": "Overgeslagen",
+    "genre": "Genre",
+    "added": "Toegevoegd",
+    "thisWeek": "Deze week",
+    "thisMonth": "Deze maand",
+    "last3Months": "Afgelopen 3 maanden",
+    "clear": "Filters wissen"
+  },
+  "sort": {
+    "label": "Sorteervolgorde",
+    "title": "A–Z",
+    "added": "Nieuwste",
+    "recent": "Recent geopend",
+    "release": "Releasedatum"
+  },
+  "collections": {
+    "label": "Filmcollecties",
+    "grouped": "Collecties",
+    "all": "Alle films"
+  },
+  "empty": {
+    "title": "Geen media gevonden",
+    "noMatches": "Niets gevonden — probeer een andere zoekopdracht of wis de filters",
+    "noLibrary": "Voeg een bibliotheek toe in Admin → Bibliotheken en scan je mappen om je plank te vullen",
+    "goToSettings": "Naar Instellingen"
+  },
+  "loadedMore": {
+    "one": "{count} titel geladen · meer wordt geladen terwijl je scrolt",
+    "other": "{count} titels geladen · meer wordt geladen terwijl je scrolt"
+  },
+  "customFolders": {
+    "heading": "Eigen mappen in de app",
+    "newPlaceholder": "Naam nieuwe map...",
+    "catchAll": "Overig",
+    "delete": "Map verwijderen",
+    "empty": "Deze map is leeg. Klik op de drie puntjes ({dots}) bij een titel om die hier toe te voegen."
+  },
+  "deleteFolder": {
+    "title": "Eigen map verwijderen",
+    "message": "Weet je zeker dat je de map ‘{name}’ wilt verwijderen? De items erin blijven op je plank staan.",
+    "confirm": "Map verwijderen"
+  },
+  "errors": {
+    "createFolder": "Map aanmaken mislukt",
+    "deleteFolder": "Map verwijderen mislukt",
+    "removeItem": "Item weghalen mislukt",
+    "updateFolder": "Map bijwerken mislukt"
+  },
+  "rootFolder": "Hoofdmap",
+  "series": {
+    "ariaLabel": "{name} — {units}",
+    "removeFromThisFolder": "{name} uit deze map halen",
+    "removeFromFolder": "Uit map halen",
+    "caughtUp": "Helemaal bij",
+    "skipped": "{count} overgeslagen",
+    "doneCount": "{count}/{total} klaar"
+  },
+  "card": {
+    "availableOffline": "Offline beschikbaar",
+    "downloading": "Downloaden…",
+    "options": "Opties",
+    "optionsFor": "Opties voor {title}",
+    "markInProgress": "Markeren als bezig",
+    "markFinished": "Markeren als voltooid",
+    "addToFolder": "Aan map toevoegen...",
+    "removeFromFolder": "Uit map halen",
+    "bookmarks": "Bladwijzers & notities...",
+    "removeDownload": "Download verwijderen",
+    "cancelDownload": "Download annuleren",
+    "downloadOffline": "Downloaden voor offline",
+    "editMetadata": "Metadata bewerken...",
+    "hide": "Verbergen van plank",
+    "pages": {
+      "one": "{count} pagina",
+      "other": "{count} pagina's"
+    },
+    "finished": "Voltooid",
+    "durationHours": "{hours}u {minutes}m",
+    "durationMinutes": "{minutes}m"
+  },
+  "folderModal": {
+    "title": "Aan map of lijst toevoegen",
+    "loading": "Mappen laden...",
+    "empty": "Nog geen eigen mappen aangemaakt. Maak er hieronder een om je media te ordenen!",
+    "newFolder": "Nieuwe eigen map",
+    "placeholder": "bijv. Favorieten, Voor het slapengaan...",
+    "adding": "Toevoegen..."
+  }
+}

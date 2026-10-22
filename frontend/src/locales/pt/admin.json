@@ -1,0 +1,709 @@
+{
+  "nav": {
+    "yourSettings": "Suas configurações",
+    "groups": {
+      "server": "Servidor",
+      "library": "Biblioteca",
+      "people": "Pessoas",
+      "settings": "Configurações",
+      "system": "Sistema"
+    },
+    "items": {
+      "overview": {
+        "label": "Visão geral",
+        "desc": "Versão, atualizações e conteúdo"
+      },
+      "libraries": {
+        "label": "Bibliotecas",
+        "desc": "Pastas e verificação automática"
+      },
+      "health": {
+        "label": "Saúde",
+        "desc": "Arquivos ausentes e o que precisa de correção"
+      },
+      "metadata": {
+        "label": "Metadados",
+        "desc": "Chave do TMDB e correspondência de títulos"
+      },
+      "kids": {
+        "label": "Modo infantil",
+        "desc": "O que as contas infantis podem ver"
+      },
+      "users": {
+        "label": "Usuários",
+        "desc": "Contas, funções, limites"
+      },
+      "activity": {
+        "label": "Atividade",
+        "desc": "Logins e o que está sendo reproduzido"
+      },
+      "appearance": {
+        "label": "Aparência",
+        "desc": "Padrões, nome, CSS personalizado"
+      },
+      "features": {
+        "label": "Recursos",
+        "desc": "Visualizações da estante, avaliações, sessões conjuntas"
+      },
+      "playback": {
+        "label": "Reprodução",
+        "desc": "Aceleração por hardware, vinheta de abertura"
+      },
+      "network": {
+        "label": "Rede",
+        "desc": "Fora de casa, Tailscale, verificação em duas etapas"
+      },
+      "backups": {
+        "label": "Backups",
+        "desc": "Agendamento, segunda cópia, pontos de restauração"
+      },
+      "logs": {
+        "label": "Logs",
+        "desc": "O que o servidor tem feito"
+      }
+    }
+  },
+  "activity": {
+    "title": "Atividade",
+    "description": "Logins e o que está sendo lido, assistido e ouvido em todas as contas.",
+    "show": "Mostrar",
+    "everyone": "Todos"
+  },
+  "appearance": {
+    "title": "Aparência",
+    "description": "Como o Plinthio aparece para todos: os padrões do servidor, o nome dele e o seu próprio CSS. As alterações são salvas na hora.",
+    "personalize": {
+      "label": "Permitir personalização",
+      "desc": "Cada pessoa pode escolher a própria cor, navegação, largura e tela de pausa em Configurações → Aparência. Desative para usar o visual do servidor para todos."
+    },
+    "usersCanChange": "Usuários podem alterar",
+    "cards": {
+      "accent": "A cor de destaque em botões, selos e na aba atual.",
+      "pageWidth": "A largura máxima das páginas em uma tela grande.",
+      "pauseScreen": "O que aparece após alguns segundos em pausa; some quando alguém mexe o mouse ou toca na tela. Elenco, equipe e informações vêm do TMDB quando há uma chave configurada."
+    },
+    "branding": {
+      "title": "Nome e aviso de login",
+      "desc": "O nome do seu servidor e um aviso opcional na página de login.",
+      "serverName": "Nome do servidor",
+      "notice": "Aviso de login",
+      "removeNotice": "Remover o aviso de login"
+    },
+    "css": {
+      "title": "CSS personalizado",
+      "desc": "Suas próprias regras de estilo, adicionadas a todas as páginas para todos. Teste aqui primeiro; elas entram no ar quando você salva.",
+      "cheatsheet": "Guia rápido de CSS",
+      "example": "/* Por exemplo */",
+      "save": "Salvar CSS",
+      "tryIt": "Testar nesta página",
+      "notSaved": "Não salvo",
+      "couldNotSave": "Não foi possível salvar o CSS"
+    }
+  },
+  "backups": {
+    "title": "Backups",
+    "description": "Cópias do banco de dados: contas, o progresso de todos, marcadores, destaques e notas, avaliações, listas, bibliotecas e metadados. Não inclui seus arquivos de mídia. Uma cópia também é feita antes de cada atualização, e as cinco mais recentes delas são sempre mantidas.",
+    "automatic": "Backups automáticos",
+    "schedule": {
+      "label": "Fazer backup agendado",
+      "desc": "Salvos no servidor em /config/backups."
+    },
+    "howOften": "Frequência",
+    "frequency": {
+      "every6h": "A cada 6 horas",
+      "every12h": "A cada 12 horas",
+      "daily": "Diariamente",
+      "every3d": "A cada 3 dias",
+      "weekly": "Semanalmente"
+    },
+    "keepLast": "Manter os últimos",
+    "destination": {
+      "label": "Também copiar backups para",
+      "why": "/config/backups fica no mesmo disco que o servidor. Uma cópia em outro disco, em um NAS ou em uma pasta sincronizada na nuvem sobrevive se esse disco falhar.",
+      "placeholder": "Não copiado para nenhum outro lugar",
+      "browseAria": "Procurar uma pasta de backup",
+      "browse": "Procurar",
+      "testAria": "Testar pasta de backup",
+      "test": "Testar",
+      "checking": "Verificando…",
+      "writable": "O servidor consegue gravar lá.",
+      "writableFree": "O servidor consegue gravar lá · {free} livres.",
+      "sameDisk": "Ela fica no mesmo disco que os dados do servidor, então protege contra erros, mas não contra falha do disco. Uma pasta em outro disco é melhor.",
+      "otherDisk": "Ela fica em um disco diferente dos dados do servidor.",
+      "hint": "Uma pasta como o servidor a vê. No Docker: qualquer lugar dentro de {media} que não seja somente leitura, ou outro disco montado em {backups} (Documentação → Backups e segurança dos dados).",
+      "keepThere": "Manter lá",
+      "copyFiles": "Também copiar fotos de perfil, capas, a chave de login e os certificados HTTPS",
+      "couldNotCheck": "Não foi possível verificar essa pasta",
+      "pickerTitle": "Copiar backups para"
+    },
+    "saveAria": "Salvar configurações de backup",
+    "savedCopying": "Salvo. Os backups existentes estão sendo copiados para {path}.",
+    "copyFailed": "A cópia para {path} falhou: {error}. Uma nova tentativa é feita a cada 15 minutos.",
+    "copiedTo": "Copiado para {path} {when}",
+    "notYet": "— ainda não",
+    "copying": "Copiando…",
+    "copyNow": "Copiar agora",
+    "stored": "Backups armazenados",
+    "storedCount": "Backups armazenados ({count})",
+    "backingUp": "Fazendo backup…",
+    "backUpNow": "Fazer backup agora",
+    "preparing": "Preparando…",
+    "downloadSnapshot": "Baixar uma cópia",
+    "empty": "Nenhum backup ainda. Ative os backups automáticos ou faça um backup agora.",
+    "downloadThis": "Baixar este backup",
+    "deleteThis": "Excluir este backup",
+    "couldNotBackUp": "Não foi possível fazer o backup",
+    "couldNotSnapshot": "Não foi possível criar a cópia. O console do navegador tem os detalhes.",
+    "couldNotDownload": "Não foi possível baixar esse backup. O console do navegador tem os detalhes.",
+    "deleteTitle": "Excluir backup",
+    "deleteMessage": "Excluir o backup de {date}? Não é possível desfazer.",
+    "couldNotDelete": "Não foi possível excluir esse backup"
+  },
+  "features": {
+    "title": "Recursos",
+    "description": "O que está ativado para todos neste servidor. As alterações são salvas na hora.",
+    "shelfViews": {
+      "title": "Visualizações da estante",
+      "desc": "Alfabética e Criador estão sempre disponíveis. Desativar uma visualização de pastas a oculta para todos."
+    },
+    "folderModes": {
+      "diskFolder": {
+        "label": "Pastas do disco",
+        "desc": "Navegue pelas pastas do servidor."
+      },
+      "customFolder": {
+        "label": "Pastas personalizadas",
+        "desc": "Pastas que cada pessoa cria no app, com uma pasta Sem organização para o resto."
+      }
+    },
+    "ratings": {
+      "title": "Avaliações",
+      "desc": "Quais avaliações aparecem. Uma desativada fica oculta em todo lugar, e o servidor para de enviá-la.",
+      "personal": {
+        "label": "Avaliações pessoais",
+        "desc": "Cada pessoa pode dar de 1 a 5 estrelas e vê as próprias."
+      },
+      "community": {
+        "label": "Avaliações do {name}",
+        "desc": "A média de todos neste servidor."
+      },
+      "external": {
+        "label": "Avaliações mundiais (TMDB)",
+        "desc": "A nota do TMDB para filmes, séries e animes. Requer uma chave do TMDB."
+      }
+    },
+    "movies": {
+      "title": "Filmes e assistir juntos",
+      "missingFilms": {
+        "label": "Mostrar filmes ausentes nas coleções",
+        "desc": "Uma coleção como Shrek ou Star Wars também lista os filmes que você não tem, em cinza e com um botão Pedir. Eles nunca aparecem na estante de Filmes. Requer uma chave do TMDB."
+      },
+      "watchParties": {
+        "label": "Sessões conjuntas",
+        "desc": "Um botão Assistir juntos em filmes e episódios: assista em sincronia de lugares diferentes, com chat. Os limites de conteúdo continuam valendo para todos na sessão. Amigos fora de casa precisam conseguir acessar este servidor (veja Rede). Desativar encerra qualquer sessão em andamento."
+      }
+    }
+  },
+  "kids": {
+    "title": "Modo infantil",
+    "description": "Contas infantis veem só o que está ativado aqui. Transforme uma conta em conta infantil em Usuários.",
+    "libraries": {
+      "title": "Bibliotecas inteiras",
+      "desc": "Tudo nestas bibliotecas, agora e no futuro."
+    },
+    "noLibraries": "Nenhuma biblioteca ainda.",
+    "items": {
+      "one": "{number} item",
+      "other": "{number} itens"
+    },
+    "titles": {
+      "title": "Séries e títulos avulsos",
+      "desc": "Adicione mais em qualquer página de série ou título com o botão {button}.",
+      "button": "Infantil"
+    },
+    "noneYet": "Nenhum ainda.",
+    "series": "Série",
+    "singleTitle": "Título",
+    "removeAria": "Remover {name} do modo infantil",
+    "couldNotRemove": "Não foi possível remover do modo infantil"
+  },
+  "libraries": {
+    "title": "Bibliotecas",
+    "description": "As pastas de onde o Plinthio lê sua mídia. Ele nunca altera seus arquivos.",
+    "add": "Adicionar biblioteca",
+    "empty": "Nenhuma biblioteca ainda. Adicione uma para apontar o Plinthio para uma pasta de mídia.",
+    "kids": "Infantil",
+    "items": {
+      "one": "{number} item",
+      "other": "{number} itens"
+    },
+    "scanning": "Verificando…",
+    "scan": "Verificar",
+    "deleteAria": "Excluir {name}",
+    "deleteLibrary": "Excluir biblioteca",
+    "types": {
+      "movies": "Filmes",
+      "shows": "Séries de TV",
+      "anime": "Anime",
+      "books": "Livros",
+      "manga": "Mangás e quadrinhos",
+      "audiobooks": "Audiolivros"
+    },
+    "autoScan": {
+      "title": "Verificação automática",
+      "desc": "Encontra mídia adicionada às pastas da biblioteca sem ninguém precisar clicar em Verificar.",
+      "scheduled": {
+        "label": "Verificar de novo em um horário",
+        "desc": "A opção confiável: funciona em compartilhamentos de rede e montagens que não avisam sobre mudanças."
+      },
+      "schedule": "Agendamento",
+      "modes": {
+        "interval": "Em intervalos regulares",
+        "times": "Em horários fixos todo dia"
+      },
+      "every": "Verificar a cada",
+      "intervals": {
+        "15": "15 minutos",
+        "30": "30 minutos",
+        "60": "hora",
+        "360": "6 horas",
+        "1440": "dia"
+      },
+      "at": "Verificar às",
+      "timeAria": "Horário de verificação {number}",
+      "removeTime": "Remover {time}",
+      "thisTime": "este horário",
+      "addTime": "Adicionar horário",
+      "timesHint": "No fuso horário do servidor. Se o servidor estava desligado em um horário marcado, ele verifica uma vez quando voltar.",
+      "watch": {
+        "label": "Monitorar mudanças nas pastas",
+        "desc": "Verifica cerca de 30 segundos depois que um arquivo aparece, quando o sistema de arquivos avisa. Funciona com ou sem o agendamento."
+      },
+      "manual": "A verificação automática está desativada. Mídia nova só aparece quando um administrador clicar em Verificar em uma biblioteca.",
+      "noSchedule": "Sem um agendamento, mudanças em compartilhamentos de rede ou montagens que não enviam eventos de arquivo só serão notadas quando você clicar em Verificar.",
+      "noTimes": "Nenhum horário definido, então o agendamento nunca roda. Adicione um horário ou mude para intervalos regulares."
+    },
+    "addDialog": {
+      "title": "Adicionar uma biblioteca",
+      "folder": "Pasta",
+      "browse": "Procurar",
+      "folderHint": "Como o servidor a vê. No Docker, sua mídia está montada em {path}.",
+      "name": "Nome",
+      "namePlaceholder": "ex.: Audiolivros",
+      "whatsInIt": "O que tem nela",
+      "adding": "Adicionando…",
+      "addAndScan": "Adicionar e verificar",
+      "pickerTitle": "Escolha a pasta da biblioteca"
+    },
+    "scanResult": {
+      "title": "{name} verificada",
+      "added": "{count} adicionados",
+      "renamed": "{count} renomeados ou movidos",
+      "updated": "{count} atualizados",
+      "removed": "{count} removidos",
+      "summary": "{parts}.",
+      "nothingNew": "Nada de novo."
+    },
+    "scanFailed": "A verificação falhou",
+    "deleteMessage": "Excluir \"{name}\"? Seus arquivos não são tocados, e o progresso e os marcadores voltam se você adicionar a mesma pasta de novo. Os títulos, capas e detalhes dela são removidos até que ela seja verificada novamente.",
+    "couldNotDelete": "Não foi possível excluir essa biblioteca",
+    "couldNotAdd": "Não foi possível adicionar essa biblioteca"
+  },
+  "logs": {
+    "title": "Logs",
+    "description": "Verificações, erros e o que o servidor tem feito, dos mais recentes aos mais antigos.",
+    "live": "Ao vivo",
+    "paused": "Pausado",
+    "refreshNow": "Atualizar agora",
+    "searchPlaceholder": "Buscar mensagens e categorias",
+    "searchAria": "Buscar nos logs",
+    "level": "Nível",
+    "levels": {
+      "all": "todos",
+      "info": "info",
+      "warn": "aviso",
+      "error": "erro"
+    },
+    "nothingMatches": "Nenhum resultado.",
+    "clearTitle": "Limpar logs",
+    "clearMessage": "Excluir todas as entradas de log do banco de dados?",
+    "couldNotClear": "Não foi possível limpar os logs"
+  },
+  "metadata": {
+    "title": "Metadados",
+    "description": "De onde vêm pôsteres, descrições, elenco e avaliações, e como organizar títulos que vieram de nomes de arquivo.",
+    "tmdb": {
+      "title": "Chave do TMDB",
+      "descBuiltIn": "Filmes, séries e animes recebem seus detalhes do TMDB, usando a chave embutida no Plinthio. Você pode colar sua própria chave do TMDB para usá-la no lugar. Mangás (MangaDex) e livros (Google Books, Open Library) não precisam de nada.",
+      "descNeedsKey": "Filmes, séries e animes recebem seus detalhes do TMDB, que exige uma chave gratuita. Mangás (MangaDex) e livros (Google Books, Open Library) não precisam de nada.",
+      "sources": {
+        "custom": "Sua própria",
+        "environment": "De TMDB_API_KEY",
+        "builtin": "Embutida",
+        "set": "Definida",
+        "notSet": "Não definida"
+      },
+      "keyLabel": "Chave da API do TMDB",
+      "placeholderReplace": "Cole uma nova chave para substituí-la",
+      "placeholderOptional": "Cole sua própria chave do TMDB (opcional)",
+      "placeholderToken": "Cole seu API Read Access Token do TMDB",
+      "saveKey": "Salvar chave",
+      "useBuiltIn": "Usar chave embutida",
+      "getOne": "Obtenha uma de graça em {link}.",
+      "getOneLink": "themoviedb.org → Settings → API",
+      "attribution": "Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.",
+      "removeTitle": "Remover a chave do TMDB",
+      "removeMessage": "Filmes, séries e animes deixam de receber novos pôsteres, detalhes e avaliações mundiais até que uma chave seja adicionada de novo."
+    }
+  },
+  "overview": {
+    "title": "Visão geral",
+    "description": "Este servidor em resumo: a versão, o que tem nele e quem o usa.",
+    "checksOff": "A verificação de atualizações está desativada (UPDATE_CHECK=false).",
+    "available": "A versão {version} está disponível.",
+    "updateWith": "Atualize com {command}",
+    "upToDate": "Você está com a versão mais recente.",
+    "upToDateCheckFailed": "Você está com a versão mais recente (a última verificação falhou — sem conexão?).",
+    "notChecked": "Ainda não verificado.",
+    "releaseNotes": "Notas da versão",
+    "checking": "Verificando…",
+    "checkNow": "Verificar agora",
+    "tiles": {
+      "files": "Arquivos",
+      "onDisk": "No disco",
+      "audio": "Áudio",
+      "accounts": "Contas"
+    },
+    "byMediaType": "Por tipo de mídia",
+    "files": {
+      "one": "{number} arquivo",
+      "other": "{number} arquivos"
+    },
+    "series": {
+      "one": "{number} série",
+      "other": "{number} séries"
+    },
+    "creators": {
+      "one": "{number} criador",
+      "other": "{number} criadores"
+    }
+  },
+  "playback": {
+    "title": "Reprodução",
+    "description": "Como o vídeo chega às telas das pessoas e a vinheta que pode tocar antes dele.",
+    "hwaccel": {
+      "title": "Aceleração por hardware",
+      "desc": "O Plinthio reproduz os arquivos como estão sempre que o navegador consegue, e só converte o que ele não consegue. Um chip gráfico torna a conversão bem mais leve.",
+      "found": "Encontrado nesta máquina",
+      "noneCpu": "Nenhum — usando a CPU",
+      "use": "Usar",
+      "auto": "O que for encontrado (recomendado)",
+      "cpu": "Sempre a CPU",
+      "always": "Sempre {method}",
+      "testing": "Testando…",
+      "test": "Testar",
+      "works": "{method} funciona nesta máquina.",
+      "failed": "{method} não funcionou: {error}",
+      "testHint": "O teste faz uma conversão real curta: o ffmpeg listar um codificador não prova que o driver por trás dele funciona.",
+      "testFailed": "O teste falhou",
+      "howItWorks": "Como a reprodução funciona e como configurar um chip gráfico",
+      "tips": {
+        "direct": {
+          "title": "Reprodução direta e streaming direto:",
+          "text": "vídeo que o navegador consegue decodificar (H.264, ou HEVC no Chrome, Edge, Vivaldi e Safari) é enviado sem alterações, até 4K, mesmo de arquivos MKV. Só o áudio que ele não reproduz (EAC3, Atmos, DTS) é convertido, para AAC."
+        },
+        "browser": {
+          "title": "O lado do navegador:",
+          "text": "para 4K, confira se o navegador decodifica vídeo por hardware ({page} → Video Decode: Hardware accelerated)."
+        },
+        "docker": {
+          "title": "Intel Quick Sync e VAAPI no Docker:",
+          "text": "repasse {dri} em {devices} e adicione o ID do grupo {render} do host em {groupAdd}."
+        },
+        "small": {
+          "title": "Máquinas pequenas:",
+          "text": "a conversão na CPU é limitada a duas threads no preset mais rápido, e as miniaturas de prévia são feitas separadamente, para que um mini PC não superaqueça."
+        }
+      }
+    },
+    "intro": {
+      "title": "Vinheta de abertura",
+      "desc": "Um clipe curto exibido em tela cheia quando alguém clica em Reproduzir em um filme ou episódio. Nunca antes de episódios em reprodução automática, trailers ou sessões conjuntas, e qualquer pessoa pode pular.",
+      "checking": "Verificando…",
+      "upload": "Enviar um clipe",
+      "custom": "Seu próprio clipe.",
+      "builtIn": "O clipe embutido do Plinthio. Substitua pelo seu:",
+      "requirements": "MP4 (H.264), de 1 a 10 segundos, até 20 MB. 1080p a cerca de 8 Mbps é mais que suficiente.",
+      "thisOne": "Este tem {seconds} segundos.",
+      "replace": "Substituir",
+      "useBuiltIn": "Usar o clipe embutido",
+      "play": "Reproduzir a vinheta de abertura",
+      "offUntil": "Desativada até você ativar.",
+      "uploadFirst": "Envie um clipe primeiro.",
+      "beforeMovies": "Antes de filmes",
+      "beforeShows": "Antes de séries e animes",
+      "tooBig": "Esse arquivo passa de 20 MB. Exporte uma versão mais curta ou com bitrate menor.",
+      "uploadFailed": "O envio falhou",
+      "removeTitle": "Remover seu clipe",
+      "removeMessage": "Remover seu clipe e voltar para a vinheta de abertura embutida do Plinthio?",
+      "couldNotRemove": "Não foi possível remover"
+    }
+  },
+  "users": {
+    "title": "Usuários",
+    "description": "Todos que podem entrar neste servidor. Não há cadastro aberto: as contas são criadas aqui.",
+    "add": "Adicionar usuário",
+    "editAria": "Editar {name}",
+    "you": "Você",
+    "lastIn": "Último acesso em {date}",
+    "neverSignedIn": "Nunca entrou",
+    "network": "({network})",
+    "outside": "fora de casa",
+    "roles": {
+      "label": "Função",
+      "viewer": {
+        "label": "Espectador",
+        "desc": "Navega, lê, assiste e ouve; acompanha o próprio progresso."
+      },
+      "editor": {
+        "label": "Editor",
+        "desc": "Também corrige títulos, capas e detalhes compartilhados."
+      },
+      "admin": {
+        "label": "Administrador",
+        "desc": "Tudo, incluindo bibliotecas, usuários e esta página."
+      }
+    },
+    "durations": {
+      "day": {
+        "one": "{count} dia",
+        "other": "{count} dias"
+      },
+      "week": {
+        "one": "{count} semana",
+        "other": "{count} semanas"
+      },
+      "month": {
+        "one": "{count} mês",
+        "other": "{count} meses"
+      },
+      "year": {
+        "one": "{count} ano",
+        "other": "{count} anos"
+      }
+    },
+    "addDialog": {
+      "title": "Adicionar um usuário",
+      "passwordHint": "Pelo menos 8 caracteres. A pessoa pode alterá-la em Configurações → Segurança.",
+      "adding": "Adicionando…"
+    },
+    "access": "Acesso",
+    "noEndDate": "Sem data de término",
+    "noEndDateSentence": "Sem data de término.",
+    "forDuration": "Por {duration}",
+    "untilDate": "Até uma data…",
+    "accessEnds": "Acesso termina",
+    "editDialog": {
+      "title": "Editar {name}",
+      "joined": "Entrou em {date}"
+    },
+    "ended": "Terminou em {date}",
+    "ends": "Termina em {date}",
+    "extendBy": "+{duration}",
+    "removeEndDate": "Remover data de término",
+    "setAccess": "Definir acesso",
+    "setNewEnd": "Ou defina um novo término…",
+    "keepNoEnd": "Manter sem data de término",
+    "fromNow": "Daqui a {duration}",
+    "remote": {
+      "label": "Pode usar o Plinthio fora de casa",
+      "desc": "Quando o servidor permite acesso externo (Rede). Desativado: só em casa e pelo Tailscale."
+    },
+    "kidsAccount": {
+      "label": "Conta infantil",
+      "desc": "Vê só o que está ativado no modo infantil."
+    },
+    "twoFactorOn": "Verificação em duas etapas ativada",
+    "twoFactorHelp": "Perdeu o celular e os códigos de backup? Redefina para que a pessoa possa entrar com a senha e configurar de novo.",
+    "contentLimit": "Limite de conteúdo",
+    "noLimit": "Sem limite",
+    "everyoneOnly": "Só livre",
+    "upTo": "Até {rating}",
+    "ageRatings": {
+      "everyone": "Livre",
+      "teen": "Adolescente",
+      "mature": "Adulto"
+    },
+    "allowUnrated": "Também mostrar títulos sem classificação. Desativado é o modo estrito: só títulos classificados dentro do limite.",
+    "ratingsHint": "As classificações são definidas em cada série ou título.",
+    "newPassword": "Nova senha",
+    "newPasswordPlaceholder": "Deixe em branco para manter a atual",
+    "newPasswordHint": "Pelo menos 8 caracteres. Definir uma desconecta a pessoa de todos os lugares.",
+    "accessEnded": "Acesso encerrado",
+    "hoursLeft": {
+      "one": "{count}h restante",
+      "other": "{count}h restantes"
+    },
+    "daysLeft": {
+      "one": "{count}d restante",
+      "other": "{count}d restantes"
+    },
+    "badges": {
+      "twoFactor": "Duas etapas",
+      "twoFactorTitle": "Também entra com um código de um app autenticador",
+      "homeOnly": "Só em casa",
+      "homeOnlyTitle": "Só pode usar o Plinthio na rede de casa",
+      "kids": "Infantil",
+      "unratedHidden": "Títulos sem classificação também ficam ocultos",
+      "unratedAllowed": "Títulos sem classificação são permitidos"
+    },
+    "couldNotAdd": "Não foi possível adicionar esse usuário",
+    "couldNotChangeAccess": "Não foi possível alterar o acesso",
+    "passwordTooShort": "A nova senha precisa ter pelo menos 8 caracteres.",
+    "couldNotSave": "Não foi possível salvar essas alterações",
+    "resetTitle": "Redefinir a verificação em duas etapas?",
+    "resetMessage": "{name} será desconectado de todos os lugares, poderá entrar só com a senha e poderá configurar a verificação em duas etapas de novo em Configurações → Segurança.",
+    "couldNotReset": "Não foi possível redefinir a verificação em duas etapas",
+    "deleteTitle": "Excluir usuário",
+    "deleteMessage": "Excluir {name}? O progresso, os marcadores, destaques, listas e avaliações dessa pessoa vão junto.",
+    "deleteUser": "Excluir usuário",
+    "couldNotDelete": "Não foi possível excluir esse usuário"
+  },
+  "health": {
+    "title": "Saúde",
+    "description": "O que precisa de atenção nas suas bibliotecas.",
+    "checked": "Verificado {time}.",
+    "checking": "Verificando…",
+    "runCheck": "Verificar",
+    "tiles": {
+      "libraries": "Bibliotecas inacessíveis",
+      "missing": "Arquivos ausentes",
+      "duplicates": "Duplicatas",
+      "clashes": "Conflitos de volume",
+      "metadata": "Sem capa",
+      "transcode": "Falhas de codificação"
+    },
+    "allClear": "Tudo parece saudável.",
+    "libraries": "Bibliotecas",
+    "itemsTotal": {
+      "one": "{number} item no total",
+      "other": "{number} itens no total"
+    },
+    "items": {
+      "one": "{number} item",
+      "other": "{number} itens"
+    },
+    "scanned": "Verificada {time}",
+    "neverScanned": "Nunca verificada",
+    "unreachable": "Pasta inacessível — confira se o disco está montado e se o volume do Docker está mapeado. Os itens continuam no catálogo até ela voltar.",
+    "rescan": "Verificar de novo",
+    "noLibraries": "Nenhuma biblioteca ainda.",
+    "missing": {
+      "title": "Arquivos ausentes",
+      "hint": "Sumiram do disco. Excluiu de propósito para liberar espaço? Mantenha no histórico: eles continuam na página do título, em cinza, com o progresso de todos. Caso contrário, ficam ocultos por enquanto (um disco pode ficar indisponível por um momento) e voltam sozinhos se os arquivos voltarem; remova-os de vez quando tiver certeza.",
+      "keepAll": "Manter todos no histórico",
+      "removing": "Removendo…",
+      "removeAll": "Remover todos de vez"
+    },
+    "keepAsHistory": "Manter no histórico",
+    "removeForGood": "Remover de vez",
+    "offloaded": {
+      "title": "Arquivados (mantidos no histórico)",
+      "hint": "Removidos para liberar espaço e mantidos no histórico: ocultos das estantes e da busca, exibidos em cinza na página do título com o progresso de todos. Se os arquivos voltarem, eles são restaurados sozinhos.",
+      "undo": "Desfazer"
+    },
+    "duplicates": {
+      "title": "Prováveis duplicatas",
+      "hint": "Mesmo título e exatamente o mesmo tamanho de arquivo — normalmente o mesmo arquivo em duas pastas ou bibliotecas.",
+      "copies": {
+        "one": "{count} cópia",
+        "other": "{count} cópias"
+      }
+    },
+    "clashes": {
+      "title": "Conflitos de volume / episódio",
+      "hint": "Arquivos diferentes que dizem ser o mesmo volume ou número de episódio de uma série. Normalmente um arquivo com nome errado."
+    },
+    "metadata": {
+      "title": "Arte ou metadados ausentes",
+      "hint": "{noCover} sem capa, {noAuthor} livros/mangás/audiolivros sem autor, {noDescription} sem descrição. Corrija-os na aba Metadados.",
+      "open": "Abrir Metadados",
+      "noCover": "Sem capa",
+      "noAuthor": "Sem autor"
+    },
+    "unrated": {
+      "title": "Títulos sem classificação",
+      "hint": "Títulos sem classificação etária própria ou da série. Só importa se você usa limites de conteúdo para alguns usuários — classifique séries na ficha da série e títulos avulsos no editor de metadados."
+    },
+    "transcode": {
+      "title": "Falhas recentes de codificação na reprodução",
+      "hint": "Erros do ffmpeg ao preparar o vídeo. Muitas vezes é um problema no driver de aceleração por hardware — tente Administração → Reprodução → Testar."
+    },
+    "mediaTypes": {
+      "movie": "filme",
+      "show": "série",
+      "anime": "anime",
+      "manga": "mangá",
+      "book": "livro",
+      "audiobook": "audiolivro"
+    },
+    "couldNotRun": "Não foi possível executar a verificação de saúde",
+    "groupSeason": "{name}, temporada {season}",
+    "titlesCount": {
+      "one": "{count} título",
+      "other": "{count} títulos"
+    },
+    "keepTitle": "Manter no histórico?",
+    "keepMessage": {
+      "one": "{label} continuará na página do título, em cinza, com o progresso de todos, mas não poderá ser reproduzido. Se os arquivos voltarem, ele é restaurado sozinho.",
+      "other": "{label} continuarão na página do título, em cinza, com o progresso de todos, mas não poderão ser reproduzidos. Se os arquivos voltarem, eles são restaurados sozinhos."
+    },
+    "couldNotKeep": "Não foi possível manter esses no histórico",
+    "couldNotUndo": "Não foi possível desfazer isso",
+    "removeTitle": "Remover de vez?",
+    "removeMessage": "Remover {name} do catálogo? O progresso e as avaliações ficam guardados no banco de dados e são vinculados de novo se os mesmos arquivos forem verificados outra vez, mas nada aparece até lá.",
+    "skipped": {
+      "one": "{count} mantido: os arquivos voltaram.",
+      "other": "{count} mantidos: os arquivos voltaram."
+    },
+    "couldNotRemove": "Não foi possível remover isso",
+    "removeMissingTitle": "Remover títulos ausentes?",
+    "removeMissingMessage": {
+      "one": "Remover de vez {count} título ausente do catálogo? Tudo cujo arquivo voltou é mantido, assim como tudo que está no histórico. O progresso de leitura e as avaliações também são mantidos e são vinculados de novo se os mesmos arquivos forem verificados outra vez.",
+      "other": "Remover de vez {count} títulos ausentes do catálogo? Tudo cujo arquivo voltou é mantido, assim como tudo que está no histórico. O progresso de leitura e as avaliações também são mantidos e são vinculados de novo se os mesmos arquivos forem verificados outra vez."
+    },
+    "removed": {
+      "one": "{count} título removido.",
+      "other": "{count} títulos removidos."
+    },
+    "removedSkipped": {
+      "one": "{count} título removido ({skipped} mantidos — os arquivos voltaram).",
+      "other": "{count} títulos removidos ({skipped} mantidos — os arquivos voltaram)."
+    },
+    "couldNotRemoveMissing": "Não foi possível remover os títulos ausentes",
+    "scanComplete": "Verificação de \"{name}\" concluída: {added} adicionados, {updated} atualizados, {removed} removidos.",
+    "scanFailed": "A verificação falhou",
+    "episodes": {
+      "one": "{count} episódio",
+      "other": "{count} episódios"
+    },
+    "files": {
+      "one": "{count} arquivo",
+      "other": "{count} arquivos"
+    },
+    "stillOnDisk": {
+      "one": "{count} ainda no disco: exclua-o para liberar o espaço.",
+      "other": "{count} ainda no disco: exclua-os para liberar o espaço."
+    }
+  },
+  "folderPicker": {
+    "title": "Escolha uma pasta",
+    "up": "Subir uma pasta",
+    "empty": "Nenhuma pasta aqui.",
+    "newFolder": "Nova pasta dentro desta (opcional)",
+    "newFolderPlaceholder": "ex.: Backups do Plinthio",
+    "useNew": "Usar nova pasta",
+    "useThis": "Usar esta pasta",
+    "couldNotOpen": "Não foi possível abrir essa pasta"
+  }
+}

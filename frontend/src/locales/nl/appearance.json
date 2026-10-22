@@ -1,0 +1,85 @@
+{
+  "section": {
+    "title": "Weergave",
+    "description": "Hoe Plinthio er voor jou uitziet. Wijzigingen zie je meteen in het voorbeeld en worden direct opgeslagen, alleen voor jouw account.",
+    "locked": "Je admin bepaalt hoe Plinthio er op deze server uitziet, dus je kunt dit hier niet wijzigen. Het voorbeeld laat zien wat iedereen ziet."
+  },
+  "language": {
+    "auto": "Automatisch",
+    "desc": "De taal waarin Plinthio met je praat. Automatisch volgt je browser."
+  },
+  "cards": {
+    "accent": {
+      "title": "Accentkleur",
+      "desc": "Je markeerkleur voor knoppen, badges en het huidige tabblad."
+    },
+    "layout": {
+      "title": "Navigatie",
+      "desc": "Waar de hoofdnavigatie staat."
+    },
+    "pageWidth": {
+      "title": "Paginabreedte",
+      "desc": "Hoe breed pagina's worden op een groot scherm. Volledige breedte past meer posters op een rij."
+    },
+    "pauseScreen": {
+      "title": "Pauzescherm",
+      "desc": "Wat er verschijnt als een film of aflevering een paar seconden gepauzeerd is."
+    }
+  },
+  "accents": {
+    "zinc": "Zink",
+    "slate": "Leisteen",
+    "red": "Rood",
+    "orange": "Oranje",
+    "amber": "Amber",
+    "lime": "Limoen",
+    "emerald": "Smaragd",
+    "teal": "Blauwgroen",
+    "sky": "Hemelsblauw",
+    "blue": "Blauw",
+    "indigo": "Indigo",
+    "violet": "Violet",
+    "purple": "Paars",
+    "fuchsia": "Fuchsia",
+    "pink": "Roze",
+    "rose": "Rozenrood"
+  },
+  "layouts": {
+    "topnav": {
+      "label": "Navigatie bovenaan",
+      "desc": "Klassieke horizontale balk bovenaan"
+    },
+    "sidebar": {
+      "label": "Zijbalk",
+      "desc": "Verticale navigatie aan de linkerkant"
+    }
+  },
+  "pageWidths": {
+    "full": {
+      "label": "Volledige breedte",
+      "desc": "Gebruik het hele scherm, met meer posters"
+    },
+    "contained": {
+      "label": "Begrensd",
+      "desc": "Gecentreerd, maximaal 1440px breed"
+    }
+  },
+  "pauseScreens": {
+    "simple": {
+      "label": "Eenvoudig",
+      "desc": "Alleen de spelerknoppen — niets bedekt het beeld."
+    },
+    "details": {
+      "label": "Details",
+      "desc": "Poster, titel, slogan, samenvatting, regisseur en cast, en wanneer het afgelopen is."
+    },
+    "cinematic": {
+      "label": "Filmisch",
+      "desc": "Het beeld wordt gedimd achter een titelkaart over het hele scherm met castfoto's en feiten van TMDB — opbrengst, oorspronkelijke titel, trefwoorden."
+    },
+    "bedtime": {
+      "label": "Bedtijd",
+      "desc": "Een gedimde klok met de eindtijd en, bij series, wanneer de rest van het seizoen zou eindigen. Rustig voor de ogen in een donkere kamer."
+    }
+  }
+}

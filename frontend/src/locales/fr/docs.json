@@ -374,7 +374,7 @@
       "hideSearch": "Masquer la barre de recherche",
       "accent": "Remplacer la couleur d'accent"
     },
-    "apply": "Pour appliquer du CSS personnalisé, allez dans **Admin → Apparence → CSS personnalisé** (administrateurs uniquement), collez vos règles dans l'éditeur, utilisez **Tester l'aperçu** pour le voir en direct dans votre onglet avant d'enregistrer, puis **Enregistrer l'identité et le CSS** pour l'envoyer à tous les clients connectés."
+    "apply": "Pour appliquer du CSS personnalisé, allez dans **Admin → Apparence → CSS personnalisé** (administrateurs uniquement), collez vos règles dans l'éditeur, utilisez **{tryIt}** pour le voir en direct dans votre onglet avant d'enregistrer, puis **{save}** pour l'envoyer à tous les clients connectés."
   },
   "errors": {
     "title": "Codes d'erreur",

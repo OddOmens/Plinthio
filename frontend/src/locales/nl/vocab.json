@@ -1,0 +1,107 @@
+{
+  "anyCreator": "Maker",
+  "manga": {
+    "unit": "Deel",
+    "units": "Delen",
+    "short": "Dl.",
+    "verb": "Lezen",
+    "verbing": "Lezen",
+    "done": "Gelezen",
+    "creator": "Auteur",
+    "series": "Mangaserie",
+    "count": {
+      "one": "{count} deel",
+      "other": "{count} delen"
+    },
+    "entry": "Dl. {number}",
+    "allDone": "Alles gelezen",
+    "progress": "{count}/{total} gelezen"
+  },
+  "book": {
+    "unit": "Boek",
+    "units": "Boeken",
+    "short": "Boek",
+    "verb": "Lezen",
+    "verbing": "Lezen",
+    "done": "Gelezen",
+    "creator": "Auteur",
+    "series": "Boekenreeks",
+    "count": {
+      "one": "{count} boek",
+      "other": "{count} boeken"
+    },
+    "entry": "Boek {number}",
+    "allDone": "Alles gelezen",
+    "progress": "{count}/{total} gelezen"
+  },
+  "audiobook": {
+    "unit": "Boek",
+    "units": "Boeken",
+    "short": "Boek",
+    "verb": "Luisteren",
+    "verbing": "Luisteren",
+    "done": "Beluisterd",
+    "creator": "Auteur",
+    "series": "Luisterboekenreeks",
+    "count": {
+      "one": "{count} boek",
+      "other": "{count} boeken"
+    },
+    "entry": "Boek {number}",
+    "allDone": "Alles beluisterd",
+    "progress": "{count}/{total} beluisterd"
+  },
+  "show": {
+    "unit": "Aflevering",
+    "units": "Afleveringen",
+    "short": "Afl.",
+    "verb": "Kijken",
+    "verbing": "Kijken",
+    "done": "Bekeken",
+    "creator": "Maker",
+    "series": "Tv-serie",
+    "count": {
+      "one": "{count} aflevering",
+      "other": "{count} afleveringen"
+    },
+    "entry": "S{season} · A{episode}",
+    "season": "S{season}",
+    "allDone": "Alles bekeken",
+    "progress": "{count}/{total} bekeken"
+  },
+  "anime": {
+    "unit": "Aflevering",
+    "units": "Afleveringen",
+    "short": "Afl.",
+    "verb": "Kijken",
+    "verbing": "Kijken",
+    "done": "Bekeken",
+    "creator": "Studio",
+    "series": "Animeserie",
+    "count": {
+      "one": "{count} aflevering",
+      "other": "{count} afleveringen"
+    },
+    "entry": "S{season} · A{episode}",
+    "season": "S{season}",
+    "allDone": "Alles bekeken",
+    "progress": "{count}/{total} bekeken"
+  },
+  "movie": {
+    "unit": "Film",
+    "units": "Films",
+    "short": "Deel",
+    "verb": "Kijken",
+    "verbing": "Kijken",
+    "done": "Bekeken",
+    "creator": "Regisseur",
+    "series": "Filmcollectie",
+    "count": {
+      "one": "{count} film",
+      "other": "{count} films"
+    },
+    "entry": "Deel {number}",
+    "allDone": "Alles bekeken",
+    "progress": "{count}/{total} bekeken"
+  }
+}

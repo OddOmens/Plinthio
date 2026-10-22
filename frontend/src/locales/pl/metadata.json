@@ -1,0 +1,206 @@
+{
+  "fields": {
+    "title": "Tytuł",
+    "author": "Autor",
+    "authors": "Autor(zy)",
+    "director": "Reżyser",
+    "directors": "Reżyser(zy)",
+    "artists": "Rysownik(cy)",
+    "artistsShort": "Rysownicy",
+    "cast": "Obsada",
+    "castActors": "Obsada / aktorzy",
+    "series": "Seria",
+    "releaseDate": "Data wydania",
+    "date": "Data",
+    "ageRating": "Kategoria wiekowa",
+    "status": "Status",
+    "publisher": "Wydawca",
+    "genres": "Gatunki",
+    "themes": "Motywy",
+    "description": "Opis",
+    "cover": "Okładka"
+  },
+  "ageRatings": {
+    "everyone": "Dla wszystkich",
+    "teen": "Nastolatki",
+    "mature": "Dla dorosłych",
+    "explicit": "Treści dosadne"
+  },
+  "edit": {
+    "title": "Edytuj metadane",
+    "appliesToAll": {
+      "one": "Dotyczy {count} tomu",
+      "few": "Dotyczy wszystkich {count} tomów",
+      "many": "Dotyczy wszystkich {count} tomów",
+      "other": "Dotyczy wszystkich {count} tomu"
+    },
+    "coverPreview": "Podgląd okładki",
+    "replaceCover": "Zmień okładkę",
+    "coverSaving": "Zapisywanie",
+    "setForSeries": "Ustaw dla serii",
+    "replace": "Zmień",
+    "unknownAuthor": "Nieznany autor",
+    "commaSeparated": "Oddzielone przecinkami",
+    "commaSeparatedActors": "Aktorzy oddzieleni przecinkami",
+    "seriesName": "Nazwa serii",
+    "releaseDateExample": "np. 2019 lub 2019-06-26",
+    "sameAsSeries": "Jak w serii",
+    "unrated": "Bez kategorii",
+    "statusExample": "np. Wychodzi, Zakończona",
+    "descriptionPlaceholder": "Streszczenie / opis",
+    "saving": "Zapisywanie...",
+    "searchToFill": "Przeszukaj {provider}, aby uzupełnić brakujące informacje",
+    "externalSources": "źródła zewnętrzne",
+    "searchPlaceholder": "Szukaj tytułu...",
+    "year": "Rok",
+    "yearHint": "Filtruj według roku wydania (np. 2002)",
+    "searching": "Wyszukiwanie...",
+    "searchingProvider": "Przeszukiwanie {provider}...",
+    "noResults": "Brak wyników. Spróbuj innego wyszukiwania.",
+    "searchedAs": "Wyszukano jako: {query}",
+    "resultDirector": "Reż.: {name}",
+    "resultCast": "Obsada: {names}",
+    "resultArt": "Rys.: {names}",
+    "useAll": "Użyj wszystkiego",
+    "uploadFailed": "Nie udało się przesłać tego obrazu.",
+    "searchFailed": "Nie udało się przeszukać dostawców metadanych — szczegóły w konsoli przeglądarki.",
+    "savedTitle": "Zapisano metadane",
+    "savedSeries": {
+      "one": "Zaktualizowano {count} pozycję w serii.",
+      "few": "Zaktualizowano wszystkie {count} pozycje w serii.",
+      "many": "Zaktualizowano wszystkie {count} pozycji w serii.",
+      "other": "Zaktualizowano wszystkie {count} pozycji w serii."
+    },
+    "savedOne": "Zaktualizowano „{title}”.",
+    "saveFailed": "Nie udało się zapisać metadanych — szczegóły w konsoli przeglądarki."
+  },
+  "manager": {
+    "title": "Porządkowanie tytułów i dopasowywanie",
+    "description": "Usuń znaczniki wydań z nazw plików i dopasuj plakaty, opisy, obsadę i daty wydania z TMDB.",
+    "stats": {
+      "total": "Wszystkie pozycje",
+      "totalHint": "Cała zindeksowana zawartość",
+      "dirty": "Tytuły do uporządkowania",
+      "dirtyHint": "Znaczniki wydania lub rok w tytule",
+      "missingCover": "Brak grafiki",
+      "missingCoverHint": "Brak pliku plakatu lub okładki",
+      "missingMeta": "Brak opisu / daty",
+      "missingMetaHint": "Wymaga dopasowania opisu z TMDB"
+    },
+    "filters": {
+      "allLibraries": "Wszystkie biblioteki",
+      "allMediaTypes": "Wszystkie typy mediów",
+      "tvShows": "Seriale",
+      "needsCleanup": "Do uporządkowania",
+      "searchPlaceholder": "Filtruj po tytule lub ścieżce..."
+    },
+    "batch": {
+      "selectAll": "Zaznacz wszystko ({count})",
+      "selected": "Zaznaczono: {count}",
+      "overwritePosters": "Nadpisz plakaty",
+      "useCanonicalTitle": "Użyj oficjalnego tytułu",
+      "cleanHint": "Usuń znaczniki wydań i końcowe lata z tytułów w bazie danych",
+      "cleanCount": "Uporządkuj tytuły ({count})",
+      "findHint": "Dopasuj każdy zaznaczony tytuł u dostawców metadanych (TMDB, MangaDex, Google Books, Open Library): grafika, opis, data wydania",
+      "findCount": "Znajdź metadane ({count})",
+      "stop": "Zatrzymaj",
+      "stopping": "Zatrzymywanie…"
+    },
+    "summary": {
+      "matched": "Dopasowano {matched} z {total}.",
+      "matchedStopped": "Dopasowano {matched} z {total}, zanim to zatrzymano.",
+      "notFound": {
+        "one": "{count} pozycja bez dopasowania — jest oznaczona poniżej; spróbuj dla niej opcji {action}.",
+        "few": "{count} pozycje bez dopasowania — są oznaczone poniżej; spróbuj dla nich opcji {action}.",
+        "many": "{count} pozycji bez dopasowania — są oznaczone poniżej; spróbuj dla nich opcji {action}.",
+        "other": "{count} pozycji bez dopasowania — są oznaczone poniżej; spróbuj dla nich opcji {action}."
+      },
+      "needsKey": {
+        "one": "{count} pozycja to wideo, które wymaga klucza TMDB — dodaj go w {where} i uruchom ponownie.",
+        "few": "{count} pozycje to wideo, które wymagają klucza TMDB — dodaj go w {where} i uruchom ponownie.",
+        "many": "{count} pozycji to wideo, które wymagają klucza TMDB — dodaj go w {where} i uruchom ponownie.",
+        "other": "{count} pozycji to wideo, które wymagają klucza TMDB — dodaj go w {where} i uruchom ponownie."
+      },
+      "adminMetadata": "Administracja → Metadane",
+      "failed": {
+        "one": "Niepowodzenia: {count} (powód w wierszu).",
+        "few": "Niepowodzenia: {count} (powód w wierszu).",
+        "many": "Niepowodzenia: {count} (powód w wierszu).",
+        "other": "Niepowodzenia: {count} (powód w wierszu)."
+      }
+    },
+    "dismiss": "Zamknij",
+    "list": {
+      "analyzing": "Analizowanie tytułów i metadanych...",
+      "empty": "Brak pozycji pasujących do wybranych filtrów."
+    },
+    "badges": {
+      "frameTag": "KLATKA",
+      "tvEpisode": "Odcinek",
+      "poster": "Plakat",
+      "frame": "Klatka",
+      "frameHint": "Tymczasowa klatka z wideo — uruchom automatyczne dopasowanie, aby pobrać oficjalny plakat",
+      "noPoster": "Brak plakatu",
+      "synopsis": "Opis",
+      "noSynopsis": "Brak opisu",
+      "noDate": "Brak daty"
+    },
+    "cleanLabel": "Po uporządkowaniu:",
+    "actions": {
+      "autoMatch": "Dopasuj automatycznie",
+      "autoMatchHint": "Dopasuj u dostawców metadanych i zaktualizuj ten tytuł",
+      "editSearch": "Edytuj / szukaj",
+      "editSearchHint": "Przeszukaj TMDB ręcznie, wybierz grafikę lub dostosuj pola metadanych"
+    },
+    "match": {
+      "matchedAs": "Dopasowano jako „{title}”",
+      "needsKey": "Wymaga klucza TMDB — dodaj go powyżej",
+      "noMatch": "Brak dopasowania — spróbuj Edytuj / szukaj",
+      "failed": "Dopasowanie nie powiodło się — spróbuj ponownie"
+    },
+    "errors": {
+      "loadFailed": "Nie udało się wczytać pozycji"
+    },
+    "clean": {
+      "confirmTitle": {
+        "one": "Uporządkować {count} tytuł?",
+        "few": "Uporządkować {count} tytuły?",
+        "many": "Uporządkować {count} tytułów?",
+        "other": "Uporządkować {count} tytułu?"
+      },
+      "confirmMessage": {
+        "one": "Z {count} zaznaczonego tytułu w bazie danych zostaną usunięte znaczniki scen, kodeki, rozdzielczości i końcowe lata wydania.",
+        "few": "Z {count} zaznaczonych tytułów w bazie danych zostaną usunięte znaczniki scen, kodeki, rozdzielczości i końcowe lata wydania.",
+        "many": "Z {count} zaznaczonych tytułów w bazie danych zostaną usunięte znaczniki scen, kodeki, rozdzielczości i końcowe lata wydania.",
+        "other": "Z {count} zaznaczonego tytułu w bazie danych zostaną usunięte znaczniki scen, kodeki, rozdzielczości i końcowe lata wydania."
+      },
+      "confirm": "Uporządkuj tytuły",
+      "progress": {
+        "one": "Porządkowanie {count} tytułu...",
+        "few": "Porządkowanie {count} tytułów...",
+        "many": "Porządkowanie {count} tytułów...",
+        "other": "Porządkowanie {count} tytułu..."
+      },
+      "doneTitle": "Tytuły uporządkowane",
+      "doneMessage": {
+        "one": "Uporządkowano {count} tytuł!",
+        "few": "Uporządkowano {count} tytuły!",
+        "many": "Uporządkowano {count} tytułów!",
+        "other": "Uporządkowano {count} tytułu!"
+      },
+      "failedTitle": "Porządkowanie nie powiodło się"
+    },
+    "find": {
+      "confirmTitle": {
+        "one": "Znaleźć metadane dla {count} pozycji?",
+        "few": "Znaleźć metadane dla {count} pozycji?",
+        "many": "Znaleźć metadane dla {count} pozycji?",
+        "other": "Znaleźć metadane dla {count} pozycji?"
+      },
+      "confirmMessage": "Każdy zaznaczony tytuł zostanie dopasowany u dostawców metadanych (TMDB, MangaDex, Google Books, Open Library), a jego grafika, opis i data wydania zostaną zaktualizowane. Wyniki pojawią się w każdym wierszu; możesz w każdej chwili przerwać.",
+      "confirm": "Rozpocznij dopasowywanie",
+      "itemFallback": "pozycja",
+      "progress": "Dopasowywanie {current} z {total}: {title}"
+    }
+  }
+}

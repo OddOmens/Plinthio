@@ -1,0 +1,56 @@
+{
+  "title": "请求",
+  "intro": "请求添加媒体库中还没有的电影、剧集、动画、书籍和有声书。",
+  "newRequest": "新建请求",
+  "request": "请求",
+  "mine": "我的请求",
+  "reviewQueue": "审核队列",
+  "filterByStatus": "按状态筛选",
+  "allStatuses": "所有状态",
+  "emptyReview": "没有需要审核的请求",
+  "emptyMine": "你还没有请求任何内容",
+  "emptyMineHint": "在上方搜索，或在你的清单中点按作品上的“请求”按钮。",
+  "requestedBy": "由 {name} 请求",
+  "deletedUser": "已删除的用户",
+  "quotedNote": "“{note}”",
+  "notePlaceholder": "给请求者的备注（可选）",
+  "deleteRequest": "删除请求",
+  "withdraw": "撤回",
+  "status": {
+    "pending": "待处理",
+    "accepted_pending": "已接受 · 待添加",
+    "accepted_added": "已接受 · 已添加",
+    "rejected": "已拒绝"
+  },
+  "actions": {
+    "acceptPending": "接受 · 待添加",
+    "acceptAdded": "接受 · 已添加",
+    "reject": "拒绝",
+    "backToPending": "退回待处理"
+  },
+  "confirm": {
+    "withdrawTitle": "撤回请求？",
+    "deleteTitle": "删除请求？",
+    "withdrawMessage": "你对“{title}”的请求将被撤回。",
+    "deleteMessage": "对“{title}”的请求将为所有人删除。"
+  },
+  "errors": {
+    "load": "无法加载请求。",
+    "send": "无法发送该请求。",
+    "update": "无法更新该请求。",
+    "remove": "无法移除该请求。"
+  },
+  "search": {
+    "placeholder": {
+      "movie": "搜索电影…",
+      "show": "搜索剧集…",
+      "anime": "搜索动画…",
+      "book": "搜索书籍…",
+      "manga": "搜索漫画…",
+      "audiobook": "搜索有声书…",
+      "titles": "搜索作品…"
+    },
+    "noResults": "没有找到“{query}”的结果。",
+    "failed": "搜索失败，请稍后重试。"
+  }
+}
