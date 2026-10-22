@@ -9,8 +9,10 @@
       @change="choose($event.target.value)"
       class="appearance-none bg-transparent pr-1 cursor-pointer focus:outline-none focus-visible:underline"
     >
-      <option value="auto">{{ $t('appearance.language.auto') }}</option>
-      <option v-for="lang in LANGUAGES" :key="lang.code" :value="lang.code" :lang="lang.code">{{ lang.name }}</option>
+      <!-- The select is transparent to sit inline, so the open list needs the theme's colours
+           or browsers draw it white behind light text. -->
+      <option value="auto" class="bg-background text-foreground">{{ $t('appearance.language.auto') }}</option>
+      <option v-for="lang in LANGUAGES" :key="lang.code" :value="lang.code" :lang="lang.code" class="bg-background text-foreground">{{ lang.name }}</option>
     </select>
   </label>
 </template>
