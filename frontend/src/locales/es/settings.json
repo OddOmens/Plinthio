@@ -1,0 +1,176 @@
+{
+  "nav": {
+    "serverAdmin": "Administración del servidor",
+    "groups": {
+      "account": "Cuenta",
+      "yours": "Tu Plinthio",
+      "connect": "Conectar"
+    },
+    "profile": { "label": "Perfil", "desc": "Tu foto y tu rol" },
+    "security": { "label": "Seguridad", "desc": "Contraseña, verificación en dos pasos, dispositivos" },
+    "appearance": { "label": "Apariencia", "desc": "Color, navegación, ancho, pantalla de pausa" },
+    "shelves": { "label": "Estanterías", "desc": "Tipos de medios, página de inicio, vistas" },
+    "hidden": { "label": "Títulos ocultos", "desc": "Los títulos que has ocultado" },
+    "activity": { "label": "Actividad", "desc": "Tus estadísticas e inicios de sesión" },
+    "apps": { "label": "Apps y claves de API", "desc": "Mihon, KOReader, OPDS, scripts" }
+  },
+  "layout": {
+    "backTo": "Volver a {title}",
+    "backToShelves": "Volver a las estanterías",
+    "sections": "Secciones de {title}"
+  },
+  "saveStatus": {
+    "error": "No se pudo guardar"
+  },
+  "activityList": {
+    "empty": "Todavía no hay actividad registrada.",
+    "deletedItem": "un elemento eliminado",
+    "you": {
+      "signedIn": "Sesión iniciada",
+      "signInFailed": "Intento de inicio de sesión fallido",
+      "viewed": "Viste {title}",
+      "viewing": "Estás viendo {title}"
+    },
+    "someone": {
+      "signedIn": "{user} inició sesión",
+      "signInFailed": "{user} no pudo iniciar sesión",
+      "viewed": "{user} vio {title}",
+      "viewing": "{user} está viendo {title}"
+    }
+  },
+  "mediaTypes": {
+    "movie": { "label": "Películas", "desc": "Largometrajes" },
+    "show": { "label": "Series de TV", "desc": "Series y episodios" },
+    "anime": { "label": "Anime", "desc": "Series y películas de anime" },
+    "book": { "label": "Libros", "desc": "EPUB, PDF y texto" },
+    "manga": { "label": "Manga y cómics", "desc": "CBZ, CBR y novelas gráficas" },
+    "audiobook": { "label": "Audiolibros", "desc": "Textos narrados y radioteatros" }
+  },
+  "format": {
+    "size": "{value} {unit}",
+    "units": { "B": "B", "KB": "KB", "MB": "MB", "GB": "GB", "TB": "TB" },
+    "seconds": "{value} s",
+    "minutes": "{value} min",
+    "hours": "{value} h",
+    "hoursMinutes": "{hours} {minutes}"
+  },
+  "profile": {
+    "title": "Perfil",
+    "description": "Tu foto y cómo está configurada tu cuenta en este servidor.",
+    "avatar": "Avatar",
+    "changePicture": "Cambiar foto",
+    "uploadPicture": "Subir foto",
+    "pictureHint": "JPG, PNG, WebP o GIF de hasta 5 MB, recortada en cuadrado.",
+    "notAnImage": "Elige un archivo de imagen (PNG, JPG, WebP o GIF).",
+    "tooBig": "Esa imagen pesa más de 5 MB.",
+    "uploadFailed": "No se pudo subir esa foto",
+    "removeTitle": "Quitar foto",
+    "removeMessage": "¿Quitar tu foto de perfil? En su lugar se mostrarán tus iniciales.",
+    "removeFailed": "No se pudo quitar la foto",
+    "roles": {
+      "admin": { "label": "Admin", "desc": "administra este servidor" },
+      "editor": { "label": "Editor", "desc": "también puede corregir títulos, portadas y detalles" },
+      "viewer": { "label": "Espectador", "desc": "explora, lee, mira y escucha" }
+    }
+  },
+  "security": {
+    "title": "Seguridad",
+    "description": "Tu contraseña, la verificación en dos pasos y los dispositivos con tu sesión iniciada.",
+    "password": {
+      "desc": "Al cambiarla se cierra tu sesión en todas partes, incluido este navegador.",
+      "current": "Contraseña actual",
+      "new": "Contraseña nueva",
+      "hint": "Al menos 8 caracteres.",
+      "change": "Cambiar contraseña",
+      "changing": "Cambiando…",
+      "changed": "Contraseña cambiada. Vuelve a iniciar sesión con tu nueva contraseña.",
+      "changeFailed": "No se pudo cambiar tu contraseña"
+    },
+    "twoFactor": {
+      "title": "Verificación en dos pasos",
+      "desc": "Un código de tu teléfono además de tu contraseña. Vale la pena si usas Plinthio fuera de casa."
+    },
+    "devices": {
+      "title": "Dispositivos con sesión iniciada",
+      "desc": "Cada teléfono, navegador y TV en el que has iniciado sesión la mantiene abierta. Si iniciaste sesión en algún sitio que ya no controlas, cierra sesión en todas partes.",
+      "signOutAll": "Cerrar sesión en todos los dispositivos",
+      "signingOut": "Cerrando sesión…",
+      "confirmTitle": "Cerrar sesión en todas partes",
+      "confirmMessage": "Se cerrará la sesión de inmediato en todos los dispositivos conectados a esta cuenta, incluido este.",
+      "signOutFailed": "No se pudo cerrar la sesión en todos los dispositivos"
+    }
+  },
+  "shelves": {
+    "title": "Estanterías",
+    "description": "Qué hay en tus estanterías y dónde se abre Plinthio. Se guarda sobre la marcha.",
+    "mediaTypes": {
+      "title": "Tipos de medios",
+      "desc": "Qué tipos de medios aparecen en tus estanterías. Deja al menos uno."
+    },
+    "startOn": {
+      "title": "Empezar en",
+      "desc": "La estantería con la que se abre Plinthio.",
+      "all": "Todos los medios"
+    },
+    "views": {
+      "title": "Vistas de estantería",
+      "desc": "Las vistas sobre tu estantería. Cada una muestra una tarjeta por serie; la alfabética siempre está.",
+      "offByAdmin": "Desactivado por tu admin",
+      "modes": {
+        "alphabetical": { "label": "Alfabética", "desc": "Siempre activa. Todas las series y títulos de la A a la Z." },
+        "creator": { "label": "Creador", "desc": "Agrupados por autor, director o estudio." },
+        "diskFolders": { "label": "Carpetas del disco", "desc": "Las carpetas del servidor." },
+        "customFolders": { "label": "Carpetas personalizadas", "desc": "Tus propias carpetas en la app, con «Sin organizar» para el resto." }
+      }
+    }
+  },
+  "hidden": {
+    "title": "Títulos ocultos",
+    "description": "Los títulos que has ocultado de tus estanterías. Solo tú dejas de verlos; puedes recuperarlos cuando quieras.",
+    "empty": "No hay nada oculto. Oculta un título desde su página y aparecerá aquí.",
+    "unhide": "Mostrar",
+    "unhideFailed": "No se pudo volver a mostrar ese título"
+  },
+  "activity": {
+    "title": "Actividad",
+    "description": "Lo que has leído, visto y escuchado, y tus inicios de sesión recientes.",
+    "recent": "Actividad reciente",
+    "tiles": {
+      "listened": "Tiempo escuchado",
+      "pagesRead": "Páginas leídas",
+      "finished": "Terminados",
+      "inProgress": "En curso"
+    }
+  },
+  "apps": {
+    "title": "Apps y claves de API",
+    "description": "Usa Plinthio desde apps de lectura, scripts y paneles. Cada una inicia sesión con una clave de API que creas aquí.",
+    "reading": {
+      "title": "Apps de lectura",
+      "desc": "Lee tus cómics, manga, PDF y libros en otras apps. Inicia sesión con tu nombre de usuario ({username}) y una clave de API como contraseña. Crea una clave por app, así puedes desconectar una borrando su clave.",
+      "address": "Dirección para {app}",
+      "mihon": "Instala la extensión Komga, abre sus ajustes e introduce esta dirección, tu nombre de usuario y una clave de API como contraseña. Después, en Ajustes → Seguimiento de Mihon, activa Komga para que lo que leas en Mihon se marque como leído aquí.",
+      "koreader": "Abre un libro y ve a Herramientas → Sincronización del progreso → Servidor de sincronización personalizado: introduce esta dirección. Elige Iniciar sesión (no Registrarse) con tu nombre de usuario y una clave de API como contraseña. Tu posición en PDF y cómics se sincroniza en ambos sentidos; las posiciones de EPUB se sincronizan entre dispositivos KOReader, y Plinthio muestra cuánto llevas. Las claves creadas antes de Plinthio 1.0 no funcionan aquí: crea una nueva.",
+      "opdsName": "Lectores OPDS (Chunky, Panels, KyBook, Moon+ Reader)",
+      "opds": "Añade esto como catálogo OPDS, con tu nombre de usuario y una clave de API como contraseña."
+    },
+    "keys": {
+      "title": "Claves de API",
+      "desc": "Una clave actúa en tu nombre. Envíala en la cabecera {header} o úsala como contraseña en una app.",
+      "name": "Nombre de la clave",
+      "namePlaceholder": "Para qué es, p. ej. Mihon en mi teléfono",
+      "make": "Crear una clave",
+      "makeFailed": "No se pudo crear la clave",
+      "copyNow": "Copia tu nueva clave ahora. No se volverá a mostrar.",
+      "copyKey": "Copiar clave",
+      "empty": "Todavía no hay claves.",
+      "made": "creada el {date}",
+      "revokeNamed": "Revocar {name}",
+      "revokeKey": "Revocar clave",
+      "revokeTitle": "Revocar clave de API",
+      "revokeMessage": "¿Revocar «{name}»? Todo lo que la use se desconectará de inmediato.",
+      "revoke": "Revocar",
+      "revokeFailed": "No se pudo revocar esa clave"
+    }
+  }
+}

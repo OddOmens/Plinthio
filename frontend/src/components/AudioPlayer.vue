@@ -5,31 +5,31 @@
         <!-- Top Track Info & Controls Row -->
         <div class="flex items-center justify-between gap-3">
           <!-- Left: Cover & Title (Click to open Fullscreen Now Playing) -->
-          <div @click="showNowPlaying = true" class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer group" title="Open Now Playing">
+          <div @click="showNowPlaying = true" class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer group" :title="$t('player.audio.openNowPlaying')">
             <div class="w-11 h-11 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border group-hover:ring-2 ring-primary/40 transition">
-              <img :src="coverUrl" :alt="`Cover of ${player.currentItem.title}`" class="w-full h-full object-cover" />
+              <img :src="coverUrl" :alt="$t('player.coverOf', { title: player.currentItem.title })" class="w-full h-full object-cover" />
             </div>
             <div class="min-w-0">
               <h4 class="text-xs sm:text-sm font-semibold text-foreground truncate group-hover:text-primary transition">
                 {{ player.currentItem.title }}
               </h4>
               <p class="text-[12px] text-muted-foreground truncate">
-                {{ player.currentItem.author || 'Unknown Author' }}
+                {{ player.currentItem.author || $t('player.unknownAuthor') }}
               </p>
             </div>
           </div>
 
           <!-- Center Controls -->
           <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            <button aria-label="Skip back 15s"
+            <button :aria-label="$t('player.audio.skipBack', { count: 15 })"
               @click="player.skip(-15)"
               class="p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition active:scale-95"
-              title="Skip back 15s"
+              :title="$t('player.audio.skipBack', { count: 15 })"
             >
               <RotateCcw class="w-4 h-4" />
             </button>
 
-            <button :aria-label="player.isPlaying ? 'Pause' : 'Play'"
+            <button :aria-label="player.isPlaying ? $t('common.pause') : $t('common.play')"
               @click="player.togglePlay"
               class="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md active:scale-95 transition"
             >
@@ -37,30 +37,30 @@
               <Play v-else class="w-4 h-4 fill-current ml-0.5" />
             </button>
 
-            <button aria-label="Skip forward 15s"
+            <button :aria-label="$t('player.audio.skipForward', { count: 15 })"
               @click="player.skip(15)"
               class="p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition active:scale-95"
-              title="Skip forward 15s"
+              :title="$t('player.audio.skipForward', { count: 15 })"
             >
               <RotateCw class="w-4 h-4" />
             </button>
           </div>
 
           <!-- Mobile Close Button -->
-          <button aria-label="Close player"
+          <button :aria-label="$t('player.audio.closePlayer')"
             @click="player.stop()"
             class="sm:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition active:scale-95 flex-shrink-0"
-            title="Close player"
+            :title="$t('player.audio.closePlayer')"
           >
             <X class="w-4 h-4" />
           </button>
 
           <!-- Right Controls: Speed, Sleep, Expand, Close -->
           <div class="hidden sm:flex items-center gap-1.5 flex-shrink-0">
-            <button aria-label="Fullscreen Now Playing"
+            <button :aria-label="$t('player.audio.fullscreen')"
               @click="showNowPlaying = true"
               class="p-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs transition flex items-center gap-1 border border-border"
-              title="Fullscreen Now Playing"
+              :title="$t('player.audio.fullscreen')"
             >
               <Maximize2 class="w-3.5 h-3.5" />
             </button>
@@ -68,9 +68,9 @@
             <button
               @click="cycleSpeed"
               class="px-2 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-mono font-medium border border-border transition"
-              title="Playback speed"
+              :title="$t('player.audio.playbackSpeed')"
             >
-              {{ player.playbackRate }}x
+              {{ $t('player.audio.rate', { rate: n(player.playbackRate) }) }}
             </button>
 
             <button
@@ -81,7 +81,7 @@
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border'
               ]"
-              :title="player.sleepTimerMinutes ? sleepLabel : 'Sleep timer'"
+              :title="player.sleepTimerMinutes ? sleepLabel : $t('player.audio.sleepTimer')"
             >
               <Moon class="w-3.5 h-3.5" />
               <span v-if="player.sleepTimerMinutes" class="text-[11px] font-bold font-mono tabular-nums">
@@ -89,10 +89,10 @@
               </span>
             </button>
 
-            <button aria-label="Close player"
+            <button :aria-label="$t('player.audio.closePlayer')"
               @click="player.stop()"
               class="p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition"
-              title="Close player"
+              :title="$t('player.audio.closePlayer')"
             >
               <X class="w-4 h-4" />
             </button>
@@ -137,6 +137,7 @@ import { usePlayerStore, PLAYBACK_SPEEDS } from '../stores/player';
 import NowPlayingModal from './NowPlayingModal.vue';
 import { Play, Pause, RotateCcw, RotateCw, Moon, X, Maximize2 } from '@lucide/vue';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
+import { t, n } from '../i18n';
 
 const player = usePlayerStore();
 const token = getMediaToken() || '';
@@ -176,8 +177,10 @@ function cycleSleepTimer() {
 }
 
 const sleepLabel = computed(() => {
-  if (player.sleepTimerMinutes === 'chapter') return 'Ch.';
+  if (player.sleepTimerMinutes === 'chapter') return t('player.audio.chapterShort');
   const secs = player.sleepRemaining;
-  return secs >= 60 ? `${Math.ceil(secs / 60)}m` : `${secs}s`;
+  return secs >= 60
+    ? t('player.units.minutesShort', { count: Math.ceil(secs / 60) })
+    : t('player.units.secondsShort', { count: secs });
 });
 </script>

@@ -13,6 +13,8 @@ export default defineConfig({
   reporter: process.env.CI ? [['list'], ['github']] : 'list',
   use: {
     baseURL: `http://127.0.0.1:${port}`,
+    // Automatic language follows the browser; pin it so the English assertions hold anywhere.
+    locale: 'en-US',
     trace: 'retain-on-failure'
   },
   webServer: {

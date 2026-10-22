@@ -1,0 +1,176 @@
+{
+  "nav": {
+    "serverAdmin": "Server admin",
+    "groups": {
+      "account": "Account",
+      "yours": "Your Plinthio",
+      "connect": "Connect"
+    },
+    "profile": { "label": "Profile", "desc": "Your picture and role" },
+    "security": { "label": "Security", "desc": "Password, two-factor, devices" },
+    "appearance": { "label": "Appearance", "desc": "Colour, navigation, width, pause screen" },
+    "shelves": { "label": "Shelves", "desc": "Media types, start page, views" },
+    "hidden": { "label": "Hidden titles", "desc": "Titles you've hidden" },
+    "activity": { "label": "Activity", "desc": "Your stats and sign-ins" },
+    "apps": { "label": "Apps & API keys", "desc": "Mihon, KOReader, OPDS, scripts" }
+  },
+  "layout": {
+    "backTo": "Back to {title}",
+    "backToShelves": "Back to shelves",
+    "sections": "{title} sections"
+  },
+  "saveStatus": {
+    "error": "Couldn't save"
+  },
+  "activityList": {
+    "empty": "No activity recorded yet.",
+    "deletedItem": "a deleted item",
+    "you": {
+      "signedIn": "Signed in",
+      "signInFailed": "Failed sign-in attempt",
+      "viewed": "Viewed {title}",
+      "viewing": "Viewing {title}"
+    },
+    "someone": {
+      "signedIn": "{user} signed in",
+      "signInFailed": "{user} failed to sign in",
+      "viewed": "{user} viewed {title}",
+      "viewing": "{user} is viewing {title}"
+    }
+  },
+  "mediaTypes": {
+    "movie": { "label": "Movies", "desc": "Feature films" },
+    "show": { "label": "TV Shows", "desc": "Series and episodes" },
+    "anime": { "label": "Anime", "desc": "Anime series and films" },
+    "book": { "label": "Books", "desc": "EPUB, PDF and text" },
+    "manga": { "label": "Manga & Comics", "desc": "CBZ, CBR and graphic novels" },
+    "audiobook": { "label": "Audiobooks", "desc": "Spoken word and audio dramas" }
+  },
+  "format": {
+    "size": "{value} {unit}",
+    "units": { "B": "B", "KB": "KB", "MB": "MB", "GB": "GB", "TB": "TB" },
+    "seconds": "{value}s",
+    "minutes": "{value}m",
+    "hours": "{value}h",
+    "hoursMinutes": "{hours} {minutes}"
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "Your picture and how your account is set up on this server.",
+    "avatar": "Avatar",
+    "changePicture": "Change picture",
+    "uploadPicture": "Upload picture",
+    "pictureHint": "JPG, PNG, WebP or GIF up to 5 MB, cropped to a square.",
+    "notAnImage": "Choose an image file (PNG, JPG, WebP or GIF).",
+    "tooBig": "That image is over 5 MB.",
+    "uploadFailed": "Could not upload that picture",
+    "removeTitle": "Remove picture",
+    "removeMessage": "Remove your profile picture? Your initials show instead.",
+    "removeFailed": "Could not remove the picture",
+    "roles": {
+      "admin": { "label": "Admin", "desc": "runs this server" },
+      "editor": { "label": "Editor", "desc": "can also fix titles, covers and details" },
+      "viewer": { "label": "Viewer", "desc": "browses, reads, watches and listens" }
+    }
+  },
+  "security": {
+    "title": "Security",
+    "description": "Your password, two-factor sign-in, and the devices signed in as you.",
+    "password": {
+      "desc": "Changing it signs you out everywhere, this browser included.",
+      "current": "Current password",
+      "new": "New password",
+      "hint": "At least 8 characters.",
+      "change": "Change password",
+      "changing": "Changing…",
+      "changed": "Password changed. Sign in again with your new password.",
+      "changeFailed": "Could not change your password"
+    },
+    "twoFactor": {
+      "title": "Two-factor sign-in",
+      "desc": "A code from your phone as well as your password. Worth it if you use Plinthio away from home."
+    },
+    "devices": {
+      "title": "Signed-in devices",
+      "desc": "Every phone, browser and TV you've signed in on keeps you signed in. If you've signed in somewhere you no longer control, sign out everywhere.",
+      "signOutAll": "Sign out of all devices",
+      "signingOut": "Signing out…",
+      "confirmTitle": "Sign out everywhere",
+      "confirmMessage": "Every device signed in to this account will be signed out straight away, including this one.",
+      "signOutFailed": "Could not sign out of all devices"
+    }
+  },
+  "shelves": {
+    "title": "Shelves",
+    "description": "What's on your shelves and where Plinthio opens. Saves as you go.",
+    "mediaTypes": {
+      "title": "Media types",
+      "desc": "Which kinds of media appear on your shelves. Keep at least one."
+    },
+    "startOn": {
+      "title": "Start on",
+      "desc": "The shelf Plinthio opens to.",
+      "all": "All media"
+    },
+    "views": {
+      "title": "Shelf views",
+      "desc": "The views above your shelf. Each shows one card per series; Alphabetical is always there.",
+      "offByAdmin": "Turned off by your admin",
+      "modes": {
+        "alphabetical": { "label": "Alphabetical", "desc": "Always on. Every series and title A–Z." },
+        "creator": { "label": "Creator", "desc": "Grouped by author, director or studio." },
+        "diskFolders": { "label": "Disk folders", "desc": "The folders on the server." },
+        "customFolders": { "label": "Custom folders", "desc": "Your own in-app folders, with an Unorganized catch-all." }
+      }
+    }
+  },
+  "hidden": {
+    "title": "Hidden titles",
+    "description": "Titles you've hidden from your shelves. Only you stop seeing them; bring one back any time.",
+    "empty": "Nothing hidden. Hide a title from its page and it shows up here.",
+    "unhide": "Unhide",
+    "unhideFailed": "Could not unhide that title"
+  },
+  "activity": {
+    "title": "Activity",
+    "description": "What you've read, watched and listened to, and your recent sign-ins.",
+    "recent": "Recent activity",
+    "tiles": {
+      "listened": "Time listened",
+      "pagesRead": "Pages read",
+      "finished": "Finished",
+      "inProgress": "In progress"
+    }
+  },
+  "apps": {
+    "title": "Apps & API keys",
+    "description": "Use Plinthio from reading apps, scripts and dashboards. Each one signs in with an API key you make here.",
+    "reading": {
+      "title": "Reading apps",
+      "desc": "Read your comics, manga, PDFs and books in other apps. Sign in with your username ({username}) and an API key as the password. Make one key per app, so you can sign one out by deleting its key.",
+      "address": "{app} address",
+      "mihon": "Install the Komga extension, open its settings and enter this address, your username and an API key as the password. Then, in Mihon's Settings → Tracking, turn on Komga so what you read in Mihon marks it read here.",
+      "koreader": "Open a book, then Tools → Progress sync → Custom sync server: enter this address. Choose Login (not Register) with your username and an API key as the password. Your place in PDFs and comics syncs both ways; EPUB positions sync between KOReader devices, and Plinthio shows how far through you are. Keys made before Plinthio 1.0 don't work here — make a new one.",
+      "opdsName": "OPDS readers (Chunky, Panels, KyBook, Moon+ Reader)",
+      "opds": "Add this as an OPDS catalog, with your username and an API key as the password."
+    },
+    "keys": {
+      "title": "API keys",
+      "desc": "A key acts as you. Send it in the {header} header, or use it as the password in an app.",
+      "name": "Key name",
+      "namePlaceholder": "What it's for, e.g. Mihon on my phone",
+      "make": "Make a key",
+      "makeFailed": "Could not make a key",
+      "copyNow": "Copy your new key now. It won't be shown again.",
+      "copyKey": "Copy key",
+      "empty": "No keys yet.",
+      "made": "made {date}",
+      "revokeNamed": "Revoke {name}",
+      "revokeKey": "Revoke key",
+      "revokeTitle": "Revoke API key",
+      "revokeMessage": "Revoke \"{name}\"? Anything using it is signed out straight away.",
+      "revoke": "Revoke",
+      "revokeFailed": "Could not revoke that key"
+    }
+  }
+}

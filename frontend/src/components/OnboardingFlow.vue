@@ -23,11 +23,10 @@
             <AppLogo class="w-20 h-20" />
             <div class="space-y-2">
               <h1 class="text-3xl font-bold tracking-tight text-foreground">
-                Welcome to {{ serverName }}
+                {{ $t('onboarding.welcome.title', { name: serverName }) }}
               </h1>
               <p class="text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
-                Let's set things up the way you like them. This takes about thirty seconds, and
-                you can change any of it later in Settings.
+                {{ $t('onboarding.welcome.text') }}
               </p>
             </div>
           </section>
@@ -35,8 +34,8 @@
           <!-- STEP: Theme -->
           <section v-else-if="step === 'theme'" class="flex flex-col gap-6">
             <header class="text-center space-y-2">
-              <h2 class="text-2xl font-bold tracking-tight text-foreground">Pick your look</h2>
-              <p class="text-sm text-muted-foreground">This one's just for you — it won't change what anyone else sees.</p>
+              <h2 class="text-2xl font-bold tracking-tight text-foreground">{{ $t('onboarding.theme.title') }}</h2>
+              <p class="text-sm text-muted-foreground">{{ $t('onboarding.theme.text') }}</p>
             </header>
 
             <div class="grid grid-cols-2 gap-4">
@@ -77,11 +76,10 @@
                their own, and only sees this step when the admin allows personal accents. -->
           <section v-else-if="step === 'accent'" class="flex flex-col gap-6">
             <header class="text-center space-y-2">
-              <h2 class="text-2xl font-bold tracking-tight text-foreground">Choose an accent</h2>
+              <h2 class="text-2xl font-bold tracking-tight text-foreground">{{ $t('onboarding.accent.title') }}</h2>
               <p class="text-sm text-muted-foreground">
-                Buttons, highlights and progress bars use this.
-                <template v-if="authStore.isAdmin">As an admin, this sets it for the whole server. People can pick their own in Settings if you allow it (Admin → Playback).</template>
-                <template v-else>It's just for you; change it any time in Settings.</template>
+                {{ $t('onboarding.accent.text') }}
+                {{ authStore.isAdmin ? $t('onboarding.accent.admin') : $t('onboarding.accent.personal') }}
               </p>
             </header>
 
@@ -100,15 +98,15 @@
                 <span :class="['w-7 h-7 rounded-full shadow-inner', acc.swatch]" />
               </button>
             </div>
-            <p class="text-center text-sm text-muted-foreground capitalize">{{ choices.accent }}</p>
+            <p class="text-center text-sm text-muted-foreground capitalize">{{ optionLabel(accentOptions, choices.accent) }}</p>
           </section>
 
           <!-- STEP: Interests -->
           <section v-else-if="step === 'interests'" class="flex flex-col gap-6">
             <header class="text-center space-y-2">
-              <h2 class="text-2xl font-bold tracking-tight text-foreground">What are you here for?</h2>
+              <h2 class="text-2xl font-bold tracking-tight text-foreground">{{ $t('onboarding.interests.title') }}</h2>
               <p class="text-sm text-muted-foreground">
-                We'll show these on your shelf and hide the rest. Pick as many as you like.
+                {{ $t('onboarding.interests.text') }}
               </p>
             </header>
 
@@ -139,17 +137,16 @@
             </div>
 
             <p v-if="choices.mediaTypes.length === 0" class="text-center text-sm text-amber-500">
-              Pick at least one so your shelf isn't empty.
+              {{ $t('onboarding.interests.pickOne') }}
             </p>
           </section>
 
           <!-- STEP: Security (optional two-factor) -->
           <section v-else-if="step === 'security'" class="flex flex-col gap-6">
             <header class="text-center space-y-2">
-              <h2 class="text-2xl font-bold tracking-tight text-foreground">Protect your account</h2>
+              <h2 class="text-2xl font-bold tracking-tight text-foreground">{{ $t('onboarding.security.title') }}</h2>
               <p class="text-sm text-muted-foreground max-w-md mx-auto">
-                Optional. Two-factor asks for a code from your phone when you sign in, so a password alone isn't enough.
-                You can turn it on now or later in Settings → Security.
+                {{ $t('onboarding.security.text') }}
               </p>
             </header>
             <div class="rounded-2xl border border-border bg-card p-5">
@@ -163,7 +160,7 @@
               <Check class="w-8 h-8" />
             </div>
             <div class="space-y-2">
-              <h2 class="text-2xl font-bold tracking-tight text-foreground">You're all set</h2>
+              <h2 class="text-2xl font-bold tracking-tight text-foreground">{{ $t('onboarding.done.title') }}</h2>
               <p class="text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
                 {{ doneMessage }}
               </p>
@@ -178,7 +175,7 @@
               :disabled="stepIndex === 0 || saving"
               class="h-11 px-4 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition disabled:opacity-0 disabled:pointer-events-none"
             >
-              Back
+              {{ $t('common.back') }}
             </button>
 
             <div class="flex items-center gap-2">
@@ -189,7 +186,7 @@
                 :disabled="saving"
                 class="h-11 px-4 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition disabled:opacity-50"
               >
-                Skip
+                {{ $t('common.skip') }}
               </button>
               <button
                 type="button"
@@ -198,7 +195,7 @@
                 class="h-11 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold transition shadow-md shadow-primary/20 active:scale-95 disabled:opacity-50 flex items-center gap-2"
               >
                 <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
-                <span>{{ step === 'done' ? 'Start browsing' : step === 'security' ? 'Not now' : 'Continue' }}</span>
+                <span>{{ step === 'done' ? $t('onboarding.nav.startBrowsing') : step === 'security' ? $t('onboarding.nav.notNow') : $t('common.continue') }}</span>
                 <ArrowRight v-if="step !== 'done' && !saving" class="w-4 h-4" />
               </button>
             </div>
@@ -210,7 +207,7 @@
 </template>
 
 <script setup>
-import { ACCENT_OPTIONS } from '../constants/appearance';
+import { ACCENT_OPTIONS, optionLabel } from '../constants/appearance';
 import AppLogo from './AppLogo.vue';
 import TwoFactorSetup from './TwoFactorSetup.vue';
 import { ref, reactive, computed } from 'vue';
@@ -219,6 +216,7 @@ import { useAuthStore } from '../stores/auth';
 import { useThemeStore } from '../stores/theme';
 import { useCustomizationStore } from '../stores/customization';
 import { ALL_MEDIA_TYPES } from '../constants/media';
+import { t, list, storedLanguageChoice } from '../i18n';
 import {
   Headphones, FileImage, Book, Tv, Film, Sparkles,
   Check, ArrowRight, Loader2, Moon, Sun
@@ -250,42 +248,43 @@ const choices = reactive({
   mediaTypes: [...(authStore.user?.preferences?.enabledMediaTypes || ALL_MEDIA_TYPES)]
 });
 
-const themeOptions = [
+const themeOptions = computed(() => [
   {
-    id: 'dark', label: 'Dark', icon: Moon,
+    id: 'dark', label: t('setup.themes.dark.label'), icon: Moon,
     mockShell: 'bg-zinc-900 border-zinc-700',
     mockBar: 'bg-zinc-800 border-zinc-700',
     mockLineStrong: 'bg-zinc-600',
     mockTile: 'bg-zinc-700'
   },
   {
-    id: 'light', label: 'Light', icon: Sun,
+    id: 'light', label: t('setup.themes.light.label'), icon: Sun,
     mockShell: 'bg-white border-zinc-200',
     mockBar: 'bg-zinc-50 border-zinc-200',
     mockLineStrong: 'bg-zinc-300',
     mockTile: 'bg-zinc-200'
   }
-];
+]);
 
 const accentOptions = ACCENT_OPTIONS;
 
-const mediaOptions = [
-  { id: 'manga', label: 'Manga', hint: 'Comics & graphic novels', icon: FileImage },
-  { id: 'book', label: 'Books', hint: 'EPUB & PDF reading', icon: Book },
-  { id: 'audiobook', label: 'Audiobooks', hint: 'Listen with resume', icon: Headphones },
-  { id: 'movie', label: 'Movies', hint: 'Watch in your browser', icon: Film },
-  { id: 'show', label: 'TV Shows', hint: 'Seasons & episodes', icon: Tv },
-  { id: 'anime', label: 'Anime', hint: 'Subbed & dubbed series', icon: Sparkles }
-];
+const mediaOptions = computed(() => [
+  { id: 'manga', icon: FileImage },
+  { id: 'book', icon: Book },
+  { id: 'audiobook', icon: Headphones },
+  { id: 'movie', icon: Film },
+  { id: 'show', icon: Tv },
+  { id: 'anime', icon: Sparkles }
+].map((m) => ({
+  ...m,
+  label: t(`onboarding.interests.types.${m.id}.label`),
+  hint: t(`onboarding.interests.types.${m.id}.hint`)
+})));
 
 const doneMessage = computed(() => {
   const count = choices.mediaTypes.length;
-  if (count === ALL_MEDIA_TYPES.length) return 'Your shelf is showing everything. Dive in.';
-  const labels = mediaOptions.filter(m => choices.mediaTypes.includes(m.id)).map(m => m.label);
-  const list = labels.length > 1
-    ? `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`
-    : labels[0];
-  return `Your shelf is tuned to ${list}. You can add more any time from Settings.`;
+  if (count === ALL_MEDIA_TYPES.length) return t('onboarding.done.everything');
+  const labels = mediaOptions.value.filter(m => choices.mediaTypes.includes(m.id)).map(m => m.label);
+  return t('onboarding.done.tuned', { list: list(labels) });
 });
 
 // Theme and accent apply live as they're picked — the whole point is seeing the choice,
@@ -332,6 +331,9 @@ async function finish(skipped) {
         : choices.mediaTypes,
       onboardingComplete: true
     };
+    // A language picked on the sign-in page becomes the account's, unless it already has one.
+    const deviceLanguage = storedLanguageChoice();
+    if (!preferences.language && deviceLanguage !== 'auto') preferences.language = deviceLanguage;
 
     await api.patch('/users/preferences', preferences);
     authStore.user = { ...authStore.user, preferences };

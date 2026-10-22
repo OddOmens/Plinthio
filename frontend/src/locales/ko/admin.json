@@ -1,0 +1,686 @@
+{
+  "nav": {
+    "yourSettings": "내 설정",
+    "groups": {
+      "server": "서버",
+      "library": "라이브러리",
+      "people": "사람",
+      "settings": "설정",
+      "system": "시스템"
+    },
+    "items": {
+      "overview": {
+        "label": "개요",
+        "desc": "버전, 업데이트, 보유 콘텐츠"
+      },
+      "libraries": {
+        "label": "라이브러리",
+        "desc": "폴더와 자동 스캔"
+      },
+      "health": {
+        "label": "상태 점검",
+        "desc": "누락된 파일과 고칠 것"
+      },
+      "metadata": {
+        "label": "메타데이터",
+        "desc": "TMDB 키와 제목 매칭"
+      },
+      "kids": {
+        "label": "키즈 모드",
+        "desc": "키즈 계정이 볼 수 있는 것"
+      },
+      "users": {
+        "label": "사용자",
+        "desc": "계정, 역할, 제한"
+      },
+      "activity": {
+        "label": "활동",
+        "desc": "로그인과 재생 중인 콘텐츠"
+      },
+      "appearance": {
+        "label": "모양",
+        "desc": "기본값, 이름, 사용자 지정 CSS"
+      },
+      "features": {
+        "label": "기능",
+        "desc": "책장 보기, 평점, 워치 파티"
+      },
+      "playback": {
+        "label": "재생",
+        "desc": "하드웨어 가속, 오프닝 클립"
+      },
+      "network": {
+        "label": "네트워크",
+        "desc": "외부 접속, Tailscale, 2단계 인증"
+      },
+      "backups": {
+        "label": "백업",
+        "desc": "일정, 추가 사본, 복원 지점"
+      },
+      "logs": {
+        "label": "로그",
+        "desc": "서버가 한 일"
+      }
+    }
+  },
+  "activity": {
+    "title": "활동",
+    "description": "모든 계정의 로그인 기록과 읽고, 보고, 듣고 있는 콘텐츠예요.",
+    "show": "표시",
+    "everyone": "모든 사람"
+  },
+  "appearance": {
+    "title": "모양",
+    "description": "모든 사람에게 보이는 Plinthio의 모양이에요. 서버 기본값, 서버 이름, 직접 작성한 CSS를 설정해요. 변경 사항은 바로 저장돼요.",
+    "personalize": {
+      "label": "개인 설정 허용",
+      "desc": "각자 설정 → 모양에서 색상, 내비게이션, 너비, 일시 정지 화면을 고를 수 있어요. 끄면 모든 사람에게 서버의 모양이 적용돼요."
+    },
+    "usersCanChange": "사용자가 변경 가능",
+    "cards": {
+      "accent": "버튼, 배지, 현재 탭에 쓰이는 강조 색상이에요.",
+      "pageWidth": "큰 화면에서 페이지가 넓어지는 정도예요.",
+      "pauseScreen": "일시 정지하고 몇 초 뒤에 나타나는 화면이에요. 마우스를 움직이거나 화면을 터치하면 사라져요. 키가 설정되어 있으면 출연진, 제작진, 정보는 TMDB에서 가져와요."
+    },
+    "branding": {
+      "title": "이름과 로그인 안내",
+      "desc": "서버 이름과 로그인 페이지에 표시할 선택적 안내 문구예요.",
+      "serverName": "서버 이름",
+      "notice": "로그인 안내",
+      "removeNotice": "로그인 안내 삭제"
+    },
+    "css": {
+      "title": "사용자 지정 CSS",
+      "desc": "모든 사람의 모든 페이지에 추가되는 나만의 스타일 규칙이에요. 먼저 여기서 시험해 보세요. 저장하면 적용돼요.",
+      "cheatsheet": "CSS 치트 시트",
+      "example": "/* 예시 */",
+      "save": "CSS 저장",
+      "tryIt": "이 페이지에서 시험",
+      "notSaved": "저장 안 됨",
+      "couldNotSave": "CSS를 저장할 수 없어요"
+    }
+  },
+  "backups": {
+    "title": "백업",
+    "description": "데이터베이스 스냅숏이에요. 계정, 모든 사람의 진행 상황, 북마크, 하이라이트와 메모, 평점, 목록, 라이브러리, 메타데이터가 포함돼요. 미디어 파일은 포함되지 않아요. 업그레이드 전에도 매번 스냅숏을 만들고, 그중 최신 5개는 항상 보관해요.",
+    "automatic": "자동 백업",
+    "schedule": {
+      "label": "일정에 따라 백업",
+      "desc": "서버의 /config/backups에 저장돼요."
+    },
+    "howOften": "주기",
+    "frequency": {
+      "every6h": "6시간마다",
+      "every12h": "12시간마다",
+      "daily": "매일",
+      "every3d": "3일마다",
+      "weekly": "매주"
+    },
+    "keepLast": "보관할 최근 백업 수",
+    "destination": {
+      "label": "백업을 추가로 복사할 위치",
+      "why": "/config/backups는 서버와 같은 디스크에 있어요. 다른 드라이브, NAS, 동기화된 클라우드 폴더에 사본을 두면 그 디스크가 고장 나도 남아 있어요.",
+      "placeholder": "다른 곳에 복사하지 않음",
+      "browseAria": "백업 폴더 찾아보기",
+      "browse": "찾아보기",
+      "testAria": "백업 폴더 테스트",
+      "test": "테스트",
+      "checking": "확인 중…",
+      "writable": "서버가 이곳에 쓸 수 있어요.",
+      "writableFree": "서버가 이곳에 쓸 수 있어요 · {free} 남음.",
+      "sameDisk": "서버 데이터와 같은 디스크에 있어서 실수는 막아 주지만 디스크 고장은 막지 못해요. 다른 드라이브의 폴더가 더 좋아요.",
+      "otherDisk": "서버 데이터와 다른 디스크에 있어요.",
+      "hint": "서버에서 보이는 폴더 경로예요. Docker에서는 {media} 아래 읽기 전용이 아닌 곳, 또는 {backups}에 마운트한 다른 드라이브를 쓰세요(문서 → Backups & Data Safety).",
+      "keepThere": "그곳에 보관할 수",
+      "copyFiles": "프로필 사진, 표지, 로그인 키, HTTPS 인증서도 복사",
+      "couldNotCheck": "그 폴더를 확인할 수 없어요",
+      "pickerTitle": "백업을 복사할 위치"
+    },
+    "saveAria": "백업 설정 저장",
+    "savedCopying": "저장했어요. 기존 백업을 {path}에 복사하고 있어요.",
+    "copyFailed": "{path}에 복사하지 못했어요: {error}. 15분마다 다시 시도해요.",
+    "copiedTo": "{path}에 복사됨 {when}",
+    "notYet": "— 아직 안 됨",
+    "copying": "복사 중…",
+    "copyNow": "지금 복사",
+    "stored": "저장된 백업",
+    "storedCount": "저장된 백업 ({count})",
+    "backingUp": "백업 중…",
+    "backUpNow": "지금 백업",
+    "preparing": "준비 중…",
+    "downloadSnapshot": "스냅숏 다운로드",
+    "empty": "아직 백업이 없어요. 자동 백업을 켜거나 지금 백업하세요.",
+    "downloadThis": "이 백업 다운로드",
+    "deleteThis": "이 백업 삭제",
+    "couldNotBackUp": "백업을 만들 수 없어요",
+    "couldNotSnapshot": "스냅숏을 만들 수 없어요. 자세한 내용은 브라우저 콘솔에 있어요.",
+    "couldNotDownload": "그 백업을 다운로드할 수 없어요. 자세한 내용은 브라우저 콘솔에 있어요.",
+    "deleteTitle": "백업 삭제",
+    "deleteMessage": "{date} 백업을 삭제할까요? 되돌릴 수 없어요.",
+    "couldNotDelete": "그 백업을 삭제할 수 없어요"
+  },
+  "features": {
+    "title": "기능",
+    "description": "이 서버의 모든 사람에게 켜져 있는 기능이에요. 변경 사항은 바로 저장돼요.",
+    "shelfViews": {
+      "title": "책장 보기",
+      "desc": "가나다순과 제작자별 보기는 항상 있어요. 폴더 보기를 끄면 모든 사람에게서 숨겨져요."
+    },
+    "folderModes": {
+      "diskFolder": {
+        "label": "디스크 폴더",
+        "desc": "서버의 폴더 구조로 둘러봐요."
+      },
+      "customFolder": {
+        "label": "사용자 지정 폴더",
+        "desc": "각자 앱에서 만드는 폴더예요. 정리되지 않은 항목은 '미분류'에 모여요."
+      }
+    },
+    "ratings": {
+      "title": "평점",
+      "desc": "표시할 평점이에요. 끈 평점은 어디에도 표시되지 않고 서버도 더 이상 보내지 않아요.",
+      "personal": {
+        "label": "개인 평점",
+        "desc": "각자 별 1~5개를 줄 수 있고, 자기 평점을 봐요."
+      },
+      "community": {
+        "label": "{name} 평점",
+        "desc": "이 서버 모든 사람의 평균이에요."
+      },
+      "external": {
+        "label": "세계 평점 (TMDB)",
+        "desc": "영화, 시리즈, 애니메이션의 TMDB 점수예요. TMDB 키가 필요해요."
+      }
+    },
+    "movies": {
+      "title": "영화와 함께 보기",
+      "missingFilms": {
+        "label": "컬렉션에 없는 영화 표시",
+        "desc": "슈렉이나 스타워즈 같은 컬렉션에 내가 갖고 있지 않은 영화도 흐리게 표시하고 요청 버튼을 달아요. 영화 책장에는 나타나지 않아요. TMDB 키가 필요해요."
+      },
+      "watchParties": {
+        "label": "워치 파티",
+        "desc": "영화와 에피소드에 함께 보기 버튼이 생겨요. 서로 다른 곳에서 동기화해 채팅하며 볼 수 있어요. 콘텐츠 제한은 파티의 모든 사람에게 그대로 적용돼요. 집 밖의 친구가 이 서버에 접속할 수 있어야 해요(네트워크 참고). 끄면 진행 중인 파티가 종료돼요."
+      }
+    }
+  },
+  "kids": {
+    "title": "키즈 모드",
+    "description": "키즈 계정은 여기서 켠 것만 볼 수 있어요. 키즈 계정 지정은 사용자에서 해요.",
+    "libraries": {
+      "title": "라이브러리 전체",
+      "desc": "이 라이브러리의 모든 것, 지금 있는 것과 앞으로 추가될 것."
+    },
+    "noLibraries": "아직 라이브러리가 없어요.",
+    "items": {
+      "other": "항목 {number}개"
+    },
+    "titles": {
+      "title": "개별 시리즈와 타이틀",
+      "desc": "시리즈나 타이틀 페이지의 {button} 버튼으로 더 추가하세요.",
+      "button": "키즈"
+    },
+    "noneYet": "아직 없어요.",
+    "series": "시리즈",
+    "singleTitle": "타이틀",
+    "removeAria": "키즈 모드에서 {name} 제거",
+    "couldNotRemove": "키즈 모드에서 제거할 수 없어요"
+  },
+  "libraries": {
+    "title": "라이브러리",
+    "description": "Plinthio가 미디어를 읽어 오는 폴더예요. 파일은 절대 변경하지 않아요.",
+    "add": "라이브러리 추가",
+    "empty": "아직 라이브러리가 없어요. 라이브러리를 추가해 Plinthio에 미디어 폴더를 알려 주세요.",
+    "kids": "키즈",
+    "items": {
+      "other": "항목 {number}개"
+    },
+    "scanning": "스캔 중…",
+    "scan": "스캔",
+    "deleteAria": "{name} 삭제",
+    "deleteLibrary": "라이브러리 삭제",
+    "types": {
+      "movies": "영화",
+      "shows": "TV 시리즈",
+      "anime": "애니메이션",
+      "books": "책",
+      "manga": "만화·코믹스",
+      "audiobooks": "오디오북"
+    },
+    "autoScan": {
+      "title": "자동 스캔",
+      "desc": "아무도 스캔을 누르지 않아도 라이브러리 폴더에 추가된 미디어를 가져와요.",
+      "scheduled": {
+        "label": "일정에 따라 다시 스캔",
+        "desc": "확실한 방법이에요. 변경을 알리지 않는 네트워크 공유와 마운트에서도 작동해요."
+      },
+      "schedule": "일정",
+      "modes": {
+        "interval": "일정한 간격으로",
+        "times": "매일 정해진 시각에"
+      },
+      "every": "다시 스캔 주기",
+      "intervals": {
+        "15": "15분마다",
+        "30": "30분마다",
+        "60": "1시간마다",
+        "360": "6시간마다",
+        "1440": "매일"
+      },
+      "at": "다시 스캔 시각",
+      "timeAria": "스캔 시각 {number}",
+      "removeTime": "{time} 삭제",
+      "thisTime": "이 시각",
+      "addTime": "시각 추가",
+      "timesHint": "서버 시간대 기준이에요. 정해진 시각에 서버가 꺼져 있었다면 다시 켜질 때 한 번 스캔해요.",
+      "watch": {
+        "label": "폴더 변경 감시",
+        "desc": "파일 시스템이 알려 주는 경우 파일이 생기고 약 30초 뒤에 스캔해요. 일정과 상관없이 작동해요."
+      },
+      "manual": "자동 스캔이 꺼져 있어요. 관리자가 라이브러리에서 스캔을 누르기 전까지 새 미디어가 나타나지 않아요.",
+      "noSchedule": "일정이 없으면 파일 이벤트를 보내지 않는 네트워크 공유나 마운트의 변경은 스캔을 누르기 전까지 알아채지 못해요.",
+      "noTimes": "설정된 시각이 없어서 일정이 실행되지 않아요. 시각을 추가하거나 일정한 간격으로 바꾸세요."
+    },
+    "addDialog": {
+      "title": "라이브러리 추가",
+      "folder": "폴더",
+      "browse": "찾아보기",
+      "folderHint": "서버에서 보이는 경로예요. Docker에서는 미디어가 {path}에 마운트되어 있어요.",
+      "name": "이름",
+      "namePlaceholder": "예: 오디오북",
+      "whatsInIt": "콘텐츠 종류",
+      "adding": "추가 중…",
+      "addAndScan": "추가 후 스캔",
+      "pickerTitle": "라이브러리 폴더 선택"
+    },
+    "scanResult": {
+      "title": "{name} 스캔 완료",
+      "added": "{count}개 추가",
+      "renamed": "{count}개 이름 변경 또는 이동",
+      "updated": "{count}개 업데이트",
+      "removed": "{count}개 제거",
+      "summary": "{parts}.",
+      "nothingNew": "새로운 항목이 없어요."
+    },
+    "scanFailed": "스캔 실패",
+    "deleteMessage": "'{name}'을(를) 삭제할까요? 파일은 건드리지 않으며, 같은 폴더를 다시 추가하면 진행 상황과 북마크가 돌아와요. 타이틀, 표지, 상세 정보는 다시 스캔할 때까지 제거돼요.",
+    "couldNotDelete": "그 라이브러리를 삭제할 수 없어요",
+    "couldNotAdd": "그 라이브러리를 추가할 수 없어요"
+  },
+  "logs": {
+    "title": "로그",
+    "description": "스캔, 오류, 서버가 한 일을 최신순으로 보여 줘요.",
+    "live": "실시간",
+    "paused": "일시 정지됨",
+    "refreshNow": "지금 새로고침",
+    "searchPlaceholder": "메시지와 카테고리 검색",
+    "searchAria": "로그 검색",
+    "level": "수준",
+    "levels": {
+      "all": "전체",
+      "info": "정보",
+      "warn": "경고",
+      "error": "오류"
+    },
+    "nothingMatches": "일치하는 항목이 없어요.",
+    "clearTitle": "로그 지우기",
+    "clearMessage": "데이터베이스의 로그 항목을 모두 삭제할까요?",
+    "couldNotClear": "로그를 지울 수 없어요"
+  },
+  "metadata": {
+    "title": "메타데이터",
+    "description": "포스터, 설명, 출연진, 평점을 어디서 가져오는지, 그리고 파일 이름에서 들어온 제목을 정리하는 곳이에요.",
+    "tmdb": {
+      "title": "TMDB 키",
+      "descBuiltIn": "영화, 시리즈, 애니메이션은 Plinthio에 내장된 키로 TMDB에서 상세 정보를 가져와요. 대신 내 TMDB 키를 붙여 넣어 쓸 수도 있어요. 만화(MangaDex)와 책(Google Books, Open Library)은 아무것도 필요 없어요.",
+      "descNeedsKey": "영화, 시리즈, 애니메이션은 TMDB에서 상세 정보를 가져오며, 무료 키가 필요해요. 만화(MangaDex)와 책(Google Books, Open Library)은 아무것도 필요 없어요.",
+      "sources": {
+        "custom": "내 키",
+        "environment": "TMDB_API_KEY 사용",
+        "builtin": "내장",
+        "set": "설정됨",
+        "notSet": "설정 안 됨"
+      },
+      "keyLabel": "TMDB API 키",
+      "placeholderReplace": "교체할 새 키 붙여 넣기",
+      "placeholderOptional": "내 TMDB 키 붙여 넣기 (선택)",
+      "placeholderToken": "TMDB API 읽기 액세스 토큰 붙여 넣기",
+      "saveKey": "키 저장",
+      "useBuiltIn": "내장 키 사용",
+      "getOne": "{link}에서 무료로 받을 수 있어요.",
+      "getOneLink": "themoviedb.org → 설정 → API",
+      "attribution": "이 제품은 TMDB API를 사용하지만 TMDB의 보증이나 인증을 받지 않았어요.",
+      "removeTitle": "TMDB 키 삭제",
+      "removeMessage": "키를 다시 추가할 때까지 영화, 시리즈, 애니메이션의 새 포스터, 상세 정보, 세계 평점을 가져오지 않아요."
+    }
+  },
+  "overview": {
+    "title": "개요",
+    "description": "이 서버의 버전, 보유 콘텐츠, 사용자를 한눈에 볼 수 있어요.",
+    "checksOff": "업데이트 확인이 꺼져 있어요 (UPDATE_CHECK=false).",
+    "available": "{version} 버전을 사용할 수 있어요.",
+    "updateWith": "업데이트 명령: {command}",
+    "upToDate": "최신 버전이에요.",
+    "upToDateCheckFailed": "최신 버전이에요 (마지막 확인 실패 — 오프라인인가요?).",
+    "notChecked": "아직 확인하지 않았어요.",
+    "releaseNotes": "릴리스 노트",
+    "checking": "확인 중…",
+    "checkNow": "지금 확인",
+    "tiles": {
+      "files": "파일",
+      "onDisk": "디스크 사용량",
+      "audio": "오디오",
+      "accounts": "계정"
+    },
+    "byMediaType": "미디어 유형별",
+    "files": {
+      "other": "파일 {number}개"
+    },
+    "series": {
+      "other": "시리즈 {number}개"
+    },
+    "creators": {
+      "other": "제작자 {number}명"
+    }
+  },
+  "playback": {
+    "title": "재생",
+    "description": "영상이 사람들의 화면에 전달되는 방식과 그 앞에 재생할 수 있는 클립이에요.",
+    "hwaccel": {
+      "title": "하드웨어 가속",
+      "desc": "Plinthio는 브라우저가 재생할 수 있으면 파일을 그대로 재생하고, 못 하는 것만 변환해요. 그래픽 칩이 있으면 변환 부담이 훨씬 줄어요.",
+      "found": "이 기기에서 찾음",
+      "noneCpu": "없음 — CPU 사용 중",
+      "use": "사용",
+      "auto": "찾은 것 사용 (권장)",
+      "cpu": "항상 CPU",
+      "always": "항상 {method}",
+      "testing": "테스트 중…",
+      "test": "테스트",
+      "works": "이 기기에서 {method}이(가) 작동해요.",
+      "failed": "{method}이(가) 작동하지 않았어요: {error}",
+      "testHint": "테스트는 짧은 실제 변환을 실행해요. ffmpeg에 인코더가 보인다고 해서 그 아래 드라이버가 작동한다는 뜻은 아니에요.",
+      "testFailed": "테스트 실패",
+      "howItWorks": "재생 방식과 그래픽 칩 설정",
+      "tips": {
+        "direct": {
+          "title": "다이렉트 플레이와 다이렉트 스트림:",
+          "text": "브라우저가 디코딩할 수 있는 영상(H.264, 또는 Chrome, Edge, Vivaldi, Safari의 HEVC)은 MKV 파일이라도 4K까지 그대로 보내요. 재생할 수 없는 오디오(EAC3, Atmos, DTS)만 AAC로 변환해요."
+        },
+        "browser": {
+          "title": "브라우저 쪽:",
+          "text": "4K라면 브라우저가 하드웨어로 영상을 디코딩하는지 확인하세요({page} → Video Decode: Hardware accelerated)."
+        },
+        "docker": {
+          "title": "Docker에서 Intel Quick Sync와 VAAPI:",
+          "text": "{devices}에서 {dri}를 넘겨주고, {groupAdd}에 호스트의 {render} 그룹 ID를 추가하세요."
+        },
+        "small": {
+          "title": "소형 기기:",
+          "text": "CPU 변환은 가장 빠른 프리셋의 스레드 2개로 제한되고, 미리 보기 썸네일은 따로 만들어서 미니 PC가 과열되지 않아요."
+        }
+      }
+    },
+    "intro": {
+      "title": "오프닝 시퀀스",
+      "desc": "영화나 에피소드에서 재생을 누르면 전체 화면으로 나오는 짧은 클립이에요. 자동 재생 에피소드, 예고편, 워치 파티 앞에는 나오지 않고, 누구나 건너뛸 수 있어요.",
+      "checking": "확인 중…",
+      "upload": "클립 업로드",
+      "custom": "직접 올린 클립이에요.",
+      "builtIn": "Plinthio 내장 클립이에요. 직접 만든 클립으로 바꿀 수 있어요:",
+      "requirements": "MP4(H.264), 1~10초, 최대 20 MB. 1080p에 약 8 Mbps면 충분해요.",
+      "thisOne": "이 클립은 {seconds}초예요.",
+      "replace": "교체",
+      "useBuiltIn": "내장 클립 사용",
+      "play": "오프닝 시퀀스 재생",
+      "offUntil": "켜기 전까지 꺼져 있어요.",
+      "uploadFirst": "먼저 클립을 업로드하세요.",
+      "beforeMovies": "영화 앞에",
+      "beforeShows": "시리즈와 애니메이션 앞에",
+      "tooBig": "파일이 20 MB를 넘어요. 더 짧게 또는 더 낮은 비트레이트로 내보내세요.",
+      "uploadFailed": "업로드 실패",
+      "removeTitle": "직접 올린 클립 삭제",
+      "removeMessage": "직접 올린 클립을 삭제하고 Plinthio 내장 오프닝 시퀀스로 돌아갈까요?",
+      "couldNotRemove": "삭제할 수 없어요"
+    }
+  },
+  "users": {
+    "title": "사용자",
+    "description": "이 서버에 로그인할 수 있는 모든 사람이에요. 직접 가입은 없고, 계정은 여기서 만들어요.",
+    "add": "사용자 추가",
+    "editAria": "{name} 편집",
+    "you": "나",
+    "lastIn": "마지막 로그인 {date}",
+    "neverSignedIn": "로그인 기록 없음",
+    "network": "({network})",
+    "outside": "외부",
+    "roles": {
+      "label": "역할",
+      "viewer": {
+        "label": "열람자",
+        "desc": "둘러보고, 읽고, 보고, 들으며 자기 진행 상황을 기록해요."
+      },
+      "editor": {
+        "label": "편집자",
+        "desc": "공유 타이틀, 표지, 상세 정보도 고칠 수 있어요."
+      },
+      "admin": {
+        "label": "관리자",
+        "desc": "라이브러리, 사용자, 이 페이지를 포함한 모든 것을 할 수 있어요."
+      }
+    },
+    "durations": {
+      "day": {
+        "other": "{count}일"
+      },
+      "week": {
+        "other": "{count}주"
+      },
+      "month": {
+        "other": "{count}개월"
+      },
+      "year": {
+        "other": "{count}년"
+      }
+    },
+    "addDialog": {
+      "title": "사용자 추가",
+      "passwordHint": "8자 이상이에요. 설정 → 보안에서 직접 바꿀 수 있어요.",
+      "adding": "추가 중…"
+    },
+    "access": "접근",
+    "noEndDate": "종료일 없음",
+    "noEndDateSentence": "종료일이 없어요.",
+    "forDuration": "{duration} 동안",
+    "untilDate": "날짜 지정…",
+    "accessEnds": "접근 종료",
+    "editDialog": {
+      "title": "{name} 편집",
+      "joined": "{date} 가입"
+    },
+    "ended": "{date}에 종료됨",
+    "ends": "{date}에 종료",
+    "extendBy": "+{duration}",
+    "removeEndDate": "종료일 삭제",
+    "setAccess": "접근 설정",
+    "setNewEnd": "또는 새 종료일 설정…",
+    "keepNoEnd": "종료일 없이 유지",
+    "fromNow": "지금부터 {duration}",
+    "remote": {
+      "label": "집 밖에서 Plinthio 사용 가능",
+      "desc": "서버가 외부 접근을 허용할 때(네트워크) 적용돼요. 끄면 집과 Tailscale에서만 쓸 수 있어요."
+    },
+    "kidsAccount": {
+      "label": "키즈 계정",
+      "desc": "키즈 모드에서 켠 것만 볼 수 있어요."
+    },
+    "twoFactorOn": "2단계 인증 켜짐",
+    "twoFactorHelp": "휴대폰과 백업 코드를 잃어버렸나요? 재설정하면 비밀번호로 로그인해 다시 설정할 수 있어요.",
+    "contentLimit": "콘텐츠 제한",
+    "noLimit": "제한 없음",
+    "everyoneOnly": "전체 이용가만",
+    "upTo": "{rating}까지",
+    "ageRatings": {
+      "everyone": "전체 이용가",
+      "teen": "청소년",
+      "mature": "성인"
+    },
+    "allowUnrated": "등급이 없는 타이틀도 표시해요. 끄면 엄격하게 제한 이하 등급이 매겨진 타이틀만 보여요.",
+    "ratingsHint": "등급은 각 시리즈나 타이틀에서 설정해요.",
+    "newPassword": "새 비밀번호",
+    "newPasswordPlaceholder": "기존 비밀번호를 유지하려면 비워 두세요",
+    "newPasswordHint": "8자 이상이에요. 설정하면 모든 곳에서 로그아웃돼요.",
+    "accessEnded": "접근 종료됨",
+    "hoursLeft": {
+      "other": "{count}시간 남음"
+    },
+    "daysLeft": {
+      "other": "{count}일 남음"
+    },
+    "badges": {
+      "twoFactor": "2단계 인증",
+      "twoFactorTitle": "인증 앱의 코드로도 로그인해요",
+      "homeOnly": "집에서만",
+      "homeOnlyTitle": "집 네트워크에서만 Plinthio를 쓸 수 있어요",
+      "kids": "키즈",
+      "unratedHidden": "등급 없는 타이틀도 숨겨져요",
+      "unratedAllowed": "등급 없는 타이틀도 허용돼요"
+    },
+    "couldNotAdd": "그 사용자를 추가할 수 없어요",
+    "couldNotChangeAccess": "접근 권한을 바꿀 수 없어요",
+    "passwordTooShort": "새 비밀번호는 8자 이상이어야 해요.",
+    "couldNotSave": "변경 사항을 저장할 수 없어요",
+    "resetTitle": "2단계 인증을 재설정할까요?",
+    "resetMessage": "{name} 님은 모든 곳에서 로그아웃되고, 이후 비밀번호만으로 로그인해 설정 → 보안에서 2단계 인증을 다시 설정할 수 있어요.",
+    "couldNotReset": "2단계 인증을 재설정할 수 없어요",
+    "deleteTitle": "사용자 삭제",
+    "deleteMessage": "{name} 님을 삭제할까요? 진행 상황, 북마크, 하이라이트, 목록, 평점도 함께 삭제돼요.",
+    "deleteUser": "사용자 삭제",
+    "couldNotDelete": "그 사용자를 삭제할 수 없어요"
+  },
+  "health": {
+    "title": "상태 점검",
+    "description": "라이브러리 전체에서 확인이 필요한 항목이에요.",
+    "checked": "{time}에 확인했어요.",
+    "checking": "확인 중…",
+    "runCheck": "점검 실행",
+    "tiles": {
+      "libraries": "접근할 수 없는 라이브러리",
+      "missing": "누락된 파일",
+      "duplicates": "중복",
+      "clashes": "권 번호 충돌",
+      "metadata": "표지 없음",
+      "transcode": "인코딩 실패"
+    },
+    "allClear": "모두 정상이에요.",
+    "libraries": "라이브러리",
+    "itemsTotal": {
+      "other": "총 {number}개 항목"
+    },
+    "items": {
+      "other": "항목 {number}개"
+    },
+    "scanned": "{time}에 스캔함",
+    "neverScanned": "스캔한 적 없음",
+    "unreachable": "폴더에 접근할 수 없어요 — 드라이브가 마운트되어 있고 Docker 볼륨이 연결되어 있는지 확인하세요. 폴더가 돌아올 때까지 항목은 카탈로그에 남아 있어요.",
+    "rescan": "다시 스캔",
+    "noLibraries": "아직 라이브러리가 없어요.",
+    "missing": {
+      "title": "누락된 파일",
+      "hint": "디스크에서 사라졌어요. 공간을 비우려고 일부러 지웠나요? 그렇다면 기록으로 보관하세요. 타이틀 페이지에 흐리게 남고 모든 사람의 진행 상황도 유지돼요. 그렇지 않다면 일단 숨겨 두었다가(드라이브가 잠시 사용 불가일 수 있어요) 파일이 돌아오면 자동으로 복구돼요. 확실해지면 완전히 제거하세요.",
+      "keepAll": "모두 기록으로 보관",
+      "removing": "제거 중…",
+      "removeAll": "모두 완전히 제거"
+    },
+    "keepAsHistory": "기록으로 보관",
+    "removeForGood": "완전히 제거",
+    "offloaded": {
+      "title": "보관됨 (기록 유지)",
+      "hint": "공간을 비우려고 제거하고 기록으로 보관한 항목이에요. 책장과 검색에서는 숨겨지고, 타이틀 페이지에 흐리게 모든 사람의 진행 상황과 함께 표시돼요. 파일이 돌아오면 자동으로 복원돼요.",
+      "undo": "실행 취소"
+    },
+    "duplicates": {
+      "title": "중복으로 보이는 항목",
+      "hint": "제목이 같고 파일 크기도 정확히 같아요 — 대개 같은 파일이 두 폴더나 라이브러리에 있는 경우예요.",
+      "copies": {
+        "other": "사본 {count}개"
+      }
+    },
+    "clashes": {
+      "title": "권 / 에피소드 번호 충돌",
+      "hint": "한 시리즈에서 서로 다른 파일이 같은 권 번호나 에피소드 번호를 쓰고 있어요. 대개 파일 이름이 잘못된 경우예요."
+    },
+    "metadata": {
+      "title": "아트워크 또는 메타데이터 누락",
+      "hint": "표지 없음 {noCover}개, 저자 없는 책/만화/오디오북 {noAuthor}개, 설명 없음 {noDescription}개. 메타데이터 탭에서 고치세요.",
+      "open": "메타데이터 열기",
+      "noCover": "표지 없음",
+      "noAuthor": "저자 없음"
+    },
+    "unrated": {
+      "title": "등급 없는 타이틀",
+      "hint": "타이틀 자체에도 시리즈에도 연령 등급이 없는 타이틀이에요. 일부 사용자에게 콘텐츠 제한을 쓸 때만 중요해요 — 시리즈는 시리즈 시트에서, 개별 타이틀은 메타데이터 편집기에서 등급을 매기세요."
+    },
+    "transcode": {
+      "title": "최근 재생 인코딩 실패",
+      "hint": "영상을 준비하는 중에 발생한 ffmpeg 오류예요. 대개 하드웨어 가속 드라이버 문제예요 — 관리 → 재생 → 테스트를 해 보세요."
+    },
+    "mediaTypes": {
+      "movie": "영화",
+      "show": "시리즈",
+      "anime": "애니메이션",
+      "manga": "만화",
+      "book": "책",
+      "audiobook": "오디오북"
+    },
+    "couldNotRun": "상태 점검을 실행할 수 없어요",
+    "groupSeason": "{name}, 시즌 {season}",
+    "titlesCount": {
+      "other": "타이틀 {count}개"
+    },
+    "keepTitle": "기록으로 보관할까요?",
+    "keepMessage": {
+      "other": "{label}은(는) 타이틀 페이지에 흐리게 모든 사람의 진행 상황과 함께 남지만 재생할 수는 없어요. 파일이 돌아오면 자동으로 복원돼요."
+    },
+    "couldNotKeep": "기록으로 보관할 수 없어요",
+    "couldNotUndo": "실행 취소할 수 없어요",
+    "removeTitle": "완전히 제거할까요?",
+    "removeMessage": "{name}을(를) 카탈로그에서 제거할까요? 진행 상황과 평점은 데이터베이스에 남아 같은 파일이 다시 스캔되면 다시 연결되지만, 그전까지는 아무것도 표시되지 않아요.",
+    "skipped": {
+      "other": "{count}개는 유지했어요: 파일이 돌아왔어요."
+    },
+    "couldNotRemove": "제거할 수 없어요",
+    "removeMissingTitle": "누락된 타이틀을 제거할까요?",
+    "removeMissingMessage": {
+      "other": "누락된 타이틀 {count}개를 카탈로그에서 완전히 제거할까요? 파일이 돌아온 항목과 기록으로 보관한 항목은 유지돼요. 읽기 진행 상황과 평점도 유지되며, 같은 파일이 다시 스캔되면 다시 연결돼요."
+    },
+    "removed": {
+      "other": "타이틀 {count}개를 제거했어요."
+    },
+    "removedSkipped": {
+      "other": "타이틀 {count}개를 제거했어요 ({skipped}개는 파일이 돌아와서 유지)."
+    },
+    "couldNotRemoveMissing": "누락된 타이틀을 제거할 수 없어요",
+    "scanComplete": "'{name}' 스캔 완료: {added}개 추가, {updated}개 업데이트, {removed}개 제거.",
+    "scanFailed": "스캔 실패",
+    "episodes": {
+      "other": "{count}화"
+    },
+    "files": {
+      "other": "파일 {count}개"
+    },
+    "stillOnDisk": {
+      "other": "{count}개가 아직 디스크에 있어요: 삭제하면 공간이 확보돼요."
+    }
+  },
+  "folderPicker": {
+    "title": "폴더 선택",
+    "up": "상위 폴더로",
+    "empty": "폴더가 없어요.",
+    "newFolder": "이 폴더 안에 새 폴더 만들기 (선택)",
+    "newFolderPlaceholder": "예: Plinthio Backups",
+    "useNew": "새 폴더 사용",
+    "useThis": "이 폴더 사용",
+    "couldNotOpen": "그 폴더를 열 수 없어요"
+  }
+}

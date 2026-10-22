@@ -1,0 +1,153 @@
+{
+  "offline": {
+    "message": "Estás sin conexión. Tus libros, cómics y audiolibros descargados siguen disponibles.",
+    "openDownloads": "Abrir descargas →"
+  },
+  "continue": {
+    "watching": "Seguir viendo",
+    "all": "Continuar",
+    "audiobook": "Seguir escuchando",
+    "manga": "Seguir leyendo",
+    "book": "Seguir leyendo",
+    "movie": "Seguir viendo",
+    "show": "Seguir viendo",
+    "anime": "Seguir viendo"
+  },
+  "sectionTitle": {
+    "results": "Resultados de «{query}»",
+    "audiobook": "Audiolibros",
+    "manga": "Manga y cómics",
+    "book": "eBooks y documentos",
+    "movie": "Películas",
+    "show": "Series",
+    "anime": "Anime",
+    "all": "Todo el contenido"
+  },
+  "counts": {
+    "folders": {
+      "one": "{count} carpeta",
+      "other": "{count} carpetas"
+    },
+    "series": {
+      "one": "{count} serie",
+      "other": "{count} series"
+    },
+    "titles": {
+      "one": "{count} título",
+      "other": "{count} títulos"
+    },
+    "seriesAndTitles": "{series}, {titles}",
+    "items": {
+      "one": "{count} elemento",
+      "other": "{count} elementos"
+    }
+  },
+  "modes": {
+    "alphabetical": "Alfabético",
+    "alphabeticalShort": "A–Z",
+    "diskFolders": "Carpetas del disco",
+    "diskFoldersShort": "Disco",
+    "customFolders": "Carpetas propias",
+    "customFoldersShort": "Propias"
+  },
+  "filters": {
+    "progress": "Progreso",
+    "status": "Estado",
+    "notStarted": "Sin empezar",
+    "inProgress": "En curso",
+    "finished": "Terminado",
+    "skipped": "Omitido",
+    "genre": "Género",
+    "added": "Añadido",
+    "thisWeek": "Esta semana",
+    "thisMonth": "Este mes",
+    "last3Months": "Últimos 3 meses",
+    "clear": "Quitar filtros"
+  },
+  "sort": {
+    "label": "Orden",
+    "title": "A–Z",
+    "added": "Más nuevos",
+    "recent": "Abiertos recientemente",
+    "release": "Fecha de estreno"
+  },
+  "collections": {
+    "label": "Colecciones de películas",
+    "grouped": "Colecciones",
+    "all": "Todas las películas"
+  },
+  "empty": {
+    "title": "No se encontró contenido",
+    "noMatches": "No hay coincidencias: prueba otra búsqueda o quita los filtros",
+    "noLibrary": "Añade una biblioteca en Admin → Bibliotecas y escanea tus carpetas para llenar tu estantería",
+    "goToSettings": "Ir a Ajustes"
+  },
+  "loadedMore": {
+    "one": "{count} título cargado · se cargan más al desplazarte",
+    "other": "{count} títulos cargados · se cargan más al desplazarte"
+  },
+  "customFolders": {
+    "heading": "Carpetas propias de la app",
+    "newPlaceholder": "Nombre de la carpeta nueva…",
+    "catchAll": "Sin clasificar",
+    "delete": "Eliminar carpeta",
+    "empty": "Esta carpeta está vacía. Haz clic en los tres puntos ({dots}) de cualquier título para añadirlo aquí."
+  },
+  "deleteFolder": {
+    "title": "Eliminar carpeta propia",
+    "message": "¿Seguro que quieres eliminar la carpeta «{name}»? Su contenido no se eliminará de tu estantería.",
+    "confirm": "Eliminar carpeta"
+  },
+  "errors": {
+    "createFolder": "No se pudo crear la carpeta",
+    "deleteFolder": "No se pudo eliminar la carpeta",
+    "removeItem": "No se pudo quitar el elemento",
+    "updateFolder": "No se pudo actualizar la carpeta"
+  },
+  "rootFolder": "Raíz",
+  "series": {
+    "ariaLabel": "{name} — {units}",
+    "removeFromThisFolder": "Quitar {name} de esta carpeta",
+    "removeFromFolder": "Quitar de la carpeta",
+    "caughtUp": "Al día",
+    "skipped": {
+      "one": "{count} omitido",
+      "other": "{count} omitidos"
+    },
+    "doneCount": {
+      "one": "{count}/{total} hecho",
+      "other": "{count}/{total} hechos"
+    }
+  },
+  "card": {
+    "availableOffline": "Disponible sin conexión",
+    "downloading": "Descargando…",
+    "options": "Opciones",
+    "optionsFor": "Opciones de {title}",
+    "markInProgress": "Marcar en curso",
+    "markFinished": "Marcar como terminado",
+    "addToFolder": "Añadir a carpeta…",
+    "removeFromFolder": "Quitar de la carpeta",
+    "bookmarks": "Marcadores y notas…",
+    "removeDownload": "Quitar descarga",
+    "cancelDownload": "Cancelar descarga",
+    "downloadOffline": "Descargar sin conexión",
+    "editMetadata": "Editar metadatos…",
+    "hide": "Ocultar de la estantería",
+    "pages": {
+      "one": "{count} página",
+      "other": "{count} páginas"
+    },
+    "finished": "Terminado",
+    "durationHours": "{hours} h {minutes} min",
+    "durationMinutes": "{minutes} min"
+  },
+  "folderModal": {
+    "title": "Añadir a carpeta o lista",
+    "loading": "Cargando carpetas…",
+    "empty": "Aún no has creado carpetas propias. ¡Crea una abajo para organizar tu contenido!",
+    "newFolder": "Nueva carpeta propia",
+    "placeholder": "p. ej. Favoritos, Para dormir…",
+    "adding": "Añadiendo…"
+  }
+}

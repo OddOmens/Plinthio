@@ -1,9 +1,9 @@
 <template>
-  <SectionHeader title="Shelves" description="What's on your shelves and where Plinthio opens. Saves as you go.">
+  <SectionHeader :title="$t('settings.shelves.title')" :description="$t('settings.shelves.description')">
     <SaveStatus :status="save.status.value" :message="save.message.value" />
   </SectionHeader>
 
-  <SettingsCard title="Media types" description="Which kinds of media appear on your shelves. Keep at least one.">
+  <SettingsCard :title="$t('settings.shelves.mediaTypes.title')" :description="$t('settings.shelves.mediaTypes.desc')">
     <div class="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-2.5">
       <label
         v-for="cat in mediaCategories"
@@ -23,16 +23,16 @@
     </div>
   </SettingsCard>
 
-  <SettingsCard title="Start on" description="The shelf Plinthio opens to.">
+  <SettingsCard :title="$t('settings.shelves.startOn.title')" :description="$t('settings.shelves.startOn.desc')">
     <OptionTiles
-      label="Start on"
+      :label="$t('settings.shelves.startOn.title')"
       :options="startupOptions"
       v-model="prefs.defaultView"
       grid-class="grid grid-cols-2 sm:grid-cols-4 2xl:grid-cols-7 gap-2.5"
     />
   </SettingsCard>
 
-  <SettingsCard title="Shelf views" description="The views above your shelf. Each shows one card per series; Alphabetical is always there.">
+  <SettingsCard :title="$t('settings.shelves.views.title')" :description="$t('settings.shelves.views.desc')">
     <div class="divide-y divide-border">
       <ToggleRow
         v-for="mode in availableFilterModes"
@@ -42,7 +42,7 @@
         :disabled="!mode.allowed || mode.always"
         @update:model-value="toggleMode(mode.id, $event)"
       >
-        <span v-if="!mode.allowed" class="inline-flex items-center gap-1"><Lock class="w-3 h-3" /> Turned off by your admin</span>
+        <span v-if="!mode.allowed" class="inline-flex items-center gap-1"><Lock class="w-3 h-3" /> {{ $t('settings.shelves.views.offByAdmin') }}</span>
         <template v-else>{{ mode.desc }}</template>
       </ToggleRow>
     </div>
@@ -58,6 +58,7 @@ import { useSaveStatus } from '../../../composables/useSaveStatus';
 import { ALL_MEDIA_TYPES } from '../../../constants/media';
 import { SHELF_MODES, normalizeShelfModes, userShelfModes } from '../../../utils/shelfModes';
 import { MEDIA_TYPE_INFO, MEDIA_TYPE_ORDER } from '../../../utils/settingsFormat';
+import { t } from '../../../i18n';
 import OptionTiles from '../../OptionTiles.vue';
 import SectionHeader from '../SectionHeader.vue';
 import SettingsCard from '../SettingsCard.vue';
@@ -67,7 +68,8 @@ import SaveStatus from '../SaveStatus.vue';
 const authStore = useAuthStore();
 const save = useSaveStatus();
 
-const mediaCategories = MEDIA_TYPE_ORDER.map((id) => ({ id, ...MEDIA_TYPE_INFO[id] }));
+// Mapped inside a computed: spreading the getters copies the wording of the moment.
+const mediaCategories = computed(() => MEDIA_TYPE_ORDER.map((id) => ({ id, ...MEDIA_TYPE_INFO[id] })));
 
 const stored = authStore.user?.preferences || {};
 const prefs = ref({
@@ -79,20 +81,25 @@ let savedPrefs = JSON.stringify(prefs.value);
 
 // "All" plus each type that's switched on.
 const startupOptions = computed(() => [
-  { id: 'all', label: 'All media', icon: LayoutGrid },
-  ...mediaCategories.filter((c) => prefs.value.enabledMediaTypes.includes(c.id)).map((c) => ({ id: c.id, label: c.label, icon: c.icon }))
+  { id: 'all', label: t('settings.shelves.startOn.all'), icon: LayoutGrid },
+  ...mediaCategories.value.filter((c) => prefs.value.enabledMediaTypes.includes(c.id)).map((c) => ({ id: c.id, label: c.label, icon: c.icon }))
 ]);
 
 const allowedFilters = ref([...SHELF_MODES]);
 const allFilterModes = [
-  { id: 'series', label: 'Alphabetical', desc: 'Always on. Every series and title A–Z.', always: true },
-  { id: 'creator', label: 'Creator', desc: 'Grouped by author, director or studio.' },
-  { id: 'disk_folder', label: 'Disk folders', desc: 'The folders on the server.' },
-  { id: 'custom_folder', label: 'Custom folders', desc: 'Your own in-app folders, with an Unorganized catch-all.' }
+  { id: 'series', key: 'alphabetical', always: true },
+  { id: 'creator', key: 'creator' },
+  { id: 'disk_folder', key: 'diskFolders' },
+  { id: 'custom_folder', key: 'customFolders' }
 ];
 const availableFilterModes = computed(() => {
   const serverModes = normalizeShelfModes(allowedFilters.value);
-  return allFilterModes.map((m) => ({ ...m, allowed: serverModes.includes(m.id) }));
+  return allFilterModes.map((m) => ({
+    ...m,
+    label: t(`settings.shelves.views.modes.${m.key}.label`),
+    desc: t(`settings.shelves.views.modes.${m.key}.desc`),
+    allowed: serverModes.includes(m.id)
+  }));
 });
 
 function toggleMode(id, on) {

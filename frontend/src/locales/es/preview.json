@@ -1,0 +1,44 @@
+{
+  "live": "Vista previa en directo",
+  "views": {
+    "shelf": "Estantería",
+    "title": "Ficha",
+    "login": "Inicio de sesión",
+    "pause": "Pausa"
+  },
+  "titles": {
+    "one": "{count}+ títulos",
+    "other": "{count}+ títulos"
+  },
+  "yourLibrary": "Tu biblioteca",
+  "continueWatching": "Seguir viendo",
+  "runtime": "{hours} h {minutes} min",
+  "yourRating": "Tu valoración",
+  "ratingsHidden": "Las valoraciones están ocultas",
+  "watchTogether": "Ver juntos",
+  "collection": "Parte de la colección",
+  "request": "Solicitar",
+  "sample": {
+    "tagline": "Algunos mensajes tardan toda una vida en llegar.",
+    "description": "La farera de una isla remota encuentra un mensaje en una botella que la devuelve a la vida que dejó atrás."
+  },
+  "captions": {
+    "shelf": "La estantería de inicio en una pantalla grande: navegación {layout}, ancho {width} y acento {accent}.",
+    "title": "Una página de película con los ajustes de valoraciones, watch party y colecciones de arriba.",
+    "login": "La pantalla de inicio de sesión, con el nombre de tu servidor y tu aviso.",
+    "pause": {
+      "simple": "Sencilla: nada tapa la imagen. Elige otro estilo para verlo aquí.",
+      "details": "Detalles: aparece tras un par de segundos en pausa. Pasa el puntero por un estilo para comparar.",
+      "cinematic": "Cinematográfica: las fotos del reparto y los datos vienen de TMDB cuando hay una clave configurada.",
+      "bedtime": "Hora de dormir: un reloj tenue y cuándo termina."
+    }
+  },
+  "layouts": {
+    "sidebar": "lateral",
+    "topnav": "superior"
+  },
+  "widths": {
+    "contained": "contenido",
+    "full": "completo"
+  }
+}

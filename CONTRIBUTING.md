@@ -7,6 +7,9 @@ Suggestions and fixes are welcome.
    For anything touching the web app, also run the browser tests: `npm run build && npm run
    test:e2e` in `frontend/` (the first time, `npx playwright install chromium`). They start a
    throwaway server with a generated manga library and drive it on a phone-sized screen.
+   Interface text goes in the translation files, not in the code; `npm run check:i18n` in
+   `frontend/` checks them. [docs/translating.md](docs/translating.md) explains how, and how
+   to improve a translation or add a language.
 3. Open a **pull request** against `main`, saying what it changes and why. Add a line to
    `CHANGELOG.md` under **Unreleased** for anything a user would notice.
 

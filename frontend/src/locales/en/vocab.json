@@ -1,0 +1,107 @@
+{
+  "anyCreator": "Creator",
+  "manga": {
+    "unit": "Volume",
+    "units": "Volumes",
+    "short": "Vol",
+    "verb": "Read",
+    "verbing": "Reading",
+    "done": "Read",
+    "creator": "Author",
+    "series": "Manga Series",
+    "count": {
+      "one": "{count} volume",
+      "other": "{count} volumes"
+    },
+    "entry": "Vol {number}",
+    "allDone": "All read",
+    "progress": "{count}/{total} read"
+  },
+  "book": {
+    "unit": "Book",
+    "units": "Books",
+    "short": "Book",
+    "verb": "Read",
+    "verbing": "Reading",
+    "done": "Read",
+    "creator": "Author",
+    "series": "Book Series",
+    "count": {
+      "one": "{count} book",
+      "other": "{count} books"
+    },
+    "entry": "Book {number}",
+    "allDone": "All read",
+    "progress": "{count}/{total} read"
+  },
+  "audiobook": {
+    "unit": "Book",
+    "units": "Books",
+    "short": "Book",
+    "verb": "Listen",
+    "verbing": "Listening",
+    "done": "Listened",
+    "creator": "Author",
+    "series": "Audiobook Series",
+    "count": {
+      "one": "{count} book",
+      "other": "{count} books"
+    },
+    "entry": "Book {number}",
+    "allDone": "All listened",
+    "progress": "{count}/{total} listened"
+  },
+  "show": {
+    "unit": "Episode",
+    "units": "Episodes",
+    "short": "Ep",
+    "verb": "Watch",
+    "verbing": "Watching",
+    "done": "Watched",
+    "creator": "Creator",
+    "series": "TV Series",
+    "count": {
+      "one": "{count} episode",
+      "other": "{count} episodes"
+    },
+    "entry": "S{season} · E{episode}",
+    "season": "S{season}",
+    "allDone": "All watched",
+    "progress": "{count}/{total} watched"
+  },
+  "anime": {
+    "unit": "Episode",
+    "units": "Episodes",
+    "short": "Ep",
+    "verb": "Watch",
+    "verbing": "Watching",
+    "done": "Watched",
+    "creator": "Studio",
+    "series": "Anime Series",
+    "count": {
+      "one": "{count} episode",
+      "other": "{count} episodes"
+    },
+    "entry": "S{season} · E{episode}",
+    "season": "S{season}",
+    "allDone": "All watched",
+    "progress": "{count}/{total} watched"
+  },
+  "movie": {
+    "unit": "Movie",
+    "units": "Movies",
+    "short": "Part",
+    "verb": "Watch",
+    "verbing": "Watching",
+    "done": "Watched",
+    "creator": "Director",
+    "series": "Movie Collection",
+    "count": {
+      "one": "{count} movie",
+      "other": "{count} movies"
+    },
+    "entry": "Part {number}",
+    "allDone": "All watched",
+    "progress": "{count}/{total} watched"
+  }
+}

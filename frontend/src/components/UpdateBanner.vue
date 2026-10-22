@@ -7,8 +7,9 @@
     <div class="page-width mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm">
       <Sparkles class="w-4 h-4 flex-shrink-0" />
       <p class="flex-1 min-w-[12rem]">
-        <strong>Plinthio {{ status.latest }}</strong> is available
-        <span class="opacity-80">— you're on {{ status.current }}.</span>
+        <I18nT keypath="nav.update.available" tag="">
+          <template #release><strong>Plinthio {{ status.latest }}</strong></template>
+        </I18nT> <span class="opacity-80">{{ $t('nav.update.current', { version: status.current }) }}</span>
       </p>
       <div class="flex items-center gap-1.5">
         <a
@@ -18,7 +19,7 @@
           rel="noopener noreferrer"
           class="h-8 px-3 rounded-lg bg-primary-foreground/15 hover:bg-primary-foreground/25 font-medium flex items-center gap-1 transition"
         >
-          What's new
+          {{ $t('nav.update.whatsNew') }}
           <ExternalLink class="w-3.5 h-3.5" />
         </a>
         <button
@@ -27,21 +28,23 @@
           :aria-expanded="String(showHow)"
           class="h-8 px-3 rounded-lg bg-primary-foreground/15 hover:bg-primary-foreground/25 font-medium transition"
         >
-          How to update
+          {{ $t('nav.update.howToUpdate') }}
         </button>
         <button
           type="button"
           @click="dismiss"
           class="h-8 w-8 rounded-lg hover:bg-primary-foreground/20 flex items-center justify-center transition"
-          :aria-label="`Dismiss the ${status.latest} update notice`"
-          title="Dismiss until the next version"
+          :aria-label="$t('nav.update.dismissLabel', { version: status.latest })"
+          :title="$t('nav.update.dismissTitle')"
         >
           <X class="w-4 h-4" />
         </button>
       </div>
 
       <div v-if="showHow" class="basis-full min-w-0 w-full pb-1.5 flex flex-col gap-1.5">
-        <p class="opacity-90">On the machine running Plinthio, in the folder with your <code>docker-compose.yml</code>:</p>
+        <I18nT keypath="nav.update.where" tag="p" class="opacity-90">
+          <template #file><code>docker-compose.yml</code></template>
+        </I18nT>
         <div class="flex items-center gap-2 max-w-full">
           <code class="flex-1 min-w-0 overflow-x-auto whitespace-nowrap rounded-lg bg-black/25 px-3 py-2 font-mono text-xs">{{ UPDATE_COMMAND }}</code>
           <button
@@ -50,12 +53,12 @@
             class="h-8 px-3 rounded-lg bg-primary-foreground/15 hover:bg-primary-foreground/25 font-medium flex items-center gap-1.5 flex-shrink-0 transition"
           >
             <component :is="copied ? Check : Copy" class="w-3.5 h-3.5" />
-            {{ copied ? 'Copied' : 'Copy' }}
+            {{ copied ? $t('common.copied') : $t('common.copy') }}
           </button>
         </div>
-        <p class="opacity-80 text-[12px] sm:text-xs">
-          Your database is backed up to <code>config/backups</code> automatically before the new version starts.
-        </p>
+        <I18nT keypath="nav.update.backup" tag="p" class="opacity-80 text-[12px] sm:text-xs">
+          <template #folder><code>config/backups</code></template>
+        </I18nT>
       </div>
     </div>
   </div>
@@ -66,6 +69,7 @@ import { ref, computed, watch, onUnmounted } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { Sparkles, X, ExternalLink, Copy, Check } from '@lucide/vue';
+import I18nT from '../i18n/I18nT.vue';
 
 const UPDATE_COMMAND = 'docker compose pull && docker compose up -d';
 // Local fallback so the banner stays dismissed even if saving the preference fails.

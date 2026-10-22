@@ -1,0 +1,69 @@
+{
+  "backTo": "{server}(으)로 돌아가기",
+  "joining": "워치 파티에 참여하는 중…",
+  "watchParty": "워치 파티",
+  "showPanel": "워치 파티 보기",
+  "hidePanel": "워치 파티 숨기기",
+  "reconnecting": "다시 연결하는 중…",
+  "waitingFor": "{names} 님을 기다리는 중…",
+  "closePanel": "패널 닫기",
+  "invite": "초대",
+  "inviteHint": "이 서버에 계정이 있는 사람은 누구나 링크나 코드 {code}(으)로 참여할 수 있어요.",
+  "watching": "시청 중 ({count})",
+  "you": "(나)",
+  "loading": "불러오는 중",
+  "host": "호스트",
+  "whoControls": "재생, 일시정지, 건너뛰기 권한",
+  "onlyMe": "나만",
+  "everyone": "모두",
+  "chatEmpty": "인사해 보세요 — 메시지는 시청 중인 모두에게 전달돼요.",
+  "messagePlaceholder": "메시지",
+  "send": "보내기",
+  "leave": "나가기",
+  "endForEveryone": "전체 종료",
+  "tapToJoin": "재생을 눌러 함께 보세요",
+  "hostInControl": "호스트가 재생을 조작하고 있어요",
+  "unreachable": "파티에 연결할 수 없어요",
+  "messageNotSent": "메시지를 보내지 못했어요",
+  "moveOnFailed": "다음으로 넘어가지 못했어요",
+  "copyPrompt": "이 초대 링크를 복사하세요:",
+  "endConfirm": {
+    "title": "워치 파티를 종료할까요?",
+    "message": "시청 중인 모두의 파티가 종료돼요.",
+    "confirm": "파티 종료"
+  },
+  "problems": {
+    "P600": {
+      "title": "워치 파티가 꺼져 있어요",
+      "message": "먼저 관리자가 이 서버에서 워치 파티를 켜야 해요."
+    },
+    "P601": {
+      "title": "이 파티는 끝났어요",
+      "message": "호스트가 종료했거나 모두 나갔어요. 새 초대 링크를 요청하세요."
+    },
+    "P603": {
+      "title": "이용할 수 없어요",
+      "message": "이 파티는 내 계정으로 열 수 없는 콘텐츠를 보고 있어요."
+    },
+    "P605": {
+      "title": "이 파티는 꽉 찼어요",
+      "message": "워치 파티는 최대 20명까지 참여할 수 있어요. 누군가 나가면 다시 시도하세요."
+    },
+    "disabled": {
+      "title": "워치 파티가 꺼졌어요",
+      "message": "관리자가 워치 파티를 꺼서 이 파티가 종료됐어요."
+    },
+    "over": {
+      "title": "파티가 끝났어요",
+      "message": "호스트가 워치 파티를 종료했어요. 시청해 주셔서 감사해요!"
+    },
+    "couldntJoin": {
+      "title": "참여할 수 없어요",
+      "message": "이 파티에 참여하는 중에 문제가 생겼어요."
+    },
+    "couldntLoad": {
+      "title": "동영상을 불러올 수 없어요",
+      "message": "초대 링크를 다시 열어 보세요."
+    }
+  }
+}

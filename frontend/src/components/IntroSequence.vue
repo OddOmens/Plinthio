@@ -6,7 +6,7 @@
     class="fixed inset-0 z-[70] bg-black flex items-center justify-center"
     @click="finish"
     role="dialog"
-    aria-label="Opening sequence"
+    :aria-label="$t('player.intro.label')"
   >
     <video
       ref="videoEl"
@@ -22,7 +22,7 @@
       @click.stop="finish"
       class="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-[calc(1.5rem+env(safe-area-inset-right))] h-10 px-4 rounded-lg bg-white/15 hover:bg-white/25 backdrop-blur text-white text-sm font-semibold flex items-center gap-1.5 transition"
     >
-      Skip <ChevronsRight class="w-4 h-4" />
+      {{ $t('common.skip') }} <ChevronsRight class="w-4 h-4" />
     </button>
   </div>
 </template>

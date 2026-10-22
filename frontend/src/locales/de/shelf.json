@@ -1,0 +1,147 @@
+{
+  "offline": {
+    "message": "Du bist offline. Deine heruntergeladenen Bücher, Comics und Hörbücher sind weiterhin verfügbar.",
+    "openDownloads": "Downloads öffnen →"
+  },
+  "continue": {
+    "watching": "Weiterschauen",
+    "all": "Weitermachen",
+    "audiobook": "Weiterhören",
+    "manga": "Weiterlesen",
+    "book": "Weiterlesen",
+    "movie": "Weiterschauen",
+    "show": "Weiterschauen",
+    "anime": "Weiterschauen"
+  },
+  "sectionTitle": {
+    "results": "Ergebnisse für „{query}“",
+    "audiobook": "Hörbücher",
+    "manga": "Manga & Comics",
+    "book": "E-Books & Dokumente",
+    "movie": "Filme",
+    "show": "Serien",
+    "anime": "Anime",
+    "all": "Alle Medien"
+  },
+  "counts": {
+    "folders": {
+      "one": "{count} Ordner",
+      "other": "{count} Ordner"
+    },
+    "series": {
+      "one": "{count} Reihe",
+      "other": "{count} Reihen"
+    },
+    "titles": {
+      "one": "{count} Titel",
+      "other": "{count} Titel"
+    },
+    "seriesAndTitles": "{series}, {titles}",
+    "items": {
+      "one": "{count} Eintrag",
+      "other": "{count} Einträge"
+    }
+  },
+  "modes": {
+    "alphabetical": "Alphabetisch",
+    "alphabeticalShort": "A–Z",
+    "diskFolders": "Festplattenordner",
+    "diskFoldersShort": "Ordner",
+    "customFolders": "Eigene Ordner",
+    "customFoldersShort": "Eigene"
+  },
+  "filters": {
+    "progress": "Fortschritt",
+    "status": "Status",
+    "notStarted": "Nicht begonnen",
+    "inProgress": "Begonnen",
+    "finished": "Abgeschlossen",
+    "skipped": "Übersprungen",
+    "genre": "Genre",
+    "added": "Hinzugefügt",
+    "thisWeek": "Diese Woche",
+    "thisMonth": "Diesen Monat",
+    "last3Months": "Letzte 3 Monate",
+    "clear": "Filter zurücksetzen"
+  },
+  "sort": {
+    "label": "Sortierung",
+    "title": "A–Z",
+    "added": "Neueste",
+    "recent": "Zuletzt geöffnet",
+    "release": "Erscheinungsdatum"
+  },
+  "collections": {
+    "label": "Filmreihen",
+    "grouped": "Reihen",
+    "all": "Alle Filme"
+  },
+  "empty": {
+    "title": "Keine Medien gefunden",
+    "noMatches": "Keine Treffer – versuch eine andere Suche oder setz die Filter zurück",
+    "noLibrary": "Füge unter Admin → Bibliotheken eine Bibliothek hinzu und scanne deine Ordner, um dein Regal zu füllen",
+    "goToSettings": "Zu den Einstellungen"
+  },
+  "loadedMore": {
+    "one": "{count} Titel geladen · weitere laden beim Scrollen",
+    "other": "{count} Titel geladen · weitere laden beim Scrollen"
+  },
+  "customFolders": {
+    "heading": "Eigene Ordner in der App",
+    "newPlaceholder": "Name des neuen Ordners…",
+    "catchAll": "Sammelordner",
+    "delete": "Ordner löschen",
+    "empty": "Dieser Ordner ist leer. Klicke bei einem Titel auf die drei Punkte ({dots}), um ihn hier hinzuzufügen."
+  },
+  "deleteFolder": {
+    "title": "Eigenen Ordner löschen",
+    "message": "Möchtest du den Ordner „{name}“ wirklich löschen? Die Einträge darin bleiben in deinem Regal.",
+    "confirm": "Ordner löschen"
+  },
+  "errors": {
+    "createFolder": "Ordner konnte nicht erstellt werden",
+    "deleteFolder": "Ordner konnte nicht gelöscht werden",
+    "removeItem": "Eintrag konnte nicht entfernt werden",
+    "updateFolder": "Ordner konnte nicht aktualisiert werden"
+  },
+  "rootFolder": "Stammordner",
+  "series": {
+    "ariaLabel": "{name} – {units}",
+    "removeFromThisFolder": "{name} aus diesem Ordner entfernen",
+    "removeFromFolder": "Aus Ordner entfernen",
+    "caughtUp": "Auf dem Laufenden",
+    "skipped": "{count} übersprungen",
+    "doneCount": "{count}/{total} erledigt"
+  },
+  "card": {
+    "availableOffline": "Offline verfügbar",
+    "downloading": "Wird heruntergeladen…",
+    "options": "Optionen",
+    "optionsFor": "Optionen für {title}",
+    "markInProgress": "Als begonnen markieren",
+    "markFinished": "Als abgeschlossen markieren",
+    "addToFolder": "Zu Ordner hinzufügen…",
+    "removeFromFolder": "Aus Ordner entfernen",
+    "bookmarks": "Lesezeichen & Notizen…",
+    "removeDownload": "Download entfernen",
+    "cancelDownload": "Download abbrechen",
+    "downloadOffline": "Offline verfügbar machen",
+    "editMetadata": "Metadaten bearbeiten…",
+    "hide": "Im Regal ausblenden",
+    "pages": {
+      "one": "{count} Seite",
+      "other": "{count} Seiten"
+    },
+    "finished": "Abgeschlossen",
+    "durationHours": "{hours} Std. {minutes} Min.",
+    "durationMinutes": "{minutes} Min."
+  },
+  "folderModal": {
+    "title": "Zu Ordner oder Liste hinzufügen",
+    "loading": "Ordner werden geladen…",
+    "empty": "Noch keine eigenen Ordner. Erstelle unten einen, um deine Medien zu ordnen!",
+    "newFolder": "Neuer eigener Ordner",
+    "placeholder": "z. B. Favoriten, Gute Nacht…",
+    "adding": "Wird hinzugefügt…"
+  }
+}

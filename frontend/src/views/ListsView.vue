@@ -8,9 +8,9 @@
       <template v-if="!openListId">
         <div class="flex flex-wrap items-end justify-between gap-3">
           <div class="min-w-0">
-            <h1 class="text-2xl font-bold tracking-tight text-foreground">Lists</h1>
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">{{ $t('lists.title') }}</h1>
             <p class="text-sm text-muted-foreground mt-1">
-              Things to watch, read and listen to, in your order. They can hold titles the server doesn't have yet.
+              {{ $t('lists.intro') }}
             </p>
           </div>
           <router-link
@@ -18,7 +18,7 @@
             class="h-9 px-3 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 text-sm font-medium flex items-center gap-2 transition flex-shrink-0"
           >
             <Inbox class="w-4 h-4" />
-            Requests
+            {{ $t('lists.requests') }}
           </router-link>
         </div>
 
@@ -72,7 +72,7 @@
               </div>
             </div>
             <p class="mt-2 text-sm font-semibold text-foreground truncate group-hover:underline">{{ list.name }}</p>
-            <p class="text-xs text-muted-foreground">{{ list.item_count }} {{ list.item_count === 1 ? 'title' : 'titles' }}</p>
+            <p class="text-xs text-muted-foreground">{{ $t('lists.titleCount', { count: list.item_count }) }}</p>
           </button>
 
           <!-- New list -->
@@ -86,14 +86,14 @@
                 ref="newListInput"
                 v-model="newListName"
                 type="text"
-                :placeholder="`${currentCategory.label} list name`"
+                :placeholder="$t(`lists.newListName.${currentCategory.id}`)"
                 class="h-9 px-3 rounded-lg bg-background border border-border text-sm text-foreground w-full"
                 @keydown.esc="creatingOpen = false"
               />
               <button type="submit" :disabled="!newListName.trim() || creating" class="h-9 rounded-lg bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50">
-                Create
+                {{ $t('common.create') }}
               </button>
-              <button type="button" @click="creatingOpen = false" class="h-8 text-xs text-muted-foreground hover:text-foreground">Cancel</button>
+              <button type="button" @click="creatingOpen = false" class="h-8 text-xs text-muted-foreground hover:text-foreground">{{ $t('common.cancel') }}</button>
             </form>
             <button
               v-else
@@ -102,10 +102,10 @@
               class="aspect-[2/3] rounded-xl border-2 border-dashed border-border hover:border-muted-foreground/50 hover:bg-muted/30 transition flex flex-col items-center justify-center gap-2 text-muted-foreground"
             >
               <Plus class="w-6 h-6" />
-              <span class="text-sm font-medium">New list</span>
+              <span class="text-sm font-medium">{{ $t('lists.newList') }}</span>
             </button>
             <p v-if="!lists.length && !creatingOpen" class="mt-2 text-xs text-muted-foreground">
-              No {{ currentCategory.label.toLowerCase() }} lists yet.
+              {{ $t(`lists.noLists.${currentCategory.id}`) }}
             </p>
           </div>
         </div>
@@ -119,15 +119,15 @@
               type="button"
               @click="closeList"
               class="w-9 h-9 mt-0.5 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center justify-center transition active:scale-95 flex-shrink-0"
-              title="All lists"
-              aria-label="All lists"
+              :title="$t('lists.allLists')"
+              :aria-label="$t('lists.allLists')"
             >
               <ArrowLeft class="w-4 h-4" />
             </button>
             <div class="min-w-0">
-              <h1 class="text-2xl font-bold tracking-tight text-foreground truncate">{{ openListInfo?.name || 'List' }}</h1>
+              <h1 class="text-2xl font-bold tracking-tight text-foreground truncate">{{ openListInfo?.name || $t('lists.listFallback') }}</h1>
               <p class="text-sm text-muted-foreground mt-0.5">
-                {{ entries.length }} {{ entries.length === 1 ? 'title' : 'titles' }}<template v-if="notOwnedCount"> · {{ notOwnedCount }} not in the library</template>
+                {{ $t('lists.titleCount', { count: entries.length }) }}<template v-if="notOwnedCount"> · {{ $t('lists.notInLibrary', { count: notOwnedCount }) }}</template>
               </p>
             </div>
           </div>
@@ -139,7 +139,7 @@
               :class="showSearch ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'"
             >
               <Plus class="w-4 h-4" />
-              Add titles
+              {{ $t('lists.addTitles') }}
             </button>
             <button
               type="button"
@@ -147,7 +147,7 @@
               class="h-9 px-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-muted flex items-center gap-1.5 transition"
             >
               <Trash2 class="w-4 h-4" />
-              <span class="hidden sm:inline">Delete list</span>
+              <span class="hidden sm:inline">{{ $t('lists.deleteList') }}</span>
             </button>
           </div>
         </div>
@@ -156,7 +156,7 @@
           <ExternalTitleSearch :search-types="openCategory.searchTypes">
             <template #action="{ result, mediaType }">
               <span v-if="inList(result)" class="h-8 px-3 rounded-lg text-xs font-medium text-muted-foreground flex items-center gap-1">
-                <Check class="w-3.5 h-3.5" /> In list
+                <Check class="w-3.5 h-3.5" /> {{ $t('lists.inList') }}
               </span>
               <button
                 v-else
@@ -164,7 +164,7 @@
                 :disabled="adding.has(resultKey(result))"
                 class="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50 flex items-center gap-1 transition"
               >
-                <Plus class="w-3.5 h-3.5" /> Add
+                <Plus class="w-3.5 h-3.5" /> {{ $t('common.add') }}
               </button>
             </template>
           </ExternalTitleSearch>
@@ -177,8 +177,10 @@
         </div>
         <div v-else-if="entries.length === 0" class="py-16 text-center border border-dashed border-border rounded-2xl bg-card/50">
           <ListOrdered class="w-7 h-7 mx-auto text-muted-foreground" />
-          <p class="text-sm font-medium text-foreground mt-3">Nothing in this list yet</p>
-          <p class="text-xs text-muted-foreground mt-1">Use <strong>Add titles</strong> to search for anything, on the server or not.</p>
+          <p class="text-sm font-medium text-foreground mt-3">{{ $t('lists.empty.title') }}</p>
+          <I18nT keypath="lists.empty.hint" tag="p" class="text-xs text-muted-foreground mt-1">
+            <template #addTitles><strong>{{ $t('lists.addTitles') }}</strong></template>
+          </I18nT>
         </div>
 
         <div v-else class="poster-grid gap-x-3 gap-y-6 sm:gap-x-4">
@@ -214,10 +216,10 @@
               <!-- Order and remove: on hover with a mouse, always on a phone -->
               <div class="absolute bottom-0 inset-x-0 p-1.5 flex items-center justify-between gap-1 bg-gradient-to-t from-black/70 to-transparent sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 transition">
                 <div class="flex gap-1">
-                  <button type="button" aria-label="Move earlier" title="Move earlier" @click.prevent.stop="move(index, -1)" :disabled="index === 0 || reordering" class="entry-btn"><ChevronLeft class="w-4 h-4" /></button>
-                  <button type="button" aria-label="Move later" title="Move later" @click.prevent.stop="move(index, 1)" :disabled="index === entries.length - 1 || reordering" class="entry-btn"><ChevronRight class="w-4 h-4" /></button>
+                  <button type="button" :aria-label="$t('lists.moveEarlier')" :title="$t('lists.moveEarlier')" @click.prevent.stop="move(index, -1)" :disabled="index === 0 || reordering" class="entry-btn"><ChevronLeft class="w-4 h-4" /></button>
+                  <button type="button" :aria-label="$t('lists.moveLater')" :title="$t('lists.moveLater')" @click.prevent.stop="move(index, 1)" :disabled="index === entries.length - 1 || reordering" class="entry-btn"><ChevronRight class="w-4 h-4" /></button>
                 </div>
-                <button type="button" aria-label="Remove from list" title="Remove from list" @click.prevent.stop="removeEntry(entry)" class="entry-btn hover:!bg-destructive"><X class="w-4 h-4" /></button>
+                <button type="button" :aria-label="$t('lists.removeFromList')" :title="$t('lists.removeFromList')" @click.prevent.stop="removeEntry(entry)" class="entry-btn hover:!bg-destructive"><X class="w-4 h-4" /></button>
               </div>
             </component>
 
@@ -231,9 +233,9 @@
               @click="requestEntry(entry)"
               :disabled="requesting.has(entry.id)"
               class="mt-1.5 self-start h-7 px-2 rounded-lg border border-border bg-background hover:bg-muted text-xs font-semibold flex items-center gap-1 disabled:opacity-50 transition"
-              title="Ask an admin to add this to the library"
+              :title="$t('lists.requestHint')"
             >
-              <Send class="w-3.5 h-3.5" /> Request
+              <Send class="w-3.5 h-3.5" /> {{ $t('lists.request') }}
             </button>
           </div>
         </div>
@@ -260,6 +262,8 @@ import ExternalTitleSearch from '../components/ExternalTitleSearch.vue';
 import AvailabilityBadge from '../components/AvailabilityBadge.vue';
 import Navbar from '../components/Navbar.vue';
 import Sidebar from '../components/Sidebar.vue';
+import { t } from '../i18n';
+import I18nT from '../i18n/I18nT.vue';
 
 const CATEGORY_ICONS = { movies: Film, shows: Tv, anime: Sparkles, read: BookOpen, listen: Headphones };
 
@@ -325,7 +329,7 @@ async function loadLists() {
     const res = await api.get('/collections', { params: { type: 'readlist', category: category.value } });
     lists.value = res.data.collections || [];
   } catch (err) {
-    error.value = 'Could not load lists.';
+    error.value = t('lists.errors.loadLists');
   } finally {
     loading.value = false;
   }
@@ -362,7 +366,7 @@ async function createList() {
     creatingOpen.value = false;
     openList(res.data.collection.id);
   } catch (err) {
-    error.value = err.response?.data?.error || 'Could not create list.';
+    error.value = err.response?.data?.error || t('lists.errors.createList');
   } finally {
     creating.value = false;
   }
@@ -378,7 +382,7 @@ async function loadEntries(id) {
     entries.value = res.data.entries || [];
     if (res.data.collection?.category && validCategory(res.data.collection.category)) category.value = res.data.collection.category;
   } catch (err) {
-    error.value = err.response?.status === 404 ? 'That list no longer exists.' : 'Could not load this list.';
+    error.value = err.response?.status === 404 ? t('lists.errors.gone') : t('lists.errors.loadList');
   } finally {
     loadingEntries.value = false;
   }
@@ -392,9 +396,9 @@ async function refreshEntries() {
 async function deleteList() {
   const list = openListInfo.value;
   const ok = await dialog.confirm({
-    title: 'Delete list?',
-    message: `"${list?.name || 'This list'}" will be deleted. Nothing in your library is removed.`,
-    confirmText: 'Delete',
+    title: t('lists.deleteDialog.title'),
+    message: t('lists.deleteDialog.message', { name: list?.name || t('lists.deleteDialog.thisList') }),
+    confirmText: t('common.delete'),
     danger: true
   });
   if (!ok) return;
@@ -402,7 +406,7 @@ async function deleteList() {
     await api.delete(`/collections/${openListId.value}`);
     closeList();
   } catch (err) {
-    error.value = err.response?.data?.error || 'Could not delete that list.';
+    error.value = err.response?.data?.error || t('lists.errors.deleteList');
   }
 }
 
@@ -418,7 +422,7 @@ function entryLink(entry) {
   return entry.external.library_item ? `/title/${entry.external.library_item.id}` : null;
 }
 function entryTitle(entry) {
-  return entry.kind === 'item' ? (entry.item.series && entry.item.media_type !== 'movie' ? `${entry.item.series}: ${entry.item.title}` : entry.item.title) : entry.external.title;
+  return entry.kind === 'item' ? (entry.item.series && entry.item.media_type !== 'movie' ? t('lists.seriesTitle', { series: entry.item.series, title: entry.item.title }) : entry.item.title) : entry.external.title;
 }
 function entryCover(entry) {
   return entry.kind === 'item' ? buildCoverUrl(entry.item, { width: 360 }) : entry.external.cover_url;
@@ -443,7 +447,7 @@ async function addExternal(result, mediaType) {
     await api.post(`/collections/${openListId.value}/external`, externalTitlePayload(result, mediaType));
     await refreshEntries();
   } catch (err) {
-    error.value = err.response?.data?.error || 'Could not add that title.';
+    error.value = err.response?.data?.error || t('lists.errors.addTitle');
   } finally {
     const next = new Set(adding.value);
     next.delete(key);
@@ -480,7 +484,7 @@ async function requestEntry(entry) {
     if (err.response?.status === 409 && err.response.data?.status) {
       ext.request_status = err.response.data.status;
     } else {
-      error.value = err.response?.data?.error || 'Could not send that request.';
+      error.value = err.response?.data?.error || t('lists.errors.request');
     }
   } finally {
     const next = new Set(requesting.value);
@@ -503,7 +507,7 @@ async function move(index, delta) {
       entries: reordered.map((e) => ({ kind: e.kind, id: e.id }))
     });
   } catch (err) {
-    error.value = 'Could not save the new order.';
+    error.value = t('lists.errors.reorder');
   } finally {
     reordering.value = false;
   }
@@ -518,7 +522,7 @@ async function removeEntry(entry) {
     );
     entries.value = entries.value.filter((e) => !(e.kind === entry.kind && e.id === entry.id));
   } catch (err) {
-    error.value = 'Could not remove that entry.';
+    error.value = t('lists.errors.remove');
   }
 }
 

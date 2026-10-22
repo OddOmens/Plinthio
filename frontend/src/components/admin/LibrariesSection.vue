@@ -1,13 +1,13 @@
 <template>
-  <SectionHeader title="Libraries" description="The folders Plinthio reads your media from. It never changes your files.">
+  <SectionHeader :title="$t('admin.libraries.title')" :description="$t('admin.libraries.description')">
     <button @click="openAddLibrary" class="btn btn-primary">
-      <Plus class="w-3.5 h-3.5" /> Add library
+      <Plus class="w-3.5 h-3.5" /> {{ $t('admin.libraries.add') }}
     </button>
   </SectionHeader>
 
   <SettingsCard flush>
     <p v-if="!libraries.length" class="py-12 px-6 text-center text-xs text-muted-foreground">
-      No libraries yet. Add one to point Plinthio at a folder of media.
+      {{ $t('admin.libraries.empty') }}
     </p>
     <ul v-else class="divide-y divide-border">
       <li v-for="lib in libraries" :key="lib.id" class="px-4 sm:px-5 py-3.5 flex flex-wrap sm:flex-nowrap items-center gap-3">
@@ -17,17 +17,17 @@
         <div class="min-w-0 flex-1">
           <p class="text-xs font-semibold text-foreground truncate flex items-center gap-2">
             {{ lib.name }}
-            <span v-if="lib.kids_allowed" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-sky-500/15 text-sky-500"><Baby class="w-2.5 h-2.5" /> Kids</span>
+            <span v-if="lib.kids_allowed" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-sky-500/15 text-sky-500"><Baby class="w-2.5 h-2.5" /> {{ $t('admin.libraries.kids') }}</span>
           </p>
           <p class="text-[12px] text-muted-foreground font-mono truncate" :title="lib.path">{{ lib.path }}</p>
-          <p class="text-[12px] text-muted-foreground">{{ libraryTypeLabel(lib.type) }} · {{ (lib.item_count || 0).toLocaleString() }} items</p>
+          <p class="text-[12px] text-muted-foreground">{{ libraryTypeLabel(lib.type) }} · {{ $t('admin.libraries.items', { count: lib.item_count || 0, number: $n(lib.item_count || 0) }) }}</p>
         </div>
         <div class="flex items-center gap-1.5 ml-auto">
           <button @click="triggerScan(lib)" :disabled="scanningId === lib.id" class="btn btn-secondary">
             <RefreshCw :class="['w-3.5 h-3.5', scanningId === lib.id ? 'animate-spin' : '']" />
-            {{ scanningId === lib.id ? 'Scanning…' : 'Scan' }}
+            {{ scanningId === lib.id ? $t('admin.libraries.scanning') : $t('admin.libraries.scan') }}
           </button>
-          <button @click="deleteLibrary(lib)" class="btn btn-ghost btn-icon hover:text-destructive" :aria-label="`Delete ${lib.name}`" title="Delete library">
+          <button @click="deleteLibrary(lib)" class="btn btn-ghost btn-icon hover:text-destructive" :aria-label="$t('admin.libraries.deleteAria', { name: lib.name })" :title="$t('admin.libraries.deleteLibrary')">
             <Trash2 class="w-4 h-4" />
           </button>
         </div>
@@ -35,73 +35,71 @@
     </ul>
   </SettingsCard>
 
-  <SettingsCard title="Automatic scanning" description="Picks up media added to your library folders without anyone pressing Scan.">
+  <SettingsCard :title="$t('admin.libraries.autoScan.title')" :description="$t('admin.libraries.autoScan.desc')">
     <template #actions><SaveStatus :status="scanSave.status.value" :message="scanSave.message.value" /></template>
     <div class="divide-y divide-border">
-      <ToggleRow v-model="autoScan.enabled" label="Re-scan on a schedule" description="The dependable one: works on network shares and mounts that report no changes." />
+      <ToggleRow v-model="autoScan.enabled" :label="$t('admin.libraries.autoScan.scheduled.label')" :description="$t('admin.libraries.autoScan.scheduled.desc')" />
       <template v-if="autoScan.enabled">
         <div class="py-3 flex flex-wrap items-center justify-between gap-3">
-          <label for="auto-scan-mode" class="text-xs font-semibold text-foreground">Schedule</label>
+          <label for="auto-scan-mode" class="text-xs font-semibold text-foreground">{{ $t('admin.libraries.autoScan.schedule') }}</label>
           <select id="auto-scan-mode" v-model="autoScan.mode" class="field w-auto min-w-[10rem]">
-            <option value="interval">At regular intervals</option>
-            <option value="times">At set times each day</option>
+            <option value="interval">{{ $t('admin.libraries.autoScan.modes.interval') }}</option>
+            <option value="times">{{ $t('admin.libraries.autoScan.modes.times') }}</option>
           </select>
         </div>
         <div v-if="autoScan.mode === 'interval'" class="py-3 flex flex-wrap items-center justify-between gap-3">
-          <label for="auto-scan-interval" class="text-xs font-semibold text-foreground">Re-scan every</label>
+          <label for="auto-scan-interval" class="text-xs font-semibold text-foreground">{{ $t('admin.libraries.autoScan.every') }}</label>
           <select id="auto-scan-interval" v-model.number="autoScan.intervalMinutes" class="field w-auto min-w-[10rem]">
-            <option :value="15">15 minutes</option>
-            <option :value="30">30 minutes</option>
-            <option :value="60">hour</option>
-            <option :value="360">6 hours</option>
-            <option :value="1440">day</option>
+            <option v-for="minutes in [15, 30, 60, 360, 1440]" :key="minutes" :value="minutes">{{ $t(`admin.libraries.autoScan.intervals.${minutes}`) }}</option>
           </select>
         </div>
         <div v-else class="py-3 flex flex-col gap-2">
           <div class="flex flex-wrap items-center justify-between gap-3">
-            <span class="text-xs font-semibold text-foreground">Re-scan at</span>
+            <span class="text-xs font-semibold text-foreground">{{ $t('admin.libraries.autoScan.at') }}</span>
             <div class="flex flex-wrap items-center gap-2">
               <div v-for="(time, index) in autoScan.times" :key="index" class="flex items-center gap-1">
-                <input type="time" v-model="autoScan.times[index]" :aria-label="`Scan time ${index + 1}`" class="field w-auto" />
-                <button type="button" @click="autoScan.times.splice(index, 1)" class="btn btn-ghost btn-icon hover:text-destructive" :aria-label="`Remove ${time || 'this time'}`">
+                <input type="time" v-model="autoScan.times[index]" :aria-label="$t('admin.libraries.autoScan.timeAria', { number: index + 1 })" class="field w-auto" />
+                <button type="button" @click="autoScan.times.splice(index, 1)" class="btn btn-ghost btn-icon hover:text-destructive" :aria-label="$t('admin.libraries.autoScan.removeTime', { time: time || $t('admin.libraries.autoScan.thisTime') })">
                   <X class="w-3.5 h-3.5" />
                 </button>
               </div>
               <button v-if="autoScan.times.length < 12" type="button" @click="autoScan.times.push('03:00')" class="btn btn-secondary">
-                <Plus class="w-3.5 h-3.5" /> Add time
+                <Plus class="w-3.5 h-3.5" /> {{ $t('admin.libraries.autoScan.addTime') }}
               </button>
             </div>
           </div>
-          <p class="field-hint">In the server's time zone. If the server was off at a set time, it scans once when it's back.</p>
+          <p class="field-hint">{{ $t('admin.libraries.autoScan.timesHint') }}</p>
         </div>
       </template>
-      <ToggleRow v-model="autoScan.watchEnabled" label="Watch folders for changes" description="Scans about 30 seconds after a file appears, where the filesystem reports it. Works with or without the schedule." />
+      <ToggleRow v-model="autoScan.watchEnabled" :label="$t('admin.libraries.autoScan.watch.label')" :description="$t('admin.libraries.autoScan.watch.desc')" />
     </div>
     <p v-if="scanningIsManual" class="mt-3 text-xs flex items-start gap-1.5 text-amber-600 dark:text-amber-400" role="status">
       <TriangleAlert class="w-3.5 h-3.5 mt-px flex-shrink-0" />
-      Automatic scanning is off. New media won't show up until an admin presses Scan on a library.
+      {{ $t('admin.libraries.autoScan.manual') }}
     </p>
     <p v-else-if="!autoScan.enabled" class="mt-3 text-xs text-muted-foreground">
-      Without a schedule, changes on network shares or mounts that send no file events won't be noticed until you press Scan.
+      {{ $t('admin.libraries.autoScan.noSchedule') }}
     </p>
     <p v-else-if="autoScan.mode === 'times' && !autoScan.times.length" class="mt-3 text-xs flex items-start gap-1.5 text-amber-600 dark:text-amber-400" role="status">
       <TriangleAlert class="w-3.5 h-3.5 mt-px flex-shrink-0" />
-      No times set, so the schedule never runs. Add a time, or switch to regular intervals.
+      {{ $t('admin.libraries.autoScan.noTimes') }}
     </p>
   </SettingsCard>
 
   <!-- Add a library -->
-  <SettingsDialog :open="showAdd" title="Add a library" @close="showAdd = false">
+  <SettingsDialog :open="showAdd" :title="$t('admin.libraries.addDialog.title')" @close="showAdd = false">
     <form id="add-library-form" @submit.prevent="submitAddLibrary" class="flex flex-col gap-4">
       <div>
-        <label for="lib-path" class="field-label">Folder</label>
+        <label for="lib-path" class="field-label">{{ $t('admin.libraries.addDialog.folder') }}</label>
         <div class="flex gap-2">
           <input id="lib-path" v-model="newLib.path" required placeholder="/media/Books" class="field font-mono flex-1 min-w-0" />
           <button type="button" @click="showPicker = true" class="btn btn-secondary flex-shrink-0">
-            <FolderOpen class="w-3.5 h-3.5" /> Browse
+            <FolderOpen class="w-3.5 h-3.5" /> {{ $t('admin.libraries.addDialog.browse') }}
           </button>
         </div>
-        <p class="field-hint">As the server sees it. In Docker, your media is mounted at <code class="bg-muted px-1 rounded font-mono">/media</code>.</p>
+        <I18nT keypath="admin.libraries.addDialog.folderHint" tag="p" class="field-hint">
+          <template #path><code class="bg-muted px-1 rounded font-mono">/media</code></template>
+        </I18nT>
         <div v-if="discoveredFolders.length" class="mt-2 flex flex-wrap gap-1.5">
           <button
             v-for="folder in discoveredFolders"
@@ -113,12 +111,12 @@
         </div>
       </div>
       <div>
-        <label for="lib-name" class="field-label">Name</label>
-        <input id="lib-name" v-model="newLib.name" required placeholder="e.g. Audiobooks" class="field" />
+        <label for="lib-name" class="field-label">{{ $t('admin.libraries.addDialog.name') }}</label>
+        <input id="lib-name" v-model="newLib.name" required :placeholder="$t('admin.libraries.addDialog.namePlaceholder')" class="field" />
       </div>
       <div>
-        <p class="field-label">What's in it</p>
-        <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-label="What's in it">
+        <p class="field-label">{{ $t('admin.libraries.addDialog.whatsInIt') }}</p>
+        <div class="grid grid-cols-2 gap-2" role="radiogroup" :aria-label="$t('admin.libraries.addDialog.whatsInIt')">
           <button
             v-for="t in LIBRARY_TYPES"
             :key="t.id"
@@ -141,9 +139,9 @@
       </div>
     </form>
     <template #footer>
-      <button type="button" @click="showAdd = false" class="btn btn-secondary ml-auto">Cancel</button>
+      <button type="button" @click="showAdd = false" class="btn btn-secondary ml-auto">{{ $t('common.cancel') }}</button>
       <button type="submit" form="add-library-form" :disabled="adding" class="btn btn-primary">
-        {{ adding ? 'Adding…' : 'Add and scan' }}
+        {{ adding ? $t('admin.libraries.addDialog.adding') : $t('admin.libraries.addDialog.addAndScan') }}
       </button>
     </template>
   </SettingsDialog>
@@ -151,7 +149,7 @@
   <FolderPicker
     :open="showPicker"
     :start="newLib.path || '/media'"
-    title="Choose the library folder"
+    :title="$t('admin.libraries.addDialog.pickerTitle')"
     @close="showPicker = false"
     @select="(p) => { useFolder(p); showPicker = false; }"
   />
@@ -169,6 +167,8 @@ import SettingsCard from '../settings/SettingsCard.vue';
 import SettingsDialog from '../settings/SettingsDialog.vue';
 import ToggleRow from '../settings/ToggleRow.vue';
 import SaveStatus from '../settings/SaveStatus.vue';
+import I18nT from '../../i18n/I18nT.vue';
+import { t, list } from '../../i18n';
 
 const props = defineProps({
   libraries: { type: Array, default: () => [] }
@@ -176,16 +176,18 @@ const props = defineProps({
 const emit = defineEmits(['changed']);
 const dialog = useDialogStore();
 
+// Labels are getters so they follow the current language.
+const libraryType = (id, formats, icon) => ({ id, formats, icon, get label() { return t(`admin.libraries.types.${id}`); } });
 const LIBRARY_TYPES = [
-  { id: 'movies', label: 'Movies', formats: '.mp4, .mkv', icon: Film },
-  { id: 'shows', label: 'TV shows', formats: '.mp4, .mkv', icon: Tv },
-  { id: 'anime', label: 'Anime', formats: '.mp4, .mkv', icon: Sparkles },
-  { id: 'books', label: 'Books', formats: '.epub, .pdf', icon: Book },
-  { id: 'manga', label: 'Manga & comics', formats: '.cbz, .cbr, .zip', icon: FileImage },
-  { id: 'audiobooks', label: 'Audiobooks', formats: '.m4b, .mp3', icon: Headphones }
+  libraryType('movies', '.mp4, .mkv', Film),
+  libraryType('shows', '.mp4, .mkv', Tv),
+  libraryType('anime', '.mp4, .mkv', Sparkles),
+  libraryType('books', '.epub, .pdf', Book),
+  libraryType('manga', '.cbz, .cbr, .zip', FileImage),
+  libraryType('audiobooks', '.m4b, .mp3', Headphones)
 ];
-const libraryIcon = (type) => LIBRARY_TYPES.find((t) => t.id === type)?.icon || Book;
-const libraryTypeLabel = (type) => LIBRARY_TYPES.find((t) => t.id === type)?.label || type;
+const libraryIcon = (type) => LIBRARY_TYPES.find((x) => x.id === type)?.icon || Book;
+const libraryTypeLabel = (type) => LIBRARY_TYPES.find((x) => x.id === type)?.label || type;
 
 // ─── Scanning ──────────────────────────────────────────────────────────────
 const scanningId = ref(null);
@@ -196,13 +198,19 @@ async function triggerScan(lib) {
     emit('changed');
     const { added = 0, updated = 0, renamed = 0, removed = 0 } = res.data || {};
     const parts = [];
-    if (added) parts.push(`${added} added`);
-    if (renamed) parts.push(`${renamed} renamed or moved`);
-    if (updated) parts.push(`${updated} updated`);
-    if (removed) parts.push(`${removed} removed`);
-    dialog.alert({ title: `Scanned ${lib.name}`, message: parts.length ? `${parts.join(', ')}.` : 'Nothing new.', type: 'success' });
+    if (added) parts.push(t('admin.libraries.scanResult.added', { count: added }));
+    if (renamed) parts.push(t('admin.libraries.scanResult.renamed', { count: renamed }));
+    if (updated) parts.push(t('admin.libraries.scanResult.updated', { count: updated }));
+    if (removed) parts.push(t('admin.libraries.scanResult.removed', { count: removed }));
+    dialog.alert({
+      title: t('admin.libraries.scanResult.title', { name: lib.name }),
+      message: parts.length
+        ? t('admin.libraries.scanResult.summary', { parts: list(parts, { type: 'unit', style: 'short' }) })
+        : t('admin.libraries.scanResult.nothingNew'),
+      type: 'success'
+    });
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Scan failed');
+    dialog.alert(err.response?.data?.error || t('admin.libraries.scanFailed'));
   } finally {
     scanningId.value = null;
   }
@@ -210,9 +218,9 @@ async function triggerScan(lib) {
 
 async function deleteLibrary(lib) {
   const confirmed = await dialog.confirm({
-    title: 'Delete library',
-    message: `Delete "${lib.name}"? Your files aren't touched, and progress and bookmarks come back if you add the same folder again. Its titles, covers and details are removed until it's scanned again.`,
-    confirmText: 'Delete library',
+    title: t('admin.libraries.deleteLibrary'),
+    message: t('admin.libraries.deleteMessage', { name: lib.name }),
+    confirmText: t('admin.libraries.deleteLibrary'),
     danger: true
   });
   if (!confirmed) return;
@@ -220,7 +228,7 @@ async function deleteLibrary(lib) {
     await api.delete(`/libraries/${lib.id}`);
     emit('changed');
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Could not delete that library');
+    dialog.alert(err.response?.data?.error || t('admin.libraries.couldNotDelete'));
   }
 }
 
@@ -247,7 +255,7 @@ onMounted(async () => {
 watch(autoScan, (value) => {
   if (!autoScanLoaded) return;
   // A time input is briefly empty while it's being edited; only send complete ones.
-  const times = value.times.filter((t) => /^\d{2}:\d{2}$/.test(t));
+  const times = value.times.filter((time) => /^\d{2}:\d{2}$/.test(time));
   scanSave.run(() => api.put('/settings/auto-scan', { ...value, times }));
 }, { deep: true });
 
@@ -295,7 +303,7 @@ async function submitAddLibrary() {
     showAdd.value = false;
     emit('changed');
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Could not add that library');
+    dialog.alert(err.response?.data?.error || t('admin.libraries.couldNotAdd'));
   } finally {
     adding.value = false;
   }

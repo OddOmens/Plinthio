@@ -1,0 +1,69 @@
+{
+  "backTo": "Back to {server}",
+  "joining": "Joining the watch party…",
+  "watchParty": "Watch party",
+  "showPanel": "Show watch party",
+  "hidePanel": "Hide watch party",
+  "reconnecting": "Reconnecting…",
+  "waitingFor": "Waiting for {names}…",
+  "closePanel": "Close panel",
+  "invite": "Invite",
+  "inviteHint": "Anyone with an account on this server can join with the link or code {code}.",
+  "watching": "Watching ({count})",
+  "you": "(you)",
+  "loading": "Loading",
+  "host": "Host",
+  "whoControls": "Who can play, pause and skip",
+  "onlyMe": "Only me",
+  "everyone": "Everyone",
+  "chatEmpty": "Say hi — messages go to everyone watching.",
+  "messagePlaceholder": "Message",
+  "send": "Send",
+  "leave": "Leave",
+  "endForEveryone": "End for everyone",
+  "tapToJoin": "Tap play to join in",
+  "hostInControl": "The host is in control of playback",
+  "unreachable": "Couldn't reach the party",
+  "messageNotSent": "Message not sent",
+  "moveOnFailed": "Couldn't move the party on",
+  "copyPrompt": "Copy this invite link:",
+  "endConfirm": {
+    "title": "End the watch party?",
+    "message": "This stops the party for everyone watching.",
+    "confirm": "End party"
+  },
+  "problems": {
+    "P600": {
+      "title": "Watch parties are off",
+      "message": "An admin has to turn on watch parties for this server first."
+    },
+    "P601": {
+      "title": "This party has ended",
+      "message": "The host ended it, or everyone left. Ask for a new invite link."
+    },
+    "P603": {
+      "title": "Not available to you",
+      "message": "This party is watching something your account can't open."
+    },
+    "P605": {
+      "title": "This party is full",
+      "message": "A watch party holds up to 20 people. Try again when someone leaves."
+    },
+    "disabled": {
+      "title": "Watch parties were turned off",
+      "message": "An admin turned off watch parties, which ended this one."
+    },
+    "over": {
+      "title": "The party is over",
+      "message": "The host ended the watch party. Thanks for watching!"
+    },
+    "couldntJoin": {
+      "title": "Couldn't join",
+      "message": "Something went wrong joining this party."
+    },
+    "couldntLoad": {
+      "title": "Couldn't load the video",
+      "message": "Try reopening the invite link."
+    }
+  }
+}

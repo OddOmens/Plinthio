@@ -1,0 +1,42 @@
+{
+  "welcome": {
+    "title": "Welcome to {name}",
+    "text": "Let's set things up the way you like them. This takes about thirty seconds, and you can change any of it later in Settings."
+  },
+  "theme": {
+    "title": "Pick your look",
+    "text": "This one's just for you — it won't change what anyone else sees."
+  },
+  "accent": {
+    "title": "Choose an accent",
+    "text": "Buttons, highlights and progress bars use this.",
+    "admin": "As an admin, this sets it for the whole server. People can pick their own in Settings if you allow it (Admin → Playback).",
+    "personal": "It's just for you; change it any time in Settings."
+  },
+  "interests": {
+    "title": "What are you here for?",
+    "text": "We'll show these on your shelf and hide the rest. Pick as many as you like.",
+    "pickOne": "Pick at least one so your shelf isn't empty.",
+    "types": {
+      "manga": { "label": "Manga", "hint": "Comics & graphic novels" },
+      "book": { "label": "Books", "hint": "EPUB & PDF reading" },
+      "audiobook": { "label": "Audiobooks", "hint": "Listen with resume" },
+      "movie": { "label": "Movies", "hint": "Watch in your browser" },
+      "show": { "label": "TV Shows", "hint": "Seasons & episodes" },
+      "anime": { "label": "Anime", "hint": "Subbed & dubbed series" }
+    }
+  },
+  "security": {
+    "title": "Protect your account",
+    "text": "Optional. Two-factor asks for a code from your phone when you sign in, so a password alone isn't enough. You can turn it on now or later in Settings → Security."
+  },
+  "done": {
+    "title": "You're all set",
+    "everything": "Your shelf is showing everything. Dive in.",
+    "tuned": "Your shelf is tuned to {list}. You can add more any time from Settings."
+  },
+  "nav": {
+    "startBrowsing": "Start browsing",
+    "notNow": "Not now"
+  }
+}

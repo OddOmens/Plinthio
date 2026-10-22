@@ -1,0 +1,41 @@
+{
+  "title": "Téléchargements",
+  "intro": "Livres, BD et livres audio enregistrés sur cet appareil pour en profiter sans connexion.",
+  "offline": "Vous êtes hors ligne. Les téléchargements restent accessibles ; la progression se synchronisera à votre retour en ligne.",
+  "needsHttps": "Les téléchargements nécessitent une connexion sécurisée, et cette page a été ouverte en simple http://. {link} pour télécharger du contenu à lire et à écouter hors ligne.",
+  "switchToHttps": "Passez en HTTPS",
+  "unsupported": "Ce navigateur ne peut pas stocker de téléchargements (il doit prendre en charge Service Worker et Cache Storage).",
+  "summary": {
+    "one": "{size} dans {count} téléchargement",
+    "other": "{size} dans {count} téléchargements"
+  },
+  "usage": "{used} sur {quota} utilisés sur cet appareil",
+  "tiedToAccount": "Les téléchargements sont liés à ce navigateur et à votre compte : la déconnexion les supprime.",
+  "downloading": "Téléchargement en cours",
+  "untitled": "Téléchargement",
+  "pagesProgress": "{done} / {total} pages",
+  "bytesProgress": "{received} sur {total}",
+  "dismiss": "Ignorer",
+  "read": "Lire",
+  "openItem": "Ouvrir {title}",
+  "removeItemLabel": "Supprimer le téléchargement de {title}",
+  "remove": "Supprimer le téléchargement",
+  "removeConfirm": "Supprimer « {title} » de cet appareil ? Il reste dans votre bibliothèque.",
+  "empty": {
+    "title": "Aucun téléchargement pour l'instant",
+    "hint": "Utilisez {action} dans le menu ⋮ d'un titre, ou le bouton de téléchargement d'un volume de manga.",
+    "action": "Télécharger hors ligne"
+  },
+  "size": {
+    "B": "{value} o",
+    "KB": "{value} Ko",
+    "MB": "{value} Mo",
+    "GB": "{value} Go",
+    "TB": "{value} To"
+  },
+  "errors": {
+    "failed": "Échec du téléchargement",
+    "failedStatus": "Échec du téléchargement ({status})",
+    "pageList": "Impossible de lire la liste des pages ({status})"
+  }
+}

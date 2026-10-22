@@ -1,32 +1,32 @@
 <template>
-  <SectionHeader title="Metadata" description="Where posters, descriptions, cast and ratings come from, and tidying titles that came in from file names." />
+  <SectionHeader :title="$t('admin.metadata.title')" :description="$t('admin.metadata.description')" />
 
-  <SettingsCard title="TMDB key" :description="tmdbBuiltIn
-    ? 'Movies, shows and anime get their details from TMDB, using the key built into Plinthio. You can paste your own TMDB key to use it instead. Manga (MangaDex) and books (Google Books, Open Library) need nothing.'
-    : 'Movies, shows and anime get their details from TMDB, which needs a free key. Manga (MangaDex) and books (Google Books, Open Library) need nothing.'">
+  <SettingsCard :title="$t('admin.metadata.tmdb.title')" :description="tmdbBuiltIn ? $t('admin.metadata.tmdb.descBuiltIn') : $t('admin.metadata.tmdb.descNeedsKey')">
     <template #actions>
       <span :class="['text-[11px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border', tmdbConfigured ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : 'text-muted-foreground border-border bg-muted/40']">
         {{ sourceLabel }}
       </span>
     </template>
     <form @submit.prevent="saveTmdbKey" class="flex flex-col sm:flex-row gap-2">
-      <label for="tmdb-key" class="sr-only">TMDB API key</label>
+      <label for="tmdb-key" class="sr-only">{{ $t('admin.metadata.tmdb.keyLabel') }}</label>
       <input
         id="tmdb-key"
         v-model="tmdbKeyInput"
         type="password"
         autocomplete="off"
-        :placeholder="tmdbSource === 'custom' ? 'Paste a new key to replace it' : tmdbBuiltIn ? 'Paste your own TMDB key (optional)' : 'Paste your TMDB API Read Access Token'"
+        :placeholder="tmdbSource === 'custom' ? $t('admin.metadata.tmdb.placeholderReplace') : tmdbBuiltIn ? $t('admin.metadata.tmdb.placeholderOptional') : $t('admin.metadata.tmdb.placeholderToken')"
         class="field flex-1 min-w-0"
       />
-      <button type="submit" :disabled="saving || !tmdbKeyInput" class="btn btn-primary">{{ saving ? 'Saving…' : 'Save key' }}</button>
-      <button v-if="tmdbSource === 'custom'" type="button" @click="clearTmdbKey" :disabled="saving" class="btn btn-ghost">{{ tmdbBuiltIn ? 'Use built-in key' : 'Remove' }}</button>
+      <button type="submit" :disabled="saving || !tmdbKeyInput" class="btn btn-primary">{{ saving ? $t('common.saving') : $t('admin.metadata.tmdb.saveKey') }}</button>
+      <button v-if="tmdbSource === 'custom'" type="button" @click="clearTmdbKey" :disabled="saving" class="btn btn-ghost">{{ tmdbBuiltIn ? $t('admin.metadata.tmdb.useBuiltIn') : $t('common.remove') }}</button>
     </form>
     <p class="field-hint">
-      Get one free at <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">themoviedb.org → Settings → API</a>.
+      <I18nT keypath="admin.metadata.tmdb.getOne">
+        <template #link><a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">{{ $t('admin.metadata.tmdb.getOneLink') }}</a></template>
+      </I18nT>
       <SaveStatus :status="save.status.value" :message="save.message.value" class="inline-flex ml-1" />
     </p>
-    <p class="field-hint">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+    <p class="field-hint">{{ $t('admin.metadata.tmdb.attribution') }}</p>
   </SettingsCard>
 
   <AdminMetadataManager :libraries="libraries" />
@@ -41,6 +41,8 @@ import AdminMetadataManager from '../AdminMetadataManager.vue';
 import SectionHeader from '../settings/SectionHeader.vue';
 import SettingsCard from '../settings/SettingsCard.vue';
 import SaveStatus from '../settings/SaveStatus.vue';
+import I18nT from '../../i18n/I18nT.vue';
+import { t } from '../../i18n';
 
 defineProps({
   libraries: { type: Array, default: () => [] }
@@ -55,11 +57,9 @@ const tmdbSource = ref(null);
 const tmdbBuiltIn = ref(false);
 const tmdbKeyInput = ref('');
 
-const sourceLabel = computed(() => ({
-  custom: 'Your own',
-  environment: 'From TMDB_API_KEY',
-  builtin: 'Built in'
-}[tmdbSource.value] || (tmdbConfigured.value ? 'Set' : 'Not set')));
+const sourceLabel = computed(() => (['custom', 'environment', 'builtin'].includes(tmdbSource.value)
+  ? t(`admin.metadata.tmdb.sources.${tmdbSource.value}`)
+  : t(tmdbConfigured.value ? 'admin.metadata.tmdb.sources.set' : 'admin.metadata.tmdb.sources.notSet')));
 
 function readStatus(data) {
   tmdbConfigured.value = !!data.tmdbConfigured;
@@ -95,9 +95,9 @@ async function clearTmdbKey() {
   // Going back to the built-in key loses nothing.
   if (tmdbBuiltIn.value) return putKey('');
   const confirmed = await dialog.confirm({
-    title: 'Remove the TMDB key',
-    message: 'Movies, shows and anime stop getting new posters, details and world ratings until a key is added again.',
-    confirmText: 'Remove',
+    title: t('admin.metadata.tmdb.removeTitle'),
+    message: t('admin.metadata.tmdb.removeMessage'),
+    confirmText: t('common.remove'),
     danger: true
   });
   if (confirmed) putKey('');

@@ -1,0 +1,69 @@
+{
+  "backTo": "Volver a {server}",
+  "joining": "Uniéndote a la watch party…",
+  "watchParty": "Watch party",
+  "showPanel": "Mostrar watch party",
+  "hidePanel": "Ocultar watch party",
+  "reconnecting": "Reconectando…",
+  "waitingFor": "Esperando a {names}…",
+  "closePanel": "Cerrar panel",
+  "invite": "Invitar",
+  "inviteHint": "Cualquiera con una cuenta en este servidor puede unirse con el enlace o el código {code}.",
+  "watching": "Viendo ({count})",
+  "you": "(tú)",
+  "loading": "Cargando",
+  "host": "Anfitrión",
+  "whoControls": "Quién puede reproducir, pausar y saltar",
+  "onlyMe": "Solo yo",
+  "everyone": "Todos",
+  "chatEmpty": "Saluda — los mensajes llegan a todos los que están viendo.",
+  "messagePlaceholder": "Mensaje",
+  "send": "Enviar",
+  "leave": "Salir",
+  "endForEveryone": "Terminar para todos",
+  "tapToJoin": "Pulsa reproducir para unirte",
+  "hostInControl": "El anfitrión controla la reproducción",
+  "unreachable": "No se pudo conectar con la watch party",
+  "messageNotSent": "Mensaje no enviado",
+  "moveOnFailed": "No se pudo pasar al siguiente",
+  "copyPrompt": "Copia este enlace de invitación:",
+  "endConfirm": {
+    "title": "¿Terminar la watch party?",
+    "message": "Esto detiene la watch party para todos los que están viendo.",
+    "confirm": "Terminar"
+  },
+  "problems": {
+    "P600": {
+      "title": "Las watch parties están desactivadas",
+      "message": "Un administrador tiene que activar las watch parties en este servidor primero."
+    },
+    "P601": {
+      "title": "Esta watch party terminó",
+      "message": "El anfitrión la terminó, o todos se fueron. Pide un nuevo enlace de invitación."
+    },
+    "P603": {
+      "title": "No disponible para ti",
+      "message": "Esta watch party está viendo algo que tu cuenta no puede abrir."
+    },
+    "P605": {
+      "title": "Esta watch party está llena",
+      "message": "Una watch party admite hasta 20 personas. Inténtalo de nuevo cuando alguien salga."
+    },
+    "disabled": {
+      "title": "Se desactivaron las watch parties",
+      "message": "Un administrador desactivó las watch parties, lo que terminó esta."
+    },
+    "over": {
+      "title": "La watch party terminó",
+      "message": "El anfitrión terminó la watch party. ¡Gracias por verla!"
+    },
+    "couldntJoin": {
+      "title": "No se pudo unir",
+      "message": "Algo salió mal al unirte a esta watch party."
+    },
+    "couldntLoad": {
+      "title": "No se pudo cargar el video",
+      "message": "Prueba a abrir de nuevo el enlace de invitación."
+    }
+  }
+}

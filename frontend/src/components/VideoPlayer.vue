@@ -12,10 +12,10 @@
         controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       ]"
     >
-      <button aria-label="Back to shelf"
+      <button :aria-label="$t('player.video.backToShelf')"
         @click="closePlayer"
         class="w-11 h-11 rounded-xl bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition active:scale-95 flex-shrink-0 backdrop-blur-sm"
-        title="Back to shelf"
+        :title="$t('player.video.backToShelf')"
       >
         <ArrowLeft class="w-5 h-5" />
       </button>
@@ -26,11 +26,11 @@
         <RatingBar :item="item" tone="dark" compact class="mt-1.5 drop-shadow" />
       </div>
 
-      <button aria-label="Cast to TV"
+      <button :aria-label="$t('player.video.castToTv')"
         v-if="castAvailable && !partyMode"
         @click="startCast"
         class="w-11 h-11 rounded-xl bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition active:scale-95 flex-shrink-0 backdrop-blur-sm"
-        title="Cast to TV"
+        :title="$t('player.video.castToTv')"
       >
         <Cast class="w-5 h-5" />
       </button>
@@ -46,10 +46,10 @@
 
       <slot name="header-actions" />
 
-      <button aria-label="Playback settings"
+      <button :aria-label="$t('player.video.playbackSettings')"
         @click="settingsOpen = !settingsOpen"
         class="w-11 h-11 rounded-xl bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition active:scale-95 flex-shrink-0 backdrop-blur-sm"
-        title="Playback settings"
+        :title="$t('player.video.playbackSettings')"
       >
         <Settings class="w-5 h-5" />
       </button>
@@ -61,23 +61,23 @@
       class="absolute top-20 right-[max(1rem,env(safe-area-inset-right))] z-30 w-64 rounded-xl bg-black/90 backdrop-blur border border-white/10 text-white p-3 space-y-3 max-h-[70dvh] overflow-y-auto"
     >
       <div v-if="!locked">
-        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Skip back</p>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">{{ $t('player.video.skipBack') }}</p>
         <div class="flex flex-wrap gap-1">
           <button v-for="s in SKIP_CHOICES" :key="`b${s}`" type="button" @click="setSkip('back', s)" :class="skipChipClass(skipBack === s)">{{ skipLabel(s) }}</button>
         </div>
-        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mt-2.5 mb-1.5">Skip forward</p>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mt-2.5 mb-1.5">{{ $t('player.video.skipForward') }}</p>
         <div class="flex flex-wrap gap-1">
           <button v-for="s in SKIP_CHOICES" :key="`f${s}`" type="button" @click="setSkip('forward', s)" :class="skipChipClass(skipForward === s)">{{ skipLabel(s) }}</button>
         </div>
       </div>
 
       <div v-if="qualities.length > 1">
-        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Quality</p>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">{{ $t('player.video.quality') }}</p>
         <button
           @click="setQuality(-1)"
           :class="menuItemClass(selectedQuality === -1)"
         >
-          Auto
+          {{ $t('player.video.auto') }}
         </button>
         <button
           v-for="(quality, index) in qualities"
@@ -90,7 +90,7 @@
       </div>
 
       <div v-if="audioTracks.length > 1">
-        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Audio</p>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">{{ $t('player.video.audio') }}</p>
         <button
           v-for="track in audioTracks"
           :key="track.index"
@@ -102,9 +102,9 @@
       </div>
 
       <div v-if="subtitles.length > 0">
-        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">Subtitles</p>
+        <p class="text-[12px] font-semibold uppercase tracking-wider text-white/50 mb-1.5">{{ $t('player.video.subtitles') }}</p>
         <button @click="setSubtitle(null)" :class="menuItemClass(selectedSubtitle === null)">
-          Off
+          {{ $t('common.off') }}
         </button>
         <button
           v-for="track in subtitles"
@@ -118,7 +118,7 @@
 
       <p v-if="qualities.length <= 1 && audioTracks.length <= 1 && subtitles.length === 0"
          class="text-xs text-white/50">
-        No alternate tracks for this video.
+        {{ $t('player.video.noAlternateTracks') }}
       </p>
     </div>
 
@@ -128,7 +128,7 @@
       @click="skipMarker"
       class="absolute bottom-24 right-4 z-30 px-4 py-2.5 rounded-xl bg-white/90 hover:bg-white text-black text-sm font-semibold shadow-lg transition active:scale-95"
     >
-      Skip {{ activeMarker.type === 'intro' ? 'Intro' : 'Credits' }}
+      {{ activeMarker.type === 'intro' ? $t('player.video.skipIntro') : $t('player.video.skipCredits') }}
     </button>
 
     <!-- Touch: skip buttons either side of the native controls' play button. Not while the
@@ -232,7 +232,7 @@
       </div>
 
       <div class="flex items-center gap-3 mt-2.5 text-white">
-        <button :aria-label="isPlaying ? 'Pause' : 'Play'" @click="togglePlay" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/10 transition">
+        <button :aria-label="isPlaying ? $t('common.pause') : $t('common.play')" @click="togglePlay" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/10 transition">
           <Pause v-if="isPlaying" class="w-5 h-5" />
           <Play v-else class="w-5 h-5 fill-current" />
         </button>
@@ -244,7 +244,7 @@
             @click="skip(dir)"
             @contextmenu.prevent="settingsOpen = true"
             :aria-label="skipAria(dir)"
-            :title="`${skipAria(dir)} — right-click to change`"
+            :title="$t('player.video.skipHint', { action: skipAria(dir) })"
             class="h-9 px-1.5 flex items-center gap-1 rounded-lg hover:bg-white/10 transition"
           >
             <RotateCcw v-if="dir === 'back'" class="w-[18px] h-[18px]" />
@@ -256,7 +256,7 @@
           {{ formatTime(videoTime) }} / {{ formatTime(totalDuration) }}
         </span>
         <div class="flex-1" />
-        <button aria-label="Toggle fullscreen" @click="toggleFullscreen" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/10 transition">
+        <button :aria-label="$t('player.video.toggleFullscreen')" @click="toggleFullscreen" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/10 transition">
           <Maximize class="w-5 h-5" />
         </button>
       </div>
@@ -282,12 +282,12 @@
         v-if="resumedFrom > 0 && showResumeToast"
         class="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 bg-black/80 backdrop-blur-sm text-white text-sm px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-3 border border-white/10"
       >
-        <span>Resumed from {{ formatTime(resumedFrom) }}</span>
+        <span>{{ $t('player.video.resumedFrom', { time: formatTime(resumedFrom) }) }}</span>
         <button
           @click="restartFromBeginning"
           class="text-primary font-semibold hover:underline whitespace-nowrap"
         >
-          Start over
+          {{ $t('player.video.startOver') }}
         </button>
       </div>
     </Transition>
@@ -299,7 +299,7 @@
     >
       <div class="w-full max-w-sm bg-card border border-border rounded-2xl p-5 shadow-2xl flex flex-col gap-4">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Up next</p>
+          <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{{ $t('player.video.upNext') }}</p>
           <h3 class="text-base font-bold text-foreground mt-1 leading-snug">{{ nextEpisode.title }}</h3>
           <p v-if="nextEpisode.series" class="text-sm text-muted-foreground mt-0.5">{{ nextEpisode.series }}</p>
         </div>
@@ -310,13 +310,13 @@
             class="flex-1 h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold transition active:scale-95 flex items-center justify-center gap-2"
           >
             <Play class="w-4 h-4 fill-current" />
-            Play now ({{ countdown }})
+            {{ $t('player.video.playNow', { seconds: countdown }) }}
           </button>
           <button
             @click="cancelNextEpisode"
             class="h-11 px-4 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition active:scale-95"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
         </div>
       </div>
@@ -331,7 +331,7 @@
         <AlertCircle class="w-6 h-6" />
       </div>
       <div>
-        <h3 class="text-base font-semibold text-white">Can't play this video</h3>
+        <h3 class="text-base font-semibold text-white">{{ $t('player.video.cantPlay') }}</h3>
         <p class="text-sm text-white/70 mt-1 max-w-md">{{ errorMessage }}</p>
         <a
           v-if="errorCode"
@@ -340,7 +340,7 @@
           rel="noopener"
           class="inline-block mt-2 text-xs font-mono text-white/50 hover:text-white underline underline-offset-2"
         >
-          Error {{ errorCode }}: what this means
+          {{ $t('player.video.errorHelp', { code: errorCode }) }}
         </a>
       </div>
       <div class="flex items-center gap-2">
@@ -348,13 +348,13 @@
           @click="retryPlayback"
           class="px-4 py-2 rounded-xl bg-white text-black hover:bg-white/90 text-sm font-medium transition"
         >
-          Retry
+          {{ $t('player.video.retry') }}
         </button>
         <button
           @click="closePlayer"
           class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition"
         >
-          Back to shelf
+          {{ $t('player.video.backToShelf') }}
         </button>
       </div>
     </div>
@@ -372,6 +372,7 @@ import RatingBar from './RatingBar.vue';
 import PauseScreen from './PauseScreen.vue';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
+import { t } from '../i18n';
 import {
   ArrowLeft, AlertCircle, Loader2, Play, Pause, Maximize,
   Settings, Cast, MonitorSpeaker, RotateCcw, RotateCw
@@ -490,16 +491,16 @@ function menuItemClass(active) {
 }
 
 function audioLabel(track) {
-  const parts = [track.language || `Track ${track.index + 1}`];
+  const parts = [track.language || t('player.video.track', { number: track.index + 1 })];
   if (track.title) parts.push(track.title);
-  if (track.channels > 2) parts.push(`${track.channels}ch`);
+  if (track.channels > 2) parts.push(t('player.video.channels', { count: track.channels }));
   return parts.join(' · ');
 }
 
 function subtitleLabel(track) {
-  const parts = [track.language || `Track ${track.index + 1}`];
+  const parts = [track.language || t('player.video.track', { number: track.index + 1 })];
   if (track.title) parts.push(track.title);
-  if (track.forced) parts.push('forced');
+  if (track.forced) parts.push(t('player.video.forced'));
   return parts.join(' · ');
 }
 
@@ -544,12 +545,20 @@ const skipBack = computed(() => skipPrefs.value.back);
 const skipForward = computed(() => skipPrefs.value.forward);
 
 function skipLabel(seconds) {
-  return seconds >= 60 ? `${seconds / 60}m` : `${seconds}s`;
+  return seconds >= 60
+    ? t('player.units.minutesShort', { count: seconds / 60 })
+    : t('player.units.secondsShort', { count: seconds });
 }
 function skipAria(dir) {
   const s = dir === 'back' ? skipBack.value : skipForward.value;
-  const amount = s >= 60 ? `${s / 60} minute${s === 60 ? '' : 's'}` : `${s} seconds`;
-  return `${dir === 'back' ? 'Back' : 'Forward'} ${amount}`;
+  if (s >= 60) {
+    return dir === 'back'
+      ? t('player.video.skipAria.backMinutes', { count: s / 60 })
+      : t('player.video.skipAria.forwardMinutes', { count: s / 60 });
+  }
+  return dir === 'back'
+    ? t('player.video.skipAria.backSeconds', { count: s })
+    : t('player.video.skipAria.forwardSeconds', { count: s });
 }
 function skipChipClass(active) {
   return [
@@ -748,9 +757,9 @@ function startAirplay() {
 const virtualTime = computed(() => videoTime.value);
 
 const preparingLabel = computed(() => {
-  if (playbackMode.value === 'transcode') return 'Converting for your browser…';
-  if (playbackMode.value === 'remux') return 'Direct Streaming…';
-  return 'Starting playback…';
+  if (playbackMode.value === 'transcode') return t('player.video.preparing.transcode');
+  if (playbackMode.value === 'remux') return t('player.video.preparing.remux');
+  return t('player.video.preparing.direct');
 });
 
 // Attaches the resolved stream to the <video> element: hls.js for the remux/transcode path
@@ -944,9 +953,9 @@ function cancelNextEpisode() {
 // Client-side failures use the app codes P350–P352.
 
 const CLIENT_ERRORS = {
-  P350: 'This browser cannot play this video, even after converting it.',
-  P351: 'Lost connection to the server. Check your network and press Retry.',
-  P352: 'Your media access expired and could not be renewed. Reload the page, or sign out and back in.'
+  P350: () => t('player.video.errors.P350'),
+  P351: () => t('player.video.errors.P351'),
+  P352: () => t('player.video.errors.P352')
 };
 
 let tokenRenewed = false;
@@ -955,7 +964,7 @@ let mediaRecoveryTried = false;
 function showError(code, message) {
   preparing.value = false;
   errorCode.value = code || '';
-  errorMessage.value = message || CLIENT_ERRORS[code] || 'Playback failed.';
+  errorMessage.value = message || CLIENT_ERRORS[code]?.() || t('player.video.errors.failed');
 }
 
 // Asks the server why `url` failed. Returns { status, code, message }, or null when the

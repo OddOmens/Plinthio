@@ -1,0 +1,686 @@
+{
+  "nav": {
+    "yourSettings": "個人設定",
+    "groups": {
+      "server": "サーバー",
+      "library": "ライブラリ",
+      "people": "ユーザー",
+      "settings": "設定",
+      "system": "システム"
+    },
+    "items": {
+      "overview": {
+        "label": "概要",
+        "desc": "バージョン、アップデート、収録内容"
+      },
+      "libraries": {
+        "label": "ライブラリ",
+        "desc": "フォルダと自動スキャン"
+      },
+      "health": {
+        "label": "ヘルスチェック",
+        "desc": "見つからないファイルと要対応の項目"
+      },
+      "metadata": {
+        "label": "メタデータ",
+        "desc": "TMDBキーとタイトルの照合"
+      },
+      "kids": {
+        "label": "キッズモード",
+        "desc": "キッズアカウントに見せる内容"
+      },
+      "users": {
+        "label": "ユーザー",
+        "desc": "アカウント、ロール、制限"
+      },
+      "activity": {
+        "label": "アクティビティ",
+        "desc": "サインインと再生中の内容"
+      },
+      "appearance": {
+        "label": "外観",
+        "desc": "デフォルト、名前、カスタムCSS"
+      },
+      "features": {
+        "label": "機能",
+        "desc": "棚の表示、評価、ウォッチパーティー"
+      },
+      "playback": {
+        "label": "再生",
+        "desc": "ハードウェアアクセラレーション、オープニング"
+      },
+      "network": {
+        "label": "ネットワーク",
+        "desc": "外出先、Tailscale、2 段階認証"
+      },
+      "backups": {
+        "label": "バックアップ",
+        "desc": "スケジュール、別の場所へのコピー、復元ポイント"
+      },
+      "logs": {
+        "label": "ログ",
+        "desc": "サーバーの動作記録"
+      }
+    }
+  },
+  "activity": {
+    "title": "アクティビティ",
+    "description": "すべてのアカウントのサインインと、読んだり見たり聴いたりしている内容です。",
+    "show": "表示",
+    "everyone": "全員"
+  },
+  "appearance": {
+    "title": "外観",
+    "description": "全員に表示されるPlinthioの見た目です：サーバーのデフォルト、サーバー名、独自のCSS。変更はすぐに保存されます。",
+    "personalize": {
+      "label": "個人ごとのカスタマイズを許可",
+      "desc": "各自が「設定 → 外観」で色、ナビゲーション、幅、一時停止画面を選べます。オフにすると、全員にサーバーの見た目が使われます。"
+    },
+    "usersCanChange": "ユーザーが変更可能",
+    "cards": {
+      "accent": "ボタン、バッジ、現在のタブに使われる強調色です。",
+      "pageWidth": "大きな画面でのページの幅です。",
+      "pauseScreen": "一時停止して数秒後に表示される内容です。マウスを動かしたり画面に触れたりすると消えます。キーが設定されていれば、キャスト、スタッフ、作品情報はTMDBから取得します。"
+    },
+    "branding": {
+      "title": "名前とサインイン時のお知らせ",
+      "desc": "サーバーの名前と、サインインページに表示する任意のお知らせです。",
+      "serverName": "サーバー名",
+      "notice": "サインイン時のお知らせ",
+      "removeNotice": "サインイン時のお知らせを削除"
+    },
+    "css": {
+      "title": "カスタムCSS",
+      "desc": "全員のすべてのページに追加される独自のスタイルルールです。まずここで試してください。保存すると反映されます。",
+      "cheatsheet": "CSSチートシート",
+      "example": "/* 例 */",
+      "save": "CSSを保存",
+      "tryIt": "このページで試す",
+      "notSaved": "未保存",
+      "couldNotSave": "CSSを保存できませんでした"
+    }
+  },
+  "backups": {
+    "title": "バックアップ",
+    "description": "データベースのスナップショットです：アカウント、全員の進捗、ブックマーク、ハイライトとメモ、評価、リスト、ライブラリ、メタデータ。メディアファイルは含まれません。アップグレードの前にも毎回スナップショットが作成され、その最新5件は常に保持されます。",
+    "automatic": "自動バックアップ",
+    "schedule": {
+      "label": "スケジュールでバックアップ",
+      "desc": "サーバーの/config/backupsに保存されます。"
+    },
+    "howOften": "頻度",
+    "frequency": {
+      "every6h": "6時間ごと",
+      "every12h": "12時間ごと",
+      "daily": "毎日",
+      "every3d": "3日ごと",
+      "weekly": "毎週"
+    },
+    "keepLast": "保持する件数",
+    "destination": {
+      "label": "バックアップのコピー先",
+      "why": "/config/backupsはサーバーと同じディスク上にあります。別のドライブ、NAS、同期されたクラウドフォルダにコピーしておけば、そのディスクが故障しても残ります。",
+      "placeholder": "ほかの場所にはコピーしない",
+      "browseAria": "バックアップ用フォルダを参照",
+      "browse": "参照",
+      "testAria": "バックアップ用フォルダをテスト",
+      "test": "テスト",
+      "checking": "確認中…",
+      "writable": "サーバーはここに書き込めます。",
+      "writableFree": "サーバーはここに書き込めます · 空き{free}。",
+      "sameDisk": "サーバーのデータと同じディスク上にあるため、操作ミスには備えられますが、ディスクの故障には備えられません。別のドライブのフォルダがおすすめです。",
+      "otherDisk": "サーバーのデータとは別のディスク上にあります。",
+      "hint": "サーバーから見たフォルダです。Dockerの場合：{media}以下の読み取り専用でない場所、または{backups}にマウントした別のドライブ（ドキュメント → Backups & Data Safety）。",
+      "keepThere": "コピー先での保持件数",
+      "copyFiles": "プロフィール写真、カバー、サインインキー、HTTPS証明書もコピーする",
+      "couldNotCheck": "そのフォルダを確認できませんでした",
+      "pickerTitle": "バックアップのコピー先"
+    },
+    "saveAria": "バックアップ設定を保存",
+    "savedCopying": "保存しました。既存のバックアップを{path}にコピーしています。",
+    "copyFailed": "{path}へのコピーに失敗しました：{error}。15分ごとに再試行します。",
+    "copiedTo": "{path}にコピー済み {when}",
+    "notYet": "— まだです",
+    "copying": "コピー中…",
+    "copyNow": "今すぐコピー",
+    "stored": "保存済みのバックアップ",
+    "storedCount": "保存済みのバックアップ（{count}）",
+    "backingUp": "バックアップ中…",
+    "backUpNow": "今すぐバックアップ",
+    "preparing": "準備中…",
+    "downloadSnapshot": "スナップショットをダウンロード",
+    "empty": "バックアップはまだありません。自動バックアップをオンにするか、今すぐバックアップしてください。",
+    "downloadThis": "このバックアップをダウンロード",
+    "deleteThis": "このバックアップを削除",
+    "couldNotBackUp": "バックアップを作成できませんでした",
+    "couldNotSnapshot": "スナップショットを作成できませんでした。詳細はブラウザのコンソールを確認してください。",
+    "couldNotDownload": "そのバックアップをダウンロードできませんでした。詳細はブラウザのコンソールを確認してください。",
+    "deleteTitle": "バックアップを削除",
+    "deleteMessage": "{date}のバックアップを削除しますか？元に戻せません。",
+    "couldNotDelete": "そのバックアップを削除できませんでした"
+  },
+  "features": {
+    "title": "機能",
+    "description": "このサーバーで全員に対して有効にする機能です。変更はすぐに保存されます。",
+    "shelfViews": {
+      "title": "棚の表示",
+      "desc": "五十音順と制作者別は常に使えます。フォルダ表示をオフにすると、全員に対して非表示になります。"
+    },
+    "folderModes": {
+      "diskFolder": {
+        "label": "ディスクのフォルダ",
+        "desc": "サーバー上のフォルダ構成で閲覧します。"
+      },
+      "customFolder": {
+        "label": "カスタムフォルダ",
+        "desc": "各自がアプリ内で作るフォルダです。未整理のものは「未分類」にまとまります。"
+      }
+    },
+    "ratings": {
+      "title": "評価",
+      "desc": "表示する評価です。オフにした評価はどこにも表示されず、サーバーからも送信されなくなります。",
+      "personal": {
+        "label": "個人の評価",
+        "desc": "各自が1〜5の星を付けられ、自分の評価が表示されます。"
+      },
+      "community": {
+        "label": "{name}の評価",
+        "desc": "このサーバーの全員による平均です。"
+      },
+      "external": {
+        "label": "世界の評価（TMDB）",
+        "desc": "映画、番組、アニメのTMDBスコアです。TMDBキーが必要です。"
+      }
+    },
+    "movies": {
+      "title": "映画と一緒に視聴",
+      "missingFilms": {
+        "label": "コレクション内の未所持の映画を表示",
+        "desc": "シュレックやスター・ウォーズなどのコレクションに、持っていない映画もグレー表示でリクエストボタン付きで並びます。映画の棚には表示されません。TMDBキーが必要です。"
+      },
+      "watchParties": {
+        "label": "ウォッチパーティー",
+        "desc": "映画やエピソードに「一緒に見る」ボタンが付き、離れた場所から同期してチャットしながら視聴できます。コンテンツ制限はパーティーの参加者全員に適用されます。外出先の友だちがこのサーバーに接続できる必要があります（「ネットワーク」を参照）。オフにすると、進行中のパーティーは終了します。"
+      }
+    }
+  },
+  "kids": {
+    "title": "キッズモード",
+    "description": "キッズアカウントには、ここでオンにしたものだけが表示されます。キッズアカウントへの切り替えは「ユーザー」で行います。",
+    "libraries": {
+      "title": "ライブラリ全体",
+      "desc": "これらのライブラリのすべて（今後追加されるものも含む）。"
+    },
+    "noLibraries": "ライブラリはまだありません。",
+    "items": {
+      "other": "{number}件"
+    },
+    "titles": {
+      "title": "個別のシリーズとタイトル",
+      "desc": "シリーズやタイトルのページにある{button}ボタンから追加できます。",
+      "button": "キッズ"
+    },
+    "noneYet": "まだありません。",
+    "series": "シリーズ",
+    "singleTitle": "タイトル",
+    "removeAria": "{name}をキッズモードから外す",
+    "couldNotRemove": "キッズモードから外せませんでした"
+  },
+  "libraries": {
+    "title": "ライブラリ",
+    "description": "Plinthioがメディアを読み込むフォルダです。ファイルが変更されることはありません。",
+    "add": "ライブラリを追加",
+    "empty": "ライブラリはまだありません。追加して、メディアのフォルダをPlinthioに指定してください。",
+    "kids": "キッズ",
+    "items": {
+      "other": "{number}件"
+    },
+    "scanning": "スキャン中…",
+    "scan": "スキャン",
+    "deleteAria": "{name}を削除",
+    "deleteLibrary": "ライブラリを削除",
+    "types": {
+      "movies": "映画",
+      "shows": "テレビ番組",
+      "anime": "アニメ",
+      "books": "書籍",
+      "manga": "マンガ・コミック",
+      "audiobooks": "オーディオブック"
+    },
+    "autoScan": {
+      "title": "自動スキャン",
+      "desc": "誰もスキャンを押さなくても、ライブラリのフォルダに追加されたメディアを取り込みます。",
+      "scheduled": {
+        "label": "スケジュールで再スキャン",
+        "desc": "確実な方法です。変更を通知しないネットワーク共有やマウントでも動作します。"
+      },
+      "schedule": "スケジュール",
+      "modes": {
+        "interval": "一定の間隔で",
+        "times": "毎日決まった時刻に"
+      },
+      "every": "再スキャンの間隔",
+      "intervals": {
+        "15": "15分ごと",
+        "30": "30分ごと",
+        "60": "1時間ごと",
+        "360": "6時間ごと",
+        "1440": "1日ごと"
+      },
+      "at": "再スキャンの時刻",
+      "timeAria": "スキャン時刻{number}",
+      "removeTime": "{time}を削除",
+      "thisTime": "この時刻",
+      "addTime": "時刻を追加",
+      "timesHint": "サーバーのタイムゾーンです。設定した時刻にサーバーが停止していた場合は、再起動時に1回スキャンします。",
+      "watch": {
+        "label": "フォルダの変更を監視",
+        "desc": "ファイルシステムが通知する場合、ファイルが追加されてから約30秒後にスキャンします。スケジュールの有無にかかわらず動作します。"
+      },
+      "manual": "自動スキャンはオフです。管理者がライブラリでスキャンを押すまで、新しいメディアは表示されません。",
+      "noSchedule": "スケジュールがないと、ファイルイベントを送らないネットワーク共有やマウントの変更は、スキャンを押すまで検出されません。",
+      "noTimes": "時刻が設定されていないため、スケジュールは実行されません。時刻を追加するか、一定の間隔に切り替えてください。"
+    },
+    "addDialog": {
+      "title": "ライブラリを追加",
+      "folder": "フォルダ",
+      "browse": "参照",
+      "folderHint": "サーバーから見たパスです。Dockerでは、メディアは{path}にマウントされています。",
+      "name": "名前",
+      "namePlaceholder": "例：オーディオブック",
+      "whatsInIt": "内容",
+      "adding": "追加中…",
+      "addAndScan": "追加してスキャン",
+      "pickerTitle": "ライブラリのフォルダを選択"
+    },
+    "scanResult": {
+      "title": "{name}をスキャンしました",
+      "added": "{count}件追加",
+      "renamed": "{count}件名前変更・移動",
+      "updated": "{count}件更新",
+      "removed": "{count}件削除",
+      "summary": "{parts}。",
+      "nothingNew": "新しいものはありません。"
+    },
+    "scanFailed": "スキャンに失敗しました",
+    "deleteMessage": "「{name}」を削除しますか？ファイルには影響しません。同じフォルダを再び追加すれば、進捗とブックマークは戻ります。タイトル、カバー、詳細情報は、再スキャンするまで削除されます。",
+    "couldNotDelete": "そのライブラリを削除できませんでした",
+    "couldNotAdd": "そのライブラリを追加できませんでした"
+  },
+  "logs": {
+    "title": "ログ",
+    "description": "スキャン、エラー、サーバーの動作を新しい順に表示します。",
+    "live": "ライブ",
+    "paused": "一時停止中",
+    "refreshNow": "今すぐ更新",
+    "searchPlaceholder": "メッセージとカテゴリを検索",
+    "searchAria": "ログを検索",
+    "level": "レベル",
+    "levels": {
+      "all": "すべて",
+      "info": "情報",
+      "warn": "警告",
+      "error": "エラー"
+    },
+    "nothingMatches": "一致するものはありません。",
+    "clearTitle": "ログを消去",
+    "clearMessage": "データベースからすべてのログを削除しますか？",
+    "couldNotClear": "ログを消去できませんでした"
+  },
+  "metadata": {
+    "title": "メタデータ",
+    "description": "ポスター、説明、キャスト、評価の取得元と、ファイル名から取り込んだタイトルの整理です。",
+    "tmdb": {
+      "title": "TMDBキー",
+      "descBuiltIn": "映画、番組、アニメの詳細情報は、Plinthioに組み込まれたキーを使ってTMDBから取得します。代わりに自分のTMDBキーを貼り付けて使うこともできます。マンガ（MangaDex）と書籍（Google Books、Open Library）には何も必要ありません。",
+      "descNeedsKey": "映画、番組、アニメの詳細情報はTMDBから取得します。これには無料のキーが必要です。マンガ（MangaDex）と書籍（Google Books、Open Library）には何も必要ありません。",
+      "sources": {
+        "custom": "独自のキー",
+        "environment": "TMDB_API_KEYから",
+        "builtin": "組み込み",
+        "set": "設定済み",
+        "notSet": "未設定"
+      },
+      "keyLabel": "TMDB APIキー",
+      "placeholderReplace": "置き換える新しいキーを貼り付け",
+      "placeholderOptional": "自分のTMDBキーを貼り付け（任意）",
+      "placeholderToken": "TMDB APIの読み取りアクセストークンを貼り付け",
+      "saveKey": "キーを保存",
+      "useBuiltIn": "組み込みのキーを使う",
+      "getOne": "{link}で無料で取得できます。",
+      "getOneLink": "themoviedb.org → 設定 → API",
+      "attribution": "この製品はTMDB APIを使用していますが、TMDBによる推奨や認定を受けたものではありません。",
+      "removeTitle": "TMDBキーを削除",
+      "removeMessage": "キーを再び追加するまで、映画、番組、アニメの新しいポスター、詳細情報、世界の評価は取得されなくなります。"
+    }
+  },
+  "overview": {
+    "title": "概要",
+    "description": "このサーバーのバージョン、収録内容、利用者をひと目で確認できます。",
+    "checksOff": "アップデートの確認はオフです（UPDATE_CHECK=false）。",
+    "available": "{version}が利用可能です。",
+    "updateWith": "アップデート方法：{command}",
+    "upToDate": "最新の状態です。",
+    "upToDateCheckFailed": "最新の状態です（前回の確認は失敗しました — オフラインかもしれません）。",
+    "notChecked": "まだ確認していません。",
+    "releaseNotes": "リリースノート",
+    "checking": "確認中…",
+    "checkNow": "今すぐ確認",
+    "tiles": {
+      "files": "ファイル",
+      "onDisk": "ディスク使用量",
+      "audio": "音声",
+      "accounts": "アカウント"
+    },
+    "byMediaType": "メディアの種類別",
+    "files": {
+      "other": "{number}ファイル"
+    },
+    "series": {
+      "other": "{number}シリーズ"
+    },
+    "creators": {
+      "other": "{number}クリエイター"
+    }
+  },
+  "playback": {
+    "title": "再生",
+    "description": "動画が各自の画面に届く仕組みと、その前に流せるクリップです。",
+    "hwaccel": {
+      "title": "ハードウェアアクセラレーション",
+      "desc": "Plinthioはブラウザが再生できるファイルはそのまま再生し、再生できないものだけを変換します。グラフィックチップがあれば変換の負荷が大きく下がります。",
+      "found": "このマシンで検出",
+      "noneCpu": "なし — CPUを使用",
+      "use": "使用する方式",
+      "auto": "検出されたもの（推奨）",
+      "cpu": "常にCPU",
+      "always": "常に{method}",
+      "testing": "テスト中…",
+      "test": "テスト",
+      "works": "このマシンで{method}が動作します。",
+      "failed": "{method}は動作しませんでした：{error}",
+      "testHint": "テストでは短い実際の変換を行います。ffmpegにエンコーダーが表示されていても、その下のドライバーが動作するとは限りません。",
+      "testFailed": "テストに失敗しました",
+      "howItWorks": "再生の仕組みとグラフィックチップの設定",
+      "tips": {
+        "direct": {
+          "title": "ダイレクト再生とダイレクトストリーム：",
+          "text": "ブラウザがデコードできる動画（H.264、またはChrome、Edge、Vivaldi、SafariでのHEVC）は、MKVファイルからでも4Kまでそのまま送信されます。再生できない音声（EAC3、Atmos、DTS）だけをAACに変換します。"
+        },
+        "browser": {
+          "title": "ブラウザ側：",
+          "text": "4Kの場合は、ブラウザがハードウェアで動画をデコードしているか確認してください（{page} → Video Decode: Hardware accelerated）。"
+        },
+        "docker": {
+          "title": "DockerでのIntel Quick SyncとVAAPI：",
+          "text": "{devices}で{dri}を渡し、{groupAdd}にホストの{render}グループIDを追加します。"
+        },
+        "small": {
+          "title": "小型のマシン：",
+          "text": "CPUでの変換は最速プリセットの2スレッドに抑えられ、プレビューのサムネイルは別に作成されるため、ミニPCが過熱しません。"
+        }
+      }
+    },
+    "intro": {
+      "title": "オープニング",
+      "desc": "映画やエピソードで再生を押したときに全画面で流れる短いクリップです。自動再生のエピソード、予告編、ウォッチパーティーの前には流れず、誰でもスキップできます。",
+      "checking": "確認中…",
+      "upload": "クリップをアップロード",
+      "custom": "独自のクリップです。",
+      "builtIn": "Plinthioの組み込みクリップです。独自のクリップに置き換えられます：",
+      "requirements": "MP4（H.264）、1〜10秒、20 MBまで。1080p・約8 Mbpsで十分です。",
+      "thisOne": "このクリップは{seconds}秒です。",
+      "replace": "置き換え",
+      "useBuiltIn": "組み込みのクリップを使う",
+      "play": "オープニングを再生",
+      "offUntil": "オンにするまでオフです。",
+      "uploadFirst": "先にクリップをアップロードしてください。",
+      "beforeMovies": "映画の前",
+      "beforeShows": "番組とアニメの前",
+      "tooBig": "ファイルが20 MBを超えています。短くするか、ビットレートを下げて書き出してください。",
+      "uploadFailed": "アップロードに失敗しました",
+      "removeTitle": "独自のクリップを削除",
+      "removeMessage": "独自のクリップを削除して、Plinthioの組み込みのオープニングに戻しますか？",
+      "couldNotRemove": "削除できませんでした"
+    }
+  },
+  "users": {
+    "title": "ユーザー",
+    "description": "このサーバーにサインインできる全員です。自己登録はなく、アカウントはここで作成します。",
+    "add": "ユーザーを追加",
+    "editAria": "{name}を編集",
+    "you": "あなた",
+    "lastIn": "最終サインイン {date}",
+    "neverSignedIn": "サインイン履歴なし",
+    "network": "（{network}）",
+    "outside": "外部",
+    "roles": {
+      "label": "ロール",
+      "viewer": {
+        "label": "閲覧者",
+        "desc": "閲覧、読書、視聴、リスニングができ、自分の進捗を記録します。"
+      },
+      "editor": {
+        "label": "編集者",
+        "desc": "共有のタイトル、カバー、詳細情報も修正できます。"
+      },
+      "admin": {
+        "label": "管理者",
+        "desc": "ライブラリ、ユーザー、このページを含むすべてを操作できます。"
+      }
+    },
+    "durations": {
+      "day": {
+        "other": "{count}日"
+      },
+      "week": {
+        "other": "{count}週間"
+      },
+      "month": {
+        "other": "{count}か月"
+      },
+      "year": {
+        "other": "{count}年"
+      }
+    },
+    "addDialog": {
+      "title": "ユーザーを追加",
+      "passwordHint": "8文字以上。本人が「設定 → セキュリティ」で変更できます。",
+      "adding": "追加中…"
+    },
+    "access": "アクセス",
+    "noEndDate": "期限なし",
+    "noEndDateSentence": "期限はありません。",
+    "forDuration": "{duration}",
+    "untilDate": "日付を指定…",
+    "accessEnds": "アクセス期限",
+    "editDialog": {
+      "title": "{name}を編集",
+      "joined": "{date}に登録"
+    },
+    "ended": "{date}に終了",
+    "ends": "{date}に終了予定",
+    "extendBy": "+{duration}",
+    "removeEndDate": "期限を解除",
+    "setAccess": "アクセスを設定",
+    "setNewEnd": "または新しい期限を設定…",
+    "keepNoEnd": "期限なしのまま",
+    "fromNow": "今から{duration}",
+    "remote": {
+      "label": "外出先でPlinthioを使用可能",
+      "desc": "サーバーが外部からのアクセスを許可している場合（ネットワーク）。オフ：自宅とTailscale経由のみ。"
+    },
+    "kidsAccount": {
+      "label": "キッズアカウント",
+      "desc": "キッズモードでオンにしたものだけが表示されます。"
+    },
+    "twoFactorOn": "2 段階認証がオンです",
+    "twoFactorHelp": "スマートフォンとバックアップコードをなくした場合は、リセットしてください。パスワードでサインインして、もう一度設定できるようになります。",
+    "contentLimit": "コンテンツ制限",
+    "noLimit": "制限なし",
+    "everyoneOnly": "全年齢のみ",
+    "upTo": "{rating}まで",
+    "ageRatings": {
+      "everyone": "全年齢",
+      "teen": "ティーン",
+      "mature": "成人向け"
+    },
+    "allowUnrated": "レーティングのないタイトルも表示します。オフにすると厳格になり、制限以下のレーティングが付いたタイトルだけが表示されます。",
+    "ratingsHint": "レーティングは各シリーズまたはタイトルで設定します。",
+    "newPassword": "新しいパスワード",
+    "newPasswordPlaceholder": "変更しない場合は空欄",
+    "newPasswordHint": "8文字以上。設定すると、すべての場所でサインアウトされます。",
+    "accessEnded": "アクセス終了",
+    "hoursLeft": {
+      "other": "残り{count}時間"
+    },
+    "daysLeft": {
+      "other": "残り{count}日"
+    },
+    "badges": {
+      "twoFactor": "2 段階認証",
+      "twoFactorTitle": "認証アプリのコードも使ってサインインします",
+      "homeOnly": "自宅のみ",
+      "homeOnlyTitle": "自宅のネットワークからのみPlinthioを使用できます",
+      "kids": "キッズ",
+      "unratedHidden": "レーティングのないタイトルも非表示",
+      "unratedAllowed": "レーティングのないタイトルも表示"
+    },
+    "couldNotAdd": "そのユーザーを追加できませんでした",
+    "couldNotChangeAccess": "アクセスを変更できませんでした",
+    "passwordTooShort": "新しいパスワードは8文字以上にしてください。",
+    "couldNotSave": "変更を保存できませんでした",
+    "resetTitle": "2 段階認証をリセットしますか？",
+    "resetMessage": "{name}はすべての場所でサインアウトされます。その後はパスワードだけでサインインでき、「設定 → セキュリティ」で2 段階認証を再設定できます。",
+    "couldNotReset": "2 段階認証をリセットできませんでした",
+    "deleteTitle": "ユーザーを削除",
+    "deleteMessage": "{name}を削除しますか？進捗、ブックマーク、ハイライト、リスト、評価も一緒に削除されます。",
+    "deleteUser": "ユーザーを削除",
+    "couldNotDelete": "そのユーザーを削除できませんでした"
+  },
+  "health": {
+    "title": "ヘルスチェック",
+    "description": "ライブラリ全体で対応が必要な項目です。",
+    "checked": "{time}に確認しました。",
+    "checking": "確認中…",
+    "runCheck": "チェックを実行",
+    "tiles": {
+      "libraries": "アクセスできないライブラリ",
+      "missing": "見つからないファイル",
+      "duplicates": "重複",
+      "clashes": "巻数の重複",
+      "metadata": "カバーなし",
+      "transcode": "エンコードの失敗"
+    },
+    "allClear": "すべて正常です。",
+    "libraries": "ライブラリ",
+    "itemsTotal": {
+      "other": "合計{number}件"
+    },
+    "items": {
+      "other": "{number}件"
+    },
+    "scanned": "{time}にスキャン",
+    "neverScanned": "未スキャン",
+    "unreachable": "フォルダにアクセスできません — ドライブがマウントされ、Dockerボリュームがマッピングされているか確認してください。フォルダが戻るまで、項目はカタログに残ります。",
+    "rescan": "再スキャン",
+    "noLibraries": "ライブラリはまだありません。",
+    "missing": {
+      "title": "見つからないファイル",
+      "hint": "ディスクから消えています。空き容量を作るために意図的に削除しましたか？それなら履歴として残しましょう。タイトルページにグレー表示で残り、全員の進捗も保持されます。そうでなければ、ひとまず非表示のまま保持され（ドライブが一時的に使えないこともあるため）、ファイルが戻れば自動的に復帰します。確実になったら完全に削除してください。",
+      "keepAll": "すべて履歴として残す",
+      "removing": "削除中…",
+      "removeAll": "すべて完全に削除"
+    },
+    "keepAsHistory": "履歴として残す",
+    "removeForGood": "完全に削除",
+    "offloaded": {
+      "title": "アーカイブ済み（履歴として保持）",
+      "hint": "空き容量のために削除し、履歴として残したものです。棚と検索には表示されず、タイトルページにグレー表示で全員の進捗とともに残ります。ファイルが戻れば自動的に復元されます。",
+      "undo": "元に戻す"
+    },
+    "duplicates": {
+      "title": "重複の可能性",
+      "hint": "タイトルが同じで、ファイルサイズも完全に一致しています — たいていは同じファイルが2つのフォルダやライブラリにあります。",
+      "copies": {
+        "other": "{count}個のコピー"
+      }
+    },
+    "clashes": {
+      "title": "巻数・話数の重複",
+      "hint": "シリーズ内で、別々のファイルが同じ巻数や話数になっています。たいていはファイル名の誤りです。"
+    },
+    "metadata": {
+      "title": "アートワークやメタデータの不足",
+      "hint": "カバーなし{noCover}件、著者なしの書籍/マンガ/オーディオブック{noAuthor}件、説明なし{noDescription}件。「メタデータ」タブで修正してください。",
+      "open": "メタデータを開く",
+      "noCover": "カバーなし",
+      "noAuthor": "著者なし"
+    },
+    "unrated": {
+      "title": "レーティングのないタイトル",
+      "hint": "タイトル自体にもシリーズにも年齢レーティングがないものです。一部のユーザーにコンテンツ制限を使う場合にのみ関係します — シリーズはシリーズのシートから、単独のタイトルはメタデータエディターからレーティングを設定してください。"
+    },
+    "transcode": {
+      "title": "最近の再生用エンコードの失敗",
+      "hint": "動画の準備中に発生したffmpegのエラーです。多くはハードウェアアクセラレーションのドライバーの問題です — 「管理 → 再生 → テスト」を試してください。"
+    },
+    "mediaTypes": {
+      "movie": "映画",
+      "show": "番組",
+      "anime": "アニメ",
+      "manga": "マンガ",
+      "book": "書籍",
+      "audiobook": "オーディオブック"
+    },
+    "couldNotRun": "ヘルスチェックを実行できませんでした",
+    "groupSeason": "{name} シーズン{season}",
+    "titlesCount": {
+      "other": "{count}件のタイトル"
+    },
+    "keepTitle": "履歴として残しますか？",
+    "keepMessage": {
+      "other": "{label}はタイトルページにグレー表示で全員の進捗とともに残りますが、再生はできません。ファイルが戻れば自動的に復元されます。"
+    },
+    "couldNotKeep": "履歴として残せませんでした",
+    "couldNotUndo": "元に戻せませんでした",
+    "removeTitle": "完全に削除しますか？",
+    "removeMessage": "{name}をカタログから削除しますか？進捗と評価はデータベースに残り、同じファイルが再びスキャンされれば再び紐付けられますが、それまでは表示されません。",
+    "skipped": {
+      "other": "{count}件は保持しました：ファイルが戻っています。"
+    },
+    "couldNotRemove": "削除できませんでした",
+    "removeMissingTitle": "見つからないタイトルを削除しますか？",
+    "removeMissingMessage": {
+      "other": "見つからないタイトル{count}件をカタログから完全に削除しますか？ファイルが戻ったものと、履歴として残したものは保持されます。読書の進捗と評価も保持され、同じファイルが再びスキャンされれば再び紐付けられます。"
+    },
+    "removed": {
+      "other": "{count}件のタイトルを削除しました。"
+    },
+    "removedSkipped": {
+      "other": "{count}件のタイトルを削除しました（{skipped}件はファイルが戻っているため保持）。"
+    },
+    "couldNotRemoveMissing": "見つからないタイトルを削除できませんでした",
+    "scanComplete": "「{name}」のスキャンが完了しました：追加{added}件、更新{updated}件、削除{removed}件。",
+    "scanFailed": "スキャンに失敗しました",
+    "episodes": {
+      "other": "{count}話"
+    },
+    "files": {
+      "other": "{count}ファイル"
+    },
+    "stillOnDisk": {
+      "other": "{count}件がまだディスクにあります：削除すると空き容量が増えます。"
+    }
+  },
+  "folderPicker": {
+    "title": "フォルダを選択",
+    "up": "1つ上のフォルダ",
+    "empty": "フォルダがありません。",
+    "newFolder": "このフォルダ内に新しいフォルダを作成（任意）",
+    "newFolderPlaceholder": "例：Plinthio Backups",
+    "useNew": "新しいフォルダを使う",
+    "useThis": "このフォルダを使う",
+    "couldNotOpen": "そのフォルダを開けませんでした"
+  }
+}

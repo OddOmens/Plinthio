@@ -1,0 +1,56 @@
+{
+  "title": "Requests",
+  "intro": "Ask for movies, shows, anime, books and audiobooks the library doesn't have yet.",
+  "newRequest": "New request",
+  "request": "Request",
+  "mine": "My requests",
+  "reviewQueue": "Review queue",
+  "filterByStatus": "Filter by status",
+  "allStatuses": "All statuses",
+  "emptyReview": "No requests to review",
+  "emptyMine": "You haven't requested anything yet",
+  "emptyMineHint": "Search above, or use the Request button on a title in one of your Lists.",
+  "requestedBy": "Requested by {name}",
+  "deletedUser": "deleted user",
+  "quotedNote": "“{note}”",
+  "notePlaceholder": "Note to the requester (optional)",
+  "deleteRequest": "Delete request",
+  "withdraw": "Withdraw",
+  "status": {
+    "pending": "Pending",
+    "accepted_pending": "Accepted · Pending add",
+    "accepted_added": "Accepted · Added",
+    "rejected": "Rejected"
+  },
+  "actions": {
+    "acceptPending": "Accept · Pending add",
+    "acceptAdded": "Accept · Added",
+    "reject": "Reject",
+    "backToPending": "Back to pending"
+  },
+  "confirm": {
+    "withdrawTitle": "Withdraw request?",
+    "deleteTitle": "Delete request?",
+    "withdrawMessage": "Your request for \"{title}\" will be withdrawn.",
+    "deleteMessage": "The request for \"{title}\" will be deleted for everyone."
+  },
+  "errors": {
+    "load": "Could not load requests.",
+    "send": "Could not send that request.",
+    "update": "Could not update that request.",
+    "remove": "Could not remove that request."
+  },
+  "search": {
+    "placeholder": {
+      "movie": "Search movies…",
+      "show": "Search shows…",
+      "anime": "Search anime…",
+      "book": "Search books…",
+      "manga": "Search manga…",
+      "audiobook": "Search audiobooks…",
+      "titles": "Search titles…"
+    },
+    "noResults": "No results for “{query}”.",
+    "failed": "Search failed. Try again in a moment."
+  }
+}

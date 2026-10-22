@@ -3,14 +3,14 @@
     <form @submit.prevent="search" class="flex flex-wrap md:flex-nowrap items-center gap-2">
       <div v-if="searchTypes.length > 1" class="flex rounded-xl bg-secondary p-1 basis-full md:basis-auto md:flex-shrink-0 min-w-0 overflow-x-auto no-scrollbar">
         <button
-          v-for="t in searchTypes"
-          :key="t.id"
+          v-for="type in searchTypes"
+          :key="type.id"
           type="button"
-          @click="activeType = t.id"
+          @click="activeType = type.id"
           class="h-8 px-3 rounded-lg text-xs font-medium transition whitespace-nowrap flex-shrink-0"
-          :class="activeType === t.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+          :class="activeType === type.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
         >
-          {{ t.label }}
+          {{ typeLabel(type) }}
         </button>
       </div>
       <div class="relative flex-1 min-w-0">
@@ -29,14 +29,14 @@
         class="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50 transition flex items-center gap-2"
       >
         <Loader2 v-if="searching" class="w-4 h-4 animate-spin" />
-        <span>Search</span>
+        <span>{{ $t('common.search') }}</span>
       </button>
     </form>
 
     <p v-if="error" class="text-xs text-destructive">{{ error }}</p>
 
     <div v-if="searched && !searching && results.length === 0 && !error" class="py-6 text-center text-xs text-muted-foreground">
-      No results for “{{ lastQuery }}”.
+      {{ $t('requests.search.noResults', { query: lastQuery }) }}
     </div>
 
     <div v-if="results.length" class="flex flex-col divide-y divide-border/60 border border-border rounded-xl overflow-hidden bg-background/40">
@@ -79,6 +79,7 @@
 import { ref, watch, computed } from 'vue';
 import { Search, Loader2, ImageOff } from '@lucide/vue';
 import api from '../api/client';
+import { t, te } from '../i18n';
 
 // Searches the same external metadata providers used to link metadata to library items
 // (TMDB, MangaDex, Google Books, Open Library). What to do with a result is up to the
@@ -99,9 +100,17 @@ const searched = ref(false);
 const error = ref('');
 const inputEl = ref(null);
 
+// Media types read from common.mediaTypes; anything else keeps the label it was given.
+function typeLabel(type) {
+  return te(`common.mediaTypes.${type.id}`) ? t(`common.mediaTypes.${type.id}`) : type.label;
+}
+
+// A whole sentence per type: lower-casing a label doesn't work in every language.
 const placeholder = computed(() => {
-  const t = props.searchTypes.find((s) => s.id === activeType.value);
-  return `Search ${t?.label.toLowerCase() || 'titles'}…`;
+  const id = activeType.value;
+  return te(`requests.search.placeholder.${id}`)
+    ? t(`requests.search.placeholder.${id}`)
+    : t('requests.search.placeholder.titles');
 });
 
 watch(() => props.searchTypes, (types) => {
@@ -123,7 +132,7 @@ async function search() {
   const q = query.value.trim();
   if (!q) return;
 
-  const type = props.searchTypes.find((t) => t.id === activeType.value);
+  const type = props.searchTypes.find((s) => s.id === activeType.value);
   searching.value = true;
   error.value = '';
   try {
@@ -134,7 +143,7 @@ async function search() {
     lastType.value = type?.id;
   } catch (err) {
     results.value = [];
-    error.value = err.response?.data?.error || 'Search failed. Try again in a moment.';
+    error.value = err.response?.data?.error || t('requests.search.failed');
   } finally {
     searching.value = false;
     searched.value = true;

@@ -1,0 +1,122 @@
+{
+  "unknownAuthor": "Unbekannter Autor",
+  "untitledAudiobook": "Plinthio-Hörbuch",
+  "coverOf": "Cover von {title}",
+  "units": {
+    "secondsShort": "{count} s",
+    "minutesShort": "{count} min"
+  },
+  "video": {
+    "backToShelf": "Zurück zur Bibliothek",
+    "castToTv": "Auf TV streamen",
+    "playbackSettings": "Wiedergabe-Einstellungen",
+    "skipBack": "Zurückspringen",
+    "skipForward": "Vorspringen",
+    "quality": "Qualität",
+    "auto": "Auto",
+    "audio": "Audio",
+    "subtitles": "Untertitel",
+    "noAlternateTracks": "Keine weiteren Spuren für dieses Video.",
+    "track": "Spur {number}",
+    "channels": "{count} Kanäle",
+    "forced": "erzwungen",
+    "skipIntro": "Intro überspringen",
+    "skipCredits": "Abspann überspringen",
+    "skipAria": {
+      "backSeconds": { "one": "{count} Sekunde zurück", "other": "{count} Sekunden zurück" },
+      "backMinutes": { "one": "{count} Minute zurück", "other": "{count} Minuten zurück" },
+      "forwardSeconds": { "one": "{count} Sekunde vor", "other": "{count} Sekunden vor" },
+      "forwardMinutes": { "one": "{count} Minute vor", "other": "{count} Minuten vor" }
+    },
+    "skipHint": "{action} — Rechtsklick zum Ändern",
+    "toggleFullscreen": "Vollbild umschalten",
+    "preparing": {
+      "transcode": "Wird für deinen Browser umgewandelt…",
+      "remux": "Direct Streaming…",
+      "direct": "Wiedergabe startet…"
+    },
+    "resumedFrom": "Fortgesetzt bei {time}",
+    "startOver": "Von vorne",
+    "upNext": "Als Nächstes",
+    "playNow": "Jetzt abspielen ({seconds})",
+    "cantPlay": "Video kann nicht abgespielt werden",
+    "errorHelp": "Fehler {code}: Was bedeutet das?",
+    "retry": "Erneut versuchen",
+    "errors": {
+      "P350": "Dieser Browser kann das Video nicht abspielen, auch nicht nach der Umwandlung.",
+      "P351": "Verbindung zum Server verloren. Prüfe dein Netzwerk und tippe auf „Erneut versuchen“.",
+      "P352": "Dein Medienzugriff ist abgelaufen und konnte nicht erneuert werden. Lade die Seite neu oder melde dich ab und wieder an.",
+      "failed": "Wiedergabe fehlgeschlagen."
+    }
+  },
+  "pause": {
+    "youreWatching": "Du schaust",
+    "paused": "Pausiert",
+    "starring": "Mit",
+    "createdBy": "Erfunden von",
+    "directedBy": "Regie",
+    "leftEndsAt": "Noch {remaining} · endet um {time}",
+    "seasonRest": {
+      "one": "Der Rest der Staffel ({count} weitere Folge) wäre um {time} zu Ende",
+      "other": "Der Rest der Staffel ({count} weitere Folgen) wäre um {time} zu Ende"
+    },
+    "runtimeMinutes": "{minutes} Min.",
+    "runtimeHours": "{hours} Std. {minutes} Min.",
+    "dollars": "{amount} $",
+    "timesBudget": "{amount} ({multiple}× das Budget)",
+    "seasons": { "one": "{count} Staffel", "other": "{count} Staffeln" },
+    "episodes": { "one": "{count} Folge", "other": "{count} Folgen" },
+    "seasonsAndEpisodes": "{seasons}, {episodes}",
+    "since": "seit {year}",
+    "facts": {
+      "originalTitle": "Originaltitel",
+      "budget": "Budget",
+      "boxOffice": "Einspielergebnis",
+      "series": "Serie",
+      "onAir": "Ausgestrahlt",
+      "partOf": "Teil von",
+      "network": "Sender",
+      "studio": "Studio",
+      "music": "Musik",
+      "cinematography": "Kamera"
+    }
+  },
+  "audio": {
+    "openNowPlaying": "Aktuelle Wiedergabe öffnen",
+    "skipBack": "{count} s zurück",
+    "skipForward": "{count} s vor",
+    "closePlayer": "Player schließen",
+    "fullscreen": "Aktuelle Wiedergabe im Vollbild",
+    "playbackSpeed": "Wiedergabegeschwindigkeit",
+    "sleepTimer": "Schlaftimer",
+    "rate": "{rate}x",
+    "chapterShort": "Kap."
+  },
+  "nowPlaying": {
+    "minimize": "Player minimieren",
+    "playingAudiobook": "Hörbuch läuft",
+    "chapters": "Kapitel",
+    "bookmarks": "Lesezeichen",
+    "bookmarksAndNotes": "Lesezeichen & Notizen",
+    "backToPlayer": "Zurück zum Player",
+    "addBookmark": "Lesezeichen hinzufügen",
+    "notePlaceholder": "Optionale Notiz (z. B. wichtiges Zitat, Hinweis)…",
+    "saveBookmark": "Lesezeichen speichern",
+    "deleteBookmark": "Lesezeichen löschen",
+    "noBookmarks": "Für dieses Hörbuch sind noch keine Lesezeichen gespeichert.",
+    "bookmarkTitle": "Lesezeichen @ {time}",
+    "leftInChapter": "Noch {time} im Kapitel",
+    "previousChapter": "Vorheriges Kapitel",
+    "nextChapter": "Nächstes Kapitel",
+    "speed": "Tempo",
+    "sleep": "Schlafen",
+    "endOfChapter": "Kapitelende",
+    "stoppingAtChapterEnd": "Stoppt am Ende dieses Kapitels",
+    "stoppingIn": "Stoppt in {time}",
+    "saveFailed": "Lesezeichen konnte nicht gespeichert werden",
+    "deleteFailed": "Lesezeichen konnte nicht gelöscht werden"
+  },
+  "intro": {
+    "label": "Vorspann"
+  }
+}

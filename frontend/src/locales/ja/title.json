@@ -1,0 +1,611 @@
+{
+  "nav": {
+    "backToShelf": "棚に戻る",
+    "shelf": "棚",
+    "details": "詳細",
+    "returnToShelf": "棚に戻る"
+  },
+  "errors": {
+    "loadHint": "このシリーズを読み込めませんでした。削除された可能性があります。",
+    "notFound": "項目が見つかりません",
+    "noSeries": "シリーズが指定されていません",
+    "loadFailed": "シリーズの詳細を読み込めませんでした",
+    "changeFailed": "変更できませんでした",
+    "seasonFailed": "シーズンの状態を更新できませんでした",
+    "partyFailed": "ウォッチパーティーを開始できませんでした",
+    "markAllFailed": "すべてを完了にできませんでした",
+    "resetFailed": "履歴をリセットできませんでした",
+    "skipFailed": "スキップの状態を更新できませんでした",
+    "markEarlierFailed": "完了にできませんでした",
+    "kidsFailed": "キッズモードを変更できませんでした"
+  },
+  "meta": {
+    "pages": {
+      "other": "{pages}ページ"
+    },
+    "seasons": {
+      "other": "{count}シーズン"
+    },
+    "episodes": {
+      "other": "{count}話"
+    }
+  },
+  "duration": {
+    "minutes": "{m}分",
+    "hoursMinutes": "{h}時間{m}分"
+  },
+  "date": {
+    "today": "今日",
+    "yesterday": "昨日"
+  },
+  "position": {
+    "pageShort": "{page}ページ",
+    "page": "{page}ページ",
+    "pageOf": "{page} / {total}ページ",
+    "timeOf": "{at} / {total}",
+    "withPercent": "{position}（{percent}）"
+  },
+  "status": {
+    "upNext": "次に再生",
+    "offloaded": "アーカイブ済み",
+    "watched": "視聴済み",
+    "skipped": "スキップ済み",
+    "new": "新着",
+    "done": "完了",
+    "finished": "完了",
+    "notStarted": "未開始"
+  },
+  "progress": {
+    "label": "進捗"
+  },
+  "offloaded": {
+    "single": "容量確保のためサーバーから削除されました。履歴と評価は残っており、ファイルを戻せば自動的に復活します。",
+    "dialogMessage": "「{title}」は容量確保のためサーバーから削除されました。履歴は残っており、ファイルを戻せば自動的に復活します。"
+  },
+  "overview": {
+    "readMore": "もっと見る"
+  },
+  "facts": {
+    "genres": "ジャンル",
+    "createdBy": "制作",
+    "director": "監督",
+    "writers": "脚本",
+    "studios": "スタジオ",
+    "network": "放送局",
+    "artists": "アーティスト",
+    "publisher": "出版社",
+    "released": "公開日",
+    "runtime": "上映時間",
+    "length": "長さ",
+    "pages": "ページ数",
+    "cast": "キャスト",
+    "status": "ステータス",
+    "format": "形式",
+    "fileSize": "ファイルサイズ",
+    "library": "ライブラリ",
+    "lastOpened": "最後に開いた日",
+    "totalLength": "合計時間",
+    "totalPages": "合計ページ数"
+  },
+  "sections": {
+    "seasons": "シーズン",
+    "episodes": "エピソード",
+    "castCrew": "キャスト＆スタッフ",
+    "extras": "特典映像",
+    "mediaInfo": "メディア情報"
+  },
+  "season": {
+    "label": "シーズン{number}",
+    "specials": "スペシャル",
+    "other": "その他",
+    "markUnwatched": "未視聴にする",
+    "markWatched": "{season}を視聴済みにする",
+    "episodes": {
+      "other": "{count}話"
+    },
+    "episodesWatched": {
+      "other": "{count}話中{watched}話"
+    },
+    "offloaded": "{count}話アーカイブ済み"
+  },
+  "sort": {
+    "firstToLast": "並び順: 最初から最後",
+    "lastToFirst": "並び順: 最後から最初",
+    "oldestFirst": "古い順",
+    "newestFirst": "新しい順"
+  },
+  "episode": {
+    "play": "{title}を再生",
+    "markUnwatched": "未視聴にする"
+  },
+  "rating": {
+    "yourRating": "あなたの評価",
+    "youRated": "あなたの評価は{rating}/5です。上部で変更できます",
+    "yourRatingChange": "あなたの評価: {rating}/5 — 変更",
+    "rateEntry": "{label}を評価",
+    "community": {
+      "other": "{server}のユーザー{users}人の平均 {average}"
+    },
+    "communityNone": "{server}での評価はまだありません",
+    "tmdb": {
+      "other": "TMDBで{rating}/{scale}（{votes}票）"
+    },
+    "saveFailed": "保存できませんでした",
+    "outOfFive": "5つ星中{value}",
+    "stars": {
+      "other": "星{count}つ"
+    },
+    "clear": "評価を消去"
+  },
+  "collection": {
+    "countOf": "{total}本中{owned}本",
+    "comingSoon": "近日公開",
+    "moreIn": "{name}の他の作品",
+    "viewAll": "{count}本すべて表示",
+    "watchAgain": "もう一度見る: {title}",
+    "resume": "再開: {title}",
+    "play": "再生: {title}"
+  },
+  "filter": {
+    "label": "フィルター: {label}",
+    "notStarted": "未開始",
+    "inProgress": "途中",
+    "completed": "完了",
+    "emptyTitle": "このフィルターには何もありません"
+  },
+  "layout": {
+    "label": "レイアウト",
+    "grid": "グリッド表示",
+    "list": "リスト表示"
+  },
+  "volume": {
+    "again": "もう一度",
+    "moreFor": "{label}のその他の操作",
+    "actions": "{label}の操作",
+    "markNotStarted": "未開始にする",
+    "markNotStartedShort": "未開始にする"
+  },
+  "skip": {
+    "skippedHint": "スキップ済み — タップで解除",
+    "skip": "スキップ",
+    "unskip": "スキップを解除",
+    "hintStory": "ある所まで話をもう知っていますか？ たとえばアニメで見た場合など。",
+    "hintOther": "いくつかを別の場所で見たり聴いたりしましたか？",
+    "through": "ここまでは知っています",
+    "unskipAll": "すべてのスキップを解除（{count}）",
+    "confirm": "{count}件をスキップ"
+  },
+  "bookmarks": {
+    "title": "しおりとメモ",
+    "label": "しおりとメモ",
+    "short": "しおり"
+  },
+  "download": {
+    "downloaded": "ダウンロード済み — タップで削除",
+    "downloading": "ダウンロード中 — タップでキャンセル",
+    "forOffline": "オフライン用にダウンロード",
+    "doneShort": "ダウンロード済み",
+    "busyShort": "ダウンロード中…",
+    "remaining": "残りをダウンロード（{count}）",
+    "httpsTitle": "ダウンロードにはHTTPSが必要です",
+    "httpsMessage": "ブラウザがオフライン用の保存を許可するのは安全な接続のときだけですが、このページは暗号化されていない http:// で開かれています。代わりにHTTPSのアドレスからPlinthioを開いてください（Tailscaleがいちばん簡単です）。そうすれば、ダウンロードもインストール可能なアプリも使えます。",
+    "httpsConfirm": "方法を見る",
+    "httpsCancel": "後で"
+  },
+  "markEarlier": {
+    "markAll": "すべて完了にする",
+    "noThanks": "結構です"
+  },
+  "actions": {
+    "more": "その他の操作",
+    "watchTogether": "一緒に見る",
+    "watchTogetherTitle": "離れた場所にいる人と一緒に見る",
+    "resetHistory": "履歴をリセット",
+    "resetHistoryTitle": "この作品の履歴をリセット",
+    "editMetadata": "メタデータを編集",
+    "metadataOne": "メタデータプロバイダーを検索して、このタイトルに適用",
+    "undoOffload": "アーカイブを取り消す",
+    "undoOffloadTitle": "{target}を再びサーバー上にあるものとして表示",
+    "keepAsHistory": "履歴として残す",
+    "keepAsHistoryTitle": "{target}をアーカイブ: ファイルを削除した後も履歴を残します",
+    "inKidsMode": "キッズモード中",
+    "kids": "キッズ"
+  },
+  "offload": {
+    "targetTitle": "「{title}」",
+    "targetSeason": "{name} シーズン{number}",
+    "targetSpecials": "{name} スペシャル",
+    "targetOther": "{name} その他",
+    "targetAll": "{name}のすべて",
+    "confirmTitle": "履歴として残しますか？",
+    "confirmMessage": "{target}は棚と検索から非表示になり再生できなくなりますが、全員の進捗とともにグレー表示でここに残ります。その後ファイルを削除して容量を空けてください。ファイルが戻れば自動的に復元されます。",
+    "confirmButton": "履歴として残す"
+  },
+  "kids": {
+    "viaLibrary": "ライブラリ全体がキッズモードです（管理 → キッズモードで変更できます）",
+    "viaSeries": "シリーズがキッズモードです。シリーズのページで変更してください",
+    "allowed": "キッズアカウントで表示されます。クリックするとキッズモードから外します",
+    "allow": "キッズモードのアカウントに表示する"
+  },
+  "reset": {
+    "title": "進捗をリセット",
+    "message": "「{name}」の進捗をすべてリセットしますか？",
+    "confirm": "進捗をリセット"
+  },
+  "extraTypes": {
+    "trailer": "予告編",
+    "featurette": "特典映像",
+    "behindthescenes": "メイキング",
+    "deletedscene": "未公開シーン",
+    "interview": "インタビュー",
+    "scene": "シーン",
+    "short": "短編",
+    "extra": "特典"
+  },
+  "availability": {
+    "notOnServer": "このサーバーにありません",
+    "notInLibrary": "ライブラリにありません",
+    "offloadedOn": "{date}に容量確保のためサーバーから削除されました。履歴は残っており、ファイルが戻れば復活します。",
+    "offloaded": "容量確保のためサーバーから削除されました。履歴は残っており、ファイルが戻れば復活します。"
+  },
+  "request": {
+    "request": "リクエスト",
+    "again": "再リクエスト",
+    "coming": "{year}年公開予定",
+    "announced": "発表済み",
+    "requested": "リクエスト済み",
+    "approved": "リクエスト承認済み",
+    "addedSoon": "まもなく追加",
+    "failed": "リクエストを送信できませんでした。"
+  },
+  "typed": {
+    "units": {
+      "manga": {
+        "other": "{count}巻"
+      },
+      "book": {
+        "other": "{count}冊"
+      },
+      "audiobook": {
+        "other": "{count}冊"
+      },
+      "show": {
+        "other": "{count}話"
+      },
+      "anime": {
+        "other": "{count}話"
+      },
+      "movie": {
+        "other": "{count}本"
+      }
+    },
+    "progressOf": {
+      "manga": {
+        "other": "{read} / {count}巻"
+      },
+      "book": {
+        "other": "{read} / {count}冊"
+      },
+      "audiobook": {
+        "other": "{read} / {count}冊"
+      },
+      "show": {
+        "other": "{read} / {count}話"
+      },
+      "anime": {
+        "other": "{read} / {count}話"
+      },
+      "movie": {
+        "other": "{read} / {count}本"
+      }
+    },
+    "progressOfSkipped": {
+      "manga": {
+        "other": "{read} + スキップ{count} / {total}巻"
+      },
+      "book": {
+        "other": "{read} + スキップ{count} / {total}冊"
+      },
+      "audiobook": {
+        "other": "{read} + スキップ{count} / {total}冊"
+      },
+      "show": {
+        "other": "{read} + スキップ{count} / {total}話"
+      },
+      "anime": {
+        "other": "{read} + スキップ{count} / {total}話"
+      },
+      "movie": {
+        "other": "{read} + スキップ{count} / {total}本"
+      }
+    },
+    "offloadedSome": {
+      "manga": {
+        "other": "{total}巻中{count}巻は容量確保のためアーカイブされました。履歴は残ります。"
+      },
+      "book": {
+        "other": "{total}冊中{count}冊は容量確保のためアーカイブされました。履歴は残ります。"
+      },
+      "audiobook": {
+        "other": "{total}冊中{count}冊は容量確保のためアーカイブされました。履歴は残ります。"
+      },
+      "show": {
+        "other": "{total}話中{count}話は容量確保のためアーカイブされました。履歴は残ります。"
+      },
+      "anime": {
+        "other": "{total}話中{count}話は容量確保のためアーカイブされました。履歴は残ります。"
+      },
+      "movie": {
+        "other": "{total}本中{count}本は容量確保のためアーカイブされました。履歴は残ります。"
+      }
+    },
+    "offloadedAll": {
+      "manga": "すべての巻が容量確保のためアーカイブされました。履歴は残ります。",
+      "book": "すべての本が容量確保のためアーカイブされました。履歴は残ります。",
+      "audiobook": "すべてのオーディオブックが容量確保のためアーカイブされました。履歴は残ります。",
+      "show": "すべてのエピソードが容量確保のためアーカイブされました。履歴は残ります。",
+      "anime": "すべてのエピソードが容量確保のためアーカイブされました。履歴は残ります。",
+      "movie": "すべての映画が容量確保のためアーカイブされました。履歴は残ります。"
+    },
+    "emptyHint": {
+      "manga": "すべての巻を表示するには「すべて」タブに切り替えてください。",
+      "book": "すべての本を表示するには「すべて」タブに切り替えてください。",
+      "audiobook": "すべてのオーディオブックを表示するには「すべて」タブに切り替えてください。",
+      "show": "すべてのエピソードを表示するには「すべて」タブに切り替えてください。",
+      "anime": "すべてのエピソードを表示するには「すべて」タブに切り替えてください。",
+      "movie": "すべての映画を表示するには「すべて」タブに切り替えてください。"
+    },
+    "markAs": {
+      "manga": "読了にする",
+      "book": "読了にする",
+      "audiobook": "再生済みにする",
+      "show": "視聴済みにする",
+      "anime": "視聴済みにする",
+      "movie": "視聴済みにする"
+    },
+    "skipUnit": {
+      "manga": "巻をスキップ",
+      "book": "本をスキップ",
+      "audiobook": "オーディオブックをスキップ",
+      "show": "エピソードをスキップ",
+      "anime": "エピソードをスキップ",
+      "movie": "映画をスキップ"
+    },
+    "unskipUnit": {
+      "manga": "巻のスキップを解除",
+      "book": "本のスキップを解除",
+      "audiobook": "オーディオブックのスキップを解除",
+      "show": "エピソードのスキップを解除",
+      "anime": "エピソードのスキップを解除",
+      "movie": "映画のスキップを解除"
+    },
+    "skipThis": {
+      "manga": "この巻をスキップ",
+      "book": "この本をスキップ",
+      "audiobook": "このオーディオブックをスキップ",
+      "show": "このエピソードをスキップ",
+      "anime": "このエピソードをスキップ",
+      "movie": "この映画をスキップ"
+    },
+    "rateThis": {
+      "manga": "この巻を評価",
+      "book": "この本を評価",
+      "audiobook": "このオーディオブックを評価",
+      "show": "このエピソードを評価",
+      "anime": "このエピソードを評価",
+      "movie": "この映画を評価"
+    },
+    "rateInHeader": {
+      "manga": "この巻を上部で評価",
+      "book": "この本を上部で評価",
+      "audiobook": "このオーディオブックを上部で評価",
+      "show": "このエピソードを上部で評価",
+      "anime": "このエピソードを上部で評価",
+      "movie": "この映画を上部で評価"
+    },
+    "again": {
+      "manga": "もう一度読む",
+      "book": "もう一度読む",
+      "audiobook": "もう一度聴く",
+      "show": "もう一度見る",
+      "anime": "もう一度見る",
+      "movie": "もう一度見る"
+    },
+    "againLower": {
+      "manga": "もう一度読む",
+      "book": "もう一度読む",
+      "audiobook": "もう一度聴く",
+      "show": "もう一度見る",
+      "anime": "もう一度見る",
+      "movie": "もう一度見る"
+    },
+    "markDone": {
+      "manga": "読了にする",
+      "book": "読了にする",
+      "audiobook": "再生済みにする",
+      "show": "視聴済みにする",
+      "anime": "視聴済みにする",
+      "movie": "視聴済みにする"
+    },
+    "markAllDone": {
+      "manga": "すべて読了にする",
+      "book": "すべて読了にする",
+      "audiobook": "すべて再生済みにする",
+      "show": "すべて視聴済みにする",
+      "anime": "すべて視聴済みにする",
+      "movie": "すべて視聴済みにする"
+    },
+    "markAllTitle": {
+      "manga": "すべて読了にする",
+      "book": "すべて読了にする",
+      "audiobook": "すべて再生済みにする",
+      "show": "すべて視聴済みにする",
+      "anime": "すべて視聴済みにする",
+      "movie": "すべて視聴済みにする"
+    },
+    "markEverything": {
+      "manga": "すべて読了にする",
+      "book": "すべて読了にする",
+      "audiobook": "すべて再生済みにする",
+      "show": "すべて視聴済みにする",
+      "anime": "すべて視聴済みにする",
+      "movie": "すべて視聴済みにする"
+    },
+    "markEveryConfirm": {
+      "manga": "「{name}」のすべての巻を読了にしますか？",
+      "book": "「{name}」のすべての本を読了にしますか？",
+      "audiobook": "「{name}」のすべてのオーディオブックを再生済みにしますか？",
+      "show": "「{name}」のすべてのエピソードを視聴済みにしますか？",
+      "anime": "「{name}」のすべてのエピソードを視聴済みにしますか？",
+      "movie": "「{name}」のすべての映画を視聴済みにしますか？"
+    },
+    "showUnits": {
+      "manga": "表示する巻",
+      "book": "表示する本",
+      "audiobook": "表示するオーディオブック",
+      "show": "表示するエピソード",
+      "anime": "表示するエピソード",
+      "movie": "表示する映画"
+    },
+    "markEarlier": {
+      "manga": {
+        "other": "それより前の{count}巻も読了にしますか？"
+      },
+      "book": {
+        "other": "それより前の{count}冊も読了にしますか？"
+      },
+      "audiobook": {
+        "other": "それより前の{count}冊も再生済みにしますか？"
+      },
+      "show": {
+        "other": "それより前の{count}話も視聴済みにしますか？"
+      },
+      "anime": {
+        "other": "それより前の{count}話も視聴済みにしますか？"
+      },
+      "movie": {
+        "other": "それより前の{count}本も視聴済みにしますか？"
+      }
+    },
+    "skipUnits": {
+      "manga": "巻をスキップ",
+      "book": "本をスキップ",
+      "audiobook": "オーディオブックをスキップ",
+      "show": "エピソードをスキップ",
+      "anime": "エピソードをスキップ",
+      "movie": "映画をスキップ"
+    },
+    "skipUnitsMenu": {
+      "manga": "巻をスキップ…",
+      "book": "本をスキップ…",
+      "audiobook": "オーディオブックをスキップ…",
+      "show": "エピソードをスキップ…",
+      "anime": "エピソードをスキップ…",
+      "movie": "映画をスキップ…"
+    },
+    "skipCovered": {
+      "manga": "もう知っている巻をスキップ",
+      "book": "もう知っている本をスキップ",
+      "audiobook": "もう知っているオーディオブックをスキップ",
+      "show": "もう知っているエピソードをスキップ",
+      "anime": "もう知っているエピソードをスキップ",
+      "movie": "もう知っている映画をスキップ"
+    },
+    "skipBody": {
+      "manga": "{hint}スキップした巻は進捗に含まれ、「続きを読む」はその後から始まります。履歴は変わりません。スキップした巻を開くと、スキップは解除されます。",
+      "book": "{hint}スキップした本は進捗に含まれ、「続きを読む」はその後から始まります。履歴は変わりません。スキップした本を開くと、スキップは解除されます。",
+      "audiobook": "{hint}スキップしたオーディオブックは進捗に含まれ、「続きを聴く」はその後から始まります。履歴は変わりません。スキップしたオーディオブックを開くと、スキップは解除されます。",
+      "show": "{hint}スキップしたエピソードは進捗に含まれ、「続きを見る」はその後から始まります。履歴は変わりません。スキップしたエピソードを開くと、スキップは解除されます。",
+      "anime": "{hint}スキップしたエピソードは進捗に含まれ、「続きを見る」はその後から始まります。履歴は変わりません。スキップしたエピソードを開くと、スキップは解除されます。",
+      "movie": "{hint}スキップした映画は進捗に含まれ、「続きを見る」はその後から始まります。履歴は変わりません。スキップした映画を開くと、スキップは解除されます。"
+    },
+    "skips": {
+      "manga": {
+        "other": "未読の{n}巻をスキップします（{range}）。"
+      },
+      "book": {
+        "other": "未読の{n}冊をスキップします（{range}）。"
+      },
+      "audiobook": {
+        "other": "未再生の{n}冊をスキップします（{range}）。"
+      },
+      "show": {
+        "other": "未視聴の{n}話をスキップします（{range}）。"
+      },
+      "anime": {
+        "other": "未視聴の{n}話をスキップします（{range}）。"
+      },
+      "movie": {
+        "other": "未視聴の{n}本をスキップします（{range}）。"
+      }
+    },
+    "nothingToSkip": {
+      "manga": "スキップするものはありません。すでに読了かスキップ済みです。",
+      "book": "スキップするものはありません。すでに読了かスキップ済みです。",
+      "audiobook": "スキップするものはありません。すでに再生済みかスキップ済みです。",
+      "show": "スキップするものはありません。すでに視聴済みかスキップ済みです。",
+      "anime": "スキップするものはありません。すでに視聴済みかスキップ済みです。",
+      "movie": "スキップするものはありません。すでに視聴済みかスキップ済みです。"
+    },
+    "allUnits": {
+      "manga": "すべての巻",
+      "book": "すべての本",
+      "audiobook": "すべてのオーディオブック",
+      "show": "すべてのエピソード",
+      "anime": "すべてのエピソード",
+      "movie": "すべての映画"
+    },
+    "start": {
+      "manga": "読み始める",
+      "book": "読み始める",
+      "audiobook": "聴き始める",
+      "show": "見始める",
+      "anime": "見始める",
+      "movie": "見始める"
+    },
+    "continue": {
+      "manga": "続きを読む",
+      "book": "続きを読む",
+      "audiobook": "続きを聴く",
+      "show": "続きを見る",
+      "anime": "続きを見る",
+      "movie": "続きを見る"
+    },
+    "downloadRemaining": {
+      "manga": {
+        "other": "未読の{count}巻をオフライン用にダウンロード"
+      },
+      "book": {
+        "other": "未読の{count}冊をオフライン用にダウンロード"
+      },
+      "audiobook": {
+        "other": "未再生の{count}冊をオフライン用にダウンロード"
+      },
+      "show": {
+        "other": "未視聴の{count}話をオフライン用にダウンロード"
+      },
+      "anime": {
+        "other": "未視聴の{count}話をオフライン用にダウンロード"
+      },
+      "movie": {
+        "other": "未視聴の{count}本をオフライン用にダウンロード"
+      }
+    },
+    "metadataAll": {
+      "manga": "メタデータプロバイダーを検索して、すべての巻に適用",
+      "book": "メタデータプロバイダーを検索して、すべての本に適用",
+      "audiobook": "メタデータプロバイダーを検索して、すべてのオーディオブックに適用",
+      "show": "メタデータプロバイダーを検索して、すべてのエピソードに適用",
+      "anime": "メタデータプロバイダーを検索して、すべてのエピソードに適用",
+      "movie": "メタデータプロバイダーを検索して、すべての映画に適用"
+    },
+    "totalUnits": {
+      "manga": "巻数",
+      "book": "冊数",
+      "audiobook": "冊数",
+      "show": "話数",
+      "anime": "話数",
+      "movie": "本数"
+    }
+  }
+}

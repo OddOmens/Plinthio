@@ -26,7 +26,7 @@
             <span class="text-sm font-semibold text-foreground">{{ title }}</span>
             <button
               type="button"
-              :aria-label="`Close ${title.toLowerCase()}`"
+              :aria-label="closeLabel || $t('common.close')"
               @click="$emit('close')"
               class="w-8 h-8 -mr-1.5 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition"
             >
@@ -51,6 +51,7 @@ import { useIsPhone } from '../composables/useIsPhone';
 const props = defineProps({
   open: { type: Boolean, default: false },
   title: { type: String, required: true },
+  closeLabel: { type: String, default: '' }, // the close button's name, e.g. "Close notebook"
   side: { type: String, default: 'right' } // 'left' | 'right', wide screens only
 });
 defineEmits(['close']);

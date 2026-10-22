@@ -1,0 +1,38 @@
+{
+  "title": "ダウンロード",
+  "intro": "オフラインで楽しめるように、この端末に保存した本、コミック、オーディオブックです。",
+  "offline": "オフラインです。ダウンロードしたものは引き続き開けます。読書の進捗はオンラインに戻ったときに同期されます。",
+  "needsHttps": "ダウンロードには安全な接続が必要ですが、このページは暗号化されていないhttp://で開かれています。オフラインで読んだり聴いたりするためにダウンロードするには、{link}。",
+  "switchToHttps": "HTTPSに切り替えてください",
+  "unsupported": "このブラウザはダウンロードを保存できません（Service WorkerとCache Storageのサポートが必要です）。",
+  "summary": "{count}件のダウンロード（{size}）",
+  "usage": "この端末で{quota}中{used}を使用中",
+  "tiedToAccount": "ダウンロードはこのブラウザとアカウントに紐づいています。ログアウトすると削除されます。",
+  "downloading": "ダウンロード中",
+  "untitled": "ダウンロード",
+  "pagesProgress": "{done} / {total}ページ",
+  "bytesProgress": "{received} / {total}",
+  "dismiss": "閉じる",
+  "read": "読む",
+  "openItem": "{title}を開く",
+  "removeItemLabel": "{title}のダウンロードを削除",
+  "remove": "ダウンロードを削除",
+  "removeConfirm": "「{title}」をこの端末から削除しますか？ライブラリには残ります。",
+  "empty": {
+    "title": "まだダウンロードしたものはありません",
+    "hint": "タイトルの⋮メニューにある{action}か、マンガの巻にあるダウンロードボタンを使ってください。",
+    "action": "オフライン用にダウンロード"
+  },
+  "size": {
+    "B": "{value} B",
+    "KB": "{value} KB",
+    "MB": "{value} MB",
+    "GB": "{value} GB",
+    "TB": "{value} TB"
+  },
+  "errors": {
+    "failed": "ダウンロードに失敗しました",
+    "failedStatus": "ダウンロードに失敗しました（{status}）",
+    "pageList": "ページ一覧を読み込めませんでした（{status}）"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "anyCreator": "制作者",
+  "manga": {
+    "unit": "巻",
+    "units": "巻",
+    "short": "巻",
+    "verb": "読む",
+    "verbing": "読書",
+    "done": "読了",
+    "creator": "著者",
+    "series": "マンガシリーズ",
+    "count": {
+      "other": "{count}巻"
+    },
+    "entry": "第{number}巻",
+    "allDone": "すべて読了",
+    "progress": {
+      "other": "{count}/{total}読了"
+    }
+  },
+  "book": {
+    "unit": "本",
+    "units": "本",
+    "short": "巻",
+    "verb": "読む",
+    "verbing": "読書",
+    "done": "読了",
+    "creator": "著者",
+    "series": "書籍シリーズ",
+    "count": {
+      "other": "{count}冊"
+    },
+    "entry": "第{number}巻",
+    "allDone": "すべて読了",
+    "progress": {
+      "other": "{count}/{total}読了"
+    }
+  },
+  "audiobook": {
+    "unit": "本",
+    "units": "本",
+    "short": "巻",
+    "verb": "聴く",
+    "verbing": "再生",
+    "done": "再生済み",
+    "creator": "著者",
+    "series": "オーディオブックシリーズ",
+    "count": {
+      "other": "{count}冊"
+    },
+    "entry": "第{number}巻",
+    "allDone": "すべて再生済み",
+    "progress": {
+      "other": "{count}/{total}再生済み"
+    }
+  },
+  "show": {
+    "unit": "エピソード",
+    "units": "エピソード",
+    "short": "話",
+    "verb": "見る",
+    "verbing": "視聴",
+    "done": "視聴済み",
+    "creator": "制作者",
+    "series": "TVシリーズ",
+    "count": {
+      "other": "{count}話"
+    },
+    "entry": "S{season}・E{episode}",
+    "season": "S{season}",
+    "allDone": "すべて視聴済み",
+    "progress": {
+      "other": "{count}/{total}視聴済み"
+    }
+  },
+  "anime": {
+    "unit": "エピソード",
+    "units": "エピソード",
+    "short": "話",
+    "verb": "見る",
+    "verbing": "視聴",
+    "done": "視聴済み",
+    "creator": "スタジオ",
+    "series": "アニメシリーズ",
+    "count": {
+      "other": "{count}話"
+    },
+    "entry": "S{season}・E{episode}",
+    "season": "S{season}",
+    "allDone": "すべて視聴済み",
+    "progress": {
+      "other": "{count}/{total}視聴済み"
+    }
+  },
+  "movie": {
+    "unit": "映画",
+    "units": "映画",
+    "short": "パート",
+    "verb": "見る",
+    "verbing": "視聴",
+    "done": "視聴済み",
+    "creator": "監督",
+    "series": "映画コレクション",
+    "count": {
+      "other": "{count}本"
+    },
+    "entry": "パート{number}",
+    "allDone": "すべて視聴済み",
+    "progress": {
+      "other": "{count}/{total}視聴済み"
+    }
+  }
+}

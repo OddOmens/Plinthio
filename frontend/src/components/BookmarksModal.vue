@@ -6,11 +6,11 @@
         <div class="flex items-center gap-2 min-w-0">
           <Bookmark class="w-4 h-4 text-primary flex-shrink-0" />
           <div class="min-w-0">
-            <h3 class="text-sm font-semibold text-foreground truncate">Bookmarks: {{ item.title }}</h3>
-            <p class="text-[12px] text-muted-foreground truncate">{{ item.author || 'Unknown' }}</p>
+            <h3 class="text-sm font-semibold text-foreground truncate">{{ $t('reader.bookmarksModal.title', { title: item.title }) }}</h3>
+            <p class="text-[12px] text-muted-foreground truncate">{{ item.author || $t('common.unknown') }}</p>
           </div>
         </div>
-        <button aria-label="Close bookmarks"
+        <button :aria-label="$t('reader.bookmark.close')"
           @click="$emit('close')"
           class="p-2.5 -m-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
         >
@@ -21,9 +21,9 @@
       <!-- Add Bookmark Section -->
       <div class="p-4 border-b border-border bg-muted/20">
         <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mb-2">
-          <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">New Bookmark</span>
+          <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{{ $t('reader.bookmarksModal.newBookmark') }}</span>
           <span class="text-[12px] text-muted-foreground font-mono">
-            {{ item.media_type === 'audiobook' ? 'Timestamp (hh:mm:ss or seconds)' : 'Page Number' }}
+            {{ item.media_type === 'audiobook' ? $t('reader.bookmarksModal.timestampHint') : $t('reader.bookmarksModal.pageNumber') }}
           </span>
         </div>
 
@@ -31,20 +31,20 @@
           <div class="flex gap-2">
             <input
               v-model="newPositionInput"
-              :placeholder="item.media_type === 'audiobook' ? 'e.g. 01:15:30 or 4500' : 'e.g. 42'"
+              :placeholder="item.media_type === 'audiobook' ? $t('reader.bookmarksModal.timestampPlaceholder') : $t('reader.bookmarksModal.pagePlaceholder')"
               required
               class="w-28 sm:w-36 flex-shrink-0 bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring font-mono"
             />
             <input
               v-model="newTitleInput"
-              placeholder="Title / Label (optional)"
+              :placeholder="$t('reader.bookmarksModal.titlePlaceholder')"
               class="flex-1 bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
 
           <textarea
             v-model="newNotesInput"
-            placeholder="Add notes, quotes, or thoughts (optional)..."
+            :placeholder="$t('reader.bookmarksModal.notesPlaceholder')"
             rows="2"
             class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
           ></textarea>
@@ -55,7 +55,7 @@
             class="self-end px-3.5 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
           >
             <Plus class="w-3.5 h-3.5" />
-            <span>{{ saving ? 'Saving...' : 'Add Bookmark' }}</span>
+            <span>{{ saving ? $t('common.saving') : $t('reader.bookmarksModal.add') }}</span>
           </button>
         </form>
       </div>
@@ -63,14 +63,14 @@
       <!-- Bookmarks List -->
       <div class="p-4 overflow-y-auto flex-1 flex flex-col gap-2.5">
         <div v-if="loading" class="text-center py-8 text-xs text-muted-foreground">
-          Loading bookmarks...
+          {{ $t('reader.bookmarksModal.loading') }}
         </div>
 
         <div
           v-else-if="bookmarks.length === 0"
           class="text-center py-8 text-xs text-muted-foreground border border-dashed border-border rounded-xl"
         >
-          No bookmarks saved yet. Use the form above to bookmark a position or page.
+          {{ $t('reader.bookmarksModal.empty') }}
         </div>
 
         <div
@@ -85,7 +85,7 @@
                 {{ formatPosition(bm.position) }}
               </span>
               <span class="text-xs font-semibold text-foreground truncate">
-                {{ bm.title || 'Bookmark' }}
+                {{ bm.title || $t('reader.bookmark.label') }}
               </span>
             </div>
 
@@ -93,16 +93,16 @@
               <button
                 @click="jumpToBookmark(bm)"
                 class="px-2 py-1 rounded bg-secondary hover:bg-secondary/80 text-secondary-foreground text-xs font-medium transition flex items-center gap-1 border border-border"
-                title="Jump to position"
+                :title="$t('reader.bookmarksModal.jumpTooltip')"
               >
                 <Play v-if="item.media_type === 'audiobook'" class="w-3 h-3" />
                 <BookOpen v-else class="w-3 h-3" />
-                <span>Jump</span>
+                <span>{{ $t('reader.bookmarksModal.jump') }}</span>
               </button>
-              <button aria-label="Delete bookmark"
+              <button :aria-label="$t('reader.bookmark.delete')"
                 @click="deleteBookmark(bm.id)"
                 class="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-muted transition"
-                title="Delete bookmark"
+                :title="$t('reader.bookmark.delete')"
               >
                 <Trash2 class="w-3.5 h-3.5" />
               </button>
@@ -129,6 +129,7 @@ import api from '../api/client';
 import { usePlayerStore } from '../stores/player';
 import { useDialogStore } from '../stores/dialog';
 import { Bookmark, X, Plus, Trash2, Play, BookOpen } from '@lucide/vue';
+import { t, d } from '../i18n';
 
 const props = defineProps({
   isOpen: Boolean,
@@ -171,12 +172,12 @@ function formatPosition(sec) {
     }
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
-  return `Page ${Math.floor(sec || 1)}`;
+  return t('reader.pageN', { page: Math.floor(sec || 1) });
 }
 
 function formatDate(iso) {
   if (!iso) return '';
-  return new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return d(iso, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 async function loadBookmarks() {
@@ -208,7 +209,7 @@ async function createBookmark() {
     newNotesInput.value = '';
     await loadBookmarks();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Failed to create bookmark');
+    dialog.alert(err.response?.data?.error || t('reader.bookmarksModal.couldNotCreate'));
   } finally {
     saving.value = false;
   }
@@ -219,7 +220,7 @@ async function deleteBookmark(id) {
     await api.delete(`/bookmarks/${id}`);
     bookmarks.value = bookmarks.value.filter(b => b.id !== id);
   } catch (err) {
-    dialog.alert('Failed to delete bookmark');
+    dialog.alert(t('reader.bookmarksModal.couldNotDelete'));
   }
 }
 

@@ -1,0 +1,196 @@
+{
+  "percent": "{percent}%",
+  "pageN": "{page}ページ",
+  "closeBook": "本を閉じる",
+  "opening": "本を開いています…",
+  "couldNotOpen": "この本を開けませんでした。",
+  "notebookButton": "目次・しおり・ハイライト",
+  "notebookTooltip": "目次とノート",
+  "searchButton": "本の中を検索",
+  "searchTooltip": "検索（Ctrl+F）",
+  "displaySettings": "表示設定",
+  "position": "本の中の位置",
+  "positionMeasuring": "本の中の位置（まだ本を計測中です）",
+  "progressShowing": "表示中：{option}。タップで切り替えます。",
+  "progress": {
+    "lastPageInChapter": "この章の最後のページ",
+    "pagesLeftInChapter": {
+      "other": "この章の残り{count}ページ"
+    },
+    "location": "位置 {current}/{total}"
+  },
+  "copyFailed": "ここではコピーできません",
+  "bookmark": {
+    "label": "しおり",
+    "bookmarks": "しおり",
+    "thisPage": "このページにしおりを挟む",
+    "removeFromPage": "このページのしおりを外す",
+    "remove": "しおりを外す",
+    "delete": "しおりを削除",
+    "deleteNamed": "しおりを削除：{title}",
+    "close": "しおりを閉じる",
+    "added": "しおりを挟みました",
+    "percentThrough": "{percent}%の位置",
+    "noneYet": "しおりはまだありません。",
+    "noneYetRibbon": "しおりはまだありません。右上のリボンをタップすると、ページにしおりを挟めます。",
+    "couldNotSave": "しおりを保存できませんでした",
+    "couldNotRemove": "しおりを外せませんでした"
+  },
+  "highlight": {
+    "toolbar": "ハイライト",
+    "edit": "ハイライトを編集",
+    "inColor": "{color}でハイライト",
+    "recolor": "{color}に変更",
+    "onlyColor": "{color}のハイライトのみ",
+    "withNote": "ハイライトしてメモを追加",
+    "remove": "ハイライトを削除",
+    "noneYet": "ハイライトはまだありません。テキストを選択して色を付けるか、メモを追加しましょう。",
+    "noneInColor": "この色のハイライトはありません。",
+    "couldNotSave": "ハイライトを保存できませんでした",
+    "couldNotRecolor": "色を変更できませんでした",
+    "couldNotRemove": "ハイライトを削除できませんでした"
+  },
+  "note": {
+    "title": "メモ",
+    "close": "メモを閉じる",
+    "add": "メモを追加",
+    "edit": "メモを編集",
+    "placeholder": "メモを入力…",
+    "save": "メモを保存",
+    "couldNotSave": "メモを保存できませんでした"
+  },
+  "display": {
+    "title": "表示",
+    "close": "表示設定を閉じる",
+    "pageColour": "ページの色",
+    "themePage": "{theme}のページ",
+    "font": "フォント",
+    "textSize": "文字サイズ",
+    "smaller": "文字を小さく",
+    "larger": "文字を大きく",
+    "lineSpacing": "行間",
+    "margins": "余白",
+    "alignment": "文字揃え",
+    "layout": "レイアウト",
+    "pages": "ページ",
+    "scroll": "スクロール",
+    "twoOnWide": "広い画面では2段",
+    "alwaysOne": "常に1段",
+    "cornerShows": "画面下の表示",
+    "appliesEverywhere": "すべての本と、お使いのすべてのデバイスに適用されます。"
+  },
+  "notebook": {
+    "title": "ノート",
+    "close": "ノートを閉じる",
+    "contents": "目次",
+    "highlights": "ハイライト",
+    "noContents": "この本には目次がありません。"
+  },
+  "search": {
+    "close": "検索を閉じる",
+    "placeholder": "この本を検索…",
+    "find": "検索",
+    "matches": {
+      "other": "{count}件"
+    },
+    "matchesCapped": "{count}件以上",
+    "noMatches": "見つかりませんでした"
+  },
+  "themes": {
+    "auto": "自動",
+    "white": "ホワイト",
+    "sepia": "セピア",
+    "green": "グリーン",
+    "gray": "グレー",
+    "black": "ブラック"
+  },
+  "fonts": {
+    "publisher": "オリジナル",
+    "serif": "明朝",
+    "sans": "ゴシック",
+    "readable": "読みやすい",
+    "mono": "等幅"
+  },
+  "lineHeights": {
+    "compact": "狭い",
+    "normal": "標準",
+    "loose": "広い"
+  },
+  "margins": {
+    "narrow": "狭い",
+    "normal": "標準",
+    "wide": "広い"
+  },
+  "align": {
+    "publisher": "オリジナル",
+    "left": "左揃え",
+    "justify": "両端揃え"
+  },
+  "progressOptions": {
+    "percent": "本全体の割合",
+    "chapter": "章の残りページ",
+    "location": "位置",
+    "none": "表示しない"
+  },
+  "highlightColors": {
+    "yellow": "黄色",
+    "green": "緑",
+    "blue": "青",
+    "pink": "ピンク",
+    "orange": "オレンジ"
+  },
+  "manga": {
+    "backToShelf": "本棚に戻る",
+    "loadingPages": "ページを読み込んでいます…",
+    "pageOf": "{page} / {total}ページ",
+    "pagesOf": "{from}–{to} / {total}ページ",
+    "singlePageView": "単ページ表示",
+    "onePage": "単ページ",
+    "spreadView": "見開き表示",
+    "twoPage": "見開き",
+    "fadeTransition": "フェードでページを切り替え",
+    "fade": "フェード",
+    "flipTransition": "リアルなページめくり",
+    "flip": "めくり",
+    "modes": {
+      "rtl": {
+        "short": "右開き",
+        "label": "右から左へ（日本の漫画）"
+      },
+      "ltr": {
+        "short": "左開き",
+        "label": "左から右へ（アメコミなど）"
+      },
+      "webtoon": {
+        "short": "縦読み",
+        "label": "縦スクロール（Webtoon）"
+      }
+    },
+    "previousPage": "前のページ",
+    "nextPage": "次のページ",
+    "volumeComplete": "この巻を読み終えました！",
+    "nextTitle": "次：{title}",
+    "nextVolume": "次の巻",
+    "pageBookmarks": "ページのしおり",
+    "bookmarkPage": "このページにしおり",
+    "optionalNote": "メモ（任意）…",
+    "couldNotSaveBookmark": "しおりを保存できませんでした"
+  },
+  "bookmarksModal": {
+    "title": "しおり：{title}",
+    "newBookmark": "新しいしおり",
+    "timestampHint": "タイムスタンプ（hh:mm:ss または秒）",
+    "pageNumber": "ページ番号",
+    "timestampPlaceholder": "例：01:15:30 または 4500",
+    "pagePlaceholder": "例：42",
+    "titlePlaceholder": "タイトル / ラベル（任意）",
+    "notesPlaceholder": "メモ、引用、感想など（任意）…",
+    "add": "しおりを追加",
+    "loading": "しおりを読み込んでいます…",
+    "empty": "保存されたしおりはまだありません。上のフォームで位置やページにしおりを挟めます。",
+    "jumpTooltip": "この位置へ移動",
+    "jump": "移動",
+    "couldNotCreate": "しおりを作成できませんでした",
+    "couldNotDelete": "しおりを削除できませんでした"
+  }
+}

@@ -1,0 +1,186 @@
+{
+  "fields": {
+    "title": "Title",
+    "author": "Author",
+    "authors": "Author(s)",
+    "director": "Director",
+    "directors": "Director(s)",
+    "artists": "Artist(s)",
+    "artistsShort": "Artists",
+    "cast": "Cast",
+    "castActors": "Cast / Actors",
+    "series": "Series",
+    "releaseDate": "Release Date",
+    "date": "Date",
+    "ageRating": "Age Rating",
+    "status": "Status",
+    "publisher": "Publisher",
+    "genres": "Genres",
+    "themes": "Themes",
+    "description": "Description",
+    "cover": "Cover"
+  },
+  "ageRatings": {
+    "everyone": "Everyone",
+    "teen": "Teen",
+    "mature": "Mature",
+    "explicit": "Explicit"
+  },
+  "edit": {
+    "title": "Edit Metadata",
+    "appliesToAll": {
+      "one": "Applies to all {count} volumes",
+      "other": "Applies to all {count} volumes"
+    },
+    "coverPreview": "Cover preview",
+    "replaceCover": "Replace cover art",
+    "coverSaving": "Saving",
+    "setForSeries": "Set for series",
+    "replace": "Replace",
+    "unknownAuthor": "Unknown Author",
+    "commaSeparated": "Comma separated",
+    "commaSeparatedActors": "Comma separated actors",
+    "seriesName": "Series name",
+    "releaseDateExample": "e.g. 2019 or 2019-06-26",
+    "sameAsSeries": "Same as series",
+    "unrated": "Unrated",
+    "statusExample": "e.g. Ongoing, Completed",
+    "descriptionPlaceholder": "Synopsis / description",
+    "saving": "Saving...",
+    "searchToFill": "Search {provider} to fill in missing info",
+    "externalSources": "external sources",
+    "searchPlaceholder": "Search title...",
+    "year": "Year",
+    "yearHint": "Filter by release year (e.g. 2002)",
+    "searching": "Searching...",
+    "searchingProvider": "Searching {provider}...",
+    "noResults": "No results found. Try a different search term.",
+    "searchedAs": "Searched as: {query}",
+    "resultDirector": "Dir: {name}",
+    "resultCast": "Cast: {names}",
+    "resultArt": "Art: {names}",
+    "useAll": "Use All",
+    "uploadFailed": "Could not upload that image.",
+    "searchFailed": "Failed to search metadata providers — see browser console for details.",
+    "savedTitle": "Metadata saved",
+    "savedSeries": {
+      "one": "Updated all {count} items in the series.",
+      "other": "Updated all {count} items in the series."
+    },
+    "savedOne": "Updated \"{title}\".",
+    "saveFailed": "Failed to save metadata — see browser console for details."
+  },
+  "manager": {
+    "title": "Title cleanup and matching",
+    "description": "Clean release tags from file names, and match posters, overviews, cast and release dates from TMDB.",
+    "stats": {
+      "total": "Total Media Items",
+      "totalHint": "All indexed content",
+      "dirty": "Needs Title Cleanup",
+      "dirtyHint": "Has release tags or year in title",
+      "missingCover": "Missing Artwork",
+      "missingCoverHint": "No poster or cover file",
+      "missingMeta": "Missing Overview / Date",
+      "missingMetaHint": "Needs TMDB synopsis match"
+    },
+    "filters": {
+      "allLibraries": "All Libraries",
+      "allMediaTypes": "All Media Types",
+      "tvShows": "TV Shows",
+      "needsCleanup": "Needs Cleanup",
+      "searchPlaceholder": "Filter by title or path..."
+    },
+    "batch": {
+      "selectAll": "Select All ({count})",
+      "selected": "{count} selected",
+      "overwritePosters": "Overwrite Posters",
+      "useCanonicalTitle": "Use Canonical Title",
+      "cleanHint": "Strip release tags and trailing years from database titles",
+      "cleanCount": "Clean Titles ({count})",
+      "findHint": "Match each selected title against the metadata providers (TMDB, MangaDex, Google Books, Open Library): artwork, synopsis, release date",
+      "findCount": "Find Metadata ({count})",
+      "stop": "Stop",
+      "stopping": "Stopping…"
+    },
+    "summary": {
+      "matched": "Matched {matched} of {total}.",
+      "matchedStopped": "Matched {matched} of {total} before you stopped it.",
+      "notFound": {
+        "one": "{count} had no match — they're marked below; try {action} on those.",
+        "other": "{count} had no match — they're marked below; try {action} on those."
+      },
+      "needsKey": {
+        "one": "{count} is a video, which need a TMDB key — add one under {where} and run it again.",
+        "other": "{count} are videos, which need a TMDB key — add one under {where} and run it again."
+      },
+      "adminMetadata": "Admin → Metadata",
+      "failed": {
+        "one": "{count} failed (see the row for why).",
+        "other": "{count} failed (see the row for why)."
+      }
+    },
+    "dismiss": "Dismiss",
+    "list": {
+      "analyzing": "Analyzing media titles and metadata...",
+      "empty": "No media items found matching the selected filters."
+    },
+    "badges": {
+      "frameTag": "FRAME",
+      "tvEpisode": "TV Episode",
+      "poster": "Poster",
+      "frame": "Frame",
+      "frameHint": "Provisional video frame — run Auto Match to fetch official poster",
+      "noPoster": "No Poster",
+      "synopsis": "Synopsis",
+      "noSynopsis": "No Synopsis",
+      "noDate": "No Date"
+    },
+    "cleanLabel": "Clean:",
+    "actions": {
+      "autoMatch": "Auto Match",
+      "autoMatchHint": "Match against the metadata providers and update this title",
+      "editSearch": "Edit / Search",
+      "editSearchHint": "Search TMDB manually, pick artwork, or customize metadata fields"
+    },
+    "match": {
+      "matchedAs": "Matched as \"{title}\"",
+      "needsKey": "Needs a TMDB key — add one above",
+      "noMatch": "No match found — try Edit / Search",
+      "failed": "Match failed — try again"
+    },
+    "errors": {
+      "loadFailed": "Failed to load items"
+    },
+    "clean": {
+      "confirmTitle": {
+        "one": "Clean {count} Titles?",
+        "other": "Clean {count} Titles?"
+      },
+      "confirmMessage": {
+        "one": "This will strip scene tags, codecs, resolutions, and trailing release years from {count} selected titles in the database.",
+        "other": "This will strip scene tags, codecs, resolutions, and trailing release years from {count} selected titles in the database."
+      },
+      "confirm": "Clean Titles",
+      "progress": {
+        "one": "Cleaning {count} titles...",
+        "other": "Cleaning {count} titles..."
+      },
+      "doneTitle": "Titles Cleaned",
+      "doneMessage": {
+        "one": "Successfully cleaned {count} titles!",
+        "other": "Successfully cleaned {count} titles!"
+      },
+      "failedTitle": "Batch Clean Failed"
+    },
+    "find": {
+      "confirmTitle": {
+        "one": "Find Metadata for {count} Item?",
+        "other": "Find Metadata for {count} Items?"
+      },
+      "confirmMessage": "Each selected title is matched against the metadata providers (TMDB, MangaDex, Google Books, Open Library) and its artwork, synopsis and release date are updated. Results show on each row; you can stop at any time.",
+      "confirm": "Start Matching",
+      "itemFallback": "item",
+      "progress": "Matching {current} of {total}: {title}"
+    }
+  }
+}
