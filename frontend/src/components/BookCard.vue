@@ -27,7 +27,7 @@
       <div class="absolute top-2 left-2 z-10 pointer-events-none">
         <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[12px] font-medium border border-border/80 shadow-sm">
           <component :is="badgeIcon" class="w-3 h-3 text-muted-foreground" />
-          <span class="capitalize">{{ item.media_type }}</span>
+          <span>{{ typeLabel }}</span>
         </span>
       </div>
 
@@ -43,7 +43,7 @@
         <span
           v-if="isDownloaded || isDownloading"
           class="w-6 h-6 rounded-full bg-background/85 backdrop-blur-md border border-border/80 flex items-center justify-center shadow-sm"
-          :title="isDownloaded ? 'Available offline' : 'Downloading…'"
+          :title="isDownloaded ? $t('shelf.card.availableOffline') : $t('shelf.card.downloading')"
         >
           <CheckCircle2 v-if="isDownloaded" class="w-3.5 h-3.5 text-emerald-500" />
           <Loader2 v-else class="w-3.5 h-3.5 animate-spin text-muted-foreground" />
@@ -82,15 +82,15 @@
         <span
           v-if="item.volume != null && (item.media_type === 'manga' || item.media_type === 'book')"
           class="flex-shrink-0 text-[11px] font-mono font-bold bg-muted text-muted-foreground rounded px-1.5 py-0.5 ml-1 self-start mt-0.5"
-        >Vol {{ item.volume % 1 === 0 ? Math.trunc(item.volume) : item.volume }}</span>
+        >{{ $t('vocab.manga.entry', { number: item.volume % 1 === 0 ? Math.trunc(item.volume) : item.volume }) }}</span>
 
         <!-- Context Menu Dropdown Trigger (Visible on touch, 34px target) -->
         <div class="relative">
-          <button aria-label="Options"
+          <button :aria-label="$t('shelf.card.options')"
             type="button"
             @click.stop="showMenu = !showMenu"
             class="w-9 h-9 -mr-1 -my-0.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/70 flex items-center justify-center transition opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 active:scale-95"
-            title="Options"
+            :title="$t('shelf.card.options')"
           >
             <MoreVertical class="w-4 h-4" />
           </button>
@@ -108,7 +108,7 @@
             v-click-outside="() => { if (!isPhone) showMenu = false; }"
             @click.stop
             :role="isPhone ? 'dialog' : 'menu'"
-            :aria-label="`${item.title} options`"
+            :aria-label="$t('shelf.card.optionsFor', { title: item.title })"
             :class="isPhone
               ? 'sheet-panel w-full rounded-t-2xl border-t border-border bg-card shadow-2xl px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm text-foreground'
               : 'absolute right-0 top-8 z-30 w-48 bg-popover/95 backdrop-blur-md border border-border rounded-xl shadow-2xl py-1.5 text-xs text-foreground divide-y divide-border/40'"
@@ -124,7 +124,7 @@
                 :class="menuItemClass"
               >
                 <component :is="item.is_finished ? inProgressIcon : finishedIcon" class="w-4 h-4 text-muted-foreground" />
-                <span>{{ item.is_finished ? 'Mark In Progress' : 'Mark as Finished' }}</span>
+                <span>{{ item.is_finished ? $t('shelf.card.markInProgress') : $t('shelf.card.markFinished') }}</span>
               </button>
               <button
                 type="button"
@@ -132,7 +132,7 @@
                 :class="menuItemClass"
               >
                 <FolderPlus class="w-4 h-4 text-muted-foreground" />
-                <span>Add to Folder...</span>
+                <span>{{ $t('shelf.card.addToFolder') }}</span>
               </button>
               <button
                 v-if="inCustomFolder"
@@ -141,7 +141,7 @@
                 :class="[menuItemClass, 'text-destructive']"
               >
                 <FolderMinus class="w-4 h-4" />
-                <span>Remove from Folder</span>
+                <span>{{ $t('shelf.card.removeFromFolder') }}</span>
               </button>
               <button
                 type="button"
@@ -149,7 +149,7 @@
                 :class="menuItemClass"
               >
                 <Bookmark class="w-4 h-4 text-muted-foreground" />
-                <span>Bookmarks & Notes...</span>
+                <span>{{ $t('shelf.card.bookmarks') }}</span>
               </button>
               <button
                 v-if="downloads.canDownload(item)"
@@ -158,7 +158,7 @@
                 :class="menuItemClass"
               >
                 <component :is="isDownloaded ? Trash2 : (isDownloading ? X : Download)" class="w-4 h-4 text-muted-foreground" />
-                <span>{{ isDownloaded ? 'Remove Download' : (isDownloading ? 'Cancel Download' : 'Download for Offline') }}</span>
+                <span>{{ isDownloaded ? $t('shelf.card.removeDownload') : (isDownloading ? $t('shelf.card.cancelDownload') : $t('shelf.card.downloadOffline')) }}</span>
               </button>
               <button
                 v-if="authStore.isEditor"
@@ -167,7 +167,7 @@
                 :class="menuItemClass"
               >
                 <Search class="w-4 h-4 text-muted-foreground" />
-                <span>Edit Metadata...</span>
+                <span>{{ $t('shelf.card.editMetadata') }}</span>
               </button>
             </div>
             <div class="pt-1">
@@ -177,7 +177,7 @@
                 :class="[menuItemClass, 'text-destructive']"
               >
                 <EyeOff class="w-4 h-4" />
-                <span>Hide from Shelf</span>
+                <span>{{ $t('shelf.card.hide') }}</span>
               </button>
             </div>
           </div>
@@ -188,7 +188,7 @@
       </div>
 
       <p class="text-xs text-muted-foreground truncate mt-1">
-        {{ realCreator(item.author, item.title) || vocabFor(item.media_type).type.replace(/s$/, '') }}
+        {{ realCreator(item.author, item.title) || vocabFor(item.media_type).typeSingular }}
       </p>
 
       <!-- Details footer (duration, pages, or format) -->
@@ -197,7 +197,7 @@
           {{ formatDuration(item.duration) }}
         </span>
         <span v-else-if="item.total_pages" class="font-mono">
-          {{ item.total_pages }} pages
+          {{ $t('shelf.card.pages', { count: item.total_pages }) }}
         </span>
         <span v-else class="uppercase font-mono text-[12px]">
           {{ item.format }}
@@ -205,10 +205,10 @@
 
         <span v-if="item.is_finished" class="text-foreground font-semibold flex items-center gap-1">
           <component :is="finishedIcon" class="w-3 h-3 text-emerald-500" />
-          Finished
+          {{ $t('shelf.card.finished') }}
         </span>
         <span v-else-if="hasProgress" class="font-medium font-mono text-foreground">
-          {{ Math.round(item.progress_percent) }}%
+          {{ n(Math.round(item.progress_percent) / 100, { style: 'percent' }) }}
         </span>
       </div>
     </div>
@@ -251,6 +251,7 @@ import {
 } from '@lucide/vue';
 import { useDownloadsStore } from '../stores/downloads';
 import { realCreator, vocabFor } from '../utils/mediaVocab';
+import { t, te, n } from '../i18n';
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -308,6 +309,12 @@ const hasProgress = computed(() => {
   return props.item.progress_percent && props.item.progress_percent > 0;
 });
 
+// The type's name in the reader's language (an unknown type shows as stored).
+const typeLabel = computed(() => {
+  const key = `common.mediaType.${props.item.media_type}`;
+  return te(key) ? t(key) : props.item.media_type;
+});
+
 const badgeIcon = computed(() => {
   switch (props.item.media_type) {
     case 'audiobook': return Headphones;
@@ -328,8 +335,8 @@ function formatDuration(sec) {
   if (!sec) return '';
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
+  if (h > 0) return t('shelf.card.durationHours', { hours: h, minutes: m });
+  return t('shelf.card.durationMinutes', { minutes: m });
 }
 
 async function toggleFinished() {

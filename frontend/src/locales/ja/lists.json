@@ -1,0 +1,81 @@
+{
+  "title": "リスト",
+  "intro": "見たいもの、読みたいもの、聴きたいものを好きな順に。サーバーにまだないタイトルも入れられます。",
+  "requests": "リクエスト",
+  "categories": {
+    "movies": "映画",
+    "shows": "番組",
+    "anime": "アニメ",
+    "read": "読む",
+    "listen": "聴く"
+  },
+  "titleCount": {
+    "other": "{count}タイトル"
+  },
+  "newList": "新しいリスト",
+  "newListName": {
+    "movies": "映画リストの名前",
+    "shows": "番組リストの名前",
+    "anime": "アニメリストの名前",
+    "read": "読むリストの名前",
+    "listen": "聴くリストの名前"
+  },
+  "noLists": {
+    "movies": "映画のリストはまだありません。",
+    "shows": "番組のリストはまだありません。",
+    "anime": "アニメのリストはまだありません。",
+    "read": "読むリストはまだありません。",
+    "listen": "聴くリストはまだありません。"
+  },
+  "allLists": "すべてのリスト",
+  "listFallback": "リスト",
+  "notInLibrary": "{count}件はライブラリにありません",
+  "addTitles": "タイトルを追加",
+  "deleteList": "リストを削除",
+  "inList": "追加済み",
+  "seriesTitle": "{series}：{title}",
+  "empty": {
+    "title": "このリストはまだ空です",
+    "hint": "{addTitles}から、サーバーにあるかどうかに関係なく何でも検索できます。"
+  },
+  "moveEarlier": "前へ移動",
+  "moveLater": "後ろへ移動",
+  "removeFromList": "リストから削除",
+  "request": "リクエスト",
+  "requestHint": "ライブラリへの追加を管理者に依頼します",
+  "requestStatus": {
+    "pending": "保留中",
+    "accepted_pending": "承認済み・追加待ち",
+    "accepted_added": "承認済み・追加済み",
+    "rejected": "却下"
+  },
+  "deleteDialog": {
+    "title": "リストを削除しますか？",
+    "message": "「{name}」を削除します。ライブラリからは何も削除されません。",
+    "thisList": "このリスト"
+  },
+  "addButton": {
+    "inNamed": "{list}に追加済み",
+    "title": "リストに追加",
+    "list": "リスト",
+    "dialogLabel": "{title}をリストに追加",
+    "heading": "リストに追加",
+    "loading": "リストを読み込み中…",
+    "newPlaceholder": "新しいリスト…",
+    "firstPlaceholder": "最初のリストに名前を付けましょう（例：見たいもの）"
+  },
+  "errors": {
+    "loadLists": "リストを読み込めませんでした。",
+    "loadYourLists": "リストを読み込めませんでした。",
+    "createList": "リストを作成できませんでした。",
+    "createThatList": "そのリストを作成できませんでした。",
+    "gone": "そのリストはもう存在しません。",
+    "loadList": "このリストを読み込めませんでした。",
+    "deleteList": "そのリストを削除できませんでした。",
+    "addTitle": "そのタイトルを追加できませんでした。",
+    "addToList": "そのリストに追加できませんでした。",
+    "request": "リクエストを送信できませんでした。",
+    "reorder": "新しい並び順を保存できませんでした。",
+    "remove": "その項目を削除できませんでした。"
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "header": {
+    "title": "{name} 설정",
+    "progress": "{total}단계 중 {step}단계: {title}",
+    "almostDone": "거의 끝났어요"
+  },
+  "steps": {
+    "appearance": "모양",
+    "admin": "관리자 계정",
+    "media": "미디어 유형",
+    "libraries": "라이브러리",
+    "household": "가족",
+    "access": "접속",
+    "review": "검토 및 완료"
+  },
+  "appearance": {
+    "title": "나만의 서버로",
+    "text": "서버의 이름과 모양을 정해요. 모두 나중에 관리에서 바꿀 수 있어요.",
+    "serverName": "서버 이름",
+    "theme": "테마",
+    "accent": "강조 색상"
+  },
+  "themes": {
+    "dark": { "label": "다크", "hint": "눈이 편안해요" },
+    "light": { "label": "라이트", "hint": "깔끔하고 밝아요" }
+  },
+  "admin": {
+    "title": "관리자 계정",
+    "text": "이 계정으로 라이브러리, 설정, 서버를 쓸 수 있는 사람을 관리해요.",
+    "passwordHint": "8자 이상. 특히 Plinthio를 인터넷에 공개할 거라면 길수록 좋아요.",
+    "confirmPassword": "비밀번호 확인"
+  },
+  "media": {
+    "title": "무엇을 보관할 건가요?",
+    "text": "고른 항목이 책장에 보여요. 다른 사람들도 나중에 각자 고를 수 있어요.",
+    "types": {
+      "audiobook": { "title": "오디오북", "desc": "챕터, 북마크, 이어 듣기." },
+      "manga": { "title": "만화 및 코믹스", "desc": "한 쪽씩 넘기는 뷰어, 한 쪽 또는 두 쪽 보기." },
+      "book": { "title": "책", "desc": "진행 상황을 기억하는 EPUB 및 PDF 리더." },
+      "movie": { "title": "영화", "desc": "이어 보기, 컬렉션, 부가 영상." },
+      "show": { "title": "TV 프로그램", "desc": "시즌과 에피소드, 다음 화 바로 보기." },
+      "anime": { "title": "애니메이션", "desc": "시즌과 에피소드별로 정리된 시리즈." }
+    }
+  },
+  "libraries": {
+    "title": "미디어 폴더 추가",
+    "text": "선택 사항이에요. 파일이 있는 폴더를 Plinthio에 알려 주면 바로 스캔해요. 나중에 관리에서 더 추가할 수 있어요.",
+    "addFolder": "폴더 추가",
+    "empty": "아직 폴더가 없어요.",
+    "dockerHint": "Docker에서는 미디어가 {path} 아래에 있어요.",
+    "addNow": "+ 지금 라이브러리 폴더 추가",
+    "name": "라이브러리 이름",
+    "namePlaceholder": "예: 내 오디오북",
+    "type": "유형",
+    "path": "폴더 경로(호스트 또는 컨테이너 안)",
+    "types": {
+      "audiobooks": "오디오북",
+      "manga": "만화 / 코믹스",
+      "books": "책 및 PDF",
+      "shows": "TV 프로그램",
+      "movies": "영화",
+      "anime": "애니메이션"
+    }
+  },
+  "household": {
+    "title": "또 누가 사용하나요?",
+    "text": "선택 사항이에요. 사람마다 진행 상황, 북마크, 모양이 따로 있어요. 관리에서 언제든 사람을 추가할 수 있어요.",
+    "usernamePlaceholder": "예: alex",
+    "role": "역할",
+    "roles": {
+      "viewer": "시청자: 둘러보기, 읽기, 진행 상황 기록",
+      "editor": "편집자: 메타데이터와 표지 수정도 가능",
+      "admin": "관리자: 서버 전체 관리"
+    },
+    "password": "비밀번호(8자 이상)",
+    "passwordPlaceholder": "이 사람의 비밀번호 설정",
+    "tooShort": "너무 짧아요. 비밀번호가 8자 미만인 계정은 건너뛰어요.",
+    "add": "사람 추가",
+    "parties": "워치 파티 켜기",
+    "partiesText": "서로 다른 곳에서 영화나 프로그램을 동시에 함께 보고 채팅도 할 수 있어요. 집 밖에 있는 친구가 접속하려면 방법이 필요해요(다음 단계). 관리에서 언제든 바꿀 수 있어요."
+  },
+  "access": {
+    "title": "Plinthio를 어디서 사용할 건가요?",
+    "text": "지금 필요한 것부터 시작하세요. 관리 → 네트워크에서 언제든 바꿀 수 있어요.",
+    "groupLabel": "Plinthio를 사용할 곳",
+    "options": {
+      "home": {
+        "title": "집에서만",
+        "badge": "추천",
+        "text": "집 네트워크에 있는 휴대폰, 태블릿, 컴퓨터에서 사용해요. 인터넷에서는 아무것도 접속할 수 없어요."
+      },
+      "tailscale": {
+        "title": "집과 외부에서 Tailscale로",
+        "text": "나와 내 Tailscale에 초대한 사람을 위한 방법이에요. 공유기에서 아무것도 열지 않고 비공개로 사용해요. 기기마다 무료 Tailscale 앱이 필요해요."
+      },
+      "internet": {
+        "title": "인터넷에서도, 손님용으로",
+        "text": "친구와 가족은 링크를 열고 로그인만 하면 돼요. 앱을 설치할 필요가 없어요. Tailscale Funnel(도메인도 공유기 설정도 필요 없음)이나 직접 소유한 웹 주소를 사용해요."
+      }
+    },
+    "via": {
+      "question": "손님은 어떻게 접속하나요?",
+      "groupLabel": "손님의 접속 방법",
+      "funnel": {
+        "title": "도메인 없이: Tailscale Funnel",
+        "text": "영구 링크, 공유기 설정 불필요. 읽기와 듣기에 가장 좋고, 동영상은 느릴 수 있어요."
+      },
+      "domain": {
+        "title": "내 도메인",
+        "text": "media.yourdomain.com처럼 최고 속도로. 공유기에서 포트를 열어야 해요."
+      }
+    },
+    "tailscale": {
+      "title": "Tailscale 설정",
+      "text": "지금 해도 되고, 설정이 끝난 뒤 언제든 해도 돼요. 관리 → 네트워크에 같은 가이드가 있고 작동 여부도 보여 줘요."
+    },
+    "domain": {
+      "title": "설정 후: 웹 주소 지정하기",
+      "text": "Caddy 애드온을 쓰면 정식 인증서가 있는 {url} 주소를 쓸 수 있어요. 도메인이 있어야 하고, 공유기에서 80번과 443번 포트를 포워딩해야 해요. 인터넷 회선이 이를 허용하는지 확인하는 방법을 포함한 단계별 안내: {docs}. 그 전까지는 아무것도 바뀌지 않아요.",
+      "docs": "문서 → 원격 접속 및 Tailscale"
+    },
+    "require2fa": "집 밖에서는 2단계 인증 필수",
+    "require2faText": "선택 사항이지만 추천해요. 집 네트워크 밖에서 로그인하려면 휴대폰 앱의 코드가 필요해요. 집에서는 비밀번호만으로 충분해요. 2단계 인증이 없는 사람도 집에서 로그인해 설정할 수 있어요."
+  },
+  "review": {
+    "title": "검토 후 Plinthio 시작",
+    "text": "모든 내용이 맞는지 확인하세요. 무엇이든 나중에 바꿀 수 있어요.",
+    "rows": {
+      "serverName": "서버 이름",
+      "adminUsername": "관리자 사용자 이름",
+      "themeAccent": "테마 및 강조 색상",
+      "media": "미디어",
+      "libraries": "라이브러리",
+      "otherAccounts": "다른 계정",
+      "parties": "워치 파티",
+      "access": "접속"
+    },
+    "folders": {
+      "other": "폴더 {count}개"
+    },
+    "access": {
+      "home": "집에서만",
+      "tailscale": "집과 Tailscale",
+      "funnel": "집과 인터넷(Tailscale Funnel)",
+      "domain": "집과 인터넷(내 도메인)",
+      "withTwoFactor": "{access}, 집 밖에서는 2단계 인증"
+    },
+    "https": {
+      "title": "집에서 안전하게 연결",
+      "text": "설치한 앱과 오프라인 다운로드에는 HTTPS가 필요해요. Plinthio는 자체 인증서로 {url}에서도 접속할 수 있고, 기기마다 인증서를 한 번 설치하면 돼요(문서 → PWA 모바일 앱 설정). 또는 Tailscale을 쓰면 아무것도 설치하지 않고 신뢰할 수 있는 주소를 쓸 수 있어요."
+    }
+  },
+  "finished": {
+    "title": "Plinthio가 준비됐어요",
+    "text": "마지막으로 선택 사항 하나: 비밀번호만으로는 로그인할 수 없도록 관리자 계정을 2단계 인증으로 보호하세요.",
+    "internet": "서버가 인터넷에서 접속 가능해지니 설정해 두는 게 좋아요.",
+    "later": "나중에 설정 → 보안에서 해도 돼요."
+  },
+  "nav": {
+    "complete": "설정 완료 및 시작",
+    "goToPlinthio": "Plinthio로 이동",
+    "notNow": "나중에"
+  },
+  "errors": {
+    "usernameRequired": "사용자 이름을 입력하세요",
+    "passwordLength": "비밀번호는 8자 이상이어야 해요",
+    "passwordMismatch": "비밀번호가 일치하지 않아요",
+    "mediaRequired": "미디어 유형을 하나 이상 선택하세요",
+    "failed": "설정에 실패했어요. 서버 연결을 확인하세요."
+  }
+}

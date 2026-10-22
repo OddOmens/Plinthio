@@ -1,0 +1,56 @@
+{
+  "title": "Demandes",
+  "intro": "Demandez des films, séries, anime, livres et livres audio que la bibliothèque n'a pas encore.",
+  "newRequest": "Nouvelle demande",
+  "request": "Demander",
+  "mine": "Mes demandes",
+  "reviewQueue": "À examiner",
+  "filterByStatus": "Filtrer par statut",
+  "allStatuses": "Tous les statuts",
+  "emptyReview": "Aucune demande à examiner",
+  "emptyMine": "Vous n'avez encore rien demandé",
+  "emptyMineHint": "Cherchez ci-dessus, ou utilisez le bouton Demander sur un titre dans l'une de vos listes.",
+  "requestedBy": "Demandé par {name}",
+  "deletedUser": "utilisateur supprimé",
+  "quotedNote": "« {note} »",
+  "notePlaceholder": "Note pour le demandeur (facultatif)",
+  "deleteRequest": "Supprimer la demande",
+  "withdraw": "Retirer",
+  "status": {
+    "pending": "En attente",
+    "accepted_pending": "Acceptée · Ajout en attente",
+    "accepted_added": "Acceptée · Ajoutée",
+    "rejected": "Refusée"
+  },
+  "actions": {
+    "acceptPending": "Accepter · Ajout en attente",
+    "acceptAdded": "Accepter · Ajoutée",
+    "reject": "Refuser",
+    "backToPending": "Remettre en attente"
+  },
+  "confirm": {
+    "withdrawTitle": "Retirer la demande ?",
+    "deleteTitle": "Supprimer la demande ?",
+    "withdrawMessage": "Votre demande pour « {title} » sera retirée.",
+    "deleteMessage": "La demande pour « {title} » sera supprimée pour tout le monde."
+  },
+  "errors": {
+    "load": "Impossible de charger les demandes.",
+    "send": "Impossible d'envoyer cette demande.",
+    "update": "Impossible de mettre à jour cette demande.",
+    "remove": "Impossible de supprimer cette demande."
+  },
+  "search": {
+    "placeholder": {
+      "movie": "Rechercher des films…",
+      "show": "Rechercher des séries…",
+      "anime": "Rechercher des anime…",
+      "book": "Rechercher des livres…",
+      "manga": "Rechercher des mangas…",
+      "audiobook": "Rechercher des livres audio…",
+      "titles": "Rechercher des titres…"
+    },
+    "noResults": "Aucun résultat pour « {query} ».",
+    "failed": "La recherche a échoué. Réessayez dans un instant."
+  }
+}

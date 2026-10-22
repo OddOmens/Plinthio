@@ -10,12 +10,12 @@
         <h1 class="text-xl font-bold">{{ problem.title }}</h1>
         <p class="text-sm text-white/70 max-w-sm">{{ problem.message }}</p>
         <button @click="goHome" class="mt-2 h-10 px-5 rounded-xl bg-white text-black text-sm font-semibold hover:bg-white/90 transition">
-          Back to {{ customizationStore.serverName || 'Plinthio' }}
+          {{ $t('party.backTo', { server: customizationStore.serverName || 'Plinthio' }) }}
         </button>
       </template>
       <template v-else>
         <Loader2 class="w-8 h-8 animate-spin text-white/70" />
-        <p class="text-sm text-white/70">Joining the watch party…</p>
+        <p class="text-sm text-white/70">{{ $t('party.joining') }}</p>
       </template>
     </div>
 
@@ -33,8 +33,8 @@
           <button
             @click="panelOpen = !panelOpen"
             class="h-11 px-3 rounded-xl bg-black/50 hover:bg-black/70 text-white flex items-center gap-2 transition active:scale-95 flex-shrink-0 backdrop-blur-sm"
-            :aria-label="panelOpen ? 'Hide watch party' : 'Show watch party'"
-            title="Watch party"
+            :aria-label="panelOpen ? $t('party.hidePanel') : $t('party.showPanel')"
+            :title="$t('party.watchParty')"
           >
             <Users class="w-5 h-5" />
             <span class="text-sm font-semibold">{{ members.length }}</span>
@@ -45,10 +45,10 @@
 
       <!-- Notices over the video: waiting on someone, locked controls, reconnecting -->
       <div class="fixed top-20 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none">
-        <div v-if="reconnecting" class="notice"><Loader2 class="w-4 h-4 animate-spin" /> Reconnecting…</div>
+        <div v-if="reconnecting" class="notice"><Loader2 class="w-4 h-4 animate-spin" /> {{ $t('party.reconnecting') }}</div>
         <div v-else-if="waitingFor.length" class="notice">
           <Loader2 class="w-4 h-4 animate-spin" />
-          Waiting for {{ waitingFor.join(', ') }}…
+          {{ $t('party.waitingFor', { names: list(waitingFor) }) }}
         </div>
         <div v-if="toast" class="notice">{{ toast }}</div>
       </div>
@@ -60,47 +60,49 @@
       >
         <div class="px-4 pb-3 flex items-center justify-between gap-2 border-b border-white/10">
           <div class="min-w-0">
-            <h2 class="text-base font-bold flex items-center gap-2"><PartyPopper class="w-4 h-4" /> Watch party</h2>
+            <h2 class="text-base font-bold flex items-center gap-2"><PartyPopper class="w-4 h-4" /> {{ $t('party.watchParty') }}</h2>
             <p class="text-xs text-white/60 truncate">{{ item.series ? `${item.series} · ` : '' }}{{ item.title }}</p>
           </div>
-          <button @click="panelOpen = false" class="w-9 h-9 rounded-lg hover:bg-white/10 flex items-center justify-center" aria-label="Close panel">
+          <button @click="panelOpen = false" class="w-9 h-9 rounded-lg hover:bg-white/10 flex items-center justify-center" :aria-label="$t('party.closePanel')">
             <X class="w-5 h-5" />
           </button>
         </div>
 
         <!-- Invite -->
         <div class="px-4 py-3 border-b border-white/10 flex flex-col gap-2">
-          <p class="text-xs font-semibold uppercase tracking-wider text-white/50">Invite</p>
+          <p class="text-xs font-semibold uppercase tracking-wider text-white/50">{{ $t('party.invite') }}</p>
           <div class="flex items-center gap-2">
             <code class="flex-1 min-w-0 truncate text-xs bg-white/5 border border-white/10 rounded-lg px-2.5 py-2">{{ inviteLink }}</code>
             <button @click="copyInvite" class="h-8 px-3 rounded-lg bg-white text-black text-xs font-semibold hover:bg-white/90 transition flex items-center gap-1.5 flex-shrink-0">
               <Check v-if="copied" class="w-3.5 h-3.5" />
               <Copy v-else class="w-3.5 h-3.5" />
-              {{ copied ? 'Copied' : 'Copy' }}
+              {{ copied ? $t('common.copied') : $t('common.copy') }}
             </button>
           </div>
-          <p class="text-[12px] text-white/50">Anyone with an account on this server can join with the link or code <strong class="text-white/80 font-mono">{{ code }}</strong>.</p>
+          <I18nT keypath="party.inviteHint" tag="p" class="text-[12px] text-white/50">
+            <template #code><strong class="text-white/80 font-mono">{{ code }}</strong></template>
+          </I18nT>
         </div>
 
         <!-- Who's here -->
         <div class="px-4 py-3 border-b border-white/10 flex flex-col gap-2">
-          <p class="text-xs font-semibold uppercase tracking-wider text-white/50">Watching ({{ members.length }})</p>
+          <p class="text-xs font-semibold uppercase tracking-wider text-white/50">{{ $t('party.watching', { count: members.length }) }}</p>
           <ul class="flex flex-col gap-1.5">
             <li v-for="m in members" :key="m.userId" class="flex items-center gap-2 text-sm">
               <span class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs font-semibold uppercase">{{ m.name.slice(0, 2) }}</span>
-              <span class="flex-1 min-w-0 truncate">{{ m.name }}<span v-if="m.userId === me" class="text-white/50"> (you)</span></span>
-              <Loader2 v-if="m.buffering" class="w-3.5 h-3.5 animate-spin text-white/60" title="Loading" />
-              <span v-if="m.userId === hostId" class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-primary text-primary-foreground">Host</span>
+              <span class="flex-1 min-w-0 truncate">{{ m.name }}<span v-if="m.userId === me" class="text-white/50"> {{ $t('party.you') }}</span></span>
+              <Loader2 v-if="m.buffering" class="w-3.5 h-3.5 animate-spin text-white/60" :title="$t('party.loading')" />
+              <span v-if="m.userId === hostId" class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-primary text-primary-foreground">{{ $t('party.host') }}</span>
             </li>
           </ul>
         </div>
 
         <!-- Host controls -->
         <div v-if="isHost" class="px-4 py-3 border-b border-white/10 flex flex-col gap-2">
-          <p class="text-xs font-semibold uppercase tracking-wider text-white/50">Who can play, pause and skip</p>
+          <p class="text-xs font-semibold uppercase tracking-wider text-white/50">{{ $t('party.whoControls') }}</p>
           <div class="grid grid-cols-2 gap-1 p-0.5 rounded-lg bg-white/5 border border-white/10">
             <button
-              v-for="opt in [{ id: 'host', label: 'Only me' }, { id: 'everyone', label: 'Everyone' }]"
+              v-for="opt in [{ id: 'host', label: $t('party.onlyMe') }, { id: 'everyone', label: $t('party.everyone') }]"
               :key="opt.id"
               @click="setControlMode(opt.id)"
               class="h-8 rounded-md text-xs font-semibold transition"
@@ -113,7 +115,7 @@
 
         <!-- Chat -->
         <div ref="chatEl" class="flex-1 min-h-0 overflow-y-auto px-4 py-3 flex flex-col gap-2">
-          <p v-if="!chat.length" class="text-xs text-white/40 text-center mt-4">Say hi — messages go to everyone watching.</p>
+          <p v-if="!chat.length" class="text-xs text-white/40 text-center mt-4">{{ $t('party.chatEmpty') }}</p>
           <div v-for="msg in chat" :key="msg.id" class="text-sm leading-snug">
             <span class="font-semibold mr-1.5" :class="msg.userId === me ? 'text-primary' : 'text-white'">{{ msg.name }}</span>
             <span class="text-white/85 break-words">{{ msg.text }}</span>
@@ -123,17 +125,17 @@
           <input
             v-model="chatText"
             maxlength="500"
-            placeholder="Message"
+            :placeholder="$t('party.messagePlaceholder')"
             class="flex-1 min-w-0 h-9 px-3 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
           />
-          <button type="submit" :disabled="!chatText.trim()" class="w-9 h-9 rounded-lg bg-white text-black flex items-center justify-center disabled:opacity-40" aria-label="Send">
+          <button type="submit" :disabled="!chatText.trim()" class="w-9 h-9 rounded-lg bg-white text-black flex items-center justify-center disabled:opacity-40" :aria-label="$t('party.send')">
             <Send class="w-4 h-4" />
           </button>
         </form>
 
         <div class="px-4 pt-3 flex gap-2">
-          <button @click="leave" class="flex-1 h-9 rounded-lg border border-white/15 hover:bg-white/10 text-sm font-medium transition">Leave</button>
-          <button v-if="isHost" @click="endParty" class="flex-1 h-9 rounded-lg bg-rose-600 hover:bg-rose-500 text-sm font-semibold transition">End for everyone</button>
+          <button @click="leave" class="flex-1 h-9 rounded-lg border border-white/15 hover:bg-white/10 text-sm font-medium transition">{{ $t('party.leave') }}</button>
+          <button v-if="isHost" @click="endParty" class="flex-1 h-9 rounded-lg bg-rose-600 hover:bg-rose-500 text-sm font-semibold transition">{{ $t('party.endForEveryone') }}</button>
         </div>
       </aside>
     </template>
@@ -149,6 +151,8 @@ import { useCustomizationStore } from '../stores/customization';
 import { useDialogStore } from '../stores/dialog';
 import { PartyConnection, livePosition, serverNow } from '../utils/party';
 import { detailRoute } from '../utils/mediaVocab';
+import { t, list } from '../i18n';
+import I18nT from '../i18n/I18nT.vue';
 
 const VideoPlayer = defineAsyncComponent(() => import('../components/VideoPlayer.vue'));
 
@@ -185,12 +189,16 @@ const isHost = computed(() => me.value && hostId.value === me.value);
 const canControl = computed(() => isHost.value || controlMode.value === 'everyone');
 const waitingFor = computed(() => members.value.filter((m) => m.buffering && m.userId !== me.value).map((m) => m.name));
 
-const PROBLEMS = {
-  P600: { title: 'Watch parties are off', message: 'An admin has to turn on watch parties for this server first.' },
-  P601: { title: 'This party has ended', message: 'The host ended it, or everyone left. Ask for a new invite link.' },
-  P603: { title: 'Not available to you', message: 'This party is watching something your account can\'t open.' },
-  P605: { title: 'This party is full', message: 'A watch party holds up to 20 people. Try again when someone leaves.' }
-};
+// What went wrong, worded in the current language when it's shown. `message` is the
+// server's own text when it sent one.
+function partyProblem(key, { ended = false, message = '' } = {}) {
+  return {
+    ended,
+    get title() { return t(`party.problems.${key}.title`); },
+    get message() { return message || t(`party.problems.${key}.message`); }
+  };
+}
+const PROBLEM_CODES = ['P600', 'P601', 'P603', 'P605'];
 
 let conn = null;
 let toastTimer = null;
@@ -242,16 +250,16 @@ function onEvent(event) {
       nextTick(() => { if (chatEl.value) chatEl.value.scrollTop = chatEl.value.scrollHeight; });
       break;
     case 'ended':
-      problem.value = event.reason === 'disabled'
-        ? { ended: true, title: 'Watch parties were turned off', message: 'An admin turned off watch parties, which ended this one.' }
-        : { ended: true, title: 'The party is over', message: 'The host ended the watch party. Thanks for watching!' };
+      problem.value = partyProblem(event.reason === 'disabled' ? 'disabled' : 'over', { ended: true });
       item.value = null;
       break;
     case 'reconnecting':
       reconnecting.value = true;
       break;
     case 'error':
-      problem.value = PROBLEMS[event.code] || { title: 'Couldn\'t join', message: event.message || 'Something went wrong joining this party.' };
+      problem.value = PROBLEM_CODES.includes(event.code)
+        ? partyProblem(event.code)
+        : partyProblem('couldntJoin', { message: event.message });
       item.value = null;
       break;
     default:
@@ -264,7 +272,7 @@ async function loadItem(id) {
     const res = await api.get(`/items/${id}`);
     if (itemId.value === id) item.value = res.data.item;
   } catch (err) {
-    problem.value = { title: 'Couldn\'t load the video', message: err.response?.data?.error || 'Try reopening the invite link.' };
+    problem.value = partyProblem('couldntLoad', { message: err.response?.data?.error });
   }
 }
 
@@ -286,7 +294,7 @@ function applyState() {
   const target = livePosition(state);
   if (Math.abs(v.currentTime - target) > 1) v.currentTime = target;
   v.playbackRate = 1;
-  if (state.playing && v.paused) v.play().catch(() => showToast('Tap play to join in'));
+  if (state.playing && v.paused) v.play().catch(() => showToast(t('party.tapToJoin')));
   else if (!state.playing && !v.paused) v.pause();
 }
 
@@ -302,7 +310,7 @@ function onUserAction(type) {
   if (agrees) return;
 
   if (!canControl.value) {
-    showToast('The host is in control of playback');
+    showToast(t('party.hostInControl'));
     applyState();
     return;
   }
@@ -310,7 +318,7 @@ function onUserAction(type) {
   const playing = type === 'play' ? true : type === 'pause' ? false : state.playing;
   partyState.value = { playing: playing && !held.value, position: v.currentTime, at: serverNow() };
   conn.action(type, v.currentTime).catch((err) => {
-    showToast(err.response?.data?.error || 'Couldn\'t reach the party');
+    showToast(err.response?.data?.error || t('party.unreachable'));
   });
 }
 
@@ -365,7 +373,7 @@ function heartbeat() {
 
 // ─── Actions ────────────────────────────────────────────────────────────────
 function onPlayNext(next) {
-  conn.changeItem(next.id, true).catch((err) => dialog.alert(err.response?.data?.error || 'Couldn\'t move the party on'));
+  conn.changeItem(next.id, true).catch((err) => dialog.alert(err.response?.data?.error || t('party.moveOnFailed')));
 }
 
 function setControlMode(mode) {
@@ -380,7 +388,7 @@ async function sendChat() {
     await conn.chat(text);
   } catch (err) {
     chatText.value = text;
-    showToast('Message not sent');
+    showToast(t('party.messageNotSent'));
   }
 }
 
@@ -388,7 +396,7 @@ async function copyInvite() {
   try {
     await navigator.clipboard.writeText(inviteLink);
   } catch (e) {
-    window.prompt('Copy this invite link:', inviteLink);
+    window.prompt(t('party.copyPrompt'), inviteLink);
   }
   copied.value = true;
   setTimeout(() => { copied.value = false; }, 2000);
@@ -396,9 +404,9 @@ async function copyInvite() {
 
 async function endParty() {
   const ok = await dialog.confirm({
-    title: 'End the watch party?',
-    message: 'This stops the party for everyone watching.',
-    confirmText: 'End party',
+    title: t('party.endConfirm.title'),
+    message: t('party.endConfirm.message'),
+    confirmText: t('party.endConfirm.confirm'),
     danger: true
   });
   if (!ok) return;

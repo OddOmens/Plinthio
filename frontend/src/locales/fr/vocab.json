@@ -1,0 +1,125 @@
+{
+  "anyCreator": "Créateur",
+  "manga": {
+    "unit": "Tome",
+    "units": "Tomes",
+    "short": "T.",
+    "verb": "Lire",
+    "verbing": "Lecture",
+    "done": "Lu",
+    "creator": "Auteur",
+    "series": "Série manga",
+    "count": {
+      "one": "{count} tome",
+      "other": "{count} tomes"
+    },
+    "entry": "Tome {number}",
+    "allDone": "Tout lu",
+    "progress": {
+      "one": "{count}/{total} lu",
+      "other": "{count}/{total} lus"
+    }
+  },
+  "book": {
+    "unit": "Livre",
+    "units": "Livres",
+    "short": "Livre",
+    "verb": "Lire",
+    "verbing": "Lecture",
+    "done": "Lu",
+    "creator": "Auteur",
+    "series": "Série de livres",
+    "count": {
+      "one": "{count} livre",
+      "other": "{count} livres"
+    },
+    "entry": "Livre {number}",
+    "allDone": "Tout lu",
+    "progress": {
+      "one": "{count}/{total} lu",
+      "other": "{count}/{total} lus"
+    }
+  },
+  "audiobook": {
+    "unit": "Livre",
+    "units": "Livres",
+    "short": "Livre",
+    "verb": "Écouter",
+    "verbing": "Écoute",
+    "done": "Écouté",
+    "creator": "Auteur",
+    "series": "Série de livres audio",
+    "count": {
+      "one": "{count} livre",
+      "other": "{count} livres"
+    },
+    "entry": "Livre {number}",
+    "allDone": "Tout écouté",
+    "progress": {
+      "one": "{count}/{total} écouté",
+      "other": "{count}/{total} écoutés"
+    }
+  },
+  "show": {
+    "unit": "Épisode",
+    "units": "Épisodes",
+    "short": "Ép.",
+    "verb": "Regarder",
+    "verbing": "Visionnage",
+    "done": "Vu",
+    "creator": "Créateur",
+    "series": "Série TV",
+    "count": {
+      "one": "{count} épisode",
+      "other": "{count} épisodes"
+    },
+    "entry": "S{season} · É{episode}",
+    "season": "S{season}",
+    "allDone": "Tout vu",
+    "progress": {
+      "one": "{count}/{total} vu",
+      "other": "{count}/{total} vus"
+    }
+  },
+  "anime": {
+    "unit": "Épisode",
+    "units": "Épisodes",
+    "short": "Ép.",
+    "verb": "Regarder",
+    "verbing": "Visionnage",
+    "done": "Vu",
+    "creator": "Studio",
+    "series": "Série animée",
+    "count": {
+      "one": "{count} épisode",
+      "other": "{count} épisodes"
+    },
+    "entry": "S{season} · É{episode}",
+    "season": "S{season}",
+    "allDone": "Tout vu",
+    "progress": {
+      "one": "{count}/{total} vu",
+      "other": "{count}/{total} vus"
+    }
+  },
+  "movie": {
+    "unit": "Film",
+    "units": "Films",
+    "short": "Partie",
+    "verb": "Regarder",
+    "verbing": "Visionnage",
+    "done": "Vu",
+    "creator": "Réalisateur",
+    "series": "Collection de films",
+    "count": {
+      "one": "{count} film",
+      "other": "{count} films"
+    },
+    "entry": "Partie {number}",
+    "allDone": "Tout vu",
+    "progress": {
+      "one": "{count}/{total} vu",
+      "other": "{count}/{total} vus"
+    }
+  }
+}

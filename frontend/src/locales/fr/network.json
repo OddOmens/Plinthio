@@ -1,0 +1,125 @@
+{
+  "title": "Réseau",
+  "description": "D'où Plinthio peut être utilisé, et la double authentification hors de la maison.",
+  "checkAgain": "Vérifier à nouveau",
+  "device": {
+    "connectingFrom": "Cet appareil se connecte depuis {where}",
+    "where": {
+      "home": "votre réseau domestique",
+      "tailscaleHome": "Tailscale (compte comme la maison)",
+      "tailscaleOutside": "Tailscale (compte comme l'extérieur)",
+      "outside": "l'extérieur du réseau domestique",
+      "unknown": "un endroit inconnu"
+    },
+    "address": "Adresse {ip}. Pour vérifier l'accès extérieur, ouvrez cette page sur un téléphone en données mobiles (Wi-Fi coupé). Elle devrait indiquer « l'extérieur ».",
+    "unknownIp": "inconnue"
+  },
+  "tailscale": {
+    "hideGuide": "Masquer le guide",
+    "guide": "Guide de configuration",
+    "setUp": "Configurer Tailscale",
+    "working": "Fonctionne sur {link}",
+    "lastUsed": "dernière utilisation : {time}",
+    "setUpAt": "Configuré sur {address}, pas utilisé depuis le dernier démarrage de Plinthio. Ouvrez-le depuis un appareil Tailscale pour vérifier.",
+    "notSetUp": "Pas configuré, d'après ce que Plinthio peut voir. Tailscale vous donne une adresse {address} de confiance, à la maison comme en déplacement ; avec Funnel, c'est aussi un lien que tout le monde peut ouvrir, sans domaine. Ouvrez le guide pour le configurer.",
+    "funnelWorking": "Funnel fonctionne : un visiteur depuis Internet, {time}.",
+    "funnelNeedsAccess": "Les visiteurs Funnel viennent d'Internet et l'accès extérieur est désactivé : ils verront « Disponible uniquement à la maison ».",
+    "allowOutside": "Autoriser l'accès extérieur"
+  },
+  "proxy": {
+    "title": "Un proxy se trouve devant Plinthio, mais TRUST_PROXY n'est pas défini",
+    "text": "Chaque visiteur semble venir du proxy ({from}), généralement une adresse domestique : l'accès extérieur ne peut donc pas être distingué. Les modules Tailscale et adresse publique le définissent pour vous. Pour un autre proxy, voir docs/remote-access.md.",
+    "localAddress": "une adresse locale"
+  },
+  "adminsWithout2fa": {
+    "title": {
+      "one": "{count} compte administrateur sans double authentification",
+      "other": "{count} comptes administrateur sans double authentification"
+    },
+    "text": "Le serveur est ouvert à Internet. Il est vivement recommandé d'activer la double authentification pour les administrateurs (Paramètres → Sécurité)."
+  },
+  "settings": {
+    "remoteAccess": {
+      "title": "Autoriser l'accès depuis l'extérieur du réseau domestique",
+      "text": "Désactivé : seuls les appareils à la maison (et sur Tailscale, ci-dessous) peuvent se connecter ou utiliser quoi que ce soit ; Internet obtient « Disponible uniquement à la maison ». Activé : toute personne dont le compte est autorisé hors de la maison peut se connecter de n'importe où. Cela décide seulement qui peut entrer : atteindre le serveur depuis Internet nécessite aussi Tailscale Funnel (sans domaine) ou une adresse web (le module adresse publique)."
+    },
+    "tailscaleIsHome": {
+      "title": "Les appareils Tailscale comptent comme la maison",
+      "text": "Activé (par défaut) : tout ce qui est sur votre tailnet est traité comme votre réseau domestique. Désactivez-le si vous partagez le serveur avec des utilisateurs Tailscale que vous préférez traiter comme extérieurs."
+    },
+    "require2fa": {
+      "title": "Exiger la double authentification hors de la maison",
+      "text": "Facultatif. Les connexions depuis l'extérieur demandent un code d'une application sur téléphone. À la maison, le mot de passe suffit toujours : les personnes sans double authentification peuvent s'y connecter et la configurer (Paramètres → Sécurité).",
+      "onlyWhenOn": "S'applique uniquement quand l'accès extérieur est activé."
+    }
+  },
+  "accounts": {
+    "total": "Comptes",
+    "withTwoFactor": "Avec double authentification",
+    "homeOnly": "Maison uniquement",
+    "adminsWithoutTwoFactor": "Administrateurs sans double authentification",
+    "hint": "Choisissez qui peut utiliser Plinthio hors de la maison, et réinitialisez la double authentification de quelqu'un, dans l'onglet Utilisateurs."
+  },
+  "recent": {
+    "title": "Connexions récentes depuis l'extérieur",
+    "none": "Aucune pour l'instant.",
+    "signedIn": "connecté",
+    "failed": "échec"
+  },
+  "docsHint": "Comment accéder à Plinthio depuis l'extérieur (Tailscale, ou une adresse web pour vos invités), pas à pas : {link}, ou {file} sur GitHub.",
+  "docsLink": "Documents → Accès à distance et Tailscale",
+  "confirm": {
+    "title": "Autoriser l'accès depuis l'extérieur ?",
+    "message": "Toute personne ayant un compte (autorisé hors de la maison) pourra se connecter depuis Internet, dès que le serveur aura une adresse web. Utilisez des mots de passe solides et pensez à exiger la double authentification hors de la maison.",
+    "allow": "Autoriser"
+  },
+  "errors": {
+    "load": "Impossible de charger les réglages réseau",
+    "save": "Impossible d'enregistrer"
+  },
+  "guide": {
+    "private": "Privé : mes appareils et les personnes que j'ajoute",
+    "funnel": "Aussi un lien pour les amis sans Tailscale (Funnel)",
+    "privateText": "Plinthio obtient {address}, reconnue sur chaque appareil connecté à votre Tailscale. Rien n'est ouvert à Internet.",
+    "funnelText": "La même adresse s'ouvre aussi dans n'importe quel navigateur, sans Tailscale, domaine ni réglage de la box. Tailscale limite la bande passante de Funnel : la lecture et l'écoute passent bien, la vidéo peut saccader.",
+    "account": {
+      "title": "Créez un compte Tailscale gratuit"
+    },
+    "dns": {
+      "title": "Activez MagicDNS et HTTPS Certificates",
+      "text": "Sur la page DNS de la console d'administration. Ce sont deux interrupteurs.",
+      "link": "Ouvrir la page DNS"
+    },
+    "key": {
+      "title": "Créez une clé d'authentification",
+      "text": "Settings → Keys → Generate auth key. Gardez la page ouverte : vous la collerez à l'étape suivante. (Facultatif : sans clé, le serveur affiche plutôt un lien de connexion.)",
+      "link": "Ouvrir Keys"
+    },
+    "server": {
+      "title": "Ajoutez Tailscale à Plinthio",
+      "name": "Nom sur votre tailnet",
+      "download": "Sur le serveur, dans le dossier contenant {file}, téléchargez le module :",
+      "env": "Ajoutez ces lignes au fichier {env} de ce dossier (créez-le s'il n'existe pas), avec votre clé à la place de {key} :",
+      "start": "Puis démarrez-le. {flag} applique un réglage modifié ; Plinthio redémarre pendant quelques secondes :",
+      "noDocker": "Vous n'utilisez pas Docker, ou Tailscale est déjà sur le serveur ?",
+      "runThis": "Exécutez ceci sur le serveur (8088 étant le port de Plinthio) :",
+      "trustProxy": "Sans Docker, définissez aussi {setting} pour Plinthio. Avec Docker et Tailscale sur l'hôte, utilisez plutôt le module pour que Plinthio puisse distinguer les appareils."
+    },
+    "funnelStep": {
+      "title": "Ouvrez la porte à Internet",
+      "text": "Les visiteurs Funnel viennent d'Internet : Plinthio doit donc avoir l'{outsideAccess} activé ({where}). Pensez aussi à exiger la double authentification hors de la maison. La première fois, Tailscale peut vous demander d'autoriser Funnel pour votre tailnet : si {command} l'indique, suivez son lien ou autorisez-le dans Access controls.",
+      "outsideAccess": "accès extérieur",
+      "whereSetup": "cette étape de configuration s'en charge",
+      "whereAdmin": "Administration → Réseau, ci-dessus",
+      "link": "Ouvrir Access controls"
+    },
+    "devices": {
+      "title": "Installez Tailscale sur vos téléphones et ordinateurs",
+      "funnelTitle": "Essayez, puis envoyez le lien à vos amis",
+      "text": "Connectez-vous avec le même compte, puis ouvrez {address} (la console d'administration indique l'adresse exacte sous Machines) et ajoutez-la à votre écran d'accueil.",
+      "funnelText": "Sur un téléphone avec le Wi-Fi coupé et Tailscale arrêté, ouvrez l'adresse. La page de connexion doit s'afficher. Créez ensuite des comptes pour vos amis (Administration → Utilisateurs) et envoyez-leur le lien."
+    },
+    "moreDetail": "Tous les détails, avec le dépannage : {file} sur GitHub.",
+    "markDone": "Marquer comme fait"
+  }
+}

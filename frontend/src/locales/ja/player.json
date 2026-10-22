@@ -1,0 +1,121 @@
+{
+  "unknownAuthor": "著者不明",
+  "untitledAudiobook": "Plinthio オーディオブック",
+  "coverOf": "{title}のカバー",
+  "units": {
+    "secondsShort": "{count}秒",
+    "minutesShort": "{count}分"
+  },
+  "video": {
+    "backToShelf": "ライブラリに戻る",
+    "castToTv": "テレビにキャスト",
+    "playbackSettings": "再生設定",
+    "skipBack": "巻き戻し",
+    "skipForward": "早送り",
+    "quality": "画質",
+    "auto": "自動",
+    "audio": "音声",
+    "subtitles": "字幕",
+    "noAlternateTracks": "この動画には切り替えられるトラックがありません。",
+    "track": "トラック {number}",
+    "channels": "{count}ch",
+    "forced": "強制",
+    "skipIntro": "イントロをスキップ",
+    "skipCredits": "クレジットをスキップ",
+    "skipAria": {
+      "backSeconds": { "other": "{count}秒戻る" },
+      "backMinutes": { "other": "{count}分戻る" },
+      "forwardSeconds": { "other": "{count}秒進む" },
+      "forwardMinutes": { "other": "{count}分進む" }
+    },
+    "skipHint": "{action} — 右クリックで変更",
+    "toggleFullscreen": "全画面表示の切り替え",
+    "preparing": {
+      "transcode": "ブラウザ向けに変換しています…",
+      "remux": "ダイレクトストリーミング中…",
+      "direct": "再生を開始しています…"
+    },
+    "resumedFrom": "{time}から再開しました",
+    "startOver": "最初から",
+    "upNext": "次のエピソード",
+    "playNow": "今すぐ再生（{seconds}）",
+    "cantPlay": "この動画を再生できません",
+    "errorHelp": "エラー {code}: 詳細を見る",
+    "retry": "再試行",
+    "errors": {
+      "P350": "変換しても、このブラウザではこの動画を再生できません。",
+      "P351": "サーバーとの接続が切れました。ネットワークを確認して「再試行」を押してください。",
+      "P352": "メディアへのアクセス期限が切れ、更新できませんでした。ページを再読み込みするか、サインアウトしてもう一度サインインしてください。",
+      "failed": "再生に失敗しました。"
+    }
+  },
+  "pause": {
+    "youreWatching": "視聴中",
+    "paused": "一時停止中",
+    "starring": "出演",
+    "createdBy": "クリエイター",
+    "directedBy": "監督",
+    "leftEndsAt": "残り{remaining}・{time}に終了",
+    "seasonRest": {
+      "other": "シーズンの残り（あと{count}話）を観ると{time}に終わります"
+    },
+    "runtimeMinutes": "{minutes}分",
+    "runtimeHours": "{hours}時間{minutes}分",
+    "dollars": "{amount}ドル",
+    "timesBudget": "{amount}（製作費の{multiple}倍）",
+    "seasons": { "other": "{count}シーズン" },
+    "episodes": { "other": "{count}話" },
+    "seasonsAndEpisodes": "{seasons}・{episodes}",
+    "since": "{year}年から",
+    "facts": {
+      "originalTitle": "原題",
+      "budget": "製作費",
+      "boxOffice": "興行収入",
+      "series": "シリーズ",
+      "onAir": "放送期間",
+      "partOf": "シリーズ作品",
+      "network": "放送局",
+      "studio": "スタジオ",
+      "music": "音楽",
+      "cinematography": "撮影"
+    }
+  },
+  "audio": {
+    "openNowPlaying": "再生画面を開く",
+    "skipBack": "{count}秒戻る",
+    "skipForward": "{count}秒進む",
+    "closePlayer": "プレーヤーを閉じる",
+    "fullscreen": "再生画面を全画面で表示",
+    "playbackSpeed": "再生速度",
+    "sleepTimer": "スリープタイマー",
+    "rate": "{rate}x",
+    "chapterShort": "章"
+  },
+  "nowPlaying": {
+    "minimize": "プレーヤーを最小化",
+    "playingAudiobook": "オーディオブック再生中",
+    "chapters": "チャプター",
+    "bookmarks": "ブックマーク",
+    "bookmarksAndNotes": "ブックマークとメモ",
+    "backToPlayer": "プレーヤーに戻る",
+    "addBookmark": "ブックマークを追加",
+    "notePlaceholder": "メモ（任意。名言や手がかりなど）…",
+    "saveBookmark": "ブックマークを保存",
+    "deleteBookmark": "ブックマークを削除",
+    "noBookmarks": "このオーディオブックにはまだブックマークがありません。",
+    "bookmarkTitle": "ブックマーク @ {time}",
+    "leftInChapter": "チャプター残り {time}",
+    "previousChapter": "前のチャプター",
+    "nextChapter": "次のチャプター",
+    "speed": "速度",
+    "sleep": "スリープ",
+    "endOfChapter": "章の終わり",
+    "stoppingAtChapterEnd": "このチャプターの終わりで停止します",
+    "stoppingIn": "{time}後に停止します",
+    "saveFailed": "ブックマークを保存できませんでした",
+    "deleteFailed": "ブックマークを削除できませんでした"
+  },
+  "intro": {
+    "label": "オープニング"
+  }
+}

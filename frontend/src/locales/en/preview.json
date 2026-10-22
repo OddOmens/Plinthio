@@ -1,0 +1,44 @@
+{
+  "live": "Live preview",
+  "views": {
+    "shelf": "Shelf",
+    "title": "Title",
+    "login": "Sign-in",
+    "pause": "Pause"
+  },
+  "titles": {
+    "one": "{count}+ titles",
+    "other": "{count}+ titles"
+  },
+  "yourLibrary": "Your library",
+  "continueWatching": "Continue watching",
+  "runtime": "{hours} h {minutes} min",
+  "yourRating": "Your rating",
+  "ratingsHidden": "Ratings are hidden",
+  "watchTogether": "Watch Together",
+  "collection": "Part of the collection",
+  "request": "Request",
+  "sample": {
+    "tagline": "Some messages take a lifetime to arrive.",
+    "description": "A lighthouse keeper on a remote island finds a message in a bottle that pulls her back into the life she left behind."
+  },
+  "captions": {
+    "shelf": "The home shelf on a big screen: {layout} layout, {width} width and the {accent} accent.",
+    "title": "A movie page with the rating, watch party and collection settings above.",
+    "login": "The sign-in screen, with your server name and notice.",
+    "pause": {
+      "simple": "Simple: nothing covers the picture. Pick another style to see it here.",
+      "details": "Details: shown after a couple of seconds paused. Hover a style to compare.",
+      "cinematic": "Cinematic: cast photos and facts come from TMDB when a key is set.",
+      "bedtime": "Bedtime: a dim clock and when it ends."
+    }
+  },
+  "layouts": {
+    "sidebar": "sidebar",
+    "topnav": "top navigation"
+  },
+  "widths": {
+    "contained": "contained",
+    "full": "full"
+  }
+}

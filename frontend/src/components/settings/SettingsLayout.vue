@@ -12,15 +12,15 @@
             type="button"
             @click="closeSection"
             class="md:hidden w-9 h-9 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center justify-center transition active:scale-95 flex-shrink-0"
-            :aria-label="`Back to ${title}`"
+            :aria-label="$t('settings.layout.backTo', { title })"
           >
             <ArrowLeft class="w-4 h-4" />
           </button>
           <router-link
             to="/"
             :class="[activeId ? 'hidden md:flex' : 'flex', 'w-9 h-9 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 items-center justify-center transition active:scale-95 flex-shrink-0']"
-            aria-label="Back to shelves"
-            title="Back to shelves"
+            :aria-label="$t('settings.layout.backToShelves')"
+            :title="$t('settings.layout.backToShelves')"
           >
             <ArrowLeft class="w-4 h-4" />
           </router-link>
@@ -37,7 +37,7 @@
       <div class="page-width mx-auto w-full px-4 sm:px-6 lg:px-8 pt-5 md:pt-8 md:grid md:grid-cols-[13rem_minmax(0,1fr)] lg:grid-cols-[15rem_minmax(0,1fr)] md:gap-8 lg:gap-12">
         <!-- Section list: the whole screen on a phone until one is opened; a sticky sidebar
              from md up. -->
-        <nav :class="[activeId ? 'hidden md:block' : 'block', 'min-w-0']" :aria-label="`${title} sections`">
+        <nav :class="[activeId ? 'hidden md:block' : 'block', 'min-w-0']" :aria-label="$t('settings.layout.sections', { title })">
           <div class="md:sticky md:top-[84px] flex flex-col gap-5 md:gap-6">
             <div v-for="group in groups" :key="group.label" class="flex flex-col gap-1.5">
               <p class="px-1 md:px-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{{ group.label }}</p>

@@ -1,0 +1,38 @@
+{
+  "title": "다운로드",
+  "intro": "연결 없이도 볼 수 있도록 이 기기에 저장한 책, 만화, 오디오북이에요.",
+  "offline": "오프라인 상태예요. 다운로드한 항목은 계속 열 수 있고, 읽기 진행 상황은 다시 온라인이 되면 동기화돼요.",
+  "needsHttps": "다운로드하려면 보안 연결이 필요한데, 이 페이지는 일반 http://로 열렸어요. 오프라인으로 읽고 들을 콘텐츠를 다운로드하려면 {link}.",
+  "switchToHttps": "HTTPS로 전환하세요",
+  "unsupported": "이 브라우저는 다운로드를 저장할 수 없어요(Service Worker와 Cache Storage 지원이 필요해요).",
+  "summary": "다운로드 {count}개, {size}",
+  "usage": "이 기기에서 {quota} 중 {used} 사용 중",
+  "tiedToAccount": "다운로드는 이 브라우저와 계정에 연결되어 있어요. 로그아웃하면 삭제돼요.",
+  "downloading": "다운로드 중",
+  "untitled": "다운로드",
+  "pagesProgress": "{done} / {total}페이지",
+  "bytesProgress": "{received} / {total}",
+  "dismiss": "닫기",
+  "read": "읽기",
+  "openItem": "{title} 열기",
+  "removeItemLabel": "{title} 다운로드 삭제",
+  "remove": "다운로드 삭제",
+  "removeConfirm": "'{title}'을(를) 이 기기에서 삭제할까요? 라이브러리에는 그대로 남아요.",
+  "empty": {
+    "title": "아직 다운로드한 항목이 없어요",
+    "hint": "제목의 ⋮ 메뉴에 있는 {action} 또는 만화 권의 다운로드 버튼을 사용하세요.",
+    "action": "오프라인용 다운로드"
+  },
+  "size": {
+    "B": "{value} B",
+    "KB": "{value} KB",
+    "MB": "{value} MB",
+    "GB": "{value} GB",
+    "TB": "{value} TB"
+  },
+  "errors": {
+    "failed": "다운로드 실패",
+    "failedStatus": "다운로드 실패({status})",
+    "pageList": "페이지 목록을 읽을 수 없어요({status})"
+  }
+}

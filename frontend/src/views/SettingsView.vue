@@ -1,5 +1,5 @@
 <template>
-  <SettingsLayout title="Settings" :groups="groups" :aliases="aliases">
+  <SettingsLayout :title="$t('common.settings')" :groups="groups" :aliases="aliases">
     <template #header>
       <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground hidden sm:inline">{{ authStore.user?.username }}</span>
     </template>
@@ -10,7 +10,7 @@
         class="flex items-center gap-3 px-3.5 md:px-2.5 h-12 md:h-9 rounded-xl md:rounded-lg border border-border md:border-0 bg-card md:bg-transparent text-sm md:text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition"
       >
         <ShieldCheck class="w-4 h-4" />
-        <span class="flex-1">Server admin</span>
+        <span class="flex-1">{{ $t('settings.nav.serverAdmin') }}</span>
         <ArrowRight class="w-3.5 h-3.5" />
       </router-link>
     </template>
@@ -28,8 +28,10 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { UserRound, Lock, Palette, LayoutGrid, EyeOff, BarChart3, Plug, ShieldCheck, ArrowRight } from '@lucide/vue';
 import { useAuthStore } from '../stores/auth';
+import { t } from '../i18n';
 import SettingsLayout from '../components/settings/SettingsLayout.vue';
 import ProfileSection from '../components/settings/user/ProfileSection.vue';
 import SecuritySection from '../components/settings/user/SecuritySection.vue';
@@ -41,30 +43,21 @@ import AppsSection from '../components/settings/user/AppsSection.vue';
 
 const authStore = useAuthStore();
 
-const groups = [
+const item = (id, icon) => ({ id, icon, label: t(`settings.nav.${id}.label`), desc: t(`settings.nav.${id}.desc`) });
+const groups = computed(() => [
   {
-    label: 'Account',
-    items: [
-      { id: 'profile', label: 'Profile', icon: UserRound, desc: 'Your picture and role' },
-      { id: 'security', label: 'Security', icon: Lock, desc: 'Password, two-factor, devices' }
-    ]
+    label: t('settings.nav.groups.account'),
+    items: [item('profile', UserRound), item('security', Lock)]
   },
   {
-    label: 'Your Plinthio',
-    items: [
-      { id: 'appearance', label: 'Appearance', icon: Palette, desc: 'Colour, navigation, width, pause screen' },
-      { id: 'shelves', label: 'Shelves', icon: LayoutGrid, desc: 'Media types, start page, views' },
-      { id: 'hidden', label: 'Hidden titles', icon: EyeOff, desc: 'Titles you\'ve hidden' },
-      { id: 'activity', label: 'Activity', icon: BarChart3, desc: 'Your stats and sign-ins' }
-    ]
+    label: t('settings.nav.groups.yours'),
+    items: [item('appearance', Palette), item('shelves', LayoutGrid), item('hidden', EyeOff), item('activity', BarChart3)]
   },
   {
-    label: 'Connect',
-    items: [
-      { id: 'apps', label: 'Apps & API keys', icon: Plug, desc: 'Mihon, KOReader, OPDS, scripts' }
-    ]
+    label: t('settings.nav.groups.connect'),
+    items: [item('apps', Plug)]
   }
-];
+]);
 
 // Tab names from before the redesign, still in links and docs.
 const aliases = { account: 'security', preferences: 'shelves', stats: 'activity', apikeys: 'apps' };

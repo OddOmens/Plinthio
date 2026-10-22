@@ -9,13 +9,13 @@
         open && (showLabel ? 'bg-muted/70 text-foreground' : 'ring-2 ring-primary/50'),
         'active:scale-95 transition flex-shrink-0'
       ]"
-      :title="`Account menu (${authStore.user?.username || ''})`"
-      :aria-label="`Account menu for ${authStore.user?.username || 'user'}`"
+      :title="$t('nav.account.menuTitle', { name: authStore.user?.username || '' })"
+      :aria-label="$t('nav.account.menuLabel', { name: authStore.user?.username || $t('nav.account.someone') })"
     >
       <img
         v-if="authStore.user?.avatar && !avatarLoadFailed"
         :src="authStore.user.avatar"
-        :alt="authStore.user?.username || 'Avatar'"
+        :alt="authStore.user?.username || $t('nav.account.avatar')"
         class="w-8 h-8 rounded-full object-cover ring-1 ring-border shadow-xs flex-shrink-0"
         @error="avatarLoadFailed = true"
       />
@@ -63,11 +63,11 @@
           <div class="min-w-0 flex-1">
             <p class="text-sm font-semibold text-foreground truncate">{{ authStore.user?.username }}</p>
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="text-xs text-muted-foreground capitalize">{{ authStore.user?.role }}</span>
+              <span class="text-xs text-muted-foreground capitalize">{{ roleLabel }}</span>
               <span
                 v-if="expirationLabel"
                 class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 font-medium"
-                :title="`Account expires: ${new Date(authStore.user.expires_at).toLocaleString()}`"
+                :title="$t('nav.account.expires', { date: d(authStore.user.expires_at, DATE_TIME) })"
               >
                 {{ expirationLabel }}
               </span>
@@ -77,12 +77,12 @@
 
         <button @click="go('/downloads')" class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3">
           <Download class="w-[18px] h-[18px] text-muted-foreground" />
-          <span>Downloads</span>
+          <span>{{ $t('nav.menu.downloads') }}</span>
         </button>
 
         <button @click="go(authStore.isEditor && pendingRequests ? '/requests?scope=all' : '/requests')" class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3">
           <Inbox class="w-[18px] h-[18px] text-muted-foreground" />
-          <span class="flex-1 text-left">Requests</span>
+          <span class="flex-1 text-left">{{ $t('nav.menu.requests') }}</span>
           <span v-if="authStore.isEditor && pendingRequests" class="min-w-[1.25rem] h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold flex items-center justify-center">
             {{ pendingRequests }}
           </span>
@@ -90,12 +90,12 @@
 
         <button @click="go('/docs')" class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3">
           <HelpCircle class="w-[18px] h-[18px] text-muted-foreground" />
-          <span>Documents</span>
+          <span>{{ $t('nav.menu.docs') }}</span>
         </button>
 
         <button @click="go('/settings')" class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3">
           <Settings class="w-[18px] h-[18px] text-muted-foreground" />
-          <span>Settings</span>
+          <span>{{ $t('common.settings') }}</span>
         </button>
 
         <!-- Admins run the server, so bug reports come from them; the link pre-fills the
@@ -109,12 +109,12 @@
           class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3"
         >
           <Bug class="w-[18px] h-[18px] text-muted-foreground" />
-          <span>Report a problem</span>
+          <span>{{ $t('nav.menu.reportProblem') }}</span>
         </a>
 
         <button v-if="authStore.isAdmin" @click="go('/admin')" class="w-full h-11 px-3.5 text-sm font-medium text-foreground hover:bg-muted/70 transition flex items-center gap-3">
           <ShieldCheck class="w-[18px] h-[18px] text-muted-foreground" />
-          <span>Admin</span>
+          <span>{{ $t('common.admin') }}</span>
         </button>
 
         <div class="border-t border-border my-1"></div>
@@ -123,7 +123,7 @@
           <span class="flex items-center gap-3">
             <Sun v-if="themeStore.isDark" class="w-[18px] h-[18px] text-muted-foreground" />
             <Moon v-else class="w-[18px] h-[18px] text-muted-foreground" />
-            <span>{{ themeStore.isDark ? 'Light Mode' : 'Dark Mode' }}</span>
+            <span>{{ themeStore.isDark ? $t('nav.menu.lightMode') : $t('nav.menu.darkMode') }}</span>
           </span>
         </button>
 
@@ -131,7 +131,7 @@
 
         <button @click="logout" class="w-full h-11 px-3.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition flex items-center gap-3">
           <LogOut class="w-[18px] h-[18px]" />
-          <span>Log out</span>
+          <span>{{ $t('nav.menu.logOut') }}</span>
         </button>
       </div>
     </Transition>
@@ -146,6 +146,7 @@ import { useThemeStore } from '../stores/theme';
 import { ChevronDown, HelpCircle, Settings, ShieldCheck, Sun, Moon, LogOut, Download, Inbox, Bug } from '@lucide/vue';
 import { reportProblemUrl, serverVersion } from '../utils/reportProblem';
 import api from '../api/client';
+import { t, te, d } from '../i18n';
 
 const props = defineProps({
   showLabel: { type: Boolean, default: true },
@@ -193,13 +194,22 @@ const expirationLabel = computed(() => {
   const expiresAt = authStore.user?.expires_at;
   if (!expiresAt) return null;
   const diffMs = new Date(expiresAt).getTime() - Date.now();
-  if (diffMs <= 0) return 'Expired';
+  if (diffMs <= 0) return t('nav.account.expired');
   const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   if (days <= 1) {
     const hours = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60)));
-    return `${hours}h left`;
+    return t('nav.account.hoursLeft', { count: hours });
   }
-  return `${days}d left`;
+  return t('nav.account.daysLeft', { count: days });
+});
+
+// The same fields toLocaleString() shows, in the reader's language.
+const DATE_TIME = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+
+// Shown lower-case and capitalised by CSS, like the raw role it replaces.
+const roleLabel = computed(() => {
+  const role = authStore.user?.role;
+  return role && te(`nav.roles.${role}`) ? t(`nav.roles.${role}`) : role;
 });
 
 const popoverClass = computed(() => {

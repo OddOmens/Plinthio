@@ -8,12 +8,12 @@
       <!-- Header -->
       <div class="px-5 py-4 border-b border-border flex items-center justify-between flex-shrink-0">
         <div class="min-w-0 pr-2">
-          <h3 class="text-sm font-semibold text-foreground truncate">Edit Metadata</h3>
+          <h3 class="text-sm font-semibold text-foreground truncate">{{ $t('metadata.edit.title') }}</h3>
           <p class="text-xs text-muted-foreground truncate mt-0.5">
-            {{ isBulk ? `Applies to all ${applyToIds.length} volumes` : item?.title }}
+            {{ isBulk ? $t('metadata.edit.appliesToAll', { count: applyToIds.length }) : item?.title }}
           </p>
         </div>
-        <button aria-label="Close"
+        <button :aria-label="$t('common.close')"
           type="button"
           @click="close"
           class="p-2.5 -m-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
@@ -31,7 +31,7 @@
                 <img
                   v-if="previewCoverUrl"
                   :src="previewCoverUrl"
-                  alt="Cover preview"
+                  :alt="$t('metadata.edit.coverPreview')"
                   class="w-full h-full object-cover"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center">
@@ -44,12 +44,12 @@
                   @click="coverFileInput?.click()"
                   :disabled="uploadingCover"
                   class="absolute inset-0 bg-black/60 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus:opacity-100 transition flex flex-col items-center justify-center gap-1 text-white disabled:opacity-100"
-                  title="Replace cover art"
+                  :title="$t('metadata.edit.replaceCover')"
                 >
                   <Loader2 v-if="uploadingCover" class="w-4 h-4 animate-spin" />
                   <Upload v-else class="w-4 h-4" />
                   <span class="text-[10px] font-medium leading-none text-center px-1">
-                    {{ uploadingCover ? 'Saving' : (isBulk ? 'Set for series' : 'Replace') }}
+                    {{ uploadingCover ? $t('metadata.edit.coverSaving') : (isBulk ? $t('metadata.edit.setForSeries') : $t('metadata.edit.replace')) }}
                   </span>
                 </button>
               </div>
@@ -65,10 +65,10 @@
 
             <div class="flex-1 flex flex-col gap-2.5 min-w-0">
               <div v-if="!isBulk">
-                <label class="block text-[12px] font-medium text-muted-foreground mb-1">Title</label>
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.title') }}</label>
                 <input
                   v-model="form.title"
-                  placeholder="Title"
+                  :placeholder="$t('metadata.fields.title')"
                   class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
@@ -76,7 +76,7 @@
                 <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ authorLabel }}</label>
                 <input
                   v-model="form.author"
-                  :placeholder="isVideoType ? 'Director(s)' : 'Unknown Author'"
+                  :placeholder="isVideoType ? $t('metadata.fields.directors') : $t('metadata.edit.unknownAuthor')"
                   class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
@@ -84,15 +84,15 @@
                 <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ artistsLabel }}</label>
                 <input
                   v-model="form.artists"
-                  :placeholder="isVideoType ? 'Comma separated actors' : 'Comma separated'"
+                  :placeholder="isVideoType ? $t('metadata.edit.commaSeparatedActors') : $t('metadata.edit.commaSeparated')"
                   class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
               <div>
-                <label class="block text-[12px] font-medium text-muted-foreground mb-1">Series</label>
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.series') }}</label>
                 <input
                   v-model="form.series"
-                  placeholder="Series name"
+                  :placeholder="$t('metadata.edit.seriesName')"
                   class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
@@ -102,62 +102,62 @@
           <!-- Extended metadata -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
-              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Release Date</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.releaseDate') }}</label>
               <input
                 v-model="form.releaseDate"
-                placeholder="e.g. 2019 or 2019-06-26"
+                :placeholder="$t('metadata.edit.releaseDateExample')"
                 class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
             <div>
-              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Age Rating</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.ageRating') }}</label>
               <select
                 v-model="form.ageRating"
                 class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               >
-                <option value="">{{ form.series ? 'Same as series' : 'Unrated' }}</option>
-                <option v-for="rating in AGE_RATINGS" :key="rating" :value="rating">{{ rating }}</option>
+                <option value="">{{ form.series ? $t('metadata.edit.sameAsSeries') : $t('metadata.edit.unrated') }}</option>
+                <option v-for="rating in AGE_RATINGS" :key="rating" :value="rating">{{ $t(`metadata.ageRatings.${rating.toLowerCase()}`) }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Status</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.status') }}</label>
               <input
                 v-model="form.status"
-                placeholder="e.g. Ongoing, Completed"
+                :placeholder="$t('metadata.edit.statusExample')"
                 class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
             <div>
-              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Publisher</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.publisher') }}</label>
               <input
                 v-model="form.publisher"
-                placeholder="Publisher"
+                :placeholder="$t('metadata.fields.publisher')"
                 class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
             <div>
-              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Genres</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.genres') }}</label>
               <input
                 v-model="form.genres"
-                placeholder="Comma separated"
+                :placeholder="$t('metadata.edit.commaSeparated')"
                 class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
             <div>
-              <label class="block text-[12px] font-medium text-muted-foreground mb-1">Themes</label>
+              <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.themes') }}</label>
               <input
                 v-model="form.themes"
-                placeholder="Comma separated"
+                :placeholder="$t('metadata.edit.commaSeparated')"
                 class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
           </div>
 
           <div>
-            <label class="block text-[12px] font-medium text-muted-foreground mb-1">Description</label>
+            <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.description') }}</label>
             <textarea
               v-model="form.description"
-              placeholder="Synopsis / description"
+              :placeholder="$t('metadata.edit.descriptionPlaceholder')"
               rows="3"
               class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
             />
@@ -170,7 +170,7 @@
             class="self-end px-4 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition disabled:opacity-50 shadow-sm flex items-center gap-1.5"
           >
             <Check class="w-3.5 h-3.5" />
-            <span>{{ saving ? 'Saving...' : (loadingFull ? 'Loading…' : 'Save') }}</span>
+            <span>{{ saving ? $t('metadata.edit.saving') : (loadingFull ? $t('common.loading') : $t('common.save')) }}</span>
           </button>
         </div>
 
@@ -183,7 +183,7 @@
           >
             <span class="flex items-center gap-1.5">
               <SearchIcon class="w-3.5 h-3.5 text-muted-foreground" />
-              Search {{ providerLabel }} to fill in missing info
+              {{ $t('metadata.edit.searchToFill', { provider: providerLabel }) }}
             </span>
             <ChevronDown :class="['w-4 h-4 text-muted-foreground transition-transform', expanded ? 'rotate-180' : '']" />
           </button>
@@ -193,15 +193,15 @@
               <input
                 v-model="query"
                 @keyup.enter="search"
-                placeholder="Search title..."
+                :placeholder="$t('metadata.edit.searchPlaceholder')"
                 class="flex-1 bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
               <input
                 v-if="isVideoType"
                 v-model="yearQuery"
                 @keyup.enter="search"
-                placeholder="Year"
-                title="Filter by release year (e.g. 2002)"
+                :placeholder="$t('metadata.edit.year')"
+                :title="$t('metadata.edit.yearHint')"
                 class="w-20 bg-background border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring text-center"
               />
               <button
@@ -211,13 +211,13 @@
                 class="px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-medium transition disabled:opacity-50 shadow-sm flex items-center gap-1.5"
               >
                 <SearchIcon class="w-3.5 h-3.5" />
-                <span>{{ searching ? 'Searching...' : 'Search' }}</span>
+                <span>{{ searching ? $t('metadata.edit.searching') : $t('common.search') }}</span>
               </button>
             </div>
 
             <div class="flex flex-col gap-2">
               <div v-if="searching" class="py-6 text-center text-xs text-muted-foreground">
-                Searching {{ providerLabel }}...
+                {{ $t('metadata.edit.searchingProvider', { provider: providerLabel }) }}
               </div>
 
               <div v-else-if="errorMessage" class="py-4 text-center text-xs text-destructive px-2">
@@ -225,11 +225,13 @@
               </div>
 
               <div v-else-if="hasSearched && results.length === 0" class="py-6 text-center text-xs text-muted-foreground">
-                No results found. Try a different search term.
+                {{ $t('metadata.edit.noResults') }}
               </div>
 
               <div v-if="searchedAs && hasSearched && !searching" class="text-[11px] text-muted-foreground/60 text-center px-2">
-                Searched as: <span class="font-mono">{{ searchedAs }}</span>
+                <I18nT keypath="metadata.edit.searchedAs" tag="">
+                  <template #query><span class="font-mono">{{ searchedAs }}</span></template>
+                </I18nT>
               </div>
 
               <div
@@ -252,10 +254,10 @@
                   </div>
                   <div class="flex flex-col min-w-0 flex-1 gap-0.5">
                     <span class="text-xs font-semibold text-foreground truncate">{{ result.title }}</span>
-                    <span v-if="result.author" class="text-[12px] text-muted-foreground truncate">{{ isVideoType ? 'Dir: ' : '' }}{{ result.author }}</span>
-                    <span v-if="result.artists" class="text-[12px] text-muted-foreground truncate">{{ isVideoType ? 'Cast: ' : 'Art: ' }}{{ result.artists }}</span>
+                    <span v-if="result.author" class="text-[12px] text-muted-foreground truncate">{{ isVideoType ? $t('metadata.edit.resultDirector', { name: result.author }) : result.author }}</span>
+                    <span v-if="result.artists" class="text-[12px] text-muted-foreground truncate">{{ isVideoType ? $t('metadata.edit.resultCast', { names: result.artists }) : $t('metadata.edit.resultArt', { names: result.artists }) }}</span>
                     <span v-if="result.releaseDate" class="text-[12px] text-muted-foreground font-mono">
-                      {{ result.releaseDate }}<template v-if="result.rating != null"> · ★ {{ result.rating.toFixed(1) }}/10</template>
+                      {{ result.releaseDate }}<template v-if="result.rating != null"> · ★ {{ $n(result.rating, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }}/10</template>
                     </span>
                     <span v-if="result.genres?.length" class="text-[12px] text-muted-foreground truncate">{{ result.genres.join(', ') }}</span>
                     <span v-if="result.themes?.length" class="text-[12px] text-muted-foreground truncate">{{ result.themes.join(', ') }}</span>
@@ -270,7 +272,7 @@
                     @click="fillFromResult(result)"
                     class="px-2 py-1 rounded-md bg-primary/15 text-primary hover:bg-primary hover:text-primary-foreground text-[11px] font-semibold transition"
                   >
-                    Use All
+                    {{ $t('metadata.edit.useAll') }}
                   </button>
                   <button
                     v-for="field in pickableFields(result)"
@@ -297,6 +299,7 @@ import { getMediaToken } from '../utils/mediaToken';
 import { ref, reactive, computed, watch } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
+import { t } from '../i18n';
 import { X, Search as SearchIcon, ImageOff, Check, ChevronDown, Upload, Loader2 } from '@lucide/vue';
 
 const dialog = useDialogStore();
@@ -358,7 +361,7 @@ async function onCoverSelected(event) {
     coverCacheBust.value = Date.now();
     emit('applied');
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Could not upload that image.');
+    dialog.alert(err.response?.data?.error || t('metadata.edit.uploadFailed'));
   } finally {
     uploadingCover.value = false;
   }
@@ -378,8 +381,8 @@ const isVideoType = computed(() =>
   ['movie', 'show', 'anime'].includes(props.item?.media_type)
 );
 
-const authorLabel = computed(() => isVideoType.value ? 'Director(s)' : 'Author(s)');
-const artistsLabel = computed(() => isVideoType.value ? 'Cast / Actors' : 'Artist(s)');
+const authorLabel = computed(() => isVideoType.value ? t('metadata.fields.directors') : t('metadata.fields.authors'));
+const artistsLabel = computed(() => isVideoType.value ? t('metadata.fields.castActors') : t('metadata.fields.artists'));
 
 const previewCoverUrl = computed(() => {
   if (pickedCoverUrl.value) return pickedCoverUrl.value;
@@ -399,7 +402,7 @@ const providerLabel = computed(() => {
     case 'movie': return 'TMDB';
     case 'show': return 'TMDB';
     case 'anime': return 'TMDB';
-    default: return 'external sources';
+    default: return t('metadata.edit.externalSources');
   }
 });
 
@@ -415,17 +418,17 @@ function sourceLabel(source) {
 // Fields a search result can contribute, and which form field they map to. `bulkHidden`
 // fields don't make sense to apply across every volume in a series-wide (bulk) edit.
 const PICK_FIELDS = computed(() => [
-  { key: 'title', label: 'Title', bulkHidden: true },
-  { key: 'author', label: isVideoType.value ? 'Director' : 'Author' },
-  { key: 'artists', label: isVideoType.value ? 'Cast' : 'Artists' },
-  { key: 'series', label: 'Series' },
-  { key: 'releaseDate', label: 'Date' },
-  { key: 'status', label: 'Status' },
-  { key: 'publisher', label: 'Publisher' },
-  { key: 'genres', label: 'Genres' },
-  { key: 'themes', label: 'Themes' },
-  { key: 'overview', label: 'Description', formKey: 'description' },
-  { key: 'coverUrl', label: 'Cover' }
+  { key: 'title', label: t('metadata.fields.title'), bulkHidden: true },
+  { key: 'author', label: isVideoType.value ? t('metadata.fields.director') : t('metadata.fields.author') },
+  { key: 'artists', label: isVideoType.value ? t('metadata.fields.cast') : t('metadata.fields.artistsShort') },
+  { key: 'series', label: t('metadata.fields.series') },
+  { key: 'releaseDate', label: t('metadata.fields.date') },
+  { key: 'status', label: t('metadata.fields.status') },
+  { key: 'publisher', label: t('metadata.fields.publisher') },
+  { key: 'genres', label: t('metadata.fields.genres') },
+  { key: 'themes', label: t('metadata.fields.themes') },
+  { key: 'overview', label: t('metadata.fields.description'), formKey: 'description' },
+  { key: 'coverUrl', label: t('metadata.fields.cover') }
 ]);
 
 function hasValue(val) {
@@ -510,7 +513,7 @@ async function search() {
   } catch (err) {
     console.error('Metadata search failed:', err);
     results.value = [];
-    errorMessage.value = err.response?.data?.error || 'Failed to search metadata providers — see browser console for details.';
+    errorMessage.value = err.response?.data?.error || t('metadata.edit.searchFailed');
   } finally {
     searching.value = false;
     hasSearched.value = true;
@@ -556,7 +559,7 @@ async function saveForm() {
       if (pickedCoverUrl.value) payload.coverUrl = pickedCoverUrl.value;
       const res = await api.post('/metadata/apply-series', payload);
       const count = res.data.updatedCount ?? props.applyToIds.length;
-      dialog.alert({ title: 'Metadata saved', message: `Updated all ${count} items in the series.`, type: 'success' });
+      dialog.alert({ title: t('metadata.edit.savedTitle'), message: t('metadata.edit.savedSeries', { count }), type: 'success' });
     } else {
       if (!props.item) return;
       const payload = {
@@ -565,13 +568,13 @@ async function saveForm() {
       };
       if (pickedCoverUrl.value) payload.coverUrl = pickedCoverUrl.value;
       await api.post(`/metadata/apply/${props.item.id}`, payload);
-      dialog.alert({ title: 'Metadata saved', message: `Updated "${payload.title}".`, type: 'success' });
+      dialog.alert({ title: t('metadata.edit.savedTitle'), message: t('metadata.edit.savedOne', { title: payload.title }), type: 'success' });
     }
     emit('applied');
     close();
   } catch (err) {
     console.error('Metadata save failed:', err);
-    dialog.alert(err.response?.data?.error || 'Failed to save metadata — see browser console for details.');
+    dialog.alert(err.response?.data?.error || t('metadata.edit.saveFailed'));
   } finally {
     saving.value = false;
   }

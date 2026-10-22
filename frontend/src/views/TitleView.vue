@@ -22,21 +22,21 @@
           <button
             @click="goBack"
             class="h-9 sm:h-7 px-3 sm:px-2.5 rounded-lg bg-background hover:bg-muted text-foreground transition active:scale-95 flex items-center gap-1.5 text-xs font-medium border border-border flex-shrink-0 shadow-sm"
-            title="Back to shelf"
+            :title="$t('title.nav.backToShelf')"
           >
             <ArrowLeft class="w-3.5 h-3.5" />
-            <span class="hidden sm:inline">Back</span>
+            <span class="hidden sm:inline">{{ $t('common.back') }}</span>
           </button>
 
           <div class="h-3.5 w-[1px] bg-border flex-shrink-0" />
 
           <div class="flex items-center gap-1.5 text-muted-foreground truncate">
-            <router-link to="/" class="hover:text-foreground transition">Shelf</router-link>
+            <router-link to="/" class="hover:text-foreground transition">{{ $t('title.nav.shelf') }}</router-link>
             <ChevronRight class="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
             <span class="hover:text-foreground transition cursor-pointer" @click="goBackToType">{{ vocab.type }}</span>
             <ChevronRight class="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
             <span class="font-semibold text-foreground truncate max-w-[200px] sm:max-w-md">
-              {{ series?.name || 'Details' }}
+              {{ series?.name || $t('title.nav.details') }}
             </span>
           </div>
         </div>
@@ -52,7 +52,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex-1 flex flex-col items-center justify-center py-24 gap-3 text-muted-foreground">
       <Loader2 class="w-8 h-8 animate-spin text-primary" />
-      <p class="text-xs font-mono">Loading…</p>
+      <p class="text-xs font-mono">{{ $t('common.loading') }}</p>
     </div>
 
     <!-- Error State -->
@@ -61,12 +61,12 @@
         <AlertCircle class="w-6 h-6" />
       </div>
       <h2 class="text-lg font-bold text-foreground">{{ error }}</h2>
-      <p class="text-xs text-muted-foreground mt-1 mb-6">Could not load this series or it may have been removed.</p>
+      <p class="text-xs text-muted-foreground mt-1 mb-6">{{ $t('title.errors.loadHint') }}</p>
       <button
         @click="goBack"
         class="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition shadow-sm"
       >
-        Return to Shelf
+        {{ $t('title.nav.returnToShelf') }}
       </button>
     </div>
 
@@ -137,7 +137,7 @@
               <div>
                 <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
                   <span class="text-[11px] uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
-                    {{ series.standalone ? vocab.type.replace(/s$/, '') : vocab.series }}
+                    {{ series.standalone ? $t(`common.mediaType.${typeKey}`) : vocab.series }}
                   </span>
                   <span v-if="shownStatus" class="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground capitalize">
                     {{ shownStatus }}
@@ -206,7 +206,7 @@
                   <button
                     @click="showActionMenu = !showActionMenu"
                     class="hero-btn !h-11 !w-11 !px-0 justify-center"
-                    aria-label="More actions"
+                    :aria-label="$t('title.actions.more')"
                     aria-haspopup="menu"
                     :aria-expanded="String(showActionMenu)"
                   >
@@ -234,10 +234,12 @@
               <!-- Progress through a series (a single title shows it on the poster) -->
               <div v-if="!isSingle" class="w-full max-w-md mx-auto sm:mx-0">
                 <div class="flex items-center justify-between text-xs mb-1.5">
-                  <span class="text-muted-foreground font-medium">Progress</span>
+                  <span class="text-muted-foreground font-medium">{{ $t('title.progress.label') }}</span>
                   <span class="font-medium text-foreground tabular-nums">
-                    {{ series.readCount }}<template v-if="series.skippedCount"> + {{ series.skippedCount }} skipped</template> of {{ unitsLabel(series.volumeCount).toLowerCase() }}
-                    <span class="text-muted-foreground">· {{ series.overallProgress }}%</span>
+                    {{ series.skippedCount
+                      ? typed('progressOfSkipped', { read: series.readCount, count: series.skippedCount, total: series.volumeCount })
+                      : typed('progressOf', { read: series.readCount, count: series.volumeCount }) }}
+                    <span class="text-muted-foreground">· {{ percent(series.overallProgress) }}</span>
                   </span>
                 </div>
                 <div class="h-1.5 w-full bg-muted rounded-full overflow-hidden">
@@ -255,11 +257,11 @@
               <!-- Offloaded: removed to free space, history kept -->
               <p v-if="isSingle && single.offloaded_at" class="text-xs text-muted-foreground leading-relaxed max-w-xl mx-auto sm:mx-0 flex items-start gap-2 text-left">
                 <Archive class="w-4 h-4 flex-shrink-0 mt-px" />
-                <span>Removed from the server to free space. Your history and ratings are kept, and it comes back by itself if the file is put back.</span>
+                <span>{{ $t('title.offloaded.single') }}</span>
               </p>
               <p v-else-if="!isSingle && series.offloadedCount" class="text-xs text-muted-foreground flex items-center gap-2 justify-center sm:justify-start">
                 <Archive class="w-4 h-4 flex-shrink-0" />
-                <span>{{ series.offloadedCount === series.volumeCount ? 'All' : series.offloadedCount }} of these {{ series.offloadedCount === series.volumeCount ? '' : `${series.volumeCount} ` }}{{ vocab.units.toLowerCase() }} {{ series.offloadedCount === 1 ? 'was' : 'were' }} offloaded to free space; they're kept as history.</span>
+                <span>{{ series.offloadedCount === series.volumeCount ? typed('offloadedAll') : typed('offloadedSome', { count: series.offloadedCount, total: series.volumeCount }) }}</span>
               </p>
 
               <!-- Tagline + overview -->
@@ -275,7 +277,7 @@
                   @click="overviewExpanded = !overviewExpanded"
                   class="mt-1 text-xs font-semibold text-primary hover:underline"
                 >
-                  {{ overviewExpanded ? 'Show less' : 'Read more' }}
+                  {{ overviewExpanded ? $t('common.showLess') : $t('title.overview.readMore') }}
                 </button>
               </div>
 
@@ -297,7 +299,7 @@
         <section v-if="isEpisodic" class="flex flex-col gap-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h2 class="section-title">
-              {{ seasons.length > 1 ? 'Seasons' : 'Episodes' }}
+              {{ seasons.length > 1 ? $t('title.sections.seasons') : $t('title.sections.episodes') }}
               <span class="count-pill">{{ seasons.length > 1 ? seasons.length : series.volumeCount }}</span>
             </h2>
             <div class="flex items-center gap-2">
@@ -308,15 +310,15 @@
                 class="h-8 px-3 rounded-lg bg-card hover:bg-muted border border-border text-xs font-medium transition flex items-center gap-1.5 disabled:opacity-50"
               >
                 <Check class="w-3.5 h-3.5" :class="activeSeason.watched === activeSeason.episodes.length ? 'text-muted-foreground' : 'text-emerald-500'" />
-                {{ activeSeason.watched === activeSeason.episodes.length ? 'Mark Unwatched' : `Mark ${activeSeason.label} Watched` }}
+                {{ activeSeason.watched === activeSeason.episodes.length ? $t('title.season.markUnwatched') : $t('title.season.markWatched', { season: activeSeason.label }) }}
               </button>
               <button
                 @click="sortAscending = !sortAscending"
                 class="h-8 px-2.5 rounded-lg bg-card hover:bg-muted border border-border text-xs font-medium transition flex items-center gap-1.5"
-                :title="sortAscending ? 'Order: first to last' : 'Order: last to first'"
+                :title="sortAscending ? $t('title.sort.firstToLast') : $t('title.sort.lastToFirst')"
               >
                 <ArrowUpDown class="w-3.5 h-3.5 text-muted-foreground" />
-                {{ sortAscending ? 'Oldest first' : 'Newest first' }}
+                {{ sortAscending ? $t('title.sort.oldestFirst') : $t('title.sort.newestFirst') }}
               </button>
             </div>
           </div>
@@ -357,7 +359,7 @@
                 :class="activeSeason?.key === s.key ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'"
               >{{ s.label }}</p>
               <p class="text-xs text-muted-foreground">
-                {{ s.watched && s.watched < s.episodes.length ? `${s.watched} of ` : '' }}{{ s.episodes.length }} {{ s.episodes.length === 1 ? 'episode' : 'episodes' }}<template v-if="s.offloaded && s.offloaded < s.episodes.length"> · {{ s.offloaded }} offloaded</template>
+                {{ s.watched && s.watched < s.episodes.length ? $t('title.season.episodesWatched', { watched: s.watched, count: s.episodes.length }) : $t('title.season.episodes', { count: s.episodes.length }) }}<template v-if="s.offloaded && s.offloaded < s.episodes.length"> · {{ $t('title.season.offloaded', { count: s.offloaded }) }}</template>
               </p>
             </button>
           </div>
@@ -375,7 +377,7 @@
                 type="button"
                 @click="openVolumeReader(ep)"
                 class="relative w-32 sm:w-56 lg:w-64 aspect-video self-start rounded-lg overflow-hidden bg-muted flex-shrink-0"
-                :aria-label="`Play ${ep.title}`"
+                :aria-label="$t('title.episode.play', { title: ep.title })"
               >
                 <img
                   :src="stillFailed[ep.id] ? volumeCoverUrl(ep, 720) : stillUrl(ep)"
@@ -411,10 +413,10 @@
                 </div>
 
                 <p class="text-xs flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span v-if="ep.id === series.nextVolume?.id && !ep.is_finished" class="px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-semibold">Up next</span>
-                  <span v-if="ep.offloaded_at" class="text-muted-foreground font-medium">Offloaded</span>
-                  <span v-if="ep.is_finished" class="text-emerald-500 font-semibold">Watched<template v-if="ep.progress_updated_at"> · {{ formatDate(ep.progress_updated_at) }}</template></span>
-                  <span v-else-if="isSkipped(ep)" class="text-sky-500 font-semibold">Skipped</span>
+                  <span v-if="ep.id === series.nextVolume?.id && !ep.is_finished" class="px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-semibold">{{ $t('title.status.upNext') }}</span>
+                  <span v-if="ep.offloaded_at" class="text-muted-foreground font-medium">{{ $t('title.status.offloaded') }}</span>
+                  <span v-if="ep.is_finished" class="text-emerald-500 font-semibold">{{ $t('title.status.watched') }}<template v-if="ep.progress_updated_at"> · {{ formatDate(ep.progress_updated_at) }}</template></span>
+                  <span v-else-if="isSkipped(ep)" class="text-sky-500 font-semibold">{{ $t('title.status.skipped') }}</span>
                   <span v-else-if="hasStarted(ep)" class="text-primary font-medium font-mono">{{ positionLabel(ep, true) }}</span>
                 </p>
 
@@ -424,8 +426,8 @@
                   <button
                     @click="toggleVolumeReadStatus(ep)"
                     class="ep-btn"
-                    :title="ep.is_finished ? 'Mark as not watched' : 'Mark as watched'"
-                    :aria-label="ep.is_finished ? 'Mark as not watched' : 'Mark as watched'"
+                    :title="ep.is_finished ? $t('title.episode.markUnwatched') : typed('markAs')"
+                    :aria-label="ep.is_finished ? $t('title.episode.markUnwatched') : typed('markAs')"
                   >
                     <CheckCircle2 v-if="ep.is_finished" class="w-4 h-4 text-emerald-500" />
                     <Check v-else class="w-4 h-4" />
@@ -435,8 +437,8 @@
                     @click="toggleVolumeSkipped(ep)"
                     class="ep-btn"
                     :class="isSkipped(ep) ? '!border-sky-500/50 !text-sky-500' : ''"
-                    :title="isSkipped(ep) ? 'Skipped — tap to unskip' : 'Skip this episode'"
-                    :aria-label="isSkipped(ep) ? 'Unskip episode' : 'Skip episode'"
+                    :title="isSkipped(ep) ? $t('title.skip.skippedHint') : typed('skipThis')"
+                    :aria-label="isSkipped(ep) ? typed('unskipUnit') : typed('skipUnit')"
                   >
                     <FastForward class="w-4 h-4" />
                   </button>
@@ -455,8 +457,8 @@
                     v-if="customizationStore.ratings.showPersonal"
                     @click="openRating(ep)"
                     class="ep-btn gap-1 !w-auto px-2"
-                    :title="ep.user_rating ? `You rated this ${ep.user_rating}/5 — change it in the header` : 'Rate this episode in the header'"
-                    aria-label="Rate this episode"
+                    :title="ep.user_rating ? $t('title.rating.youRated', { rating: ep.user_rating }) : typed('rateInHeader')"
+                    :aria-label="typed('rateThis')"
                   >
                     <Star class="w-4 h-4" :class="ep.user_rating ? 'text-amber-400 fill-amber-400' : ''" />
                     <span v-if="ep.user_rating" class="text-xs font-semibold text-foreground">{{ ep.user_rating }}</span>
@@ -471,16 +473,16 @@
         <section v-else-if="isMovieCollection" class="flex flex-col gap-4">
           <div class="flex items-center justify-between gap-3">
             <h2 class="section-title">
-              Movies
-              <span class="count-pill">{{ collectionMissingCount ? `${series.volumeCount} of ${collectionRows.length}` : series.volumeCount }}</span>
+              {{ $t('common.mediaTypes.movie') }}
+              <span class="count-pill">{{ collectionMissingCount ? $t('title.collection.countOf', { owned: series.volumeCount, total: collectionRows.length }) : series.volumeCount }}</span>
             </h2>
             <button
               @click="sortAscending = !sortAscending"
               class="h-8 px-2.5 rounded-lg bg-card hover:bg-muted border border-border text-xs font-medium transition flex items-center gap-1.5"
-              :title="sortAscending ? 'Order: first to last' : 'Order: last to first'"
+              :title="sortAscending ? $t('title.sort.firstToLast') : $t('title.sort.lastToFirst')"
             >
               <ArrowUpDown class="w-3.5 h-3.5 text-muted-foreground" />
-              {{ sortAscending ? 'Oldest first' : 'Newest first' }}
+              {{ sortAscending ? $t('title.sort.oldestFirst') : $t('title.sort.newestFirst') }}
             </button>
           </div>
 
@@ -500,7 +502,7 @@
                   <span
                     v-else-if="film.id === series.nextVolume?.id"
                     class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-primary text-primary-foreground text-[11px] font-semibold shadow"
-                  >Up next</span>
+                  >{{ $t('title.status.upNext') }}</span>
                   <div v-if="film.progress_percent > 0 && !film.is_finished" class="absolute bottom-0 inset-x-0 h-1.5 bg-black/50">
                     <div class="h-full bg-primary" :style="{ width: `${film.progress_percent}%` }" />
                   </div>
@@ -509,7 +511,7 @@
                       type="button"
                       @click.prevent.stop="openVolumeReader(film)"
                       class="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl active:scale-95 transition"
-                      :aria-label="`${film.is_finished ? 'Watch again' : (hasStarted(film) ? 'Resume' : 'Play')}: ${film.title}`"
+                      :aria-label="film.is_finished ? $t('title.collection.watchAgain', { title: film.title }) : (hasStarted(film) ? $t('title.collection.resume', { title: film.title }) : $t('title.collection.play', { title: film.title }))"
                     >
                       <Play class="w-5 h-5 fill-current ml-0.5" />
                     </button>
@@ -531,7 +533,7 @@
                 <div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border-2 border-dashed border-muted-foreground/30">
                   <img v-if="part.posterUrl" :src="part.posterUrl" :alt="part.title" loading="lazy" class="w-full h-full object-cover art-not-owned" />
                   <div v-else class="w-full h-full flex items-center justify-center text-2xl font-semibold text-muted-foreground/50">{{ initials(part.title) }}</div>
-                  <span v-if="part.upcoming" class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-semibold">Coming soon</span>
+                  <span v-if="part.upcoming" class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-semibold">{{ $t('title.collection.comingSoon') }}</span>
                   <AvailabilityBadge v-else kind="not-owned" small class="absolute top-2 left-2" />
                 </div>
                 <p class="mt-2 text-sm font-medium text-muted-foreground line-clamp-2">{{ part.title }}</p>
@@ -563,7 +565,7 @@
                 class="sm:hidden h-9 min-w-0 flex-1 px-3 rounded-lg bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition flex items-center gap-1.5 active:scale-95"
                 :class="activeFilterTab !== 'all' ? '!border-primary/60 bg-primary/5' : ''"
                 aria-haspopup="dialog"
-                :aria-label="`Filter: ${activeFilterLabel}`"
+                :aria-label="$t('title.filter.label', { label: activeFilterLabel })"
               >
                 <ListFilter class="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
                 <span class="truncate">{{ activeFilterLabel }}</span>
@@ -593,28 +595,28 @@
                 <button
                   @click="sortAscending = !sortAscending"
                   class="h-9 sm:h-7 px-2.5 rounded-lg bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition flex items-center gap-1.5 active:scale-95"
-                  :title="sortAscending ? 'Order: first to last' : 'Order: last to first'"
+                  :title="sortAscending ? $t('title.sort.firstToLast') : $t('title.sort.lastToFirst')"
                 >
                   <ArrowUpDown class="w-3 h-3 text-muted-foreground" />
                   <span class="font-mono text-xs">{{ sortAscending ? '1 → N' : 'N → 1' }}</span>
                 </button>
                 <!-- Same outer height as the order button: 2px border + 2px padding + button. -->
-                <div class="h-9 sm:h-7 flex items-center bg-muted/50 p-0.5 rounded-lg border border-border" role="group" aria-label="Layout">
+                <div class="h-9 sm:h-7 flex items-center bg-muted/50 p-0.5 rounded-lg border border-border" role="group" :aria-label="$t('title.layout.label')">
                   <button
-                    aria-label="Grid view"
+                    :aria-label="$t('title.layout.grid')"
                     :aria-pressed="String(viewLayout === 'grid')"
                     @click="viewLayout = 'grid'"
                     :class="['h-full aspect-square rounded-md transition flex items-center justify-center', viewLayout === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
-                    title="Grid view"
+                    :title="$t('title.layout.grid')"
                   >
                     <LayoutGrid class="w-3.5 h-3.5" />
                   </button>
                   <button
-                    aria-label="List view"
+                    :aria-label="$t('title.layout.list')"
                     :aria-pressed="String(viewLayout === 'list')"
                     @click="viewLayout = 'list'"
                     :class="['h-full aspect-square rounded-md transition flex items-center justify-center', viewLayout === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
-                    title="List view"
+                    :title="$t('title.layout.list')"
                   >
                     <List class="w-3.5 h-3.5" />
                   </button>
@@ -629,8 +631,8 @@
           class="py-16 text-center border border-dashed border-border rounded-2xl bg-card/30"
         >
           <BookX class="w-10 h-10 text-muted-foreground/60 mx-auto mb-2" />
-          <h3 class="text-sm font-semibold text-foreground">Nothing in this filter</h3>
-          <p class="text-xs text-muted-foreground mt-1">Switch to the "All" tab to see every {{ vocab.unit.toLowerCase() }}.</p>
+          <h3 class="text-sm font-semibold text-foreground">{{ $t('title.filter.emptyTitle') }}</h3>
+          <p class="text-xs text-muted-foreground mt-1">{{ typed('emptyHint') }}</p>
         </div>
 
         <!-- Volumes View: Grid Layout -->
@@ -679,19 +681,19 @@
                   v-else-if="isSkipped(vol)"
                   class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-500 text-white text-[11px] font-bold shadow-md"
                 >
-                  <FastForward class="w-3 h-3" /> Skipped
+                  <FastForward class="w-3 h-3" /> {{ $t('title.status.skipped') }}
                 </span>
                 <span
                   v-else-if="vol.progress_percent > 0"
                   class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground text-[11px] font-mono font-bold shadow-md"
                 >
-                  {{ Math.round(vol.progress_percent) }}%
+                  {{ percent(vol.progress_percent) }}
                 </span>
                 <span
                   v-else
                   class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-black/60 text-zinc-300 text-[11px] font-medium backdrop-blur-sm"
                 >
-                  New
+                  {{ $t('title.status.new') }}
                 </span>
               </div>
 
@@ -729,16 +731,16 @@
 
                 <!-- Read history text -->
                 <span v-if="vol.is_finished" class="text-emerald-500 font-semibold flex items-center gap-0.5">
-                  <Check class="w-3 h-3" /> Done
+                  <Check class="w-3 h-3" /> {{ $t('title.status.done') }}
                 </span>
                 <span v-else-if="isSkipped(vol)" class="text-sky-500 font-semibold flex items-center gap-0.5">
-                  <FastForward class="w-3 h-3" /> Skipped
+                  <FastForward class="w-3 h-3" /> {{ $t('title.status.skipped') }}
                 </span>
                 <span v-else-if="hasStarted(vol)" class="text-primary font-mono font-medium">
                   {{ positionLabel(vol) }}
                 </span>
                 <span v-else class="text-muted-foreground/80">
-                  New
+                  {{ $t('title.status.new') }}
                 </span>
               </div>
 
@@ -754,12 +756,12 @@
                   >
                     <Book v-if="!vol.is_finished && !hasStarted(vol)" class="w-3.5 h-3.5 flex-shrink-0" />
                     <BookOpen v-else class="w-3.5 h-3.5 flex-shrink-0" />
-                    <span class="truncate">{{ vol.is_finished ? 'Again' : (hasStarted(vol) ? 'Resume' : vocab.verb) }}</span>
+                    <span class="truncate">{{ vol.is_finished ? $t('title.volume.again') : (hasStarted(vol) ? $t('common.resume') : vocab.verb) }}</span>
                   </button>
                   <button
                     @click="openVolumeSheet(vol)"
                     class="sm:hidden w-9 h-9 flex-shrink-0 rounded-lg border border-border hover:bg-muted text-muted-foreground flex items-center justify-center transition active:scale-95"
-                    :aria-label="`More for ${entryLabel(vol)}`"
+                    :aria-label="$t('title.volume.moreFor', { label: entryLabel(vol) })"
                     aria-haspopup="dialog"
                   >
                     <MoreHorizontal class="w-4 h-4" />
@@ -768,29 +770,29 @@
 
                 <div class="hidden sm:grid grid-flow-col auto-cols-fr gap-1.5">
                   <!-- Mark Read / Unread 1-Click Toggle -->
-                  <button :aria-label="vol.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}`"
+                  <button :aria-label="vol.is_finished ? $t('title.volume.markNotStarted') : typed('markAs')"
                     @click="toggleVolumeReadStatus(vol)"
                     class="h-8 min-w-0 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
-                    :title="vol.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}`"
+                    :title="vol.is_finished ? $t('title.volume.markNotStarted') : typed('markAs')"
                   >
                     <BookCheck v-if="vol.is_finished" class="w-4 h-4 text-emerald-500" />
                     <Book v-else class="w-4 h-4" />
                   </button>
 
-                  <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? `Unskip ${vocab.unit.toLowerCase()}` : `Skip ${vocab.unit.toLowerCase()}`"
+                  <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? typed('unskipUnit') : typed('skipUnit')"
                     @click="toggleVolumeSkipped(vol)"
                     class="h-8 min-w-0 rounded-lg border hover:bg-muted flex items-center justify-center transition active:scale-95"
                     :class="isSkipped(vol) ? 'border-sky-500/50 text-sky-500' : 'border-border text-muted-foreground hover:text-foreground'"
-                    :title="isSkipped(vol) ? 'Skipped — tap to unskip' : `Skip this ${vocab.unit.toLowerCase()}`"
+                    :title="isSkipped(vol) ? $t('title.skip.skippedHint') : typed('skipThis')"
                   >
                     <FastForward class="w-3.5 h-3.5" />
                   </button>
 
                   <!-- Bookmarks button -->
-                  <button aria-label="Bookmarks & Notes"
+                  <button :aria-label="$t('title.bookmarks.title')"
                     @click="openBookmarks(vol)"
                     class="h-8 min-w-0 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
-                    title="Bookmarks & Notes"
+                    :title="$t('title.bookmarks.title')"
                   >
                     <Bookmark class="w-3.5 h-3.5" />
                   </button>
@@ -806,10 +808,10 @@
                   </button>
 
                   <!-- Rate — shows your stars once you've rated it; the stars themselves are in the header -->
-                  <button v-if="customizationStore.ratings.showPersonal" :aria-label="`Rate this ${vocab.unit.toLowerCase()}`"
+                  <button v-if="customizationStore.ratings.showPersonal" :aria-label="typed('rateThis')"
                     @click="openRating(vol)"
                     class="h-8 min-w-0 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center gap-0.5 transition active:scale-95 text-[12px] font-semibold"
-                    :title="vol.user_rating ? `You rated this ${vol.user_rating}/5 — change it in the header` : `Rate this ${vocab.unit.toLowerCase()} in the header`"
+                    :title="vol.user_rating ? $t('title.rating.youRated', { rating: vol.user_rating }) : typed('rateInHeader')"
                   >
                     <Star class="w-3.5 h-3.5 flex-shrink-0" :class="vol.user_rating ? 'text-amber-400 fill-amber-400' : ''" />
                     <span v-if="vol.user_rating" class="text-foreground">{{ vol.user_rating }}</span>
@@ -875,25 +877,25 @@
                   <!-- Status state -->
                   <span v-if="vol.is_finished" class="text-emerald-500 font-semibold flex items-center gap-1">
                     <BookCheck class="w-3.5 h-3.5" />
-                    <span>Finished</span>
+                    <span>{{ $t('title.status.finished') }}</span>
                     <span v-if="vol.progress_updated_at" class="text-muted-foreground font-normal ml-1">
                       ({{ formatDate(vol.progress_updated_at) }})
                     </span>
                   </span>
                   <span v-else-if="isSkipped(vol)" class="text-sky-500 font-medium flex items-center gap-1">
                     <FastForward class="w-3.5 h-3.5" />
-                    <span>Skipped</span>
+                    <span>{{ $t('title.status.skipped') }}</span>
                   </span>
                   <span v-else-if="hasStarted(vol)" class="text-primary font-medium flex items-center gap-1">
                     <BookOpen class="w-3.5 h-3.5" />
-                    <span>{{ positionLabel(vol, true) }} ({{ Math.round(vol.progress_percent || 0) }}%)</span>
+                    <span>{{ $t('title.position.withPercent', { position: positionLabel(vol, true), percent: percent(vol.progress_percent || 0) }) }}</span>
                     <span v-if="vol.progress_updated_at" class="text-muted-foreground font-normal ml-1">
                       · {{ formatDate(vol.progress_updated_at) }}
                     </span>
                   </span>
                   <span v-else class="text-muted-foreground/80 flex items-center gap-1">
                     <Book class="w-3.5 h-3.5" />
-                    <span>Not started</span>
+                    <span>{{ $t('title.status.notStarted') }}</span>
                   </span>
                 </div>
 
@@ -918,13 +920,13 @@
                 <Play v-if="(isTimeBasedType || hasStarted(vol)) && !vol.is_finished" class="w-3.5 h-3.5 fill-current" />
                 <Book v-else-if="!vol.is_finished" class="w-3.5 h-3.5" />
                 <BookOpen v-else class="w-3.5 h-3.5" />
-                <span>{{ vol.is_finished ? `${vocab.verb} Again` : (hasStarted(vol) ? 'Resume' : vocab.verb) }}</span>
+                <span>{{ vol.is_finished ? typed('again') : (hasStarted(vol) ? $t('common.resume') : vocab.verb) }}</span>
               </button>
 
               <button
                 @click="openVolumeSheet(vol)"
                 class="sm:hidden w-10 h-10 flex-shrink-0 rounded-xl border border-border hover:bg-muted text-muted-foreground flex items-center justify-center transition active:scale-95"
-                :aria-label="`More for ${entryLabel(vol)}`"
+                :aria-label="$t('title.volume.moreFor', { label: entryLabel(vol) })"
                 aria-haspopup="dialog"
               >
                 <MoreHorizontal class="w-4 h-4" />
@@ -934,28 +936,28 @@
               <button
                 @click="toggleVolumeReadStatus(vol)"
                 class="hidden sm:flex h-9 px-3 rounded-xl border border-border hover:bg-muted text-foreground text-xs font-medium transition active:scale-95 items-center gap-1.5"
-                :title="vol.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}`"
+                :title="vol.is_finished ? $t('title.volume.markNotStarted') : typed('markAs')"
               >
                 <BookCheck v-if="vol.is_finished" class="w-4 h-4 text-emerald-500" />
                 <Book v-else class="w-4 h-4 text-muted-foreground" />
-                <span class="hidden md:inline">{{ vol.is_finished ? 'Mark Not Started' : `Mark ${vocab.done}` }}</span>
+                <span class="hidden md:inline">{{ vol.is_finished ? $t('title.volume.markNotStartedShort') : typed('markDone') }}</span>
               </button>
 
-              <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? `Unskip ${vocab.unit.toLowerCase()}` : `Skip ${vocab.unit.toLowerCase()}`"
+              <button v-if="!vol.is_finished" :aria-label="isSkipped(vol) ? typed('unskipUnit') : typed('skipUnit')"
                 @click="toggleVolumeSkipped(vol)"
                 class="hidden sm:flex h-9 px-3 rounded-xl border hover:bg-muted text-xs font-medium transition active:scale-95 items-center gap-1.5"
                 :class="isSkipped(vol) ? 'border-sky-500/50 text-sky-500' : 'border-border text-foreground'"
-                :title="isSkipped(vol) ? 'Skipped — tap to unskip' : `Skip this ${vocab.unit.toLowerCase()}`"
+                :title="isSkipped(vol) ? $t('title.skip.skippedHint') : typed('skipThis')"
               >
                 <FastForward class="w-4 h-4" :class="isSkipped(vol) ? '' : 'text-muted-foreground'" />
-                <span class="hidden md:inline">{{ isSkipped(vol) ? 'Unskip' : 'Skip' }}</span>
+                <span class="hidden md:inline">{{ isSkipped(vol) ? $t('title.skip.unskip') : $t('title.skip.skip') }}</span>
               </button>
 
               <!-- Bookmarks Button -->
-              <button aria-label="Bookmarks & Notes"
+              <button :aria-label="$t('title.bookmarks.title')"
                 @click="openBookmarks(vol)"
                 class="hidden sm:flex w-9 h-9 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground items-center justify-center transition active:scale-95"
-                title="Bookmarks & Notes"
+                :title="$t('title.bookmarks.title')"
               >
                 <Bookmark class="w-4 h-4" />
               </button>
@@ -971,10 +973,10 @@
               </button>
 
               <!-- Rate — shows your stars once you've rated it; the stars themselves are in the header -->
-              <button v-if="customizationStore.ratings.showPersonal" :aria-label="`Rate this ${vocab.unit.toLowerCase()}`"
+              <button v-if="customizationStore.ratings.showPersonal" :aria-label="typed('rateThis')"
                 @click="openRating(vol)"
                 class="hidden sm:flex h-9 min-w-9 px-2 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground items-center justify-center gap-1 transition active:scale-95 text-xs font-semibold"
-                :title="vol.user_rating ? `You rated this ${vol.user_rating}/5 — change it in the header` : `Rate this ${vocab.unit.toLowerCase()} in the header`"
+                :title="vol.user_rating ? $t('title.rating.youRated', { rating: vol.user_rating }) : typed('rateInHeader')"
               >
                 <Star class="w-4 h-4" :class="vol.user_rating ? 'text-amber-400 fill-amber-400' : ''" />
                 <span v-if="vol.user_rating" class="text-foreground">{{ vol.user_rating }}</span>
@@ -987,13 +989,13 @@
         <!-- ─── The rest of a movie's collection (Star Wars…), owned or not ────────── -->
         <section v-if="moreInEntries.length" class="flex flex-col gap-4">
           <div class="flex items-center justify-between gap-3">
-            <h2 class="section-title">More in {{ moreInName }}</h2>
+            <h2 class="section-title">{{ $t('title.collection.moreIn', { name: moreInName }) }}</h2>
             <router-link
               v-if="collection"
               :to="{ path: `/series/${encodeURIComponent(collection.name)}`, query: { library: collection.libraryId, type: collection.mediaType } }"
               class="text-sm font-medium text-primary hover:underline flex items-center gap-1 flex-shrink-0"
             >
-              View all {{ collection.volumeCount }}
+              {{ $t('title.collection.viewAll', { count: collection.volumeCount }) }}
               <ChevronRight class="w-4 h-4" />
             </router-link>
           </div>
@@ -1014,7 +1016,7 @@
                 <div class="relative aspect-[2/3] rounded-xl overflow-hidden bg-muted border-2 border-dashed border-muted-foreground/30">
                   <img v-if="entry.part.posterUrl" :src="entry.part.posterUrl" :alt="entry.title" loading="lazy" class="w-full h-full object-cover art-not-owned" />
                   <div v-else class="w-full h-full flex items-center justify-center text-2xl font-semibold text-muted-foreground/50">{{ initials(entry.title) }}</div>
-                  <span v-if="entry.part.upcoming" class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-semibold">Coming soon</span>
+                  <span v-if="entry.part.upcoming" class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-semibold">{{ $t('title.collection.comingSoon') }}</span>
                   <AvailabilityBadge v-else kind="not-owned" small class="absolute top-2 left-2" />
                 </div>
                 <p class="mt-2 text-sm font-medium text-muted-foreground line-clamp-2">{{ entry.title }}</p>
@@ -1032,7 +1034,7 @@
         <section v-if="people.length" class="flex flex-col gap-4">
           <h2 class="section-title">
             <Users class="w-5 h-5 text-muted-foreground" />
-            Cast &amp; Crew
+            {{ $t('title.sections.castCrew') }}
           </h2>
           <div class="flex gap-4 overflow-x-auto no-scrollbar -mx-1 px-1 pb-2">
             <div v-for="person in people" :key="person.key" class="w-28 sm:w-32 flex-shrink-0">
@@ -1050,7 +1052,7 @@
         <section v-if="extrasList.length" class="flex flex-col gap-4">
           <h2 class="section-title">
             <Clapperboard class="w-5 h-5 text-muted-foreground" />
-            Extras
+            {{ $t('title.sections.extras') }}
             <span class="count-pill">{{ extrasList.length }}</span>
           </h2>
           <div class="flex gap-4 overflow-x-auto no-scrollbar -mx-1 px-1 pb-2">
@@ -1068,7 +1070,7 @@
                 </div>
               </div>
               <p class="mt-2 text-sm font-semibold text-foreground line-clamp-2">{{ extra.title }}</p>
-              <p class="text-xs text-muted-foreground mt-0.5">{{ extra.extra_type }}<template v-if="extra.duration"> · {{ formatLength(extra.duration) }}</template></p>
+              <p class="text-xs text-muted-foreground mt-0.5">{{ extraTypeLabel(extra.extra_type) }}<template v-if="extra.duration"> · {{ formatLength(extra.duration) }}</template></p>
             </button>
           </div>
         </section>
@@ -1077,7 +1079,7 @@
         <section v-if="mediaFacts.length" class="flex flex-col gap-4">
           <h2 class="section-title">
             <Info class="w-5 h-5 text-muted-foreground" />
-            {{ isSingle ? 'Media Info' : 'Details' }}
+            {{ isSingle ? $t('title.sections.mediaInfo') : $t('title.nav.details') }}
           </h2>
           <dl class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4 rounded-2xl border border-border bg-card/40 p-4 sm:p-5">
             <div v-for="fact in mediaFacts" :key="fact.label" class="min-w-0">
@@ -1103,11 +1105,11 @@
           <div
             role="dialog"
             aria-modal="true"
-            :aria-label="`Show ${vocab.units.toLowerCase()}`"
+            :aria-label="typed('showUnits')"
             class="sheet-panel w-full rounded-t-2xl border-t border-border bg-card shadow-2xl px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
           >
             <div class="mx-auto mb-2 h-1 w-10 rounded-full bg-muted-foreground/30" aria-hidden="true" />
-            <p class="px-2 pb-2 text-sm font-semibold text-foreground border-b border-border/60">Show {{ vocab.units.toLowerCase() }}</p>
+            <p class="px-2 pb-2 text-sm font-semibold text-foreground border-b border-border/60">{{ typed('showUnits') }}</p>
             <div class="flex flex-col py-1.5">
               <button
                 v-for="tab in filterTabs"
@@ -1142,7 +1144,7 @@
             ref="sheetEl"
             role="dialog"
             aria-modal="true"
-            :aria-label="`${entryLabel(sheetVolume)} actions`"
+            :aria-label="$t('title.volume.actions', { label: entryLabel(sheetVolume) })"
             tabindex="-1"
             class="sheet-panel w-full max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-border bg-card shadow-2xl px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] focus:outline-none"
           >
@@ -1154,9 +1156,9 @@
                 <p class="text-xs text-muted-foreground">
                   {{ entryLabel(sheetVolume) }} ·
                   <span v-if="sheetVolume.is_finished" class="text-emerald-500 font-medium">{{ vocab.done }}</span>
-                  <span v-else-if="isSkipped(sheetVolume)" class="text-sky-500 font-medium">Skipped</span>
+                  <span v-else-if="isSkipped(sheetVolume)" class="text-sky-500 font-medium">{{ $t('title.status.skipped') }}</span>
                   <span v-else-if="hasStarted(sheetVolume)" class="text-primary font-medium">{{ positionLabel(sheetVolume, true) }}</span>
-                  <span v-else>Not started</span>
+                  <span v-else>{{ $t('title.status.notStarted') }}</span>
                 </p>
               </div>
             </div>
@@ -1165,20 +1167,20 @@
               <button type="button" class="sheet-item" @click="sheetRun(openVolumeReader)">
                 <Play v-if="hasStarted(sheetVolume) && !sheetVolume.is_finished" class="w-5 h-5 text-primary fill-current" />
                 <BookOpen v-else class="w-5 h-5 text-primary" />
-                <span class="font-semibold">{{ sheetVolume.is_finished ? `${vocab.verb} again` : (hasStarted(sheetVolume) ? 'Resume' : vocab.verb) }}</span>
+                <span class="font-semibold">{{ sheetVolume.is_finished ? typed('againLower') : (hasStarted(sheetVolume) ? $t('common.resume') : vocab.verb) }}</span>
               </button>
               <button type="button" class="sheet-item" @click="sheetRun(toggleVolumeReadStatus)">
                 <BookCheck v-if="!sheetVolume.is_finished" class="w-5 h-5 text-emerald-500" />
                 <RotateCcw v-else class="w-5 h-5 text-muted-foreground" />
-                <span>{{ sheetVolume.is_finished ? 'Mark as not started' : `Mark as ${vocab.done.toLowerCase()}` }}</span>
+                <span>{{ sheetVolume.is_finished ? $t('title.volume.markNotStarted') : typed('markAs') }}</span>
               </button>
               <button v-if="!sheetVolume.is_finished" type="button" class="sheet-item" @click="sheetRun(toggleVolumeSkipped)">
                 <FastForward class="w-5 h-5 text-sky-500" />
-                <span>{{ isSkipped(sheetVolume) ? 'Unskip' : `Skip this ${vocab.unit.toLowerCase()}` }}</span>
+                <span>{{ isSkipped(sheetVolume) ? $t('title.skip.unskip') : typed('skipThis') }}</span>
               </button>
               <button type="button" class="sheet-item" @click="sheetRun(openBookmarks)">
                 <Bookmark class="w-5 h-5 text-muted-foreground" />
-                <span>Bookmarks &amp; notes</span>
+                <span>{{ $t('title.bookmarks.label') }}</span>
               </button>
               <button v-if="downloads.canDownload(sheetVolume)" type="button" class="sheet-item" @click="sheetRun(toggleVolumeDownload)">
                 <CheckCircle2 v-if="downloads.isDownloaded(sheetVolume.id)" class="w-5 h-5 text-emerald-500" />
@@ -1188,12 +1190,12 @@
               </button>
               <button v-if="customizationStore.ratings.showPersonal" type="button" class="sheet-item" @click="sheetRun(openRating)">
                 <Star class="w-5 h-5" :class="sheetVolume.user_rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'" />
-                <span>{{ sheetVolume.user_rating ? `Your rating: ${sheetVolume.user_rating}/5 — change` : `Rate this ${vocab.unit.toLowerCase()}` }}</span>
+                <span>{{ sheetVolume.user_rating ? $t('title.rating.yourRatingChange', { rating: sheetVolume.user_rating }) : typed('rateThis') }}</span>
               </button>
             </div>
 
             <button type="button" @click="closeVolumeSheet" class="w-full h-11 rounded-xl bg-muted text-sm font-medium text-foreground active:scale-[0.98] transition">
-              Cancel
+              {{ $t('common.cancel') }}
             </button>
           </div>
         </div>
@@ -1213,13 +1215,12 @@
         style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))"
       >
         <p class="flex-1 text-xs text-foreground">
-          Mark the {{ markEarlier.ids.length }} earlier {{ (markEarlier.ids.length === 1 ? vocab.unit : vocab.units).toLowerCase() }}
-          {{ vocab.done.toLowerCase() }} too?
+          {{ typed('markEarlier', { count: markEarlier.ids.length }) }}
         </p>
         <button type="button" @click="confirmMarkEarlier" class="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition shrink-0">
-          Mark all
+          {{ $t('title.markEarlier.markAll') }}
         </button>
-        <button type="button" @click="markEarlier = null" class="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted shrink-0" aria-label="No thanks">
+        <button type="button" @click="markEarlier = null" class="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted shrink-0" :aria-label="$t('title.markEarlier.noThanks')">
           <X class="w-4 h-4" />
         </button>
       </div>
@@ -1234,17 +1235,15 @@
         <div>
           <h3 id="skip-dialog-title" class="text-sm font-semibold text-foreground flex items-center gap-2">
             <FastForward class="w-4 h-4 text-sky-500" />
-            Skip {{ vocab.units.toLowerCase() }}
+            {{ typed('skipUnits') }}
           </h3>
           <p class="text-xs text-muted-foreground mt-1">
-            {{ skipHint }} Skipped {{ vocab.units.toLowerCase() }} count toward your progress and
-            "Continue" picks up after them. Your history isn't changed, and opening a skipped
-            {{ vocab.unit.toLowerCase() }} un-skips it.
+            {{ typed('skipBody', { hint: skipHint }) }}
           </p>
         </div>
 
         <label class="flex flex-col gap-1.5">
-          <span class="text-xs font-medium text-foreground">I've covered everything through</span>
+          <span class="text-xs font-medium text-foreground">{{ $t('title.skip.through') }}</span>
           <select
             v-model="skipThroughId"
             class="h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
@@ -1254,11 +1253,10 @@
         </label>
 
         <p class="text-xs" :class="volumesToSkip.length ? 'text-foreground' : 'text-muted-foreground'">
-          <template v-if="volumesToSkip.length">
-            Skips <strong>{{ volumesToSkip.length }}</strong> {{ (volumesToSkip.length === 1 ? vocab.unit : vocab.units).toLowerCase() }} you haven't finished
-            ({{ volumeLabel(volumesToSkip[0]) }}{{ volumesToSkip.length > 1 ? ` – ${volumeLabel(volumesToSkip[volumesToSkip.length - 1])}` : '' }}).
-          </template>
-          <template v-else>Nothing to skip — those are already {{ vocab.done.toLowerCase() }} or skipped.</template>
+          <I18nT v-if="volumesToSkip.length" :keypath="`title.typed.skips.${typeKey}`" :params="{ count: volumesToSkip.length, range: skipRange }" tag="">
+            <template #n><strong>{{ volumesToSkip.length }}</strong></template>
+          </I18nT>
+          <template v-else>{{ typed('nothingToSkip') }}</template>
         </p>
 
         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
@@ -1268,12 +1266,12 @@
             @click="clearAllSkips"
             class="h-9 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition"
           >
-            Unskip all ({{ series.skippedCount }})
+            {{ $t('title.skip.unskipAll', { count: series.skippedCount }) }}
           </button>
           <span v-else />
           <div class="flex items-center gap-2">
             <button type="button" @click="showSkipDialog = false" class="h-9 px-3 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:bg-secondary/80 transition">
-              Cancel
+              {{ $t('common.cancel') }}
             </button>
             <button
               type="button"
@@ -1281,7 +1279,7 @@
               :disabled="!volumesToSkip.length"
               class="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition disabled:opacity-50"
             >
-              Skip {{ volumesToSkip.length || '' }}
+              {{ volumesToSkip.length ? $t('title.skip.confirm', { count: volumesToSkip.length }) : $t('title.skip.skip') }}
             </button>
           </div>
         </div>
@@ -1364,6 +1362,8 @@ import AvailabilityBadge from '../components/AvailabilityBadge.vue';
 import AddToListButton from '../components/AddToListButton.vue';
 import { startParty } from '../utils/party';
 import { coverUrl as buildCoverUrl, stillUrl } from '../utils/cover';
+import { t, te, n, d, relative } from '../i18n';
+import I18nT from '../i18n/I18nT.vue';
 import {
   ArrowLeft,
   ChevronRight,
@@ -1546,12 +1546,12 @@ const filterTabs = computed(() => {
   const unread = vols.length - completed - skipped - inProgress;
 
   const tabs = [
-    { id: 'all', label: `All ${vocab.value.units}`, count: vols.length },
-    { id: 'unread', label: 'Not Started', count: unread },
-    { id: 'in_progress', label: 'In Progress', count: inProgress },
-    { id: 'completed', label: 'Completed', count: completed },
+    { id: 'all', label: typed('allUnits'), count: vols.length },
+    { id: 'unread', label: t('title.filter.notStarted'), count: unread },
+    { id: 'in_progress', label: t('title.filter.inProgress'), count: inProgress },
+    { id: 'completed', label: t('title.filter.completed'), count: completed },
   ];
-  if (skipped) tabs.push({ id: 'skipped', label: 'Skipped', count: skipped });
+  if (skipped) tabs.push({ id: 'skipped', label: t('title.status.skipped'), count: skipped });
   return tabs;
 });
 
@@ -1592,9 +1592,8 @@ const filteredVolumes = computed(() => {
 
 // ─── Smart CTA State ────────────────────────────────────────────────────────
 const smartCtaState = computed(() => {
-  const v = vocab.value;
   if (!series.value || !series.value.nextVolume) {
-    return { label: `Start ${v.verbing}`, subLabel: '', isResume: false, isFinished: false };
+    return { label: typed('start'), subLabel: '', isResume: false, isFinished: false };
   }
   const next = series.value.nextVolume;
   // A single title needs no "Vol 1" — the page is already about it.
@@ -1602,24 +1601,24 @@ const smartCtaState = computed(() => {
 
   if (!next.is_finished && hasStarted(next)) {
     return {
-      label: `Continue ${v.verbing}`,
+      label: typed('continue'),
       subLabel: [which, positionLabel(next, true)].filter(Boolean).join(' · '),
       isResume: true,
       isFinished: false
     };
   } else if (coveredCount.value === series.value.volumeCount && series.value.volumeCount > 0) {
-    return { label: `${v.verb} Again`, subLabel: which, isResume: false, isFinished: true };
+    return { label: typed('again'), subLabel: which, isResume: false, isFinished: true };
   }
-  return { label: `Start ${v.verbing}`, subLabel: which, isResume: false, isFinished: false };
+  return { label: typed('start'), subLabel: which, isResume: false, isFinished: false };
 });
 
 // ─── Offline downloads ──────────────────────────────────────────────────────────
 const downloads = useDownloadsStore();
 
 function downloadLabel(vol) {
-  if (downloads.isDownloaded(vol.id)) return 'Downloaded — tap to remove';
-  if (downloads.isDownloading(vol.id)) return 'Downloading — tap to cancel';
-  return 'Download for offline';
+  if (downloads.isDownloaded(vol.id)) return t('title.download.downloaded');
+  if (downloads.isDownloading(vol.id)) return t('title.download.downloading');
+  return t('title.download.forOffline');
 }
 
 function toggleVolumeDownload(vol) {
@@ -1640,30 +1639,28 @@ const showActionMenu = ref(false);
 const heroActions = computed(() => {
   const s = series.value;
   if (!s) return [];
-  const v = vocab.value;
-  const units = v.units.toLowerCase();
   const actions = [];
 
   if (canStartParty.value) {
     actions.push({
-      key: 'party', label: 'Watch Together', title: 'Watch this together with people in other places',
+      key: 'party', label: t('title.actions.watchTogether'), title: t('title.actions.watchTogetherTitle'),
       icon: startingParty.value ? Loader2 : PartyPopper, spin: startingParty.value, iconClass: 'text-primary',
       disabled: startingParty.value, run: startWatchParty, onPhone: true
     });
   }
   actions.push({
-    key: 'done', label: `Mark ${s.volumeCount > 1 ? 'All ' : ''}${v.done}`, title: `Mark everything as ${v.done.toLowerCase()}`,
+    key: 'done', label: s.volumeCount > 1 ? typed('markAllDone') : typed('markDone'), title: typed('markEverything'),
     icon: Check, iconClass: 'text-emerald-500',
     disabled: s.readCount === s.volumeCount || actionLoading.value, run: markAllAsRead
   });
   actions.push({
-    key: 'reset', label: 'Reset History', title: 'Reset your history for this',
+    key: 'reset', label: t('title.actions.resetHistory'), title: t('title.actions.resetHistoryTitle'),
     icon: RotateCcw, iconClass: 'text-muted-foreground',
     disabled: (s.readCount === 0 && s.inProgressCount === 0) || actionLoading.value, run: markAllAsUnread
   });
   if (s.volumeCount > 1) {
     actions.push({
-      key: 'skip', label: `Skip ${v.units}…`, title: `Skip ${units} you've already covered`,
+      key: 'skip', label: typed('skipUnitsMenu'), title: typed('skipCovered'),
       icon: FastForward, iconClass: 'text-sky-500', disabled: actionLoading.value, run: openSkipDialog
     });
   }
@@ -1672,7 +1669,7 @@ const heroActions = computed(() => {
     const done = downloads.isDownloaded(it.id);
     const busy = downloads.isDownloading(it.id);
     actions.push({
-      key: 'download', label: done ? 'Downloaded' : (busy ? 'Downloading…' : 'Download'), title: downloadLabel(it),
+      key: 'download', label: done ? t('title.download.doneShort') : (busy ? t('title.download.busyShort') : t('common.download')), title: downloadLabel(it),
       icon: done ? CheckCircle2 : (busy ? Loader2 : Download), spin: busy,
       iconClass: done ? 'text-emerald-500' : 'text-muted-foreground', run: () => toggleVolumeDownload(it)
     });
@@ -1681,27 +1678,27 @@ const heroActions = computed(() => {
   // the button silently missing.
   if (offerHttpsForDownloads.value) {
     actions.push({
-      key: 'download-https', label: 'Download', title: 'Download for offline',
+      key: 'download-https', label: t('common.download'), title: t('title.download.forOffline'),
       icon: Download, iconClass: 'text-muted-foreground', run: explainDownloadsNeedHttps
     });
   }
   if (isSingle.value) {
     actions.push({
-      key: 'bookmarks', label: 'Bookmarks', title: 'Bookmarks & Notes',
+      key: 'bookmarks', label: t('title.bookmarks.short'), title: t('title.bookmarks.title'),
       icon: Bookmark, iconClass: 'text-muted-foreground', run: () => openBookmarks(single.value)
     });
   }
   if (!isSingle.value && downloads.supported && undownloadedUnread.value.length) {
-    const n = undownloadedUnread.value.length;
+    const count = undownloadedUnread.value.length;
     actions.push({
-      key: 'download-rest', label: `Download Remaining (${n})`, title: `Download ${n} ${units} you haven't finished, for offline use`,
+      key: 'download-rest', label: t('title.download.remaining', { count }), title: typed('downloadRemaining', { count }),
       icon: Download, iconClass: 'text-muted-foreground', run: downloadUnread
     });
   }
   if (authStore.isEditor) {
     actions.push({
-      key: 'metadata', label: 'Edit Metadata',
-      title: `Search metadata providers and apply to ${s.volumeCount > 1 ? `all ${units}` : 'this title'}`,
+      key: 'metadata', label: t('title.actions.editMetadata'),
+      title: s.volumeCount > 1 ? typed('metadataAll') : t('title.actions.metadataOne'),
       icon: Search, iconClass: 'text-muted-foreground', run: openSeriesMetadataSearch
     });
   }
@@ -1711,14 +1708,14 @@ const heroActions = computed(() => {
     const target = offloadTarget.value;
     if (target) {
       actions.push(target.offloaded
-        ? { key: 'unoffload', label: 'Undo Offload', title: `Show ${target.label} as on the server again`, icon: Undo2, iconClass: 'text-muted-foreground', disabled: actionLoading.value, run: () => setOffloaded(target, false) }
-        : { key: 'offload', label: 'Keep as History', title: `Offload ${target.label}: keep its history after you delete the files`, icon: Archive, iconClass: 'text-muted-foreground', disabled: actionLoading.value, run: () => setOffloaded(target, true) });
+        ? { key: 'unoffload', label: t('title.actions.undoOffload'), title: t('title.actions.undoOffloadTitle', { target: target.label }), icon: Undo2, iconClass: 'text-muted-foreground', disabled: actionLoading.value, run: () => setOffloaded(target, false) }
+        : { key: 'offload', label: t('title.actions.keepAsHistory'), title: t('title.actions.keepAsHistoryTitle', { target: target.label }), icon: Archive, iconClass: 'text-muted-foreground', disabled: actionLoading.value, run: () => setOffloaded(target, true) });
     }
   }
   if (authStore.isEditor && kidsStatus.value) {
     const k = kidsStatus.value;
     actions.push({
-      key: 'kids', label: k.allowed ? 'In Kids Mode' : 'Kids', title: kidsTitle.value,
+      key: 'kids', label: k.allowed ? t('title.actions.inKidsMode') : t('title.actions.kids'), title: kidsTitle.value,
       icon: Baby, iconClass: k.allowed ? 'text-sky-500' : 'text-muted-foreground',
       btnClass: ['disabled:opacity-70', k.allowed ? '!text-sky-500 !border-sky-500/40' : ''],
       pressed: String(k.allowed),
@@ -1736,13 +1733,17 @@ const offloadTarget = computed(() => {
   let items; let label;
   if (isSingle.value) {
     items = [single.value];
-    label = `"${single.value.title}"`;
+    label = t('title.offload.targetTitle', { title: single.value.title });
   } else if (isEpisodic.value && activeSeason.value) {
     items = activeSeason.value.episodes;
-    label = `${series.value.name}, ${activeSeason.value.label.toLowerCase()}`;
+    const name = series.value.name;
+    const number = activeSeason.value.seasonNumber;
+    label = number == null ? t('title.offload.targetOther', { name })
+      : number === 0 ? t('title.offload.targetSpecials', { name })
+        : t('title.offload.targetSeason', { name, number });
   } else {
     items = series.value.volumes || [];
-    label = `all of ${series.value.name}`;
+    label = t('title.offload.targetAll', { name: series.value.name });
   }
   if (!items.length) return null;
   return { ids: items.map((i) => i.id), label, offloaded: items.every((i) => i.offloaded_at) };
@@ -1751,9 +1752,9 @@ const offloadTarget = computed(() => {
 async function setOffloaded(target, offload) {
   if (offload) {
     const ok = await dialog.confirm({
-      title: 'Keep as history?',
-      message: `${target.label.charAt(0).toUpperCase()}${target.label.slice(1)} will be hidden from shelves and search and can't be played, but stays here, greyed, with everyone's progress. Then delete the files to free the space. If they come back, it's restored by itself.`,
-      confirmText: 'Keep as history'
+      title: t('title.offload.confirmTitle'),
+      message: t('title.offload.confirmMessage', { target: `${target.label.charAt(0).toUpperCase()}${target.label.slice(1)}` }),
+      confirmText: t('title.offload.confirmButton')
     });
     if (!ok) return;
   }
@@ -1762,7 +1763,7 @@ async function setOffloaded(target, offload) {
     await api.post(`/admin/health/${offload ? 'offload' : 'unoffload'}`, { itemIds: target.ids });
     await fetchSeriesData();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Could not change that');
+    dialog.alert(err.response?.data?.error || t('title.errors.changeFailed'));
   } finally {
     actionLoading.value = false;
   }
@@ -1773,10 +1774,10 @@ const offerHttpsForDownloads = computed(() => !downloads.supported && downloads.
 
 async function explainDownloadsNeedHttps() {
   const go = await dialog.confirm({
-    title: 'Downloads need HTTPS',
-    message: 'Browsers only allow saving things for offline use on a secure connection, and this page was opened over plain http://. Open Plinthio from an HTTPS address instead (Tailscale is the easiest way) and downloads, and the installable app, will work.',
-    confirmText: 'Show me how',
-    cancelText: 'Not now',
+    title: t('title.download.httpsTitle'),
+    message: t('title.download.httpsMessage'),
+    confirmText: t('title.download.httpsConfirm'),
+    cancelText: t('title.download.httpsCancel'),
     type: 'info'
   });
   if (go) router.push('/docs#pwa');
@@ -1802,9 +1803,9 @@ const singleProgressLabel = computed(() => {
   const it = single.value;
   if (!it) return '';
   if (it.is_finished) return vocab.value.done;
-  if (isSkipped(it)) return 'Skipped';
-  if (!hasStarted(it)) return 'Not started';
-  return `${positionLabel(it, true)} (${Math.round(it.progress_percent || 0)}%)`;
+  if (isSkipped(it)) return t('title.status.skipped');
+  if (!hasStarted(it)) return t('title.status.notStarted');
+  return t('title.position.withPercent', { position: positionLabel(it, true), percent: percent(it.progress_percent || 0) });
 });
 
 const singleFacts = computed(() => {
@@ -1812,18 +1813,18 @@ const singleFacts = computed(() => {
   if (!it) return [];
   const facts = [];
   const year = it.release_date || null;
-  if (year) facts.push({ label: 'Released', value: year });
-  if (isTimeBased(it.media_type) && it.duration) facts.push({ label: 'Length', value: formatLength(it.duration) });
-  if (it.total_pages) facts.push({ label: 'Pages', value: it.total_pages.toLocaleString() });
+  if (year) facts.push({ label: t('title.facts.released'), value: year });
+  if (isTimeBased(it.media_type) && it.duration) facts.push({ label: t('title.facts.length'), value: formatLength(it.duration) });
+  if (it.total_pages) facts.push({ label: t('title.facts.pages'), value: n(it.total_pages) });
   if (shownCreator.value) facts.push({ label: vocab.value.creator, value: shownCreator.value });
-  if (it.artists && it.artists !== it.author) facts.push({ label: isVideo(it.media_type) ? 'Cast' : 'Artists', value: it.artists });
-  if (it.genres) facts.push({ label: 'Genres', value: it.genres });
-  if (it.publisher) facts.push({ label: 'Publisher', value: it.publisher });
-  if (it.status) facts.push({ label: 'Status', value: it.status });
-  if (it.format) facts.push({ label: 'Format', value: it.format.toUpperCase() });
-  if (it.file_size) facts.push({ label: 'File size', value: formatFileSize(it.file_size) });
-  if (series.value?.libraryName) facts.push({ label: 'Library', value: series.value.libraryName });
-  if (it.progress_updated_at) facts.push({ label: 'Last opened', value: formatDate(it.progress_updated_at) });
+  if (it.artists && it.artists !== it.author) facts.push({ label: isVideo(it.media_type) ? t('title.facts.cast') : t('title.facts.artists'), value: it.artists });
+  if (it.genres) facts.push({ label: t('title.facts.genres'), value: it.genres });
+  if (it.publisher) facts.push({ label: t('title.facts.publisher'), value: it.publisher });
+  if (it.status) facts.push({ label: t('title.facts.status'), value: it.status });
+  if (it.format) facts.push({ label: t('title.facts.format'), value: it.format.toUpperCase() });
+  if (it.file_size) facts.push({ label: t('title.facts.fileSize'), value: formatFileSize(it.file_size) });
+  if (series.value?.libraryName) facts.push({ label: t('title.facts.library'), value: series.value.libraryName });
+  if (it.progress_updated_at) facts.push({ label: t('title.facts.lastOpened'), value: formatDate(it.progress_updated_at) });
   return facts;
 });
 
@@ -1834,17 +1835,37 @@ const mediaType = computed(() =>
   series.value?.mediaType || series.value?.volumes?.[0]?.media_type || route.query.type || 'manga'
 );
 const vocab = computed(() => vocabFor(mediaType.value));
+// Sentences that name this page's entries ("Skip this volume", "Mark all watched") are
+// written out whole for each media type under title.typed, so every language can phrase
+// them properly rather than slotting a translated word into an English sentence.
+const MEDIA_TYPES = ['manga', 'book', 'audiobook', 'show', 'anime', 'movie'];
+const typeKey = computed(() => (MEDIA_TYPES.includes(mediaType.value) ? mediaType.value : 'book'));
+function typed(key, params) {
+  return t(`title.typed.${key}.${typeKey.value}`, params);
+}
 const isTimeBasedType = computed(() => isTimeBased(mediaType.value));
 const navType = computed(() => mediaType.value);
 const totalDuration = computed(() =>
   isTimeBasedType.value ? (series.value?.volumes || []).reduce((sum, v) => sum + (v.duration || 0), 0) : 0
 );
 const skipHint = computed(() => (mediaType.value === 'manga' || mediaType.value === 'book'
-  ? 'Already know the story up to a point — say you watched the anime?'
-  : 'Already seen or heard some of these elsewhere?'));
+  ? t('title.skip.hintStory')
+  : t('title.skip.hintOther')));
 
-function unitsLabel(n) {
-  return `${n} ${n === 1 ? vocab.value.unit : vocab.value.units}`;
+function unitsLabel(count) {
+  return typed('units', { count });
+}
+
+// 42 → "42%" / "42 %", as the reader's language writes it.
+function percent(value) {
+  return n((value || 0) / 100, { style: 'percent' });
+}
+
+// Extras are typed by the scanner in English ("Trailer", "Behind the Scenes"); show the
+// translation of the ones it knows.
+function extraTypeLabel(type) {
+  const key = `title.extraTypes.${String(type || '').toLowerCase().replace(/\s+/g, '')}`;
+  return type && te(key) ? t(key) : type;
 }
 
 function hasStarted(vol) {
@@ -1861,25 +1882,31 @@ function formatClock(seconds) {
 
 function formatLength(seconds) {
   const mins = Math.round((seconds || 0) / 60);
-  if (mins < 60) return `${mins}m`;
-  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+  if (mins < 60) return t('title.duration.minutes', { m: mins });
+  return t('title.duration.hoursMinutes', { h: Math.floor(mins / 60), m: mins % 60 });
 }
 
 // Where you are in it: "p. 42" / "Page 42 of 180" for pages, "12:05" / "12:05 of 45:00" for time.
 function positionLabel(vol, long = false) {
   if (isTimeBased(vol.media_type)) {
     const at = formatClock(vol.current_time);
-    return long && vol.duration ? `${at} of ${formatClock(vol.duration)}` : at;
+    return long && vol.duration ? t('title.position.timeOf', { at, total: formatClock(vol.duration) }) : at;
   }
-  if (!long) return `p. ${vol.current_page}`;
-  return vol.total_pages ? `Page ${vol.current_page} of ${vol.total_pages}` : `Page ${vol.current_page}`;
+  if (!long) return t('title.position.pageShort', { page: vol.current_page });
+  return vol.total_pages
+    ? t('title.position.pageOf', { page: vol.current_page, total: vol.total_pages })
+    : t('title.position.page', { page: vol.current_page });
 }
 
 // How long it is: pages for books/comics, running time for audio/video, else the format.
 function lengthLabel(vol) {
   if (isTimeBased(vol.media_type) && vol.duration) return formatLength(vol.duration);
-  if (vol.total_pages) return `${vol.total_pages} pages`;
+  if (vol.total_pages) return pagesLabel(vol.total_pages);
   return vol.format || '';
+}
+
+function pagesLabel(count) {
+  return t('title.meta.pages', { count, pages: n(count) });
 }
 
 // Same-named series can exist in several libraries / media types; bulk actions stay on
@@ -1990,15 +2017,15 @@ const metaLine = computed(() => {
       parts.push(formatLength(totalDuration.value));
     }
   } else if (series.value?.totalPages) {
-    parts.push(`${series.value.totalPages.toLocaleString()} pages`);
+    parts.push(pagesLabel(series.value.totalPages));
   }
   if (isEpisodic.value) {
     if (seasons.value.length > 1) {
-      parts.push(`${seasons.value.length} Seasons`);
+      parts.push(t('title.meta.seasons', { count: seasons.value.length }));
     }
     const count = series.value?.volumeCount || series.value?.volumes?.length || 0;
     if (count > 0) {
-      parts.push(`${count} Episodes`);
+      parts.push(t('title.meta.episodes', { count }));
     }
   } else if (!isSingle.value && series.value?.volumeCount) {
     parts.push(unitsLabel(series.value.volumeCount));
@@ -2015,29 +2042,29 @@ const infoRows = computed(() => {
   const it = single.value || s?.volumes?.[0];
 
   const genres = s?.genres || it?.genres;
-  if (genres) rows.push({ label: 'Genres', value: genres });
+  if (genres) rows.push({ label: t('title.facts.genres'), value: genres });
 
   if (isMovieCollection.value) {
     // Each film's own page carries its director, writers, studios and cast.
   } else if (isVideoType.value) {
     if (isEpisodic.value) {
       const creators = c?.creators?.length ? c.creators.join(', ') : shownCreator.value;
-      if (creators) rows.push({ label: 'Created by', value: creators });
+      if (creators) rows.push({ label: t('title.facts.createdBy'), value: creators });
     } else {
       const directors = c?.crew?.filter(cr => cr.job === 'Director').map(cr => cr.name) || [];
       const dirStr = directors.length ? directors.join(', ') : shownCreator.value;
-      if (dirStr) rows.push({ label: 'Director', value: dirStr });
+      if (dirStr) rows.push({ label: t('title.facts.director'), value: dirStr });
     }
     const writers = c?.crew?.filter(cr => ['Screenplay', 'Writer', 'Story', 'Novel'].includes(cr.job)).map(cr => cr.name) || [];
-    if (writers.length) rows.push({ label: 'Writers', value: Array.from(new Set(writers)).join(', ') });
+    if (writers.length) rows.push({ label: t('title.facts.writers'), value: Array.from(new Set(writers)).join(', ') });
     const studios = c?.studios?.length ? c.studios.join(', ') : (s?.publisher || it?.publisher);
-    if (studios) rows.push({ label: 'Studios', value: studios });
-    if (c?.networks?.length) rows.push({ label: 'Network', value: c.networks.join(', ') });
+    if (studios) rows.push({ label: t('title.facts.studios'), value: studios });
+    if (c?.networks?.length) rows.push({ label: t('title.facts.network'), value: c.networks.join(', ') });
   } else {
     if (shownCreator.value) rows.push({ label: vocab.value.creator, value: shownCreator.value });
-    if (s?.artists && s.artists !== s.author) rows.push({ label: 'Artists', value: s.artists });
+    if (s?.artists && s.artists !== s.author) rows.push({ label: t('title.facts.artists'), value: s.artists });
     const publisher = s?.publisher || it?.publisher;
-    if (publisher) rows.push({ label: 'Publisher', value: publisher });
+    if (publisher) rows.push({ label: t('title.facts.publisher'), value: publisher });
   }
 
   return rows;
@@ -2073,7 +2100,7 @@ const seasons = computed(() => {
     return {
       key: seasonKey(n),
       seasonNumber: n,
-      label: n == null ? 'Other' : n === 0 ? 'Specials' : `Season ${n}`,
+      label: n == null ? t('title.season.other') : n === 0 ? t('title.season.specials') : t('title.season.label', { number: n }),
       episodes: eps,
       watched: eps.filter((e) => e.is_finished).length,
       offloaded: eps.filter((e) => e.offloaded_at).length
@@ -2139,7 +2166,7 @@ async function toggleSeasonWatched(season) {
     ));
     await fetchSeriesData();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Failed to update season status');
+    dialog.alert(err.response?.data?.error || t('title.errors.seasonFailed'));
   } finally {
     actionLoading.value = false;
   }
@@ -2175,7 +2202,7 @@ const people = computed(() => {
 
   const lead = crew.filter((m) => m.lead);
   if (!lead.length && !c?.crew?.length && shownCreator.value) {
-    lead.push({ key: `crew-${shownCreator.value}`, name: shownCreator.value, role: isEpisodic.value ? vocab.value.creator : 'Director', photo: null });
+    lead.push({ key: `crew-${shownCreator.value}`, name: shownCreator.value, role: isEpisodic.value ? vocab.value.creator : t('title.facts.director'), photo: null });
   }
   return [...lead, ...cast, ...crew.filter((m) => !m.lead)];
 });
@@ -2192,19 +2219,19 @@ const mediaFacts = computed(() => {
   if (!it && !series.value) return [];
   const facts = [];
   if (isSingle.value && it) {
-    if (it.release_date) facts.push({ label: 'Released', value: it.release_date });
-    if (isTimeBased(it.media_type) && it.duration) facts.push({ label: 'Runtime', value: formatLength(it.duration) });
-    if (it.total_pages) facts.push({ label: 'Pages', value: it.total_pages.toLocaleString() });
-    if (it.format) facts.push({ label: 'Format', value: it.format.toUpperCase() });
-    if (it.file_size) facts.push({ label: 'File size', value: formatFileSize(it.file_size) });
-    if (series.value?.libraryName) facts.push({ label: 'Library', value: series.value.libraryName });
-    if (it.progress_updated_at) facts.push({ label: 'Last opened', value: formatDate(it.progress_updated_at) });
+    if (it.release_date) facts.push({ label: t('title.facts.released'), value: it.release_date });
+    if (isTimeBased(it.media_type) && it.duration) facts.push({ label: t('title.facts.runtime'), value: formatLength(it.duration) });
+    if (it.total_pages) facts.push({ label: t('title.facts.pages'), value: n(it.total_pages) });
+    if (it.format) facts.push({ label: t('title.facts.format'), value: it.format.toUpperCase() });
+    if (it.file_size) facts.push({ label: t('title.facts.fileSize'), value: formatFileSize(it.file_size) });
+    if (series.value?.libraryName) facts.push({ label: t('title.facts.library'), value: series.value.libraryName });
+    if (it.progress_updated_at) facts.push({ label: t('title.facts.lastOpened'), value: formatDate(it.progress_updated_at) });
   } else if (series.value) {
-    if (series.value.libraryName) facts.push({ label: 'Library', value: series.value.libraryName });
-    facts.push({ label: `Total ${vocab.value.units}`, value: series.value.volumeCount });
-    if (totalDuration.value > 0) facts.push({ label: 'Total Length', value: formatLength(totalDuration.value) });
-    if (series.value.totalPages > 0) facts.push({ label: 'Total Pages', value: series.value.totalPages.toLocaleString() });
-    if (it?.format) facts.push({ label: 'Format', value: it.format.toUpperCase() });
+    if (series.value.libraryName) facts.push({ label: t('title.facts.library'), value: series.value.libraryName });
+    facts.push({ label: typed('totalUnits'), value: n(series.value.volumeCount) });
+    if (totalDuration.value > 0) facts.push({ label: t('title.facts.totalLength'), value: formatLength(totalDuration.value) });
+    if (series.value.totalPages > 0) facts.push({ label: t('title.facts.totalPages'), value: n(series.value.totalPages) });
+    if (it?.format) facts.push({ label: t('title.facts.format'), value: it.format.toUpperCase() });
   }
   return facts;
 });
@@ -2221,7 +2248,7 @@ async function startWatchParty() {
     const party = await startParty(series.value.nextVolume.id);
     router.push(`/party/${party.code}`);
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Couldn\'t start a watch party');
+    dialog.alert(err.response?.data?.error || t('title.errors.partyFailed'));
   } finally {
     startingParty.value = false;
   }
@@ -2326,14 +2353,14 @@ async function fetchSeriesData() {
             .catch(() => {});
         }
       } else {
-        error.value = 'Item not found';
+        error.value = t('title.errors.notFound');
       }
     } else {
-      error.value = 'No series specified';
+      error.value = t('title.errors.noSeries');
     }
   } catch (err) {
     console.error('Failed to load series:', err);
-    error.value = err.response?.data?.error || 'Failed to load series details';
+    error.value = err.response?.data?.error || t('title.errors.loadFailed');
   } finally {
     loading.value = false;
   }
@@ -2344,9 +2371,9 @@ async function markAllAsRead() {
   if (!series.value || !series.value.name) return;
   if (series.value.standalone) return toggleVolumeReadStatus(series.value.volumes[0]);
   const confirmed = await dialog.confirm({
-    title: `Mark All As ${vocab.value.done}`,
-    message: `Mark every ${vocab.value.unit.toLowerCase()} of "${series.value.name}" as ${vocab.value.done.toLowerCase()}?`,
-    confirmText: `Mark All ${vocab.value.done}`
+    title: typed('markAllTitle'),
+    message: typed('markEveryConfirm', { name: series.value.name }),
+    confirmText: typed('markAllDone')
   });
   if (!confirmed) return;
 
@@ -2355,7 +2382,7 @@ async function markAllAsRead() {
     await api.post(`/items/series/${encodeURIComponent(series.value.name)}/mark-read`, null, { params: seriesScopeParams() });
     await fetchSeriesData();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Failed to mark all as read');
+    dialog.alert(err.response?.data?.error || t('title.errors.markAllFailed'));
   } finally {
     actionLoading.value = false;
   }
@@ -2370,9 +2397,9 @@ async function markAllAsUnread() {
     return fetchSeriesData();
   }
   const confirmed = await dialog.confirm({
-    title: 'Reset Progress',
-    message: `Reset all your progress for "${series.value.name}"?`,
-    confirmText: 'Reset Progress',
+    title: t('title.reset.title'),
+    message: t('title.reset.message', { name: series.value.name }),
+    confirmText: t('title.reset.confirm'),
     danger: true
   });
   if (!confirmed) return;
@@ -2382,7 +2409,7 @@ async function markAllAsUnread() {
     await api.post(`/items/series/${encodeURIComponent(series.value.name)}/mark-unread`, null, { params: seriesScopeParams() });
     await fetchSeriesData();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Failed to reset reading history');
+    dialog.alert(err.response?.data?.error || t('title.errors.resetFailed'));
   } finally {
     actionLoading.value = false;
   }
@@ -2412,7 +2439,7 @@ async function setSkipped(vols, skipped) {
     await api.post('/progress/skip', { itemIds: ids, skipped });
     await fetchSeriesData();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Could not update what\'s skipped');
+    dialog.alert(err.response?.data?.error || t('title.errors.skipFailed'));
     await fetchSeriesData();
   } finally {
     actionLoading.value = false;
@@ -2441,6 +2468,13 @@ const volumesToSkip = computed(() => {
 function volumeLabel(v) {
   return entryLabel(v);
 }
+
+// "Vol 1 – Vol 3" (or just "Vol 2") for the skip dialog's summary.
+const skipRange = computed(() => {
+  const vols = volumesToSkip.value;
+  if (!vols.length) return '';
+  return vols.length > 1 ? `${volumeLabel(vols[0])} – ${volumeLabel(vols[vols.length - 1])}` : volumeLabel(vols[0]);
+});
 
 function openSkipDialog() {
   // Default to the volume just before where they are now.
@@ -2521,7 +2555,7 @@ async function confirmMarkEarlier() {
   try {
     await api.post('/progress/finish', { itemIds: offer.ids, finished: true });
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Could not mark those as finished');
+    dialog.alert(err.response?.data?.error || t('title.errors.markEarlierFailed'));
   }
   await fetchSeriesData();
 }
@@ -2544,8 +2578,8 @@ function openVolumeReader(vol) {
   // Offloaded: its file was removed to free space. Say so instead of a player error.
   if (vol.offloaded_at) {
     dialog.alert({
-      title: 'Offloaded',
-      message: `"${vol.title}" was removed from the server to free space. Your history is kept, and it comes back by itself if the file is put back.`
+      title: t('title.status.offloaded'),
+      message: t('title.offloaded.dialogMessage', { title: vol.title })
     });
     return;
   }
@@ -2590,7 +2624,7 @@ const heroRatingLabel = computed(() => {
   const vol = heroRatingItem.value;
   if (!vol || (series.value?.volumes?.length || 0) <= 1) return '';
   // "Rate Vol 3", "Rate S1 · E2", "Rate The Empire Strikes Back".
-  return `Rate ${entryLabel(vol)}`;
+  return t('title.rating.rateEntry', { label: entryLabel(vol) });
 });
 
 function openRating(vol) {
@@ -2607,7 +2641,7 @@ function handleRated({ itemId, rating }) {
 // ─── Phone status filter ────────────────────────────────────────────────────
 const showFilterSheet = ref(false);
 const activeFilterTabEntry = computed(() => filterTabs.value.find((t) => t.id === activeFilterTab.value) || filterTabs.value[0]);
-const activeFilterLabel = computed(() => activeFilterTabEntry.value?.label || 'All');
+const activeFilterLabel = computed(() => activeFilterTabEntry.value?.label || t('common.all'));
 const activeFilterCount = computed(() => activeFilterTabEntry.value?.count ?? 0);
 
 // ─── Phone action sheet for one volume ──────────────────────────────────────
@@ -2660,13 +2694,13 @@ function formatDate(dateStr) {
   try {
     // SQLite's CURRENT_TIMESTAMP is UTC with no zone marker ("2026-09-26 21:10:00"), which
     // Date would read as local time — putting it hours in the future ("-1 days ago").
-    const d = new Date(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateStr) ? `${dateStr.replace(' ', 'T')}Z` : dateStr);
+    const date = new Date(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateStr) ? `${dateStr.replace(' ', 'T')}Z` : dateStr);
     const now = new Date();
-    const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
-    if (diffDays <= 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 0) return t('title.date.today');
+    if (diffDays === 1) return t('title.date.yesterday');
+    if (diffDays < 7) return relative(-diffDays, 'day');
+    return d(date, { month: 'short', day: 'numeric', year: 'numeric' });
   } catch (e) {
     return dateStr;
   }
@@ -2675,8 +2709,8 @@ function formatDate(dateStr) {
 function formatFileSize(bytes) {
   if (!bytes) return '';
   const mb = bytes / (1024 * 1024);
-  if (mb >= 1000) return `${(mb / 1024).toFixed(1)} GB`;
-  return `${Math.round(mb)} MB`;
+  if (mb >= 1000) return n(mb / 1024, { style: 'unit', unit: 'gigabyte', minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return n(Math.round(mb), { style: 'unit', unit: 'megabyte' });
 }
 
 watch(() => [route.params.seriesName, route.params.id], () => {
@@ -2709,9 +2743,9 @@ async function loadKidsStatus() {
 const kidsTitle = computed(() => {
   const st = kidsStatus.value;
   if (!st) return '';
-  if (st.via === 'library') return 'Its whole library is in Kids Mode (change that in Admin → Kids Mode)';
-  if (st.via === 'series' && series.value?.standalone) return 'Its series is in Kids Mode — change it on the series page';
-  return st.allowed ? 'Kids accounts can see this — click to remove it from Kids Mode' : 'Let Kids Mode accounts see this';
+  if (st.via === 'library') return t('title.kids.viaLibrary');
+  if (st.via === 'series' && series.value?.standalone) return t('title.kids.viaSeries');
+  return st.allowed ? t('title.kids.allowed') : t('title.kids.allow');
 });
 async function toggleKids() {
   const target = kidsTarget();
@@ -2723,7 +2757,7 @@ async function toggleKids() {
     else await api.post('/kids/titles', target);
     await loadKidsStatus();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Could not change Kids Mode');
+    dialog.alert(err.response?.data?.error || t('title.errors.kidsFailed'));
   } finally {
     kidsBusy.value = false;
   }

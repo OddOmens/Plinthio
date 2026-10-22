@@ -1,0 +1,42 @@
+{
+  "welcome": {
+    "title": "Willkommen bei {name}",
+    "text": "Lass uns alles so einrichten, wie es dir gefällt. Das dauert etwa dreißig Sekunden, und du kannst alles später in den Einstellungen ändern."
+  },
+  "theme": {
+    "title": "Wähle deinen Look",
+    "text": "Das gilt nur für dich – für alle anderen ändert sich nichts."
+  },
+  "accent": {
+    "title": "Wähle eine Akzentfarbe",
+    "text": "Buttons, Hervorhebungen und Fortschrittsbalken nutzen sie.",
+    "admin": "Als Admin legst du sie für den ganzen Server fest. Wenn du es erlaubst, kann jede Person in den Einstellungen ihre eigene wählen (Verwaltung → Wiedergabe).",
+    "personal": "Sie gilt nur für dich; ändere sie jederzeit in den Einstellungen."
+  },
+  "interests": {
+    "title": "Wofür bist du hier?",
+    "text": "Wir zeigen diese in deinem Regal und blenden den Rest aus. Wähle so viele, wie du möchtest.",
+    "pickOne": "Wähle mindestens eins, damit dein Regal nicht leer ist.",
+    "types": {
+      "manga": { "label": "Manga", "hint": "Comics & Graphic Novels" },
+      "book": { "label": "Bücher", "hint": "EPUB & PDF lesen" },
+      "audiobook": { "label": "Hörbücher", "hint": "Hören und weitermachen" },
+      "movie": { "label": "Filme", "hint": "Im Browser ansehen" },
+      "show": { "label": "Serien", "hint": "Staffeln & Folgen" },
+      "anime": { "label": "Anime", "hint": "Mit Untertiteln & synchronisiert" }
+    }
+  },
+  "security": {
+    "title": "Schütze dein Konto",
+    "text": "Optional. Die Zwei-Faktor-Anmeldung fragt beim Anmelden nach einem Code von deinem Handy, sodass ein Passwort allein nicht reicht. Du kannst sie jetzt oder später unter Einstellungen → Sicherheit einschalten."
+  },
+  "done": {
+    "title": "Alles bereit",
+    "everything": "Dein Regal zeigt alles. Viel Spaß!",
+    "tuned": "Dein Regal zeigt jetzt {list}. Du kannst jederzeit in den Einstellungen mehr hinzufügen."
+  },
+  "nav": {
+    "startBrowsing": "Loslegen",
+    "notNow": "Nicht jetzt"
+  }
+}

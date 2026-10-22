@@ -1,0 +1,122 @@
+{
+  "unknownAuthor": "Auteur inconnu",
+  "untitledAudiobook": "Livre audio Plinthio",
+  "coverOf": "Couverture de {title}",
+  "units": {
+    "secondsShort": "{count} s",
+    "minutesShort": "{count} min"
+  },
+  "video": {
+    "backToShelf": "Retour à la bibliothèque",
+    "castToTv": "Caster sur la TV",
+    "playbackSettings": "Paramètres de lecture",
+    "skipBack": "Reculer de",
+    "skipForward": "Avancer de",
+    "quality": "Qualité",
+    "auto": "Auto",
+    "audio": "Audio",
+    "subtitles": "Sous-titres",
+    "noAlternateTracks": "Aucune autre piste pour cette vidéo.",
+    "track": "Piste {number}",
+    "channels": "{count} canaux",
+    "forced": "forcés",
+    "skipIntro": "Passer l'intro",
+    "skipCredits": "Passer le générique",
+    "skipAria": {
+      "backSeconds": { "one": "Reculer de {count} seconde", "other": "Reculer de {count} secondes" },
+      "backMinutes": { "one": "Reculer de {count} minute", "other": "Reculer de {count} minutes" },
+      "forwardSeconds": { "one": "Avancer de {count} seconde", "other": "Avancer de {count} secondes" },
+      "forwardMinutes": { "one": "Avancer de {count} minute", "other": "Avancer de {count} minutes" }
+    },
+    "skipHint": "{action} — clic droit pour modifier",
+    "toggleFullscreen": "Plein écran",
+    "preparing": {
+      "transcode": "Conversion pour votre navigateur…",
+      "remux": "Streaming direct…",
+      "direct": "Démarrage de la lecture…"
+    },
+    "resumedFrom": "Reprise à {time}",
+    "startOver": "Recommencer",
+    "upNext": "À suivre",
+    "playNow": "Lire maintenant ({seconds})",
+    "cantPlay": "Impossible de lire cette vidéo",
+    "errorHelp": "Erreur {code} : ce que cela signifie",
+    "retry": "Réessayer",
+    "errors": {
+      "P350": "Ce navigateur ne peut pas lire cette vidéo, même après conversion.",
+      "P351": "Connexion au serveur perdue. Vérifiez votre réseau et appuyez sur Réessayer.",
+      "P352": "Votre accès aux médias a expiré et n'a pas pu être renouvelé. Rechargez la page, ou déconnectez-vous puis reconnectez-vous.",
+      "failed": "La lecture a échoué."
+    }
+  },
+  "pause": {
+    "youreWatching": "Vous regardez",
+    "paused": "En pause",
+    "starring": "Avec",
+    "createdBy": "Créée par",
+    "directedBy": "Réalisé par",
+    "leftEndsAt": "{remaining} restantes · fin à {time}",
+    "seasonRest": {
+      "one": "La suite de la saison ({count} épisode de plus) finirait à {time}",
+      "other": "La suite de la saison ({count} épisodes de plus) finirait à {time}"
+    },
+    "runtimeMinutes": "{minutes} min",
+    "runtimeHours": "{hours} h {minutes} min",
+    "dollars": "{amount} $",
+    "timesBudget": "{amount} ({multiple}× son budget)",
+    "seasons": { "one": "{count} saison", "other": "{count} saisons" },
+    "episodes": { "one": "{count} épisode", "other": "{count} épisodes" },
+    "seasonsAndEpisodes": "{seasons}, {episodes}",
+    "since": "depuis {year}",
+    "facts": {
+      "originalTitle": "Titre original",
+      "budget": "Budget",
+      "boxOffice": "Box-office",
+      "series": "Série",
+      "onAir": "Diffusion",
+      "partOf": "Fait partie de",
+      "network": "Chaîne",
+      "studio": "Studio",
+      "music": "Musique",
+      "cinematography": "Photographie"
+    }
+  },
+  "audio": {
+    "openNowPlaying": "Ouvrir la lecture en cours",
+    "skipBack": "Reculer de {count} s",
+    "skipForward": "Avancer de {count} s",
+    "closePlayer": "Fermer le lecteur",
+    "fullscreen": "Lecture en cours en plein écran",
+    "playbackSpeed": "Vitesse de lecture",
+    "sleepTimer": "Minuteur de sommeil",
+    "rate": "{rate}x",
+    "chapterShort": "Chap."
+  },
+  "nowPlaying": {
+    "minimize": "Réduire le lecteur",
+    "playingAudiobook": "Livre audio en cours",
+    "chapters": "Chapitres",
+    "bookmarks": "Signets",
+    "bookmarksAndNotes": "Signets et notes",
+    "backToPlayer": "Retour au lecteur",
+    "addBookmark": "Ajouter un signet",
+    "notePlaceholder": "Note facultative (citation clé, indice…)",
+    "saveBookmark": "Enregistrer le signet",
+    "deleteBookmark": "Supprimer le signet",
+    "noBookmarks": "Aucun signet enregistré pour ce livre audio.",
+    "bookmarkTitle": "Signet @ {time}",
+    "leftInChapter": "{time} restantes dans le chapitre",
+    "previousChapter": "Chapitre précédent",
+    "nextChapter": "Chapitre suivant",
+    "speed": "Vitesse",
+    "sleep": "Sommeil",
+    "endOfChapter": "Fin du chap.",
+    "stoppingAtChapterEnd": "Arrêt à la fin de ce chapitre",
+    "stoppingIn": "Arrêt dans {time}",
+    "saveFailed": "Impossible d'enregistrer le signet",
+    "deleteFailed": "Impossible de supprimer le signet"
+  },
+  "intro": {
+    "label": "Séquence d'ouverture"
+  }
+}

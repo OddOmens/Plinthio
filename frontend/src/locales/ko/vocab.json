@@ -1,0 +1,113 @@
+{
+  "anyCreator": "제작자",
+  "manga": {
+    "unit": "권",
+    "units": "권",
+    "short": "권",
+    "verb": "읽기",
+    "verbing": "읽기",
+    "done": "읽음",
+    "creator": "작가",
+    "series": "만화 시리즈",
+    "count": {
+      "other": "{count}권"
+    },
+    "entry": "{number}권",
+    "allDone": "모두 읽음",
+    "progress": {
+      "other": "{count}/{total} 읽음"
+    }
+  },
+  "book": {
+    "unit": "책",
+    "units": "책",
+    "short": "권",
+    "verb": "읽기",
+    "verbing": "읽기",
+    "done": "읽음",
+    "creator": "저자",
+    "series": "도서 시리즈",
+    "count": {
+      "other": "{count}권"
+    },
+    "entry": "{number}권",
+    "allDone": "모두 읽음",
+    "progress": {
+      "other": "{count}/{total} 읽음"
+    }
+  },
+  "audiobook": {
+    "unit": "책",
+    "units": "책",
+    "short": "권",
+    "verb": "듣기",
+    "verbing": "듣기",
+    "done": "들음",
+    "creator": "저자",
+    "series": "오디오북 시리즈",
+    "count": {
+      "other": "{count}권"
+    },
+    "entry": "{number}권",
+    "allDone": "모두 들음",
+    "progress": {
+      "other": "{count}/{total} 들음"
+    }
+  },
+  "show": {
+    "unit": "에피소드",
+    "units": "에피소드",
+    "short": "화",
+    "verb": "시청",
+    "verbing": "시청",
+    "done": "시청함",
+    "creator": "크리에이터",
+    "series": "TV 시리즈",
+    "count": {
+      "other": "{count}화"
+    },
+    "entry": "S{season} · E{episode}",
+    "season": "S{season}",
+    "allDone": "모두 시청함",
+    "progress": {
+      "other": "{count}/{total} 시청함"
+    }
+  },
+  "anime": {
+    "unit": "에피소드",
+    "units": "에피소드",
+    "short": "화",
+    "verb": "시청",
+    "verbing": "시청",
+    "done": "시청함",
+    "creator": "스튜디오",
+    "series": "애니메이션 시리즈",
+    "count": {
+      "other": "{count}화"
+    },
+    "entry": "S{season} · E{episode}",
+    "season": "S{season}",
+    "allDone": "모두 시청함",
+    "progress": {
+      "other": "{count}/{total} 시청함"
+    }
+  },
+  "movie": {
+    "unit": "영화",
+    "units": "영화",
+    "short": "파트",
+    "verb": "시청",
+    "verbing": "시청",
+    "done": "시청함",
+    "creator": "감독",
+    "series": "영화 컬렉션",
+    "count": {
+      "other": "{count}편"
+    },
+    "entry": "파트 {number}",
+    "allDone": "모두 시청함",
+    "progress": {
+      "other": "{count}/{total} 시청함"
+    }
+  }
+}

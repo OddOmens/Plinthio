@@ -1,0 +1,172 @@
+{
+  "header": {
+    "title": "Configurar {name}",
+    "progress": "Paso {step} de {total}: {title}",
+    "almostDone": "Casi listo"
+  },
+  "steps": {
+    "appearance": "Apariencia",
+    "admin": "Cuenta de administrador",
+    "media": "Tipos de contenido",
+    "libraries": "Bibliotecas",
+    "household": "Hogar",
+    "access": "Acceso",
+    "review": "Revisar y terminar"
+  },
+  "appearance": {
+    "title": "Hazlo tuyo",
+    "text": "Un nombre y un estilo para tu servidor. Puedes cambiar todo esto más tarde en Administración.",
+    "serverName": "Nombre del servidor",
+    "theme": "Tema",
+    "accent": "Color de acento"
+  },
+  "themes": {
+    "dark": { "label": "Oscuro", "hint": "Descansa la vista" },
+    "light": { "label": "Claro", "hint": "Limpio y luminoso" }
+  },
+  "admin": {
+    "title": "Tu cuenta de administrador",
+    "text": "Esta cuenta gestiona las bibliotecas, los ajustes y quién puede usar el servidor.",
+    "passwordHint": "Al menos 8 caracteres. Cuanto más larga, mejor, sobre todo si vas a abrir Plinthio a internet.",
+    "confirmPassword": "Confirmar contraseña"
+  },
+  "media": {
+    "title": "¿Qué vas a guardar aquí?",
+    "text": "Aparecen en tu estantería. Cada persona elegirá también los suyos más adelante.",
+    "types": {
+      "audiobook": { "title": "Audiolibros", "desc": "Capítulos, marcadores y continuar donde lo dejaste." },
+      "manga": { "title": "Manga y cómics", "desc": "Lector página a página, simple o doble." },
+      "book": { "title": "Libros", "desc": "Lector de EPUB y PDF con progreso." },
+      "movie": { "title": "Películas", "desc": "Películas con continuar viendo, colecciones y extras." },
+      "show": { "title": "Series de TV", "desc": "Temporadas y episodios, con el siguiente a mano." },
+      "anime": { "title": "Anime", "desc": "Series ordenadas por temporada y episodio." }
+    }
+  },
+  "libraries": {
+    "title": "Añade tus carpetas de contenido",
+    "text": "Opcional. Indica a Plinthio las carpetas donde están tus archivos; las analizará enseguida. Puedes añadir más después en Administración.",
+    "addFolder": "Añadir carpeta",
+    "empty": "Todavía no hay carpetas.",
+    "dockerHint": "En Docker, tu contenido está en {path}.",
+    "addNow": "+ Añadir ahora una carpeta de biblioteca",
+    "name": "Nombre de la biblioteca",
+    "namePlaceholder": "p. ej. Mis audiolibros",
+    "type": "Tipo",
+    "path": "Ruta de la carpeta (en el host o en el contenedor)",
+    "types": {
+      "audiobooks": "Audiolibros",
+      "manga": "Manga / Cómics",
+      "books": "Libros y PDF",
+      "shows": "Series de TV",
+      "movies": "Películas",
+      "anime": "Anime"
+    }
+  },
+  "household": {
+    "title": "¿Quién más lo usa?",
+    "text": "Opcional. Cada persona tiene su propio progreso, marcadores y estilo. Puedes añadir personas cuando quieras en Administración.",
+    "usernamePlaceholder": "p. ej. alex",
+    "role": "Rol",
+    "roles": {
+      "viewer": "Espectador: explorar, leer y seguir el progreso",
+      "editor": "Editor: también puede corregir metadatos y portadas",
+      "admin": "Administrador: control total del servidor"
+    },
+    "password": "Contraseña (al menos 8 caracteres)",
+    "passwordPlaceholder": "Ponle una contraseña",
+    "tooShort": "Demasiado corta: se omiten las cuentas con una contraseña de menos de 8 caracteres.",
+    "add": "Añadir a alguien",
+    "parties": "Activar las watch parties",
+    "partiesText": "Mira una película o una serie en compañía desde distintos lugares, sincronizados y con chat. Los amigos que no estén en casa necesitan una forma de entrar (siguiente paso). Puedes cambiarlo cuando quieras en Administración."
+  },
+  "access": {
+    "title": "¿Dónde vas a usar Plinthio?",
+    "text": "Empieza con lo que necesitas ahora. Puedes cambiarlo cuando quieras en Administración → Red.",
+    "groupLabel": "Dónde usarás Plinthio",
+    "options": {
+      "home": {
+        "title": "Solo en casa",
+        "badge": "Empieza aquí",
+        "text": "Teléfonos, tabletas y ordenadores de tu red doméstica. Nada es accesible desde internet."
+      },
+      "tailscale": {
+        "title": "En casa, y fuera con Tailscale",
+        "text": "Para ti y las personas que invites a tu Tailscale: privado, sin abrir nada en tu router. Cada dispositivo necesita la app gratuita de Tailscale."
+      },
+      "internet": {
+        "title": "También desde internet, para invitados",
+        "text": "Amigos y familia abren un enlace e inician sesión, sin instalar apps: mediante Tailscale Funnel (sin dominio ni cambios en el router) o una dirección web propia."
+      }
+    },
+    "via": {
+      "question": "¿Cómo llegarán tus invitados?",
+      "groupLabel": "Cómo llegan los invitados",
+      "funnel": {
+        "title": "Sin dominio: Tailscale Funnel",
+        "text": "Un enlace permanente, sin cambios en el router. Ideal para leer y escuchar; el vídeo puede ir más lento."
+      },
+      "domain": {
+        "title": "Mi propio dominio",
+        "text": "A toda velocidad, como media.tudominio.com. Hay que abrir puertos en tu router."
+      }
+    },
+    "tailscale": {
+      "title": "Configurar Tailscale",
+      "text": "Ahora, o en cualquier momento después de la configuración: Administración → Red tiene esta misma guía y te muestra cuándo funciona."
+    },
+    "domain": {
+      "title": "Después de la configuración: dale una dirección web",
+      "text": "El complemento Caddy ofrece {url} con un certificado real. Necesita un dominio y los puertos 80 y 443 redirigidos en tu router. Paso a paso, incluido cómo comprobar si tu conexión a internet lo permite: {docs}. Hasta entonces, no cambia nada.",
+      "docs": "Documentos → Acceso remoto y Tailscale"
+    },
+    "require2fa": "Exigir verificación en dos pasos fuera de casa",
+    "require2faText": "Opcional, recomendado. Iniciar sesión desde fuera de la red doméstica pedirá entonces un código de una app del teléfono; en casa basta con la contraseña. Quien no tenga la verificación en dos pasos puede iniciar sesión en casa y configurarla allí."
+  },
+  "review": {
+    "title": "Revisar y lanzar Plinthio",
+    "text": "Comprueba que todo esté bien. Puedes cambiar cualquier cosa más tarde.",
+    "rows": {
+      "serverName": "Nombre del servidor",
+      "adminUsername": "Usuario administrador",
+      "themeAccent": "Tema y acento",
+      "media": "Contenido",
+      "libraries": "Bibliotecas",
+      "otherAccounts": "Otras cuentas",
+      "parties": "Watch parties",
+      "access": "Acceso"
+    },
+    "folders": {
+      "one": "{count} carpeta",
+      "other": "{count} carpetas"
+    },
+    "access": {
+      "home": "Solo en casa",
+      "tailscale": "Casa y Tailscale",
+      "funnel": "Casa e internet (Tailscale Funnel)",
+      "domain": "Casa e internet (tu propio dominio)",
+      "withTwoFactor": "{access}, verificación en dos pasos fuera de casa"
+    },
+    "https": {
+      "title": "Conexión segura en casa",
+      "text": "La app instalada y las descargas sin conexión necesitan HTTPS. Plinthio también está en {url} con su propio certificado, que cada dispositivo instala una vez (Documentos → Instalar la app móvil PWA). O usa Tailscale para tener una dirección de confianza sin instalar nada."
+    }
+  },
+  "finished": {
+    "title": "Plinthio está listo",
+    "text": "Una última cosa, opcional: protege tu cuenta de administrador con la verificación en dos pasos, para que la contraseña sola no baste.",
+    "internet": "Merece la pena, ya que el servidor será accesible desde internet.",
+    "later": "También puedes hacerlo más tarde en Ajustes → Seguridad."
+  },
+  "nav": {
+    "complete": "Completar y lanzar",
+    "goToPlinthio": "Ir a Plinthio",
+    "notNow": "Ahora no"
+  },
+  "errors": {
+    "usernameRequired": "El nombre de usuario es obligatorio",
+    "passwordLength": "La contraseña debe tener al menos 8 caracteres",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "mediaRequired": "Selecciona al menos un tipo de contenido",
+    "failed": "La configuración ha fallado. Comprueba la conexión con el servidor."
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "title": "Descargas",
+  "intro": "Libros, cómics y audiolibros guardados en este dispositivo para disfrutarlos sin conexión.",
+  "offline": "Estás sin conexión. Las descargas se siguen abriendo; el progreso se sincroniza cuando vuelvas a conectarte.",
+  "needsHttps": "Las descargas necesitan una conexión segura, y esta página se abrió con http:// simple. {link} para descargar contenido y leerlo o escucharlo sin conexión.",
+  "switchToHttps": "Cambia a HTTPS",
+  "unsupported": "Este navegador no puede guardar descargas (necesita compatibilidad con Service Worker y Cache Storage).",
+  "summary": {
+    "one": "{size} en {count} descarga",
+    "other": "{size} en {count} descargas"
+  },
+  "usage": "{used} de {quota} usados en este dispositivo",
+  "tiedToAccount": "Las descargas están vinculadas a este navegador y a tu cuenta: al cerrar sesión se eliminan.",
+  "downloading": "Descargando",
+  "untitled": "Descarga",
+  "pagesProgress": "{done} / {total} páginas",
+  "bytesProgress": "{received} de {total}",
+  "dismiss": "Descartar",
+  "read": "Leer",
+  "openItem": "Abrir {title}",
+  "removeItemLabel": "Quitar la descarga de {title}",
+  "remove": "Quitar descarga",
+  "removeConfirm": "¿Quitar «{title}» de este dispositivo? Seguirá en tu biblioteca.",
+  "empty": {
+    "title": "Aún no has descargado nada",
+    "hint": "Usa {action} en el menú ⋮ de un título, o el botón de descarga de un volumen de manga.",
+    "action": "Descargar para usar sin conexión"
+  },
+  "size": {
+    "B": "{value} B",
+    "KB": "{value} KB",
+    "MB": "{value} MB",
+    "GB": "{value} GB",
+    "TB": "{value} TB"
+  },
+  "errors": {
+    "failed": "Error en la descarga",
+    "failedStatus": "Error en la descarga ({status})",
+    "pageList": "No se pudo leer la lista de páginas ({status})"
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "header": {
+    "title": "Set up {name}",
+    "progress": "Step {step} of {total}: {title}",
+    "almostDone": "Almost done"
+  },
+  "steps": {
+    "appearance": "Appearance",
+    "admin": "Admin Account",
+    "media": "Media Types",
+    "libraries": "Libraries",
+    "household": "Household",
+    "access": "Access",
+    "review": "Review & Finish"
+  },
+  "appearance": {
+    "title": "Make it yours",
+    "text": "A name and a look for your server. You can change all of this later in Admin.",
+    "serverName": "Server name",
+    "theme": "Theme",
+    "accent": "Accent colour"
+  },
+  "themes": {
+    "dark": { "label": "Dark", "hint": "Easy on the eyes" },
+    "light": { "label": "Light", "hint": "Clean and bright" }
+  },
+  "admin": {
+    "title": "Your admin account",
+    "text": "This account manages libraries, settings and who can use the server.",
+    "passwordHint": "At least 8 characters. Longer is better, especially if you'll open Plinthio to the internet.",
+    "confirmPassword": "Confirm password"
+  },
+  "media": {
+    "title": "What will you keep here?",
+    "text": "These show on your shelf. Everyone picks their own later, too.",
+    "types": {
+      "audiobook": { "title": "Audiobooks", "desc": "Chapters, bookmarks and resume." },
+      "manga": { "title": "Manga & Comics", "desc": "Page-by-page reader, single or double page." },
+      "book": { "title": "Books", "desc": "EPUB and PDF reader with progress." },
+      "movie": { "title": "Movies", "desc": "Films with resume, collections and extras." },
+      "show": { "title": "TV Shows", "desc": "Seasons and episodes, up next." },
+      "anime": { "title": "Anime", "desc": "Series sorted by season and episode." }
+    }
+  },
+  "libraries": {
+    "title": "Add your media folders",
+    "text": "Optional. Point Plinthio at the folders your files are in; it scans them straight away. You can add more later in Admin.",
+    "addFolder": "Add folder",
+    "empty": "No folders yet.",
+    "dockerHint": "In Docker, your media is under {path}.",
+    "addNow": "+ Add a library folder now",
+    "name": "Library name",
+    "namePlaceholder": "e.g. My Audiobooks",
+    "type": "Type",
+    "path": "Folder path (on the host or in the container)",
+    "types": {
+      "audiobooks": "Audiobooks",
+      "manga": "Manga / Comics",
+      "books": "Books & PDFs",
+      "shows": "TV Shows",
+      "movies": "Movies",
+      "anime": "Anime"
+    }
+  },
+  "household": {
+    "title": "Who else uses it?",
+    "text": "Optional. Each person gets their own progress, bookmarks and look. You can add people any time in Admin.",
+    "usernamePlaceholder": "e.g. alex",
+    "role": "Role",
+    "roles": {
+      "viewer": "Viewer: browse, read & track progress",
+      "editor": "Editor: can also fix metadata & covers",
+      "admin": "Admin: full server control"
+    },
+    "password": "Password (at least 8 characters)",
+    "passwordPlaceholder": "Set a password for them",
+    "tooShort": "Too short: accounts with a password under 8 characters are skipped.",
+    "add": "Add someone",
+    "parties": "Turn on watch parties",
+    "partiesText": "Watch a movie or show together from different places, in sync, with chat. Friends away from home need a way in (next step). You can change this any time in Admin."
+  },
+  "access": {
+    "title": "Where will you use Plinthio?",
+    "text": "Start with what you need now. You can change this any time in Admin → Network.",
+    "groupLabel": "Where you'll use Plinthio",
+    "options": {
+      "home": {
+        "title": "At home only",
+        "badge": "Start here",
+        "text": "Phones, tablets and computers on your home network. Nothing is reachable from the internet."
+      },
+      "tailscale": {
+        "title": "At home, and away with Tailscale",
+        "text": "For you and people you invite to your Tailscale: private, with nothing opened on your router. Each device needs the free Tailscale app."
+      },
+      "internet": {
+        "title": "Also from the internet, for guests",
+        "text": "Friends and family open a link and sign in, with no apps to install: through Tailscale Funnel (no domain, no router changes) or a web address of your own."
+      }
+    },
+    "via": {
+      "question": "How will guests reach it?",
+      "groupLabel": "How guests reach it",
+      "funnel": {
+        "title": "No domain: Tailscale Funnel",
+        "text": "A permanent link, no router changes. Best for reading and listening; video may be slower."
+      },
+      "domain": {
+        "title": "My own domain",
+        "text": "Full speed, like media.yourdomain.com. Needs ports opened on your router."
+      }
+    },
+    "tailscale": {
+      "title": "Set up Tailscale",
+      "text": "Now, or any time after setup: Admin → Network has this same guide, and shows when it's working."
+    },
+    "domain": {
+      "title": "After setup: give it a web address",
+      "text": "The Caddy add-on gives {url} with a real certificate. It needs a domain and ports 80 and 443 forwarded on your router. Step by step, including how to check your internet connection allows it: {docs}. Until then, nothing changes.",
+      "docs": "Docs → Remote Access & Tailscale"
+    },
+    "require2fa": "Require two-factor away from home",
+    "require2faText": "Optional, recommended. Signing in from outside the home network then needs a code from a phone app; at home a password is enough. Anyone without two-factor can still sign in at home and set it up there."
+  },
+  "review": {
+    "title": "Review & Launch Plinthio",
+    "text": "Check everything looks right. You can change any of it later.",
+    "rows": {
+      "serverName": "Server name",
+      "adminUsername": "Admin username",
+      "themeAccent": "Theme & accent",
+      "media": "Media",
+      "libraries": "Libraries",
+      "otherAccounts": "Other accounts",
+      "parties": "Watch parties",
+      "access": "Access"
+    },
+    "folders": {
+      "one": "{count} folder",
+      "other": "{count} folders"
+    },
+    "access": {
+      "home": "Home only",
+      "tailscale": "Home and Tailscale",
+      "funnel": "Home and the internet (Tailscale Funnel)",
+      "domain": "Home and the internet (your own domain)",
+      "withTwoFactor": "{access}, two-factor away from home"
+    },
+    "https": {
+      "title": "Secure connection at home",
+      "text": "The installed app and offline downloads need HTTPS. Plinthio is also at {url} with its own certificate, which each device installs once (Docs → PWA Mobile App Setup). Or use Tailscale for a trusted address with nothing to install."
+    }
+  },
+  "finished": {
+    "title": "Plinthio is ready",
+    "text": "One last, optional thing: protect your admin account with two-factor, so a password alone isn't enough.",
+    "internet": "Worth it, since the server will be reachable from the internet.",
+    "later": "You can also do this later in Settings → Security."
+  },
+  "nav": {
+    "complete": "Complete Setup & Launch",
+    "goToPlinthio": "Go to Plinthio",
+    "notNow": "Not now"
+  },
+  "errors": {
+    "usernameRequired": "Username is required",
+    "passwordLength": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "mediaRequired": "Please select at least one media type",
+    "failed": "Setup failed. Please check server connection."
+  }
+}

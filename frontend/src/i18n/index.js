@@ -137,25 +137,33 @@ export function te(key) {
   return lookup(locale.value, key) !== undefined || lookup(DEFAULT_LANGUAGE, key) !== undefined;
 }
 
+// Dates and numbers use the browser's own regional variant when it's the same language
+// (en-GB keeps its 24-hour clock and day-first dates, fr-CA its own), else the plain language.
+function formatLocale() {
+  const code = locale.value;
+  const wanted = typeof navigator === 'undefined' ? [] : (navigator.languages || [navigator.language]);
+  return wanted.find((tag) => String(tag || '').toLowerCase().split('-')[0] === code) || code;
+}
+
 // Numbers and dates in the reader's language: n(1234) → "1,234" / "1 234" / "1.234".
 export function n(value, options) {
-  return new Intl.NumberFormat(locale.value, options).format(value);
+  return new Intl.NumberFormat(formatLocale(), options).format(value);
 }
 
 export function d(value, options) {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat(locale.value, options).format(date);
+  return new Intl.DateTimeFormat(formatLocale(), options).format(date);
 }
 
 // "3 days ago", "in 2 hours" — `value` in `unit`s, negative for the past.
 export function relative(value, unit, options = { numeric: 'auto' }) {
-  return new Intl.RelativeTimeFormat(locale.value, options).format(value, unit);
+  return new Intl.RelativeTimeFormat(formatLocale(), options).format(value, unit);
 }
 
 // A list joined the local way: ["A", "B", "C"] → "A, B and C" / "A、B、C".
 export function list(items, options = { type: 'conjunction' }) {
-  return new Intl.ListFormat(locale.value, options).format(items);
+  return new Intl.ListFormat(formatLocale(), options).format(items);
 }
 
 export function useI18n() {

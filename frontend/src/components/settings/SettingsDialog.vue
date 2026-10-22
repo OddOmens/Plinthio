@@ -9,7 +9,7 @@
             <h3 class="text-sm font-semibold text-foreground truncate">{{ title }}</h3>
             <p v-if="subtitle" class="text-xs text-muted-foreground mt-0.5 truncate">{{ subtitle }}</p>
           </div>
-          <button type="button" aria-label="Close" @click="$emit('close')" class="w-8 h-8 -mr-2 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition">
+          <button type="button" :aria-label="$t('common.close')" @click="$emit('close')" class="w-8 h-8 -mr-2 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition">
             <X class="w-4 h-4" />
           </button>
         </header>

@@ -2,16 +2,16 @@
   <div v-if="isOpen" class="fixed inset-0 z-50 bg-background/95 backdrop-blur-2xl flex flex-col safe-top safe-bottom transition-all select-none">
     <!-- Top Header Bar -->
     <header class="px-5 py-3 flex items-center justify-between border-b border-border/40">
-      <button aria-label="Minimize player"
+      <button :aria-label="$t('player.nowPlaying.minimize')"
         @click="close"
         class="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition"
-        title="Minimize player"
+        :title="$t('player.nowPlaying.minimize')"
       >
         <ChevronDown class="w-5 h-5" />
       </button>
 
       <div class="text-center">
-        <span class="text-[11px] uppercase font-mono tracking-widest text-muted-foreground">Playing Audiobook</span>
+        <span class="text-[11px] uppercase font-mono tracking-widest text-muted-foreground">{{ $t('player.nowPlaying.playingAudiobook') }}</span>
         <h4 class="text-xs font-semibold text-foreground truncate max-w-[240px] sm:max-w-md">
           {{ player.currentItem?.title }}
         </h4>
@@ -27,8 +27,8 @@
             ? 'bg-primary text-primary-foreground'
             : 'text-muted-foreground hover:text-foreground hover:bg-muted'
         ]"
-        title="Chapters"
-        aria-label="Chapters"
+        :title="$t('player.nowPlaying.chapters')"
+        :aria-label="$t('player.nowPlaying.chapters')"
       >
         <ListOrdered class="w-5 h-5" />
       </button>
@@ -40,7 +40,7 @@
             ? 'bg-primary text-primary-foreground'
             : 'text-muted-foreground hover:text-foreground hover:bg-muted'
         ]"
-        title="Bookmarks"
+        :title="$t('player.nowPlaying.bookmarks')"
       >
         <Bookmark class="w-5 h-5" />
         <span v-if="bookmarks.length > 0" class="text-[11px] font-bold font-mono">
@@ -57,30 +57,30 @@
         <div class="flex items-center justify-between border-b border-border pb-3">
           <div class="flex items-center gap-2">
             <Bookmark class="w-4 h-4 text-primary" />
-            <h3 class="text-sm font-semibold text-foreground">Bookmarks & Notes</h3>
+            <h3 class="text-sm font-semibold text-foreground">{{ $t('player.nowPlaying.bookmarksAndNotes') }}</h3>
           </div>
           <button @click="showBookmarksDrawer = false" class="text-xs text-muted-foreground hover:text-foreground">
-            Back to Player
+            {{ $t('player.nowPlaying.backToPlayer') }}
           </button>
         </div>
 
         <!-- Add Bookmark at Current Position -->
         <div class="flex flex-col gap-2 bg-muted/40 p-3 rounded-xl border border-border">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-foreground">Add Bookmark</span>
+            <span class="text-xs font-semibold text-foreground">{{ $t('player.nowPlaying.addBookmark') }}</span>
             <span class="text-xs font-mono text-primary font-bold">@ {{ formatTime(player.currentTime) }}</span>
           </div>
           <input
             v-model="newBookmarkNote"
             @keyup.enter="createBookmark"
-            placeholder="Optional note (e.g. key quote, clue)..."
+            :placeholder="$t('player.nowPlaying.notePlaceholder')"
             class="bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
           <button
             @click="createBookmark"
             class="self-end px-3 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition shadow-sm"
           >
-            Save Bookmark
+            {{ $t('player.nowPlaying.saveBookmark') }}
           </button>
         </div>
 
@@ -102,17 +102,17 @@
               <p v-if="bm.notes" class="text-xs text-muted-foreground mt-0.5 break-words">{{ bm.notes }}</p>
             </button>
 
-            <button aria-label="Delete bookmark"
+            <button :aria-label="$t('player.nowPlaying.deleteBookmark')"
               @click="deleteBookmark(bm.id)"
               class="p-1 text-muted-foreground hover:text-destructive transition opacity-60 group-hover:opacity-100"
-              title="Delete bookmark"
+              :title="$t('player.nowPlaying.deleteBookmark')"
             >
               <Trash2 class="w-3.5 h-3.5" />
             </button>
           </div>
 
           <div v-if="bookmarks.length === 0" class="py-12 text-center text-xs text-muted-foreground">
-            No bookmarks saved for this audiobook yet.
+            {{ $t('player.nowPlaying.noBookmarks') }}
           </div>
         </div>
       </div>
@@ -122,11 +122,11 @@
         <div class="flex items-center justify-between border-b border-border pb-3">
           <div class="flex items-center gap-2">
             <ListOrdered class="w-4 h-4 text-primary" />
-            <h3 class="text-sm font-semibold text-foreground">Chapters</h3>
+            <h3 class="text-sm font-semibold text-foreground">{{ $t('player.nowPlaying.chapters') }}</h3>
             <span class="text-[12px] text-muted-foreground">{{ player.chapters.length }}</span>
           </div>
           <button @click="showChapters = false" class="text-xs text-muted-foreground hover:text-foreground">
-            Back to Player
+            {{ $t('player.nowPlaying.backToPlayer') }}
           </button>
         </div>
         <ol ref="chapterListEl" class="flex-1 overflow-y-auto -mx-2">
@@ -151,7 +151,7 @@
       <template v-else>
         <!-- Large High-Res Cover Artwork with dynamic height clamp for landscape -->
         <div class="relative w-40 h-40 sm:w-64 sm:h-64 md:w-72 md:h-72 max-h-[30dvh] sm:max-h-[40dvh] aspect-square rounded-2xl overflow-hidden shadow-2xl border border-border/80 flex-shrink-0">
-          <img :src="coverUrl" :alt="`Cover of ${player.currentItem?.title}`" class="w-full h-full object-cover" />
+          <img :src="coverUrl" :alt="$t('player.coverOf', { title: player.currentItem?.title })" class="w-full h-full object-cover" />
         </div>
 
         <!-- Title & Metadata -->
@@ -160,7 +160,7 @@
             {{ player.currentItem?.title }}
           </h2>
           <p class="text-xs sm:text-sm text-muted-foreground truncate">
-            {{ player.currentItem?.author || 'Unknown Author' }}
+            {{ player.currentItem?.author || $t('player.unknownAuthor') }}
           </p>
           <span v-if="player.currentItem?.series" class="text-xs font-mono text-muted-foreground mt-0.5">
             {{ player.currentItem.series }}
@@ -189,39 +189,39 @@
           />
           <div class="flex items-center justify-between text-xs font-mono text-muted-foreground tabular-nums">
             <span>{{ formatTime(player.currentTime) }}</span>
-            <span v-if="player.currentChapter" class="text-[11px]">{{ formatTime(chapterRemaining) }} left in chapter</span>
+            <span v-if="player.currentChapter" class="text-[11px]">{{ $t('player.nowPlaying.leftInChapter', { time: formatTime(chapterRemaining) }) }}</span>
             <span>-{{ formatTime(remainingSeconds) }}</span>
           </div>
         </div>
 
         <!-- Primary Playback Controls: -30s, -15s, Play/Pause, +15s, +30s -->
         <div class="flex items-center justify-center gap-3 sm:gap-5 w-full">
-          <button v-if="player.chapters.length" aria-label="Previous chapter"
+          <button v-if="player.chapters.length" :aria-label="$t('player.nowPlaying.previousChapter')"
             @click="player.previousChapter()"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90"
-            title="Previous chapter"
+            :title="$t('player.nowPlaying.previousChapter')"
           >
             <SkipBack class="w-5 h-5" />
           </button>
-          <button v-else aria-label="Skip back 30s"
+          <button v-else :aria-label="$t('player.audio.skipBack', { count: 30 })"
             @click="player.skip(-30)"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 flex flex-col items-center gap-0.5"
-            title="Skip back 30s"
+            :title="$t('player.audio.skipBack', { count: 30 })"
           >
             <RotateCcw class="w-5 h-5" />
             <span class="text-[10px] font-mono font-bold leading-none">30</span>
           </button>
 
-          <button aria-label="Skip back 15s"
+          <button :aria-label="$t('player.audio.skipBack', { count: 15 })"
             @click="player.skip(-15)"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 flex flex-col items-center gap-0.5"
-            title="Skip back 15s"
+            :title="$t('player.audio.skipBack', { count: 15 })"
           >
             <RotateCcw class="w-5 h-5" />
             <span class="text-[10px] font-mono font-bold leading-none">15</span>
           </button>
 
-          <button :aria-label="player.isPlaying ? 'Pause' : 'Play'"
+          <button :aria-label="player.isPlaying ? $t('common.pause') : $t('common.play')"
             @click="player.togglePlay"
             class="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl active:scale-95 hover:scale-105 transition"
           >
@@ -229,27 +229,27 @@
             <Play v-else class="w-7 h-7 fill-current ml-1" />
           </button>
 
-          <button aria-label="Skip forward 15s"
+          <button :aria-label="$t('player.audio.skipForward', { count: 15 })"
             @click="player.skip(15)"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 flex flex-col items-center gap-0.5"
-            title="Skip forward 15s"
+            :title="$t('player.audio.skipForward', { count: 15 })"
           >
             <RotateCw class="w-5 h-5" />
             <span class="text-[10px] font-mono font-bold leading-none">15</span>
           </button>
 
-          <button v-if="player.chapters.length" aria-label="Next chapter"
+          <button v-if="player.chapters.length" :aria-label="$t('player.nowPlaying.nextChapter')"
             @click="player.nextChapter()"
             :disabled="player.currentChapterIndex >= player.chapters.length - 1"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 disabled:opacity-30"
-            title="Next chapter"
+            :title="$t('player.nowPlaying.nextChapter')"
           >
             <SkipForward class="w-5 h-5" />
           </button>
-          <button v-else aria-label="Skip forward 30s"
+          <button v-else :aria-label="$t('player.audio.skipForward', { count: 30 })"
             @click="player.skip(30)"
             class="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition active:scale-90 flex flex-col items-center gap-0.5"
-            title="Skip forward 30s"
+            :title="$t('player.audio.skipForward', { count: 30 })"
           >
             <RotateCw class="w-5 h-5" />
             <span class="text-[10px] font-mono font-bold leading-none">30</span>
@@ -260,7 +260,7 @@
         <div class="w-full flex flex-col gap-4 pt-2 border-t border-border/40">
           <!-- Speed Chips -->
           <div class="flex items-center justify-between gap-2">
-            <span class="text-[12px] text-muted-foreground font-medium">Speed</span>
+            <span class="text-[12px] text-muted-foreground font-medium">{{ $t('player.nowPlaying.speed') }}</span>
             <div class="flex items-center gap-1">
               <button
                 v-for="rate in PLAYBACK_SPEEDS"
@@ -273,7 +273,7 @@
                     : 'bg-muted/60 text-muted-foreground hover:text-foreground'
                 ]"
               >
-                {{ rate }}x
+                {{ $t('player.audio.rate', { rate: n(rate) }) }}
               </button>
             </div>
           </div>
@@ -281,7 +281,7 @@
           <!-- Sleep Timer Chips -->
           <div class="flex items-center justify-between gap-2">
             <span class="text-[12px] text-muted-foreground font-medium flex items-center gap-1">
-              <Moon class="w-3.5 h-3.5" /> Sleep
+              <Moon class="w-3.5 h-3.5" /> {{ $t('player.nowPlaying.sleep') }}
             </span>
             <div class="flex items-center gap-1 flex-wrap justify-end">
               <button
@@ -295,12 +295,12 @@
                     : 'bg-muted/60 text-muted-foreground hover:text-foreground'
                 ]"
               >
-                {{ opt === 'chapter' ? 'End of ch.' : (opt ? `${opt}m` : 'Off') }}
+                {{ opt === 'chapter' ? $t('player.nowPlaying.endOfChapter') : (opt ? $t('player.units.minutesShort', { count: opt }) : $t('common.off')) }}
               </button>
             </div>
           </div>
           <p v-if="player.sleepTimerMinutes" class="-mt-2 text-right text-[12px] text-primary font-mono tabular-nums">
-            {{ player.sleepTimerMinutes === 'chapter' ? 'Stopping at the end of this chapter' : `Stopping in ${formatTime(player.sleepRemaining)}` }}
+            {{ player.sleepTimerMinutes === 'chapter' ? $t('player.nowPlaying.stoppingAtChapterEnd') : $t('player.nowPlaying.stoppingIn', { time: formatTime(player.sleepRemaining) }) }}
           </p>
 
           <!-- Volume Slider -->
@@ -330,6 +330,7 @@ import { usePlayerStore, PLAYBACK_SPEEDS } from '../stores/player';
 import { useDialogStore } from '../stores/dialog';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 import RatingBar from './RatingBar.vue';
+import { t, n } from '../i18n';
 import {
   ChevronDown,
   Play,
@@ -415,13 +416,13 @@ async function createBookmark() {
       itemId: player.currentItem.id,
       type: 'audiobook',
       position: player.currentTime,
-      title: `Bookmark @ ${formatTime(player.currentTime)}`,
+      title: t('player.nowPlaying.bookmarkTitle', { time: formatTime(player.currentTime) }),
       notes: newBookmarkNote.value.trim() || null
     });
     newBookmarkNote.value = '';
     await loadBookmarks();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Failed to save bookmark');
+    dialog.alert(err.response?.data?.error || t('player.nowPlaying.saveFailed'));
   }
 }
 
@@ -430,7 +431,7 @@ async function deleteBookmark(id) {
     await api.delete(`/bookmarks/${id}`);
     await loadBookmarks();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Failed to delete bookmark');
+    dialog.alert(err.response?.data?.error || t('player.nowPlaying.deleteFailed'));
   }
 }
 

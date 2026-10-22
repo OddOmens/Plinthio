@@ -1,0 +1,42 @@
+{
+  "welcome": {
+    "title": "Te damos la bienvenida a {name}",
+    "text": "Vamos a dejarlo todo a tu gusto. Se tarda unos treinta segundos y podrás cambiar cualquier cosa más tarde en Ajustes."
+  },
+  "theme": {
+    "title": "Elige tu estilo",
+    "text": "Esto es solo para ti: no cambia lo que ven los demás."
+  },
+  "accent": {
+    "title": "Elige un color de acento",
+    "text": "Lo usan los botones, los elementos destacados y las barras de progreso.",
+    "admin": "Como administrador, lo defines para todo el servidor. Cada persona puede elegir el suyo en Ajustes si lo permites (Administración → Reproducción).",
+    "personal": "Es solo para ti; cámbialo cuando quieras en Ajustes."
+  },
+  "interests": {
+    "title": "¿Qué te trae por aquí?",
+    "text": "Los mostraremos en tu estantería y ocultaremos el resto. Elige tantos como quieras.",
+    "pickOne": "Elige al menos uno para que tu estantería no esté vacía.",
+    "types": {
+      "manga": { "label": "Manga", "hint": "Cómics y novelas gráficas" },
+      "book": { "label": "Libros", "hint": "Lectura de EPUB y PDF" },
+      "audiobook": { "label": "Audiolibros", "hint": "Escucha y continúa donde lo dejaste" },
+      "movie": { "label": "Películas", "hint": "Míralas en el navegador" },
+      "show": { "label": "Series de TV", "hint": "Temporadas y episodios" },
+      "anime": { "label": "Anime", "hint": "Series subtituladas y dobladas" }
+    }
+  },
+  "security": {
+    "title": "Protege tu cuenta",
+    "text": "Opcional. La verificación en dos pasos pide un código de tu teléfono al iniciar sesión, así que la contraseña sola no basta. Puedes activarla ahora o más tarde en Ajustes → Seguridad."
+  },
+  "done": {
+    "title": "Todo listo",
+    "everything": "Tu estantería lo muestra todo. ¡A disfrutar!",
+    "tuned": "Tu estantería está centrada en {list}. Puedes añadir más cuando quieras desde Ajustes."
+  },
+  "nav": {
+    "startBrowsing": "Empezar a explorar",
+    "notNow": "Ahora no"
+  }
+}

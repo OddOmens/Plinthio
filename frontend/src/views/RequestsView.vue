@@ -4,14 +4,14 @@
       <router-link
         to="/"
         class="w-9 h-9 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center justify-center transition active:scale-95 flex-shrink-0"
-        title="Back to Shelves"
+        :title="$t('nav.backToShelves')"
       >
         <ArrowLeft class="w-4 h-4" />
       </router-link>
       <div>
-        <h1 class="text-xl font-bold text-foreground">Requests</h1>
+        <h1 class="text-xl font-bold text-foreground">{{ $t('requests.title') }}</h1>
         <p class="text-sm text-muted-foreground mt-0.5">
-          Ask for movies, shows, anime, books and audiobooks the library doesn't have yet.
+          {{ $t('requests.intro') }}
         </p>
       </div>
     </div>
@@ -20,7 +20,7 @@
     <section class="border border-border rounded-2xl bg-card p-4 flex flex-col gap-3">
       <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
         <Send class="w-4 h-4 text-primary" />
-        New request
+        {{ $t('requests.newRequest') }}
       </h2>
       <ExternalTitleSearch :search-types="SEARCH_TYPES">
         <template #action="{ result, mediaType }">
@@ -29,7 +29,7 @@
             class="text-[11px] font-medium px-1.5 py-0.5 rounded"
             :class="REQUEST_STATUSES[sentStatus(result)]?.tone"
           >
-            {{ REQUEST_STATUSES[sentStatus(result)]?.label }}
+            {{ statusLabel(sentStatus(result)) }}
           </span>
           <button
             v-else
@@ -37,7 +37,7 @@
             :disabled="submitting.has(resultKey(result))"
             class="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50 flex items-center gap-1 transition"
           >
-            <Send class="w-3.5 h-3.5" /> Request
+            <Send class="w-3.5 h-3.5" /> {{ $t('requests.request') }}
           </button>
         </template>
       </ExternalTitleSearch>
@@ -52,7 +52,7 @@
             class="h-8 px-3 rounded-lg text-xs font-medium transition"
             :class="scope === 'mine' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
           >
-            My requests
+            {{ $t('requests.mine') }}
           </button>
           <button
             v-if="authStore.isEditor"
@@ -60,7 +60,7 @@
             class="h-8 px-3 rounded-lg text-xs font-medium transition flex items-center gap-1.5"
             :class="scope === 'all' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
           >
-            Review queue
+            {{ $t('requests.reviewQueue') }}
             <span v-if="pendingCount" class="min-w-[1.25rem] h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold flex items-center justify-center">
               {{ pendingCount }}
             </span>
@@ -70,16 +70,16 @@
         <select
           v-model="statusFilter"
           class="h-9 px-2.5 rounded-xl bg-card border border-border text-xs text-foreground"
-          aria-label="Filter by status"
+          :aria-label="$t('requests.filterByStatus')"
         >
-          <option value="">All statuses</option>
-          <option v-for="(s, key) in REQUEST_STATUSES" :key="key" :value="key">{{ s.label }}</option>
+          <option value="">{{ $t('requests.allStatuses') }}</option>
+          <option v-for="key in Object.keys(REQUEST_STATUSES)" :key="key" :value="key">{{ statusLabel(key) }}</option>
         </select>
       </div>
 
       <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
 
-      <div v-if="loading" class="py-12 text-center text-sm text-muted-foreground">Loading…</div>
+      <div v-if="loading" class="py-12 text-center text-sm text-muted-foreground">{{ $t('common.loading') }}</div>
 
       <div
         v-else-if="requests.length === 0"
@@ -87,10 +87,10 @@
       >
         <Inbox class="w-7 h-7 mx-auto text-muted-foreground" />
         <p class="text-sm font-medium text-foreground mt-3">
-          {{ scope === 'all' ? 'No requests to review' : 'You haven\'t requested anything yet' }}
+          {{ scope === 'all' ? $t('requests.emptyReview') : $t('requests.emptyMine') }}
         </p>
         <p v-if="scope === 'mine'" class="text-xs text-muted-foreground mt-1">
-          Search above, or use the Request button on a title in one of your Lists.
+          {{ $t('requests.emptyMineHint') }}
         </p>
       </div>
 
@@ -117,22 +117,22 @@
               <div class="min-w-0">
                 <p class="text-sm font-semibold text-foreground truncate">{{ req.title }}</p>
                 <p class="text-xs text-muted-foreground truncate">
-                  {{ [MEDIA_TYPE_LABELS[req.media_type], req.release_date?.slice(0, 4), SOURCE_LABELS[req.source] || req.source].filter(Boolean).join(' · ') }}
+                  {{ [mediaTypeLabel(req.media_type), req.release_date?.slice(0, 4), SOURCE_LABELS[req.source] || req.source].filter(Boolean).join(' · ') }}
                 </p>
               </div>
               <span
                 class="text-[11px] font-medium px-1.5 py-0.5 rounded flex-shrink-0 whitespace-nowrap"
                 :class="REQUEST_STATUSES[req.status]?.tone"
               >
-                {{ REQUEST_STATUSES[req.status]?.label }}
+                {{ statusLabel(req.status) }}
               </span>
             </div>
 
             <p class="text-[12px] text-muted-foreground">
-              <span v-if="scope === 'all'">Requested by <span class="text-foreground font-medium">{{ req.requested_by || 'deleted user' }}</span> · </span>
+              <span v-if="scope === 'all'"><I18nT keypath="requests.requestedBy" tag=""><template #name><span class="text-foreground font-medium">{{ req.requested_by || $t('requests.deletedUser') }}</span></template></I18nT> · </span>
               {{ formatDate(req.created_at) }}
             </p>
-            <p v-if="req.note" class="text-xs text-foreground/90 bg-muted/40 rounded-lg px-2.5 py-1.5">“{{ req.note }}”</p>
+            <p v-if="req.note" class="text-xs text-foreground/90 bg-muted/40 rounded-lg px-2.5 py-1.5">{{ $t('requests.quotedNote', { note: req.note }) }}</p>
             <p v-if="req.response_note || req.handled_by_username" class="text-xs text-muted-foreground">
               <span v-if="req.handled_by_username">{{ req.handled_by_username }}<span v-if="req.response_note">: </span></span>
               <span v-if="req.response_note" class="text-foreground/90">{{ req.response_note }}</span>
@@ -144,7 +144,7 @@
                 v-model="responseNotes[req.id]"
                 type="text"
                 maxlength="1000"
-                placeholder="Note to the requester (optional)"
+                :placeholder="$t('requests.notePlaceholder')"
                 class="h-8 px-2.5 rounded-lg bg-background border border-border text-xs text-foreground placeholder:text-muted-foreground"
               />
               <div class="flex flex-wrap gap-1.5">
@@ -163,7 +163,7 @@
                   @click="removeRequest(req)"
                   :disabled="updating.has(req.id)"
                   class="h-8 px-2.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-muted flex items-center gap-1.5 transition disabled:opacity-40"
-                  title="Delete request"
+                  :title="$t('requests.deleteRequest')"
                 >
                   <Trash2 class="w-3.5 h-3.5" />
                 </button>
@@ -176,7 +176,7 @@
                 :disabled="updating.has(req.id)"
                 class="h-8 px-2.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-muted flex items-center gap-1.5 transition disabled:opacity-40"
               >
-                <X class="w-3.5 h-3.5" /> Withdraw
+                <X class="w-3.5 h-3.5" /> {{ $t('requests.withdraw') }}
               </button>
             </div>
           </div>
@@ -196,15 +196,27 @@ import { useDialogStore } from '../stores/dialog';
 import { LIST_CATEGORIES, REQUEST_STATUSES, MEDIA_TYPE_LABELS } from '../constants/media';
 import { externalTitlePayload, SOURCE_LABELS } from '../utils/externalTitle';
 import ExternalTitleSearch from '../components/ExternalTitleSearch.vue';
+import { t, te, d } from '../i18n';
 
 const SEARCH_TYPES = LIST_CATEGORIES.flatMap((c) => c.searchTypes);
 
+// Labels are getters so they follow the current language.
+const action = (status, key, icon, classes) => ({ status, icon, classes, get label() { return t(`requests.actions.${key}`); } });
 const REVIEW_ACTIONS = [
-  { status: 'accepted_pending', label: 'Accept · Pending add', icon: CheckCircle2, classes: 'bg-sky-500/15 text-sky-500 hover:bg-sky-500/25' },
-  { status: 'accepted_added', label: 'Accept · Added', icon: PackageCheck, classes: 'bg-emerald-500/15 text-emerald-500 hover:bg-emerald-500/25' },
-  { status: 'rejected', label: 'Reject', icon: Ban, classes: 'bg-destructive/15 text-destructive hover:bg-destructive/25' },
-  { status: 'pending', label: 'Back to pending', icon: Clock, classes: 'bg-secondary text-secondary-foreground hover:bg-secondary/80' }
+  action('accepted_pending', 'acceptPending', CheckCircle2, 'bg-sky-500/15 text-sky-500 hover:bg-sky-500/25'),
+  action('accepted_added', 'acceptAdded', PackageCheck, 'bg-emerald-500/15 text-emerald-500 hover:bg-emerald-500/25'),
+  action('rejected', 'reject', Ban, 'bg-destructive/15 text-destructive hover:bg-destructive/25'),
+  action('pending', 'backToPending', Clock, 'bg-secondary text-secondary-foreground hover:bg-secondary/80')
 ];
+
+// REQUEST_STATUSES keeps each status's colour; the words come from the locale.
+function statusLabel(status) {
+  return te(`requests.status.${status}`) ? t(`requests.status.${status}`) : REQUEST_STATUSES[status]?.label;
+}
+
+function mediaTypeLabel(type) {
+  return te(`common.mediaType.${type}`) ? t(`common.mediaType.${type}`) : MEDIA_TYPE_LABELS[type];
+}
 
 const route = useRoute();
 const router = useRouter();
@@ -235,7 +247,7 @@ function formatDate(value) {
   if (!value) return '';
   // SQLite CURRENT_TIMESTAMP is UTC without a zone marker.
   const date = new Date(`${String(value).replace(' ', 'T')}Z`);
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return d(date, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function withUpdating(id, on) {
@@ -255,7 +267,7 @@ async function loadRequests() {
     requests.value = res.data.requests || [];
     responseNotes.value = Object.fromEntries(requests.value.map((r) => [r.id, r.response_note || '']));
   } catch (err) {
-    error.value = err.response?.data?.error || 'Could not load requests.';
+    error.value = err.response?.data?.error || t('requests.errors.load');
   } finally {
     loading.value = false;
   }
@@ -289,7 +301,7 @@ async function submitRequest(result, mediaType) {
     if (err.response?.status === 409 && err.response.data?.status) {
       sent.value = { ...sent.value, [key]: err.response.data.status };
     } else {
-      error.value = err.response?.data?.error || 'Could not send that request.';
+      error.value = err.response?.data?.error || t('requests.errors.send');
     }
   } finally {
     const next = new Set(submitting.value);
@@ -312,7 +324,7 @@ async function setStatus(req, status) {
       requests.value = requests.value.filter((r) => r.id !== req.id);
     }
   } catch (err) {
-    error.value = err.response?.data?.error || 'Could not update that request.';
+    error.value = err.response?.data?.error || t('requests.errors.update');
   } finally {
     withUpdating(req.id, false);
   }
@@ -321,11 +333,11 @@ async function setStatus(req, status) {
 async function removeRequest(req) {
   const own = scope.value === 'mine';
   const ok = await dialog.confirm({
-    title: own ? 'Withdraw request?' : 'Delete request?',
+    title: own ? t('requests.confirm.withdrawTitle') : t('requests.confirm.deleteTitle'),
     message: own
-      ? `Your request for "${req.title}" will be withdrawn.`
-      : `The request for "${req.title}" will be deleted for everyone.`,
-    confirmText: own ? 'Withdraw' : 'Delete',
+      ? t('requests.confirm.withdrawMessage', { title: req.title })
+      : t('requests.confirm.deleteMessage', { title: req.title }),
+    confirmText: own ? t('requests.withdraw') : t('common.delete'),
     danger: true
   });
   if (!ok) return;
@@ -336,7 +348,7 @@ async function removeRequest(req) {
     requests.value = requests.value.filter((r) => r.id !== req.id);
     loadPendingCount();
   } catch (err) {
-    error.value = err.response?.data?.error || 'Could not remove that request.';
+    error.value = err.response?.data?.error || t('requests.errors.remove');
   } finally {
     withUpdating(req.id, false);
   }

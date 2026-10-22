@@ -1,0 +1,144 @@
+{
+  "offline": {
+    "message": "You're offline. Your downloaded books, comics and audiobooks are still available.",
+    "openDownloads": "Open Downloads →"
+  },
+  "continue": {
+    "watching": "Continue Watching",
+    "all": "Continue",
+    "audiobook": "Continue Audiobooks",
+    "manga": "Continue Manga",
+    "book": "Continue Books",
+    "movie": "Continue Movies",
+    "show": "Continue Shows",
+    "anime": "Continue Anime"
+  },
+  "sectionTitle": {
+    "results": "Results for \"{query}\"",
+    "audiobook": "Audiobooks",
+    "manga": "Manga & Comics",
+    "book": "eBooks & Documents",
+    "movie": "Movies",
+    "show": "Shows",
+    "anime": "Anime",
+    "all": "All Media"
+  },
+  "counts": {
+    "folders": {
+      "one": "{count} folder",
+      "other": "{count} folders"
+    },
+    "series": "{count} series",
+    "titles": {
+      "one": "{count} title",
+      "other": "{count} titles"
+    },
+    "seriesAndTitles": "{series}, {titles}",
+    "items": {
+      "one": "{count} item",
+      "other": "{count} items"
+    }
+  },
+  "modes": {
+    "alphabetical": "Alphabetical",
+    "alphabeticalShort": "A–Z",
+    "diskFolders": "Disk Folders",
+    "diskFoldersShort": "Disk",
+    "customFolders": "Custom Folders",
+    "customFoldersShort": "Custom"
+  },
+  "filters": {
+    "progress": "Progress",
+    "status": "Status",
+    "notStarted": "Not started",
+    "inProgress": "In progress",
+    "finished": "Finished",
+    "skipped": "Skipped",
+    "genre": "Genre",
+    "added": "Added",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "last3Months": "Last 3 months",
+    "clear": "Clear filters"
+  },
+  "sort": {
+    "label": "Sort order",
+    "title": "A–Z",
+    "added": "Newest",
+    "recent": "Recently opened",
+    "release": "Release date"
+  },
+  "collections": {
+    "label": "Movie collections",
+    "grouped": "Collections",
+    "all": "All movies"
+  },
+  "empty": {
+    "title": "No media found",
+    "noMatches": "Nothing matches — try a different search or clear the filters",
+    "noLibrary": "Add a library in Admin → Libraries and scan your folders to populate your shelf",
+    "goToSettings": "Go to Settings"
+  },
+  "loadedMore": {
+    "one": "Loaded {count} title · more load as you scroll",
+    "other": "Loaded {count} titles · more load as you scroll"
+  },
+  "customFolders": {
+    "heading": "Custom In-App Folders",
+    "newPlaceholder": "New folder name...",
+    "catchAll": "Catch-all",
+    "delete": "Delete folder",
+    "empty": "This folder is empty. Click the three dots ({dots}) on any title to add it here."
+  },
+  "deleteFolder": {
+    "title": "Delete Custom Folder",
+    "message": "Are you sure you want to delete the folder \"{name}\"? Items inside will not be deleted from your shelf.",
+    "confirm": "Delete Folder"
+  },
+  "errors": {
+    "createFolder": "Failed to create folder",
+    "deleteFolder": "Failed to delete folder",
+    "removeItem": "Failed to remove item",
+    "updateFolder": "Failed to update folder"
+  },
+  "rootFolder": "Root",
+  "series": {
+    "ariaLabel": "{name} — {units}",
+    "removeFromThisFolder": "Remove {name} from this folder",
+    "removeFromFolder": "Remove from folder",
+    "caughtUp": "Caught up",
+    "skipped": "{count} skipped",
+    "doneCount": "{count}/{total} done"
+  },
+  "card": {
+    "availableOffline": "Available offline",
+    "downloading": "Downloading…",
+    "options": "Options",
+    "optionsFor": "{title} options",
+    "markInProgress": "Mark In Progress",
+    "markFinished": "Mark as Finished",
+    "addToFolder": "Add to Folder...",
+    "removeFromFolder": "Remove from Folder",
+    "bookmarks": "Bookmarks & Notes...",
+    "removeDownload": "Remove Download",
+    "cancelDownload": "Cancel Download",
+    "downloadOffline": "Download for Offline",
+    "editMetadata": "Edit Metadata...",
+    "hide": "Hide from Shelf",
+    "pages": {
+      "one": "{count} page",
+      "other": "{count} pages"
+    },
+    "finished": "Finished",
+    "durationHours": "{hours}h {minutes}m",
+    "durationMinutes": "{minutes}m"
+  },
+  "folderModal": {
+    "title": "Add to Folder or List",
+    "loading": "Loading folders...",
+    "empty": "No custom folders created yet. Create one below to organize your media!",
+    "newFolder": "New Custom Folder",
+    "placeholder": "e.g. Favorites, Bedtime...",
+    "adding": "Adding..."
+  }
+}

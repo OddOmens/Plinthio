@@ -2,14 +2,14 @@
   <div class="flex flex-col gap-5">
     <div class="flex flex-wrap items-start justify-between gap-3 pt-2">
       <div class="min-w-0 flex-1 basis-64">
-        <h3 class="text-sm font-semibold text-foreground">Title cleanup and matching</h3>
+        <h3 class="text-sm font-semibold text-foreground">{{ $t('metadata.manager.title') }}</h3>
         <p class="text-xs text-muted-foreground mt-0.5">
-          Clean release tags from file names, and match posters, overviews, cast and release dates from TMDB.
+          {{ $t('metadata.manager.description') }}
         </p>
       </div>
       <button @click="fetchItems" :disabled="loading" class="btn btn-secondary">
         <RefreshCw :class="['w-3.5 h-3.5', loading ? 'animate-spin' : '']" />
-        {{ loading ? 'Loading…' : 'Refresh' }}
+        {{ loading ? $t('common.loading') : $t('common.refresh') }}
       </button>
     </div>
 
@@ -24,9 +24,9 @@
             : 'bg-card/60 border-border hover:bg-card hover:border-border/80'
         ]"
       >
-        <div class="text-[12px] font-medium text-muted-foreground">Total Media Items</div>
+        <div class="text-[12px] font-medium text-muted-foreground">{{ $t('metadata.manager.stats.total') }}</div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalAll }}</div>
-        <div class="text-[11px] text-muted-foreground mt-0.5">All indexed content</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">{{ $t('metadata.manager.stats.totalHint') }}</div>
       </div>
 
       <div
@@ -40,10 +40,10 @@
       >
         <div class="text-[12px] font-medium text-amber-500 flex items-center gap-1.5">
           <AlertTriangle class="w-3.5 h-3.5" />
-          Needs Title Cleanup
+          {{ $t('metadata.manager.stats.dirty') }}
         </div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalDirty }}</div>
-        <div class="text-[11px] text-muted-foreground mt-0.5">Has release tags or year in title</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">{{ $t('metadata.manager.stats.dirtyHint') }}</div>
       </div>
 
       <div
@@ -57,10 +57,10 @@
       >
         <div class="text-[12px] font-medium text-rose-500 flex items-center gap-1.5">
           <ImageOff class="w-3.5 h-3.5" />
-          Missing Artwork
+          {{ $t('metadata.manager.stats.missingCover') }}
         </div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalMissingCover }}</div>
-        <div class="text-[11px] text-muted-foreground mt-0.5">No poster or cover file</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">{{ $t('metadata.manager.stats.missingCoverHint') }}</div>
       </div>
 
       <div
@@ -74,10 +74,10 @@
       >
         <div class="text-[12px] font-medium text-blue-500 flex items-center gap-1.5">
           <Info class="w-3.5 h-3.5" />
-          Missing Overview / Date
+          {{ $t('metadata.manager.stats.missingMeta') }}
         </div>
         <div class="text-lg font-bold text-foreground mt-1">{{ totalMissingMeta }}</div>
-        <div class="text-[11px] text-muted-foreground mt-0.5">Needs TMDB synopsis match</div>
+        <div class="text-[11px] text-muted-foreground mt-0.5">{{ $t('metadata.manager.stats.missingMetaHint') }}</div>
       </div>
     </div>
 
@@ -90,7 +90,7 @@
           @change="fetchItems"
           class="bg-background border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         >
-          <option value="">All Libraries</option>
+          <option value="">{{ $t('metadata.manager.filters.allLibraries') }}</option>
           <option v-for="lib in libraries" :key="lib.id" :value="lib.id">
             {{ lib.name }} ({{ lib.type }})
           </option>
@@ -102,12 +102,12 @@
           @change="fetchItems"
           class="bg-background border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         >
-          <option value="">All Media Types</option>
-          <option value="movie">Movies</option>
-          <option value="show">TV Shows</option>
-          <option value="anime">Anime</option>
-          <option value="manga">Manga</option>
-          <option value="book">Books</option>
+          <option value="">{{ $t('metadata.manager.filters.allMediaTypes') }}</option>
+          <option value="movie">{{ $t('common.mediaTypes.movie') }}</option>
+          <option value="show">{{ $t('metadata.manager.filters.tvShows') }}</option>
+          <option value="anime">{{ $t('common.mediaTypes.anime') }}</option>
+          <option value="manga">{{ $t('common.mediaTypes.manga') }}</option>
+          <option value="book">{{ $t('common.mediaTypes.book') }}</option>
         </select>
 
         <!-- Status Filter Pills -->
@@ -116,25 +116,25 @@
             @click="setStatusFilter('all')"
             :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'all' ? 'bg-card text-foreground font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
-            All
+            {{ $t('common.all') }}
           </button>
           <button
             @click="setStatusFilter('dirty')"
             :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'dirty' ? 'bg-card text-amber-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
-            Needs Cleanup
+            {{ $t('metadata.manager.filters.needsCleanup') }}
           </button>
           <button
             @click="setStatusFilter('missing_cover')"
             :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'missing_cover' ? 'bg-card text-rose-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
-            No Poster
+            {{ $t('metadata.manager.badges.noPoster') }}
           </button>
           <button
             @click="setStatusFilter('missing_meta')"
             :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'missing_meta' ? 'bg-card text-blue-500 font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
           >
-            No Synopsis
+            {{ $t('metadata.manager.badges.noSynopsis') }}
           </button>
         </div>
       </div>
@@ -145,12 +145,13 @@
         <input
           v-model="searchQuery"
           @input="debounceSearch"
-          placeholder="Filter by title or path..."
+          :placeholder="$t('metadata.manager.filters.searchPlaceholder')"
           class="w-full bg-background border border-border rounded-lg pl-8 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <button
           v-if="searchQuery"
           @click="searchQuery = ''; fetchItems()"
+          :aria-label="$t('common.clear')"
           class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
         >
           <X class="w-3.5 h-3.5" />
@@ -172,10 +173,10 @@
             @change="toggleSelectAll"
             class="rounded border-border text-primary focus:ring-primary h-4 w-4"
           />
-          <span>Select All ({{ items.length }})</span>
+          <span>{{ $t('metadata.manager.batch.selectAll', { count: items.length }) }}</span>
         </label>
         <span v-if="selectedIds.size > 0" class="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-          {{ selectedIds.size }} selected
+          {{ $t('metadata.manager.batch.selected', { count: selectedIds.size }) }}
         </span>
       </div>
 
@@ -187,7 +188,7 @@
             v-model="batchOverwriteCovers"
             class="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5"
           />
-          <span>Overwrite Posters</span>
+          <span>{{ $t('metadata.manager.batch.overwritePosters') }}</span>
         </label>
 
         <label class="flex items-center gap-1.5 text-[12px] text-muted-foreground cursor-pointer select-none pr-2">
@@ -196,7 +197,7 @@
             v-model="batchUseCanonicalTitle"
             class="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5"
           />
-          <span>Use Canonical Title</span>
+          <span>{{ $t('metadata.manager.batch.useCanonicalTitle') }}</span>
         </label>
 
         <!-- Clean Titles Button -->
@@ -204,10 +205,10 @@
           @click="batchCleanTitles"
           :disabled="selectedIds.size === 0 || processingBatch"
           class="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-medium transition flex items-center gap-1.5 disabled:opacity-40"
-          title="Strip release tags and trailing years from database titles"
+          :title="$t('metadata.manager.batch.cleanHint')"
         >
           <Wand2 class="w-3.5 h-3.5 text-amber-500" />
-          <span>Clean Titles ({{ selectedIds.size }})</span>
+          <span>{{ $t('metadata.manager.batch.cleanCount', { count: selectedIds.size }) }}</span>
         </button>
 
         <!-- Match TMDB Button -->
@@ -215,10 +216,10 @@
           @click="batchMatchMetadata"
           :disabled="selectedIds.size === 0 || processingBatch"
           class="px-3.5 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition flex items-center gap-1.5 shadow-sm disabled:opacity-40"
-          title="Match each selected title against the metadata providers (TMDB, MangaDex, Google Books, Open Library): artwork, synopsis, release date"
+          :title="$t('metadata.manager.batch.findHint')"
         >
           <Sparkles class="w-3.5 h-3.5" />
-          <span>Find Metadata ({{ selectedIds.size }})</span>
+          <span>{{ $t('metadata.manager.batch.findCount', { count: selectedIds.size }) }}</span>
         </button>
       </div>
     </div>
@@ -238,7 +239,7 @@
             @click="stopBatch = true"
             :disabled="stopBatch"
             class="h-7 px-2.5 rounded-md border border-border bg-background hover:bg-muted text-[12px] font-medium disabled:opacity-50"
-          >{{ stopBatch ? 'Stopping…' : 'Stop' }}</button>
+          >{{ stopBatch ? $t('metadata.manager.batch.stopping') : $t('metadata.manager.batch.stop') }}</button>
         </span>
       </div>
       <div class="w-full h-1.5 bg-muted rounded-full overflow-hidden">
@@ -259,12 +260,18 @@
       <CheckCircle2 v-if="batchSummary.matched" class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-px" />
       <AlertTriangle v-else class="w-4 h-4 text-amber-500 flex-shrink-0 mt-px" />
       <p class="flex-1 text-foreground">
-        <span>Matched <strong>{{ batchSummary.matched }}</strong> of {{ batchSummary.total }}<template v-if="batchSummary.stopped"> before you stopped it</template>.</span>
-        <span v-if="batchSummary.notFound" class="ml-1">{{ batchSummary.notFound }} had no match — they're marked below; try <em>Edit / Search</em> on those.</span>
-        <span v-if="batchSummary.needsKey" class="ml-1">{{ batchSummary.needsKey }} {{ batchSummary.needsKey === 1 ? 'is a video' : 'are videos' }}, which need a TMDB key — add one under <em>Admin → Metadata</em> and run it again.</span>
-        <span v-if="batchSummary.failed" class="ml-1">{{ batchSummary.failed }} failed (see the row for why).</span>
+        <I18nT :keypath="batchSummary.stopped ? 'metadata.manager.summary.matchedStopped' : 'metadata.manager.summary.matched'" :params="{ total: batchSummary.total }">
+          <template #matched><strong>{{ batchSummary.matched }}</strong></template>
+        </I18nT>
+        <I18nT v-if="batchSummary.notFound" keypath="metadata.manager.summary.notFound" :params="{ count: batchSummary.notFound }" class="ml-1">
+          <template #action><em>{{ $t('metadata.manager.actions.editSearch') }}</em></template>
+        </I18nT>
+        <I18nT v-if="batchSummary.needsKey" keypath="metadata.manager.summary.needsKey" :params="{ count: batchSummary.needsKey }" class="ml-1">
+          <template #where><em>{{ $t('metadata.manager.summary.adminMetadata') }}</em></template>
+        </I18nT>
+        <span v-if="batchSummary.failed" class="ml-1">{{ $t('metadata.manager.summary.failed', { count: batchSummary.failed }) }}</span>
       </p>
-      <button type="button" @click="batchSummary = null" class="text-muted-foreground hover:text-foreground" aria-label="Dismiss">
+      <button type="button" @click="batchSummary = null" class="text-muted-foreground hover:text-foreground" :aria-label="$t('metadata.manager.dismiss')">
         <X class="w-4 h-4" />
       </button>
     </div>
@@ -273,12 +280,12 @@
     <div class="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
       <div v-if="loading && items.length === 0" class="py-16 flex flex-col items-center justify-center gap-2 text-muted-foreground">
         <Loader2 class="w-6 h-6 animate-spin text-primary" />
-        <span class="text-xs">Analyzing media titles and metadata...</span>
+        <span class="text-xs">{{ $t('metadata.manager.list.analyzing') }}</span>
       </div>
 
       <div v-else-if="items.length === 0" class="py-16 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
         <Sparkles class="w-6 h-6 text-muted-foreground/60" />
-        <span>No media items found matching the selected filters.</span>
+        <span>{{ $t('metadata.manager.list.empty') }}</span>
       </div>
 
       <div v-else class="divide-y divide-border">
@@ -323,7 +330,7 @@
                 v-else-if="item.cover_source === 'frame'"
                 class="absolute bottom-0 inset-x-0 bg-amber-600/90 text-[10px] font-bold text-white text-center py-0.5 leading-none"
               >
-                FRAME
+                {{ $t('metadata.manager.badges.frameTag') }}
               </span>
             </div>
 
@@ -339,7 +346,7 @@
                 </span>
 
                 <span v-if="item.isTv" class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 font-semibold">
-                  TV Episode
+                  {{ $t('metadata.manager.badges.tvEpisode') }}
                 </span>
               </div>
 
@@ -356,12 +363,12 @@
               >
                 <CheckCircle2 v-if="matchResults[item.id].status === 'matched'" class="w-3 h-3 flex-shrink-0" />
                 <AlertTriangle v-else class="w-3 h-3 flex-shrink-0" />
-                <span class="truncate">{{ matchResults[item.id].message }}</span>
+                <span class="truncate">{{ matchResults[item.id].message || $t(matchResults[item.id].key, matchResults[item.id].params) }}</span>
               </p>
 
               <!-- Proposed Clean Title preview if dirty -->
               <div v-if="item.isDirty" class="flex items-center gap-1.5 text-[12px] text-amber-500 mt-0.5 font-medium">
-                <span>Clean:</span>
+                <span>{{ $t('metadata.manager.cleanLabel') }}</span>
                 <span class="text-foreground bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded font-semibold truncate max-w-sm">
                   {{ item.cleanTitle }}
                 </span>
@@ -392,13 +399,13 @@
               ]"
             >
               <Check class="w-3 h-3" />
-              Poster
+              {{ $t('metadata.manager.badges.poster') }}
             </span>
-            <span v-else-if="item.isFrame" class="text-[11px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 font-medium" title="Provisional video frame — run Auto Match to fetch official poster">
-              Frame
+            <span v-else-if="item.isFrame" class="text-[11px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 font-medium" :title="$t('metadata.manager.badges.frameHint')">
+              {{ $t('metadata.manager.badges.frame') }}
             </span>
             <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20 font-medium">
-              No Poster
+              {{ $t('metadata.manager.badges.noPoster') }}
             </span>
 
             <!-- Synopsis badge -->
@@ -408,10 +415,10 @@
               :title="item.description"
             >
               <Check class="w-3 h-3" />
-              Synopsis
+              {{ $t('metadata.manager.badges.synopsis') }}
             </span>
             <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
-              No Synopsis
+              {{ $t('metadata.manager.badges.noSynopsis') }}
             </span>
 
             <!-- Release Date badge -->
@@ -422,7 +429,7 @@
               {{ item.release_date }}
             </span>
             <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
-              No Date
+              {{ $t('metadata.manager.badges.noDate') }}
             </span>
           </div>
 
@@ -433,21 +440,21 @@
               @click="matchSingle(item)"
               :disabled="matchingIds.has(item.id)"
               class="px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-[12px] font-medium transition flex items-center gap-1 disabled:opacity-50"
-              title="Match against the metadata providers and update this title"
+              :title="$t('metadata.manager.actions.autoMatchHint')"
             >
               <Loader2 v-if="matchingIds.has(item.id)" class="w-3 h-3 animate-spin text-primary" />
               <Sparkles v-else class="w-3 h-3 text-primary" />
-              <span>Auto Match</span>
+              <span>{{ $t('metadata.manager.actions.autoMatch') }}</span>
             </button>
 
             <!-- Manual Edit / Identify Modal Trigger -->
             <button
               @click="openIdentifyModal(item)"
               class="px-2.5 py-1 rounded-md border border-border hover:bg-muted text-foreground text-[12px] font-medium transition flex items-center gap-1"
-              title="Search TMDB manually, pick artwork, or customize metadata fields"
+              :title="$t('metadata.manager.actions.editSearchHint')"
             >
               <Pencil class="w-3 h-3 text-muted-foreground" />
-              <span>Edit / Search</span>
+              <span>{{ $t('metadata.manager.actions.editSearch') }}</span>
             </button>
           </div>
         </div>
@@ -472,6 +479,7 @@ import { useAuthStore } from '../stores/auth.js';
 import { useDialogStore } from '../stores/dialog.js';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
 import MetadataSearchModal from './MetadataSearchModal.vue';
+import { t } from '../i18n';
 import {
   Sparkles,
   Wand2,
@@ -577,7 +585,7 @@ async function fetchItems() {
   } catch (err) {
     console.error('Failed to fetch items for metadata manager:', err);
     dialog.alert({
-      title: 'Failed to load items',
+      title: t('metadata.manager.errors.loadFailed'),
       message: err.response?.data?.error || err.message,
       variant: 'error'
     });
@@ -640,21 +648,23 @@ async function performMatch(item) {
       };
     }
     cacheBuster.value = Date.now();
-    matchResults.value[item.id] = { status: 'matched', message: `Matched as "${updated?.title || item.title}"` };
+    matchResults.value[item.id] = { status: 'matched', key: 'metadata.manager.match.matchedAs', params: { title: updated?.title || item.title } };
     return 'matched';
   } catch (err) {
     const data = err.response?.data || {};
     if (data.code === 'P400') {
       // Not a failure of this title — the server has no TMDB key yet.
-      matchResults.value[item.id] = { status: 'none', message: 'Needs a TMDB key — add one above' };
+      matchResults.value[item.id] = { status: 'none', key: 'metadata.manager.match.needsKey' };
       return 'needsKey';
     }
     if (err.response?.status === 404) {
-      const why = /No metadata source/.test(data.error || '') ? data.error : 'No match found — try Edit / Search';
-      matchResults.value[item.id] = { status: 'none', message: why };
+      // The server's "No metadata source…" explains itself; anything else reads as no match.
+      matchResults.value[item.id] = /No metadata source/.test(data.error || '')
+        ? { status: 'none', message: data.error }
+        : { status: 'none', key: 'metadata.manager.match.noMatch' };
       return 'none';
     }
-    matchResults.value[item.id] = { status: 'error', message: data.error || 'Match failed — try again' };
+    matchResults.value[item.id] = { status: 'error', message: data.error, key: 'metadata.manager.match.failed' };
     return 'error';
   } finally {
     matchingIds.value.delete(item.id);
@@ -671,14 +681,14 @@ async function batchCleanTitles() {
   if (ids.length === 0) return;
 
   const confirmed = await dialog.confirm({
-    title: `Clean ${ids.length} Titles?`,
-    message: `This will strip scene tags, codecs, resolutions, and trailing release years from ${ids.length} selected titles in the database.`,
-    confirmText: 'Clean Titles'
+    title: t('metadata.manager.clean.confirmTitle', { count: ids.length }),
+    message: t('metadata.manager.clean.confirmMessage', { count: ids.length }),
+    confirmText: t('metadata.manager.clean.confirm')
   });
   if (!confirmed) return;
 
   processingBatch.value = true;
-  batchStatusText.value = `Cleaning ${ids.length} titles...`;
+  batchStatusText.value = t('metadata.manager.clean.progress', { count: ids.length });
   batchPercent.value = 50;
 
   try {
@@ -686,8 +696,8 @@ async function batchCleanTitles() {
     batchPercent.value = 100;
 
     await dialog.alert({
-      title: 'Titles Cleaned',
-      message: `Successfully cleaned ${res.data.updatedCount} titles!`,
+      title: t('metadata.manager.clean.doneTitle'),
+      message: t('metadata.manager.clean.doneMessage', { count: res.data.updatedCount }),
       variant: 'success'
     });
 
@@ -696,7 +706,7 @@ async function batchCleanTitles() {
   } catch (err) {
     console.error('Batch clean titles error:', err);
     dialog.alert({
-      title: 'Batch Clean Failed',
+      title: t('metadata.manager.clean.failedTitle'),
       message: err.response?.data?.error || err.message,
       variant: 'error'
     });
@@ -715,9 +725,9 @@ async function batchMatchMetadata() {
   if (ids.length === 0) return;
 
   const confirmed = await dialog.confirm({
-    title: `Find Metadata for ${ids.length} ${ids.length === 1 ? 'Item' : 'Items'}?`,
-    message: `Each selected title is matched against the metadata providers (TMDB, MangaDex, Google Books, Open Library) and its artwork, synopsis and release date are updated. Results show on each row; you can stop at any time.`,
-    confirmText: 'Start Matching'
+    title: t('metadata.manager.find.confirmTitle', { count: ids.length }),
+    message: t('metadata.manager.find.confirmMessage'),
+    confirmText: t('metadata.manager.find.confirm')
   });
   if (!confirmed) return;
 
@@ -731,8 +741,8 @@ async function batchMatchMetadata() {
   try {
     for (const id of ids) {
       if (stopBatch.value) break;
-      const item = items.value.find((i) => i.id === id) || { id, title: 'item' };
-      batchStatusText.value = `Matching ${done + 1} of ${ids.length}: ${item.title}`;
+      const item = items.value.find((i) => i.id === id) || { id, title: t('metadata.manager.find.itemFallback') };
+      batchStatusText.value = t('metadata.manager.find.progress', { current: done + 1, total: ids.length, title: item.title });
       counts[await performMatch(item)]++;
       done++;
       batchPercent.value = Math.round((done / ids.length) * 100);

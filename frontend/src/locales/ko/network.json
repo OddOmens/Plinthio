@@ -1,0 +1,124 @@
+{
+  "title": "네트워크",
+  "description": "Plinthio를 사용할 수 있는 곳과 집 밖에서의 2단계 인증.",
+  "checkAgain": "다시 확인",
+  "device": {
+    "connectingFrom": "이 기기는 {where}에서 연결하고 있어요",
+    "where": {
+      "home": "집 네트워크",
+      "tailscaleHome": "Tailscale(집으로 간주)",
+      "tailscaleOutside": "Tailscale(외부로 간주)",
+      "outside": "집 네트워크 밖",
+      "unknown": "알 수 없는 곳"
+    },
+    "address": "주소 {ip}. 외부 접속을 확인하려면 모바일 데이터(Wi-Fi 끔)를 쓰는 휴대폰에서 이 페이지를 여세요. \"집 네트워크 밖\"이라고 나와야 해요.",
+    "unknownIp": "알 수 없음"
+  },
+  "tailscale": {
+    "hideGuide": "설정 가이드 숨기기",
+    "guide": "설정 가이드",
+    "setUp": "Tailscale 설정",
+    "working": "{link}에서 작동 중",
+    "lastUsed": "마지막 사용: {time}",
+    "setUpAt": "{address}에 설정되어 있지만 Plinthio가 마지막으로 시작된 뒤로 사용되지 않았어요. Tailscale 기기에서 열어 확인하세요.",
+    "notSetUp": "Plinthio가 확인한 바로는 설정되지 않았어요. Tailscale을 쓰면 집과 외부 모두에서 신뢰할 수 있는 {address} 주소를 쓸 수 있어요. Funnel을 쓰면 도메인 없이 누구나 열 수 있는 링크도 돼요. 가이드를 열어 설정하세요.",
+    "funnelWorking": "Funnel이 작동 중이에요: 인터넷에서 접속, {time}.",
+    "funnelNeedsAccess": "Funnel 방문자는 인터넷에서 오는데 외부 접속이 꺼져 있어서 \"집에서만 사용할 수 있어요\"라는 화면을 보게 돼요.",
+    "allowOutside": "외부 접속 허용"
+  },
+  "proxy": {
+    "title": "Plinthio 앞에 프록시가 있지만 TRUST_PROXY가 설정되지 않았어요",
+    "text": "모든 방문자가 프록시({from})에서 오는 것처럼 보여요. 보통 집 주소라서 외부 접속을 구분할 수 없어요. Tailscale 애드온과 공개 주소 애드온은 이 값을 자동으로 설정해요. 다른 프록시는 docs/remote-access.md를 참고하세요.",
+    "localAddress": "로컬 주소"
+  },
+  "adminsWithout2fa": {
+    "title": {
+      "other": "2단계 인증이 없는 관리자 계정 {count}개"
+    },
+    "text": "서버가 인터넷에 열려 있어요. 관리자는 2단계 인증을 켜는 것(설정 → 보안)을 강력히 추천해요."
+  },
+  "settings": {
+    "remoteAccess": {
+      "title": "집 네트워크 밖에서의 접속 허용",
+      "text": "꺼짐: 집에 있는 기기(및 아래 Tailscale 기기)만 로그인하거나 사용할 수 있고, 인터넷에서는 \"집에서만 사용할 수 있어요\"가 보여요. 켜짐: 집 밖 사용이 허용된 계정이라면 어디서든 로그인할 수 있어요. 이 설정은 누구를 들여보낼지만 정해요. 인터넷에서 서버에 접속하려면 Tailscale Funnel(도메인 불필요)이나 웹 주소(공개 주소 애드온)도 필요해요."
+    },
+    "tailscaleIsHome": {
+      "title": "Tailscale 기기를 집으로 간주",
+      "text": "켜짐(기본값): tailnet에 있는 모든 것을 집 네트워크처럼 다뤄요. 외부로 다루고 싶은 Tailscale 사용자와 서버를 함께 쓴다면 끄세요."
+    },
+    "require2fa": {
+      "title": "집 밖에서는 2단계 인증 필수",
+      "text": "선택 사항이에요. 외부에서 로그인하려면 휴대폰 앱의 코드가 필요해요. 집에서는 여전히 비밀번호만으로 충분하므로, 2단계 인증이 없는 사람도 집에서 로그인해 설정할 수 있어요(설정 → 보안).",
+      "onlyWhenOn": "외부 접속이 켜져 있을 때만 적용돼요."
+    }
+  },
+  "accounts": {
+    "total": "계정",
+    "withTwoFactor": "2단계 인증 사용",
+    "homeOnly": "집에서만",
+    "adminsWithoutTwoFactor": "2단계 인증이 없는 관리자",
+    "hint": "집 밖에서 Plinthio를 쓸 수 있는 사람과 2단계 인증 초기화는 사용자 탭에서 설정해요."
+  },
+  "recent": {
+    "title": "최근 외부 로그인",
+    "none": "아직 없어요.",
+    "signedIn": "로그인 성공",
+    "failed": "실패"
+  },
+  "docsHint": "외부에서 Plinthio에 접속하는 방법(Tailscale 또는 손님용 웹 주소)을 단계별로: {link} 또는 GitHub의 {file}.",
+  "docsLink": "문서 → 원격 접속 및 Tailscale",
+  "confirm": {
+    "title": "외부 접속을 허용할까요?",
+    "message": "서버에 웹 주소가 생기면 계정이 있는 사람(집 밖 사용이 허용된 경우)은 인터넷에서 로그인할 수 있어요. 강력한 비밀번호를 쓰고, 집 밖에서는 2단계 인증을 필수로 하는 것도 고려하세요.",
+    "allow": "허용"
+  },
+  "errors": {
+    "load": "네트워크 설정을 불러올 수 없어요",
+    "save": "저장할 수 없어요"
+  },
+  "guide": {
+    "private": "비공개: 내 기기와 내가 추가한 사람",
+    "funnel": "Tailscale이 없는 친구용 링크도(Funnel)",
+    "privateText": "Plinthio에 {address} 주소가 생기고, 내 Tailscale에 로그인한 모든 기기에서 신뢰돼요. 인터넷에는 아무것도 열리지 않아요.",
+    "funnelText": "같은 주소를 Tailscale, 도메인, 공유기 설정 없이 누구의 브라우저에서나 열 수 있어요. Tailscale은 Funnel의 대역폭을 제한해서 읽기와 듣기는 괜찮지만 동영상은 끊길 수 있어요.",
+    "account": {
+      "title": "무료 Tailscale 계정 만들기"
+    },
+    "dns": {
+      "title": "MagicDNS와 HTTPS Certificates 켜기",
+      "text": "관리 콘솔의 DNS 페이지에 있어요. 둘 다 스위치예요.",
+      "link": "DNS 페이지 열기"
+    },
+    "key": {
+      "title": "인증 키 만들기",
+      "text": "Settings → Keys → Generate auth key. 다음 단계에서 붙여 넣을 테니 페이지를 열어 두세요. (선택 사항: 키가 없으면 서버가 대신 로그인 링크를 보여 줘요.)",
+      "link": "Keys 열기"
+    },
+    "server": {
+      "title": "Plinthio에 Tailscale 추가",
+      "name": "tailnet에서 쓸 이름",
+      "download": "서버의 {file}이 있는 폴더에서 애드온을 내려받으세요:",
+      "env": "그 폴더의 {env} 파일(없으면 새로 만드세요)에 다음 줄을 추가하고, {key} 자리에 내 키를 넣으세요:",
+      "start": "그런 다음 시작하세요. {flag}를 붙이면 바뀐 설정이 적용돼요. Plinthio는 몇 초 동안 다시 시작해요:",
+      "noDocker": "Docker를 쓰지 않거나 서버에 이미 Tailscale이 있나요?",
+      "runThis": "서버에서 다음을 실행하세요(8088은 Plinthio의 포트):",
+      "trustProxy": "Docker 없이 쓴다면 Plinthio에 {setting}도 설정하세요. Docker와 호스트의 Tailscale을 함께 쓴다면 Plinthio가 기기를 구분할 수 있도록 애드온을 대신 쓰세요."
+    },
+    "funnelStep": {
+      "title": "인터넷 접속 허용",
+      "text": "Funnel 방문자는 인터넷에서 오므로 Plinthio의 {outsideAccess}을 켜야 해요({where}). 집 밖에서는 2단계 인증을 필수로 하는 것도 고려하세요. 처음에는 Tailscale이 tailnet에서 Funnel을 허용하라고 요청할 수 있어요. {command}에 그렇게 나오면 그 링크를 따라가거나 Access controls에서 허용하세요.",
+      "outsideAccess": "외부 접속",
+      "whereSetup": "이 설정 단계에서 대신 해 줘요",
+      "whereAdmin": "위의 관리 → 네트워크",
+      "link": "Access controls 열기"
+    },
+    "devices": {
+      "title": "휴대폰과 컴퓨터에 Tailscale 설치",
+      "funnelTitle": "직접 해 보고 친구에게 링크 보내기",
+      "text": "같은 계정으로 로그인한 뒤 {address}을 열고(정확한 주소는 관리 콘솔의 Machines에 나와요), 거기서 홈 화면에 추가하세요.",
+      "funnelText": "Wi-Fi를 끄고 Tailscale을 실행하지 않은 휴대폰에서 주소를 여세요. 로그인 페이지가 보여야 해요. 그런 다음 친구의 계정을 만들고(관리 → 사용자) 링크를 보내세요."
+    },
+    "moreDetail": "문제 해결을 포함한 자세한 내용: GitHub의 {file}.",
+    "markDone": "완료로 표시"
+  }
+}

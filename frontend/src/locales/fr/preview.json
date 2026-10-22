@@ -1,0 +1,44 @@
+{
+  "live": "Aperçu en direct",
+  "views": {
+    "shelf": "Étagère",
+    "title": "Fiche",
+    "login": "Connexion",
+    "pause": "Pause"
+  },
+  "titles": {
+    "one": "{count}+ titre",
+    "other": "{count}+ titres"
+  },
+  "yourLibrary": "Votre bibliothèque",
+  "continueWatching": "Reprendre",
+  "runtime": "{hours} h {minutes} min",
+  "yourRating": "Votre note",
+  "ratingsHidden": "Les notes sont masquées",
+  "watchTogether": "Regarder ensemble",
+  "collection": "Fait partie de la collection",
+  "request": "Demander",
+  "sample": {
+    "tagline": "Certains messages mettent toute une vie à arriver.",
+    "description": "La gardienne d'un phare sur une île isolée trouve un message dans une bouteille qui la ramène à la vie qu'elle avait laissée derrière elle."
+  },
+  "captions": {
+    "shelf": "L'étagère d'accueil sur grand écran : {layout}, {width} et couleur d'accent {accent}.",
+    "title": "Une page de film avec les réglages de notes, de soirées de visionnage et de collections ci-dessus.",
+    "login": "L'écran de connexion, avec le nom de votre serveur et votre message.",
+    "pause": {
+      "simple": "Simple : rien ne recouvre l'image. Choisissez un autre style pour le voir ici.",
+      "details": "Détails : s'affiche après quelques secondes de pause. Survolez un style pour comparer.",
+      "cinematic": "Cinéma : les photos des acteurs et les infos viennent de TMDB si une clé est configurée.",
+      "bedtime": "Coucher : une horloge tamisée et l'heure de fin."
+    }
+  },
+  "layouts": {
+    "sidebar": "barre latérale",
+    "topnav": "navigation en haut"
+  },
+  "widths": {
+    "contained": "contenu centré",
+    "full": "pleine largeur"
+  }
+}

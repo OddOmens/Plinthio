@@ -1,0 +1,198 @@
+{
+  "percent": "{percent} %",
+  "pageN": "Seite {page}",
+  "closeBook": "Buch schließen",
+  "opening": "Buch wird geöffnet…",
+  "couldNotOpen": "Dieses Buch konnte nicht geöffnet werden.",
+  "notebookButton": "Inhalt, Lesezeichen und Markierungen",
+  "notebookTooltip": "Inhalt & Notizbuch",
+  "searchButton": "Im Buch suchen",
+  "searchTooltip": "Suchen (Strg+F)",
+  "displaySettings": "Anzeigeeinstellungen",
+  "position": "Position im Buch",
+  "positionMeasuring": "Position im Buch (Buch wird noch vermessen)",
+  "progressShowing": "Anzeige: {option}. Zum Ändern tippen.",
+  "progress": {
+    "lastPageInChapter": "Letzte Seite im Kapitel",
+    "pagesLeftInChapter": {
+      "one": "Noch {count} Seite im Kapitel",
+      "other": "Noch {count} Seiten im Kapitel"
+    },
+    "location": "Pos. {current} von {total}"
+  },
+  "copyFailed": "Kopieren ist hier nicht möglich",
+  "bookmark": {
+    "label": "Lesezeichen",
+    "bookmarks": "Lesezeichen",
+    "thisPage": "Lesezeichen auf dieser Seite setzen",
+    "removeFromPage": "Lesezeichen von dieser Seite entfernen",
+    "remove": "Lesezeichen entfernen",
+    "delete": "Lesezeichen löschen",
+    "deleteNamed": "Lesezeichen {title} löschen",
+    "close": "Lesezeichen schließen",
+    "added": "Lesezeichen gesetzt",
+    "percentThrough": "Bei {percent} %",
+    "noneYet": "Noch keine Lesezeichen.",
+    "noneYetRibbon": "Noch keine Lesezeichen. Tippe oben rechts auf das Lesebändchen, um eine Seite zu markieren.",
+    "couldNotSave": "Lesezeichen konnte nicht gespeichert werden",
+    "couldNotRemove": "Lesezeichen konnte nicht entfernt werden"
+  },
+  "highlight": {
+    "toolbar": "Markieren",
+    "edit": "Markierung bearbeiten",
+    "inColor": "{color} markieren",
+    "recolor": "In {color} ändern",
+    "onlyColor": "Nur Markierungen in {color}",
+    "withNote": "Markieren und Notiz hinzufügen",
+    "remove": "Markierung entfernen",
+    "noneYet": "Noch keine Markierungen. Wähle Text aus, um ihn farbig zu markieren oder eine Notiz hinzuzufügen.",
+    "noneInColor": "Keine Markierungen in dieser Farbe.",
+    "couldNotSave": "Markierung konnte nicht gespeichert werden",
+    "couldNotRecolor": "Farbe konnte nicht geändert werden",
+    "couldNotRemove": "Markierung konnte nicht entfernt werden"
+  },
+  "note": {
+    "title": "Notiz",
+    "close": "Notiz schließen",
+    "add": "Notiz hinzufügen",
+    "edit": "Notiz bearbeiten",
+    "placeholder": "Deine Notiz…",
+    "save": "Notiz speichern",
+    "couldNotSave": "Notiz konnte nicht gespeichert werden"
+  },
+  "display": {
+    "title": "Anzeige",
+    "close": "Anzeige schließen",
+    "pageColour": "Seitenfarbe",
+    "themePage": "Seitenfarbe {theme}",
+    "font": "Schrift",
+    "textSize": "Textgröße",
+    "smaller": "Kleinerer Text",
+    "larger": "Größerer Text",
+    "lineSpacing": "Zeilenabstand",
+    "margins": "Ränder",
+    "alignment": "Ausrichtung",
+    "layout": "Layout",
+    "pages": "Seiten",
+    "scroll": "Scrollen",
+    "twoOnWide": "Zwei im Breitbild",
+    "alwaysOne": "Immer eine",
+    "cornerShows": "Untere Ecke zeigt",
+    "appliesEverywhere": "Gilt für jedes Buch, das du liest, auf all deinen Geräten."
+  },
+  "notebook": {
+    "title": "Notizbuch",
+    "close": "Notizbuch schließen",
+    "contents": "Inhalt",
+    "highlights": "Markierungen",
+    "noContents": "Dieses Buch hat kein Inhaltsverzeichnis."
+  },
+  "search": {
+    "close": "Suche schließen",
+    "placeholder": "In diesem Buch suchen…",
+    "find": "Suchen",
+    "matches": {
+      "one": "{count} Treffer",
+      "other": "{count} Treffer"
+    },
+    "matchesCapped": "{count}+ Treffer",
+    "noMatches": "Keine Treffer"
+  },
+  "themes": {
+    "auto": "Auto",
+    "white": "Weiß",
+    "sepia": "Sepia",
+    "green": "Grün",
+    "gray": "Grau",
+    "black": "Schwarz"
+  },
+  "fonts": {
+    "publisher": "Original",
+    "serif": "Serifen",
+    "sans": "Serifenlos",
+    "readable": "Lesbar",
+    "mono": "Mono"
+  },
+  "lineHeights": {
+    "compact": "Kompakt",
+    "normal": "Normal",
+    "loose": "Weit"
+  },
+  "margins": {
+    "narrow": "Schmal",
+    "normal": "Normal",
+    "wide": "Breit"
+  },
+  "align": {
+    "publisher": "Original",
+    "left": "Links",
+    "justify": "Blocksatz"
+  },
+  "progressOptions": {
+    "percent": "Prozent des Buchs",
+    "chapter": "Seiten bis Kapitelende",
+    "location": "Position",
+    "none": "Nichts"
+  },
+  "highlightColors": {
+    "yellow": "Gelb",
+    "green": "Grün",
+    "blue": "Blau",
+    "pink": "Pink",
+    "orange": "Orange"
+  },
+  "manga": {
+    "backToShelf": "Zurück zum Regal",
+    "loadingPages": "Seiten werden geladen…",
+    "pageOf": "Seite {page} von {total}",
+    "pagesOf": "Seiten {from}–{to} von {total}",
+    "singlePageView": "Einzelseitenansicht",
+    "onePage": "1 Seite",
+    "spreadView": "Doppelseitenansicht",
+    "twoPage": "2 Seiten",
+    "fadeTransition": "Seiten überblenden",
+    "fade": "Blende",
+    "flipTransition": "Realistisch umblättern",
+    "flip": "Blättern",
+    "modes": {
+      "rtl": {
+        "short": "R→L",
+        "label": "Rechts nach links (japanischer Manga)"
+      },
+      "ltr": {
+        "short": "L→R",
+        "label": "Links nach rechts (Comics)"
+      },
+      "webtoon": {
+        "short": "Scrollen",
+        "label": "Durchgehend vertikal scrollen (Webtoon)"
+      }
+    },
+    "previousPage": "Vorherige Seite",
+    "nextPage": "Nächste Seite",
+    "volumeComplete": "Band beendet!",
+    "nextTitle": "Weiter: {title}",
+    "nextVolume": "Nächster Band",
+    "pageBookmarks": "Seiten-Lesezeichen",
+    "bookmarkPage": "Seite markieren",
+    "optionalNote": "Notiz (optional)…",
+    "couldNotSaveBookmark": "Lesezeichen konnte nicht gespeichert werden"
+  },
+  "bookmarksModal": {
+    "title": "Lesezeichen: {title}",
+    "newBookmark": "Neues Lesezeichen",
+    "timestampHint": "Zeitstempel (hh:mm:ss oder Sekunden)",
+    "pageNumber": "Seitenzahl",
+    "timestampPlaceholder": "z. B. 01:15:30 oder 4500",
+    "pagePlaceholder": "z. B. 42",
+    "titlePlaceholder": "Titel / Bezeichnung (optional)",
+    "notesPlaceholder": "Notizen, Zitate oder Gedanken (optional)…",
+    "add": "Lesezeichen hinzufügen",
+    "loading": "Lesezeichen werden geladen…",
+    "empty": "Noch keine Lesezeichen gespeichert. Markiere mit dem Formular oben eine Position oder Seite.",
+    "jumpTooltip": "Zu dieser Position springen",
+    "jump": "Springen",
+    "couldNotCreate": "Lesezeichen konnte nicht erstellt werden",
+    "couldNotDelete": "Lesezeichen konnte nicht gelöscht werden"
+  }
+}

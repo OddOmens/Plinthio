@@ -1,0 +1,122 @@
+{
+  "unknownAuthor": "Unknown Author",
+  "untitledAudiobook": "Plinthio Audiobook",
+  "coverOf": "Cover of {title}",
+  "units": {
+    "secondsShort": "{count}s",
+    "minutesShort": "{count}m"
+  },
+  "video": {
+    "backToShelf": "Back to shelf",
+    "castToTv": "Cast to TV",
+    "playbackSettings": "Playback settings",
+    "skipBack": "Skip back",
+    "skipForward": "Skip forward",
+    "quality": "Quality",
+    "auto": "Auto",
+    "audio": "Audio",
+    "subtitles": "Subtitles",
+    "noAlternateTracks": "No alternate tracks for this video.",
+    "track": "Track {number}",
+    "channels": "{count}ch",
+    "forced": "forced",
+    "skipIntro": "Skip Intro",
+    "skipCredits": "Skip Credits",
+    "skipAria": {
+      "backSeconds": { "one": "Back {count} second", "other": "Back {count} seconds" },
+      "backMinutes": { "one": "Back {count} minute", "other": "Back {count} minutes" },
+      "forwardSeconds": { "one": "Forward {count} second", "other": "Forward {count} seconds" },
+      "forwardMinutes": { "one": "Forward {count} minute", "other": "Forward {count} minutes" }
+    },
+    "skipHint": "{action} — right-click to change",
+    "toggleFullscreen": "Toggle fullscreen",
+    "preparing": {
+      "transcode": "Converting for your browser…",
+      "remux": "Direct Streaming…",
+      "direct": "Starting playback…"
+    },
+    "resumedFrom": "Resumed from {time}",
+    "startOver": "Start over",
+    "upNext": "Up next",
+    "playNow": "Play now ({seconds})",
+    "cantPlay": "Can't play this video",
+    "errorHelp": "Error {code}: what this means",
+    "retry": "Retry",
+    "errors": {
+      "P350": "This browser cannot play this video, even after converting it.",
+      "P351": "Lost connection to the server. Check your network and press Retry.",
+      "P352": "Your media access expired and could not be renewed. Reload the page, or sign out and back in.",
+      "failed": "Playback failed."
+    }
+  },
+  "pause": {
+    "youreWatching": "You're watching",
+    "paused": "Paused",
+    "starring": "Starring",
+    "createdBy": "Created by",
+    "directedBy": "Directed by",
+    "leftEndsAt": "{remaining} left · ends at {time}",
+    "seasonRest": {
+      "one": "Rest of the season ({count} more episode) would end at {time}",
+      "other": "Rest of the season ({count} more episodes) would end at {time}"
+    },
+    "runtimeMinutes": "{minutes} min",
+    "runtimeHours": "{hours} h {minutes} min",
+    "dollars": "${amount}",
+    "timesBudget": "{amount} ({multiple}× its budget)",
+    "seasons": { "one": "{count} season", "other": "{count} seasons" },
+    "episodes": { "one": "{count} episode", "other": "{count} episodes" },
+    "seasonsAndEpisodes": "{seasons}, {episodes}",
+    "since": "since {year}",
+    "facts": {
+      "originalTitle": "Original title",
+      "budget": "Budget",
+      "boxOffice": "Box office",
+      "series": "Series",
+      "onAir": "On air",
+      "partOf": "Part of",
+      "network": "Network",
+      "studio": "Studio",
+      "music": "Music",
+      "cinematography": "Cinematography"
+    }
+  },
+  "audio": {
+    "openNowPlaying": "Open Now Playing",
+    "skipBack": "Skip back {count}s",
+    "skipForward": "Skip forward {count}s",
+    "closePlayer": "Close player",
+    "fullscreen": "Fullscreen Now Playing",
+    "playbackSpeed": "Playback speed",
+    "sleepTimer": "Sleep timer",
+    "rate": "{rate}x",
+    "chapterShort": "Ch."
+  },
+  "nowPlaying": {
+    "minimize": "Minimize player",
+    "playingAudiobook": "Playing Audiobook",
+    "chapters": "Chapters",
+    "bookmarks": "Bookmarks",
+    "bookmarksAndNotes": "Bookmarks & Notes",
+    "backToPlayer": "Back to Player",
+    "addBookmark": "Add Bookmark",
+    "notePlaceholder": "Optional note (e.g. key quote, clue)...",
+    "saveBookmark": "Save Bookmark",
+    "deleteBookmark": "Delete bookmark",
+    "noBookmarks": "No bookmarks saved for this audiobook yet.",
+    "bookmarkTitle": "Bookmark @ {time}",
+    "leftInChapter": "{time} left in chapter",
+    "previousChapter": "Previous chapter",
+    "nextChapter": "Next chapter",
+    "speed": "Speed",
+    "sleep": "Sleep",
+    "endOfChapter": "End of ch.",
+    "stoppingAtChapterEnd": "Stopping at the end of this chapter",
+    "stoppingIn": "Stopping in {time}",
+    "saveFailed": "Failed to save bookmark",
+    "deleteFailed": "Failed to delete bookmark"
+  },
+  "intro": {
+    "label": "Opening sequence"
+  }
+}

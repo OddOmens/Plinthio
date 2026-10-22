@@ -38,10 +38,10 @@
               </p>
             </div>
 
-            <button aria-label="Close"
+            <button :aria-label="$t('common.close')"
               @click="dialog.showCancel ? dialog.onCancel() : dialog.onConfirm()"
               class="w-9 h-9 -mr-1.5 -mt-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/70 flex items-center justify-center transition"
-              title="Close"
+              :title="$t('common.close')"
             >
               <X class="w-4 h-4" />
             </button>

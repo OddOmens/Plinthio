@@ -1,0 +1,709 @@
+{
+  "nav": {
+    "yourSettings": "Deine Einstellungen",
+    "groups": {
+      "server": "Server",
+      "library": "Bibliothek",
+      "people": "Personen",
+      "settings": "Einstellungen",
+      "system": "System"
+    },
+    "items": {
+      "overview": {
+        "label": "Übersicht",
+        "desc": "Version, Updates und Inhalt"
+      },
+      "libraries": {
+        "label": "Bibliotheken",
+        "desc": "Ordner und automatisches Scannen"
+      },
+      "health": {
+        "label": "Zustand",
+        "desc": "Fehlende Dateien und was zu reparieren ist"
+      },
+      "metadata": {
+        "label": "Metadaten",
+        "desc": "TMDB-Schlüssel und Titelzuordnung"
+      },
+      "kids": {
+        "label": "Kindermodus",
+        "desc": "Was Kinderkonten sehen dürfen"
+      },
+      "users": {
+        "label": "Benutzer",
+        "desc": "Konten, Rollen, Limits"
+      },
+      "activity": {
+        "label": "Aktivität",
+        "desc": "Anmeldungen und was gerade läuft"
+      },
+      "appearance": {
+        "label": "Darstellung",
+        "desc": "Standards, Name, eigenes CSS"
+      },
+      "features": {
+        "label": "Funktionen",
+        "desc": "Regalansichten, Bewertungen, Watch-Partys"
+      },
+      "playback": {
+        "label": "Wiedergabe",
+        "desc": "Hardwarebeschleunigung, Intro-Clip"
+      },
+      "network": {
+        "label": "Netzwerk",
+        "desc": "Unterwegs, Tailscale, Zwei-Faktor"
+      },
+      "backups": {
+        "label": "Backups",
+        "desc": "Zeitplan, Zweitkopie, Wiederherstellungspunkte"
+      },
+      "logs": {
+        "label": "Protokolle",
+        "desc": "Was der Server gemacht hat"
+      }
+    }
+  },
+  "activity": {
+    "title": "Aktivität",
+    "description": "Anmeldungen und was gelesen, gesehen und gehört wird – über alle Konten hinweg.",
+    "show": "Anzeigen",
+    "everyone": "Alle"
+  },
+  "appearance": {
+    "title": "Darstellung",
+    "description": "Wie Plinthio für alle aussieht: die Standards des Servers, sein Name und dein eigenes CSS. Änderungen werden sofort gespeichert.",
+    "personalize": {
+      "label": "Personalisierung erlauben",
+      "desc": "Alle können unter Einstellungen → Darstellung eigene Farbe, Navigation, Breite und Pausenbildschirm wählen. Schalte es aus, damit alle das Aussehen des Servers bekommen."
+    },
+    "usersCanChange": "Benutzer können ändern",
+    "cards": {
+      "accent": "Die Akzentfarbe auf Schaltflächen, Badges und dem aktuellen Tab.",
+      "pageWidth": "Wie breit Seiten auf einem großen Bildschirm werden.",
+      "pauseScreen": "Was nach ein paar Sekunden Pause erscheint; es blendet sich aus, sobald jemand die Maus bewegt oder den Bildschirm berührt. Besetzung, Crew und Fakten kommen von TMDB, wenn ein Schlüssel hinterlegt ist."
+    },
+    "branding": {
+      "title": "Name und Anmeldehinweis",
+      "desc": "Der Name deines Servers und ein optionaler Hinweis auf der Anmeldeseite.",
+      "serverName": "Servername",
+      "notice": "Anmeldehinweis",
+      "removeNotice": "Anmeldehinweis entfernen"
+    },
+    "css": {
+      "title": "Eigenes CSS",
+      "desc": "Deine eigenen Stilregeln, für alle auf jeder Seite eingefügt. Probiere sie hier zuerst aus; live gehen sie, wenn du speicherst.",
+      "cheatsheet": "CSS-Spickzettel",
+      "example": "/* Zum Beispiel */",
+      "save": "CSS speichern",
+      "tryIt": "Auf dieser Seite ausprobieren",
+      "notSaved": "Nicht gespeichert",
+      "couldNotSave": "CSS konnte nicht gespeichert werden"
+    }
+  },
+  "backups": {
+    "title": "Backups",
+    "description": "Schnappschüsse der Datenbank: Konten, der Fortschritt aller, Lesezeichen, Markierungen und Notizen, Bewertungen, Listen, Bibliotheken und Metadaten. Nicht deine Mediendateien. Vor jedem Upgrade wird ebenfalls ein Schnappschuss erstellt, und die neuesten fünf davon bleiben immer erhalten.",
+    "automatic": "Automatische Backups",
+    "schedule": {
+      "label": "Nach Zeitplan sichern",
+      "desc": "Auf dem Server in /config/backups gespeichert."
+    },
+    "howOften": "Wie oft",
+    "frequency": {
+      "every6h": "Alle 6 Stunden",
+      "every12h": "Alle 12 Stunden",
+      "daily": "Täglich",
+      "every3d": "Alle 3 Tage",
+      "weekly": "Wöchentlich"
+    },
+    "keepLast": "Behalte die letzten",
+    "destination": {
+      "label": "Backups zusätzlich kopieren nach",
+      "why": "/config/backups liegt auf derselben Festplatte wie der Server. Eine Kopie auf einem anderen Laufwerk, einem NAS oder in einem synchronisierten Cloud-Ordner übersteht deren Ausfall.",
+      "placeholder": "Wird nirgendwo anders hin kopiert",
+      "browseAria": "Backup-Ordner auswählen",
+      "browse": "Durchsuchen",
+      "testAria": "Backup-Ordner testen",
+      "test": "Testen",
+      "checking": "Wird geprüft…",
+      "writable": "Der Server kann dort schreiben.",
+      "writableFree": "Der Server kann dort schreiben · {free} frei.",
+      "sameDisk": "Er liegt auf derselben Festplatte wie die Serverdaten – das schützt vor Versehen, aber nicht vor einem Plattenausfall. Ein Ordner auf einem anderen Laufwerk ist besser.",
+      "otherDisk": "Er liegt auf einer anderen Festplatte als die Serverdaten.",
+      "hint": "Ein Ordner, wie der Server ihn sieht. In Docker: irgendwo unter {media}, das nicht schreibgeschützt ist, oder ein anderes Laufwerk, eingebunden unter {backups} (Doku → Backups & Data Safety).",
+      "keepThere": "Dort behalten",
+      "copyFiles": "Auch Profilbilder, Cover, den Anmeldeschlüssel und HTTPS-Zertifikate kopieren",
+      "couldNotCheck": "Der Ordner konnte nicht geprüft werden",
+      "pickerTitle": "Backups kopieren nach"
+    },
+    "saveAria": "Backup-Einstellungen speichern",
+    "savedCopying": "Gespeichert. Deine vorhandenen Backups werden nach {path} kopiert.",
+    "copyFailed": "Kopieren nach {path} fehlgeschlagen: {error}. Es wird alle 15 Minuten erneut versucht.",
+    "copiedTo": "Kopiert nach {path} {when}",
+    "notYet": "— noch nicht",
+    "copying": "Wird kopiert…",
+    "copyNow": "Jetzt kopieren",
+    "stored": "Gespeicherte Backups",
+    "storedCount": "Gespeicherte Backups ({count})",
+    "backingUp": "Wird gesichert…",
+    "backUpNow": "Jetzt sichern",
+    "preparing": "Wird vorbereitet…",
+    "downloadSnapshot": "Schnappschuss herunterladen",
+    "empty": "Noch keine Backups. Schalte automatische Backups ein oder sichere jetzt.",
+    "downloadThis": "Dieses Backup herunterladen",
+    "deleteThis": "Dieses Backup löschen",
+    "couldNotBackUp": "Backup konnte nicht erstellt werden",
+    "couldNotSnapshot": "Schnappschuss konnte nicht erstellt werden. Details stehen in der Browserkonsole.",
+    "couldNotDownload": "Das Backup konnte nicht heruntergeladen werden. Details stehen in der Browserkonsole.",
+    "deleteTitle": "Backup löschen",
+    "deleteMessage": "Das Backup vom {date} löschen? Das kann nicht rückgängig gemacht werden.",
+    "couldNotDelete": "Das Backup konnte nicht gelöscht werden"
+  },
+  "features": {
+    "title": "Funktionen",
+    "description": "Was für alle auf diesem Server eingeschaltet ist. Änderungen werden sofort gespeichert.",
+    "shelfViews": {
+      "title": "Regalansichten",
+      "desc": "Alphabetisch und Urheber gibt es immer. Wenn du eine Ordneransicht ausschaltest, ist sie für alle ausgeblendet."
+    },
+    "folderModes": {
+      "diskFolder": {
+        "label": "Festplattenordner",
+        "desc": "Nach den Ordnern auf dem Server stöbern."
+      },
+      "customFolder": {
+        "label": "Eigene Ordner",
+        "desc": "Ordner, die jede Person in der App anlegt, mit einem Sammelordner „Unsortiert“."
+      }
+    },
+    "ratings": {
+      "title": "Bewertungen",
+      "desc": "Welche Bewertungen angezeigt werden. Eine ausgeschaltete ist überall ausgeblendet, und der Server sendet sie nicht mehr.",
+      "personal": {
+        "label": "Eigene Bewertungen",
+        "desc": "Alle können 1–5 Sterne vergeben und sehen ihre eigenen."
+      },
+      "community": {
+        "label": "{name}-Bewertungen",
+        "desc": "Der Durchschnitt aller auf diesem Server."
+      },
+      "external": {
+        "label": "Weltweite Bewertungen (TMDB)",
+        "desc": "Die TMDB-Wertung für Filme, Serien und Anime. Braucht einen TMDB-Schlüssel."
+      }
+    },
+    "movies": {
+      "title": "Filme und gemeinsam schauen",
+      "missingFilms": {
+        "label": "Fehlende Filme in Sammlungen zeigen",
+        "desc": "Eine Sammlung wie Shrek oder Star Wars listet auch die Filme, die du nicht hast – ausgegraut mit einem Anfragen-Button. Im Filme-Regal erscheinen sie nie. Braucht einen TMDB-Schlüssel."
+      },
+      "watchParties": {
+        "label": "Watch-Partys",
+        "desc": "Ein Gemeinsam-schauen-Button bei Filmen und Folgen: synchron von verschiedenen Orten aus schauen, mit Chat. Inhaltsbeschränkungen gelten weiter für alle in der Party. Freunde unterwegs müssen diesen Server erreichen können (siehe Netzwerk). Ausschalten beendet laufende Partys."
+      }
+    }
+  },
+  "kids": {
+    "title": "Kindermodus",
+    "description": "Kinderkonten sehen nur, was hier eingeschaltet ist. Unter Benutzer machst du ein Konto zum Kinderkonto.",
+    "libraries": {
+      "title": "Ganze Bibliotheken",
+      "desc": "Alles in diesen Bibliotheken, jetzt und künftig."
+    },
+    "noLibraries": "Noch keine Bibliotheken.",
+    "items": {
+      "one": "{number} Eintrag",
+      "other": "{number} Einträge"
+    },
+    "titles": {
+      "title": "Einzelne Reihen und Titel",
+      "desc": "Füge weitere über die Schaltfläche {button} auf einer Reihen- oder Titelseite hinzu.",
+      "button": "Kinder"
+    },
+    "noneYet": "Noch keine.",
+    "series": "Reihe",
+    "singleTitle": "Titel",
+    "removeAria": "{name} aus dem Kindermodus entfernen",
+    "couldNotRemove": "Konnte nicht aus dem Kindermodus entfernt werden"
+  },
+  "libraries": {
+    "title": "Bibliotheken",
+    "description": "Die Ordner, aus denen Plinthio deine Medien liest. Deine Dateien werden nie verändert.",
+    "add": "Bibliothek hinzufügen",
+    "empty": "Noch keine Bibliotheken. Füge eine hinzu, um Plinthio auf einen Medienordner zu verweisen.",
+    "kids": "Kinder",
+    "items": {
+      "one": "{number} Eintrag",
+      "other": "{number} Einträge"
+    },
+    "scanning": "Wird gescannt…",
+    "scan": "Scannen",
+    "deleteAria": "{name} löschen",
+    "deleteLibrary": "Bibliothek löschen",
+    "types": {
+      "movies": "Filme",
+      "shows": "Serien",
+      "anime": "Anime",
+      "books": "Bücher",
+      "manga": "Manga & Comics",
+      "audiobooks": "Hörbücher"
+    },
+    "autoScan": {
+      "title": "Automatisches Scannen",
+      "desc": "Findet neue Medien in deinen Bibliotheksordnern, ohne dass jemand auf Scannen drücken muss.",
+      "scheduled": {
+        "label": "Nach Zeitplan neu scannen",
+        "desc": "Die zuverlässige Variante: funktioniert auch bei Netzwerkfreigaben und Mounts, die keine Änderungen melden."
+      },
+      "schedule": "Zeitplan",
+      "modes": {
+        "interval": "In regelmäßigen Abständen",
+        "times": "Zu festen Uhrzeiten täglich"
+      },
+      "every": "Neu scannen",
+      "intervals": {
+        "15": "alle 15 Minuten",
+        "30": "alle 30 Minuten",
+        "60": "stündlich",
+        "360": "alle 6 Stunden",
+        "1440": "täglich"
+      },
+      "at": "Neu scannen um",
+      "timeAria": "Scanzeit {number}",
+      "removeTime": "{time} entfernen",
+      "thisTime": "diese Uhrzeit",
+      "addTime": "Uhrzeit hinzufügen",
+      "timesHint": "In der Zeitzone des Servers. War der Server zu einer festen Zeit aus, scannt er einmal, sobald er wieder läuft.",
+      "watch": {
+        "label": "Ordner auf Änderungen überwachen",
+        "desc": "Scannt etwa 30 Sekunden, nachdem eine Datei auftaucht – sofern das Dateisystem das meldet. Funktioniert mit oder ohne Zeitplan."
+      },
+      "manual": "Automatisches Scannen ist aus. Neue Medien tauchen erst auf, wenn ein Admin bei einer Bibliothek auf Scannen drückt.",
+      "noSchedule": "Ohne Zeitplan werden Änderungen auf Netzwerkfreigaben oder Mounts, die keine Dateiereignisse senden, erst bemerkt, wenn du auf Scannen drückst.",
+      "noTimes": "Keine Uhrzeiten festgelegt, daher läuft der Zeitplan nie. Füge eine Uhrzeit hinzu oder wechsle zu regelmäßigen Abständen."
+    },
+    "addDialog": {
+      "title": "Bibliothek hinzufügen",
+      "folder": "Ordner",
+      "browse": "Durchsuchen",
+      "folderHint": "So, wie der Server ihn sieht. In Docker sind deine Medien unter {path} eingebunden.",
+      "name": "Name",
+      "namePlaceholder": "z. B. Hörbücher",
+      "whatsInIt": "Inhalt",
+      "adding": "Wird hinzugefügt…",
+      "addAndScan": "Hinzufügen und scannen",
+      "pickerTitle": "Bibliotheksordner wählen"
+    },
+    "scanResult": {
+      "title": "{name} gescannt",
+      "added": "{count} hinzugefügt",
+      "renamed": "{count} umbenannt oder verschoben",
+      "updated": "{count} aktualisiert",
+      "removed": "{count} entfernt",
+      "summary": "{parts}.",
+      "nothingNew": "Nichts Neues."
+    },
+    "scanFailed": "Scan fehlgeschlagen",
+    "deleteMessage": "„{name}“ löschen? Deine Dateien bleiben unberührt, und Fortschritt und Lesezeichen kommen zurück, wenn du denselben Ordner wieder hinzufügst. Titel, Cover und Details verschwinden, bis erneut gescannt wird.",
+    "couldNotDelete": "Die Bibliothek konnte nicht gelöscht werden",
+    "couldNotAdd": "Die Bibliothek konnte nicht hinzugefügt werden"
+  },
+  "logs": {
+    "title": "Protokolle",
+    "description": "Scans, Fehler und was der Server gemacht hat, neueste zuerst.",
+    "live": "Live",
+    "paused": "Pausiert",
+    "refreshNow": "Jetzt aktualisieren",
+    "searchPlaceholder": "Meldungen und Kategorien durchsuchen",
+    "searchAria": "Protokolle durchsuchen",
+    "level": "Stufe",
+    "levels": {
+      "all": "alle",
+      "info": "info",
+      "warn": "warnung",
+      "error": "fehler"
+    },
+    "nothingMatches": "Keine Treffer.",
+    "clearTitle": "Protokolle leeren",
+    "clearMessage": "Alle Protokolleinträge aus der Datenbank löschen?",
+    "couldNotClear": "Die Protokolle konnten nicht geleert werden"
+  },
+  "metadata": {
+    "title": "Metadaten",
+    "description": "Woher Poster, Beschreibungen, Besetzung und Bewertungen kommen – und das Aufräumen von Titeln, die aus Dateinamen stammen.",
+    "tmdb": {
+      "title": "TMDB-Schlüssel",
+      "descBuiltIn": "Filme, Serien und Anime bekommen ihre Details von TMDB, mit dem in Plinthio eingebauten Schlüssel. Du kannst stattdessen deinen eigenen TMDB-Schlüssel einfügen. Manga (MangaDex) und Bücher (Google Books, Open Library) brauchen nichts.",
+      "descNeedsKey": "Filme, Serien und Anime bekommen ihre Details von TMDB, wofür ein kostenloser Schlüssel nötig ist. Manga (MangaDex) und Bücher (Google Books, Open Library) brauchen nichts.",
+      "sources": {
+        "custom": "Dein eigener",
+        "environment": "Aus TMDB_API_KEY",
+        "builtin": "Eingebaut",
+        "set": "Gesetzt",
+        "notSet": "Nicht gesetzt"
+      },
+      "keyLabel": "TMDB-API-Schlüssel",
+      "placeholderReplace": "Neuen Schlüssel einfügen, um ihn zu ersetzen",
+      "placeholderOptional": "Eigenen TMDB-Schlüssel einfügen (optional)",
+      "placeholderToken": "Dein TMDB-API-Lesezugriffstoken einfügen",
+      "saveKey": "Schlüssel speichern",
+      "useBuiltIn": "Eingebauten Schlüssel nutzen",
+      "getOne": "Hol dir kostenlos einen unter {link}.",
+      "getOneLink": "themoviedb.org → Einstellungen → API",
+      "attribution": "Dieses Produkt nutzt die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert.",
+      "removeTitle": "TMDB-Schlüssel entfernen",
+      "removeMessage": "Filme, Serien und Anime bekommen keine neuen Poster, Details und weltweiten Bewertungen mehr, bis wieder ein Schlüssel hinzugefügt wird."
+    }
+  },
+  "overview": {
+    "title": "Übersicht",
+    "description": "Dieser Server auf einen Blick: seine Version, sein Inhalt und wer ihn nutzt.",
+    "checksOff": "Update-Prüfungen sind aus (UPDATE_CHECK=false).",
+    "available": "{version} ist verfügbar.",
+    "updateWith": "Aktualisiere mit {command}",
+    "upToDate": "Du bist auf dem neuesten Stand.",
+    "upToDateCheckFailed": "Du bist auf dem neuesten Stand (letzte Prüfung fehlgeschlagen – offline?).",
+    "notChecked": "Noch nicht geprüft.",
+    "releaseNotes": "Versionshinweise",
+    "checking": "Wird geprüft…",
+    "checkNow": "Jetzt prüfen",
+    "tiles": {
+      "files": "Dateien",
+      "onDisk": "Auf der Festplatte",
+      "audio": "Audio",
+      "accounts": "Konten"
+    },
+    "byMediaType": "Nach Medientyp",
+    "files": {
+      "one": "{number} Datei",
+      "other": "{number} Dateien"
+    },
+    "series": {
+      "one": "{number} Reihe",
+      "other": "{number} Reihen"
+    },
+    "creators": {
+      "one": "{number} Urheber",
+      "other": "{number} Urheber"
+    }
+  },
+  "playback": {
+    "title": "Wiedergabe",
+    "description": "Wie Videos auf die Bildschirme kommen, und der Clip, der davor laufen kann.",
+    "hwaccel": {
+      "title": "Hardwarebeschleunigung",
+      "desc": "Plinthio spielt Dateien unverändert ab, wann immer der Browser es kann, und wandelt nur um, was er nicht kann. Ein Grafikchip macht das Umwandeln viel günstiger.",
+      "found": "Auf diesem Rechner gefunden",
+      "noneCpu": "Keine – CPU wird genutzt",
+      "use": "Verwenden",
+      "auto": "Was gefunden wird (empfohlen)",
+      "cpu": "Immer die CPU",
+      "always": "Immer {method}",
+      "testing": "Wird getestet…",
+      "test": "Testen",
+      "works": "{method} funktioniert auf diesem Rechner.",
+      "failed": "{method} hat nicht funktioniert: {error}",
+      "testHint": "Der Test führt eine kurze echte Umwandlung aus: Dass ffmpeg einen Encoder auflistet, beweist nicht, dass der Treiber darunter funktioniert.",
+      "testFailed": "Test fehlgeschlagen",
+      "howItWorks": "So funktioniert die Wiedergabe – und so richtest du einen Grafikchip ein",
+      "tips": {
+        "direct": {
+          "title": "Direct Play und Direct Stream:",
+          "text": "Video, das der Browser dekodieren kann (H.264, oder HEVC in Chrome, Edge, Vivaldi und Safari), wird unverändert gesendet, bis 4K, sogar aus MKV-Dateien. Nur Audio, das er nicht abspielen kann (EAC3, Atmos, DTS), wird in AAC umgewandelt."
+        },
+        "browser": {
+          "title": "Die Browserseite:",
+          "text": "Prüfe für 4K, ob der Browser Video in Hardware dekodiert ({page} → Video Decode: Hardware accelerated)."
+        },
+        "docker": {
+          "title": "Intel Quick Sync und VAAPI in Docker:",
+          "text": "Reiche {dri} unter {devices} durch und füge die ID der {render}-Gruppe des Hosts unter {groupAdd} hinzu."
+        },
+        "small": {
+          "title": "Kleine Rechner:",
+          "text": "Umwandeln auf der CPU ist auf zwei Threads mit dem schnellsten Preset begrenzt, und Vorschaubilder werden separat erzeugt, damit ein Mini-PC nicht überhitzt."
+        }
+      }
+    },
+    "intro": {
+      "title": "Intro",
+      "desc": "Ein kurzer Clip, der im Vollbild läuft, wenn jemand bei einem Film oder einer Folge auf Abspielen drückt. Nie vor automatisch abgespielten Folgen, Trailern oder Watch-Partys, und jede Person kann ihn überspringen.",
+      "checking": "Wird geprüft…",
+      "upload": "Clip hochladen",
+      "custom": "Dein eigener Clip.",
+      "builtIn": "Der eingebaute Clip von Plinthio. Ersetze ihn durch deinen eigenen:",
+      "requirements": "MP4 (H.264), 1–10 Sekunden, bis 20 MB. 1080p mit etwa 8 Mbit/s reicht völlig.",
+      "thisOne": "Dieser ist {seconds} Sekunden lang.",
+      "replace": "Ersetzen",
+      "useBuiltIn": "Eingebauten Clip nutzen",
+      "play": "Intro abspielen",
+      "offUntil": "Aus, bis du es einschaltest.",
+      "uploadFirst": "Lade zuerst einen Clip hoch.",
+      "beforeMovies": "Vor Filmen",
+      "beforeShows": "Vor Serien und Anime",
+      "tooBig": "Die Datei ist größer als 20 MB. Exportiere sie kürzer oder mit niedrigerer Bitrate.",
+      "uploadFailed": "Hochladen fehlgeschlagen",
+      "removeTitle": "Deinen Clip entfernen",
+      "removeMessage": "Deinen Clip entfernen und zum eingebauten Intro von Plinthio zurückkehren?",
+      "couldNotRemove": "Konnte nicht entfernt werden"
+    }
+  },
+  "users": {
+    "title": "Benutzer",
+    "description": "Alle, die sich an diesem Server anmelden können. Es gibt keine Selbstregistrierung: Konten werden hier angelegt.",
+    "add": "Benutzer hinzufügen",
+    "editAria": "{name} bearbeiten",
+    "you": "Du",
+    "lastIn": "Zuletzt da: {date}",
+    "neverSignedIn": "Nie angemeldet",
+    "network": "({network})",
+    "outside": "von außen",
+    "roles": {
+      "label": "Rolle",
+      "viewer": {
+        "label": "Betrachter",
+        "desc": "Stöbert, liest, schaut und hört; verfolgt den eigenen Fortschritt."
+      },
+      "editor": {
+        "label": "Redakteur",
+        "desc": "Korrigiert zusätzlich gemeinsame Titel, Cover und Details."
+      },
+      "admin": {
+        "label": "Admin",
+        "desc": "Alles, auch Bibliotheken, Benutzer und diese Seite."
+      }
+    },
+    "durations": {
+      "day": {
+        "one": "{count} Tag",
+        "other": "{count} Tage"
+      },
+      "week": {
+        "one": "{count} Woche",
+        "other": "{count} Wochen"
+      },
+      "month": {
+        "one": "{count} Monat",
+        "other": "{count} Monate"
+      },
+      "year": {
+        "one": "{count} Jahr",
+        "other": "{count} Jahre"
+      }
+    },
+    "addDialog": {
+      "title": "Benutzer hinzufügen",
+      "passwordHint": "Mindestens 8 Zeichen. Es lässt sich unter Einstellungen → Sicherheit ändern.",
+      "adding": "Wird hinzugefügt…"
+    },
+    "access": "Zugang",
+    "noEndDate": "Kein Enddatum",
+    "noEndDateSentence": "Kein Enddatum.",
+    "forDuration": "Für {duration}",
+    "untilDate": "Bis zu einem Datum…",
+    "accessEnds": "Zugang endet",
+    "editDialog": {
+      "title": "{name} bearbeiten",
+      "joined": "Dabei seit {date}"
+    },
+    "ended": "Beendet am {date}",
+    "ends": "Endet am {date}",
+    "extendBy": "+{duration}",
+    "removeEndDate": "Enddatum entfernen",
+    "setAccess": "Zugang festlegen",
+    "setNewEnd": "Oder neues Ende festlegen…",
+    "keepNoEnd": "Ohne Enddatum lassen",
+    "fromNow": "{duration} ab jetzt",
+    "remote": {
+      "label": "Darf Plinthio unterwegs nutzen",
+      "desc": "Wenn der Server Zugriff von außen erlaubt (Netzwerk). Aus: nur zu Hause und über Tailscale."
+    },
+    "kidsAccount": {
+      "label": "Kinderkonto",
+      "desc": "Sieht nur, was im Kindermodus eingeschaltet ist."
+    },
+    "twoFactorOn": "Zwei-Faktor ist an",
+    "twoFactorHelp": "Handy und Backup-Codes verloren? Setze es zurück, damit die Person sich mit ihrem Passwort anmelden und es neu einrichten kann.",
+    "contentLimit": "Inhaltsbeschränkung",
+    "noLimit": "Keine Beschränkung",
+    "everyoneOnly": "Nur für alle Altersstufen",
+    "upTo": "Bis {rating}",
+    "ageRatings": {
+      "everyone": "Alle Altersstufen",
+      "teen": "Jugendliche",
+      "mature": "Erwachsene"
+    },
+    "allowUnrated": "Auch Titel ohne Altersfreigabe zeigen. Aus ist streng: nur eingestufte Titel bis zur Grenze.",
+    "ratingsHint": "Altersfreigaben werden an jeder Reihe oder jedem Titel festgelegt.",
+    "newPassword": "Neues Passwort",
+    "newPasswordPlaceholder": "Leer lassen, um es beizubehalten",
+    "newPasswordHint": "Mindestens 8 Zeichen. Ein neues Passwort meldet die Person überall ab.",
+    "accessEnded": "Zugang beendet",
+    "hoursLeft": {
+      "one": "noch {count} Std.",
+      "other": "noch {count} Std."
+    },
+    "daysLeft": {
+      "one": "noch {count} Tag",
+      "other": "noch {count} Tage"
+    },
+    "badges": {
+      "twoFactor": "Zwei-Faktor",
+      "twoFactorTitle": "Meldet sich zusätzlich mit einem Code aus einer Authenticator-App an",
+      "homeOnly": "Nur zu Hause",
+      "homeOnlyTitle": "Kann Plinthio nur im Heimnetz nutzen",
+      "kids": "Kinder",
+      "unratedHidden": "Titel ohne Freigabe sind ebenfalls ausgeblendet",
+      "unratedAllowed": "Titel ohne Freigabe sind erlaubt"
+    },
+    "couldNotAdd": "Der Benutzer konnte nicht hinzugefügt werden",
+    "couldNotChangeAccess": "Der Zugang konnte nicht geändert werden",
+    "passwordTooShort": "Das neue Passwort braucht mindestens 8 Zeichen.",
+    "couldNotSave": "Die Änderungen konnten nicht gespeichert werden",
+    "resetTitle": "Zwei-Faktor zurücksetzen?",
+    "resetMessage": "{name} wird überall abgemeldet, kann sich dann nur mit dem Passwort anmelden und Zwei-Faktor unter Einstellungen → Sicherheit neu einrichten.",
+    "couldNotReset": "Zwei-Faktor konnte nicht zurückgesetzt werden",
+    "deleteTitle": "Benutzer löschen",
+    "deleteMessage": "{name} löschen? Fortschritt, Lesezeichen, Markierungen, Listen und Bewertungen werden mitgelöscht.",
+    "deleteUser": "Benutzer löschen",
+    "couldNotDelete": "Der Benutzer konnte nicht gelöscht werden"
+  },
+  "health": {
+    "title": "Zustand",
+    "description": "Was in deinen Bibliotheken Aufmerksamkeit braucht.",
+    "checked": "Geprüft am {time}.",
+    "checking": "Wird geprüft…",
+    "runCheck": "Prüfung starten",
+    "tiles": {
+      "libraries": "Nicht erreichbare Bibliotheken",
+      "missing": "Fehlende Dateien",
+      "duplicates": "Duplikate",
+      "clashes": "Bandkonflikte",
+      "metadata": "Ohne Cover",
+      "transcode": "Kodierfehler"
+    },
+    "allClear": "Alles sieht gut aus.",
+    "libraries": "Bibliotheken",
+    "itemsTotal": {
+      "one": "{number} Eintrag insgesamt",
+      "other": "{number} Einträge insgesamt"
+    },
+    "items": {
+      "one": "{number} Eintrag",
+      "other": "{number} Einträge"
+    },
+    "scanned": "Gescannt am {time}",
+    "neverScanned": "Nie gescannt",
+    "unreachable": "Ordner nicht erreichbar – prüfe, ob das Laufwerk eingebunden und das Docker-Volume zugeordnet ist. Die Einträge bleiben im Katalog, bis er wieder da ist.",
+    "rescan": "Neu scannen",
+    "noLibraries": "Noch keine Bibliotheken.",
+    "missing": {
+      "title": "Fehlende Dateien",
+      "hint": "Von der Festplatte verschwunden. Absichtlich gelöscht, um Platz zu schaffen? Behalte sie als Verlauf: Sie bleiben ausgegraut auf ihrer Titelseite, mit dem Fortschritt aller. Ansonsten bleiben sie vorerst ausgeblendet (ein Laufwerk kann kurz nicht verfügbar sein) und kommen von selbst zurück, wenn die Dateien wieder auftauchen; entferne sie endgültig, sobald du dir sicher bist.",
+      "keepAll": "Alle als Verlauf behalten",
+      "removing": "Wird entfernt…",
+      "removeAll": "Alle endgültig entfernen"
+    },
+    "keepAsHistory": "Als Verlauf behalten",
+    "removeForGood": "Endgültig entfernen",
+    "offloaded": {
+      "title": "Archiviert (als Verlauf behalten)",
+      "hint": "Entfernt, um Platz zu schaffen, und als Verlauf behalten: in Regalen und Suche ausgeblendet, ausgegraut auf ihrer Titelseite mit dem Fortschritt aller. Kommen die Dateien zurück, werden sie von selbst wiederhergestellt.",
+      "undo": "Rückgängig"
+    },
+    "duplicates": {
+      "title": "Wahrscheinliche Duplikate",
+      "hint": "Gleicher Titel und exakt gleiche Dateigröße – meist dieselbe Datei in zwei Ordnern oder Bibliotheken.",
+      "copies": {
+        "one": "{count} Kopie",
+        "other": "{count} Kopien"
+      }
+    },
+    "clashes": {
+      "title": "Band- / Folgenkonflikte",
+      "hint": "Verschiedene Dateien, die in einer Reihe dieselbe Band- oder Folgennummer beanspruchen. Meist eine falsch benannte Datei."
+    },
+    "metadata": {
+      "title": "Fehlende Bilder oder Metadaten",
+      "hint": "{noCover} ohne Cover, {noAuthor} Bücher/Manga/Hörbücher ohne Autor, {noDescription} ohne Beschreibung. Korrigiere sie im Tab Metadaten.",
+      "open": "Metadaten öffnen",
+      "noCover": "Kein Cover",
+      "noAuthor": "Kein Autor"
+    },
+    "unrated": {
+      "title": "Titel ohne Altersfreigabe",
+      "hint": "Titel ohne Altersfreigabe, weder selbst noch über ihre Reihe. Wichtig nur, wenn du für manche Benutzer Inhaltsbeschränkungen nutzt – stufe Reihen in ihrem Reihenblatt ein, einzelne Titel im Metadaten-Editor."
+    },
+    "transcode": {
+      "title": "Aktuelle Kodierfehler bei der Wiedergabe",
+      "hint": "ffmpeg-Fehler beim Vorbereiten von Videos. Oft ein Treiberproblem der Hardwarebeschleunigung – probiere Admin → Wiedergabe → Testen."
+    },
+    "mediaTypes": {
+      "movie": "Film",
+      "show": "Serie",
+      "anime": "Anime",
+      "manga": "Manga",
+      "book": "Buch",
+      "audiobook": "Hörbuch"
+    },
+    "couldNotRun": "Die Zustandsprüfung konnte nicht ausgeführt werden",
+    "groupSeason": "{name}, Staffel {season}",
+    "titlesCount": {
+      "one": "{count} Titel",
+      "other": "{count} Titel"
+    },
+    "keepTitle": "Als Verlauf behalten?",
+    "keepMessage": {
+      "one": "{label} bleibt ausgegraut auf der Titelseite, mit dem Fortschritt aller, kann aber nicht abgespielt werden. Kommen die Dateien zurück, wird es von selbst wiederhergestellt.",
+      "other": "{label} bleiben ausgegraut auf ihrer Titelseite, mit dem Fortschritt aller, können aber nicht abgespielt werden. Kommen die Dateien zurück, werden sie von selbst wiederhergestellt."
+    },
+    "couldNotKeep": "Konnte nicht als Verlauf behalten werden",
+    "couldNotUndo": "Konnte nicht rückgängig gemacht werden",
+    "removeTitle": "Endgültig entfernen?",
+    "removeMessage": "{name} aus dem Katalog entfernen? Fortschritt und Bewertungen bleiben in der Datenbank und werden wieder verknüpft, falls dieselben Dateien je erneut gescannt werden – bis dahin wird aber nichts angezeigt.",
+    "skipped": {
+      "one": "{count} behalten: die Dateien sind wieder da.",
+      "other": "{count} behalten: die Dateien sind wieder da."
+    },
+    "couldNotRemove": "Konnte nicht entfernt werden",
+    "removeMissingTitle": "Fehlende Titel entfernen?",
+    "removeMissingMessage": {
+      "one": "{count} fehlenden Titel endgültig aus dem Katalog entfernen? Alles, dessen Datei wieder da ist, bleibt erhalten, ebenso alles, was als Verlauf behalten wird. Lesefortschritt und Bewertungen bleiben auch erhalten und werden wieder verknüpft, falls dieselben Dateien je erneut gescannt werden.",
+      "other": "{count} fehlende Titel endgültig aus dem Katalog entfernen? Alles, dessen Datei wieder da ist, bleibt erhalten, ebenso alles, was als Verlauf behalten wird. Lesefortschritt und Bewertungen bleiben auch erhalten und werden wieder verknüpft, falls dieselben Dateien je erneut gescannt werden."
+    },
+    "removed": {
+      "one": "{count} Titel entfernt.",
+      "other": "{count} Titel entfernt."
+    },
+    "removedSkipped": {
+      "one": "{count} Titel entfernt ({skipped} behalten – die Dateien sind wieder da).",
+      "other": "{count} Titel entfernt ({skipped} behalten – die Dateien sind wieder da)."
+    },
+    "couldNotRemoveMissing": "Fehlende Titel konnten nicht entfernt werden",
+    "scanComplete": "Scan von „{name}“ abgeschlossen: {added} hinzugefügt, {updated} aktualisiert, {removed} entfernt.",
+    "scanFailed": "Scan fehlgeschlagen",
+    "episodes": {
+      "one": "{count} Folge",
+      "other": "{count} Folgen"
+    },
+    "files": {
+      "one": "{count} Datei",
+      "other": "{count} Dateien"
+    },
+    "stillOnDisk": {
+      "one": "{count} noch auf der Festplatte: lösche sie, um den Platz freizugeben.",
+      "other": "{count} noch auf der Festplatte: lösche sie, um den Platz freizugeben."
+    }
+  },
+  "folderPicker": {
+    "title": "Ordner wählen",
+    "up": "Einen Ordner nach oben",
+    "empty": "Hier sind keine Ordner.",
+    "newFolder": "Neuer Ordner hierin (optional)",
+    "newFolderPlaceholder": "z. B. Plinthio Backups",
+    "useNew": "Neuen Ordner verwenden",
+    "useThis": "Diesen Ordner verwenden",
+    "couldNotOpen": "Der Ordner konnte nicht geöffnet werden"
+  }
+}

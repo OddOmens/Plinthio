@@ -1,0 +1,664 @@
+{
+  "nav": {
+    "backToShelf": "Volver al estante",
+    "shelf": "Estante",
+    "details": "Detalles",
+    "returnToShelf": "Volver al estante"
+  },
+  "errors": {
+    "loadHint": "No se pudo cargar esta serie o puede que se haya eliminado.",
+    "notFound": "No se encontró el elemento",
+    "noSeries": "No se indicó ninguna serie",
+    "loadFailed": "No se pudieron cargar los detalles de la serie",
+    "changeFailed": "No se pudo cambiar",
+    "seasonFailed": "No se pudo actualizar el estado de la temporada",
+    "partyFailed": "No se pudo iniciar la watch party",
+    "markAllFailed": "No se pudo marcar todo como terminado",
+    "resetFailed": "No se pudo restablecer el historial",
+    "skipFailed": "No se pudo actualizar lo omitido",
+    "markEarlierFailed": "No se pudieron marcar como terminados",
+    "kidsFailed": "No se pudo cambiar el modo infantil"
+  },
+  "meta": {
+    "pages": {
+      "one": "{pages} página",
+      "other": "{pages} páginas"
+    },
+    "seasons": {
+      "one": "{count} temporada",
+      "other": "{count} temporadas"
+    },
+    "episodes": {
+      "one": "{count} episodio",
+      "other": "{count} episodios"
+    }
+  },
+  "duration": {
+    "minutes": "{m} min",
+    "hoursMinutes": "{h} h {m} min"
+  },
+  "date": {
+    "today": "Hoy",
+    "yesterday": "Ayer"
+  },
+  "position": {
+    "pageShort": "p. {page}",
+    "page": "Página {page}",
+    "pageOf": "Página {page} de {total}",
+    "timeOf": "{at} de {total}",
+    "withPercent": "{position} ({percent})"
+  },
+  "status": {
+    "upNext": "A continuación",
+    "offloaded": "Archivado",
+    "watched": "Visto",
+    "skipped": "Omitido",
+    "new": "Nuevo",
+    "done": "Hecho",
+    "finished": "Terminado",
+    "notStarted": "Sin empezar"
+  },
+  "progress": {
+    "label": "Progreso"
+  },
+  "offloaded": {
+    "single": "Se quitó del servidor para liberar espacio. Tu historial y tus valoraciones se conservan, y volverá solo si se vuelve a poner el archivo.",
+    "dialogMessage": "«{title}» se quitó del servidor para liberar espacio. Tu historial se conserva, y volverá solo si se vuelve a poner el archivo."
+  },
+  "overview": {
+    "readMore": "Leer más"
+  },
+  "facts": {
+    "genres": "Géneros",
+    "createdBy": "Creada por",
+    "director": "Dirección",
+    "writers": "Guion",
+    "studios": "Estudios",
+    "network": "Cadena",
+    "artists": "Artistas",
+    "publisher": "Editorial",
+    "released": "Estreno",
+    "runtime": "Duración",
+    "length": "Duración",
+    "pages": "Páginas",
+    "cast": "Reparto",
+    "status": "Estado",
+    "format": "Formato",
+    "fileSize": "Tamaño del archivo",
+    "library": "Biblioteca",
+    "lastOpened": "Última apertura",
+    "totalLength": "Duración total",
+    "totalPages": "Total de páginas"
+  },
+  "sections": {
+    "seasons": "Temporadas",
+    "episodes": "Episodios",
+    "castCrew": "Reparto y equipo",
+    "extras": "Extras",
+    "mediaInfo": "Información del archivo"
+  },
+  "season": {
+    "label": "Temporada {number}",
+    "specials": "Especiales",
+    "other": "Otros",
+    "markUnwatched": "Marcar como no visto",
+    "markWatched": "Marcar {season} como vista",
+    "episodes": {
+      "one": "{count} episodio",
+      "other": "{count} episodios"
+    },
+    "episodesWatched": {
+      "one": "{watched} de {count} episodio",
+      "other": "{watched} de {count} episodios"
+    },
+    "offloaded": {
+      "one": "{count} archivado",
+      "other": "{count} archivados"
+    }
+  },
+  "sort": {
+    "firstToLast": "Orden: del primero al último",
+    "lastToFirst": "Orden: del último al primero",
+    "oldestFirst": "Más antiguos primero",
+    "newestFirst": "Más recientes primero"
+  },
+  "episode": {
+    "play": "Reproducir {title}",
+    "markUnwatched": "Marcar como no visto"
+  },
+  "rating": {
+    "yourRating": "Tu valoración",
+    "youRated": "Le diste {rating}/5; cámbialo en la cabecera",
+    "yourRatingChange": "Tu valoración: {rating}/5 · cambiar",
+    "rateEntry": "Valorar {label}",
+    "community": {
+      "one": "Media de {average} de {users} usuario de {server}",
+      "other": "Media de {average} de {users} usuarios de {server}"
+    },
+    "communityNone": "Aún no hay valoraciones en {server}",
+    "tmdb": {
+      "one": "{rating}/{scale} en TMDB con {votes} voto",
+      "other": "{rating}/{scale} en TMDB con {votes} votos"
+    },
+    "saveFailed": "No se pudo guardar",
+    "outOfFive": "{value} de 5 estrellas",
+    "stars": {
+      "one": "{count} estrella",
+      "other": "{count} estrellas"
+    },
+    "clear": "Borrar valoración"
+  },
+  "collection": {
+    "countOf": "{owned} de {total}",
+    "comingSoon": "Próximamente",
+    "moreIn": "Más de {name}",
+    "viewAll": "Ver las {count}",
+    "watchAgain": "Volver a ver: {title}",
+    "resume": "Reanudar: {title}",
+    "play": "Reproducir: {title}"
+  },
+  "filter": {
+    "label": "Filtro: {label}",
+    "notStarted": "Sin empezar",
+    "inProgress": "En curso",
+    "completed": "Terminados",
+    "emptyTitle": "No hay nada con este filtro"
+  },
+  "layout": {
+    "label": "Diseño",
+    "grid": "Vista de cuadrícula",
+    "list": "Vista de lista"
+  },
+  "volume": {
+    "again": "Otra vez",
+    "moreFor": "Más para {label}",
+    "actions": "Acciones de {label}",
+    "markNotStarted": "Marcar como sin empezar",
+    "markNotStartedShort": "Sin empezar"
+  },
+  "skip": {
+    "skippedHint": "Omitido: toca para dejar de omitir",
+    "skip": "Omitir",
+    "unskip": "Dejar de omitir",
+    "hintStory": "¿Ya conoces la historia hasta cierto punto, por ejemplo porque viste el anime?",
+    "hintOther": "¿Ya viste o escuchaste algunos en otro sitio?",
+    "through": "Ya conozco todo hasta",
+    "unskipAll": "Dejar de omitir todo ({count})",
+    "confirm": "Omitir {count}"
+  },
+  "bookmarks": {
+    "title": "Marcadores y notas",
+    "label": "Marcadores y notas",
+    "short": "Marcadores"
+  },
+  "download": {
+    "downloaded": "Descargado: toca para quitarlo",
+    "downloading": "Descargando: toca para cancelar",
+    "forOffline": "Descargar para usar sin conexión",
+    "doneShort": "Descargado",
+    "busyShort": "Descargando…",
+    "remaining": "Descargar el resto ({count})",
+    "httpsTitle": "Las descargas necesitan HTTPS",
+    "httpsMessage": "Los navegadores solo permiten guardar cosas para usarlas sin conexión en una conexión segura, y esta página se abrió con http:// sin cifrar. Abre Plinthio desde una dirección HTTPS (Tailscale es lo más fácil) y funcionarán las descargas y la app instalable.",
+    "httpsConfirm": "Muéstrame cómo",
+    "httpsCancel": "Ahora no"
+  },
+  "markEarlier": {
+    "markAll": "Marcar todos",
+    "noThanks": "No, gracias"
+  },
+  "actions": {
+    "more": "Más acciones",
+    "watchTogether": "Ver juntos",
+    "watchTogetherTitle": "Ver esto con personas que están en otros lugares",
+    "resetHistory": "Restablecer historial",
+    "resetHistoryTitle": "Restablecer tu historial de este título",
+    "editMetadata": "Editar metadatos",
+    "metadataOne": "Buscar en los proveedores de metadatos y aplicar a este título",
+    "undoOffload": "Deshacer archivado",
+    "undoOffloadTitle": "Mostrar {target} como disponible de nuevo en el servidor",
+    "keepAsHistory": "Guardar como historial",
+    "keepAsHistoryTitle": "Archivar {target}: conservar su historial después de borrar los archivos",
+    "inKidsMode": "En modo infantil",
+    "kids": "Infantil"
+  },
+  "offload": {
+    "targetTitle": "«{title}»",
+    "targetSeason": "{name}, temporada {number}",
+    "targetSpecials": "{name}, especiales",
+    "targetOther": "{name}, otros",
+    "targetAll": "todo {name}",
+    "confirmTitle": "¿Guardar como historial?",
+    "confirmMessage": "{target} se ocultará de los estantes y de la búsqueda y no se podrá reproducir, pero seguirá aquí, en gris, con el progreso de todos. Después borra los archivos para liberar espacio. Si vuelven, se restaura solo.",
+    "confirmButton": "Guardar como historial"
+  },
+  "kids": {
+    "viaLibrary": "Toda su biblioteca está en modo infantil (cámbialo en Administración → Modo infantil)",
+    "viaSeries": "Su serie está en modo infantil; cámbialo en la página de la serie",
+    "allowed": "Las cuentas infantiles pueden verlo; haz clic para quitarlo del modo infantil",
+    "allow": "Permitir que las cuentas en modo infantil lo vean"
+  },
+  "reset": {
+    "title": "Restablecer progreso",
+    "message": "¿Restablecer todo tu progreso de «{name}»?",
+    "confirm": "Restablecer progreso"
+  },
+  "extraTypes": {
+    "trailer": "Tráiler",
+    "featurette": "Featurette",
+    "behindthescenes": "Detrás de las cámaras",
+    "deletedscene": "Escena eliminada",
+    "interview": "Entrevista",
+    "scene": "Escena",
+    "short": "Corto",
+    "extra": "Extra"
+  },
+  "availability": {
+    "notOnServer": "No está en este servidor",
+    "notInLibrary": "No está en la biblioteca",
+    "offloadedOn": "Se quitó del servidor el {date} para liberar espacio. Tu historial se conserva; vuelve si vuelve el archivo.",
+    "offloaded": "Se quitó del servidor para liberar espacio. Tu historial se conserva; vuelve si vuelve el archivo."
+  },
+  "request": {
+    "request": "Solicitar",
+    "again": "Volver a solicitar",
+    "coming": "Llega en {year}",
+    "announced": "Anunciada",
+    "requested": "Solicitada",
+    "approved": "Solicitud aprobada",
+    "addedSoon": "Se añadirá pronto",
+    "failed": "No se pudo enviar la solicitud."
+  },
+  "typed": {
+    "units": {
+      "manga": {
+        "one": "{count} tomo",
+        "other": "{count} tomos"
+      },
+      "book": {
+        "one": "{count} libro",
+        "other": "{count} libros"
+      },
+      "audiobook": {
+        "one": "{count} libro",
+        "other": "{count} libros"
+      },
+      "show": {
+        "one": "{count} episodio",
+        "other": "{count} episodios"
+      },
+      "anime": {
+        "one": "{count} episodio",
+        "other": "{count} episodios"
+      },
+      "movie": {
+        "one": "{count} película",
+        "other": "{count} películas"
+      }
+    },
+    "progressOf": {
+      "manga": {
+        "one": "{read} de {count} tomo",
+        "other": "{read} de {count} tomos"
+      },
+      "book": {
+        "one": "{read} de {count} libro",
+        "other": "{read} de {count} libros"
+      },
+      "audiobook": {
+        "one": "{read} de {count} libro",
+        "other": "{read} de {count} libros"
+      },
+      "show": {
+        "one": "{read} de {count} episodio",
+        "other": "{read} de {count} episodios"
+      },
+      "anime": {
+        "one": "{read} de {count} episodio",
+        "other": "{read} de {count} episodios"
+      },
+      "movie": {
+        "one": "{read} de {count} película",
+        "other": "{read} de {count} películas"
+      }
+    },
+    "progressOfSkipped": {
+      "manga": {
+        "one": "{read} + {count} omitido de {total} tomos",
+        "other": "{read} + {count} omitidos de {total} tomos"
+      },
+      "book": {
+        "one": "{read} + {count} omitido de {total} libros",
+        "other": "{read} + {count} omitidos de {total} libros"
+      },
+      "audiobook": {
+        "one": "{read} + {count} omitido de {total} libros",
+        "other": "{read} + {count} omitidos de {total} libros"
+      },
+      "show": {
+        "one": "{read} + {count} omitido de {total} episodios",
+        "other": "{read} + {count} omitidos de {total} episodios"
+      },
+      "anime": {
+        "one": "{read} + {count} omitido de {total} episodios",
+        "other": "{read} + {count} omitidos de {total} episodios"
+      },
+      "movie": {
+        "one": "{read} + {count} omitida de {total} películas",
+        "other": "{read} + {count} omitidas de {total} películas"
+      }
+    },
+    "offloadedSome": {
+      "manga": {
+        "one": "{count} de estos {total} tomos se archivó para liberar espacio; se conserva en el historial.",
+        "other": "{count} de estos {total} tomos se archivaron para liberar espacio; se conservan en el historial."
+      },
+      "book": {
+        "one": "{count} de estos {total} libros se archivó para liberar espacio; se conserva en el historial.",
+        "other": "{count} de estos {total} libros se archivaron para liberar espacio; se conservan en el historial."
+      },
+      "audiobook": {
+        "one": "{count} de estos {total} libros se archivó para liberar espacio; se conserva en el historial.",
+        "other": "{count} de estos {total} libros se archivaron para liberar espacio; se conservan en el historial."
+      },
+      "show": {
+        "one": "{count} de estos {total} episodios se archivó para liberar espacio; se conserva en el historial.",
+        "other": "{count} de estos {total} episodios se archivaron para liberar espacio; se conservan en el historial."
+      },
+      "anime": {
+        "one": "{count} de estos {total} episodios se archivó para liberar espacio; se conserva en el historial.",
+        "other": "{count} de estos {total} episodios se archivaron para liberar espacio; se conservan en el historial."
+      },
+      "movie": {
+        "one": "{count} de estas {total} películas se archivó para liberar espacio; se conserva en el historial.",
+        "other": "{count} de estas {total} películas se archivaron para liberar espacio; se conservan en el historial."
+      }
+    },
+    "offloadedAll": {
+      "manga": "Todos estos tomos se archivaron para liberar espacio; se conservan en el historial.",
+      "book": "Todos estos libros se archivaron para liberar espacio; se conservan en el historial.",
+      "audiobook": "Todos estos libros se archivaron para liberar espacio; se conservan en el historial.",
+      "show": "Todos estos episodios se archivaron para liberar espacio; se conservan en el historial.",
+      "anime": "Todos estos episodios se archivaron para liberar espacio; se conservan en el historial.",
+      "movie": "Todas estas películas se archivaron para liberar espacio; se conservan en el historial."
+    },
+    "emptyHint": {
+      "manga": "Cambia a la pestaña «Todos» para ver todos los tomos.",
+      "book": "Cambia a la pestaña «Todos» para ver todos los libros.",
+      "audiobook": "Cambia a la pestaña «Todos» para ver todos los libros.",
+      "show": "Cambia a la pestaña «Todos» para ver todos los episodios.",
+      "anime": "Cambia a la pestaña «Todos» para ver todos los episodios.",
+      "movie": "Cambia a la pestaña «Todas» para ver todas las películas."
+    },
+    "markAs": {
+      "manga": "Marcar como leído",
+      "book": "Marcar como leído",
+      "audiobook": "Marcar como escuchado",
+      "show": "Marcar como visto",
+      "anime": "Marcar como visto",
+      "movie": "Marcar como vista"
+    },
+    "skipUnit": {
+      "manga": "Omitir tomo",
+      "book": "Omitir libro",
+      "audiobook": "Omitir libro",
+      "show": "Omitir episodio",
+      "anime": "Omitir episodio",
+      "movie": "Omitir película"
+    },
+    "unskipUnit": {
+      "manga": "Dejar de omitir tomo",
+      "book": "Dejar de omitir libro",
+      "audiobook": "Dejar de omitir libro",
+      "show": "Dejar de omitir episodio",
+      "anime": "Dejar de omitir episodio",
+      "movie": "Dejar de omitir película"
+    },
+    "skipThis": {
+      "manga": "Omitir este tomo",
+      "book": "Omitir este libro",
+      "audiobook": "Omitir este libro",
+      "show": "Omitir este episodio",
+      "anime": "Omitir este episodio",
+      "movie": "Omitir esta película"
+    },
+    "rateThis": {
+      "manga": "Valorar este tomo",
+      "book": "Valorar este libro",
+      "audiobook": "Valorar este libro",
+      "show": "Valorar este episodio",
+      "anime": "Valorar este episodio",
+      "movie": "Valorar esta película"
+    },
+    "rateInHeader": {
+      "manga": "Valorar este tomo en la cabecera",
+      "book": "Valorar este libro en la cabecera",
+      "audiobook": "Valorar este libro en la cabecera",
+      "show": "Valorar este episodio en la cabecera",
+      "anime": "Valorar este episodio en la cabecera",
+      "movie": "Valorar esta película en la cabecera"
+    },
+    "again": {
+      "manga": "Volver a leer",
+      "book": "Volver a leer",
+      "audiobook": "Volver a escuchar",
+      "show": "Volver a ver",
+      "anime": "Volver a ver",
+      "movie": "Volver a ver"
+    },
+    "againLower": {
+      "manga": "Volver a leer",
+      "book": "Volver a leer",
+      "audiobook": "Volver a escuchar",
+      "show": "Volver a ver",
+      "anime": "Volver a ver",
+      "movie": "Volver a ver"
+    },
+    "markDone": {
+      "manga": "Marcar como leído",
+      "book": "Marcar como leído",
+      "audiobook": "Marcar como escuchado",
+      "show": "Marcar como visto",
+      "anime": "Marcar como visto",
+      "movie": "Marcar como vista"
+    },
+    "markAllDone": {
+      "manga": "Marcar todo como leído",
+      "book": "Marcar todo como leído",
+      "audiobook": "Marcar todo como escuchado",
+      "show": "Marcar todo como visto",
+      "anime": "Marcar todo como visto",
+      "movie": "Marcar todo como visto"
+    },
+    "markAllTitle": {
+      "manga": "Marcar todo como leído",
+      "book": "Marcar todo como leído",
+      "audiobook": "Marcar todo como escuchado",
+      "show": "Marcar todo como visto",
+      "anime": "Marcar todo como visto",
+      "movie": "Marcar todo como visto"
+    },
+    "markEverything": {
+      "manga": "Marcar todo como leído",
+      "book": "Marcar todo como leído",
+      "audiobook": "Marcar todo como escuchado",
+      "show": "Marcar todo como visto",
+      "anime": "Marcar todo como visto",
+      "movie": "Marcar todo como visto"
+    },
+    "markEveryConfirm": {
+      "manga": "¿Marcar cada tomo de «{name}» como leído?",
+      "book": "¿Marcar cada libro de «{name}» como leído?",
+      "audiobook": "¿Marcar cada libro de «{name}» como escuchado?",
+      "show": "¿Marcar cada episodio de «{name}» como visto?",
+      "anime": "¿Marcar cada episodio de «{name}» como visto?",
+      "movie": "¿Marcar cada película de «{name}» como vista?"
+    },
+    "showUnits": {
+      "manga": "Mostrar tomos",
+      "book": "Mostrar libros",
+      "audiobook": "Mostrar libros",
+      "show": "Mostrar episodios",
+      "anime": "Mostrar episodios",
+      "movie": "Mostrar películas"
+    },
+    "markEarlier": {
+      "manga": {
+        "one": "¿Marcar también el tomo anterior como leído?",
+        "other": "¿Marcar también los {count} tomos anteriores como leídos?"
+      },
+      "book": {
+        "one": "¿Marcar también el libro anterior como leído?",
+        "other": "¿Marcar también los {count} libros anteriores como leídos?"
+      },
+      "audiobook": {
+        "one": "¿Marcar también el libro anterior como escuchado?",
+        "other": "¿Marcar también los {count} libros anteriores como escuchados?"
+      },
+      "show": {
+        "one": "¿Marcar también el episodio anterior como visto?",
+        "other": "¿Marcar también los {count} episodios anteriores como vistos?"
+      },
+      "anime": {
+        "one": "¿Marcar también el episodio anterior como visto?",
+        "other": "¿Marcar también los {count} episodios anteriores como vistos?"
+      },
+      "movie": {
+        "one": "¿Marcar también la película anterior como vista?",
+        "other": "¿Marcar también las {count} películas anteriores como vistas?"
+      }
+    },
+    "skipUnits": {
+      "manga": "Omitir tomos",
+      "book": "Omitir libros",
+      "audiobook": "Omitir libros",
+      "show": "Omitir episodios",
+      "anime": "Omitir episodios",
+      "movie": "Omitir películas"
+    },
+    "skipUnitsMenu": {
+      "manga": "Omitir tomos…",
+      "book": "Omitir libros…",
+      "audiobook": "Omitir libros…",
+      "show": "Omitir episodios…",
+      "anime": "Omitir episodios…",
+      "movie": "Omitir películas…"
+    },
+    "skipCovered": {
+      "manga": "Omitir los tomos que ya conoces",
+      "book": "Omitir los libros que ya conoces",
+      "audiobook": "Omitir los libros que ya conoces",
+      "show": "Omitir los episodios que ya conoces",
+      "anime": "Omitir los episodios que ya conoces",
+      "movie": "Omitir las películas que ya conoces"
+    },
+    "skipBody": {
+      "manga": "{hint} Los tomos omitidos cuentan para tu progreso y «Seguir leyendo» continúa después de ellos. Tu historial no cambia, y al abrir un tomo omitido deja de estar omitido.",
+      "book": "{hint} Los libros omitidos cuentan para tu progreso y «Seguir leyendo» continúa después de ellos. Tu historial no cambia, y al abrir un libro omitido deja de estar omitido.",
+      "audiobook": "{hint} Los libros omitidos cuentan para tu progreso y «Seguir escuchando» continúa después de ellos. Tu historial no cambia, y al abrir un libro omitido deja de estar omitido.",
+      "show": "{hint} Los episodios omitidos cuentan para tu progreso y «Seguir viendo» continúa después de ellos. Tu historial no cambia, y al abrir un episodio omitido deja de estar omitido.",
+      "anime": "{hint} Los episodios omitidos cuentan para tu progreso y «Seguir viendo» continúa después de ellos. Tu historial no cambia, y al abrir un episodio omitido deja de estar omitido.",
+      "movie": "{hint} Las películas omitidas cuentan para tu progreso y «Seguir viendo» continúa después de ellas. Tu historial no cambia, y al abrir una película omitida deja de estar omitida."
+    },
+    "skips": {
+      "manga": {
+        "one": "Omite {n} tomo que no has terminado ({range}).",
+        "other": "Omite {n} tomos que no has terminado ({range})."
+      },
+      "book": {
+        "one": "Omite {n} libro que no has terminado ({range}).",
+        "other": "Omite {n} libros que no has terminado ({range})."
+      },
+      "audiobook": {
+        "one": "Omite {n} libro que no has terminado ({range}).",
+        "other": "Omite {n} libros que no has terminado ({range})."
+      },
+      "show": {
+        "one": "Omite {n} episodio que no has terminado ({range}).",
+        "other": "Omite {n} episodios que no has terminado ({range})."
+      },
+      "anime": {
+        "one": "Omite {n} episodio que no has terminado ({range}).",
+        "other": "Omite {n} episodios que no has terminado ({range})."
+      },
+      "movie": {
+        "one": "Omite {n} película que no has terminado ({range}).",
+        "other": "Omite {n} películas que no has terminado ({range})."
+      }
+    },
+    "nothingToSkip": {
+      "manga": "Nada que omitir: ya están leídos u omitidos.",
+      "book": "Nada que omitir: ya están leídos u omitidos.",
+      "audiobook": "Nada que omitir: ya están escuchados u omitidos.",
+      "show": "Nada que omitir: ya están vistos u omitidos.",
+      "anime": "Nada que omitir: ya están vistos u omitidos.",
+      "movie": "Nada que omitir: ya están vistas u omitidas."
+    },
+    "allUnits": {
+      "manga": "Todos los tomos",
+      "book": "Todos los libros",
+      "audiobook": "Todos los libros",
+      "show": "Todos los episodios",
+      "anime": "Todos los episodios",
+      "movie": "Todas las películas"
+    },
+    "start": {
+      "manga": "Empezar a leer",
+      "book": "Empezar a leer",
+      "audiobook": "Empezar a escuchar",
+      "show": "Empezar a ver",
+      "anime": "Empezar a ver",
+      "movie": "Empezar a ver"
+    },
+    "continue": {
+      "manga": "Seguir leyendo",
+      "book": "Seguir leyendo",
+      "audiobook": "Seguir escuchando",
+      "show": "Seguir viendo",
+      "anime": "Seguir viendo",
+      "movie": "Seguir viendo"
+    },
+    "downloadRemaining": {
+      "manga": {
+        "one": "Descargar {count} tomo sin terminar para usar sin conexión",
+        "other": "Descargar {count} tomos sin terminar para usar sin conexión"
+      },
+      "book": {
+        "one": "Descargar {count} libro sin terminar para usar sin conexión",
+        "other": "Descargar {count} libros sin terminar para usar sin conexión"
+      },
+      "audiobook": {
+        "one": "Descargar {count} libro sin terminar para usar sin conexión",
+        "other": "Descargar {count} libros sin terminar para usar sin conexión"
+      },
+      "show": {
+        "one": "Descargar {count} episodio sin terminar para usar sin conexión",
+        "other": "Descargar {count} episodios sin terminar para usar sin conexión"
+      },
+      "anime": {
+        "one": "Descargar {count} episodio sin terminar para usar sin conexión",
+        "other": "Descargar {count} episodios sin terminar para usar sin conexión"
+      },
+      "movie": {
+        "one": "Descargar {count} película sin terminar para usar sin conexión",
+        "other": "Descargar {count} películas sin terminar para usar sin conexión"
+      }
+    },
+    "metadataAll": {
+      "manga": "Buscar en los proveedores de metadatos y aplicar a todos los tomos",
+      "book": "Buscar en los proveedores de metadatos y aplicar a todos los libros",
+      "audiobook": "Buscar en los proveedores de metadatos y aplicar a todos los libros",
+      "show": "Buscar en los proveedores de metadatos y aplicar a todos los episodios",
+      "anime": "Buscar en los proveedores de metadatos y aplicar a todos los episodios",
+      "movie": "Buscar en los proveedores de metadatos y aplicar a todas las películas"
+    },
+    "totalUnits": {
+      "manga": "Total de tomos",
+      "book": "Total de libros",
+      "audiobook": "Total de libros",
+      "show": "Total de episodios",
+      "anime": "Total de episodios",
+      "movie": "Total de películas"
+    }
+  }
+}

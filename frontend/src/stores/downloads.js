@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { getMediaToken } from '../utils/mediaToken';
 import { coverUrl } from '../utils/cover';
+import { t } from '../i18n';
 
 // Offline downloads. Files are written into the service worker's 'plinthio-offline' cache
 // under token-free keys (see public/sw.js offlineKey), which the worker then serves when
@@ -116,7 +117,7 @@ export const useDownloadsStore = defineStore('downloads', {
       for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v));
 
       const res = await fetch(url, { signal, cache: 'no-store' });
-      if (!res.ok) throw new Error(`Download failed (${res.status})`);
+      if (!res.ok) throw new Error(t('downloads.errors.failedStatus', { status: res.status }));
 
       const progress = this.active[id];
       const counter = new TransformStream({
@@ -172,7 +173,7 @@ export const useDownloadsStore = defineStore('downloads', {
           const pagesPath = `/api/media/manga/${id}/pages`;
           const token = localStorage.getItem('plinthio_token');
           const res = await fetch(pagesPath, { signal, headers: token ? { Authorization: `Bearer ${token}` } : {} });
-          if (!res.ok) throw new Error(`Could not read page list (${res.status})`);
+          if (!res.ok) throw new Error(t('downloads.errors.pageList', { status: res.status }));
           const { totalPages = 0 } = await res.clone().json();
           await cache.put(offlineKey(pagesPath), res);
           this.active[id].pages = { done: 0, total: totalPages };
@@ -209,7 +210,7 @@ export const useDownloadsStore = defineStore('downloads', {
         if (err.name === 'AbortError') {
           delete this.active[id];
         } else {
-          this.active[id].error = err.message || 'Download failed';
+          this.active[id].error = err.message || t('downloads.errors.failed');
           this.active[id].done = true;
         }
       }

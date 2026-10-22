@@ -6,27 +6,27 @@
     @click.prevent.stop="open"
     class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background hover:bg-muted text-foreground text-xs font-semibold transition"
     :class="compact ? 'h-7 px-2' : 'h-8 px-3'"
-    :title="savedTo ? `In ${savedTo}` : 'Add to one of your lists'"
+    :title="savedTo ? $t('lists.addButton.inNamed', { list: savedTo }) : $t('lists.addButton.title')"
   >
     <BookmarkCheck v-if="savedTo" class="w-3.5 h-3.5 text-emerald-500" />
     <BookmarkPlus v-else class="w-3.5 h-3.5" />
-    {{ savedTo ? 'In list' : 'List' }}
+    {{ savedTo ? $t('lists.inList') : $t('lists.addButton.list') }}
   </button>
 
   <Teleport to="body">
     <div v-if="showing" class="fixed inset-0 z-[80] bg-black/50 flex items-end sm:items-center justify-center p-4" @click.self="showing = false">
-      <div class="w-full max-w-sm rounded-2xl bg-card border border-border shadow-xl p-4 flex flex-col gap-3 safe-bottom" role="dialog" :aria-label="`Add ${payload.title} to a list`">
+      <div class="w-full max-w-sm rounded-2xl bg-card border border-border shadow-xl p-4 flex flex-col gap-3 safe-bottom" role="dialog" :aria-label="$t('lists.addButton.dialogLabel', { title: payload.title })">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="text-sm font-semibold text-foreground">Add to a list</p>
+            <p class="text-sm font-semibold text-foreground">{{ $t('lists.addButton.heading') }}</p>
             <p class="text-xs text-muted-foreground truncate">{{ payload.title }}</p>
           </div>
-          <button type="button" aria-label="Close" @click="showing = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted">
+          <button type="button" :aria-label="$t('common.close')" @click="showing = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted">
             <X class="w-4 h-4" />
           </button>
         </div>
 
-        <p v-if="loading" class="text-xs text-muted-foreground py-3 text-center">Loading your lists…</p>
+        <p v-if="loading" class="text-xs text-muted-foreground py-3 text-center">{{ $t('lists.addButton.loading') }}</p>
         <div v-else-if="lists.length" class="flex flex-col gap-1 max-h-64 overflow-y-auto">
           <button
             v-for="list in lists"
@@ -47,11 +47,11 @@
           <input
             v-model="newName"
             type="text"
-            :placeholder="lists.length ? 'New list…' : 'Name your first list, e.g. Watchlist'"
+            :placeholder="lists.length ? $t('lists.addButton.newPlaceholder') : $t('lists.addButton.firstPlaceholder')"
             class="flex-1 h-9 px-3 rounded-xl bg-background border border-border text-sm text-foreground"
           />
           <button type="submit" :disabled="!newName.trim() || busy" class="h-9 px-3 rounded-xl bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50">
-            Create
+            {{ $t('common.create') }}
           </button>
         </form>
         <p v-if="error" class="text-xs text-destructive">{{ error }}</p>
@@ -64,6 +64,7 @@
 import { ref } from 'vue';
 import { BookmarkPlus, BookmarkCheck, Check, ListOrdered, X } from '@lucide/vue';
 import api from '../api/client';
+import { t } from '../i18n';
 
 // `payload`: what POST /collections/:id/external takes (see utils/externalTitle.js).
 // `category`: which lists it can go in (movies, shows, anime, read, listen).
@@ -90,7 +91,7 @@ async function open() {
     const res = await api.get('/collections', { params: { type: 'readlist', category: props.category } });
     lists.value = res.data.collections || [];
   } catch (err) {
-    error.value = 'Could not load your lists.';
+    error.value = t('lists.errors.loadYourLists');
   } finally {
     loading.value = false;
   }
@@ -105,7 +106,7 @@ async function addTo(list) {
   } catch (err) {
     // Already in that list (P502) counts as done.
     if (err.response?.data?.code !== 'P502') {
-      error.value = err.response?.data?.error || 'Could not add it to that list.';
+      error.value = err.response?.data?.error || t('lists.errors.addToList');
       busy.value = false;
       return;
     }
@@ -127,7 +128,7 @@ async function createAndAdd() {
     busy.value = false;
     await addTo({ ...res.data.collection, item_count: 0 });
   } catch (err) {
-    error.value = err.response?.data?.error || 'Could not create that list.';
+    error.value = err.response?.data?.error || t('lists.errors.createThatList');
     busy.value = false;
   }
 }

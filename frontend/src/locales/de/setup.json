@@ -1,0 +1,172 @@
+{
+  "header": {
+    "title": "{name} einrichten",
+    "progress": "Schritt {step} von {total}: {title}",
+    "almostDone": "Fast geschafft"
+  },
+  "steps": {
+    "appearance": "Aussehen",
+    "admin": "Admin-Konto",
+    "media": "Medientypen",
+    "libraries": "Bibliotheken",
+    "household": "Haushalt",
+    "access": "Zugriff",
+    "review": "Überprüfen"
+  },
+  "appearance": {
+    "title": "Mach ihn zu deinem",
+    "text": "Ein Name und ein Look für deinen Server. Du kannst all das später in der Verwaltung ändern.",
+    "serverName": "Servername",
+    "theme": "Design",
+    "accent": "Akzentfarbe"
+  },
+  "themes": {
+    "dark": { "label": "Dunkel", "hint": "Schont die Augen" },
+    "light": { "label": "Hell", "hint": "Klar und hell" }
+  },
+  "admin": {
+    "title": "Dein Admin-Konto",
+    "text": "Dieses Konto verwaltet Bibliotheken, Einstellungen und wer den Server nutzen darf.",
+    "passwordHint": "Mindestens 8 Zeichen. Länger ist besser, besonders wenn du Plinthio fürs Internet öffnest.",
+    "confirmPassword": "Passwort bestätigen"
+  },
+  "media": {
+    "title": "Was möchtest du hier aufbewahren?",
+    "text": "Diese erscheinen in deinem Regal. Alle anderen wählen später ihre eigenen.",
+    "types": {
+      "audiobook": { "title": "Hörbücher", "desc": "Kapitel, Lesezeichen und Weiterhören." },
+      "manga": { "title": "Manga & Comics", "desc": "Seite für Seite, als Einzel- oder Doppelseite." },
+      "book": { "title": "Bücher", "desc": "EPUB- und PDF-Reader mit Fortschritt." },
+      "movie": { "title": "Filme", "desc": "Filme mit Weiterschauen, Sammlungen und Extras." },
+      "show": { "title": "Serien", "desc": "Staffeln und Folgen, mit der nächsten Folge." },
+      "anime": { "title": "Anime", "desc": "Serien nach Staffel und Folge sortiert." }
+    }
+  },
+  "libraries": {
+    "title": "Füge deine Medienordner hinzu",
+    "text": "Optional. Zeig Plinthio die Ordner, in denen deine Dateien liegen; sie werden sofort gescannt. Weitere kannst du später in der Verwaltung hinzufügen.",
+    "addFolder": "Ordner hinzufügen",
+    "empty": "Noch keine Ordner.",
+    "dockerHint": "In Docker liegen deine Medien unter {path}.",
+    "addNow": "+ Jetzt einen Bibliotheksordner hinzufügen",
+    "name": "Name der Bibliothek",
+    "namePlaceholder": "z. B. Meine Hörbücher",
+    "type": "Typ",
+    "path": "Ordnerpfad (auf dem Host oder im Container)",
+    "types": {
+      "audiobooks": "Hörbücher",
+      "manga": "Manga / Comics",
+      "books": "Bücher & PDFs",
+      "shows": "Serien",
+      "movies": "Filme",
+      "anime": "Anime"
+    }
+  },
+  "household": {
+    "title": "Wer nutzt ihn noch?",
+    "text": "Optional. Jede Person bekommt ihren eigenen Fortschritt, eigene Lesezeichen und einen eigenen Look. Du kannst jederzeit in der Verwaltung Leute hinzufügen.",
+    "usernamePlaceholder": "z. B. alex",
+    "role": "Rolle",
+    "roles": {
+      "viewer": "Zuschauer: stöbern, lesen & Fortschritt speichern",
+      "editor": "Bearbeiter: kann auch Metadaten & Cover korrigieren",
+      "admin": "Admin: volle Kontrolle über den Server"
+    },
+    "password": "Passwort (mindestens 8 Zeichen)",
+    "passwordPlaceholder": "Leg ein Passwort für die Person fest",
+    "tooShort": "Zu kurz: Konten mit einem Passwort unter 8 Zeichen werden übersprungen.",
+    "add": "Person hinzufügen",
+    "parties": "Watch-Partys einschalten",
+    "partiesText": "Schaut gemeinsam einen Film oder eine Serie an verschiedenen Orten, synchron und mit Chat. Freunde, die nicht bei dir zu Hause sind, brauchen einen Zugang (nächster Schritt). Du kannst das jederzeit in der Verwaltung ändern."
+  },
+  "access": {
+    "title": "Wo wirst du Plinthio nutzen?",
+    "text": "Fang mit dem an, was du jetzt brauchst. Du kannst das jederzeit unter Verwaltung → Netzwerk ändern.",
+    "groupLabel": "Wo du Plinthio nutzt",
+    "options": {
+      "home": {
+        "title": "Nur zu Hause",
+        "badge": "Hier anfangen",
+        "text": "Handys, Tablets und Computer in deinem Heimnetz. Aus dem Internet ist nichts erreichbar."
+      },
+      "tailscale": {
+        "title": "Zu Hause und unterwegs mit Tailscale",
+        "text": "Für dich und Leute, die du in dein Tailscale einlädst: privat, ohne etwas an deinem Router zu öffnen. Jedes Gerät braucht die kostenlose Tailscale-App."
+      },
+      "internet": {
+        "title": "Auch aus dem Internet, für Gäste",
+        "text": "Freunde und Familie öffnen einen Link und melden sich an, ohne App-Installation: über Tailscale Funnel (keine Domain, keine Router-Änderungen) oder eine eigene Webadresse."
+      }
+    },
+    "via": {
+      "question": "Wie erreichen Gäste den Server?",
+      "groupLabel": "Wie Gäste den Server erreichen",
+      "funnel": {
+        "title": "Ohne Domain: Tailscale Funnel",
+        "text": "Ein dauerhafter Link, keine Router-Änderungen. Ideal zum Lesen und Hören; Video kann langsamer sein."
+      },
+      "domain": {
+        "title": "Meine eigene Domain",
+        "text": "Volle Geschwindigkeit, etwa media.deinedomain.de. Dafür müssen Ports an deinem Router geöffnet werden."
+      }
+    },
+    "tailscale": {
+      "title": "Tailscale einrichten",
+      "text": "Jetzt oder jederzeit nach der Einrichtung: Unter Verwaltung → Netzwerk findest du dieselbe Anleitung und siehst, ob es funktioniert."
+    },
+    "domain": {
+      "title": "Nach der Einrichtung: eine Webadresse vergeben",
+      "text": "Das Caddy-Add-on stellt {url} mit einem echten Zertifikat bereit. Dafür brauchst du eine Domain und die Ports 80 und 443 müssen an deinem Router weitergeleitet sein. Schritt für Schritt, auch wie du prüfst, ob deine Internetverbindung das zulässt: {docs}. Bis dahin ändert sich nichts.",
+      "docs": "Dokumente → Fernzugriff & Tailscale"
+    },
+    "require2fa": "Zwei-Faktor-Anmeldung unterwegs verlangen",
+    "require2faText": "Optional, empfohlen. Die Anmeldung von außerhalb des Heimnetzes braucht dann einen Code aus einer Handy-App; zu Hause reicht das Passwort. Wer keine Zwei-Faktor-Anmeldung hat, kann sich trotzdem zu Hause anmelden und sie dort einrichten."
+  },
+  "review": {
+    "title": "Plinthio überprüfen & starten",
+    "text": "Prüfe, ob alles stimmt. Du kannst alles später noch ändern.",
+    "rows": {
+      "serverName": "Servername",
+      "adminUsername": "Admin-Benutzername",
+      "themeAccent": "Design & Akzent",
+      "media": "Medien",
+      "libraries": "Bibliotheken",
+      "otherAccounts": "Weitere Konten",
+      "parties": "Watch-Partys",
+      "access": "Zugriff"
+    },
+    "folders": {
+      "one": "{count} Ordner",
+      "other": "{count} Ordner"
+    },
+    "access": {
+      "home": "Nur zu Hause",
+      "tailscale": "Zu Hause und Tailscale",
+      "funnel": "Zu Hause und im Internet (Tailscale Funnel)",
+      "domain": "Zu Hause und im Internet (eigene Domain)",
+      "withTwoFactor": "{access}, Zwei-Faktor-Anmeldung unterwegs"
+    },
+    "https": {
+      "title": "Sichere Verbindung zu Hause",
+      "text": "Die installierte App und Offline-Downloads brauchen HTTPS. Plinthio ist auch unter {url} mit einem eigenen Zertifikat erreichbar, das jedes Gerät einmal installiert (Dokumente → PWA-App einrichten). Oder nutze Tailscale für eine vertrauenswürdige Adresse, ohne etwas zu installieren."
+    }
+  },
+  "finished": {
+    "title": "Plinthio ist bereit",
+    "text": "Noch eine letzte, optionale Sache: Schütze dein Admin-Konto mit der Zwei-Faktor-Anmeldung, damit ein Passwort allein nicht reicht.",
+    "internet": "Es lohnt sich, da der Server aus dem Internet erreichbar sein wird.",
+    "later": "Du kannst das auch später unter Einstellungen → Sicherheit erledigen."
+  },
+  "nav": {
+    "complete": "Einrichtung abschließen & starten",
+    "goToPlinthio": "Zu Plinthio",
+    "notNow": "Nicht jetzt"
+  },
+  "errors": {
+    "usernameRequired": "Benutzername ist erforderlich",
+    "passwordLength": "Das Passwort muss mindestens 8 Zeichen haben",
+    "passwordMismatch": "Die Passwörter stimmen nicht überein",
+    "mediaRequired": "Bitte wähle mindestens einen Medientyp",
+    "failed": "Einrichtung fehlgeschlagen. Bitte prüfe die Verbindung zum Server."
+  }
+}

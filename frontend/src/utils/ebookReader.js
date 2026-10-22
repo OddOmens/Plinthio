@@ -1,6 +1,12 @@
 // The EPUB reader's display settings. They belong to the person, not the book: set them
 // once in any book and every book opens the same way, on every device (they're saved in
 // the user's preferences as `ebookReader`).
+//
+// Option labels are getters, so they follow the current language (spreading an option
+// copies today's wording).
+import { t } from '../i18n';
+
+const labelled = (group, id, extra = {}) => ({ id, ...extra, get label() { return t(`reader.${group}.${id}`); } });
 
 export const EBOOK_DEFAULTS = Object.freeze({
   theme: 'auto',        // follows the app's light/dark mode until one is picked
@@ -19,14 +25,14 @@ export const FONT_SIZE_MAX = 34;
 
 // Page colours, like an e-reader. `dark` decides how highlights blend with the page.
 export const READER_THEMES = {
-  white: { label: 'White', bg: '#ffffff', fg: '#1c1c1c', muted: '#6b6b6b', border: '#e7e5e4', link: '#1d4ed8', dark: false },
-  sepia: { label: 'Sepia', bg: '#f4ecd8', fg: '#3b2e20', muted: '#7a6a55', border: '#e2d4b4', link: '#8a4b0f', dark: false },
-  green: { label: 'Green', bg: '#d8e8d0', fg: '#1f2a1d', muted: '#566b52', border: '#c1d6b7', link: '#1f5f2a', dark: false },
-  gray: { label: 'Gray', bg: '#3f3f46', fg: '#ececec', muted: '#a8a8b0', border: '#52525b', link: '#93c5fd', dark: true },
-  black: { label: 'Black', bg: '#000000', fg: '#d6d6d6', muted: '#8a8a8a', border: '#262626', link: '#93c5fd', dark: true }
+  white: { get label() { return t('reader.themes.white'); }, bg: '#ffffff', fg: '#1c1c1c', muted: '#6b6b6b', border: '#e7e5e4', link: '#1d4ed8', dark: false },
+  sepia: { get label() { return t('reader.themes.sepia'); }, bg: '#f4ecd8', fg: '#3b2e20', muted: '#7a6a55', border: '#e2d4b4', link: '#8a4b0f', dark: false },
+  green: { get label() { return t('reader.themes.green'); }, bg: '#d8e8d0', fg: '#1f2a1d', muted: '#566b52', border: '#c1d6b7', link: '#1f5f2a', dark: false },
+  gray: { get label() { return t('reader.themes.gray'); }, bg: '#3f3f46', fg: '#ececec', muted: '#a8a8b0', border: '#52525b', link: '#93c5fd', dark: true },
+  black: { get label() { return t('reader.themes.black'); }, bg: '#000000', fg: '#d6d6d6', muted: '#8a8a8a', border: '#262626', link: '#93c5fd', dark: true }
 };
 
-export const THEME_OPTIONS = [{ id: 'auto', label: 'Auto' }, ...Object.entries(READER_THEMES).map(([id, t]) => ({ id, label: t.label }))];
+export const THEME_OPTIONS = ['auto', ...Object.keys(READER_THEMES)].map((id) => labelled('themes', id));
 
 export function resolveTheme(id) {
   if (READER_THEMES[id]) return READER_THEMES[id];
@@ -38,18 +44,18 @@ export function resolveTheme(id) {
 }
 
 export const FONT_OPTIONS = [
-  { id: 'publisher', label: 'Original', css: null },
-  { id: 'serif', label: 'Serif', css: 'Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif' },
-  { id: 'sans', label: 'Sans', css: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' },
-  { id: 'readable', label: 'Readable', css: 'Verdana, Geneva, Tahoma, sans-serif' },
-  { id: 'mono', label: 'Mono', css: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace' }
+  labelled('fonts', 'publisher', { css: null }),
+  labelled('fonts', 'serif', { css: 'Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif' }),
+  labelled('fonts', 'sans', { css: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' }),
+  labelled('fonts', 'readable', { css: 'Verdana, Geneva, Tahoma, sans-serif' }),
+  labelled('fonts', 'mono', { css: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace' })
 ];
 
 export const LINE_HEIGHTS = { compact: 1.4, normal: 1.65, loose: 1.95 };
 export const LINE_HEIGHT_OPTIONS = [
-  { id: 'compact', label: 'Compact' },
-  { id: 'normal', label: 'Normal' },
-  { id: 'loose', label: 'Loose' }
+  labelled('lineHeights', 'compact'),
+  labelled('lineHeights', 'normal'),
+  labelled('lineHeights', 'loose')
 ];
 
 // Paged mode: the gap between columns, as a share of the page width (epub.js splits it
@@ -60,30 +66,30 @@ export const MARGINS = {
   wide: { gap: 0.18, pad: '14%' }
 };
 export const MARGIN_OPTIONS = [
-  { id: 'narrow', label: 'Narrow' },
-  { id: 'normal', label: 'Normal' },
-  { id: 'wide', label: 'Wide' }
+  labelled('margins', 'narrow'),
+  labelled('margins', 'normal'),
+  labelled('margins', 'wide')
 ];
 
 export const ALIGN_OPTIONS = [
-  { id: 'publisher', label: 'Original' },
-  { id: 'left', label: 'Left' },
-  { id: 'justify', label: 'Justified' }
+  labelled('align', 'publisher'),
+  labelled('align', 'left'),
+  labelled('align', 'justify')
 ];
 
 export const PROGRESS_OPTIONS = [
-  { id: 'percent', label: 'Percent of book' },
-  { id: 'chapter', label: 'Pages left in chapter' },
-  { id: 'location', label: 'Location' },
-  { id: 'none', label: 'Nothing' }
+  labelled('progressOptions', 'percent'),
+  labelled('progressOptions', 'chapter'),
+  labelled('progressOptions', 'location'),
+  labelled('progressOptions', 'none')
 ];
 
 export const HIGHLIGHT_COLORS = [
-  { id: 'yellow', label: 'Yellow', fill: '#facc15' },
-  { id: 'green', label: 'Green', fill: '#4ade80' },
-  { id: 'blue', label: 'Blue', fill: '#60a5fa' },
-  { id: 'pink', label: 'Pink', fill: '#f472b6' },
-  { id: 'orange', label: 'Orange', fill: '#fb923c' }
+  labelled('highlightColors', 'yellow', { fill: '#facc15' }),
+  labelled('highlightColors', 'green', { fill: '#4ade80' }),
+  labelled('highlightColors', 'blue', { fill: '#60a5fa' }),
+  labelled('highlightColors', 'pink', { fill: '#f472b6' }),
+  labelled('highlightColors', 'orange', { fill: '#fb923c' })
 ];
 
 export function highlightFill(color) {
@@ -97,7 +103,7 @@ export function normalizeEbookPrefs(stored) {
   const pick = (key, allowed) => (allowed.includes(s[key]) ? s[key] : EBOOK_DEFAULTS[key]);
   const size = Number(s.fontSize);
   return {
-    theme: pick('theme', THEME_OPTIONS.map((t) => t.id)),
+    theme: pick('theme', THEME_OPTIONS.map((o) => o.id)),
     font: pick('font', FONT_OPTIONS.map((f) => f.id)),
     fontSize: Number.isFinite(size) ? Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, Math.round(size))) : EBOOK_DEFAULTS.fontSize,
     lineHeight: pick('lineHeight', Object.keys(LINE_HEIGHTS)),

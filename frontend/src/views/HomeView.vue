@@ -23,15 +23,15 @@
         class="rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-4 py-3 text-sm flex items-center gap-3 hover:bg-amber-500/15 transition"
       >
         <WifiOff class="w-4 h-4 flex-shrink-0" />
-        <span class="flex-1">You're offline. Your downloaded books, comics and audiobooks are still available.</span>
-        <span class="font-semibold whitespace-nowrap">Open Downloads →</span>
+        <span class="flex-1">{{ $t('shelf.offline.message') }}</span>
+        <span class="font-semibold whitespace-nowrap">{{ $t('shelf.offline.openDownloads') }}</span>
       </router-link>
       <!-- Continue Watching (video only, shown as its own row on the "All" view) -->
       <section :key="`watching-${activeType}`" v-if="continueWatchingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="shelf-fade-in flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-semibold tracking-tight text-foreground flex items-center gap-1.5">
             <MonitorPlay class="w-4 h-4 text-muted-foreground" />
-            Continue Watching
+            {{ $t('shelf.continue.watching') }}
           </h2>
         </div>
 
@@ -54,7 +54,7 @@
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-semibold tracking-tight text-foreground flex items-center gap-1.5">
             <Clock class="w-4 h-4 text-muted-foreground" />
-            Continue {{ continueCategoryLabel }}
+            {{ continueTitle }}
           </h2>
         </div>
 
@@ -99,7 +99,9 @@
                   : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
               ]"
             >
-              <component :is="mode.icon" class="w-3.5 h-3.5 flex-shrink-0" />
+              <!-- On a phone only the chosen view keeps its icon, leaving the others room for
+                   labels longer than English's. -->
+              <component :is="mode.icon" class="w-3.5 h-3.5 flex-shrink-0" :class="groupBy === mode.id ? '' : 'hidden sm:block'" />
               <span class="sm:hidden truncate">{{ mode.short }}</span>
               <span class="hidden sm:inline">{{ mode.label }}</span>
             </button>
@@ -110,49 +112,49 @@
              old wrapping row squeezed every select down to an empty chip), with the movie
              collections switch on its own full-width row below. -->
         <div v-if="groupBy !== 'custom_folder'" class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
-          <select v-model="progressFilter" aria-label="Progress" :class="filterSelectClass(progressFilter)">
-            <option value="">Status</option>
-            <option value="unread">Not started</option>
-            <option value="in_progress">In progress</option>
-            <option value="finished">Finished</option>
-            <option value="skipped">Skipped</option>
+          <select v-model="progressFilter" :aria-label="$t('shelf.filters.progress')" :class="filterSelectClass(progressFilter)">
+            <option value="">{{ $t('shelf.filters.status') }}</option>
+            <option value="unread">{{ $t('shelf.filters.notStarted') }}</option>
+            <option value="in_progress">{{ $t('shelf.filters.inProgress') }}</option>
+            <option value="finished">{{ $t('shelf.filters.finished') }}</option>
+            <option value="skipped">{{ $t('shelf.filters.skipped') }}</option>
           </select>
-          <select v-if="genres.length" v-model="genreFilter" aria-label="Genre" :class="filterSelectClass(genreFilter)">
-            <option value="">Genre</option>
+          <select v-if="genres.length" v-model="genreFilter" :aria-label="$t('shelf.filters.genre')" :class="filterSelectClass(genreFilter)">
+            <option value="">{{ $t('shelf.filters.genre') }}</option>
             <option v-for="g in genres" :key="g.name" :value="g.name">{{ g.name }} ({{ g.count }})</option>
           </select>
-          <select v-model="addedWithin" aria-label="Added" :class="filterSelectClass(addedWithin)">
-            <option value="">Added</option>
-            <option value="7">This week</option>
-            <option value="30">This month</option>
-            <option value="90">Last 3 months</option>
+          <select v-model="addedWithin" :aria-label="$t('shelf.filters.added')" :class="filterSelectClass(addedWithin)">
+            <option value="">{{ $t('shelf.filters.added') }}</option>
+            <option value="7">{{ $t('shelf.filters.thisWeek') }}</option>
+            <option value="30">{{ $t('shelf.filters.thisMonth') }}</option>
+            <option value="90">{{ $t('shelf.filters.last3Months') }}</option>
           </select>
           <!-- Without a genre list there are three selects; sort takes the whole last row. -->
-          <select v-model="sortBy" aria-label="Sort order" title="Sort order" :class="[filterSelectClass(sortBy === 'title' ? '' : sortBy), genres.length ? '' : 'col-span-2']">
-            <option value="title">A–Z</option>
-            <option value="added">Newest</option>
-            <option value="recent">Recently opened</option>
-            <option value="release">Release date</option>
+          <select v-model="sortBy" :aria-label="$t('shelf.sort.label')" :title="$t('shelf.sort.label')" :class="[filterSelectClass(sortBy === 'title' ? '' : sortBy), genres.length ? '' : 'col-span-2']">
+            <option value="title">{{ $t('shelf.sort.title') }}</option>
+            <option value="added">{{ $t('shelf.sort.added') }}</option>
+            <option value="recent">{{ $t('shelf.sort.recent') }}</option>
+            <option value="release">{{ $t('shelf.sort.release') }}</option>
           </select>
           <!-- Movie collections: one card per collection, or every film -->
           <div
             v-if="hasMovieCollections && (activeType === 'movie' || activeType === 'all')"
             class="col-span-2 flex items-center p-0.5 rounded-lg border border-border bg-muted/40 text-sm sm:text-xs"
             role="group"
-            aria-label="Movie collections"
+            :aria-label="$t('shelf.collections.label')"
           >
             <button
               type="button"
               @click="expandCollections = false"
               :aria-pressed="String(!expandCollections)"
               :class="['flex-1 sm:flex-none h-9 sm:h-8 px-2.5 rounded-md font-medium transition', !expandCollections ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
-            >Collections</button>
+            >{{ $t('shelf.collections.grouped') }}</button>
             <button
               type="button"
               @click="expandCollections = true"
               :aria-pressed="String(expandCollections)"
               :class="['flex-1 sm:flex-none h-9 sm:h-8 px-2.5 rounded-md font-medium transition', expandCollections ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
-            >All movies</button>
+            >{{ $t('shelf.collections.all') }}</button>
           </div>
           <button
             v-if="filtersActive || sortBy !== 'title'"
@@ -160,7 +162,7 @@
             @click="clearFilters"
             class="col-span-2 h-9 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition flex items-center justify-center gap-1"
           >
-            <X class="w-3.5 h-3.5" /> Clear filters
+            <X class="w-3.5 h-3.5" /> {{ $t('shelf.filters.clear') }}
           </button>
         </div>
 
@@ -183,16 +185,16 @@
           <div class="w-10 h-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mb-3">
             <BookX class="w-5 h-5" />
           </div>
-          <h3 class="text-sm font-medium text-foreground">No media found</h3>
+          <h3 class="text-sm font-medium text-foreground">{{ $t('shelf.empty.title') }}</h3>
           <p class="text-xs text-muted-foreground max-w-sm mt-1 mb-4">
-            {{ searchQuery || filtersActive ? 'Nothing matches — try a different search or clear the filters' : 'Add a library in Admin → Libraries and scan your folders to populate your shelf' }}
+            {{ searchQuery || filtersActive ? $t('shelf.empty.noMatches') : $t('shelf.empty.noLibrary') }}
           </p>
           <router-link
             v-if="authStore.isAdmin && !searchQuery && !filtersActive"
             to="/admin"
             class="px-3.5 py-1.5 rounded-md bg-primary hover:bg-primary/90 text-xs font-medium text-primary-foreground transition shadow-sm"
           >
-            Go to Settings
+            {{ $t('shelf.empty.goToSettings') }}
           </router-link>
         </div>
 
@@ -231,16 +233,16 @@
           </div>
 
           <div v-if="hasMoreServerItems" class="py-4 text-center text-xs text-muted-foreground">
-            Loaded {{ filteredItems.length }} titles · more load as you scroll
+            {{ $t('shelf.loadedMore', { count: filteredItems.length }) }}
           </div>
 
           <div v-if="shelfEntries.length === 0 && !loading" class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border rounded-2xl bg-card/50 p-8">
             <div class="w-10 h-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mb-3">
               <BookX class="w-5 h-5" />
             </div>
-            <h3 class="text-sm font-medium text-foreground">No media found</h3>
+            <h3 class="text-sm font-medium text-foreground">{{ $t('shelf.empty.title') }}</h3>
             <p class="text-xs text-muted-foreground max-w-sm mt-1 mb-4">
-              {{ searchQuery || filtersActive ? 'Nothing matches — try a different search or clear the filters' : 'Add a library in Admin → Libraries and scan your folders to populate your shelf' }}
+              {{ searchQuery || filtersActive ? $t('shelf.empty.noMatches') : $t('shelf.empty.noLibrary') }}
             </p>
           </div>
         </div>
@@ -288,13 +290,13 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-3.5">
             <div class="flex items-center gap-2">
               <FolderHeart class="w-4 h-4 text-primary" />
-              <span class="text-xs font-semibold text-foreground">Custom In-App Folders</span>
+              <span class="text-xs font-semibold text-foreground">{{ $t('shelf.customFolders.heading') }}</span>
             </div>
             <div class="flex items-center gap-2 w-full sm:w-auto">
               <input
                 v-model="quickFolderInput"
                 @keyup.enter="createQuickFolder"
-                placeholder="New folder name..."
+                :placeholder="$t('shelf.customFolders.newPlaceholder')"
                 class="flex-1 sm:w-48 h-9 bg-background border border-border rounded-lg px-3 text-base sm:text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
               <button
@@ -303,7 +305,7 @@
                 class="h-9 px-3.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition disabled:opacity-50 flex items-center gap-1.5 shadow-sm active:scale-95 flex-shrink-0"
               >
                 <Plus class="w-3.5 h-3.5" />
-                Add
+                {{ $t('common.add') }}
               </button>
             </div>
           </div>
@@ -322,15 +324,15 @@
                 </h3>
                 <span class="text-xs text-muted-foreground">({{ folderEntries(folder).length }})</span>
                 <span v-if="folder.isDefault" class="text-[11px] font-mono uppercase px-1.5 py-0.2 rounded bg-muted text-muted-foreground">
-                  Catch-all
+                  {{ $t('shelf.customFolders.catchAll') }}
                 </span>
               </div>
 
-              <button aria-label="Delete folder"
+              <button :aria-label="$t('shelf.customFolders.delete')"
                 v-if="!folder.isDefault"
                 @click="deleteCustomFolder(folder)"
                 class="p-1 text-muted-foreground hover:text-destructive hover:bg-muted rounded transition"
-                title="Delete folder"
+                :title="$t('shelf.customFolders.delete')"
               >
                 <Trash2 class="w-3.5 h-3.5" />
               </button>
@@ -349,9 +351,9 @@
               @edit-metadata="openMetadataModal"
               @remove-from-folder="removeItemsFromCustomFolder(folder.id, $event)"
             />
-            <div v-else class="py-6 text-center text-xs text-muted-foreground border border-dashed border-border/60 rounded-xl bg-card/30">
-              This folder is empty. Click the three dots (<span class="font-bold">...</span>) on any title to add it here.
-            </div>
+            <I18nT v-else keypath="shelf.customFolders.empty" tag="div" class="py-6 text-center text-xs text-muted-foreground border border-dashed border-border/60 rounded-xl bg-card/30">
+              <template #dots><span class="font-bold">...</span></template>
+            </I18nT>
           </div>
         </div>
         </div>
@@ -410,6 +412,8 @@ import ShelfEntryGrid from '../components/ShelfEntryGrid.vue';
 import { buildShelfEntries, entryFolder, groupEntries } from '../utils/shelfEntries';
 import { detailRoute, creatorLabel, realCreator } from '../utils/mediaVocab';
 import { normalizeShelfModes, userShelfModes } from '../utils/shelfModes';
+import { t } from '../i18n';
+import I18nT from '../i18n/I18nT.vue';
 // Readers, players and editors only mount once something is opened, so they load on demand
 // instead of riding in the shelf's first download (hls.js alone is ~500KB).
 const MangaReader = defineAsyncComponent(() => import('../components/MangaReader.vue'));
@@ -545,10 +549,10 @@ const groupingModes = computed(() => {
   const all = [
     // Internally still "series": every view shows series cards now, and this one is simply
     // all of them A–Z (the stored preference name is kept so saved choices carry over).
-    { id: 'series', label: 'Alphabetical', short: 'A–Z', icon: ArrowDownAZ },
+    { id: 'series', label: t('shelf.modes.alphabetical'), short: t('shelf.modes.alphabeticalShort'), icon: ArrowDownAZ },
     { id: 'creator', label: creatorLabel(activeType.value), short: creatorLabel(activeType.value), icon: User },
-    { id: 'disk_folder', label: 'Disk Folders', short: 'Disk', icon: HardDrive },
-    { id: 'custom_folder', label: 'Custom Folders', short: 'Custom', icon: FolderHeart }
+    { id: 'disk_folder', label: t('shelf.modes.diskFolders'), short: t('shelf.modes.diskFoldersShort'), icon: HardDrive },
+    { id: 'custom_folder', label: t('shelf.modes.customFolders'), short: t('shelf.modes.customFoldersShort'), icon: FolderHeart }
   ];
   return all.filter((m) => serverModes.includes(m.id) && userModes.includes(m.id));
 });
@@ -559,17 +563,11 @@ watch(groupingModes, (newModes) => {
   }
 });
 
-const continueCategoryLabel = computed(() => {
-  switch (activeType.value) {
-    case 'audiobook': return 'Audiobooks';
-    case 'manga': return 'Manga';
-    case 'book': return 'Books';
-    case 'movie': return 'Movies';
-    case 'show': return 'Shows';
-    case 'anime': return 'Anime';
-    default: return '';
-  }
-});
+// One whole message per category, so each language can say "continue reading" its own way.
+const CONTINUE_TYPES = ['audiobook', 'manga', 'book', 'movie', 'show', 'anime'];
+const continueTitle = computed(() =>
+  t(`shelf.continue.${CONTINUE_TYPES.includes(activeType.value) ? activeType.value : 'all'}`)
+);
 
 // Continue items strictly filtered by the current category (or all)
 const displayedContinueItems = computed(() => {
@@ -597,15 +595,15 @@ const continueReadingItems = computed(() =>
 );
 
 const sectionTitle = computed(() => {
-  if (searchQuery.value) return `Results for "${searchQuery.value}"`;
+  if (searchQuery.value) return t('shelf.sectionTitle.results', { query: searchQuery.value });
   switch (activeType.value) {
-    case 'audiobook': return 'Audiobooks';
-    case 'manga': return 'Manga & Comics';
-    case 'book': return 'eBooks & Documents';
-    case 'movie': return 'Movies';
-    case 'show': return 'Shows';
-    case 'anime': return 'Anime';
-    default: return 'All Media';
+    case 'audiobook': return t('shelf.sectionTitle.audiobook');
+    case 'manga': return t('shelf.sectionTitle.manga');
+    case 'book': return t('shelf.sectionTitle.book');
+    case 'movie': return t('shelf.sectionTitle.movie');
+    case 'show': return t('shelf.sectionTitle.show');
+    case 'anime': return t('shelf.sectionTitle.anime');
+    default: return t('shelf.sectionTitle.all');
   }
 });
 
@@ -617,17 +615,18 @@ const filteredItems = computed(() => {
 
 const displayItemCount = computed(() => {
   if (groupBy.value === 'custom_folder') {
-    return `${customFolders.value.length} folders`;
+    return t('shelf.counts.folders', { count: customFolders.value.length });
   }
   if (groupBy.value === 'series') {
     const seriesCount = shelfEntries.value.filter((e) => e.kind === 'series').length;
     const singles = shelfEntries.value.length - seriesCount;
-    const parts = [];
-    if (seriesCount) parts.push(`${seriesCount} series`);
-    if (singles) parts.push(`${singles} ${singles === 1 ? 'title' : 'titles'}`);
-    if (parts.length) return parts.join(', ');
+    const series = t('shelf.counts.series', { count: seriesCount });
+    const titles = t('shelf.counts.titles', { count: singles });
+    if (seriesCount && singles) return t('shelf.counts.seriesAndTitles', { series, titles });
+    if (seriesCount) return series;
+    if (singles) return titles;
   }
-  return `${filteredItems.value.length} items`;
+  return t('shelf.counts.items', { count: filteredItems.value.length });
 });
 
 /**
@@ -748,8 +747,8 @@ const entriesByCreator = computed(() => groupEntries(shelfEntries.value, creator
 // creator, so both go under one Unknown group instead of posing as a director.
 function creatorHeading(entry) {
   return entry.kind === 'series'
-    ? realCreator(entry.author, entry.name) || 'Unknown'
-    : realCreator(entry.item.author, entry.item.title) || 'Unknown';
+    ? realCreator(entry.author, entry.name) || t('common.unknown')
+    : realCreator(entry.item.author, entry.item.title) || t('common.unknown');
 }
 
 // A series goes under the folder all its titles share (see entryFolder).
@@ -922,15 +921,15 @@ async function createQuickFolder() {
     quickFolderInput.value = '';
     await loadCustomFolders();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Failed to create folder');
+    dialog.alert(err.response?.data?.error || t('shelf.errors.createFolder'));
   }
 }
 
 async function deleteCustomFolder(folder) {
   const confirmed = await dialog.confirm({
-    title: 'Delete Custom Folder',
-    message: `Are you sure you want to delete the folder "${folder.name}"? Items inside will not be deleted from your shelf.`,
-    confirmText: 'Delete Folder',
+    title: t('shelf.deleteFolder.title'),
+    message: t('shelf.deleteFolder.message', { name: folder.name }),
+    confirmText: t('shelf.deleteFolder.confirm'),
     danger: true
   });
   if (!confirmed) return;
@@ -939,7 +938,7 @@ async function deleteCustomFolder(folder) {
     await api.delete(`/collections/${folder.id}`);
     await loadCustomFolders();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Failed to delete folder');
+    dialog.alert(err.response?.data?.error || t('shelf.errors.deleteFolder'));
   }
 }
 
@@ -951,7 +950,7 @@ async function removeItemsFromCustomFolder(folderId, items) {
     }
     await loadCustomFolders();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Failed to remove item');
+    dialog.alert(err.response?.data?.error || t('shelf.errors.removeItem'));
   }
 }
 
