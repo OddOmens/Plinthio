@@ -31,6 +31,15 @@ function flatten(node, prefix = '', out = {}) {
   return out;
 }
 
+// The plural forms each language must give: whatever Intl.PluralRules can pick for it,
+// except the "many" that French, Spanish, Italian and Portuguese use only for round
+// millions — "other" reads fine there. Polish needs one/few/many/other; Japanese only other.
+const ROUND_MILLIONS_MANY = new Set(['fr', 'es', 'it', 'pt']);
+function requiredPluralForms(lang) {
+  return new Intl.PluralRules(lang).resolvedOptions().pluralCategories
+    .filter((c) => !(c === 'many' && ROUND_MILLIONS_MANY.has(lang)));
+}
+
 function placeholders(value) {
   const text = typeof value === 'string' ? value : Object.values(value).join(' ');
   return [...new Set(text.match(/\{\w+\}/g) || [])].sort().join(' ');
@@ -60,6 +69,9 @@ for (const ns of namespaces) {
       if (!(key in theirs)) problems.push(`${lang}/${ns}: missing ${key}`);
       else if (placeholders(theirs[key]) !== placeholders(flat[key])) {
         problems.push(`${lang}/${ns}: ${key} placeholders ${placeholders(theirs[key]) || '(none)'} ≠ English ${placeholders(flat[key]) || '(none)'}`);
+      } else if (isPlural(flat[key]) && isPlural(theirs[key])) {
+        const missing = requiredPluralForms(lang).filter((form) => !(form in theirs[key]));
+        if (missing.length) problems.push(`${lang}/${ns}: ${key} needs plural form(s) ${missing.join(', ')}`);
       }
     }
     for (const key of Object.keys(theirs)) {

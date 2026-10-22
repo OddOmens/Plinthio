@@ -321,21 +321,27 @@
     },
     "progressOfSkipped": {
       "manga": {
+        "one": "{read} + {count} übersprungen von {total} Bänden",
         "other": "{read} + {count} übersprungen von {total} Bänden"
       },
       "book": {
+        "one": "{read} + {count} übersprungen von {total} Büchern",
         "other": "{read} + {count} übersprungen von {total} Büchern"
       },
       "audiobook": {
+        "one": "{read} + {count} übersprungen von {total} Büchern",
         "other": "{read} + {count} übersprungen von {total} Büchern"
       },
       "show": {
+        "one": "{read} + {count} übersprungen von {total} Folgen",
         "other": "{read} + {count} übersprungen von {total} Folgen"
       },
       "anime": {
+        "one": "{read} + {count} übersprungen von {total} Folgen",
         "other": "{read} + {count} übersprungen von {total} Folgen"
       },
       "movie": {
+        "one": "{read} + {count} übersprungen von {total} Filmen",
         "other": "{read} + {count} übersprungen von {total} Filmen"
       }
     },
