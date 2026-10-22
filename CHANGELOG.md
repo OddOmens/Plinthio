@@ -9,6 +9,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-22
+
 ### Added
 - **Plinthio now speaks 11 languages:** English, German, Spanish, French, Italian, Dutch, Polish, Brazilian Portuguese, Japanese, Korean and Simplified Chinese. Pick a language in Settings → Appearance → Language; it's saved to your account and follows you to every device. **Automatic** (the default) uses your browser's language. The sign-in page and the setup wizard have a language switch too, so you can choose before you have an account. Dates, numbers and sizes are written the local way. Messages that come from the server, such as some error text, are still in English for now. Want to help with a translation? See `docs/translating.md`.
 - **Scan at set times.** Automatic scanning can now run at one or more times each day (server time zone) instead of only every so often. A time missed while the server was off is made up once when it's back.
