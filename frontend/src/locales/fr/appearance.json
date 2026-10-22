@@ -1,0 +1,85 @@
+{
+  "section": {
+    "title": "Apparence",
+    "description": "L'apparence de Plinthio pour vous. Les changements s'affichent dans l'aperçu et sont enregistrés aussitôt, pour votre compte uniquement.",
+    "locked": "Votre administrateur définit l'apparence de Plinthio sur ce serveur : ces réglages ne peuvent donc pas être modifiés ici. L'aperçu montre ce que tout le monde voit."
+  },
+  "language": {
+    "auto": "Automatique",
+    "desc": "La langue dans laquelle Plinthio s'affiche pour vous. Automatique suit votre navigateur."
+  },
+  "cards": {
+    "accent": {
+      "title": "Couleur d'accent",
+      "desc": "Votre couleur de mise en valeur pour les boutons, les badges et l'onglet actif."
+    },
+    "layout": {
+      "title": "Navigation",
+      "desc": "L'emplacement de la navigation principale."
+    },
+    "pageWidth": {
+      "title": "Largeur de page",
+      "desc": "La largeur des pages sur un grand écran. La pleine largeur affiche plus d'affiches par ligne."
+    },
+    "pauseScreen": {
+      "title": "Écran de pause",
+      "desc": "Ce qui s'affiche après quelques secondes de pause sur un film ou un épisode."
+    }
+  },
+  "accents": {
+    "zinc": "Zinc",
+    "slate": "Ardoise",
+    "red": "Rouge",
+    "orange": "Orange",
+    "amber": "Ambre",
+    "lime": "Citron vert",
+    "emerald": "Émeraude",
+    "teal": "Sarcelle",
+    "sky": "Ciel",
+    "blue": "Bleu",
+    "indigo": "Indigo",
+    "violet": "Violet",
+    "purple": "Pourpre",
+    "fuchsia": "Fuchsia",
+    "pink": "Rose",
+    "rose": "Rose vif"
+  },
+  "layouts": {
+    "topnav": {
+      "label": "Navigation en haut",
+      "desc": "Barre d'en-tête horizontale classique"
+    },
+    "sidebar": {
+      "label": "Barre latérale",
+      "desc": "Navigation verticale à gauche"
+    }
+  },
+  "pageWidths": {
+    "full": {
+      "label": "Pleine largeur",
+      "desc": "Utilise tout l'écran pour afficher plus d'affiches"
+    },
+    "contained": {
+      "label": "Centrée",
+      "desc": "Centrée, limitée à 1440 px de large"
+    }
+  },
+  "pauseScreens": {
+    "simple": {
+      "label": "Simple",
+      "desc": "Seulement les commandes du lecteur : rien ne masque l'image."
+    },
+    "details": {
+      "label": "Détails",
+      "desc": "Affiche, titre, accroche, synopsis, réalisation et distribution, et l'heure de fin."
+    },
+    "cinematic": {
+      "label": "Cinéma",
+      "desc": "L'image s'assombrit derrière une carte plein écran avec les photos de la distribution et des infos de TMDB : box-office, titre original, mots-clés."
+    },
+    "bedtime": {
+      "label": "Coucher",
+      "desc": "Une horloge tamisée avec l'heure de fin et, pour les séries, celle du reste de la saison. Reposant pour les yeux dans une pièce sombre."
+    }
+  }
+}

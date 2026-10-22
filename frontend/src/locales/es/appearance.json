@@ -1,0 +1,85 @@
+{
+  "section": {
+    "title": "Apariencia",
+    "description": "Cómo ves Plinthio. Los cambios aparecen en la vista previa y se guardan al momento, solo para tu cuenta.",
+    "locked": "Tu administrador define cómo se ve Plinthio en este servidor, así que no puedes cambiarlo aquí. La vista previa muestra lo que ven todos."
+  },
+  "language": {
+    "auto": "Automático",
+    "desc": "El idioma en el que te habla Plinthio. Automático sigue a tu navegador."
+  },
+  "cards": {
+    "accent": {
+      "title": "Color de acento",
+      "desc": "Tu color de resaltado en botones, insignias y la pestaña actual."
+    },
+    "layout": {
+      "title": "Navegación",
+      "desc": "Dónde se coloca la navegación principal."
+    },
+    "pageWidth": {
+      "title": "Ancho de página",
+      "desc": "Qué tan anchas se ven las páginas en una pantalla grande. El ancho completo muestra más pósteres por fila."
+    },
+    "pauseScreen": {
+      "title": "Pantalla de pausa",
+      "desc": "Lo que aparece tras unos segundos en pausa en una película o un episodio."
+    }
+  },
+  "accents": {
+    "zinc": "Zinc",
+    "slate": "Pizarra",
+    "red": "Rojo",
+    "orange": "Naranja",
+    "amber": "Ámbar",
+    "lime": "Lima",
+    "emerald": "Esmeralda",
+    "teal": "Verde azulado",
+    "sky": "Cielo",
+    "blue": "Azul",
+    "indigo": "Índigo",
+    "violet": "Violeta",
+    "purple": "Morado",
+    "fuchsia": "Fucsia",
+    "pink": "Rosa",
+    "rose": "Rosado"
+  },
+  "layouts": {
+    "topnav": {
+      "label": "Navegación superior",
+      "desc": "Barra de encabezado horizontal clásica"
+    },
+    "sidebar": {
+      "label": "Barra lateral",
+      "desc": "Navegación vertical a la izquierda"
+    }
+  },
+  "pageWidths": {
+    "full": {
+      "label": "Ancho completo",
+      "desc": "Usa toda la pantalla y muestra más pósteres"
+    },
+    "contained": {
+      "label": "Contenido",
+      "desc": "Centrado, con un máximo de 1440 px de ancho"
+    }
+  },
+  "pauseScreens": {
+    "simple": {
+      "label": "Sencilla",
+      "desc": "Solo los controles del reproductor: nada tapa la imagen."
+    },
+    "details": {
+      "label": "Detalles",
+      "desc": "Póster, título, eslogan, sinopsis, dirección y reparto, y cuándo terminará."
+    },
+    "cinematic": {
+      "label": "Cinematográfica",
+      "desc": "La imagen se atenúa tras una ficha a pantalla completa con fotos del reparto y datos de TMDB: taquilla, título original, palabras clave."
+    },
+    "bedtime": {
+      "label": "Hora de dormir",
+      "desc": "Un reloj tenue con la hora de fin y, en las series, cuándo terminaría el resto de la temporada. Descansa la vista en una habitación oscura."
+    }
+  }
+}

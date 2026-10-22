@@ -1,17 +1,27 @@
 <template>
-  <SectionHeader title="Appearance" description="How Plinthio looks for you. Changes show in the preview and save straight away, for your account only.">
+  <SectionHeader :title="$t('appearance.section.title')" :description="$t('appearance.section.description')">
     <SaveStatus :status="save.status.value" :message="save.message.value" />
   </SectionHeader>
 
   <div v-if="!personalizationOn" class="flex items-start gap-3 p-4 rounded-xl border border-border bg-muted/30">
     <Lock class="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
     <p class="text-xs text-muted-foreground leading-relaxed">
-      Your admin sets how Plinthio looks on this server, so these can't be changed here. The preview shows what everyone sees.
+      {{ $t('appearance.section.locked') }}
     </p>
   </div>
 
   <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-5 items-start">
     <div class="order-2 xl:order-1 flex flex-col gap-5 min-w-0">
+      <!-- Language is always the person's own: the admin can't lock what someone can read. -->
+      <SettingsCard :title="$t('common.language')" :description="$t('appearance.language.desc')">
+        <OptionTiles
+          :label="$t('common.language')"
+          :options="languageOptions"
+          :model-value="languageChoice"
+          @update:model-value="setPersonalLanguage"
+          grid-class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-2.5"
+        />
+      </SettingsCard>
       <SettingsCard
         v-for="card in appearanceCards"
         :key="card.field"
@@ -22,7 +32,7 @@
       >
         <template v-if="!card.allowed" #actions>
           <span class="text-[11px] text-muted-foreground font-medium flex items-center gap-1 px-2 h-6 rounded-md bg-muted">
-            <Lock class="w-3 h-3" /> Set by your admin
+            <Lock class="w-3 h-3" /> {{ $t('common.setByAdmin') }}
           </span>
         </template>
         <OptionTiles
@@ -56,6 +66,7 @@ import CustomizationPreview from '../../CustomizationPreview.vue';
 import SectionHeader from '../SectionHeader.vue';
 import SettingsCard from '../SettingsCard.vue';
 import SaveStatus from '../SaveStatus.vue';
+import { t, LANGUAGES, setLanguage, storedLanguageChoice } from '../../../i18n';
 
 const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
@@ -71,27 +82,27 @@ const appearanceCards = computed(() => {
   const prefsNow = authStore.user?.preferences || {};
   const cards = [
     {
-      field: 'accentTheme', key: 'accentColor', title: 'Accent colour', preview: 'shelf',
-      desc: 'Your highlight colour on buttons, badges and the current tab.',
+      field: 'accentTheme', key: 'accentColor', title: t('appearance.cards.accent.title'), preview: 'shelf',
+      desc: t('appearance.cards.accent.desc'),
       serverValue: customizationStore.accentTheme || 'zinc',
       options: ACCENT_OPTIONS,
       swatches: true, grid: 'grid grid-cols-4 sm:grid-cols-8 xl:grid-cols-4 2xl:grid-cols-8 gap-2.5'
     },
     {
-      field: 'layoutMode', key: 'layoutMode', title: 'Navigation', preview: 'shelf',
-      desc: 'Where the main navigation sits.',
+      field: 'layoutMode', key: 'layoutMode', title: t('appearance.cards.layout.title'), preview: 'shelf',
+      desc: t('appearance.cards.layout.desc'),
       serverValue: customizationStore.layoutMode || 'topnav',
       options: LAYOUT_OPTIONS
     },
     {
-      field: 'pageWidth', key: 'pageWidth', title: 'Page width', preview: 'shelf',
-      desc: 'How wide pages get on a big screen. Full width fits more posters in a row.',
+      field: 'pageWidth', key: 'pageWidth', title: t('appearance.cards.pageWidth.title'), preview: 'shelf',
+      desc: t('appearance.cards.pageWidth.desc'),
       serverValue: customizationStore.pageWidth || 'full',
       options: PAGE_WIDTH_OPTIONS
     },
     {
-      field: 'pauseScreen', key: 'pauseScreen', title: 'Pause screen', preview: 'pause',
-      desc: 'What appears after a couple of seconds paused on a movie or episode.',
+      field: 'pauseScreen', key: 'pauseScreen', title: t('appearance.cards.pauseScreen.title'), preview: 'pause',
+      desc: t('appearance.cards.pauseScreen.desc'),
       serverValue: customizationStore.pauseScreen || 'details',
       options: PAUSE_SCREEN_OPTIONS
     }
@@ -102,6 +113,18 @@ const appearanceCards = computed(() => {
     value: prefsNow[card.field] || card.serverValue
   }));
 });
+
+// 'auto' follows the browser; the names are each language's own, so anyone can find theirs.
+const languageOptions = computed(() => [
+  { id: 'auto', label: t('appearance.language.auto') },
+  ...LANGUAGES.map((lang) => ({ id: lang.code, label: lang.name }))
+]);
+const languageChoice = computed(() => authStore.user?.preferences?.language || storedLanguageChoice());
+
+async function setPersonalLanguage(value) {
+  await setLanguage(value);
+  await setPersonal('language', value);
+}
 
 // What the preview shows: the effective look, or the option under the pointer.
 const previewSettings = computed(() => {
