@@ -1,0 +1,125 @@
+{
+  "anyCreator": "Autore",
+  "manga": {
+    "unit": "Volume",
+    "units": "Volumi",
+    "short": "Vol.",
+    "verb": "Leggi",
+    "verbing": "In lettura",
+    "done": "Letto",
+    "creator": "Autore",
+    "series": "Serie manga",
+    "count": {
+      "one": "{count} volume",
+      "other": "{count} volumi"
+    },
+    "entry": "Vol. {number}",
+    "allDone": "Tutto letto",
+    "progress": {
+      "one": "{count}/{total} letto",
+      "other": "{count}/{total} letti"
+    }
+  },
+  "book": {
+    "unit": "Libro",
+    "units": "Libri",
+    "short": "Libro",
+    "verb": "Leggi",
+    "verbing": "In lettura",
+    "done": "Letto",
+    "creator": "Autore",
+    "series": "Serie di libri",
+    "count": {
+      "one": "{count} libro",
+      "other": "{count} libri"
+    },
+    "entry": "Libro {number}",
+    "allDone": "Tutto letto",
+    "progress": {
+      "one": "{count}/{total} letto",
+      "other": "{count}/{total} letti"
+    }
+  },
+  "audiobook": {
+    "unit": "Libro",
+    "units": "Libri",
+    "short": "Libro",
+    "verb": "Ascolta",
+    "verbing": "In ascolto",
+    "done": "Ascoltato",
+    "creator": "Autore",
+    "series": "Serie di audiolibri",
+    "count": {
+      "one": "{count} libro",
+      "other": "{count} libri"
+    },
+    "entry": "Libro {number}",
+    "allDone": "Tutto ascoltato",
+    "progress": {
+      "one": "{count}/{total} ascoltato",
+      "other": "{count}/{total} ascoltati"
+    }
+  },
+  "show": {
+    "unit": "Episodio",
+    "units": "Episodi",
+    "short": "Ep.",
+    "verb": "Guarda",
+    "verbing": "In visione",
+    "done": "Visto",
+    "creator": "Ideatore",
+    "series": "Serie TV",
+    "count": {
+      "one": "{count} episodio",
+      "other": "{count} episodi"
+    },
+    "entry": "S{season} · E{episode}",
+    "season": "S{season}",
+    "allDone": "Tutto visto",
+    "progress": {
+      "one": "{count}/{total} visto",
+      "other": "{count}/{total} visti"
+    }
+  },
+  "anime": {
+    "unit": "Episodio",
+    "units": "Episodi",
+    "short": "Ep.",
+    "verb": "Guarda",
+    "verbing": "In visione",
+    "done": "Visto",
+    "creator": "Studio",
+    "series": "Serie anime",
+    "count": {
+      "one": "{count} episodio",
+      "other": "{count} episodi"
+    },
+    "entry": "S{season} · E{episode}",
+    "season": "S{season}",
+    "allDone": "Tutto visto",
+    "progress": {
+      "one": "{count}/{total} visto",
+      "other": "{count}/{total} visti"
+    }
+  },
+  "movie": {
+    "unit": "Film",
+    "units": "Film",
+    "short": "Parte",
+    "verb": "Guarda",
+    "verbing": "In visione",
+    "done": "Visto",
+    "creator": "Regista",
+    "series": "Saga di film",
+    "count": {
+      "one": "{count} film",
+      "other": "{count} film"
+    },
+    "entry": "Parte {number}",
+    "allDone": "Tutto visto",
+    "progress": {
+      "one": "{count}/{total} visto",
+      "other": "{count}/{total} visti"
+    }
+  }
+}

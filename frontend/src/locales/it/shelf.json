@@ -1,0 +1,147 @@
+{
+  "offline": {
+    "message": "Sei offline. I libri, i fumetti e gli audiolibri che hai scaricato sono ancora disponibili.",
+    "openDownloads": "Apri Download →"
+  },
+  "continue": {
+    "watching": "Continua a guardare",
+    "all": "Continua",
+    "audiobook": "Continua ad ascoltare",
+    "manga": "Continua a leggere",
+    "book": "Continua a leggere",
+    "movie": "Continua a guardare",
+    "show": "Continua a guardare",
+    "anime": "Continua a guardare"
+  },
+  "sectionTitle": {
+    "results": "Risultati per “{query}”",
+    "audiobook": "Audiolibri",
+    "manga": "Manga e fumetti",
+    "book": "eBook e documenti",
+    "movie": "Film",
+    "show": "Serie TV",
+    "anime": "Anime",
+    "all": "Tutti i contenuti"
+  },
+  "counts": {
+    "folders": {
+      "one": "{count} cartella",
+      "other": "{count} cartelle"
+    },
+    "series": "{count} serie",
+    "titles": {
+      "one": "{count} titolo",
+      "other": "{count} titoli"
+    },
+    "seriesAndTitles": "{series}, {titles}",
+    "items": {
+      "one": "{count} elemento",
+      "other": "{count} elementi"
+    }
+  },
+  "modes": {
+    "alphabetical": "Alfabetica",
+    "alphabeticalShort": "A–Z",
+    "diskFolders": "Cartelle del disco",
+    "diskFoldersShort": "Disco",
+    "customFolders": "Cartelle personali",
+    "customFoldersShort": "Personali"
+  },
+  "filters": {
+    "progress": "Avanzamento",
+    "status": "Stato",
+    "notStarted": "Non iniziati",
+    "inProgress": "In corso",
+    "finished": "Completati",
+    "skipped": "Saltati",
+    "genre": "Genere",
+    "added": "Aggiunti",
+    "thisWeek": "Questa settimana",
+    "thisMonth": "Questo mese",
+    "last3Months": "Ultimi 3 mesi",
+    "clear": "Cancella filtri"
+  },
+  "sort": {
+    "label": "Ordinamento",
+    "title": "A–Z",
+    "added": "Più recenti",
+    "recent": "Aperti di recente",
+    "release": "Data di uscita"
+  },
+  "collections": {
+    "label": "Saghe di film",
+    "grouped": "Saghe",
+    "all": "Tutti i film"
+  },
+  "empty": {
+    "title": "Nessun contenuto trovato",
+    "noMatches": "Nessuna corrispondenza: prova un'altra ricerca o cancella i filtri",
+    "noLibrary": "Aggiungi una libreria in Amministrazione → Librerie e analizza le cartelle per riempire il tuo scaffale",
+    "goToSettings": "Vai alle Impostazioni"
+  },
+  "loadedMore": {
+    "one": "Caricato {count} titolo · gli altri si caricano mentre scorri",
+    "other": "Caricati {count} titoli · gli altri si caricano mentre scorri"
+  },
+  "customFolders": {
+    "heading": "Cartelle personali nell'app",
+    "newPlaceholder": "Nome della nuova cartella...",
+    "catchAll": "Varie",
+    "delete": "Elimina cartella",
+    "empty": "Questa cartella è vuota. Fai clic sui tre puntini ({dots}) di un titolo per aggiungerlo qui."
+  },
+  "deleteFolder": {
+    "title": "Elimina cartella personale",
+    "message": "Vuoi davvero eliminare la cartella “{name}”? Gli elementi al suo interno non verranno eliminati dal tuo scaffale.",
+    "confirm": "Elimina cartella"
+  },
+  "errors": {
+    "createFolder": "Impossibile creare la cartella",
+    "deleteFolder": "Impossibile eliminare la cartella",
+    "removeItem": "Impossibile rimuovere l'elemento",
+    "updateFolder": "Impossibile aggiornare la cartella"
+  },
+  "rootFolder": "Radice",
+  "series": {
+    "ariaLabel": "{name} — {units}",
+    "removeFromThisFolder": "Rimuovi {name} da questa cartella",
+    "removeFromFolder": "Rimuovi dalla cartella",
+    "caughtUp": "In pari",
+    "skipped": {
+      "one": "{count} saltato",
+      "other": "{count} saltati"
+    },
+    "doneCount": "{count}/{total} completati"
+  },
+  "card": {
+    "availableOffline": "Disponibile offline",
+    "downloading": "Download in corso…",
+    "options": "Opzioni",
+    "optionsFor": "Opzioni di {title}",
+    "markInProgress": "Segna come in corso",
+    "markFinished": "Segna come completato",
+    "addToFolder": "Aggiungi a cartella...",
+    "removeFromFolder": "Rimuovi dalla cartella",
+    "bookmarks": "Segnalibri e note...",
+    "removeDownload": "Rimuovi download",
+    "cancelDownload": "Annulla download",
+    "downloadOffline": "Scarica per offline",
+    "editMetadata": "Modifica metadati...",
+    "hide": "Nascondi dallo scaffale",
+    "pages": {
+      "one": "{count} pagina",
+      "other": "{count} pagine"
+    },
+    "finished": "Completato",
+    "durationHours": "{hours} h {minutes} min",
+    "durationMinutes": "{minutes} min"
+  },
+  "folderModal": {
+    "title": "Aggiungi a cartella o lista",
+    "loading": "Caricamento cartelle...",
+    "empty": "Non hai ancora creato cartelle personali. Creane una qui sotto per organizzare i tuoi contenuti!",
+    "newFolder": "Nuova cartella personale",
+    "placeholder": "es. Preferiti, Prima di dormire...",
+    "adding": "Aggiunta..."
+  }
+}

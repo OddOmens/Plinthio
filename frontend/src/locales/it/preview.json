@@ -1,0 +1,44 @@
+{
+  "live": "Anteprima dal vivo",
+  "views": {
+    "shelf": "Scaffale",
+    "title": "Titolo",
+    "login": "Accesso",
+    "pause": "Pausa"
+  },
+  "titles": {
+    "one": "{count}+ titoli",
+    "other": "{count}+ titoli"
+  },
+  "yourLibrary": "La tua libreria",
+  "continueWatching": "Continua a guardare",
+  "runtime": "{hours} h {minutes} min",
+  "yourRating": "Il tuo voto",
+  "ratingsHidden": "I voti sono nascosti",
+  "watchTogether": "Guarda insieme",
+  "collection": "Fa parte della saga",
+  "request": "Richiedi",
+  "sample": {
+    "tagline": "Certi messaggi impiegano una vita ad arrivare.",
+    "description": "La guardiana di un faro su un'isola remota trova un messaggio in bottiglia che la riporta alla vita che si era lasciata alle spalle."
+  },
+  "captions": {
+    "shelf": "Lo scaffale principale su uno schermo grande: layout {layout}, larghezza {width} e colore {accent}.",
+    "title": "La pagina di un film con le impostazioni di voto, watch party e saga qui sopra.",
+    "login": "La schermata di accesso, con il nome del server e il tuo avviso.",
+    "pause": {
+      "simple": "Semplice: niente copre l'immagine. Scegli un altro stile per vederlo qui.",
+      "details": "Dettagli: appare dopo un paio di secondi di pausa. Passa sopra uno stile per confrontarli.",
+      "cinematic": "Cinematografica: foto del cast e dati arrivano da TMDB quando è impostata una chiave.",
+      "bedtime": "Buonanotte: un orologio soffuso e quando finisce."
+    }
+  },
+  "layouts": {
+    "sidebar": "barra laterale",
+    "topnav": "barra in alto"
+  },
+  "widths": {
+    "contained": "contenuta",
+    "full": "piena"
+  }
+}

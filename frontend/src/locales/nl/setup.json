@@ -1,0 +1,196 @@
+{
+  "header": {
+    "title": "{name} instellen",
+    "progress": "Stap {step} van {total}: {title}",
+    "almostDone": "Bijna klaar"
+  },
+  "steps": {
+    "appearance": "Weergave",
+    "admin": "Adminaccount",
+    "media": "Mediatypen",
+    "libraries": "Bibliotheken",
+    "household": "Huishouden",
+    "access": "Toegang",
+    "review": "Controleren & afronden"
+  },
+  "appearance": {
+    "title": "Maak het eigen",
+    "text": "Een naam en een uiterlijk voor je server. Je kunt dit allemaal later wijzigen in Admin.",
+    "serverName": "Servernaam",
+    "theme": "Thema",
+    "accent": "Accentkleur"
+  },
+  "themes": {
+    "dark": {
+      "label": "Donker",
+      "hint": "Rustig voor de ogen"
+    },
+    "light": {
+      "label": "Licht",
+      "hint": "Strak en helder"
+    }
+  },
+  "admin": {
+    "title": "Je adminaccount",
+    "text": "Met dit account beheer je bibliotheken, instellingen en wie de server mag gebruiken.",
+    "passwordHint": "Minstens 8 tekens. Langer is beter, vooral als je Plinthio openzet naar internet.",
+    "confirmPassword": "Wachtwoord bevestigen"
+  },
+  "media": {
+    "title": "Wat ga je hier bewaren?",
+    "text": "Deze verschijnen op je plank. Iedereen kiest later ook zijn eigen.",
+    "types": {
+      "audiobook": {
+        "title": "Luisterboeken",
+        "desc": "Hoofdstukken, bladwijzers en verder luisteren."
+      },
+      "manga": {
+        "title": "Manga & strips",
+        "desc": "Lezer per pagina, enkel of dubbel."
+      },
+      "book": {
+        "title": "Boeken",
+        "desc": "EPUB- en PDF-lezer met voortgang."
+      },
+      "movie": {
+        "title": "Films",
+        "desc": "Films met verder kijken, collecties en extra's."
+      },
+      "show": {
+        "title": "Tv-series",
+        "desc": "Seizoenen en afleveringen, met wat hierna komt."
+      },
+      "anime": {
+        "title": "Anime",
+        "desc": "Series op seizoen en aflevering."
+      }
+    }
+  },
+  "libraries": {
+    "title": "Voeg je mediamappen toe",
+    "text": "Optioneel. Wijs Plinthio de mappen aan waarin je bestanden staan; ze worden meteen gescand. Je kunt later meer toevoegen in Admin.",
+    "addFolder": "Map toevoegen",
+    "empty": "Nog geen mappen.",
+    "dockerHint": "In Docker staan je media onder {path}.",
+    "addNow": "+ Nu een bibliotheekmap toevoegen",
+    "name": "Naam van bibliotheek",
+    "namePlaceholder": "bijv. Mijn luisterboeken",
+    "type": "Type",
+    "path": "Mappad (op de host of in de container)",
+    "types": {
+      "audiobooks": "Luisterboeken",
+      "manga": "Manga / strips",
+      "books": "Boeken & pdf's",
+      "shows": "Tv-series",
+      "movies": "Films",
+      "anime": "Anime"
+    }
+  },
+  "household": {
+    "title": "Wie gebruikt het nog meer?",
+    "text": "Optioneel. Iedereen krijgt een eigen voortgang, eigen bladwijzers en een eigen uiterlijk. Je kunt altijd mensen toevoegen in Admin.",
+    "usernamePlaceholder": "bijv. alex",
+    "role": "Rol",
+    "roles": {
+      "viewer": "Kijker: bladeren, lezen & voortgang bijhouden",
+      "editor": "Redacteur: kan ook metadata & omslagen verbeteren",
+      "admin": "Admin: volledige controle over de server"
+    },
+    "password": "Wachtwoord (minstens 8 tekens)",
+    "passwordPlaceholder": "Stel een wachtwoord voor hen in",
+    "tooShort": "Te kort: accounts met een wachtwoord korter dan 8 tekens worden overgeslagen.",
+    "add": "Iemand toevoegen",
+    "parties": "Watchparty's aanzetten",
+    "partiesText": "Kijk samen een film of serie vanaf verschillende plekken, synchroon, met chat. Vrienden buitenshuis hebben een manier nodig om erbij te komen (volgende stap). Je kunt dit altijd wijzigen in Admin."
+  },
+  "access": {
+    "title": "Waar ga je Plinthio gebruiken?",
+    "text": "Begin met wat je nu nodig hebt. Je kunt dit altijd wijzigen in Admin → Netwerk.",
+    "groupLabel": "Waar je Plinthio gebruikt",
+    "options": {
+      "home": {
+        "title": "Alleen thuis",
+        "badge": "Begin hier",
+        "text": "Telefoons, tablets en computers op je thuisnetwerk. Niets is bereikbaar vanaf internet."
+      },
+      "tailscale": {
+        "title": "Thuis, en onderweg met Tailscale",
+        "text": "Voor jou en mensen die je uitnodigt in je Tailscale: privé, zonder iets open te zetten op je router. Elk apparaat heeft de gratis Tailscale-app nodig."
+      },
+      "internet": {
+        "title": "Ook vanaf internet, voor gasten",
+        "text": "Vrienden en familie openen een link en loggen in, zonder apps te installeren: via Tailscale Funnel (geen domein, geen wijzigingen aan je router) of een eigen webadres."
+      }
+    },
+    "via": {
+      "question": "Hoe komen gasten erbij?",
+      "groupLabel": "Hoe gasten erbij komen",
+      "funnel": {
+        "title": "Geen domein: Tailscale Funnel",
+        "text": "Een vaste link, geen wijzigingen aan je router. Het best voor lezen en luisteren; video kan trager zijn."
+      },
+      "domain": {
+        "title": "Mijn eigen domein",
+        "text": "Volle snelheid, zoals media.jouwdomein.nl. Er moeten poorten open op je router."
+      }
+    },
+    "tailscale": {
+      "title": "Tailscale instellen",
+      "text": "Nu, of op elk moment na de installatie: Admin → Netwerk heeft dezelfde handleiding en laat zien wanneer het werkt."
+    },
+    "domain": {
+      "title": "Na de installatie: geef het een webadres",
+      "text": "De Caddy-add-on geeft {url} met een echt certificaat. Daarvoor zijn een domein en doorgestuurde poorten 80 en 443 op je router nodig. Stap voor stap, inclusief hoe je controleert of je internetverbinding het toelaat: {docs}. Tot die tijd verandert er niets.",
+      "docs": "Documentatie → Toegang op afstand & Tailscale"
+    },
+    "require2fa": "Tweestapsverificatie verplicht buitenshuis",
+    "require2faText": "Optioneel, aangeraden. Inloggen van buiten het thuisnetwerk vraagt dan om een code uit een telefoonapp; thuis is een wachtwoord genoeg. Iedereen zonder tweestapsverificatie kan thuis nog inloggen en het daar instellen."
+  },
+  "review": {
+    "title": "Controleren & Plinthio starten",
+    "text": "Kijk of alles klopt. Je kunt alles later nog wijzigen.",
+    "rows": {
+      "serverName": "Servernaam",
+      "adminUsername": "Gebruikersnaam admin",
+      "themeAccent": "Thema & accentkleur",
+      "media": "Media",
+      "libraries": "Bibliotheken",
+      "otherAccounts": "Andere accounts",
+      "parties": "Watchparty's",
+      "access": "Toegang"
+    },
+    "folders": {
+      "one": "{count} map",
+      "other": "{count} mappen"
+    },
+    "access": {
+      "home": "Alleen thuis",
+      "tailscale": "Thuis en Tailscale",
+      "funnel": "Thuis en internet (Tailscale Funnel)",
+      "domain": "Thuis en internet (eigen domein)",
+      "withTwoFactor": "{access}, tweestapsverificatie buitenshuis"
+    },
+    "https": {
+      "title": "Beveiligde verbinding thuis",
+      "text": "De geïnstalleerde app en offline downloads hebben HTTPS nodig. Plinthio staat ook op {url} met een eigen certificaat, dat elk apparaat één keer installeert (Documentatie → PWA-app op mobiel instellen). Of gebruik Tailscale voor een vertrouwd adres zonder iets te installeren."
+    }
+  },
+  "finished": {
+    "title": "Plinthio is klaar",
+    "text": "Nog één laatste, optioneel ding: bescherm je adminaccount met tweestapsverificatie, zodat een wachtwoord alleen niet genoeg is.",
+    "internet": "De moeite waard, want de server wordt bereikbaar vanaf internet.",
+    "later": "Je kunt dit ook later doen in Instellingen → Beveiliging."
+  },
+  "nav": {
+    "complete": "Installatie afronden & starten",
+    "goToPlinthio": "Naar Plinthio",
+    "notNow": "Niet nu"
+  },
+  "errors": {
+    "usernameRequired": "Gebruikersnaam is verplicht",
+    "passwordLength": "Het wachtwoord moet minstens 8 tekens hebben",
+    "passwordMismatch": "De wachtwoorden komen niet overeen",
+    "mediaRequired": "Kies minstens één mediatype",
+    "failed": "Installatie mislukt. Controleer de verbinding met de server."
+  }
+}

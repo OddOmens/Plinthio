@@ -374,7 +374,7 @@
       "hideSearch": "Hide the Search Bar",
       "accent": "Custom Accent Color Override"
     },
-    "apply": "To apply custom CSS, go to **Admin → Appearance → Custom CSS** (Admin only), paste your rules into the editor, use **Test Preview** to check it live in your current tab before saving, then **Save Branding & CSS** to push it to every connected client."
+    "apply": "To apply custom CSS, go to **Admin → Appearance → Custom CSS** (Admin only), paste your rules into the editor, use **{tryIt}** to check it live in your current tab before saving, then **{save}** to push it to every connected client."
   },
   "errors": {
     "title": "Error Codes",

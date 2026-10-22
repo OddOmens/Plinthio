@@ -1,0 +1,124 @@
+{
+  "title": "网络",
+  "description": "可以在哪里使用 Plinthio，以及离家时的两步验证。",
+  "checkAgain": "重新检查",
+  "device": {
+    "connectingFrom": "此设备正从{where}连接",
+    "where": {
+      "home": "你的家庭网络",
+      "tailscaleHome": "Tailscale（视为家庭网络）",
+      "tailscaleOutside": "Tailscale（视为外部网络）",
+      "outside": "家庭网络之外",
+      "unknown": "未知位置"
+    },
+    "address": "地址 {ip}。要检查外部访问，请在使用移动数据（关闭 Wi-Fi）的手机上打开此页面，它应显示“家庭网络之外”。",
+    "unknownIp": "未知"
+  },
+  "tailscale": {
+    "hideGuide": "隐藏设置指南",
+    "guide": "设置指南",
+    "setUp": "设置 Tailscale",
+    "working": "已在 {link} 正常工作",
+    "lastUsed": "上次使用：{time}",
+    "setUpAt": "已设置在 {address}，但自 Plinthio 上次启动以来未被使用。请从一台 Tailscale 设备打开它进行检查。",
+    "notSetUp": "据 Plinthio 所知，尚未设置。Tailscale 让你无论在家还是在外都能使用一个受信任的 {address} 地址；配合 Funnel，它还会成为任何人都能打开的链接，无需域名。打开指南进行设置。",
+    "funnelWorking": "Funnel 正常工作：{time}有来自互联网的访问者。",
+    "funnelNeedsAccess": "Funnel 访问者来自互联网，而外部访问已关闭，因此他们会看到“仅限家庭网络使用”。",
+    "allowOutside": "允许外部访问"
+  },
+  "proxy": {
+    "title": "Plinthio 前面有代理，但没有设置 TRUST_PROXY",
+    "text": "每个访问者看起来都来自代理（{from}），通常是一个家庭网络地址，因此无法区分外部访问。Tailscale 和公网地址插件会为你设置它。如果是其他代理，请参阅 docs/remote-access.md。",
+    "localAddress": "本地地址"
+  },
+  "adminsWithout2fa": {
+    "title": {
+      "other": "{count}个管理员帐户未开启两步验证"
+    },
+    "text": "服务器已对互联网开放。强烈建议为管理员开启两步验证（设置 → 安全）。"
+  },
+  "settings": {
+    "remoteAccess": {
+      "title": "允许从家庭网络之外访问",
+      "text": "关闭：只有家里的设备（以及下方的 Tailscale 设备）可以登录或使用任何功能，来自互联网的访问会看到“仅限家庭网络使用”。开启：任何获准在外使用的帐户都可以从任何地方登录。此项只决定允许谁进入：要从互联网访问服务器，还需要 Tailscale Funnel（无需域名）或一个网址（公网地址插件）。"
+    },
+    "tailscaleIsHome": {
+      "title": "Tailscale 设备视为家庭网络",
+      "text": "开启（默认）：你 tailnet 中的所有设备都被视为家庭网络。如果你与一些希望视为外部的 Tailscale 用户共享服务器，请关闭此项。"
+    },
+    "require2fa": {
+      "title": "离家时要求两步验证",
+      "text": "可选。从外部登录需要输入手机应用中的验证码。在家时仍然只需密码，因此没有两步验证的人可以在家登录并进行设置（设置 → 安全）。",
+      "onlyWhenOn": "仅在开启外部访问时生效。"
+    }
+  },
+  "accounts": {
+    "total": "帐户",
+    "withTwoFactor": "已开启两步验证",
+    "homeOnly": "仅限家庭网络",
+    "adminsWithoutTwoFactor": "未开启两步验证的管理员",
+    "hint": "在“用户”标签页中设置谁可以在外使用 Plinthio，以及重置某人的两步验证。"
+  },
+  "recent": {
+    "title": "最近的外部登录",
+    "none": "暂无。",
+    "signedIn": "已登录",
+    "failed": "失败"
+  },
+  "docsHint": "如何从外部访问 Plinthio（Tailscale，或为访客提供的网址），分步说明：{link}，或 GitHub 上的 {file}。",
+  "docsLink": "文档 → 远程访问与 Tailscale",
+  "confirm": {
+    "title": "允许外部访问？",
+    "message": "一旦服务器有了网址，任何（获准在外使用的）帐户都可以从互联网登录。请使用强密码，并考虑在离家时要求两步验证。",
+    "allow": "允许"
+  },
+  "errors": {
+    "load": "无法加载网络设置",
+    "save": "无法保存"
+  },
+  "guide": {
+    "private": "私密：只有我的设备和我添加的人",
+    "funnel": "同时为没有 Tailscale 的朋友提供链接（Funnel）",
+    "privateText": "Plinthio 会获得 {address}，在每台登录了你的 Tailscale 的设备上都受信任。不会向互联网开放任何内容。",
+    "funnelText": "同一个地址也能在任何人的浏览器中打开，无需 Tailscale、域名或更改路由器。Tailscale 会限制 Funnel 的带宽：阅读和收听没问题，视频可能会缓冲。",
+    "account": {
+      "title": "注册免费的 Tailscale 帐户"
+    },
+    "dns": {
+      "title": "开启 MagicDNS 和 HTTPS 证书",
+      "text": "在管理控制台的 DNS 页面。两者都是开关。",
+      "link": "打开 DNS 页面"
+    },
+    "key": {
+      "title": "生成认证密钥",
+      "text": "Settings → Keys → Generate auth key。保持页面打开，下一步需要粘贴它。（可选：没有密钥时，服务器会改为输出一个登录链接。）",
+      "link": "打开 Keys"
+    },
+    "server": {
+      "title": "为 Plinthio 添加 Tailscale",
+      "name": "在 tailnet 中的名称",
+      "download": "在服务器上 {file} 所在的文件夹中，下载该插件：",
+      "env": "将以下内容添加到该文件夹的 {env} 文件中（没有就新建一个），用你的密钥替换 {key}：",
+      "start": "然后启动它。{flag} 会让更改后的设置生效；Plinthio 会重启几秒钟：",
+      "noDocker": "没有使用 Docker，或者服务器上已经装了 Tailscale？",
+      "runThis": "在服务器上运行以下命令（8088是 Plinthio 的端口）：",
+      "trustProxy": "不使用 Docker 时，还需要为 Plinthio 设置 {setting}。使用 Docker 且 Tailscale 装在宿主机上时，请改用该插件，以便 Plinthio 区分不同设备。"
+    },
+    "funnelStep": {
+      "title": "向互联网开放",
+      "text": "Funnel 访问者来自互联网，因此 Plinthio 需要开启{outsideAccess}（{where}）。也可以考虑在离家时要求两步验证。首次使用时，Tailscale 可能会要求你为 tailnet 允许 Funnel：如果 {command} 提示了，请打开它给出的链接，或在 Access controls 中允许。",
+      "outsideAccess": "外部访问",
+      "whereSetup": "此设置步骤会帮你完成",
+      "whereAdmin": "见上方 管理 → 网络",
+      "link": "打开 Access controls"
+    },
+    "devices": {
+      "title": "在手机和电脑上安装 Tailscale",
+      "funnelTitle": "试一试，然后把链接发给朋友",
+      "text": "用同一个帐户登录，然后打开 {address}（管理控制台的 Machines 下会列出确切地址），并从那里将其添加到主屏幕。",
+      "funnelText": "在关闭 Wi-Fi 且未运行 Tailscale 的手机上打开该地址，你应该会看到登录页面。然后为朋友创建帐户（管理 → 用户），并把链接发给他们。"
+    },
+    "moreDetail": "更详细的说明及故障排查：GitHub 上的 {file}。",
+    "markDone": "标记为已完成"
+  }
+}

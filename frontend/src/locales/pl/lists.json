@@ -1,0 +1,84 @@
+{
+  "title": "Listy",
+  "intro": "Rzeczy do obejrzenia, przeczytania i wysłuchania, w twojej kolejności. Mogą zawierać tytuły, których serwer jeszcze nie ma.",
+  "requests": "Prośby",
+  "categories": {
+    "movies": "Filmy",
+    "shows": "Seriale",
+    "anime": "Anime",
+    "read": "Czytanie",
+    "listen": "Słuchanie"
+  },
+  "titleCount": {
+    "one": "{count} tytuł",
+    "few": "{count} tytuły",
+    "many": "{count} tytułów",
+    "other": "{count} tytułu"
+  },
+  "newList": "Nowa lista",
+  "newListName": {
+    "movies": "Nazwa listy filmów",
+    "shows": "Nazwa listy seriali",
+    "anime": "Nazwa listy anime",
+    "read": "Nazwa listy do czytania",
+    "listen": "Nazwa listy do słuchania"
+  },
+  "noLists": {
+    "movies": "Nie ma jeszcze list filmów.",
+    "shows": "Nie ma jeszcze list seriali.",
+    "anime": "Nie ma jeszcze list anime.",
+    "read": "Nie ma jeszcze list do czytania.",
+    "listen": "Nie ma jeszcze list do słuchania."
+  },
+  "allLists": "Wszystkie listy",
+  "listFallback": "Lista",
+  "notInLibrary": "Poza biblioteką: {count}",
+  "addTitles": "Dodaj tytuły",
+  "deleteList": "Usuń listę",
+  "inList": "Na liście",
+  "seriesTitle": "{series}: {title}",
+  "empty": {
+    "title": "Ta lista jest jeszcze pusta",
+    "hint": "Użyj opcji {addTitles}, aby wyszukać cokolwiek, na serwerze lub spoza niego."
+  },
+  "moveEarlier": "Przesuń wyżej",
+  "moveLater": "Przesuń niżej",
+  "removeFromList": "Usuń z listy",
+  "request": "Poproś",
+  "requestHint": "Poproś administratora o dodanie tego do biblioteki",
+  "requestStatus": {
+    "pending": "Oczekuje",
+    "accepted_pending": "Przyjęta · Czeka na dodanie",
+    "accepted_added": "Przyjęta · Dodano",
+    "rejected": "Odrzucona"
+  },
+  "deleteDialog": {
+    "title": "Usunąć listę?",
+    "message": "Lista „{name}” zostanie usunięta. Nic z twojej biblioteki nie zniknie.",
+    "thisList": "Ta lista"
+  },
+  "addButton": {
+    "inNamed": "Na liście {list}",
+    "title": "Dodaj do jednej z twoich list",
+    "list": "Lista",
+    "dialogLabel": "Dodaj {title} do listy",
+    "heading": "Dodaj do listy",
+    "loading": "Wczytywanie twoich list…",
+    "newPlaceholder": "Nowa lista…",
+    "firstPlaceholder": "Nazwij swoją pierwszą listę, np. Do obejrzenia"
+  },
+  "errors": {
+    "loadLists": "Nie udało się wczytać list.",
+    "loadYourLists": "Nie udało się wczytać twoich list.",
+    "createList": "Nie udało się utworzyć listy.",
+    "createThatList": "Nie udało się utworzyć tej listy.",
+    "gone": "Ta lista już nie istnieje.",
+    "loadList": "Nie udało się wczytać tej listy.",
+    "deleteList": "Nie udało się usunąć tej listy.",
+    "addTitle": "Nie udało się dodać tego tytułu.",
+    "addToList": "Nie udało się dodać go do tej listy.",
+    "request": "Nie udało się wysłać tej prośby.",
+    "reorder": "Nie udało się zapisać nowej kolejności.",
+    "remove": "Nie udało się usunąć tej pozycji."
+  }
+}

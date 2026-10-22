@@ -1,0 +1,133 @@
+{
+  "unknownAuthor": "未知作者",
+  "untitledAudiobook": "Plinthio 有声书",
+  "coverOf": "“{title}”的封面",
+  "units": {
+    "secondsShort": "{count}秒",
+    "minutesShort": "{count}分"
+  },
+  "video": {
+    "backToShelf": "返回书架",
+    "castToTv": "投屏到电视",
+    "playbackSettings": "播放设置",
+    "skipBack": "后退",
+    "skipForward": "快进",
+    "quality": "画质",
+    "auto": "自动",
+    "audio": "音频",
+    "subtitles": "字幕",
+    "noAlternateTracks": "此视频没有其他音轨或字幕。",
+    "track": "轨道{number}",
+    "channels": "{count}声道",
+    "forced": "强制",
+    "skipIntro": "跳过片头",
+    "skipCredits": "跳过片尾",
+    "skipAria": {
+      "backSeconds": {
+        "other": "后退{count}秒"
+      },
+      "backMinutes": {
+        "other": "后退{count}分钟"
+      },
+      "forwardSeconds": {
+        "other": "快进{count}秒"
+      },
+      "forwardMinutes": {
+        "other": "快进{count}分钟"
+      }
+    },
+    "skipHint": "{action}（右键可更改）",
+    "toggleFullscreen": "切换全屏",
+    "preparing": {
+      "transcode": "正在为你的浏览器转码…",
+      "remux": "正在直接串流…",
+      "direct": "正在开始播放…"
+    },
+    "resumedFrom": "已从 {time} 继续播放",
+    "startOver": "从头开始",
+    "upNext": "即将播放",
+    "playNow": "立即播放（{seconds}）",
+    "cantPlay": "无法播放此视频",
+    "errorHelp": "错误 {code}：这是什么意思",
+    "retry": "重试",
+    "errors": {
+      "P350": "即使经过转码，此浏览器也无法播放此视频。",
+      "P351": "与服务器的连接已断开。请检查网络后点按“重试”。",
+      "P352": "你的媒体访问权限已过期且无法续期。请刷新页面，或退出后重新登录。",
+      "failed": "播放失败。"
+    }
+  },
+  "pause": {
+    "youreWatching": "你正在观看",
+    "paused": "已暂停",
+    "starring": "主演",
+    "createdBy": "主创",
+    "directedBy": "导演",
+    "leftEndsAt": "剩余{remaining} · {time} 结束",
+    "seasonRest": {
+      "other": "本季剩余部分（还有{count}集）将在 {time} 结束"
+    },
+    "runtimeMinutes": "{minutes}分钟",
+    "runtimeHours": "{hours}小时{minutes}分钟",
+    "dollars": "${amount}",
+    "timesBudget": "{amount}（预算的{multiple}倍）",
+    "seasons": {
+      "other": "{count}季"
+    },
+    "episodes": {
+      "other": "{count}集"
+    },
+    "seasonsAndEpisodes": "{seasons}，{episodes}",
+    "since": "{year}年起",
+    "facts": {
+      "originalTitle": "原名",
+      "budget": "预算",
+      "boxOffice": "票房",
+      "series": "系列",
+      "onAir": "播出时间",
+      "partOf": "所属系列",
+      "network": "播出平台",
+      "studio": "制作公司",
+      "music": "配乐",
+      "cinematography": "摄影"
+    }
+  },
+  "audio": {
+    "openNowPlaying": "打开正在播放",
+    "skipBack": "后退{count}秒",
+    "skipForward": "快进{count}秒",
+    "closePlayer": "关闭播放器",
+    "fullscreen": "全屏显示正在播放",
+    "playbackSpeed": "播放速度",
+    "sleepTimer": "睡眠定时",
+    "rate": "{rate}x",
+    "chapterShort": "章"
+  },
+  "nowPlaying": {
+    "minimize": "最小化播放器",
+    "playingAudiobook": "正在播放有声书",
+    "chapters": "章节",
+    "bookmarks": "书签",
+    "bookmarksAndNotes": "书签和笔记",
+    "backToPlayer": "返回播放器",
+    "addBookmark": "添加书签",
+    "notePlaceholder": "可选笔记（例如关键语句、线索）...",
+    "saveBookmark": "保存书签",
+    "deleteBookmark": "删除书签",
+    "noBookmarks": "这本有声书还没有保存书签。",
+    "bookmarkTitle": "书签 @ {time}",
+    "leftInChapter": "本章剩余 {time}",
+    "previousChapter": "上一章",
+    "nextChapter": "下一章",
+    "speed": "速度",
+    "sleep": "睡眠",
+    "endOfChapter": "本章结束",
+    "stoppingAtChapterEnd": "将在本章结束时停止",
+    "stoppingIn": "将在 {time} 后停止",
+    "saveFailed": "保存书签失败",
+    "deleteFailed": "删除书签失败"
+  },
+  "intro": {
+    "label": "片头"
+  }
+}

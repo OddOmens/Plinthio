@@ -1,0 +1,43 @@
+{
+  "title": "Pobrane",
+  "intro": "Książki, komiksy i audiobooki zapisane na tym urządzeniu do czytania bez połączenia.",
+  "offline": "Jesteś offline. Pobrane pliki nadal się otwierają; postęp czytania zsynchronizuje się po powrocie do sieci.",
+  "needsHttps": "Pobieranie wymaga bezpiecznego połączenia, a ta strona została otwarta przez zwykłe http://. {link}, aby pobierać treści do czytania i słuchania offline.",
+  "switchToHttps": "Przełącz na HTTPS",
+  "unsupported": "Ta przeglądarka nie może przechowywać pobranych plików (potrzebuje obsługi Service Worker i Cache Storage).",
+  "summary": {
+    "one": "{size} w {count} pobranym pliku",
+    "few": "{size} w {count} pobranych plikach",
+    "many": "{size} w {count} pobranych plikach",
+    "other": "{size} w {count} pobranego pliku"
+  },
+  "usage": "Użyto {used} z {quota} na tym urządzeniu",
+  "tiedToAccount": "Pobrane pliki są powiązane z tą przeglądarką i twoim kontem — wylogowanie je usuwa.",
+  "downloading": "Pobieranie",
+  "untitled": "Pobrany plik",
+  "pagesProgress": "{done} / {total} stron",
+  "bytesProgress": "{received} z {total}",
+  "dismiss": "Odrzuć",
+  "read": "Czytaj",
+  "openItem": "Otwórz {title}",
+  "removeItemLabel": "Usuń pobrany plik {title}",
+  "remove": "Usuń pobrany plik",
+  "removeConfirm": "Usunąć „{title}” z tego urządzenia? Pozostanie w twojej bibliotece.",
+  "empty": {
+    "title": "Nic jeszcze nie pobrano",
+    "hint": "Użyj opcji {action} w menu ⋮ tytułu lub przycisku pobierania przy tomie mangi.",
+    "action": "Pobierz do trybu offline"
+  },
+  "size": {
+    "B": "{value} B",
+    "KB": "{value} KB",
+    "MB": "{value} MB",
+    "GB": "{value} GB",
+    "TB": "{value} TB"
+  },
+  "errors": {
+    "failed": "Pobieranie nie powiodło się",
+    "failedStatus": "Pobieranie nie powiodło się ({status})",
+    "pageList": "Nie udało się odczytać listy stron ({status})"
+  }
+}

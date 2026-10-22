@@ -1,0 +1,101 @@
+{
+  "anyCreator": "创作者",
+  "manga": {
+    "unit": "卷",
+    "units": "分卷",
+    "short": "卷",
+    "verb": "阅读",
+    "verbing": "阅读中",
+    "done": "已读",
+    "creator": "作者",
+    "series": "漫画系列",
+    "count": {
+      "other": "{count}卷"
+    },
+    "entry": "第{number}卷",
+    "allDone": "全部已读",
+    "progress": "已读{count}/{total}"
+  },
+  "book": {
+    "unit": "本",
+    "units": "书籍",
+    "short": "本",
+    "verb": "阅读",
+    "verbing": "阅读中",
+    "done": "已读",
+    "creator": "作者",
+    "series": "书籍系列",
+    "count": {
+      "other": "{count}本"
+    },
+    "entry": "第{number}本",
+    "allDone": "全部已读",
+    "progress": "已读{count}/{total}"
+  },
+  "audiobook": {
+    "unit": "本",
+    "units": "有声书",
+    "short": "本",
+    "verb": "收听",
+    "verbing": "收听中",
+    "done": "已听",
+    "creator": "作者",
+    "series": "有声书系列",
+    "count": {
+      "other": "{count}本"
+    },
+    "entry": "第{number}本",
+    "allDone": "全部已听",
+    "progress": "已听{count}/{total}"
+  },
+  "show": {
+    "unit": "集",
+    "units": "分集",
+    "short": "集",
+    "verb": "观看",
+    "verbing": "观看中",
+    "done": "已看",
+    "creator": "主创",
+    "series": "电视剧",
+    "count": {
+      "other": "{count}集"
+    },
+    "entry": "第{season}季 · 第{episode}集",
+    "season": "第{season}季",
+    "allDone": "全部已看",
+    "progress": "已看{count}/{total}"
+  },
+  "anime": {
+    "unit": "集",
+    "units": "分集",
+    "short": "集",
+    "verb": "观看",
+    "verbing": "观看中",
+    "done": "已看",
+    "creator": "制作公司",
+    "series": "动画系列",
+    "count": {
+      "other": "{count}集"
+    },
+    "entry": "第{season}季 · 第{episode}集",
+    "season": "第{season}季",
+    "allDone": "全部已看",
+    "progress": "已看{count}/{total}"
+  },
+  "movie": {
+    "unit": "部",
+    "units": "电影",
+    "short": "部",
+    "verb": "观看",
+    "verbing": "观看中",
+    "done": "已看",
+    "creator": "导演",
+    "series": "电影合集",
+    "count": {
+      "other": "{count}部电影"
+    },
+    "entry": "第{number}部",
+    "allDone": "全部已看",
+    "progress": "已看{count}/{total}"
+  }
+}

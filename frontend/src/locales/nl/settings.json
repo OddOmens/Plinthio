@@ -1,0 +1,242 @@
+{
+  "nav": {
+    "serverAdmin": "Serverbeheer",
+    "groups": {
+      "account": "Account",
+      "yours": "Jouw Plinthio",
+      "connect": "Koppelen"
+    },
+    "profile": {
+      "label": "Profiel",
+      "desc": "Je foto en rol"
+    },
+    "security": {
+      "label": "Beveiliging",
+      "desc": "Wachtwoord, tweestapsverificatie, apparaten"
+    },
+    "appearance": {
+      "label": "Weergave",
+      "desc": "Kleur, navigatie, breedte, pauzescherm"
+    },
+    "shelves": {
+      "label": "Planken",
+      "desc": "Mediatypen, startpagina, weergaven"
+    },
+    "hidden": {
+      "label": "Verborgen titels",
+      "desc": "Titels die je hebt verborgen"
+    },
+    "activity": {
+      "label": "Activiteit",
+      "desc": "Je statistieken en aanmeldingen"
+    },
+    "apps": {
+      "label": "Apps & API-sleutels",
+      "desc": "Mihon, KOReader, OPDS, scripts"
+    }
+  },
+  "layout": {
+    "backTo": "Terug naar {title}",
+    "backToShelves": "Terug naar planken",
+    "sections": "Onderdelen van {title}"
+  },
+  "saveStatus": {
+    "error": "Opslaan mislukt"
+  },
+  "activityList": {
+    "empty": "Nog geen activiteit vastgelegd.",
+    "deletedItem": "een verwijderd item",
+    "you": {
+      "signedIn": "Ingelogd",
+      "signInFailed": "Mislukte inlogpoging",
+      "viewed": "{title} bekeken",
+      "viewing": "Bekijkt {title}"
+    },
+    "someone": {
+      "signedIn": "{user} is ingelogd",
+      "signInFailed": "{user} kon niet inloggen",
+      "viewed": "{user} heeft {title} bekeken",
+      "viewing": "{user} bekijkt {title}"
+    }
+  },
+  "mediaTypes": {
+    "movie": {
+      "label": "Films",
+      "desc": "Speelfilms"
+    },
+    "show": {
+      "label": "Tv-series",
+      "desc": "Series en afleveringen"
+    },
+    "anime": {
+      "label": "Anime",
+      "desc": "Animeseries en -films"
+    },
+    "book": {
+      "label": "Boeken",
+      "desc": "EPUB, PDF en tekst"
+    },
+    "manga": {
+      "label": "Manga & strips",
+      "desc": "CBZ, CBR en graphic novels"
+    },
+    "audiobook": {
+      "label": "Luisterboeken",
+      "desc": "Gesproken woord en hoorspelen"
+    }
+  },
+  "format": {
+    "size": "{value} {unit}",
+    "units": {
+      "B": "B",
+      "KB": "KB",
+      "MB": "MB",
+      "GB": "GB",
+      "TB": "TB"
+    },
+    "seconds": "{value}s",
+    "minutes": "{value}m",
+    "hours": "{value}u",
+    "hoursMinutes": "{hours} {minutes}"
+  },
+  "profile": {
+    "title": "Profiel",
+    "description": "Je foto en hoe je account op deze server is ingesteld.",
+    "avatar": "Avatar",
+    "changePicture": "Foto wijzigen",
+    "uploadPicture": "Foto uploaden",
+    "pictureHint": "JPG, PNG, WebP of GIF tot 5 MB, bijgesneden tot een vierkant.",
+    "notAnImage": "Kies een afbeeldingsbestand (PNG, JPG, WebP of GIF).",
+    "tooBig": "Die afbeelding is groter dan 5 MB.",
+    "uploadFailed": "Kon die foto niet uploaden",
+    "removeTitle": "Foto verwijderen",
+    "removeMessage": "Je profielfoto verwijderen? Dan worden je initialen getoond.",
+    "removeFailed": "Kon de foto niet verwijderen",
+    "roles": {
+      "admin": {
+        "label": "Admin",
+        "desc": "beheert deze server"
+      },
+      "editor": {
+        "label": "Redacteur",
+        "desc": "kan ook titels, omslagen en details verbeteren"
+      },
+      "viewer": {
+        "label": "Kijker",
+        "desc": "bladert, leest, kijkt en luistert"
+      }
+    }
+  },
+  "security": {
+    "title": "Beveiliging",
+    "description": "Je wachtwoord, tweestapsverificatie en de apparaten waarop je bent ingelogd.",
+    "password": {
+      "desc": "Als je het wijzigt, word je overal uitgelogd, ook in deze browser.",
+      "current": "Huidig wachtwoord",
+      "new": "Nieuw wachtwoord",
+      "hint": "Minstens 8 tekens.",
+      "change": "Wachtwoord wijzigen",
+      "changing": "Wijzigen…",
+      "changed": "Wachtwoord gewijzigd. Log opnieuw in met je nieuwe wachtwoord.",
+      "changeFailed": "Kon je wachtwoord niet wijzigen"
+    },
+    "twoFactor": {
+      "title": "Tweestapsverificatie",
+      "desc": "Een code van je telefoon naast je wachtwoord. De moeite waard als je Plinthio buitenshuis gebruikt."
+    },
+    "devices": {
+      "title": "Ingelogde apparaten",
+      "desc": "Op elke telefoon, browser en tv waarop je inlogt, blijf je ingelogd. Ben je ingelogd op een apparaat dat je niet meer in handen hebt, log dan overal uit.",
+      "signOutAll": "Uitloggen op alle apparaten",
+      "signingOut": "Uitloggen…",
+      "confirmTitle": "Overal uitloggen",
+      "confirmMessage": "Elk apparaat dat bij dit account is ingelogd, wordt meteen uitgelogd, ook dit apparaat.",
+      "signOutFailed": "Kon niet uitloggen op alle apparaten"
+    }
+  },
+  "shelves": {
+    "title": "Planken",
+    "description": "Wat er op je planken staat en waar Plinthio opent. Wordt direct opgeslagen.",
+    "mediaTypes": {
+      "title": "Mediatypen",
+      "desc": "Welke soorten media op je planken verschijnen. Houd er minstens één."
+    },
+    "startOn": {
+      "title": "Beginnen op",
+      "desc": "De plank waarop Plinthio opent.",
+      "all": "Alle media"
+    },
+    "views": {
+      "title": "Plankweergaven",
+      "desc": "De weergaven boven je plank. Elke weergave toont één kaart per serie; Alfabetisch is er altijd.",
+      "offByAdmin": "Uitgezet door je admin",
+      "modes": {
+        "alphabetical": {
+          "label": "Alfabetisch",
+          "desc": "Altijd aan. Elke serie en titel van A tot Z."
+        },
+        "creator": {
+          "label": "Maker",
+          "desc": "Gegroepeerd op auteur, regisseur of studio."
+        },
+        "diskFolders": {
+          "label": "Schijfmappen",
+          "desc": "De mappen op de server."
+        },
+        "customFolders": {
+          "label": "Eigen mappen",
+          "desc": "Je eigen mappen in de app, met Overig voor de rest."
+        }
+      }
+    }
+  },
+  "hidden": {
+    "title": "Verborgen titels",
+    "description": "Titels die je van je planken hebt verborgen. Alleen jij ziet ze niet meer; je kunt ze altijd terughalen.",
+    "empty": "Niets verborgen. Verberg een titel via de pagina ervan, dan verschijnt hij hier.",
+    "unhide": "Tonen",
+    "unhideFailed": "Kon die titel niet weer zichtbaar maken"
+  },
+  "activity": {
+    "title": "Activiteit",
+    "description": "Wat je hebt gelezen, bekeken en beluisterd, en je recente aanmeldingen.",
+    "recent": "Recente activiteit",
+    "tiles": {
+      "listened": "Luistertijd",
+      "pagesRead": "Pagina's gelezen",
+      "finished": "Voltooid",
+      "inProgress": "Bezig"
+    }
+  },
+  "apps": {
+    "title": "Apps & API-sleutels",
+    "description": "Gebruik Plinthio vanuit lees-apps, scripts en dashboards. Elk daarvan logt in met een API-sleutel die je hier maakt.",
+    "reading": {
+      "title": "Lees-apps",
+      "desc": "Lees je strips, manga, pdf's en boeken in andere apps. Log in met je gebruikersnaam ({username}) en een API-sleutel als wachtwoord. Maak één sleutel per app, zodat je een app kunt uitloggen door de sleutel ervan te verwijderen.",
+      "address": "Adres voor {app}",
+      "mihon": "Installeer de Komga-extensie, open de instellingen ervan en vul dit adres, je gebruikersnaam en een API-sleutel als wachtwoord in. Zet daarna in Mihon bij Settings → Tracking Komga aan, zodat wat je in Mihon leest hier als gelezen wordt gemarkeerd.",
+      "koreader": "Open een boek, dan Tools → Progress sync → Custom sync server: vul dit adres in. Kies Login (niet Register) met je gebruikersnaam en een API-sleutel als wachtwoord. Je positie in pdf's en strips wordt in beide richtingen gesynchroniseerd; EPUB-posities worden tussen KOReader-apparaten gesynchroniseerd, en Plinthio laat zien hoe ver je bent. Sleutels van vóór Plinthio 1.0 werken hier niet — maak een nieuwe.",
+      "opdsName": "OPDS-lezers (Chunky, Panels, KyBook, Moon+ Reader)",
+      "opds": "Voeg dit toe als OPDS-catalogus, met je gebruikersnaam en een API-sleutel als wachtwoord."
+    },
+    "keys": {
+      "title": "API-sleutels",
+      "desc": "Een sleutel handelt namens jou. Stuur hem mee in de header {header}, of gebruik hem als wachtwoord in een app.",
+      "name": "Naam van sleutel",
+      "namePlaceholder": "Waarvoor hij is, bijv. Mihon op mijn telefoon",
+      "make": "Sleutel maken",
+      "makeFailed": "Kon geen sleutel maken",
+      "copyNow": "Kopieer je nieuwe sleutel nu. Hij wordt niet opnieuw getoond.",
+      "copyKey": "Sleutel kopiëren",
+      "empty": "Nog geen sleutels.",
+      "made": "gemaakt op {date}",
+      "revokeNamed": "{name} intrekken",
+      "revokeKey": "Sleutel intrekken",
+      "revokeTitle": "API-sleutel intrekken",
+      "revokeMessage": "‘{name}’ intrekken? Alles wat hem gebruikt, wordt meteen uitgelogd.",
+      "revoke": "Intrekken",
+      "revokeFailed": "Kon die sleutel niet intrekken"
+    }
+  }
+}

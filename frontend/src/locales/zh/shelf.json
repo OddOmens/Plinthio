@@ -1,0 +1,139 @@
+{
+  "offline": {
+    "message": "你已离线。已下载的书籍、漫画和有声书仍可使用。",
+    "openDownloads": "打开下载 →"
+  },
+  "continue": {
+    "watching": "继续观看",
+    "all": "继续",
+    "audiobook": "继续收听",
+    "manga": "继续看漫画",
+    "book": "继续阅读",
+    "movie": "继续看电影",
+    "show": "继续追剧",
+    "anime": "继续看动画"
+  },
+  "sectionTitle": {
+    "results": "“{query}”的搜索结果",
+    "audiobook": "有声书",
+    "manga": "漫画",
+    "book": "电子书和文档",
+    "movie": "电影",
+    "show": "剧集",
+    "anime": "动画",
+    "all": "所有媒体"
+  },
+  "counts": {
+    "folders": {
+      "other": "{count}个文件夹"
+    },
+    "series": "{count}个系列",
+    "titles": {
+      "other": "{count}部作品"
+    },
+    "seriesAndTitles": "{series}，{titles}",
+    "items": {
+      "other": "{count}项"
+    }
+  },
+  "modes": {
+    "alphabetical": "按字母",
+    "alphabeticalShort": "A–Z",
+    "diskFolders": "磁盘文件夹",
+    "diskFoldersShort": "磁盘",
+    "customFolders": "自定义文件夹",
+    "customFoldersShort": "自定义"
+  },
+  "filters": {
+    "progress": "进度",
+    "status": "状态",
+    "notStarted": "未开始",
+    "inProgress": "进行中",
+    "finished": "已完成",
+    "skipped": "已跳过",
+    "genre": "类型",
+    "added": "添加时间",
+    "thisWeek": "本周",
+    "thisMonth": "本月",
+    "last3Months": "最近3个月",
+    "clear": "清除筛选"
+  },
+  "sort": {
+    "label": "排序方式",
+    "title": "A–Z",
+    "added": "最新添加",
+    "recent": "最近打开",
+    "release": "发行日期"
+  },
+  "collections": {
+    "label": "电影合集",
+    "grouped": "合集",
+    "all": "所有电影"
+  },
+  "empty": {
+    "title": "未找到媒体",
+    "noMatches": "没有匹配的内容，试试其他搜索词或清除筛选",
+    "noLibrary": "在“管理 → 媒体库”中添加媒体库并扫描文件夹，即可填充你的书架",
+    "goToSettings": "前往设置"
+  },
+  "loadedMore": {
+    "other": "已加载{count}部作品 · 滚动可加载更多"
+  },
+  "customFolders": {
+    "heading": "应用内自定义文件夹",
+    "newPlaceholder": "新文件夹名称...",
+    "catchAll": "其余内容",
+    "delete": "删除文件夹",
+    "empty": "此文件夹是空的。点击任意作品上的三个点（{dots}）即可将其添加到这里。"
+  },
+  "deleteFolder": {
+    "title": "删除自定义文件夹",
+    "message": "确定要删除文件夹“{name}”吗？其中的项目不会从你的书架上删除。",
+    "confirm": "删除文件夹"
+  },
+  "errors": {
+    "createFolder": "创建文件夹失败",
+    "deleteFolder": "删除文件夹失败",
+    "removeItem": "移除项目失败",
+    "updateFolder": "更新文件夹失败"
+  },
+  "rootFolder": "根目录",
+  "series": {
+    "ariaLabel": "{name} — {units}",
+    "removeFromThisFolder": "从此文件夹中移除“{name}”",
+    "removeFromFolder": "从文件夹中移除",
+    "caughtUp": "已追平",
+    "skipped": "已跳过{count}个",
+    "doneCount": "已完成{count}/{total}"
+  },
+  "card": {
+    "availableOffline": "可离线使用",
+    "downloading": "正在下载…",
+    "options": "选项",
+    "optionsFor": "“{title}”选项",
+    "markInProgress": "标记为进行中",
+    "markFinished": "标记为已完成",
+    "addToFolder": "添加到文件夹...",
+    "removeFromFolder": "从文件夹中移除",
+    "bookmarks": "书签和笔记...",
+    "removeDownload": "移除下载",
+    "cancelDownload": "取消下载",
+    "downloadOffline": "下载以离线使用",
+    "editMetadata": "编辑元数据...",
+    "hide": "从书架隐藏",
+    "pages": {
+      "other": "{count}页"
+    },
+    "finished": "已完成",
+    "durationHours": "{hours}小时{minutes}分",
+    "durationMinutes": "{minutes}分钟"
+  },
+  "folderModal": {
+    "title": "添加到文件夹或清单",
+    "loading": "正在加载文件夹...",
+    "empty": "还没有创建自定义文件夹。在下方创建一个来整理你的媒体吧！",
+    "newFolder": "新建自定义文件夹",
+    "placeholder": "例如：收藏、睡前...",
+    "adding": "正在添加..."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "live": "实时预览",
+  "views": {
+    "shelf": "书架",
+    "title": "作品",
+    "login": "登录",
+    "pause": "暂停"
+  },
+  "titles": {
+    "other": "{count}+部作品"
+  },
+  "yourLibrary": "你的媒体库",
+  "continueWatching": "继续观看",
+  "runtime": "{hours}小时{minutes}分钟",
+  "yourRating": "你的评分",
+  "ratingsHidden": "评分已隐藏",
+  "watchTogether": "一起看",
+  "collection": "所属合集",
+  "request": "请求",
+  "sample": {
+    "tagline": "有些讯息，要用一生才能抵达。",
+    "description": "偏远小岛上的灯塔看守人发现了一个漂流瓶，瓶中的信将她拉回了她曾经离开的生活。"
+  },
+  "captions": {
+    "shelf": "大屏幕上的主页书架：{layout}布局、{width}宽度和{accent}强调色。",
+    "title": "电影页面，上方是评分、一起看和合集设置。",
+    "login": "登录页面，显示你的服务器名称和公告。",
+    "pause": {
+      "simple": "简洁：不遮挡画面。选择其他样式可在此预览。",
+      "details": "详情：暂停几秒后显示。将鼠标悬停在样式上可以对比。",
+      "cinematic": "影院：设置密钥后，演员照片和资料来自 TMDB。",
+      "bedtime": "睡前：一个昏暗的时钟和结束时间。"
+    }
+  },
+  "layouts": {
+    "sidebar": "侧边栏",
+    "topnav": "顶部导航"
+  },
+  "widths": {
+    "contained": "居中",
+    "full": "全宽"
+  }
+}

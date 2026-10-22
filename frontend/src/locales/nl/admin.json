@@ -1,0 +1,709 @@
+{
+  "nav": {
+    "yourSettings": "Je instellingen",
+    "groups": {
+      "server": "Server",
+      "library": "Bibliotheek",
+      "people": "Mensen",
+      "settings": "Instellingen",
+      "system": "Systeem"
+    },
+    "items": {
+      "overview": {
+        "label": "Overzicht",
+        "desc": "Versie, updates en wat erop staat"
+      },
+      "libraries": {
+        "label": "Bibliotheken",
+        "desc": "Mappen en automatisch scannen"
+      },
+      "health": {
+        "label": "Gezondheid",
+        "desc": "Ontbrekende bestanden en wat er moet worden opgelost"
+      },
+      "metadata": {
+        "label": "Metadata",
+        "desc": "TMDB-sleutel en titels koppelen"
+      },
+      "kids": {
+        "label": "Kindermodus",
+        "desc": "Wat kinderaccounts kunnen zien"
+      },
+      "users": {
+        "label": "Gebruikers",
+        "desc": "Accounts, rollen, limieten"
+      },
+      "activity": {
+        "label": "Activiteit",
+        "desc": "Inlogs en wat er wordt afgespeeld"
+      },
+      "appearance": {
+        "label": "Uiterlijk",
+        "desc": "Standaarden, naam, eigen CSS"
+      },
+      "features": {
+        "label": "Functies",
+        "desc": "Plankweergaven, beoordelingen, watchparty's"
+      },
+      "playback": {
+        "label": "Afspelen",
+        "desc": "Hardwareversnelling, openingsclip"
+      },
+      "network": {
+        "label": "Netwerk",
+        "desc": "Buitenshuis, Tailscale, tweestapsverificatie"
+      },
+      "backups": {
+        "label": "Back-ups",
+        "desc": "Schema, tweede kopie, herstelpunten"
+      },
+      "logs": {
+        "label": "Logboek",
+        "desc": "Wat de server heeft gedaan"
+      }
+    }
+  },
+  "activity": {
+    "title": "Activiteit",
+    "description": "Inlogs, en wat er wordt gelezen, bekeken en beluisterd, op elk account.",
+    "show": "Tonen",
+    "everyone": "Iedereen"
+  },
+  "appearance": {
+    "title": "Uiterlijk",
+    "description": "Hoe Plinthio er voor iedereen uitziet: de standaarden van de server, de naam en je eigen CSS. Wijzigingen worden meteen opgeslagen.",
+    "personalize": {
+      "label": "Mensen laten personaliseren",
+      "desc": "Iedereen kan in Instellingen → Uiterlijk een eigen kleur, navigatie, breedte en pauzescherm kiezen. Zet dit uit om voor iedereen het uiterlijk van de server te gebruiken."
+    },
+    "usersCanChange": "Gebruikers kunnen wijzigen",
+    "cards": {
+      "accent": "De accentkleur op knoppen, badges en het huidige tabblad.",
+      "pageWidth": "Hoe breed pagina's worden op een groot scherm.",
+      "pauseScreen": "Wat er verschijnt na een paar seconden pauze; het verdwijnt als iemand de muis beweegt of het scherm aanraakt. Cast, crew en weetjes komen van TMDB als er een sleutel is ingesteld."
+    },
+    "branding": {
+      "title": "Naam en inlogmelding",
+      "desc": "De naam van je server, en een optionele melding op de inlogpagina.",
+      "serverName": "Servernaam",
+      "notice": "Inlogmelding",
+      "removeNotice": "Inlogmelding verwijderen"
+    },
+    "css": {
+      "title": "Eigen CSS",
+      "desc": "Je eigen stijlregels, voor iedereen aan elke pagina toegevoegd. Probeer ze eerst hier; ze gaan live als je opslaat.",
+      "cheatsheet": "CSS-spiekbriefje",
+      "example": "/* Bijvoorbeeld */",
+      "save": "CSS opslaan",
+      "tryIt": "Probeer op deze pagina",
+      "notSaved": "Niet opgeslagen",
+      "couldNotSave": "Kon de CSS niet opslaan"
+    }
+  },
+  "backups": {
+    "title": "Back-ups",
+    "description": "Momentopnamen van de database: accounts, ieders voortgang, bladwijzers, markeringen en notities, beoordelingen, lijsten, bibliotheken en metadata. Niet je mediabestanden. Er wordt ook vóór elke upgrade een momentopname gemaakt, en de nieuwste vijf daarvan blijven altijd bewaard.",
+    "automatic": "Automatische back-ups",
+    "schedule": {
+      "label": "Back-up volgens schema",
+      "desc": "Opgeslagen op de server in /config/backups."
+    },
+    "howOften": "Hoe vaak",
+    "frequency": {
+      "every6h": "Elke 6 uur",
+      "every12h": "Elke 12 uur",
+      "daily": "Dagelijks",
+      "every3d": "Elke 3 dagen",
+      "weekly": "Wekelijks"
+    },
+    "keepLast": "Bewaar de laatste",
+    "destination": {
+      "label": "Back-ups ook kopiëren naar",
+      "why": "/config/backups staat op dezelfde schijf als de server. Een kopie op een andere schijf, een NAS of een gesynchroniseerde cloudmap overleeft het als die schijf kapotgaat.",
+      "placeholder": "Nergens anders naartoe gekopieerd",
+      "browseAria": "Bladeren naar een back-upmap",
+      "browse": "Bladeren",
+      "testAria": "Back-upmap testen",
+      "test": "Testen",
+      "checking": "Controleren…",
+      "writable": "De server kan daar schrijven.",
+      "writableFree": "De server kan daar schrijven · {free} vrij.",
+      "sameDisk": "Het staat op dezelfde schijf als de gegevens van de server, dus het beschermt tegen vergissingen, maar niet tegen een kapotte schijf. Een map op een andere schijf is beter.",
+      "otherDisk": "Het staat op een andere schijf dan de gegevens van de server.",
+      "hint": "Een map zoals de server die ziet. In Docker: ergens onder {media} dat niet alleen-lezen is, of een andere schijf gekoppeld op {backups} (Documentatie → Back-ups en gegevensveiligheid).",
+      "keepThere": "Daar bewaren",
+      "copyFiles": "Ook profielfoto's, covers, de inlogsleutel en HTTPS-certificaten kopiëren",
+      "couldNotCheck": "Kon die map niet controleren",
+      "pickerTitle": "Back-ups kopiëren naar"
+    },
+    "saveAria": "Back-upinstellingen opslaan",
+    "savedCopying": "Opgeslagen. Je bestaande back-ups worden gekopieerd naar {path}.",
+    "copyFailed": "Kopiëren naar {path} mislukt: {error}. Het wordt elke 15 minuten opnieuw geprobeerd.",
+    "copiedTo": "Gekopieerd naar {path} {when}",
+    "notYet": "— nog niet",
+    "copying": "Kopiëren…",
+    "copyNow": "Nu kopiëren",
+    "stored": "Opgeslagen back-ups",
+    "storedCount": "Opgeslagen back-ups ({count})",
+    "backingUp": "Back-up maken…",
+    "backUpNow": "Nu back-up maken",
+    "preparing": "Voorbereiden…",
+    "downloadSnapshot": "Momentopname downloaden",
+    "empty": "Nog geen back-ups. Zet automatische back-ups aan of maak nu een back-up.",
+    "downloadThis": "Deze back-up downloaden",
+    "deleteThis": "Deze back-up verwijderen",
+    "couldNotBackUp": "Kon geen back-up maken",
+    "couldNotSnapshot": "Kon geen momentopname maken. De browserconsole bevat de details.",
+    "couldNotDownload": "Kon die back-up niet downloaden. De browserconsole bevat de details.",
+    "deleteTitle": "Back-up verwijderen",
+    "deleteMessage": "De back-up van {date} verwijderen? Dit kan niet ongedaan worden gemaakt.",
+    "couldNotDelete": "Kon die back-up niet verwijderen"
+  },
+  "features": {
+    "title": "Functies",
+    "description": "Wat er voor iedereen op deze server aanstaat. Wijzigingen worden meteen opgeslagen.",
+    "shelfViews": {
+      "title": "Plankweergaven",
+      "desc": "Alfabetisch en Maker zijn er altijd. Een mapweergave uitzetten verbergt die voor iedereen."
+    },
+    "folderModes": {
+      "diskFolder": {
+        "label": "Schijfmappen",
+        "desc": "Bladeren via de mappen op de server."
+      },
+      "customFolder": {
+        "label": "Eigen mappen",
+        "desc": "Eigen mappen van mensen in de app, met een verzamelmap Ongeordend."
+      }
+    },
+    "ratings": {
+      "title": "Beoordelingen",
+      "desc": "Welke beoordelingen er verschijnen. Een uitgezette beoordeling is overal verborgen, en de server stuurt die niet meer mee.",
+      "personal": {
+        "label": "Persoonlijke beoordelingen",
+        "desc": "Iedereen kan 1–5 sterren geven en ziet de eigen beoordeling."
+      },
+      "community": {
+        "label": "Beoordelingen op {name}",
+        "desc": "Het gemiddelde van iedereen op deze server."
+      },
+      "external": {
+        "label": "Wereldbeoordelingen (TMDB)",
+        "desc": "De TMDB-score voor films, series en anime. Vereist een TMDB-sleutel."
+      }
+    },
+    "movies": {
+      "title": "Films en samen kijken",
+      "missingFilms": {
+        "label": "Ontbrekende films in collecties tonen",
+        "desc": "Een collectie zoals Shrek of Star Wars toont ook de films die je niet hebt, grijs, met een knop Aanvragen. Ze verschijnen nooit op de plank Films. Vereist een TMDB-sleutel."
+      },
+      "watchParties": {
+        "label": "Watchparty's",
+        "desc": "Een knop Samen kijken bij films en afleveringen: kijk synchroon vanaf verschillende plekken, met chat. Inhoudslimieten gelden nog steeds voor iedereen in een watchparty. Vrienden buitenshuis moeten deze server kunnen bereiken (zie Netwerk). Uitzetten beëindigt lopende watchparty's."
+      }
+    }
+  },
+  "kids": {
+    "title": "Kindermodus",
+    "description": "Kinderaccounts zien alleen wat hier aanstaat. Maak een account een kinderaccount bij Gebruikers.",
+    "libraries": {
+      "title": "Hele bibliotheken",
+      "desc": "Alles in deze bibliotheken, nu en later."
+    },
+    "noLibraries": "Nog geen bibliotheken.",
+    "items": {
+      "one": "{number} item",
+      "other": "{number} items"
+    },
+    "titles": {
+      "title": "Losse series en titels",
+      "desc": "Voeg er meer toe vanaf de pagina van een serie of titel met de knop {button}.",
+      "button": "Kinderen"
+    },
+    "noneYet": "Nog geen.",
+    "series": "Serie",
+    "singleTitle": "Titel",
+    "removeAria": "{name} uit de kindermodus halen",
+    "couldNotRemove": "Kon het niet uit de kindermodus halen"
+  },
+  "libraries": {
+    "title": "Bibliotheken",
+    "description": "De mappen waaruit Plinthio je media leest. Je bestanden worden nooit gewijzigd.",
+    "add": "Bibliotheek toevoegen",
+    "empty": "Nog geen bibliotheken. Voeg er een toe om Plinthio naar een map met media te laten kijken.",
+    "kids": "Kinderen",
+    "items": {
+      "one": "{number} item",
+      "other": "{number} items"
+    },
+    "scanning": "Scannen…",
+    "scan": "Scannen",
+    "deleteAria": "{name} verwijderen",
+    "deleteLibrary": "Bibliotheek verwijderen",
+    "types": {
+      "movies": "Films",
+      "shows": "Tv-series",
+      "anime": "Anime",
+      "books": "Boeken",
+      "manga": "Manga & strips",
+      "audiobooks": "Luisterboeken"
+    },
+    "autoScan": {
+      "title": "Automatisch scannen",
+      "desc": "Pikt media op die aan je bibliotheekmappen zijn toegevoegd, zonder dat iemand op Scannen hoeft te drukken.",
+      "scheduled": {
+        "label": "Opnieuw scannen volgens schema",
+        "desc": "De betrouwbare optie: werkt op netwerkshares en koppelingen die geen wijzigingen doorgeven."
+      },
+      "schedule": "Schema",
+      "modes": {
+        "interval": "Met vaste tussenpozen",
+        "times": "Op vaste tijden per dag"
+      },
+      "every": "Opnieuw scannen",
+      "intervals": {
+        "15": "elke 15 minuten",
+        "30": "elke 30 minuten",
+        "60": "elk uur",
+        "360": "elke 6 uur",
+        "1440": "elke dag"
+      },
+      "at": "Opnieuw scannen om",
+      "timeAria": "Scantijd {number}",
+      "removeTime": "{time} verwijderen",
+      "thisTime": "deze tijd",
+      "addTime": "Tijd toevoegen",
+      "timesHint": "In de tijdzone van de server. Als de server op een vast tijdstip uit stond, scant hij één keer zodra hij weer aan is.",
+      "watch": {
+        "label": "Mappen in de gaten houden",
+        "desc": "Scant zo'n 30 seconden nadat er een bestand verschijnt, als het bestandssysteem dat doorgeeft. Werkt met of zonder schema."
+      },
+      "manual": "Automatisch scannen staat uit. Nieuwe media verschijnen pas als een admin bij een bibliotheek op Scannen drukt.",
+      "noSchedule": "Zonder schema worden wijzigingen op netwerkshares of koppelingen die geen bestandsgebeurtenissen sturen pas opgemerkt als je op Scannen drukt.",
+      "noTimes": "Geen tijden ingesteld, dus het schema draait nooit. Voeg een tijd toe, of schakel over naar vaste tussenpozen."
+    },
+    "addDialog": {
+      "title": "Een bibliotheek toevoegen",
+      "folder": "Map",
+      "browse": "Bladeren",
+      "folderHint": "Zoals de server die ziet. In Docker zijn je media gekoppeld op {path}.",
+      "name": "Naam",
+      "namePlaceholder": "bijv. Luisterboeken",
+      "whatsInIt": "Wat erin staat",
+      "adding": "Toevoegen…",
+      "addAndScan": "Toevoegen en scannen",
+      "pickerTitle": "Kies de bibliotheekmap"
+    },
+    "scanResult": {
+      "title": "{name} gescand",
+      "added": "{count} toegevoegd",
+      "renamed": "{count} hernoemd of verplaatst",
+      "updated": "{count} bijgewerkt",
+      "removed": "{count} verwijderd",
+      "summary": "{parts}.",
+      "nothingNew": "Niets nieuws."
+    },
+    "scanFailed": "Scannen mislukt",
+    "deleteMessage": "‘{name}’ verwijderen? Je bestanden blijven onaangeroerd, en voortgang en bladwijzers komen terug als je dezelfde map opnieuw toevoegt. De titels, covers en details worden verwijderd tot de map opnieuw wordt gescand.",
+    "couldNotDelete": "Kon die bibliotheek niet verwijderen",
+    "couldNotAdd": "Kon die bibliotheek niet toevoegen"
+  },
+  "logs": {
+    "title": "Logboek",
+    "description": "Scans, fouten en wat de server heeft gedaan, nieuwste eerst.",
+    "live": "Live",
+    "paused": "Gepauzeerd",
+    "refreshNow": "Nu vernieuwen",
+    "searchPlaceholder": "Berichten en categorieën doorzoeken",
+    "searchAria": "Logboek doorzoeken",
+    "level": "Niveau",
+    "levels": {
+      "all": "alle",
+      "info": "info",
+      "warn": "waarschuwing",
+      "error": "fout"
+    },
+    "nothingMatches": "Geen resultaten.",
+    "clearTitle": "Logboek wissen",
+    "clearMessage": "Elke logregel uit de database verwijderen?",
+    "couldNotClear": "Kon het logboek niet wissen"
+  },
+  "metadata": {
+    "title": "Metadata",
+    "description": "Waar posters, beschrijvingen, cast en beoordelingen vandaan komen, en het opschonen van titels die uit bestandsnamen komen.",
+    "tmdb": {
+      "title": "TMDB-sleutel",
+      "descBuiltIn": "Films, series en anime krijgen hun details van TMDB, met de sleutel die in Plinthio is ingebouwd. Je kunt je eigen TMDB-sleutel plakken om die in plaats daarvan te gebruiken. Manga (MangaDex) en boeken (Google Books, Open Library) hebben niets nodig.",
+      "descNeedsKey": "Films, series en anime krijgen hun details van TMDB, waarvoor een gratis sleutel nodig is. Manga (MangaDex) en boeken (Google Books, Open Library) hebben niets nodig.",
+      "sources": {
+        "custom": "Je eigen",
+        "environment": "Uit TMDB_API_KEY",
+        "builtin": "Ingebouwd",
+        "set": "Ingesteld",
+        "notSet": "Niet ingesteld"
+      },
+      "keyLabel": "TMDB API-sleutel",
+      "placeholderReplace": "Plak een nieuwe sleutel om deze te vervangen",
+      "placeholderOptional": "Plak je eigen TMDB-sleutel (optioneel)",
+      "placeholderToken": "Plak je TMDB API Read Access Token",
+      "saveKey": "Sleutel opslaan",
+      "useBuiltIn": "Ingebouwde sleutel gebruiken",
+      "getOne": "Vraag er gratis een aan op {link}.",
+      "getOneLink": "themoviedb.org → Settings → API",
+      "attribution": "Dit product gebruikt de TMDB API, maar wordt niet onderschreven of gecertificeerd door TMDB.",
+      "removeTitle": "De TMDB-sleutel verwijderen",
+      "removeMessage": "Films, series en anime krijgen geen nieuwe posters, details en wereldbeoordelingen meer tot er weer een sleutel wordt toegevoegd."
+    }
+  },
+  "overview": {
+    "title": "Overzicht",
+    "description": "Deze server in één oogopslag: de versie, wat erop staat en wie hem gebruikt.",
+    "checksOff": "Updatecontroles staan uit (UPDATE_CHECK=false).",
+    "available": "{version} is beschikbaar.",
+    "updateWith": "Bijwerken met {command}",
+    "upToDate": "Je bent helemaal bij.",
+    "upToDateCheckFailed": "Je bent helemaal bij (laatste controle mislukt — offline?).",
+    "notChecked": "Nog niet gecontroleerd.",
+    "releaseNotes": "Release-opmerkingen",
+    "checking": "Controleren…",
+    "checkNow": "Nu controleren",
+    "tiles": {
+      "files": "Bestanden",
+      "onDisk": "Op schijf",
+      "audio": "Audio",
+      "accounts": "Accounts"
+    },
+    "byMediaType": "Per mediatype",
+    "files": {
+      "one": "{number} bestand",
+      "other": "{number} bestanden"
+    },
+    "series": {
+      "one": "{number} serie",
+      "other": "{number} series"
+    },
+    "creators": {
+      "one": "{number} maker",
+      "other": "{number} makers"
+    }
+  },
+  "playback": {
+    "title": "Afspelen",
+    "description": "Hoe video op de schermen van mensen komt, en de clip die ervoor kan worden afgespeeld.",
+    "hwaccel": {
+      "title": "Hardwareversnelling",
+      "desc": "Plinthio speelt bestanden af zoals ze zijn wanneer de browser dat kan, en zet alleen om wat hij niet kan afspelen. Met een grafische chip is omzetten veel lichter.",
+      "found": "Gevonden op deze machine",
+      "noneCpu": "Geen — de CPU wordt gebruikt",
+      "use": "Gebruiken",
+      "auto": "Wat er wordt gevonden (aanbevolen)",
+      "cpu": "Altijd de CPU",
+      "always": "Altijd {method}",
+      "testing": "Testen…",
+      "test": "Testen",
+      "works": "{method} werkt op deze machine.",
+      "failed": "{method} werkte niet: {error}",
+      "testHint": "Testen voert een korte echte omzetting uit: dat ffmpeg een encoder vermeldt, bewijst niet dat de driver eronder werkt.",
+      "testFailed": "Test mislukt",
+      "howItWorks": "Hoe afspelen werkt, en een grafische chip instellen",
+      "tips": {
+        "direct": {
+          "title": "Direct afspelen en direct streamen:",
+          "text": "video die de browser kan decoderen (H.264, of HEVC in Chrome, Edge, Vivaldi en Safari) wordt onaangeroerd verstuurd, tot 4K, zelfs vanuit MKV-bestanden. Alleen audio die hij niet kan afspelen (EAC3, Atmos, DTS) wordt omgezet, naar AAC."
+        },
+        "browser": {
+          "title": "De kant van de browser:",
+          "text": "controleer voor 4K of de browser video in hardware decodeert ({page} → Video Decode: Hardware accelerated)."
+        },
+        "docker": {
+          "title": "Intel Quick Sync en VAAPI in Docker:",
+          "text": "geef {dri} door onder {devices}, en voeg de groeps-ID van {render} op de host toe onder {groupAdd}."
+        },
+        "small": {
+          "title": "Kleine machines:",
+          "text": "omzetten op de CPU is beperkt tot twee threads met de snelste preset, en voorbeeldminiaturen worden apart gemaakt, zodat een mini-pc niet oververhit raakt."
+        }
+      }
+    },
+    "intro": {
+      "title": "Openingsclip",
+      "desc": "Een korte clip die schermvullend wordt afgespeeld als iemand bij een film of aflevering op Afspelen drukt. Nooit vóór automatisch afgespeelde afleveringen, trailers of watchparty's, en iedereen kan hem overslaan.",
+      "checking": "Controleren…",
+      "upload": "Een clip uploaden",
+      "custom": "Je eigen clip.",
+      "builtIn": "De ingebouwde clip van Plinthio. Vervang hem door je eigen clip:",
+      "requirements": "MP4 (H.264), 1–10 seconden, tot 20 MB. 1080p met ongeveer 8 Mbps is ruim voldoende.",
+      "thisOne": "Deze duurt {seconds} seconden.",
+      "replace": "Vervangen",
+      "useBuiltIn": "De ingebouwde clip gebruiken",
+      "play": "De openingsclip afspelen",
+      "offUntil": "Uit tot je hem aanzet.",
+      "uploadFirst": "Upload eerst een clip.",
+      "beforeMovies": "Vóór films",
+      "beforeShows": "Vóór series en anime",
+      "tooBig": "Dat bestand is groter dan 20 MB. Exporteer het korter of met een lagere bitrate.",
+      "uploadFailed": "Uploaden mislukt",
+      "removeTitle": "Je clip verwijderen",
+      "removeMessage": "Je clip verwijderen en teruggaan naar de ingebouwde openingsclip van Plinthio?",
+      "couldNotRemove": "Kon hem niet verwijderen"
+    }
+  },
+  "users": {
+    "title": "Gebruikers",
+    "description": "Iedereen die op deze server kan inloggen. Zelf registreren kan niet: accounts worden hier aangemaakt.",
+    "add": "Gebruiker toevoegen",
+    "editAria": "{name} bewerken",
+    "you": "Jij",
+    "lastIn": "Laatst ingelogd {date}",
+    "neverSignedIn": "Nooit ingelogd",
+    "network": "({network})",
+    "outside": "buiten",
+    "roles": {
+      "label": "Rol",
+      "viewer": {
+        "label": "Kijker",
+        "desc": "Bladert, leest, kijkt en luistert; houdt de eigen voortgang bij."
+      },
+      "editor": {
+        "label": "Redacteur",
+        "desc": "Verbetert ook gedeelde titels, covers en details."
+      },
+      "admin": {
+        "label": "Admin",
+        "desc": "Alles, inclusief bibliotheken, gebruikers en deze pagina."
+      }
+    },
+    "durations": {
+      "day": {
+        "one": "{count} dag",
+        "other": "{count} dagen"
+      },
+      "week": {
+        "one": "{count} week",
+        "other": "{count} weken"
+      },
+      "month": {
+        "one": "{count} maand",
+        "other": "{count} maanden"
+      },
+      "year": {
+        "one": "{count} jaar",
+        "other": "{count} jaar"
+      }
+    },
+    "addDialog": {
+      "title": "Een gebruiker toevoegen",
+      "passwordHint": "Minstens 8 tekens. Dit kan later worden gewijzigd in Instellingen → Beveiliging.",
+      "adding": "Toevoegen…"
+    },
+    "access": "Toegang",
+    "noEndDate": "Geen einddatum",
+    "noEndDateSentence": "Geen einddatum.",
+    "forDuration": "Voor {duration}",
+    "untilDate": "Tot een datum…",
+    "accessEnds": "Toegang eindigt",
+    "editDialog": {
+      "title": "{name} bewerken",
+      "joined": "Lid sinds {date}"
+    },
+    "ended": "Geëindigd {date}",
+    "ends": "Eindigt {date}",
+    "extendBy": "+{duration}",
+    "removeEndDate": "Einddatum verwijderen",
+    "setAccess": "Toegang instellen",
+    "setNewEnd": "Of stel een nieuw einde in…",
+    "keepNoEnd": "Geen einddatum houden",
+    "fromNow": "Over {duration}",
+    "remote": {
+      "label": "Mag Plinthio buitenshuis gebruiken",
+      "desc": "Als de server toegang van buitenaf toestaat (Netwerk). Uit: alleen thuis en via Tailscale."
+    },
+    "kidsAccount": {
+      "label": "Kinderaccount",
+      "desc": "Ziet alleen wat in de kindermodus aanstaat."
+    },
+    "twoFactorOn": "Tweestapsverificatie staat aan",
+    "twoFactorHelp": "Telefoon en back-upcodes kwijt? Zet het terug, zodat diegene met het wachtwoord kan inloggen en het opnieuw kan instellen.",
+    "contentLimit": "Inhoudslimiet",
+    "noLimit": "Geen limiet",
+    "everyoneOnly": "Alleen alle leeftijden",
+    "upTo": "Tot en met {rating}",
+    "ageRatings": {
+      "everyone": "Alle leeftijden",
+      "teen": "Tieners",
+      "mature": "Volwassenen"
+    },
+    "allowUnrated": "Ook titels tonen die geen leeftijdsclassificatie hebben. Uit is streng: alleen geclassificeerde titels op of onder de limiet.",
+    "ratingsHint": "Leeftijdsclassificaties worden per serie of titel ingesteld.",
+    "newPassword": "Nieuw wachtwoord",
+    "newPasswordPlaceholder": "Leeg laten om het huidige te houden",
+    "newPasswordHint": "Minstens 8 tekens. Een nieuw wachtwoord logt diegene overal uit.",
+    "accessEnded": "Toegang beëindigd",
+    "hoursLeft": {
+      "one": "nog {count} u",
+      "other": "nog {count} u"
+    },
+    "daysLeft": {
+      "one": "nog {count} d",
+      "other": "nog {count} d"
+    },
+    "badges": {
+      "twoFactor": "Tweestaps",
+      "twoFactorTitle": "Logt ook in met een code uit een authenticator-app",
+      "homeOnly": "Alleen thuis",
+      "homeOnlyTitle": "Kan Plinthio alleen via het thuisnetwerk gebruiken",
+      "kids": "Kinderen",
+      "unratedHidden": "Titels zonder classificatie zijn ook verborgen",
+      "unratedAllowed": "Titels zonder classificatie zijn toegestaan"
+    },
+    "couldNotAdd": "Kon die gebruiker niet toevoegen",
+    "couldNotChangeAccess": "Kon de toegang niet wijzigen",
+    "passwordTooShort": "Het nieuwe wachtwoord moet minstens 8 tekens hebben.",
+    "couldNotSave": "Kon die wijzigingen niet opslaan",
+    "resetTitle": "Tweestapsverificatie terugzetten?",
+    "resetMessage": "{name} wordt overal uitgelogd, kan daarna met alleen het wachtwoord inloggen en kan tweestapsverificatie opnieuw instellen in Instellingen → Beveiliging.",
+    "couldNotReset": "Kon tweestapsverificatie niet terugzetten",
+    "deleteTitle": "Gebruiker verwijderen",
+    "deleteMessage": "{name} verwijderen? De voortgang, bladwijzers, markeringen, lijsten en beoordelingen gaan mee.",
+    "deleteUser": "Gebruiker verwijderen",
+    "couldNotDelete": "Kon die gebruiker niet verwijderen"
+  },
+  "health": {
+    "title": "Gezondheid",
+    "description": "Wat er aandacht nodig heeft in je bibliotheken.",
+    "checked": "Gecontroleerd {time}.",
+    "checking": "Controleren…",
+    "runCheck": "Controle uitvoeren",
+    "tiles": {
+      "libraries": "Onbereikbare bibliotheken",
+      "missing": "Ontbrekende bestanden",
+      "duplicates": "Duplicaten",
+      "clashes": "Nummerconflicten",
+      "metadata": "Geen cover",
+      "transcode": "Omzetfouten"
+    },
+    "allClear": "Alles ziet er gezond uit.",
+    "libraries": "Bibliotheken",
+    "itemsTotal": {
+      "one": "{number} item in totaal",
+      "other": "{number} items in totaal"
+    },
+    "items": {
+      "one": "{number} item",
+      "other": "{number} items"
+    },
+    "scanned": "Gescand {time}",
+    "neverScanned": "Nooit gescand",
+    "unreachable": "Map niet bereikbaar — controleer of de schijf gekoppeld is en het Docker-volume is toegewezen. Items blijven in de catalogus tot de map terug is.",
+    "rescan": "Opnieuw scannen",
+    "noLibraries": "Nog geen bibliotheken.",
+    "missing": {
+      "title": "Ontbrekende bestanden",
+      "hint": "Verdwenen van de schijf. Bewust verwijderd om ruimte vrij te maken? Bewaar ze als geschiedenis: ze blijven op hun titelpagina staan, grijs, met ieders voortgang. Anders worden ze voorlopig verborgen (een schijf kan even onbereikbaar zijn) en komen ze vanzelf terug als de bestanden terugkomen; verwijder ze definitief zodra je het zeker weet.",
+      "keepAll": "Alles als geschiedenis bewaren",
+      "removing": "Verwijderen…",
+      "removeAll": "Alles definitief verwijderen"
+    },
+    "keepAsHistory": "Bewaren als geschiedenis",
+    "removeForGood": "Definitief verwijderen",
+    "offloaded": {
+      "title": "Gearchiveerd (bewaard als geschiedenis)",
+      "hint": "Verwijderd om ruimte vrij te maken en bewaard als geschiedenis: verborgen in planken en zoekresultaten, grijs getoond op hun titelpagina met ieders voortgang. Als de bestanden terugkomen, worden ze vanzelf hersteld.",
+      "undo": "Ongedaan maken"
+    },
+    "duplicates": {
+      "title": "Waarschijnlijke duplicaten",
+      "hint": "Dezelfde titel en exact dezelfde bestandsgrootte — meestal hetzelfde bestand in twee mappen of bibliotheken.",
+      "copies": {
+        "one": "{count} kopie",
+        "other": "{count} kopieën"
+      }
+    },
+    "clashes": {
+      "title": "Conflicten in deel- of afleveringsnummers",
+      "hint": "Verschillende bestanden die in een serie hetzelfde deel- of afleveringsnummer claimen. Meestal een verkeerd benoemd bestand."
+    },
+    "metadata": {
+      "title": "Ontbrekende artwork of metadata",
+      "hint": "{noCover} zonder cover, {noAuthor} boeken/manga/luisterboeken zonder auteur, {noDescription} zonder beschrijving. Los ze op in het tabblad Metadata.",
+      "open": "Metadata openen",
+      "noCover": "Geen cover",
+      "noAuthor": "Geen auteur"
+    },
+    "unrated": {
+      "title": "Titels zonder classificatie",
+      "hint": "Titels zonder leeftijdsclassificatie op zichzelf of op hun serie. Alleen van belang als je voor sommige gebruikers inhoudslimieten gebruikt — classificeer series via hun serieblad, losse titels via de metadata-editor."
+    },
+    "transcode": {
+      "title": "Recente omzetfouten bij afspelen",
+      "hint": "ffmpeg-fouten bij het voorbereiden van video. Vaak een probleem met een driver voor hardwareversnelling — probeer Admin → Afspelen → Testen."
+    },
+    "mediaTypes": {
+      "movie": "film",
+      "show": "serie",
+      "anime": "anime",
+      "manga": "manga",
+      "book": "boek",
+      "audiobook": "luisterboek"
+    },
+    "couldNotRun": "Kon de gezondheidscontrole niet uitvoeren",
+    "groupSeason": "{name}, seizoen {season}",
+    "titlesCount": {
+      "one": "{count} titel",
+      "other": "{count} titels"
+    },
+    "keepTitle": "Bewaren als geschiedenis?",
+    "keepMessage": {
+      "one": "{label} blijft op de titelpagina staan, grijs, met ieders voortgang, maar kan niet worden afgespeeld. Als de bestanden terugkomen, wordt het vanzelf hersteld.",
+      "other": "{label} blijven op hun titelpagina staan, grijs, met ieders voortgang, maar kunnen niet worden afgespeeld. Als de bestanden terugkomen, worden ze vanzelf hersteld."
+    },
+    "couldNotKeep": "Kon die niet als geschiedenis bewaren",
+    "couldNotUndo": "Kon dat niet ongedaan maken",
+    "removeTitle": "Definitief verwijderen?",
+    "removeMessage": "{name} uit de catalogus verwijderen? Voortgang en beoordelingen blijven in de database en worden weer gekoppeld als dezelfde bestanden ooit opnieuw worden gescand, maar tot die tijd is er niets van te zien.",
+    "skipped": {
+      "one": "{count} behouden: de bestanden zijn terug.",
+      "other": "{count} behouden: de bestanden zijn terug."
+    },
+    "couldNotRemove": "Kon dat niet verwijderen",
+    "removeMissingTitle": "Ontbrekende titels verwijderen?",
+    "removeMissingMessage": {
+      "one": "{count} ontbrekende titel definitief uit de catalogus verwijderen? Alles waarvan het bestand terug is, blijft staan, net als alles wat als geschiedenis is bewaard. Leesvoortgang en beoordelingen blijven ook bewaard en worden weer gekoppeld als dezelfde bestanden ooit opnieuw worden gescand.",
+      "other": "{count} ontbrekende titels definitief uit de catalogus verwijderen? Alles waarvan het bestand terug is, blijft staan, net als alles wat als geschiedenis is bewaard. Leesvoortgang en beoordelingen blijven ook bewaard en worden weer gekoppeld als dezelfde bestanden ooit opnieuw worden gescand."
+    },
+    "removed": {
+      "one": "{count} titel verwijderd.",
+      "other": "{count} titels verwijderd."
+    },
+    "removedSkipped": {
+      "one": "{count} titel verwijderd ({skipped} behouden — de bestanden zijn terug).",
+      "other": "{count} titels verwijderd ({skipped} behouden — de bestanden zijn terug)."
+    },
+    "couldNotRemoveMissing": "Kon ontbrekende titels niet verwijderen",
+    "scanComplete": "Scan van ‘{name}’ voltooid: {added} toegevoegd, {updated} bijgewerkt, {removed} verwijderd.",
+    "scanFailed": "Scannen mislukt",
+    "episodes": {
+      "one": "{count} aflevering",
+      "other": "{count} afleveringen"
+    },
+    "files": {
+      "one": "{count} bestand",
+      "other": "{count} bestanden"
+    },
+    "stillOnDisk": {
+      "one": "{count} staat nog op de schijf: verwijder het om ruimte vrij te maken.",
+      "other": "{count} staan nog op de schijf: verwijder ze om ruimte vrij te maken."
+    }
+  },
+  "folderPicker": {
+    "title": "Kies een map",
+    "up": "Eén map omhoog",
+    "empty": "Geen mappen hierin.",
+    "newFolder": "Nieuwe map hierin (optioneel)",
+    "newFolderPlaceholder": "bijv. Plinthio Back-ups",
+    "useNew": "Nieuwe map gebruiken",
+    "useThis": "Deze map gebruiken",
+    "couldNotOpen": "Kon die map niet openen"
+  }
+}

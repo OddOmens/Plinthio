@@ -1,0 +1,82 @@
+{
+  "title": "Listas",
+  "intro": "Coisas para assistir, ler e ouvir, na sua ordem. Elas podem incluir títulos que o servidor ainda não tem.",
+  "requests": "Pedidos",
+  "categories": {
+    "movies": "Filmes",
+    "shows": "Séries",
+    "anime": "Anime",
+    "read": "Ler",
+    "listen": "Ouvir"
+  },
+  "titleCount": {
+    "one": "{count} título",
+    "other": "{count} títulos"
+  },
+  "newList": "Nova lista",
+  "newListName": {
+    "movies": "Nome da lista de filmes",
+    "shows": "Nome da lista de séries",
+    "anime": "Nome da lista de anime",
+    "read": "Nome da lista de leitura",
+    "listen": "Nome da lista para ouvir"
+  },
+  "noLists": {
+    "movies": "Nenhuma lista de filmes ainda.",
+    "shows": "Nenhuma lista de séries ainda.",
+    "anime": "Nenhuma lista de anime ainda.",
+    "read": "Nenhuma lista de leitura ainda.",
+    "listen": "Nenhuma lista para ouvir ainda."
+  },
+  "allLists": "Todas as listas",
+  "listFallback": "Lista",
+  "notInLibrary": "{count} fora da biblioteca",
+  "addTitles": "Adicionar títulos",
+  "deleteList": "Excluir lista",
+  "inList": "Na lista",
+  "seriesTitle": "{series}: {title}",
+  "empty": {
+    "title": "Nada nesta lista ainda",
+    "hint": "Use {addTitles} para pesquisar qualquer coisa, esteja no servidor ou não."
+  },
+  "moveEarlier": "Mover para cima",
+  "moveLater": "Mover para baixo",
+  "removeFromList": "Remover da lista",
+  "request": "Pedir",
+  "requestHint": "Pedir a um administrador para adicionar isto à biblioteca",
+  "requestStatus": {
+    "pending": "Pendente",
+    "accepted_pending": "Aceito · Aguardando adição",
+    "accepted_added": "Aceito · Adicionado",
+    "rejected": "Recusado"
+  },
+  "deleteDialog": {
+    "title": "Excluir lista?",
+    "message": "\"{name}\" será excluída. Nada é removido da sua biblioteca.",
+    "thisList": "Esta lista"
+  },
+  "addButton": {
+    "inNamed": "Em {list}",
+    "title": "Adicionar a uma das suas listas",
+    "list": "Lista",
+    "dialogLabel": "Adicionar {title} a uma lista",
+    "heading": "Adicionar a uma lista",
+    "loading": "Carregando suas listas…",
+    "newPlaceholder": "Nova lista…",
+    "firstPlaceholder": "Dê nome à sua primeira lista, ex.: Para assistir"
+  },
+  "errors": {
+    "loadLists": "Não foi possível carregar as listas.",
+    "loadYourLists": "Não foi possível carregar suas listas.",
+    "createList": "Não foi possível criar a lista.",
+    "createThatList": "Não foi possível criar essa lista.",
+    "gone": "Essa lista não existe mais.",
+    "loadList": "Não foi possível carregar esta lista.",
+    "deleteList": "Não foi possível excluir essa lista.",
+    "addTitle": "Não foi possível adicionar esse título.",
+    "addToList": "Não foi possível adicionar a essa lista.",
+    "request": "Não foi possível enviar esse pedido.",
+    "reorder": "Não foi possível salvar a nova ordem.",
+    "remove": "Não foi possível remover esse item."
+  }
+}

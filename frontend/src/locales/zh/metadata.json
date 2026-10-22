@@ -1,0 +1,176 @@
+{
+  "fields": {
+    "title": "标题",
+    "author": "作者",
+    "authors": "作者",
+    "director": "导演",
+    "directors": "导演",
+    "artists": "画师",
+    "artistsShort": "画师",
+    "cast": "演员",
+    "castActors": "演员阵容",
+    "series": "系列",
+    "releaseDate": "发行日期",
+    "date": "日期",
+    "ageRating": "年龄分级",
+    "status": "状态",
+    "publisher": "出版商",
+    "genres": "类型",
+    "themes": "主题",
+    "description": "简介",
+    "cover": "封面"
+  },
+  "ageRatings": {
+    "everyone": "全年龄",
+    "teen": "青少年",
+    "mature": "成人",
+    "explicit": "限制级"
+  },
+  "edit": {
+    "title": "编辑元数据",
+    "appliesToAll": {
+      "other": "应用于全部{count}卷"
+    },
+    "coverPreview": "封面预览",
+    "replaceCover": "替换封面",
+    "coverSaving": "正在保存",
+    "setForSeries": "为整个系列设置",
+    "replace": "替换",
+    "unknownAuthor": "未知作者",
+    "commaSeparated": "用逗号分隔",
+    "commaSeparatedActors": "演员，用逗号分隔",
+    "seriesName": "系列名称",
+    "releaseDateExample": "例如2019或2019-06-26",
+    "sameAsSeries": "与系列相同",
+    "unrated": "未分级",
+    "statusExample": "例如：连载中、已完结",
+    "descriptionPlaceholder": "剧情梗概 / 简介",
+    "saving": "正在保存...",
+    "searchToFill": "搜索 {provider} 以补全缺失信息",
+    "externalSources": "外部来源",
+    "searchPlaceholder": "搜索标题...",
+    "year": "年份",
+    "yearHint": "按发行年份筛选（例如2002）",
+    "searching": "正在搜索...",
+    "searchingProvider": "正在搜索 {provider}...",
+    "noResults": "未找到结果。请换个关键词试试。",
+    "searchedAs": "搜索词：{query}",
+    "resultDirector": "导演：{name}",
+    "resultCast": "演员：{names}",
+    "resultArt": "作画：{names}",
+    "useAll": "全部使用",
+    "uploadFailed": "无法上传该图片。",
+    "searchFailed": "搜索元数据来源失败，详情请查看浏览器控制台。",
+    "savedTitle": "元数据已保存",
+    "savedSeries": {
+      "other": "已更新该系列中的全部{count}项。"
+    },
+    "savedOne": "已更新“{title}”。",
+    "saveFailed": "保存元数据失败，详情请查看浏览器控制台。"
+  },
+  "manager": {
+    "title": "标题清理与匹配",
+    "description": "清除文件名中的发布标签，并从 TMDB 匹配海报、简介、演员和发行日期。",
+    "stats": {
+      "total": "媒体项目总数",
+      "totalHint": "所有已索引的内容",
+      "dirty": "标题需要清理",
+      "dirtyHint": "标题中含有发布标签或年份",
+      "missingCover": "缺少封面图",
+      "missingCoverHint": "没有海报或封面文件",
+      "missingMeta": "缺少简介 / 日期",
+      "missingMetaHint": "需要匹配 TMDB 简介"
+    },
+    "filters": {
+      "allLibraries": "所有媒体库",
+      "allMediaTypes": "所有媒体类型",
+      "tvShows": "电视剧",
+      "needsCleanup": "需要清理",
+      "searchPlaceholder": "按标题或路径筛选..."
+    },
+    "batch": {
+      "selectAll": "全选（{count}）",
+      "selected": "已选择{count}项",
+      "overwritePosters": "覆盖海报",
+      "useCanonicalTitle": "使用规范标题",
+      "cleanHint": "从数据库标题中去除发布标签和末尾的年份",
+      "cleanCount": "清理标题（{count}）",
+      "findHint": "将每个选中的标题与元数据来源（TMDB、MangaDex、Google Books、Open Library）匹配：封面图、简介、发行日期",
+      "findCount": "查找元数据（{count}）",
+      "stop": "停止",
+      "stopping": "正在停止…"
+    },
+    "summary": {
+      "matched": "已匹配{matched}/{total}项。",
+      "matchedStopped": "在你停止前已匹配{matched}/{total}项。",
+      "notFound": {
+        "other": "{count}项没有匹配结果，已在下方标出；可以对它们尝试“{action}”。"
+      },
+      "needsKey": {
+        "other": "{count}项是视频，需要 TMDB 密钥。请在“{where}”中添加后重新运行。"
+      },
+      "adminMetadata": "管理 → 元数据",
+      "failed": {
+        "other": "{count}项失败（原因见对应行）。"
+      }
+    },
+    "dismiss": "关闭",
+    "list": {
+      "analyzing": "正在分析媒体标题和元数据...",
+      "empty": "没有符合所选筛选条件的媒体项目。"
+    },
+    "badges": {
+      "frameTag": "截帧",
+      "tvEpisode": "电视剧集",
+      "poster": "海报",
+      "frame": "截帧",
+      "frameHint": "临时的视频截帧，运行“自动匹配”以获取官方海报",
+      "noPoster": "无海报",
+      "synopsis": "简介",
+      "noSynopsis": "无简介",
+      "noDate": "无日期"
+    },
+    "cleanLabel": "清理后：",
+    "actions": {
+      "autoMatch": "自动匹配",
+      "autoMatchHint": "与元数据来源匹配并更新此标题",
+      "editSearch": "编辑 / 搜索",
+      "editSearchHint": "手动搜索 TMDB、选择封面图或自定义元数据字段"
+    },
+    "match": {
+      "matchedAs": "已匹配为“{title}”",
+      "needsKey": "需要 TMDB 密钥，请在上方添加",
+      "noMatch": "未找到匹配，试试“编辑 / 搜索”",
+      "failed": "匹配失败，请重试"
+    },
+    "errors": {
+      "loadFailed": "加载项目失败"
+    },
+    "clean": {
+      "confirmTitle": {
+        "other": "清理{count}个标题？"
+      },
+      "confirmMessage": {
+        "other": "这会从数据库中{count}个选中的标题里去除 Scene 标签、编码、分辨率和末尾的发行年份。"
+      },
+      "confirm": "清理标题",
+      "progress": {
+        "other": "正在清理{count}个标题..."
+      },
+      "doneTitle": "标题已清理",
+      "doneMessage": {
+        "other": "已成功清理{count}个标题！"
+      },
+      "failedTitle": "批量清理失败"
+    },
+    "find": {
+      "confirmTitle": {
+        "other": "为{count}个项目查找元数据？"
+      },
+      "confirmMessage": "每个选中的标题都会与元数据来源（TMDB、MangaDex、Google Books、Open Library）匹配，并更新其封面图、简介和发行日期。结果会显示在每一行上，你可以随时停止。",
+      "confirm": "开始匹配",
+      "itemFallback": "项目",
+      "progress": "正在匹配第{current}/{total}项：{title}"
+    }
+  }
+}

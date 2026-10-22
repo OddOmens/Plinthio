@@ -1,0 +1,686 @@
+{
+  "nav": {
+    "yourSettings": "你的设置",
+    "groups": {
+      "server": "服务器",
+      "library": "媒体库",
+      "people": "用户",
+      "settings": "设置",
+      "system": "系统"
+    },
+    "items": {
+      "overview": {
+        "label": "概览",
+        "desc": "版本、更新和内容统计"
+      },
+      "libraries": {
+        "label": "媒体库",
+        "desc": "文件夹和自动扫描"
+      },
+      "health": {
+        "label": "健康状况",
+        "desc": "缺失的文件和需要修复的问题"
+      },
+      "metadata": {
+        "label": "元数据",
+        "desc": "TMDB密钥和标题匹配"
+      },
+      "kids": {
+        "label": "儿童模式",
+        "desc": "儿童帐户可以看到的内容"
+      },
+      "users": {
+        "label": "用户",
+        "desc": "帐户、角色、限制"
+      },
+      "activity": {
+        "label": "活动",
+        "desc": "登录记录和正在播放的内容"
+      },
+      "appearance": {
+        "label": "外观",
+        "desc": "默认值、名称、自定义CSS"
+      },
+      "features": {
+        "label": "功能",
+        "desc": "书架视图、评分、一起看"
+      },
+      "playback": {
+        "label": "播放",
+        "desc": "硬件加速、片头短片"
+      },
+      "network": {
+        "label": "网络",
+        "desc": "外出访问、Tailscale、两步验证"
+      },
+      "backups": {
+        "label": "备份",
+        "desc": "计划、副本、还原点"
+      },
+      "logs": {
+        "label": "日志",
+        "desc": "服务器最近做了什么"
+      }
+    }
+  },
+  "activity": {
+    "title": "活动",
+    "description": "所有帐户的登录记录，以及正在阅读、观看和收听的内容。",
+    "show": "显示",
+    "everyone": "所有人"
+  },
+  "appearance": {
+    "title": "外观",
+    "description": "Plinthio对所有人的外观：服务器默认值、名称和你自己的CSS。更改会即时保存。",
+    "personalize": {
+      "label": "允许用户个性化",
+      "desc": "每个人都可以在“设置 → 外观”中选择自己的颜色、导航、宽度和暂停画面。关闭后所有人都使用服务器的外观。"
+    },
+    "usersCanChange": "用户可更改",
+    "cards": {
+      "accent": "按钮、徽章和当前标签页上的强调色。",
+      "pageWidth": "在大屏幕上页面的最大宽度。",
+      "pauseScreen": "暂停几秒后显示的内容；移动鼠标或触摸屏幕时会淡出。设置了密钥后，演职人员和相关信息来自TMDB。"
+    },
+    "branding": {
+      "title": "名称和登录提示",
+      "desc": "你的服务器名称，以及登录页上的可选提示。",
+      "serverName": "服务器名称",
+      "notice": "登录提示",
+      "removeNotice": "移除登录提示"
+    },
+    "css": {
+      "title": "自定义CSS",
+      "desc": "你自己的样式规则，会添加到所有人的每个页面上。先在这里试试，保存后即生效。",
+      "cheatsheet": "CSS速查表",
+      "example": "/* 例如 */",
+      "save": "保存CSS",
+      "tryIt": "在此页面上试用",
+      "notSaved": "未保存",
+      "couldNotSave": "无法保存CSS"
+    }
+  },
+  "backups": {
+    "title": "备份",
+    "description": "数据库快照：帐户、所有人的进度、书签、高亮和笔记、评分、列表、媒体库和元数据。不包括你的媒体文件。每次升级前也会创建快照，并始终保留最新的五个。",
+    "automatic": "自动备份",
+    "schedule": {
+      "label": "按计划备份",
+      "desc": "保存在服务器的/config/backups中。"
+    },
+    "howOften": "频率",
+    "frequency": {
+      "every6h": "每6小时",
+      "every12h": "每12小时",
+      "daily": "每天",
+      "every3d": "每3天",
+      "weekly": "每周"
+    },
+    "keepLast": "保留最近",
+    "destination": {
+      "label": "同时将备份复制到",
+      "why": "/config/backups和服务器在同一块磁盘上。放在另一块硬盘、NAS或同步的云文件夹中的副本，在这块磁盘损坏时也能幸存。",
+      "placeholder": "不复制到其他位置",
+      "browseAria": "浏览备份文件夹",
+      "browse": "浏览",
+      "testAria": "测试备份文件夹",
+      "test": "测试",
+      "checking": "检查中…",
+      "writable": "服务器可以写入该位置。",
+      "writableFree": "服务器可以写入该位置 · 可用{free}。",
+      "sameDisk": "它和服务器的数据在同一块磁盘上，所以能防止误操作，但防不了磁盘损坏。最好选另一块硬盘上的文件夹。",
+      "otherDisk": "它和服务器的数据不在同一块磁盘上。",
+      "hint": "填写服务器所看到的文件夹路径。在Docker中：{media}下任何非只读的位置，或挂载在{backups}的另一块硬盘（文档 → 备份与数据安全）。",
+      "keepThere": "在该位置保留",
+      "copyFiles": "同时复制头像、封面、登录密钥和HTTPS证书",
+      "couldNotCheck": "无法检查该文件夹",
+      "pickerTitle": "将备份复制到"
+    },
+    "saveAria": "保存备份设置",
+    "savedCopying": "已保存。现有的备份正在复制到{path}。",
+    "copyFailed": "复制到{path}失败：{error}。每15分钟会重试一次。",
+    "copiedTo": "已复制到{path}，{when}",
+    "notYet": "——尚未复制",
+    "copying": "复制中…",
+    "copyNow": "立即复制",
+    "stored": "已存储的备份",
+    "storedCount": "已存储的备份（{count}）",
+    "backingUp": "备份中…",
+    "backUpNow": "立即备份",
+    "preparing": "准备中…",
+    "downloadSnapshot": "下载快照",
+    "empty": "还没有备份。开启自动备份或立即备份。",
+    "downloadThis": "下载此备份",
+    "deleteThis": "删除此备份",
+    "couldNotBackUp": "无法创建备份",
+    "couldNotSnapshot": "无法创建快照。详情请查看浏览器控制台。",
+    "couldNotDownload": "无法下载该备份。详情请查看浏览器控制台。",
+    "deleteTitle": "删除备份",
+    "deleteMessage": "要删除{date}的备份吗？此操作无法撤销。",
+    "couldNotDelete": "无法删除该备份"
+  },
+  "features": {
+    "title": "功能",
+    "description": "此服务器上为所有人开启的功能。更改会即时保存。",
+    "shelfViews": {
+      "title": "书架视图",
+      "desc": "按字母和按创作者视图始终可用。关闭某个文件夹视图会对所有人隐藏它。"
+    },
+    "folderModes": {
+      "diskFolder": {
+        "label": "磁盘文件夹",
+        "desc": "按服务器上的文件夹浏览。"
+      },
+      "customFolder": {
+        "label": "自定义文件夹",
+        "desc": "每个人在应用内自建的文件夹，另有一个“未整理”收纳其余内容。"
+      }
+    },
+    "ratings": {
+      "title": "评分",
+      "desc": "显示哪些评分。关闭的评分在所有地方都会隐藏，服务器也不再发送它。",
+      "personal": {
+        "label": "个人评分",
+        "desc": "每个人都可以打1–5星，并看到自己的评分。"
+      },
+      "community": {
+        "label": "{name}评分",
+        "desc": "此服务器上所有人的平均分。"
+      },
+      "external": {
+        "label": "全球评分（TMDB）",
+        "desc": "TMDB对电影、剧集和动画的评分。需要TMDB密钥。"
+      }
+    },
+    "movies": {
+      "title": "电影和一起看",
+      "missingFilms": {
+        "label": "在合集中显示缺少的电影",
+        "desc": "像《怪物史莱克》或《星球大战》这样的合集也会列出你没有的电影，以灰色显示并带有“请求”按钮。它们不会出现在电影书架上。需要TMDB密钥。"
+      },
+      "watchParties": {
+        "label": "一起看",
+        "desc": "在电影和剧集上显示“一起看”按钮：身处不同地方也能同步观看，还可以聊天。内容限制对参与的每个人仍然有效。不在家的朋友需要能访问此服务器（见“网络”）。关闭后会结束所有正在进行的一起看。"
+      }
+    }
+  },
+  "kids": {
+    "title": "儿童模式",
+    "description": "儿童帐户只能看到这里开启的内容。在“用户”中将帐户设为儿童帐户。",
+    "libraries": {
+      "title": "整个媒体库",
+      "desc": "这些媒体库中现在和以后的所有内容。"
+    },
+    "noLibraries": "还没有媒体库。",
+    "items": {
+      "other": "{number}项"
+    },
+    "titles": {
+      "title": "单个系列和作品",
+      "desc": "可在任意系列或作品页面上通过{button}按钮添加更多。",
+      "button": "儿童"
+    },
+    "noneYet": "暂无。",
+    "series": "系列",
+    "singleTitle": "作品",
+    "removeAria": "将{name}移出儿童模式",
+    "couldNotRemove": "无法将其移出儿童模式"
+  },
+  "libraries": {
+    "title": "媒体库",
+    "description": "Plinthio读取媒体的文件夹。它从不修改你的文件。",
+    "add": "添加媒体库",
+    "empty": "还没有媒体库。添加一个，让Plinthio指向存放媒体的文件夹。",
+    "kids": "儿童",
+    "items": {
+      "other": "{number}项"
+    },
+    "scanning": "扫描中…",
+    "scan": "扫描",
+    "deleteAria": "删除{name}",
+    "deleteLibrary": "删除媒体库",
+    "types": {
+      "movies": "电影",
+      "shows": "电视剧",
+      "anime": "动画",
+      "books": "书籍",
+      "manga": "漫画",
+      "audiobooks": "有声书"
+    },
+    "autoScan": {
+      "title": "自动扫描",
+      "desc": "无需手动点击“扫描”，即可发现添加到媒体库文件夹中的媒体。",
+      "scheduled": {
+        "label": "按计划重新扫描",
+        "desc": "最可靠的方式：对不报告变更的网络共享和挂载点也有效。"
+      },
+      "schedule": "计划",
+      "modes": {
+        "interval": "按固定间隔",
+        "times": "每天在设定时间"
+      },
+      "every": "重新扫描间隔",
+      "intervals": {
+        "15": "15分钟",
+        "30": "30分钟",
+        "60": "1小时",
+        "360": "6小时",
+        "1440": "1天"
+      },
+      "at": "重新扫描时间",
+      "timeAria": "扫描时间{number}",
+      "removeTime": "移除{time}",
+      "thisTime": "此时间",
+      "addTime": "添加时间",
+      "timesHint": "使用服务器的时区。如果服务器在设定时间处于关闭状态，恢复后会扫描一次。",
+      "watch": {
+        "label": "监视文件夹变化",
+        "desc": "在文件系统报告新文件出现后约30秒进行扫描。无论是否设置计划都有效。"
+      },
+      "manual": "自动扫描已关闭。在管理员对媒体库点击“扫描”之前，新媒体不会显示。",
+      "noSchedule": "没有计划时，网络共享或不发送文件事件的挂载点上的变化，要等你点击“扫描”才会被发现。",
+      "noTimes": "没有设定时间，计划永远不会运行。请添加时间，或改为按固定间隔。"
+    },
+    "addDialog": {
+      "title": "添加媒体库",
+      "folder": "文件夹",
+      "browse": "浏览",
+      "folderHint": "填写服务器所看到的路径。在Docker中，你的媒体挂载在{path}。",
+      "name": "名称",
+      "namePlaceholder": "例如：有声书",
+      "whatsInIt": "内容类型",
+      "adding": "添加中…",
+      "addAndScan": "添加并扫描",
+      "pickerTitle": "选择媒体库文件夹"
+    },
+    "scanResult": {
+      "title": "已扫描{name}",
+      "added": "新增{count}项",
+      "renamed": "{count}项已重命名或移动",
+      "updated": "更新{count}项",
+      "removed": "移除{count}项",
+      "summary": "{parts}。",
+      "nothingNew": "没有新内容。"
+    },
+    "scanFailed": "扫描失败",
+    "deleteMessage": "要删除“{name}”吗？你的文件不会被改动，如果再次添加同一个文件夹，进度和书签都会回来。在重新扫描之前，其中的作品、封面和详情会被移除。",
+    "couldNotDelete": "无法删除该媒体库",
+    "couldNotAdd": "无法添加该媒体库"
+  },
+  "logs": {
+    "title": "日志",
+    "description": "扫描、错误和服务器最近做的事，最新的在前。",
+    "live": "实时",
+    "paused": "已暂停",
+    "refreshNow": "立即刷新",
+    "searchPlaceholder": "搜索消息和类别",
+    "searchAria": "搜索日志",
+    "level": "级别",
+    "levels": {
+      "all": "全部",
+      "info": "信息",
+      "warn": "警告",
+      "error": "错误"
+    },
+    "nothingMatches": "没有匹配项。",
+    "clearTitle": "清除日志",
+    "clearMessage": "要从数据库中删除所有日志条目吗？",
+    "couldNotClear": "无法清除日志"
+  },
+  "metadata": {
+    "title": "元数据",
+    "description": "海报、简介、演职人员和评分的来源，以及整理从文件名得来的标题。",
+    "tmdb": {
+      "title": "TMDB密钥",
+      "descBuiltIn": "电影、剧集和动画的详情来自TMDB，使用Plinthio内置的密钥。你也可以粘贴自己的TMDB密钥来代替。漫画（MangaDex）和书籍（Google Books、Open Library）无需任何设置。",
+      "descNeedsKey": "电影、剧集和动画的详情来自TMDB，需要一个免费的密钥。漫画（MangaDex）和书籍（Google Books、Open Library）无需任何设置。",
+      "sources": {
+        "custom": "你自己的",
+        "environment": "来自TMDB_API_KEY",
+        "builtin": "内置",
+        "set": "已设置",
+        "notSet": "未设置"
+      },
+      "keyLabel": "TMDB API密钥",
+      "placeholderReplace": "粘贴新密钥以替换",
+      "placeholderOptional": "粘贴你自己的TMDB密钥（可选）",
+      "placeholderToken": "粘贴你的TMDB API读取访问令牌",
+      "saveKey": "保存密钥",
+      "useBuiltIn": "使用内置密钥",
+      "getOne": "可在{link}免费获取。",
+      "getOneLink": "themoviedb.org → Settings → API",
+      "attribution": "本产品使用TMDB API，但未经TMDB认可或认证。",
+      "removeTitle": "移除TMDB密钥",
+      "removeMessage": "在重新添加密钥之前，电影、剧集和动画将不再获取新的海报、详情和全球评分。"
+    }
+  },
+  "overview": {
+    "title": "概览",
+    "description": "此服务器一览：版本、内容和使用者。",
+    "checksOff": "更新检查已关闭（UPDATE_CHECK=false）。",
+    "available": "{version}已发布。",
+    "updateWith": "使用{command}更新",
+    "upToDate": "已是最新版本。",
+    "upToDateCheckFailed": "已是最新版本（上次检查失败——是否离线？）。",
+    "notChecked": "尚未检查。",
+    "releaseNotes": "发行说明",
+    "checking": "检查中…",
+    "checkNow": "立即检查",
+    "tiles": {
+      "files": "文件",
+      "onDisk": "占用空间",
+      "audio": "音频",
+      "accounts": "帐户"
+    },
+    "byMediaType": "按媒体类型",
+    "files": {
+      "other": "{number}个文件"
+    },
+    "series": {
+      "other": "{number}个系列"
+    },
+    "creators": {
+      "other": "{number}位创作者"
+    }
+  },
+  "playback": {
+    "title": "播放",
+    "description": "视频如何送达用户的屏幕，以及可在播放前出现的片头短片。",
+    "hwaccel": {
+      "title": "硬件加速",
+      "desc": "只要浏览器支持，Plinthio就会直接播放原始文件，只转换浏览器无法播放的部分。有显卡芯片时，转换的开销会小得多。",
+      "found": "在本机上检测到",
+      "noneCpu": "无——使用CPU",
+      "use": "使用",
+      "auto": "检测到什么就用什么（推荐）",
+      "cpu": "始终使用CPU",
+      "always": "始终使用{method}",
+      "testing": "测试中…",
+      "test": "测试",
+      "works": "{method}在本机上可用。",
+      "failed": "{method}不可用：{error}",
+      "testHint": "测试会进行一次简短的真实转换：ffmpeg列出某个编码器，并不能证明其底层驱动可用。",
+      "testFailed": "测试失败",
+      "howItWorks": "播放原理及显卡芯片的设置方法",
+      "tips": {
+        "direct": {
+          "title": "直接播放和直接串流：",
+          "text": "浏览器能解码的视频（H.264，或在Chrome、Edge、Vivaldi和Safari中的HEVC）会原样发送，最高4K，即使是MKV文件也一样。只有浏览器无法播放的音频（EAC3、Atmos、DTS）会被转换为AAC。"
+        },
+        "browser": {
+          "title": "浏览器方面：",
+          "text": "播放4K时，请确认浏览器使用硬件解码视频（{page} → Video Decode: Hardware accelerated）。"
+        },
+        "docker": {
+          "title": "在Docker中使用Intel Quick Sync和VAAPI：",
+          "text": "在{devices}下传入{dri}，并在{groupAdd}下添加主机的{render}组ID。"
+        },
+        "small": {
+          "title": "小型设备：",
+          "text": "使用CPU转换时限制为两个线程并采用最快的预设，预览缩略图也会单独生成，这样迷你主机就不会过热。"
+        }
+      }
+    },
+    "intro": {
+      "title": "片头",
+      "desc": "有人在电影或剧集上点击“播放”时全屏播放的一段短片。自动连播的剧集、预告片和一起看之前都不会播放，任何人都可以跳过。",
+      "checking": "检查中…",
+      "upload": "上传短片",
+      "custom": "你自己的短片。",
+      "builtIn": "Plinthio内置的短片。用你自己的替换：",
+      "requirements": "MP4（H.264），1–10秒，最大20 MB。1080p、约8 Mbps就足够了。",
+      "thisOne": "这段短片时长{seconds}秒。",
+      "replace": "替换",
+      "useBuiltIn": "使用内置短片",
+      "play": "播放片头",
+      "offUntil": "在你开启之前处于关闭状态。",
+      "uploadFirst": "请先上传短片。",
+      "beforeMovies": "电影之前",
+      "beforeShows": "剧集和动画之前",
+      "tooBig": "该文件超过20 MB。请导出更短或码率更低的版本。",
+      "uploadFailed": "上传失败",
+      "removeTitle": "移除你的短片",
+      "removeMessage": "要移除你的短片并改回Plinthio内置的片头吗？",
+      "couldNotRemove": "无法移除"
+    }
+  },
+  "users": {
+    "title": "用户",
+    "description": "所有可以登录此服务器的人。不支持自行注册：帐户在这里创建。",
+    "add": "添加用户",
+    "editAria": "编辑{name}",
+    "you": "你",
+    "lastIn": "上次登录：{date}",
+    "neverSignedIn": "从未登录",
+    "network": "（{network}）",
+    "outside": "外部",
+    "roles": {
+      "label": "角色",
+      "viewer": {
+        "label": "观众",
+        "desc": "浏览、阅读、观看和收听；记录自己的进度。"
+      },
+      "editor": {
+        "label": "编辑者",
+        "desc": "还可以修正共享的作品、封面和详情。"
+      },
+      "admin": {
+        "label": "管理员",
+        "desc": "一切权限，包括媒体库、用户和此页面。"
+      }
+    },
+    "durations": {
+      "day": {
+        "other": "{count}天"
+      },
+      "week": {
+        "other": "{count}周"
+      },
+      "month": {
+        "other": "{count}个月"
+      },
+      "year": {
+        "other": "{count}年"
+      }
+    },
+    "addDialog": {
+      "title": "添加用户",
+      "passwordHint": "至少8个字符。对方可以在“设置 → 安全”中修改。",
+      "adding": "添加中…"
+    },
+    "access": "访问权限",
+    "noEndDate": "无结束日期",
+    "noEndDateSentence": "无结束日期。",
+    "forDuration": "为期{duration}",
+    "untilDate": "直到某个日期…",
+    "accessEnds": "访问结束于",
+    "editDialog": {
+      "title": "编辑{name}",
+      "joined": "加入于{date}"
+    },
+    "ended": "已于{date}结束",
+    "ends": "{date}结束",
+    "extendBy": "+{duration}",
+    "removeEndDate": "移除结束日期",
+    "setAccess": "设置访问权限",
+    "setNewEnd": "或设置新的结束日期…",
+    "keepNoEnd": "保持无结束日期",
+    "fromNow": "从现在起{duration}",
+    "remote": {
+      "label": "可在外出时使用Plinthio",
+      "desc": "在服务器允许外部访问时（见“网络”）。关闭：仅限在家和通过Tailscale使用。"
+    },
+    "kidsAccount": {
+      "label": "儿童帐户",
+      "desc": "只能看到儿童模式中开启的内容。"
+    },
+    "twoFactorOn": "两步验证已开启",
+    "twoFactorHelp": "对方丢了手机和备用码？重置后，对方可以用密码登录并重新设置。",
+    "contentLimit": "内容限制",
+    "noLimit": "无限制",
+    "everyoneOnly": "仅限全年龄",
+    "upTo": "最高{rating}",
+    "ageRatings": {
+      "everyone": "全年龄",
+      "teen": "青少年",
+      "mature": "成人"
+    },
+    "allowUnrated": "同时显示未分级的作品。关闭则为严格模式：只显示已分级且不超过限制的作品。",
+    "ratingsHint": "分级在每个系列或作品上设置。",
+    "newPassword": "新密码",
+    "newPasswordPlaceholder": "留空则保留原密码",
+    "newPasswordHint": "至少8个字符。设置后对方会在所有设备上退出登录。",
+    "accessEnded": "访问已结束",
+    "hoursLeft": {
+      "other": "剩余{count}小时"
+    },
+    "daysLeft": {
+      "other": "剩余{count}天"
+    },
+    "badges": {
+      "twoFactor": "两步验证",
+      "twoFactorTitle": "登录时还需要验证器应用中的验证码",
+      "homeOnly": "仅限在家",
+      "homeOnlyTitle": "只能在家庭网络中使用Plinthio",
+      "kids": "儿童",
+      "unratedHidden": "未分级的作品也会隐藏",
+      "unratedAllowed": "允许未分级的作品"
+    },
+    "couldNotAdd": "无法添加该用户",
+    "couldNotChangeAccess": "无法更改其访问权限",
+    "passwordTooShort": "新密码至少需要8个字符。",
+    "couldNotSave": "无法保存这些更改",
+    "resetTitle": "重置两步验证？",
+    "resetMessage": "{name}将在所有设备上退出登录，之后只需密码即可登录，并可在“设置 → 安全”中重新设置两步验证。",
+    "couldNotReset": "无法重置两步验证",
+    "deleteTitle": "删除用户",
+    "deleteMessage": "要删除{name}吗？其进度、书签、高亮、列表和评分都会一并删除。",
+    "deleteUser": "删除用户",
+    "couldNotDelete": "无法删除该用户"
+  },
+  "health": {
+    "title": "健康状况",
+    "description": "你的媒体库中需要注意的问题。",
+    "checked": "检查于{time}。",
+    "checking": "检查中…",
+    "runCheck": "运行检查",
+    "tiles": {
+      "libraries": "无法访问的媒体库",
+      "missing": "缺失的文件",
+      "duplicates": "重复项",
+      "clashes": "卷号冲突",
+      "metadata": "无封面",
+      "transcode": "编码失败"
+    },
+    "allClear": "一切正常。",
+    "libraries": "媒体库",
+    "itemsTotal": {
+      "other": "共{number}项"
+    },
+    "items": {
+      "other": "{number}项"
+    },
+    "scanned": "扫描于{time}",
+    "neverScanned": "从未扫描",
+    "unreachable": "无法访问文件夹——请检查硬盘是否已挂载、Docker卷是否已映射。在恢复之前，项目会保留在目录中。",
+    "rescan": "重新扫描",
+    "noLibraries": "还没有媒体库。",
+    "missing": {
+      "title": "缺失的文件",
+      "hint": "已从磁盘上消失。是为了释放空间而有意删除的吗？那就保留为记录：它们会以灰色留在作品页面上，所有人的进度都会保留。否则它们暂时会被隐藏（硬盘可能短暂不可用），文件回来后会自动恢复；确定之后再将它们永久移除。",
+      "keepAll": "全部保留为记录",
+      "removing": "移除中…",
+      "removeAll": "全部永久移除"
+    },
+    "keepAsHistory": "保留为记录",
+    "removeForGood": "永久移除",
+    "offloaded": {
+      "title": "已归档（保留为记录）",
+      "hint": "为释放空间而移除并保留为记录：从书架和搜索中隐藏，在作品页面上以灰色显示并保留所有人的进度。如果文件回来了，它们会自动恢复。",
+      "undo": "撤销"
+    },
+    "duplicates": {
+      "title": "可能的重复项",
+      "hint": "标题相同且文件大小完全一致——通常是同一个文件放在了两个文件夹或媒体库中。",
+      "copies": {
+        "other": "{count}份"
+      }
+    },
+    "clashes": {
+      "title": "卷号/集数冲突",
+      "hint": "同一系列中，不同的文件声称是同一卷或同一集。通常是文件命名有误。"
+    },
+    "metadata": {
+      "title": "缺少封面或元数据",
+      "hint": "{noCover}项没有封面，{noAuthor}本书籍/漫画/有声书没有作者，{noDescription}项没有简介。可在“元数据”标签页中修复。",
+      "open": "打开元数据",
+      "noCover": "无封面",
+      "noAuthor": "无作者"
+    },
+    "unrated": {
+      "title": "未分级的作品",
+      "hint": "本身及所属系列都没有年龄分级的作品。只有在你对某些用户使用内容限制时才有影响——系列在系列面板中分级，单个作品在元数据编辑器中分级。"
+    },
+    "transcode": {
+      "title": "最近的播放编码失败",
+      "hint": "准备视频时ffmpeg出错。通常是硬件加速驱动的问题——试试“管理 → 播放 → 测试”。"
+    },
+    "mediaTypes": {
+      "movie": "电影",
+      "show": "剧集",
+      "anime": "动画",
+      "manga": "漫画",
+      "book": "书籍",
+      "audiobook": "有声书"
+    },
+    "couldNotRun": "无法运行健康检查",
+    "groupSeason": "{name}第{season}季",
+    "titlesCount": {
+      "other": "{count}部作品"
+    },
+    "keepTitle": "保留为记录？",
+    "keepMessage": {
+      "other": "{label}将以灰色留在作品页面上，所有人的进度都会保留，但无法播放。如果文件回来了，会自动恢复。"
+    },
+    "couldNotKeep": "无法将它们保留为记录",
+    "couldNotUndo": "无法撤销",
+    "removeTitle": "永久移除？",
+    "removeMessage": "要从目录中移除{name}吗？进度和评分会保留在数据库中，若以后再次扫描到相同的文件会重新关联，但在那之前不会显示。",
+    "skipped": {
+      "other": "保留了{count}项：它们的文件已经回来了。"
+    },
+    "couldNotRemove": "无法移除",
+    "removeMissingTitle": "移除缺失的作品？",
+    "removeMissingMessage": {
+      "other": "要从目录中永久移除{count}部缺失的作品吗？文件已经回来的内容会保留，已保留为记录的内容也会保留。阅读进度和评分同样会保留，若以后再次扫描到相同的文件会重新关联。"
+    },
+    "removed": {
+      "other": "已移除{count}部作品。"
+    },
+    "removedSkipped": {
+      "other": "已移除{count}部作品（保留了{skipped}部——它们的文件已经回来了）。"
+    },
+    "couldNotRemoveMissing": "无法移除缺失的作品",
+    "scanComplete": "“{name}”扫描完成：新增{added}项，更新{updated}项，移除{removed}项。",
+    "scanFailed": "扫描失败",
+    "episodes": {
+      "other": "{count}集"
+    },
+    "files": {
+      "other": "{count}个文件"
+    },
+    "stillOnDisk": {
+      "other": "{count}项仍在磁盘上：删除它们即可释放空间。"
+    }
+  },
+  "folderPicker": {
+    "title": "选择文件夹",
+    "up": "上一级文件夹",
+    "empty": "这里没有文件夹。",
+    "newFolder": "在此文件夹中新建文件夹（可选）",
+    "newFolderPlaceholder": "例如：Plinthio备份",
+    "useNew": "使用新文件夹",
+    "useThis": "使用此文件夹",
+    "couldNotOpen": "无法打开该文件夹"
+  }
+}

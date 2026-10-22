@@ -1,0 +1,154 @@
+{
+  "unknownAuthor": "Nieznany autor",
+  "untitledAudiobook": "Audiobook Plinthio",
+  "coverOf": "Okładka: {title}",
+  "units": {
+    "secondsShort": "{count} s",
+    "minutesShort": "{count} min"
+  },
+  "video": {
+    "backToShelf": "Wróć do półki",
+    "castToTv": "Przesyłaj na TV",
+    "playbackSettings": "Ustawienia odtwarzania",
+    "skipBack": "Przewiń do tyłu",
+    "skipForward": "Przewiń do przodu",
+    "quality": "Jakość",
+    "auto": "Auto",
+    "audio": "Dźwięk",
+    "subtitles": "Napisy",
+    "noAlternateTracks": "Brak innych ścieżek w tym wideo.",
+    "track": "Ścieżka {number}",
+    "channels": "{count} kan.",
+    "forced": "wymuszone",
+    "skipIntro": "Pomiń czołówkę",
+    "skipCredits": "Pomiń napisy końcowe",
+    "skipAria": {
+      "backSeconds": {
+        "one": "{count} sekunda do tyłu",
+        "few": "{count} sekundy do tyłu",
+        "many": "{count} sekund do tyłu",
+        "other": "{count} sekundy do tyłu"
+      },
+      "backMinutes": {
+        "one": "{count} minuta do tyłu",
+        "few": "{count} minuty do tyłu",
+        "many": "{count} minut do tyłu",
+        "other": "{count} minuty do tyłu"
+      },
+      "forwardSeconds": {
+        "one": "{count} sekunda do przodu",
+        "few": "{count} sekundy do przodu",
+        "many": "{count} sekund do przodu",
+        "other": "{count} sekundy do przodu"
+      },
+      "forwardMinutes": {
+        "one": "{count} minuta do przodu",
+        "few": "{count} minuty do przodu",
+        "many": "{count} minut do przodu",
+        "other": "{count} minuty do przodu"
+      }
+    },
+    "skipHint": "{action} — kliknij prawym przyciskiem, aby zmienić",
+    "toggleFullscreen": "Pełny ekran",
+    "preparing": {
+      "transcode": "Konwertowanie dla twojej przeglądarki…",
+      "remux": "Bezpośrednie strumieniowanie…",
+      "direct": "Rozpoczynanie odtwarzania…"
+    },
+    "resumedFrom": "Wznowiono od {time}",
+    "startOver": "Od początku",
+    "upNext": "Następny",
+    "playNow": "Odtwórz teraz ({seconds})",
+    "cantPlay": "Nie można odtworzyć tego wideo",
+    "errorHelp": "Błąd {code}: co to oznacza",
+    "retry": "Ponów",
+    "errors": {
+      "P350": "Ta przeglądarka nie może odtworzyć tego wideo, nawet po konwersji.",
+      "P351": "Utracono połączenie z serwerem. Sprawdź sieć i naciśnij Ponów.",
+      "P352": "Dostęp do multimediów wygasł i nie udało się go odnowić. Odśwież stronę albo wyloguj się i zaloguj ponownie.",
+      "failed": "Odtwarzanie nie powiodło się."
+    }
+  },
+  "pause": {
+    "youreWatching": "Oglądasz",
+    "paused": "Wstrzymano",
+    "starring": "Występują",
+    "createdBy": "Twórcy",
+    "directedBy": "Reżyseria",
+    "leftEndsAt": "Zostało {remaining} · koniec o {time}",
+    "seasonRest": {
+      "one": "Reszta sezonu (jeszcze {count} odcinek) skończyłaby się o {time}",
+      "few": "Reszta sezonu (jeszcze {count} odcinki) skończyłaby się o {time}",
+      "many": "Reszta sezonu (jeszcze {count} odcinków) skończyłaby się o {time}",
+      "other": "Reszta sezonu (jeszcze {count} odcinka) skończyłaby się o {time}"
+    },
+    "runtimeMinutes": "{minutes} min",
+    "runtimeHours": "{hours} godz. {minutes} min",
+    "dollars": "{amount} $",
+    "timesBudget": "{amount} ({multiple}× budżet)",
+    "seasons": {
+      "one": "{count} sezon",
+      "few": "{count} sezony",
+      "many": "{count} sezonów",
+      "other": "{count} sezonu"
+    },
+    "episodes": {
+      "one": "{count} odcinek",
+      "few": "{count} odcinki",
+      "many": "{count} odcinków",
+      "other": "{count} odcinka"
+    },
+    "seasonsAndEpisodes": "{seasons}, {episodes}",
+    "since": "od {year}",
+    "facts": {
+      "originalTitle": "Tytuł oryginalny",
+      "budget": "Budżet",
+      "boxOffice": "Wpływy z kin",
+      "series": "Serial",
+      "onAir": "Emisja",
+      "partOf": "Kolekcja",
+      "network": "Stacja",
+      "studio": "Studio",
+      "music": "Muzyka",
+      "cinematography": "Zdjęcia"
+    }
+  },
+  "audio": {
+    "openNowPlaying": "Otwórz Teraz odtwarzane",
+    "skipBack": "Cofnij o {count} s",
+    "skipForward": "Przewiń o {count} s",
+    "closePlayer": "Zamknij odtwarzacz",
+    "fullscreen": "Teraz odtwarzane na pełnym ekranie",
+    "playbackSpeed": "Prędkość odtwarzania",
+    "sleepTimer": "Wyłącznik czasowy",
+    "rate": "{rate}x",
+    "chapterShort": "Rozdz."
+  },
+  "nowPlaying": {
+    "minimize": "Zminimalizuj odtwarzacz",
+    "playingAudiobook": "Odtwarzany audiobook",
+    "chapters": "Rozdziały",
+    "bookmarks": "Zakładki",
+    "bookmarksAndNotes": "Zakładki i notatki",
+    "backToPlayer": "Wróć do odtwarzacza",
+    "addBookmark": "Dodaj zakładkę",
+    "notePlaceholder": "Opcjonalna notatka (np. ważny cytat, wskazówka)...",
+    "saveBookmark": "Zapisz zakładkę",
+    "deleteBookmark": "Usuń zakładkę",
+    "noBookmarks": "Brak zapisanych zakładek w tym audiobooku.",
+    "bookmarkTitle": "Zakładka @ {time}",
+    "leftInChapter": "{time} do końca rozdziału",
+    "previousChapter": "Poprzedni rozdział",
+    "nextChapter": "Następny rozdział",
+    "speed": "Prędkość",
+    "sleep": "Wyłącznik",
+    "endOfChapter": "Koniec rozdz.",
+    "stoppingAtChapterEnd": "Zatrzymanie na końcu tego rozdziału",
+    "stoppingIn": "Zatrzymanie za {time}",
+    "saveFailed": "Nie udało się zapisać zakładki",
+    "deleteFailed": "Nie udało się usunąć zakładki"
+  },
+  "intro": {
+    "label": "Czołówka"
+  }
+}

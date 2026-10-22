@@ -1,0 +1,186 @@
+{
+  "fields": {
+    "title": "Titel",
+    "author": "Auteur",
+    "authors": "Auteur(s)",
+    "director": "Regisseur",
+    "directors": "Regisseur(s)",
+    "artists": "Tekenaar(s)",
+    "artistsShort": "Tekenaars",
+    "cast": "Cast",
+    "castActors": "Cast / acteurs",
+    "series": "Serie",
+    "releaseDate": "Releasedatum",
+    "date": "Datum",
+    "ageRating": "Leeftijdsclassificatie",
+    "status": "Status",
+    "publisher": "Uitgever",
+    "genres": "Genres",
+    "themes": "Thema's",
+    "description": "Beschrijving",
+    "cover": "Omslag"
+  },
+  "ageRatings": {
+    "everyone": "Alle leeftijden",
+    "teen": "Tieners",
+    "mature": "Volwassenen",
+    "explicit": "Expliciet"
+  },
+  "edit": {
+    "title": "Metadata bewerken",
+    "appliesToAll": {
+      "one": "Geldt voor {count} deel",
+      "other": "Geldt voor alle {count} delen"
+    },
+    "coverPreview": "Voorbeeld omslag",
+    "replaceCover": "Omslag vervangen",
+    "coverSaving": "Opslaan",
+    "setForSeries": "Instellen voor serie",
+    "replace": "Vervangen",
+    "unknownAuthor": "Onbekende auteur",
+    "commaSeparated": "Gescheiden door komma's",
+    "commaSeparatedActors": "Acteurs, gescheiden door komma's",
+    "seriesName": "Naam van de serie",
+    "releaseDateExample": "bijv. 2019 of 2019-06-26",
+    "sameAsSeries": "Zelfde als serie",
+    "unrated": "Niet geclassificeerd",
+    "statusExample": "bijv. Lopend, Afgerond",
+    "descriptionPlaceholder": "Samenvatting / beschrijving",
+    "saving": "Opslaan...",
+    "searchToFill": "Zoek in {provider} om ontbrekende info aan te vullen",
+    "externalSources": "externe bronnen",
+    "searchPlaceholder": "Titel zoeken...",
+    "year": "Jaar",
+    "yearHint": "Filteren op releasejaar (bijv. 2002)",
+    "searching": "Zoeken...",
+    "searchingProvider": "Zoeken in {provider}...",
+    "noResults": "Geen resultaten gevonden. Probeer een andere zoekterm.",
+    "searchedAs": "Gezocht als: {query}",
+    "resultDirector": "Regie: {name}",
+    "resultCast": "Cast: {names}",
+    "resultArt": "Tekeningen: {names}",
+    "useAll": "Alles gebruiken",
+    "uploadFailed": "Kon die afbeelding niet uploaden.",
+    "searchFailed": "Zoeken bij de metadatabronnen is mislukt — zie de browserconsole voor details.",
+    "savedTitle": "Metadata opgeslagen",
+    "savedSeries": {
+      "one": "{count} item in de serie bijgewerkt.",
+      "other": "Alle {count} items in de serie bijgewerkt."
+    },
+    "savedOne": "‘{title}’ bijgewerkt.",
+    "saveFailed": "Metadata opslaan is mislukt — zie de browserconsole voor details."
+  },
+  "manager": {
+    "title": "Titels opschonen en matchen",
+    "description": "Haal release-tags uit bestandsnamen en match posters, samenvattingen, cast en releasedata van TMDB.",
+    "stats": {
+      "total": "Totaal aantal items",
+      "totalHint": "Alle geïndexeerde inhoud",
+      "dirty": "Titel moet opgeschoond",
+      "dirtyHint": "Heeft release-tags of een jaartal in de titel",
+      "missingCover": "Geen artwork",
+      "missingCoverHint": "Geen poster of omslagbestand",
+      "missingMeta": "Geen samenvatting / datum",
+      "missingMetaHint": "Moet gematcht worden voor een TMDB-samenvatting"
+    },
+    "filters": {
+      "allLibraries": "Alle bibliotheken",
+      "allMediaTypes": "Alle mediatypen",
+      "tvShows": "Tv-series",
+      "needsCleanup": "Moet opgeschoond",
+      "searchPlaceholder": "Filteren op titel of pad..."
+    },
+    "batch": {
+      "selectAll": "Alles selecteren ({count})",
+      "selected": "{count} geselecteerd",
+      "overwritePosters": "Posters overschrijven",
+      "useCanonicalTitle": "Officiële titel gebruiken",
+      "cleanHint": "Release-tags en jaartallen aan het eind uit titels in de database halen",
+      "cleanCount": "Titels opschonen ({count})",
+      "findHint": "Elke geselecteerde titel matchen met de metadatabronnen (TMDB, MangaDex, Google Books, Open Library): artwork, samenvatting, releasedatum",
+      "findCount": "Metadata zoeken ({count})",
+      "stop": "Stoppen",
+      "stopping": "Stoppen…"
+    },
+    "summary": {
+      "matched": "{matched} van {total} gematcht.",
+      "matchedStopped": "{matched} van {total} gematcht voordat je stopte.",
+      "notFound": {
+        "one": "{count} had geen match — die staat hieronder gemarkeerd; probeer daar {action}.",
+        "other": "{count} hadden geen match — die staan hieronder gemarkeerd; probeer daar {action}."
+      },
+      "needsKey": {
+        "one": "{count} is een video, en daarvoor is een TMDB-sleutel nodig — voeg er een toe onder {where} en voer het opnieuw uit.",
+        "other": "{count} zijn video's, en daarvoor is een TMDB-sleutel nodig — voeg er een toe onder {where} en voer het opnieuw uit."
+      },
+      "adminMetadata": "Admin → Metadata",
+      "failed": {
+        "one": "{count} mislukt (zie de rij voor de reden).",
+        "other": "{count} mislukt (zie de rij voor de reden)."
+      }
+    },
+    "dismiss": "Sluiten",
+    "list": {
+      "analyzing": "Titels en metadata analyseren...",
+      "empty": "Geen items gevonden die bij de gekozen filters passen."
+    },
+    "badges": {
+      "frameTag": "FRAME",
+      "tvEpisode": "Tv-aflevering",
+      "poster": "Poster",
+      "frame": "Frame",
+      "frameHint": "Tijdelijk videoframe — gebruik Automatisch matchen om de officiële poster op te halen",
+      "noPoster": "Geen poster",
+      "synopsis": "Samenvatting",
+      "noSynopsis": "Geen samenvatting",
+      "noDate": "Geen datum"
+    },
+    "cleanLabel": "Opgeschoond:",
+    "actions": {
+      "autoMatch": "Automatisch matchen",
+      "autoMatchHint": "Matchen met de metadatabronnen en deze titel bijwerken",
+      "editSearch": "Bewerken / zoeken",
+      "editSearchHint": "Zelf zoeken in TMDB, artwork kiezen of metadatavelden aanpassen"
+    },
+    "match": {
+      "matchedAs": "Gematcht als ‘{title}’",
+      "needsKey": "Heeft een TMDB-sleutel nodig — voeg er hierboven een toe",
+      "noMatch": "Geen match gevonden — probeer Bewerken / zoeken",
+      "failed": "Matchen mislukt — probeer het opnieuw"
+    },
+    "errors": {
+      "loadFailed": "Items laden is mislukt"
+    },
+    "clean": {
+      "confirmTitle": {
+        "one": "{count} titel opschonen?",
+        "other": "{count} titels opschonen?"
+      },
+      "confirmMessage": {
+        "one": "Hiermee worden scene-tags, codecs, resoluties en releasejaren aan het eind verwijderd uit {count} geselecteerde titel in de database.",
+        "other": "Hiermee worden scene-tags, codecs, resoluties en releasejaren aan het eind verwijderd uit {count} geselecteerde titels in de database."
+      },
+      "confirm": "Titels opschonen",
+      "progress": {
+        "one": "{count} titel opschonen...",
+        "other": "{count} titels opschonen..."
+      },
+      "doneTitle": "Titels opgeschoond",
+      "doneMessage": {
+        "one": "{count} titel opgeschoond!",
+        "other": "{count} titels opgeschoond!"
+      },
+      "failedTitle": "Opschonen mislukt"
+    },
+    "find": {
+      "confirmTitle": {
+        "one": "Metadata zoeken voor {count} item?",
+        "other": "Metadata zoeken voor {count} items?"
+      },
+      "confirmMessage": "Elke geselecteerde titel wordt gematcht met de metadatabronnen (TMDB, MangaDex, Google Books, Open Library), en het artwork, de samenvatting en de releasedatum worden bijgewerkt. De resultaten verschijnen per rij; je kunt op elk moment stoppen.",
+      "confirm": "Matchen starten",
+      "itemFallback": "item",
+      "progress": "{current} van {total} matchen: {title}"
+    }
+  }
+}

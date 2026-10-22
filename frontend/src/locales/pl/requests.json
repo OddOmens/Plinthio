@@ -1,0 +1,56 @@
+{
+  "title": "Prośby",
+  "intro": "Poproś o filmy, seriale, anime, książki i audiobooki, których jeszcze nie ma w bibliotece.",
+  "newRequest": "Nowa prośba",
+  "request": "Poproś",
+  "mine": "Moje prośby",
+  "reviewQueue": "Do rozpatrzenia",
+  "filterByStatus": "Filtruj według statusu",
+  "allStatuses": "Wszystkie statusy",
+  "emptyReview": "Brak próśb do rozpatrzenia",
+  "emptyMine": "Nie masz jeszcze żadnych próśb",
+  "emptyMineHint": "Wyszukaj powyżej albo użyj przycisku Poproś przy tytule na jednej z twoich list.",
+  "requestedBy": "Od: {name}",
+  "deletedUser": "usunięty użytkownik",
+  "quotedNote": "„{note}”",
+  "notePlaceholder": "Notatka dla proszącego (opcjonalnie)",
+  "deleteRequest": "Usuń prośbę",
+  "withdraw": "Wycofaj",
+  "status": {
+    "pending": "Oczekuje",
+    "accepted_pending": "Przyjęta · Czeka na dodanie",
+    "accepted_added": "Przyjęta · Dodano",
+    "rejected": "Odrzucona"
+  },
+  "actions": {
+    "acceptPending": "Przyjmij · Czeka na dodanie",
+    "acceptAdded": "Przyjmij · Dodano",
+    "reject": "Odrzuć",
+    "backToPending": "Przywróć do oczekujących"
+  },
+  "confirm": {
+    "withdrawTitle": "Wycofać prośbę?",
+    "deleteTitle": "Usunąć prośbę?",
+    "withdrawMessage": "Twoja prośba o „{title}” zostanie wycofana.",
+    "deleteMessage": "Prośba o „{title}” zostanie usunięta dla wszystkich."
+  },
+  "errors": {
+    "load": "Nie udało się wczytać próśb.",
+    "send": "Nie udało się wysłać tej prośby.",
+    "update": "Nie udało się zaktualizować tej prośby.",
+    "remove": "Nie udało się usunąć tej prośby."
+  },
+  "search": {
+    "placeholder": {
+      "movie": "Szukaj filmów…",
+      "show": "Szukaj seriali…",
+      "anime": "Szukaj anime…",
+      "book": "Szukaj książek…",
+      "manga": "Szukaj mangi…",
+      "audiobook": "Szukaj audiobooków…",
+      "titles": "Szukaj tytułów…"
+    },
+    "noResults": "Brak wyników dla „{query}”.",
+    "failed": "Wyszukiwanie nie powiodło się. Spróbuj ponownie za chwilę."
+  }
+}

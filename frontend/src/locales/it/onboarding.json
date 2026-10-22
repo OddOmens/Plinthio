@@ -1,0 +1,60 @@
+{
+  "welcome": {
+    "title": "Benvenuto su {name}",
+    "text": "Sistemiamo le cose come piacciono a te. Ci vogliono una trentina di secondi, e puoi cambiare tutto più tardi nelle Impostazioni."
+  },
+  "theme": {
+    "title": "Scegli il tuo stile",
+    "text": "Vale solo per te: non cambia quello che vedono gli altri."
+  },
+  "accent": {
+    "title": "Scegli un colore",
+    "text": "Lo usano pulsanti, evidenziazioni e barre di avanzamento.",
+    "admin": "Come amministratore, lo imposti per tutto il server. Ognuno può scegliere il proprio nelle Impostazioni, se lo consenti (Amministrazione → Riproduzione).",
+    "personal": "Vale solo per te; puoi cambiarlo quando vuoi nelle Impostazioni."
+  },
+  "interests": {
+    "title": "Cosa ti interessa?",
+    "text": "Mostreremo questi sul tuo scaffale e nasconderemo il resto. Scegline quanti vuoi.",
+    "pickOne": "Scegline almeno uno, così lo scaffale non resta vuoto.",
+    "types": {
+      "manga": {
+        "label": "Manga",
+        "hint": "Fumetti e graphic novel"
+      },
+      "book": {
+        "label": "Libri",
+        "hint": "Lettura di EPUB e PDF"
+      },
+      "audiobook": {
+        "label": "Audiolibri",
+        "hint": "Ascolta e riprendi"
+      },
+      "movie": {
+        "label": "Film",
+        "hint": "Guarda nel browser"
+      },
+      "show": {
+        "label": "Serie TV",
+        "hint": "Stagioni ed episodi"
+      },
+      "anime": {
+        "label": "Anime",
+        "hint": "Serie sottotitolate e doppiate"
+      }
+    }
+  },
+  "security": {
+    "title": "Proteggi il tuo account",
+    "text": "Facoltativo. La verifica in due passaggi chiede un codice dal telefono quando accedi, così la sola password non basta. Puoi attivarla ora o più tardi in Impostazioni → Sicurezza."
+  },
+  "done": {
+    "title": "È tutto pronto",
+    "everything": "Il tuo scaffale mostra tutto. Buon divertimento.",
+    "tuned": "Il tuo scaffale è impostato su {list}. Puoi aggiungerne altri quando vuoi dalle Impostazioni."
+  },
+  "nav": {
+    "startBrowsing": "Inizia a esplorare",
+    "notNow": "Non ora"
+  }
+}

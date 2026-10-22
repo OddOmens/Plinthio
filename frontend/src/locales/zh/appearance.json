@@ -1,0 +1,85 @@
+{
+  "section": {
+    "title": "外观",
+    "description": "Plinthio 在你眼中的样子。更改会立即显示在预览中并自动保存，只对你的帐户生效。",
+    "locked": "此服务器的外观由管理员设置，因此无法在这里更改。预览显示的是所有人看到的样子。"
+  },
+  "language": {
+    "auto": "自动",
+    "desc": "Plinthio 界面使用的语言。“自动”会跟随你的浏览器。"
+  },
+  "cards": {
+    "accent": {
+      "title": "强调色",
+      "desc": "按钮、徽标和当前标签页上的高亮颜色。"
+    },
+    "layout": {
+      "title": "导航",
+      "desc": "主导航的位置。"
+    },
+    "pageWidth": {
+      "title": "页面宽度",
+      "desc": "大屏幕上页面的宽度。全宽时每行能放下更多海报。"
+    },
+    "pauseScreen": {
+      "title": "暂停画面",
+      "desc": "电影或剧集暂停几秒后显示的内容。"
+    }
+  },
+  "accents": {
+    "zinc": "锌灰",
+    "slate": "石板灰",
+    "red": "红色",
+    "orange": "橙色",
+    "amber": "琥珀色",
+    "lime": "青柠绿",
+    "emerald": "翡翠绿",
+    "teal": "青色",
+    "sky": "天蓝",
+    "blue": "蓝色",
+    "indigo": "靛蓝",
+    "violet": "紫罗兰",
+    "purple": "紫色",
+    "fuchsia": "品红",
+    "pink": "粉色",
+    "rose": "玫瑰红"
+  },
+  "layouts": {
+    "topnav": {
+      "label": "顶部导航",
+      "desc": "经典的横向标题栏"
+    },
+    "sidebar": {
+      "label": "侧边栏",
+      "desc": "左侧纵向导航"
+    }
+  },
+  "pageWidths": {
+    "full": {
+      "label": "全宽",
+      "desc": "占满整个屏幕，放下更多海报"
+    },
+    "contained": {
+      "label": "居中",
+      "desc": "居中显示，最宽1440px"
+    }
+  },
+  "pauseScreens": {
+    "simple": {
+      "label": "简洁",
+      "desc": "只显示播放器控件，不遮挡画面。"
+    },
+    "details": {
+      "label": "详情",
+      "desc": "海报、标题、宣传语、简介、导演和演员，以及结束时间。"
+    },
+    "cinematic": {
+      "label": "影院",
+      "desc": "画面变暗，前方显示全屏标题卡，附带演员照片和来自 TMDB 的资料，如票房、原名、关键词。"
+    },
+    "bedtime": {
+      "label": "睡前",
+      "desc": "一个昏暗的时钟，显示结束时间；剧集还会显示本季剩余部分的结束时间。在暗室中不刺眼。"
+    }
+  }
+}

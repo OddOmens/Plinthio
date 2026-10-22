@@ -374,7 +374,7 @@
       "hideSearch": "Suchleiste ausblenden",
       "accent": "Eigene Akzentfarbe"
     },
-    "apply": "Um eigenes CSS anzuwenden, öffne **Admin → Darstellung → Eigenes CSS** (nur Admins), füge deine Regeln in den Editor ein, prüfe sie mit **Vorschau testen** live in deinem aktuellen Tab, bevor du speicherst, und verteile sie dann mit **Branding & CSS speichern** an alle verbundenen Geräte."
+    "apply": "Um eigenes CSS anzuwenden, öffne **Admin → Darstellung → Eigenes CSS** (nur Admins), füge deine Regeln in den Editor ein, prüfe sie mit **{tryIt}** live in deinem aktuellen Tab, bevor du speicherst, und verteile sie dann mit **{save}** an alle verbundenen Geräte."
   },
   "errors": {
     "title": "Fehlercodes",
