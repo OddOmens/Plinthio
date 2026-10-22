@@ -1,6 +1,7 @@
 # Translating Plinthio
 
-Plinthio's interface is available in English, French, German, Spanish, Japanese and Korean.
+Plinthio's interface is available in English, German, Spanish, French, Italian, Dutch, Polish,
+Brazilian Portuguese, Japanese, Korean and Simplified Chinese.
 Each person picks their language in **Settings → Appearance → Language** (it's saved to their
 account); before signing in, the sign-in page and setup wizard have a language switch, and
 **Automatic** follows the browser.
@@ -39,8 +40,10 @@ showError(t('title.errors.couldNotLoad'));
 - **Plurals** are an object keyed by [plural category](https://cldr.unicode.org/index/cldr-spec/plural-rules),
   chosen from `params.count`:
   `"episodes": { "one": "{count} episode", "other": "{count} episodes" }`.
-  French/Spanish/German use `one`/`other` (French adds `many` only for big round numbers;
-  `other` covers it); Japanese and Korean only need `other`.
+  German, Dutch, French, Spanish, Italian and Portuguese use `one`/`other` (the Romance
+  languages' `many` is only for round millions, so `other` covers it); Polish needs
+  `one`/`few`/`many`/`other`; Japanese, Korean and Chinese only need `other`. The check below
+  fails if a language is missing a form it needs.
 - **Markup inside a sentence** (a link, `<code>`, bold): don't split the sentence. Use
   `<I18nT>` with a slot per placeholder so translators can move it:
   ```vue
@@ -70,6 +73,11 @@ Match the English voice: plain, friendly, short. Sentence case in every language
 | Spanish | *tú* | Neutral international Spanish. |
 | Japanese | です／ます | Katakana for loanwords used in apps (ライブラリ, プレーヤー). No spaces between words. |
 | Korean | 해요체 | Labels and buttons are nouns or short verbs (저장, 취소). |
+| Italian | *tu* | |
+| Dutch | *je* | |
+| Polish | *ty* | Buttons in the imperative (Zapisz, Anuluj). |
+| Portuguese (Brazil) | *você* | Brazilian spelling and vocabulary (tela, arquivo, baixar). |
+| Simplified Chinese | 你 | Full-width punctuation (，。：); no spaces between Chinese and numbers. |
 
 ## Checking
 
