@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect, onMounted, defineAsyncComponent } from 'vue';
+import { ref, computed, watch, watchEffect, onMounted, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 import AudioPlayer from './components/AudioPlayer.vue';
 import GlobalDialog from './components/GlobalDialog.vue';
@@ -18,6 +18,7 @@ import UpdateBanner from './components/UpdateBanner.vue';
 const OnboardingFlow = defineAsyncComponent(() => import('./components/OnboardingFlow.vue'));
 import { useAuthStore } from './stores/auth';
 import { useCustomizationStore } from './stores/customization';
+import { setLanguage } from './i18n';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -44,6 +45,11 @@ watchEffect(() => {
   }
   const width = customizationStore.effectivePageWidth(authStore.user);
   document.documentElement.classList.toggle('page-contained', width === 'contained');
+});
+
+// Signing in (or changing it on another device) brings the account's language along.
+watch(() => authStore.user?.preferences?.language, (language) => {
+  if (language) setLanguage(language);
 });
 
 const showOnboarding = computed(() => {

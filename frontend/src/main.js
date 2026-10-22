@@ -7,12 +7,16 @@ import { useThemeStore } from './stores/theme';
 import { useCustomizationStore } from './stores/customization';
 import { useAuthStore } from './stores/auth';
 import { getMediaToken } from './utils/mediaToken';
+import i18n, { setLanguage, storedLanguageChoice } from './i18n';
+import I18nT from './i18n/I18nT.vue';
 
 const pinia = createPinia();
 const app = createApp(App);
 
 app.use(pinia);
 app.use(router);
+app.use(i18n);
+app.component('I18nT', I18nT);
 
 // Initialize theme (dark or light)
 const themeStore = useThemeStore();
@@ -27,7 +31,11 @@ customizationStore.fetchCustomization();
 // every image doesn't 401. Normal loads skip this and refresh in the background instead.
 const authStore = useAuthStore();
 const ready = authStore.token && !getMediaToken() ? authStore.refreshSession() : Promise.resolve();
-ready.finally(() => app.mount('#app'));
+// The account's language wins over this device's; either way it's loaded before the first
+// paint so nothing flashes up in English first.
+ready
+  .then(() => setLanguage(authStore.user?.preferences?.language || storedLanguageChoice()))
+  .finally(() => app.mount('#app'));
 
 // Registered from the bundle rather than an inline <script>, so the Content-Security-Policy
 // can forbid inline script outright.
