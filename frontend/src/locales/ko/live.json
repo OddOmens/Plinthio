@@ -7,7 +7,7 @@
     "channels": "채널",
     "guide": "편성표"
   },
-  "searchPlaceholder": "채널 검색…",
+  "searchPlaceholder": "채널 및 프로그램 검색…",
   "groupsLabel": "채널 그룹",
   "channelCount": {
     "other": "채널 {count}개"
@@ -42,6 +42,8 @@
   "guide": {
     "channel": "채널",
     "now": "지금",
+    "tonight": "오늘 밤",
+    "tomorrow": "내일",
     "earlier": "이전 시간대",
     "later": "다음 시간대",
     "notLoadedTitle": "편성표를 아직 불러오지 않았어요",
@@ -69,6 +71,8 @@
     "channelDown": "채널 내리기",
     "channelUpHint": "채널 올리기 (↑)",
     "channelDownHint": "채널 내리기 (↓)",
+    "lastChannel": "이전 채널",
+    "lastChannelHint": "이전 채널 (L)",
     "nextChannel": "다음 채널",
     "info": "방송 정보",
     "pip": "화면 속 화면",
@@ -84,5 +88,55 @@
       "decode": "이 브라우저에서는 이 채널의 영상을 재생할 수 없어요.",
       "unsupportedBrowser": "이 브라우저에서는 실시간 스트림을 재생할 수 없어요."
     }
+  },
+  "undo": "실행 취소",
+  "lists": {
+    "label": "채널 목록",
+    "favourites": "즐겨찾기",
+    "recent": "최근",
+    "all": "전체 채널"
+  },
+  "favourites": {
+    "add": "{channel}을(를) 즐겨찾기에 추가",
+    "remove": "{channel}을(를) 즐겨찾기에서 삭제",
+    "addShort": "즐겨찾기에 추가",
+    "removeShort": "즐겨찾기에서 삭제"
+  },
+  "menu": {
+    "options": "옵션 더 보기",
+    "optionsFor": "{channel} 옵션",
+    "hideChannel": "나에게만 숨기기",
+    "hideGroup": "'{group}' 전체를 나에게만 숨기기"
+  },
+  "hidden": {
+    "channel": "{channel}을(를) 나에게만 숨겼어요",
+    "group": "'{group}'을(를) 나에게만 숨겼어요"
+  },
+  "search": {
+    "channels": "채널",
+    "programmes": "프로그램",
+    "noResultsTitle": "검색 결과 없음",
+    "noResults": "'{query}'와(과) 일치하는 채널이나 프로그램이 없어요.",
+    "clear": "검색어 지우기",
+    "errorTitle": "검색할 수 없어요"
+  },
+  "mine": {
+    "button": "내가 숨긴 항목",
+    "title": "내가 숨긴 항목",
+    "subtitle": "이 선택은 나에게만 보이며 모든 기기에 적용돼요.",
+    "showOnHome": "홈에 '지금 방송 중' 표시",
+    "showOnHomeHint": "즐겨찾기 채널에서 방송 중인 프로그램을 보여 주는 줄이에요.",
+    "hiddenTitle": "숨긴 채널과 그룹",
+    "nothingHidden": "숨긴 항목이 없어요. 채널 메뉴에서 그 채널이나 그룹 전체를 나에게만 숨길 수 있어요.",
+    "wholeGroup": "그룹 전체",
+    "show": "표시",
+    "showAll": "모두 표시",
+    "saveFailed": "저장할 수 없어요. 연결 상태를 확인하고 다시 시도하세요."
+  },
+  "home": {
+    "title": "지금 방송 중",
+    "allChannels": "전체 채널",
+    "hideRow": "이 줄 숨기기",
+    "hideRowHint": "이 줄 숨기기 (실시간 TV → 내가 숨긴 항목에서 다시 켤 수 있어요)"
   }
 }

@@ -513,7 +513,19 @@
     "hiddenCategoriesMustBeA": "Ausgeblendete Kategorien müssen eine Liste mit höchstens 5000 Namen sein",
     "hiddenLanguagesMustBeA": "Ausgeblendete Sprachen müssen eine Liste mit höchstens 5000 Namen sein",
     "hiddenCountriesMustBeTwo": "Ausgeblendete Länder müssen zweistellige Ländercodes sein",
-    "hiddenStreamHostsMustBe": "Ausgeblendete Stream-Server müssen Hostnamen sein, etwa example.com"
+    "hiddenStreamHostsMustBe": "Ausgeblendete Stream-Server müssen Hostnamen sein, etwa example.com",
+    "lineUpNotFound": "Senderauswahl nicht gefunden",
+    "channelNumbersGoFrom1": "Sendernummern reichen von 1 bis 9999",
+    "enterANameForTheChannel": "Gib einen Namen für den Sender ein oder lass das Feld leer",
+    "theLogoAddressMustStart": "Die Logo-Adresse muss mit http:// oder https:// beginnen",
+    "anotherChannelAlreadyHasThat": "Ein anderer Sender hat diese Nummer schon",
+    "enterANameForTheLineUp": "Gib einen Namen für die Senderauswahl ein",
+    "sendTheLineUpsIn": "Sende die Senderauswahlen in ihrer neuen Reihenfolge",
+    "kidsAllowedMustBeTrue": "kidsAllowed muss true oder false sein",
+    "hideOfflineMustBeTrue": "hideOffline muss true oder false sein",
+    "enabledMustBeTrueOr": "enabled muss true oder false sein",
+    "chooseUpTo5000Channels": "Wähle bis zu 5000 Sender",
+    "youCanHaveUpTo": "Du kannst bis zu 500 Sender als Favoriten haben"
   },
   "patterns": {
     "noMetadataSource": "Noch keine Metadatenquelle für {type}",

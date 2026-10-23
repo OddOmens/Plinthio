@@ -488,7 +488,7 @@
     },
     "channels": {
       "title": "Sender",
-      "desc": "Blende die aus, die du nicht willst. Kinderkonten sehen nur die hier für Kinder freigegebenen Sender, und keiner ist freigegeben, bis du welche auswählst.",
+      "desc": "Blende die aus, die du nicht willst, oder drücke auf den Stift, um einem Sender eine eigene Nummer, einen Namen oder ein Logo zu geben. Kinderkonten sehen nur die Sender, die hier oder in einer für Kinder freigegebenen Senderauswahl für Kinder freigegeben sind, und keiner ist freigegeben, bis du welche auswählst.",
       "searchPlaceholder": "Sender suchen",
       "sourceFilter": "Senderliste",
       "allSources": "Alle Listen",
@@ -499,6 +499,7 @@
         "hidden": "Ausgeblendet",
         "filtered": "Per Filter ausgeblendet",
         "pinned": "Immer angezeigt",
+        "offline": "Offline",
         "kids": "Für Kinder freigegeben",
         "unsupported": "Nicht abspielbar"
       },
@@ -532,12 +533,147 @@
         "filteredHint": "Ausgeblendet durch Anzeige auswählen ({reasons}). Mit Immer anzeigen behältst du diesen Sender trotzdem.",
         "pinnedHint": "Immer angezeigt, egal was die Filter sagen. Drücke erneut, um die Filter entscheiden zu lassen.",
         "pinnedOverHint": "Immer angezeigt, obwohl ein Filter {reasons} ausblendet. Drücke erneut, um die Filter entscheiden zu lassen.",
-        "regionLocked": "Geo-gesperrt"
+        "regionLocked": "Geo-gesperrt",
+        "offline": "Offline",
+        "offlineHint": "Lief bei den letzten zwei Prüfungen nicht (zuletzt geprüft: {date})",
+        "inLineupsHint": "In Senderauswahlen: {names}"
       },
       "range": "{from}–{to} von {total}",
       "empty": "Noch keine Sender. Sie erscheinen hier, sobald eine Liste geladen ist.",
       "noMatches": "Keine passenden Sender.",
-      "couldNotLoad": "Sender konnten nicht geladen werden"
+      "couldNotLoad": "Sender konnten nicht geladen werden",
+      "edit": "Nummer, Name und Logo",
+      "editAria": "Nummer, Name und Logo von {name} bearbeiten",
+      "numberHint": "Sendernummer",
+      "checkNow": "Jetzt prüfen",
+      "checkNowAria": "Prüfen, ob {name} gerade läuft",
+      "checking": "Wird geprüft…",
+      "couldNotCheck": "Sender konnte nicht geprüft werden",
+      "addToLineup": "Zur Senderauswahl hinzufügen",
+      "addedToLineup": {
+        "one": "{number} Sender zu {name} hinzugefügt",
+        "other": "{number} Sender zu {name} hinzugefügt"
+      },
+      "stillOffline": "Immer noch offline · Erneut prüfen"
+    },
+    "health": {
+      "title": "Senderstatus",
+      "desc": "Öffentliche Sender kommen und gehen. Plinthio prüft im Hintergrund immer ein paar auf einmal, um die zu finden, die nicht mehr funktionieren. Jede Prüfung fragt beim Stream nur die ersten paar Kilobyte ab, es wird also nichts abgespielt oder umgewandelt, und der Server merkt es kaum.",
+      "enabled": {
+        "label": "Sender im Hintergrund prüfen",
+        "desc": "Etwa 20 Sender alle 10 Minuten, solange Live-TV an ist – so kommt jeder Sender ungefähr einmal am Tag dran."
+      },
+      "hideOffline": {
+        "label": "Offline-Sender ausblenden",
+        "desc": "Ein Sender, der zwei Prüfungen hintereinander nicht besteht, wird für Zuschauer ausgeblendet. Er wird etwa einmal am Tag erneut geprüft und kommt von selbst zurück, sobald er wieder läuft."
+      },
+      "counts": {
+        "ok": "Funktionieren",
+        "offline": "Offline",
+        "unchecked": "Noch nicht geprüft"
+      },
+      "showOffline": "Offline-Sender anzeigen",
+      "lastChecked": "Letzte Prüfung: {date}.",
+      "neverChecked": "Noch keine Prüfungen.",
+      "pace": "Die Sender werden nach und nach geprüft; Jetzt prüfen bei einem Sender prüft sofort.",
+      "paused": "Die Prüfungen im Hintergrund sind aus, deshalb bleiben diese Zahlen, wie sie sind.",
+      "couldNotLoad": "Senderstatus konnte nicht geladen werden"
+    },
+    "editChannel": {
+      "title": "Sender bearbeiten",
+      "number": "Sendernummer",
+      "automatic": "Automatisch",
+      "useAutomatic": "Automatisch verwenden",
+      "numberHint": "1 bis 9999, jede nur einmal. Zuschauer können sie eintippen, um direkt zu diesem Sender zu springen. Sender ohne Nummer folgen nach deiner höchsten.",
+      "numberInvalid": "Gib eine ganze Zahl von 1 bis 9999 ein.",
+      "name": "Name",
+      "useOriginal": "Original verwenden",
+      "nameHint": "Leer lassen, um den Namen aus der Liste zu verwenden: {name}",
+      "logo": "Logo-Adresse",
+      "useOriginalLogo": "Original-Logo verwenden",
+      "logoHint": "Ein Link zu einem Bild (http oder https). Leer lassen, um das Logo aus der Liste zu verwenden. Das neue Logo erscheint nach dem Speichern.",
+      "checkHint": "Prüfe, ob dieser Sender gerade läuft. Ein Sender wird erst nach zwei fehlgeschlagenen Prüfungen hintereinander als offline markiert.",
+      "health": {
+        "ok": "Funktioniert (geprüft: {date})",
+        "offline": "Offline (geprüft: {date})",
+        "unchecked": "Noch nicht geprüft"
+      },
+      "couldNotSave": "Sender konnte nicht gespeichert werden",
+      "checkOk": "Er läuft.",
+      "checkFailed": "Diesmal lief er nicht: {error}",
+      "checkFailedNoReason": "Diesmal lief er nicht."
+    },
+    "lineups": {
+      "title": "Senderauswahlen",
+      "desc": "Stelle eigene Sendergruppen zusammen, etwa Nachrichten, Sport oder Für Kinder, in der Reihenfolge, die du willst. Jede Senderauswahl ist ein Tab auf der Live-TV-Seite, in der Reihenfolge wie hier.",
+      "create": "Neue Senderauswahl",
+      "createTitle": "Neue Senderauswahl",
+      "empty": "Noch keine Senderauswahlen. Bis du eine anlegst, sehen Zuschauer alle Sender nach Kategorie.",
+      "footer": "Auch in einer Senderauswahl sehen Zuschauer keine Sender, die du ausgeblendet hast oder die offline sind, und die Filter gelten weiter – außer für Sender mit Immer anzeigen.",
+      "name": "Name",
+      "namePlaceholder": "z. B. Nachrichten",
+      "nameHint": "Wird Zuschauern als Name des Tabs angezeigt.",
+      "openAria": "Senderauswahl {name} öffnen",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "moveUpAria": "Senderauswahl {name} nach oben verschieben",
+      "moveDownAria": "Senderauswahl {name} nach unten verschieben",
+      "kids": {
+        "label": "Für Kinder freigeben",
+        "desc": "Kinderkonten dürfen jeden Sender in dieser Senderauswahl schauen, zusätzlich zu den einzeln für Kinder freigegebenen Sendern."
+      },
+      "delete": "Senderauswahl löschen",
+      "deleteTitle": "Senderauswahl löschen",
+      "deleteMessage": "{name} löschen? Die Sender bleiben, wo sie sind; nur die Senderauswahl verschwindet.",
+      "couldNotLoad": "Senderauswahlen konnten nicht geladen werden",
+      "couldNotLoadChannels": "Die Sender dieser Senderauswahl konnten nicht geladen werden",
+      "couldNotCreate": "Senderauswahl konnte nicht angelegt werden",
+      "couldNotAdd": "Sender konnten nicht hinzugefügt werden",
+      "couldNotDelete": "Senderauswahl konnte nicht gelöscht werden",
+      "editor": {
+        "subtitle": "Änderungen werden sofort gespeichert",
+        "tabs": {
+          "channels": "Sender",
+          "add": "Hinzufügen"
+        },
+        "empty": "Noch keine Sender in dieser Senderauswahl.",
+        "addChannels": "Sender hinzufügen",
+        "sortName": "A–Z",
+        "sortNumber": "Nach Nummer",
+        "moveUpAria": "{name} nach oben verschieben",
+        "moveDownAria": "{name} nach unten verschieben",
+        "remove": "Aus der Senderauswahl entfernen",
+        "removeAria": "{name} aus dieser Senderauswahl entfernen",
+        "addBy": "Sender hinzufügen per",
+        "kinds": {
+          "search": "Suche",
+          "categories": "Ganze Kategorie"
+        },
+        "search": {
+          "search": "Sender suchen",
+          "categories": "Kategorien suchen"
+        },
+        "searchHint": "Tippe einen Teil des Sendernamens ein.",
+        "inLineup": "Hinzugefügt",
+        "addAria": "{name} zu dieser Senderauswahl hinzufügen",
+        "addFound": {
+          "one": "{number} Treffer hinzufügen",
+          "other": "Alle {number} Treffer hinzufügen"
+        },
+        "moreResults": {
+          "one": "{number} weiterer Treffer; tippe mehr, um einzugrenzen.",
+          "other": "{number} weitere Treffer; tippe mehr, um einzugrenzen."
+        },
+        "addAll": "Alle hinzufügen",
+        "addCategoryAria": "Alle Sender aus {name} hinzufügen",
+        "categoryHidden": "per Filter ausgeblendet",
+        "hiddenByFilter": "Per Filter ausgeblendet",
+        "nothingNew": "Alle Sender dieser Kategorie sind schon drin.",
+        "added": {
+          "one": "{number} Sender hinzugefügt",
+          "other": "{number} Sender hinzugefügt"
+        }
+      }
     }
   },
   "logs": {

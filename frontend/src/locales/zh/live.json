@@ -7,7 +7,7 @@
     "channels": "频道",
     "guide": "节目单"
   },
-  "searchPlaceholder": "搜索频道…",
+  "searchPlaceholder": "搜索频道和节目…",
   "groupsLabel": "频道分组",
   "channelCount": {
     "other": "{count}个频道"
@@ -42,6 +42,8 @@
   "guide": {
     "channel": "频道",
     "now": "现在",
+    "tonight": "今晚",
+    "tomorrow": "明天",
     "earlier": "更早",
     "later": "稍后",
     "notLoadedTitle": "节目单尚未加载",
@@ -69,6 +71,8 @@
     "channelDown": "上一个频道",
     "channelUpHint": "下一个频道（↑）",
     "channelDownHint": "上一个频道（↓）",
+    "lastChannel": "返回上次频道",
+    "lastChannelHint": "返回上次频道（L）",
     "nextChannel": "下一个频道",
     "info": "节目信息",
     "pip": "画中画",
@@ -84,5 +88,55 @@
       "decode": "此浏览器无法播放该频道的视频。",
       "unsupportedBrowser": "此浏览器无法播放直播流。"
     }
+  },
+  "undo": "撤销",
+  "lists": {
+    "label": "频道列表",
+    "favourites": "收藏",
+    "recent": "最近",
+    "all": "全部频道"
+  },
+  "favourites": {
+    "add": "将 {channel} 加入收藏",
+    "remove": "将 {channel} 移出收藏",
+    "addShort": "加入收藏",
+    "removeShort": "取消收藏"
+  },
+  "menu": {
+    "options": "更多选项",
+    "optionsFor": "{channel} 的选项",
+    "hideChannel": "仅对我隐藏",
+    "hideGroup": "对我隐藏整个“{group}”分组"
+  },
+  "hidden": {
+    "channel": "已为你隐藏 {channel}",
+    "group": "已为你隐藏“{group}”"
+  },
+  "search": {
+    "channels": "频道",
+    "programmes": "节目",
+    "noResultsTitle": "未找到结果",
+    "noResults": "没有与“{query}”匹配的频道或节目。",
+    "clear": "清除搜索",
+    "errorTitle": "无法搜索"
+  },
+  "mine": {
+    "button": "我隐藏的",
+    "title": "我隐藏的",
+    "subtitle": "这些选择只有你能看到，并在你的所有设备上生效。",
+    "showOnHome": "在首页显示“正在直播”",
+    "showOnHomeHint": "显示你收藏的频道正在播出什么的一栏。",
+    "hiddenTitle": "你隐藏的频道和分组",
+    "nothingHidden": "你还没有隐藏任何内容。可以在频道的菜单中只为你自己隐藏这个频道或整个分组。",
+    "wholeGroup": "整个分组",
+    "show": "显示",
+    "showAll": "全部显示",
+    "saveFailed": "无法保存。请检查网络连接后重试。"
+  },
+  "home": {
+    "title": "正在直播",
+    "allChannels": "全部频道",
+    "hideRow": "隐藏这一栏",
+    "hideRowHint": "隐藏这一栏（可在“电视直播 → 我隐藏的”中恢复）"
   }
 }

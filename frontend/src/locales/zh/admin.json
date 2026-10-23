@@ -476,7 +476,7 @@
     },
     "channels": {
       "title": "频道",
-      "desc": "隐藏你不想要的频道。儿童帐户只能看到这里允许儿童观看的频道；在你选择之前，没有任何频道被允许。",
+      "desc": "隐藏你不想要的频道，或点击铅笔图标为频道设置专属编号、名称或台标。儿童帐户只能看到这里允许儿童观看的频道，以及允许儿童观看的频道合集中的频道；在你选择之前，没有任何频道被允许。",
       "searchPlaceholder": "搜索频道",
       "sourceFilter": "频道列表",
       "allSources": "所有列表",
@@ -487,6 +487,7 @@
         "hidden": "已隐藏",
         "filtered": "被筛选隐藏",
         "pinned": "始终显示",
+        "offline": "离线",
         "kids": "允许儿童观看",
         "unsupported": "无法播放"
       },
@@ -519,12 +520,143 @@
         "filteredHint": "已被“选择显示内容”隐藏（{reasons}）。使用“始终显示”可仍然保留此频道。",
         "pinnedHint": "始终显示，不受筛选条件影响。再次点击即可交由筛选条件决定。",
         "pinnedOverHint": "始终显示，即使筛选条件隐藏了{reasons}。再次点击即可交由筛选条件决定。",
-        "regionLocked": "地区限制"
+        "regionLocked": "地区限制",
+        "offline": "离线",
+        "offlineHint": "最近两次检查都无法播放（上次检查于 {date}）",
+        "inLineupsHint": "所属频道合集：{names}"
       },
       "range": "{from}–{to}，共{total}个",
       "empty": "还没有频道。列表加载后，频道会显示在这里。",
       "noMatches": "没有匹配的频道。",
-      "couldNotLoad": "无法加载频道"
+      "couldNotLoad": "无法加载频道",
+      "edit": "编号、名称和台标",
+      "editAria": "编辑 {name} 的编号、名称和台标",
+      "numberHint": "频道编号",
+      "checkNow": "立即检查",
+      "checkNowAria": "检查 {name} 现在能否播放",
+      "checking": "正在检查…",
+      "couldNotCheck": "无法检查频道",
+      "addToLineup": "添加到频道合集",
+      "addedToLineup": {
+        "other": "已将{number}个频道添加到 {name}"
+      },
+      "stillOffline": "仍然离线 · 再次检查"
+    },
+    "health": {
+      "title": "频道状态",
+      "desc": "公共频道时有时无。Plinthio 会在后台每次检查几个频道，找出已经失效的那些。每次检查只向直播流请求开头的几 KB 数据，不会播放或转换任何内容，服务器几乎察觉不到。",
+      "enabled": {
+        "label": "在后台检查频道",
+        "desc": "电视直播开启期间，每10分钟检查约20个频道，因此每个频道大约每天检查一次。"
+      },
+      "hideOffline": {
+        "label": "隐藏离线频道",
+        "desc": "连续两次检查失败的频道会对观众隐藏。它大约每天会再检查一次，恢复播放后会自动重新显示。"
+      },
+      "counts": {
+        "ok": "正常",
+        "offline": "离线",
+        "unchecked": "尚未检查"
+      },
+      "showOffline": "显示离线频道",
+      "lastChecked": "上次检查：{date}。",
+      "neverChecked": "尚未进行检查。",
+      "pace": "频道每次检查几个；在某个频道上点击“立即检查”会马上检查。",
+      "paused": "后台检查已关闭，因此这些数字不会变化。",
+      "couldNotLoad": "无法加载频道状态"
+    },
+    "editChannel": {
+      "title": "编辑频道",
+      "number": "频道编号",
+      "automatic": "自动",
+      "useAutomatic": "使用自动编号",
+      "numberHint": "1到9999，每个编号只能使用一次。观众可以输入编号直接跳到这个频道。没有编号的频道会排在你设置的最大编号之后。",
+      "numberInvalid": "请输入1到9999之间的整数。",
+      "name": "名称",
+      "useOriginal": "使用原名称",
+      "nameHint": "留空则使用列表中的名称：{name}",
+      "logo": "台标地址",
+      "useOriginalLogo": "使用原台标",
+      "logoHint": "图片链接（http 或 https）。留空则使用列表自带的台标。保存后会显示新台标。",
+      "checkHint": "查看这个频道现在能否播放。只有连续两次检查失败，频道才会被标记为离线。",
+      "health": {
+        "ok": "正常（检查于 {date}）",
+        "offline": "离线（检查于 {date}）",
+        "unchecked": "尚未检查"
+      },
+      "couldNotSave": "无法保存频道",
+      "checkOk": "可以播放。",
+      "checkFailed": "这次无法播放：{error}",
+      "checkFailedNoReason": "这次无法播放。"
+    },
+    "lineups": {
+      "title": "频道合集",
+      "desc": "按你喜欢的顺序创建自己的频道组合，例如新闻、体育或少儿。每个频道合集都会成为电视直播页面上的一个标签页，顺序与这里一致。",
+      "create": "新建频道合集",
+      "createTitle": "新建频道合集",
+      "empty": "还没有频道合集。在你创建之前，观众会看到按类别排列的所有频道。",
+      "footer": "在频道合集中，观众仍然看不到你隐藏的频道或离线频道；除非频道设置为“始终显示”，否则筛选条件依然有效。",
+      "name": "名称",
+      "namePlaceholder": "例如：新闻",
+      "nameHint": "会作为标签页名称显示给观众。",
+      "openAria": "打开频道合集 {name}",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "moveUpAria": "上移频道合集 {name}",
+      "moveDownAria": "下移频道合集 {name}",
+      "kids": {
+        "label": "允许儿童观看",
+        "desc": "儿童帐户可以观看此频道合集中的所有频道，以及单独允许儿童观看的频道。"
+      },
+      "delete": "删除频道合集",
+      "deleteTitle": "删除频道合集",
+      "deleteMessage": "要删除 {name} 吗？其中的频道不受影响，只会删除这个频道合集。",
+      "couldNotLoad": "无法加载频道合集",
+      "couldNotLoadChannels": "无法加载此频道合集的频道",
+      "couldNotCreate": "无法创建频道合集",
+      "couldNotAdd": "无法添加频道",
+      "couldNotDelete": "无法删除频道合集",
+      "editor": {
+        "subtitle": "更改会即时保存",
+        "tabs": {
+          "channels": "频道",
+          "add": "添加频道"
+        },
+        "empty": "此频道合集中还没有频道。",
+        "addChannels": "添加频道",
+        "sortName": "A–Z",
+        "sortNumber": "按编号",
+        "moveUpAria": "上移 {name}",
+        "moveDownAria": "下移 {name}",
+        "remove": "从频道合集中移除",
+        "removeAria": "从此频道合集中移除 {name}",
+        "addBy": "添加方式",
+        "kinds": {
+          "search": "搜索",
+          "categories": "整个类别"
+        },
+        "search": {
+          "search": "搜索频道",
+          "categories": "搜索类别"
+        },
+        "searchHint": "输入频道名称的一部分。",
+        "inLineup": "已添加",
+        "addAria": "将 {name} 添加到此频道合集",
+        "addFound": {
+          "other": "添加找到的{number}个"
+        },
+        "moreResults": {
+          "other": "还有{number}个匹配项；输入更多内容可缩小范围。"
+        },
+        "addAll": "全部添加",
+        "addCategoryAria": "添加 {name} 中的所有频道",
+        "categoryHidden": "已被筛选隐藏",
+        "hiddenByFilter": "被筛选隐藏",
+        "nothingNew": "该类别的所有频道都已在这里。",
+        "added": {
+          "other": "已添加{number}个频道"
+        }
+      }
     }
   },
   "logs": {

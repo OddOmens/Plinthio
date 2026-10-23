@@ -7,7 +7,7 @@
     "channels": "Zenders",
     "guide": "Gids"
   },
-  "searchPlaceholder": "Zenders zoeken…",
+  "searchPlaceholder": "Zenders en programma's zoeken…",
   "groupsLabel": "Zendergroepen",
   "channelCount": {
     "one": "{count} zender",
@@ -44,6 +44,8 @@
   "guide": {
     "channel": "Zender",
     "now": "Nu",
+    "tonight": "Vanavond",
+    "tomorrow": "Morgen",
     "earlier": "Eerder",
     "later": "Later",
     "notLoadedTitle": "De tv-gids is nog niet geladen",
@@ -73,6 +75,8 @@
     "channelDown": "Zender omlaag",
     "channelUpHint": "Zender omhoog (↑)",
     "channelDownHint": "Zender omlaag (↓)",
+    "lastChannel": "Vorige zender",
+    "lastChannelHint": "Vorige zender (L)",
     "nextChannel": "Volgende zender",
     "info": "Wat is er op",
     "pip": "Beeld-in-beeld",
@@ -88,5 +92,55 @@
       "decode": "Deze browser kan de video van deze zender niet afspelen.",
       "unsupportedBrowser": "Deze browser kan geen livestreams afspelen."
     }
+  },
+  "undo": "Ongedaan maken",
+  "lists": {
+    "label": "Zenderoverzichten",
+    "favourites": "Favorieten",
+    "recent": "Recent",
+    "all": "Alle zenders"
+  },
+  "favourites": {
+    "add": "{channel} toevoegen aan favorieten",
+    "remove": "{channel} uit favorieten halen",
+    "addShort": "Aan favorieten toevoegen",
+    "removeShort": "Uit favorieten halen"
+  },
+  "menu": {
+    "options": "Meer opties",
+    "optionsFor": "Opties voor {channel}",
+    "hideChannel": "Voor mij verbergen",
+    "hideGroup": "Heel ‘{group}’ voor mij verbergen"
+  },
+  "hidden": {
+    "channel": "{channel} is voor jou verborgen",
+    "group": "‘{group}’ is voor jou verborgen"
+  },
+  "search": {
+    "channels": "Zenders",
+    "programmes": "Programma's",
+    "noResultsTitle": "Niets gevonden",
+    "noResults": "Geen zenders of programma's passen bij ‘{query}’.",
+    "clear": "Zoekopdracht wissen",
+    "errorTitle": "Kon niet zoeken"
+  },
+  "mine": {
+    "button": "Voor mij verborgen",
+    "title": "Voor mij verborgen",
+    "subtitle": "Alleen jij ziet deze keuzes, op elk apparaat.",
+    "showOnHome": "‘Nu live’ op Home tonen",
+    "showOnHomeHint": "Een rij met wat er op je favoriete zenders is.",
+    "hiddenTitle": "Zenders en groepen die je hebt verborgen",
+    "nothingHidden": "Je hebt niets verborgen. Gebruik het menu van een zender om die zender, of een hele groep, alleen voor jezelf te verbergen.",
+    "wholeGroup": "Hele groep",
+    "show": "Tonen",
+    "showAll": "Alles tonen",
+    "saveFailed": "Kon dat niet opslaan. Controleer je verbinding en probeer het opnieuw."
+  },
+  "home": {
+    "title": "Nu live",
+    "allChannels": "Alle zenders",
+    "hideRow": "Deze rij verbergen",
+    "hideRowHint": "Deze rij verbergen (terughalen via Live tv → Voor mij verborgen)"
   }
 }

@@ -7,7 +7,7 @@
     "channels": "Chaînes",
     "guide": "Guide"
   },
-  "searchPlaceholder": "Rechercher une chaîne…",
+  "searchPlaceholder": "Rechercher des chaînes et des programmes…",
   "groupsLabel": "Groupes de chaînes",
   "channelCount": {
     "one": "{count} chaîne",
@@ -44,6 +44,8 @@
   "guide": {
     "channel": "Chaîne",
     "now": "Maintenant",
+    "tonight": "Ce soir",
+    "tomorrow": "Demain",
     "earlier": "Plus tôt",
     "later": "Plus tard",
     "notLoadedTitle": "Le guide des programmes n'est pas encore chargé",
@@ -73,6 +75,8 @@
     "channelDown": "Chaîne −",
     "channelUpHint": "Chaîne + (↑)",
     "channelDownHint": "Chaîne − (↓)",
+    "lastChannel": "Chaîne précédente",
+    "lastChannelHint": "Chaîne précédente (L)",
     "nextChannel": "Chaîne suivante",
     "info": "Au programme",
     "pip": "Image dans l'image",
@@ -88,5 +92,55 @@
       "decode": "Ce navigateur ne peut pas lire la vidéo de cette chaîne.",
       "unsupportedBrowser": "Ce navigateur ne peut pas lire les flux en direct."
     }
+  },
+  "undo": "Annuler",
+  "lists": {
+    "label": "Listes de chaînes",
+    "favourites": "Favoris",
+    "recent": "Récentes",
+    "all": "Toutes les chaînes"
+  },
+  "favourites": {
+    "add": "Ajouter {channel} aux favoris",
+    "remove": "Retirer {channel} des favoris",
+    "addShort": "Ajouter aux favoris",
+    "removeShort": "Retirer des favoris"
+  },
+  "menu": {
+    "options": "Plus d'options",
+    "optionsFor": "Options pour {channel}",
+    "hideChannel": "Masquer pour moi",
+    "hideGroup": "Masquer tout « {group} » pour moi"
+  },
+  "hidden": {
+    "channel": "{channel} est masquée pour vous",
+    "group": "« {group} » est masqué pour vous"
+  },
+  "search": {
+    "channels": "Chaînes",
+    "programmes": "Programmes",
+    "noResultsTitle": "Aucun résultat",
+    "noResults": "Aucune chaîne ni aucun programme ne correspond à « {query} ».",
+    "clear": "Effacer la recherche",
+    "errorTitle": "Impossible de rechercher"
+  },
+  "mine": {
+    "button": "Masqué pour moi",
+    "title": "Masqué pour moi",
+    "subtitle": "Vous seul voyez ces choix, sur tous vos appareils.",
+    "showOnHome": "Afficher « En direct » sur l'accueil",
+    "showOnHomeHint": "Une rangée avec ce qui passe sur vos chaînes favorites.",
+    "hiddenTitle": "Chaînes et groupes que vous avez masqués",
+    "nothingHidden": "Vous n'avez rien masqué. Utilisez le menu d'une chaîne pour la masquer, ou tout son groupe, rien que pour vous.",
+    "wholeGroup": "Groupe entier",
+    "show": "Afficher",
+    "showAll": "Tout afficher",
+    "saveFailed": "Impossible d'enregistrer. Vérifiez votre connexion et réessayez."
+  },
+  "home": {
+    "title": "En direct",
+    "allChannels": "Toutes les chaînes",
+    "hideRow": "Masquer cette rangée",
+    "hideRowHint": "Masquer cette rangée (à réactiver dans TV en direct → Masqué pour moi)"
   }
 }

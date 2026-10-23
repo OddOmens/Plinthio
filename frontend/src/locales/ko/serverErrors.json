@@ -513,7 +513,19 @@
     "hiddenCategoriesMustBeA": "숨길 카테고리는 최대 5000개의 이름 목록이어야 해요",
     "hiddenLanguagesMustBeA": "숨길 언어는 최대 5000개의 이름 목록이어야 해요",
     "hiddenCountriesMustBeTwo": "숨길 국가는 두 글자 국가 코드여야 해요",
-    "hiddenStreamHostsMustBe": "숨길 스트림 서버는 example.com 같은 호스트 이름이어야 해요"
+    "hiddenStreamHostsMustBe": "숨길 스트림 서버는 example.com 같은 호스트 이름이어야 해요",
+    "lineUpNotFound": "라인업을 찾을 수 없어요",
+    "channelNumbersGoFrom1": "채널 번호는 1~9999 사이여야 해요",
+    "enterANameForTheChannel": "채널 이름을 입력하거나 비워 두세요",
+    "theLogoAddressMustStart": "로고 주소는 http:// 또는 https://로 시작해야 해요",
+    "anotherChannelAlreadyHasThat": "다른 채널이 이미 그 번호를 쓰고 있어요",
+    "enterANameForTheLineUp": "라인업 이름을 입력하세요",
+    "sendTheLineUpsIn": "라인업을 새 순서대로 보내 주세요",
+    "kidsAllowedMustBeTrue": "kidsAllowed는 true 또는 false여야 해요",
+    "hideOfflineMustBeTrue": "hideOffline은 true 또는 false여야 해요",
+    "enabledMustBeTrueOr": "enabled는 true 또는 false여야 해요",
+    "chooseUpTo5000Channels": "채널은 최대 5000개까지 고를 수 있어요",
+    "youCanHaveUpTo": "즐겨찾기 채널은 최대 500개까지 둘 수 있어요"
   },
   "patterns": {
     "noMetadataSource": "{type} 메타데이터 소스가 아직 없어요",

@@ -7,7 +7,7 @@
     "channels": "Canali",
     "guide": "Guida TV"
   },
-  "searchPlaceholder": "Cerca canali…",
+  "searchPlaceholder": "Cerca canali e programmi…",
   "groupsLabel": "Gruppi di canali",
   "channelCount": {
     "one": "{count} canale",
@@ -44,6 +44,8 @@
   "guide": {
     "channel": "Canale",
     "now": "Ora",
+    "tonight": "Stasera",
+    "tomorrow": "Domani",
     "earlier": "Prima",
     "later": "Dopo",
     "notLoadedTitle": "La guida TV non è ancora stata caricata",
@@ -73,6 +75,8 @@
     "channelDown": "Canale giù",
     "channelUpHint": "Canale su (↑)",
     "channelDownHint": "Canale giù (↓)",
+    "lastChannel": "Canale precedente",
+    "lastChannelHint": "Canale precedente (L)",
     "nextChannel": "Canale successivo",
     "info": "In onda",
     "pip": "Picture in picture",
@@ -88,5 +92,55 @@
       "decode": "Questo browser non riesce a riprodurre il video di questo canale.",
       "unsupportedBrowser": "Questo browser non può riprodurre le dirette."
     }
+  },
+  "undo": "Annulla",
+  "lists": {
+    "label": "Liste di canali",
+    "favourites": "Preferiti",
+    "recent": "Recenti",
+    "all": "Tutti i canali"
+  },
+  "favourites": {
+    "add": "Aggiungi {channel} ai preferiti",
+    "remove": "Togli {channel} dai preferiti",
+    "addShort": "Aggiungi ai preferiti",
+    "removeShort": "Togli dai preferiti"
+  },
+  "menu": {
+    "options": "Altre opzioni",
+    "optionsFor": "Opzioni per {channel}",
+    "hideChannel": "Nascondi per me",
+    "hideGroup": "Nascondi tutto «{group}» per me"
+  },
+  "hidden": {
+    "channel": "{channel} è nascosto per te",
+    "group": "«{group}» è nascosto per te"
+  },
+  "search": {
+    "channels": "Canali",
+    "programmes": "Programmi",
+    "noResultsTitle": "Nessun risultato",
+    "noResults": "Nessun canale o programma corrisponde a «{query}».",
+    "clear": "Cancella ricerca",
+    "errorTitle": "Impossibile cercare"
+  },
+  "mine": {
+    "button": "Nascosti per me",
+    "title": "Nascosti per me",
+    "subtitle": "Queste scelte le vedi solo tu, su ogni dispositivo.",
+    "showOnHome": "Mostra «In onda ora» nella Home",
+    "showOnHomeHint": "Una riga con cosa va in onda sui tuoi canali preferiti.",
+    "hiddenTitle": "Canali e gruppi che hai nascosto",
+    "nothingHidden": "Non hai nascosto niente. Usa il menu di un canale per nascondere quel canale, o un intero gruppo, solo per te.",
+    "wholeGroup": "Gruppo intero",
+    "show": "Mostra",
+    "showAll": "Mostra tutto",
+    "saveFailed": "Impossibile salvare. Controlla la connessione e riprova."
+  },
+  "home": {
+    "title": "In onda ora",
+    "allChannels": "Tutti i canali",
+    "hideRow": "Nascondi questa riga",
+    "hideRowHint": "Nascondi questa riga (puoi riattivarla in TV in diretta → Nascosti per me)"
   }
 }

@@ -298,16 +298,40 @@
       "text": "Sous **Chaînes**, recherchez ou filtrez par liste, puis utilisez **Masquer** sur les chaînes dont vous ne voulez pas. Cochez-en plusieurs (ou une page entière) pour les modifier d'un coup. Les modifications sont enregistrées immédiatement.",
       "kept": "Les chaînes masquées et les choix pour les enfants sont conservés quand une liste est rechargée. Une chaîne qui disparaît de sa playlist est retirée."
     },
+    "lineups": {
+      "title": "Sélections et numéros de chaîne",
+      "intro": "Sous **Sélections de chaînes**, créez vos propres ensembles de chaînes, comme Infos, Sport ou Pour les enfants. Chaque sélection devient un onglet de la page TV en direct, dans l'ordre où vous les placez.",
+      "create": "**Nouvelle sélection** demande un nom, puis l'ouvre. Ajoutez des chaînes par **Recherche** (une à la fois, ou tous les résultats d'un coup) ou par **Catégorie entière**, qui ajoute toutes les chaînes d'une catégorie en une fois. Vous pouvez aussi cocher des chaînes sous **Chaînes** et appuyer sur **Ajouter à la sélection**.",
+      "order": "Utilisez les flèches haut et bas pour ordonner les sélections, et les chaînes à l'intérieur de chacune. **A–Z** et **Par numéro** trient toute une sélection d'un coup. Retirer une chaîne d'une sélection ne la masque nulle part ailleurs.",
+      "kids": "**Autoriser aux enfants** sur une sélection permet aux comptes enfants de regarder toutes ses chaînes, en plus de celles autorisées une par une.",
+      "rules": "Une sélection ne fait pas revenir les chaînes que vous avez masquées ou qui sont hors ligne, et les filtres s'appliquent toujours, sauf pour une chaîne réglée sur **Toujours afficher**.",
+      "numbers": "**Numéros, noms et logos** : appuyez sur le crayon à côté d'une chaîne sous **Chaînes** pour lui donner son propre numéro (de 1 à 9999, chacun utilisé une seule fois), un nom ou une adresse de logo. Les spectateurs peuvent taper un numéro dans le lecteur pour passer directement à cette chaîne. Les chaînes sans numéro viennent après votre numéro le plus élevé. Laissez un champ vide pour revenir à ce que fournit la liste."
+    },
+    "health": {
+      "title": "État des chaînes",
+      "intro": "Les chaînes publiques cessent de fonctionner de temps en temps. Avec **Vérifier les chaînes en arrière-plan** activé (c'est le cas au départ), Plinthio contrôle environ 20 chaînes toutes les 10 minutes tant que la TV en direct est activée, soit chacune environ une fois par jour.",
+      "light": "Une vérification est volontairement légère : le serveur récupère la playlist de la chaîne et les premiers kilo-octets de vidéo, rien de plus. Rien n'est lu, décodé ni converti, donc cela ne coûte presque rien.",
+      "offline": "Une chaîne qui échoue à deux vérifications d'affilée est marquée **Hors ligne**. Avec **Masquer les chaînes hors ligne** activé, les spectateurs ne la voient plus jusqu'à ce qu'elle fonctionne à nouveau ; une seule vérification réussie la fait revenir.",
+      "counts": "La carte indique combien de chaînes fonctionnent, sont hors ligne ou ne sont pas encore vérifiées, et quand la dernière vérification a eu lieu. Appuyez sur le nombre de chaînes hors ligne pour les lister, et sur **Vérifier** sur l'une d'elles pour la contrôler immédiatement."
+    },
     "kids": {
       "title": "Comptes enfants",
-      "text": "Les comptes enfants ne voient que les chaînes marquées **Autoriser aux enfants**. Aucune ne l'est tant que vous ne les avez pas choisies : d'ici là, la TV en direct n'apparaît pas dans le menu d'un compte enfant."
+      "text": "Les comptes enfants ne voient que les chaînes marquées **Autoriser aux enfants**, ainsi que les chaînes d'une sélection marquée **Autoriser aux enfants**. Aucune ne l'est tant que vous ne les avez pas choisies : d'ici là, la TV en direct n'apparaît pas dans le menu d'un compte enfant."
     },
     "watching": {
       "title": "Regarder",
-      "channels": "**Chaînes** : toutes les chaînes, avec ce qui passe maintenant et ensuite. Recherchez, ou limitez l'affichage à un groupe.",
+      "channels": "**Chaînes** : des onglets Favoris, Récentes, un par sélection et Toutes les chaînes (avec des catégories au choix), et pour chaque chaîne ce qui passe maintenant et ensuite.",
       "guide": "**Guide** : une grille de ce qui passe sur les chaînes. Touchez un programme pour voir ses détails et un bouton **Regarder maintenant**.",
       "player": "**Le lecteur** : les flèches haut et bas (ou les boutons) changent de chaîne. L'image dans l'image et le plein écran fonctionnent si le navigateur les prend en charge.",
       "throughServer": "Les flux passent par ce serveur : toute personne qui peut joindre Plinthio peut regarder, à la maison comme ailleurs. Chaque spectateur utilise la connexion Internet du serveur."
+    },
+    "yours": {
+      "title": "Les choix de chaque spectateur",
+      "intro": "Chaque spectateur peut personnaliser la TV en direct. Ces choix appartiennent à son compte et ne changent rien pour les autres.",
+      "favourites": "**Favoris** : l'étoile d'une chaîne l'ajoute à un onglet **Favoris**, affiché en premier. Les favoris apparaissent aussi dans une rangée **En direct** sur la page d'accueil avec ce qui passe ; cette rangée peut être masquée.",
+      "recent": "**Récentes** : les dernières chaînes regardées ont leur propre onglet, et le bouton **Chaîne précédente** du lecteur (ou la touche {key}) revient à la chaîne d'avant.",
+      "hiding": "**Masquer pour moi** : le menu d'une chaîne masque cette chaîne, ou tout son groupe, rien que pour vous. **Masqué pour moi** sur la page TV en direct liste ce que vous avez masqué, avec un moyen de faire revenir chaque élément, et active ou désactive la rangée de l'accueil.",
+      "search": "**Rechercher** trouve des chaînes par nom et des programmes par titre, sur la journée et demie à venir. Dans le guide, **Maintenant**, **Ce soir** et **Demain** sautent directement à ce moment."
     },
     "publicSources": {
       "title": "À propos des chaînes publiques",
@@ -333,7 +357,15 @@
       },
       "missingChannel": {
         "title": "Une chaîne que je veux est absente",
-        "text": "Un filtre de **Choisir ce qui s'affiche** la masque peut-être. Sous **Chaînes**, choisissez **Masquées par un filtre** : chaque chaîne indique quel filtre la masque, et **Toujours afficher** la fait revenir."
+        "text": "Un filtre de **Choisir ce qui s'affiche** la masque peut-être, ou elle est peut-être hors ligne. Sous **Chaînes**, choisissez **Masquées par un filtre** ou **Hors ligne** : chaque chaîne en indique la raison, et **Toujours afficher** ou **Vérifier** peut aider. Un spectateur l'a peut-être aussi masquée pour lui-même ; elle figure alors sous **Masqué pour moi** sur sa page TV en direct."
+      },
+      "offline": {
+        "title": "Une chaîne est marquée « Hors ligne »",
+        "text": "Elle a échoué à ses deux dernières vérifications. Elle est revérifiée environ une fois par jour et revient d'elle-même dès qu'elle fonctionne ; **Vérifier** la contrôle immédiatement. Si elle échoue toujours, masquez-la, ou désactivez **Masquer les chaînes hors ligne** pour la lister quand même."
+      },
+      "numberTaken": {
+        "title": "Un numéro de chaîne ne s'enregistre pas",
+        "text": "Chaque numéro ne peut appartenir qu'à une seule chaîne. Donnez d'abord un autre numéro à l'autre chaîne (ou effacez le sien)."
       },
       "noGuide": {
         "title": "Le guide est vide pour certaines chaînes",

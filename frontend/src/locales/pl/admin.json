@@ -512,7 +512,7 @@
     },
     "channels": {
       "title": "Kanały",
-      "desc": "Ukryj te, których nie chcesz. Konta dziecięce widzą tylko kanały dozwolone tutaj dla dzieci, a dopóki ich nie wybierzesz, żaden nie jest dozwolony.",
+      "desc": "Ukryj te, których nie chcesz, albo naciśnij ołówek, aby nadać kanałowi własny numer, nazwę lub logo. Konta dziecięce widzą tylko kanały dozwolone tutaj dla dzieci lub należące do zestawu kanałów dozwolonego dla dzieci, a dopóki ich nie wybierzesz, żaden nie jest dozwolony.",
       "searchPlaceholder": "Szukaj kanałów",
       "sourceFilter": "Lista kanałów",
       "allSources": "Wszystkie listy",
@@ -523,6 +523,7 @@
         "hidden": "Ukryte",
         "filtered": "Ukryte przez filtr",
         "pinned": "Zawsze widoczne",
+        "offline": "Niedostępne",
         "kids": "Dla dzieci",
         "unsupported": "Nieodtwarzalne"
       },
@@ -558,12 +559,155 @@
         "filteredHint": "Ukryty w sekcji Wybierz, co pokazywać ({reasons}). Użyj opcji Zawsze pokazuj, aby mimo to zachować ten kanał.",
         "pinnedHint": "Zawsze widoczny, niezależnie od filtrów. Naciśnij ponownie, aby decydowały filtry.",
         "pinnedOverHint": "Zawsze widoczny, mimo że filtr ukrywa: {reasons}. Naciśnij ponownie, aby decydowały filtry.",
-        "regionLocked": "Blokada regionalna"
+        "regionLocked": "Blokada regionalna",
+        "offline": "Niedostępny",
+        "offlineHint": "Nie działał przy dwóch ostatnich sprawdzeniach (ostatnio sprawdzono {date})",
+        "inLineupsHint": "W zestawach: {names}"
       },
       "range": "{from}–{to} z {total}",
       "empty": "Nie ma jeszcze kanałów. Pojawią się tutaj po wczytaniu listy.",
       "noMatches": "Żaden kanał nie pasuje.",
-      "couldNotLoad": "Nie udało się wczytać kanałów"
+      "couldNotLoad": "Nie udało się wczytać kanałów",
+      "edit": "Numer, nazwa i logo",
+      "editAria": "Edytuj numer, nazwę i logo kanału {name}",
+      "numberHint": "Numer kanału",
+      "checkNow": "Sprawdź teraz",
+      "checkNowAria": "Sprawdź, czy {name} teraz działa",
+      "checking": "Sprawdzanie…",
+      "couldNotCheck": "Nie udało się sprawdzić kanału",
+      "addToLineup": "Dodaj do zestawu",
+      "addedToLineup": {
+        "one": "Dodano {number} kanał do zestawu {name}",
+        "few": "Dodano {number} kanały do zestawu {name}",
+        "many": "Dodano {number} kanałów do zestawu {name}",
+        "other": "Dodano {number} kanału do zestawu {name}"
+      },
+      "stillOffline": "Nadal niedostępny · Sprawdź ponownie"
+    },
+    "health": {
+      "title": "Stan kanałów",
+      "desc": "Kanały publiczne pojawiają się i znikają. Plinthio sprawdza je w tle po kilka naraz, aby znaleźć te, które przestały działać. Każde sprawdzenie pobiera tylko pierwsze kilka kilobajtów strumienia, więc nic nie jest odtwarzane ani konwertowane, a serwer prawie tego nie odczuwa.",
+      "enabled": {
+        "label": "Sprawdzaj kanały w tle",
+        "desc": "Około 20 kanałów co 10 minut, gdy TV na żywo jest włączona, więc każdy kanał jest sprawdzany mniej więcej raz dziennie."
+      },
+      "hideOffline": {
+        "label": "Ukryj niedostępne kanały",
+        "desc": "Kanał, który nie przejdzie dwóch sprawdzeń z rzędu, zostaje ukryty przed widzami. Jest sprawdzany ponownie mniej więcej raz dziennie i wraca sam, gdy znów zadziała."
+      },
+      "counts": {
+        "ok": "Działające",
+        "offline": "Niedostępne",
+        "unchecked": "Jeszcze niesprawdzone"
+      },
+      "showOffline": "Pokaż niedostępne kanały",
+      "lastChecked": "Ostatnie sprawdzenie: {date}.",
+      "neverChecked": "Jeszcze niczego nie sprawdzono.",
+      "pace": "Kanały są sprawdzane po kilka naraz; Sprawdź teraz przy kanale sprawdza go od razu.",
+      "paused": "Sprawdzanie w tle jest wyłączone, więc te liczby się nie zmieniają.",
+      "couldNotLoad": "Nie udało się wczytać stanu kanałów"
+    },
+    "editChannel": {
+      "title": "Edytuj kanał",
+      "number": "Numer kanału",
+      "automatic": "Automatyczny",
+      "useAutomatic": "Użyj automatycznego",
+      "numberHint": "Od 1 do 9999, każdy tylko raz. Widzowie mogą go wpisać, aby przejść do tego kanału. Kanały bez numeru są ustawiane za twoim najwyższym numerem.",
+      "numberInvalid": "Wpisz liczbę całkowitą od 1 do 9999.",
+      "name": "Nazwa",
+      "useOriginal": "Użyj oryginalnej",
+      "nameHint": "Zostaw puste, aby użyć nazwy z listy: {name}",
+      "logo": "Adres logo",
+      "useOriginalLogo": "Użyj oryginalnego logo",
+      "logoHint": "Link do obrazu (http lub https). Zostaw puste, aby użyć logo z listy. Nowe logo pojawi się po zapisaniu.",
+      "checkHint": "Sprawdź, czy ten kanał teraz działa. Kanał jest oznaczany jako niedostępny dopiero po dwóch nieudanych sprawdzeniach z rzędu.",
+      "health": {
+        "ok": "Działa (sprawdzono {date})",
+        "offline": "Niedostępny (sprawdzono {date})",
+        "unchecked": "Jeszcze niesprawdzony"
+      },
+      "couldNotSave": "Nie udało się zapisać kanału",
+      "checkOk": "Działa.",
+      "checkFailed": "Tym razem nie zadziałał: {error}",
+      "checkFailedNoReason": "Tym razem nie zadziałał."
+    },
+    "lineups": {
+      "title": "Zestawy kanałów",
+      "desc": "Twórz własne zestawy kanałów, np. Wiadomości, Sport albo Dla dzieci, w dowolnej kolejności. Każdy zestaw to zakładka na stronie TV na żywo, w takiej kolejności jak tutaj.",
+      "create": "Nowy zestaw",
+      "createTitle": "Nowy zestaw",
+      "empty": "Nie ma jeszcze zestawów. Dopóki go nie utworzysz, widzowie widzą wszystkie kanały według kategorii.",
+      "footer": "W zestawie widzowie nadal nie widzą kanałów ukrytych ani niedostępnych, a filtry nadal działają, chyba że kanał ma ustawione Zawsze pokazuj.",
+      "name": "Nazwa",
+      "namePlaceholder": "np. Wiadomości",
+      "nameHint": "Widzowie zobaczą ją jako nazwę zakładki.",
+      "openAria": "Otwórz zestaw {name}",
+      "moveUp": "Przesuń w górę",
+      "moveDown": "Przesuń w dół",
+      "moveUpAria": "Przesuń zestaw {name} w górę",
+      "moveDownAria": "Przesuń zestaw {name} w dół",
+      "kids": {
+        "label": "Zezwól dzieciom",
+        "desc": "Konta dziecięce mogą oglądać każdy kanał z tego zestawu, a także kanały dozwolone dla dzieci pojedynczo."
+      },
+      "delete": "Usuń zestaw",
+      "deleteTitle": "Usuń zestaw",
+      "deleteMessage": "Usunąć {name}? Kanały zostaną tam, gdzie są; zniknie tylko zestaw.",
+      "couldNotLoad": "Nie udało się wczytać zestawów",
+      "couldNotLoadChannels": "Nie udało się wczytać kanałów tego zestawu",
+      "couldNotCreate": "Nie udało się utworzyć zestawu",
+      "couldNotAdd": "Nie udało się dodać kanałów",
+      "couldNotDelete": "Nie udało się usunąć zestawu",
+      "editor": {
+        "subtitle": "Zmiany zapisują się na bieżąco",
+        "tabs": {
+          "channels": "Kanały",
+          "add": "Dodaj kanały"
+        },
+        "empty": "W tym zestawie nie ma jeszcze kanałów.",
+        "addChannels": "Dodaj kanały",
+        "sortName": "A–Z",
+        "sortNumber": "Według numeru",
+        "moveUpAria": "Przesuń {name} w górę",
+        "moveDownAria": "Przesuń {name} w dół",
+        "remove": "Usuń z zestawu",
+        "removeAria": "Usuń {name} z tego zestawu",
+        "addBy": "Sposób dodawania kanałów",
+        "kinds": {
+          "search": "Wyszukaj",
+          "categories": "Cała kategoria"
+        },
+        "search": {
+          "search": "Szukaj kanałów",
+          "categories": "Szukaj kategorii"
+        },
+        "searchHint": "Wpisz fragment nazwy kanału.",
+        "inLineup": "Dodano",
+        "addAria": "Dodaj {name} do tego zestawu",
+        "addFound": {
+          "one": "Dodaj znaleziony ({number})",
+          "few": "Dodaj wszystkie znalezione ({number})",
+          "many": "Dodaj wszystkie znalezione ({number})",
+          "other": "Dodaj wszystkie znalezione ({number})"
+        },
+        "moreResults": {
+          "one": "Jeszcze {number} wynik; wpisz więcej, aby zawęzić.",
+          "few": "Jeszcze {number} wyniki; wpisz więcej, aby zawęzić.",
+          "many": "Jeszcze {number} wyników; wpisz więcej, aby zawęzić.",
+          "other": "Jeszcze {number} wyniku; wpisz więcej, aby zawęzić."
+        },
+        "addAll": "Dodaj wszystkie",
+        "addCategoryAria": "Dodaj wszystkie kanały z kategorii {name}",
+        "categoryHidden": "ukryta przez filtr",
+        "hiddenByFilter": "Ukryte przez filtr",
+        "nothingNew": "Wszystkie kanały z tej kategorii już tu są.",
+        "added": {
+          "one": "Dodano {number} kanał",
+          "few": "Dodano {number} kanały",
+          "many": "Dodano {number} kanałów",
+          "other": "Dodano {number} kanału"
+        }
+      }
     }
   },
   "logs": {

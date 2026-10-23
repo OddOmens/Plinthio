@@ -298,16 +298,40 @@
       "text": "W sekcji **Kanały** wyszukaj kanały lub przefiltruj je według listy, a potem **Ukryj** te, których nie chcesz. Zaznacz kilka (albo całą stronę), aby zmienić je naraz. Zmiany zapisują się od razu.",
       "kept": "Ukryte kanały i wybory dla dzieci zostają zachowane, gdy lista wczytuje się ponownie. Kanał, który zniknie ze swojej playlisty, zostaje usunięty."
     },
+    "lineups": {
+      "title": "Zestawy i numery kanałów",
+      "intro": "W sekcji **Zestawy kanałów** możesz tworzyć własne zestawy kanałów, np. Wiadomości, Sport albo Dla dzieci. Każdy zestaw staje się zakładką na stronie TV na żywo, w ustalonej przez ciebie kolejności.",
+      "create": "**Nowy zestaw** pyta o nazwę, a potem otwiera zestaw. Dodawaj kanały przez **Wyszukaj** (pojedynczo albo wszystkie znalezione naraz) lub **Cała kategoria**, co od razu dodaje wszystkie kanały z kategorii. Możesz też zaznaczyć kanały w sekcji **Kanały** i nacisnąć **Dodaj do zestawu**.",
+      "order": "Strzałkami w górę i w dół ustawisz kolejność zestawów oraz kanałów w zestawie. **A–Z** i **Według numeru** sortują cały zestaw naraz. Usunięcie kanału z zestawu nie ukrywa go nigdzie indziej.",
+      "kids": "**Zezwól dzieciom** przy zestawie pozwala kontom dziecięcym oglądać wszystkie jego kanały, a także te dozwolone pojedynczo.",
+      "rules": "Zestaw nie przywraca kanałów ukrytych ani niedostępnych, a filtry nadal działają, chyba że kanał ma ustawione **Zawsze pokazuj**.",
+      "numbers": "**Numery, nazwy i logo**: naciśnij ołówek obok kanału w sekcji **Kanały**, aby nadać mu własny numer (od 1 do 9999, każdy tylko raz), nazwę lub adres logo. Widzowie mogą wpisać numer w odtwarzaczu, aby przejść do tego kanału. Kanały bez numeru są ustawiane za twoim najwyższym numerem. Zostaw pole puste, aby wrócić do tego, co podaje lista."
+    },
+    "health": {
+      "title": "Stan kanałów",
+      "intro": "Kanały publiczne co jakiś czas przestają działać. Gdy opcja **Sprawdzaj kanały w tle** jest włączona (domyślnie jest), Plinthio sprawdza około 20 kanałów co 10 minut, gdy TV na żywo jest włączona, więc każdy jest sprawdzany mniej więcej raz dziennie.",
+      "light": "Sprawdzenie jest celowo lekkie: serwer pobiera playlistę kanału i pierwsze kilka kilobajtów obrazu, nic więcej. Nic nie jest odtwarzane, dekodowane ani konwertowane, więc prawie nic to nie kosztuje.",
+      "offline": "Kanał, który nie przejdzie dwóch sprawdzeń z rzędu, jest oznaczany jako **Niedostępny**. Gdy opcja **Ukryj niedostępne kanały** jest włączona, widzowie go nie widzą, dopóki znów nie zadziała; jedno udane sprawdzenie go przywraca.",
+      "counts": "Karta pokazuje, ile kanałów działa, ile jest niedostępnych, a ilu jeszcze nie sprawdzono, oraz kiedy odbyło się ostatnie sprawdzenie. Naciśnij liczbę niedostępnych, aby wyświetlić te kanały, albo **Sprawdź teraz** przy kanale, aby sprawdzić go od razu."
+    },
     "kids": {
       "title": "Konta dziecięce",
-      "text": "Konta dziecięce widzą tylko kanały oznaczone przyciskiem **Zezwól dzieciom**. Dopóki ich nie wybierzesz, żaden nie jest dozwolony, więc do tego czasu TV na żywo nie pojawia się w menu konta dziecięcego."
+      "text": "Konta dziecięce widzą tylko kanały oznaczone przyciskiem **Zezwól dzieciom** oraz kanały z zestawu kanałów oznaczonego przyciskiem **Zezwól dzieciom**. Dopóki ich nie wybierzesz, żaden nie jest dozwolony, więc do tego czasu TV na żywo nie pojawia się w menu konta dziecięcego."
     },
     "watching": {
       "title": "Oglądanie",
-      "channels": "**Kanały**: wszystkie kanały z tym, co leci teraz i co będzie dalej. Wyszukuj albo zawęź widok do jednej grupy.",
+      "channels": "**Kanały**: zakładki Ulubione, Ostatnie, po jednej dla każdego zestawu kanałów oraz Wszystkie kanały (z kategoriami do wyboru), a przy każdym kanale to, co leci teraz i co będzie dalej.",
       "guide": "**Program TV**: rozkład tego, co leci na wszystkich kanałach. Stuknij program, aby zobaczyć szczegóły i przycisk **Oglądaj teraz**.",
       "player": "**Odtwarzacz**: strzałki w górę i w dół (lub przyciski) przełączają kanały. Obraz w obrazie i pełny ekran działają tam, gdzie obsługuje je przeglądarka.",
       "throughServer": "Strumienie przechodzą przez ten serwer, więc każdy, kto ma dostęp do Plinthio, może oglądać — w domu i poza nim. Każdy widz korzysta z łącza internetowego serwera."
+    },
+    "yours": {
+      "title": "Własne wybory każdego widza",
+      "intro": "Każdy, kto ogląda, może dopasować TV na żywo do siebie. Te wybory należą do jego konta i niczego nie zmieniają innym.",
+      "favourites": "**Ulubione**: gwiazdka przy kanale dodaje go do zakładki **Ulubione**, wyświetlanej jako pierwsza. Ulubione pojawiają się też w wierszu **Teraz na żywo** na stronie głównej razem z tym, co leci; ten wiersz można ukryć.",
+      "recent": "**Ostatnie**: ostatnio oglądane kanały mają własną zakładkę, a przycisk **Poprzednio oglądany** w odtwarzaczu (lub klawisz {key}) wraca do kanału oglądanego wcześniej.",
+      "hiding": "**Ukryj dla mnie**: menu kanału ukrywa ten kanał albo całą jego grupę tylko dla ciebie. **Ukryte dla mnie** na stronie TV na żywo pokazuje wszystko, co jest ukryte, z możliwością przywrócenia każdej pozycji, i włącza lub wyłącza wiersz na stronie głównej.",
+      "search": "**Szukaj** znajduje kanały po nazwie i programy po tytule w ciągu najbliższych półtora dnia. W programie TV przyciski **Teraz**, **Dziś wieczorem** i **Jutro** przenoszą od razu do tej pory."
     },
     "publicSources": {
       "title": "O kanałach publicznych",
@@ -333,7 +357,15 @@
       },
       "missingChannel": {
         "title": "Brakuje kanału, który chcę oglądać",
-        "text": "Może go ukrywać filtr w sekcji **Wybierz, co pokazywać**. W sekcji **Kanały** wybierz **Ukryte przez filtr**: przy każdym kanale widać, który filtr go ukrywa, a **Zawsze pokazuj** przywraca go z powrotem."
+        "text": "Może go ukrywać filtr w sekcji **Wybierz, co pokazywać** albo kanał może być niedostępny. W sekcji **Kanały** wybierz **Ukryte przez filtr** lub **Niedostępne**: przy każdym kanale widać powód, a pomóc może **Zawsze pokazuj** lub **Sprawdź teraz**. Kanał może też być ukryty przez widza tylko dla niego samego; wtedy widać go w sekcji **Ukryte dla mnie** na stronie TV na żywo tego widza."
+      },
+      "offline": {
+        "title": "Kanał jest oznaczony jako „Niedostępny”",
+        "text": "Nie przeszedł dwóch ostatnich sprawdzeń. Jest sprawdzany ponownie mniej więcej raz dziennie i wraca sam, gdy zadziała; **Sprawdź teraz** sprawdza go od razu. Jeśli nadal nie działa, ukryj go albo wyłącz **Ukryj niedostępne kanały**, aby mimo to był na liście."
+      },
+      "numberTaken": {
+        "title": "Nie da się zapisać numeru kanału",
+        "text": "Każdy numer może mieć tylko jeden kanał. Najpierw nadaj drugiemu kanałowi inny numer (albo go wyczyść)."
       },
       "noGuide": {
         "title": "Program TV jest pusty dla niektórych kanałów",
