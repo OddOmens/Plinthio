@@ -120,10 +120,13 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `/collections…` | V | Custom folders and Lists: create, add library or outside titles, reorder, remove |
 | `GET /requests` · `POST /requests` · `DELETE /requests/:id` | V | Your requests |
 | `GET /requests/pending-count` · `PATCH /requests/:id` | E | Review queue |
-| `GET /live/status` · `GET /live/channels?group=&q=` · `GET /live/channels/:id` · `GET /live/guide?from=&hours=&offset=&limit=` | V | Live TV (when enabled): channels with now/next, one channel's programmes, the guide grid |
+| `GET /live/status` · `GET /live/channels?lineup=<id>\|favourites&group=&q=` · `GET /live/channels/:id` · `GET /live/guide?from=&hours=&offset=&limit=&lineup=` | V | Live TV (when enabled): channels with now/next and the line-ups you can see, one channel's programmes, the guide grid |
+| `POST/DELETE /live/favourites/:channelId` · `GET /live/now?limit=` · `POST /live/channels/:id/watched` · `GET /live/recent` · `GET /live/search?q=` · `GET /live/me/hidden` | V | Favourites, the Home "Live now" row, recently watched, channel and programme search, your personally hidden channels (hide them with `PATCH /users/preferences { liveTv: { hiddenChannels, hiddenGroups, showOnHome } }`) |
 | `GET /live/admin/presets` · `GET/POST /live/admin/sources` · `PATCH/DELETE /live/admin/sources/:id` · `POST /live/admin/sources/:id/refresh` · `POST /live/admin/acknowledge` | A | Live TV lists (a public list needs the one-time acknowledgement first) |
+| `GET/POST /live/admin/lineups` · `PATCH/DELETE /live/admin/lineups/:id` · `PUT /live/admin/lineups/order` · `GET/PUT/POST/DELETE /live/admin/lineups/:id/channels` | A | Line-ups (admin-made channel collections, optionally allowed for kids) |
+| `PATCH /live/admin/channels/:id` (`number`, `name`, `logo`) · `POST /live/admin/channels/:id/check` · `GET/PATCH /live/admin/health` | A | Channel numbering, display name and logo; the light stream check and hiding offline channels |
 | `GET/PATCH /live/admin/filters` | A | What viewers see: hide region-locked channels, and whole categories, languages, countries or stream hosts; with per-value channel counts |
-| `GET /live/admin/channels?source=&q=&status=all\|visible\|hidden\|filtered\|pinned\|kids\|unsupported` · `PATCH /live/admin/channels` (`ids`, `hidden`, `kidsAllowed`, `pinned`) | A | Channels, with why each is filtered; hide, allow for kids, or always show despite the filters |
+| `GET /live/admin/channels?source=&q=&status=all\|visible\|hidden\|filtered\|pinned\|kids\|offline\|unsupported&group=` · `PATCH /live/admin/channels` (`ids`, `hidden`, `kidsAllowed`, `pinned`) | A | Channels, with why each is filtered; hide, allow for kids, or always show despite the filters |
 | `POST /party` · `GET /party/:code` · `GET /party/:code/events` (server-sent events) · `POST /party/:code/{action,buffering,item,settings,chat}` · `DELETE /party/:code` | V | Watch parties (when enabled) |
 
 ### Metadata

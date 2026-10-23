@@ -298,16 +298,40 @@
       "text": "Under **Channels**, search or filter by list, then **Hide** the channels you don't want. Tick several (or a whole page) to change them at once. Changes save straight away.",
       "kept": "Hidden channels and kids choices are kept when a list reloads. A channel that disappears from its playlist is removed."
     },
+    "lineups": {
+      "title": "Line-ups and channel numbers",
+      "intro": "Under **Line-ups**, make your own sets of channels, such as News, Sport or For the kids. Each line-up becomes a tab on the Live TV page, in the order you put them.",
+      "create": "**New line-up** asks for a name, then opens it. Add channels by **Search** (one at a time, or every match at once) or by **Whole category**, which adds all of a category's channels in one go. You can also tick channels under **Channels** and press **Add to line-up**.",
+      "order": "Use the up and down arrows to put line-ups, and the channels inside one, in order. **A–Z** and **By number** sort a whole line-up at once. Removing a channel from a line-up doesn't hide it anywhere else.",
+      "kids": "**Allow for kids** on a line-up lets kids accounts watch every channel in it, as well as the ones allowed one by one.",
+      "rules": "A line-up doesn't bring back channels you've hidden or that are offline, and the filters still apply unless a channel is set to **Always show**.",
+      "numbers": "**Numbers, names and logos**: press the pencil next to a channel under **Channels** to give it its own number (1 to 9999, each used once), a name or a logo address. Viewers can type a number in the player to jump to that channel. Channels without a number follow on after your highest one. Leave a field empty to go back to what the list gives."
+    },
+    "health": {
+      "title": "Channel health",
+      "intro": "Public channels stop working now and then. With **Check channels in the background** on (it is to start with), Plinthio looks at about 20 channels every 10 minutes while Live TV is on, so each one is checked roughly once a day.",
+      "light": "A check is deliberately light: the server fetches the channel's playlist and the first couple of kilobytes of video, nothing more. Nothing is played, decoded or converted, so it costs next to nothing.",
+      "offline": "A channel that fails two checks in a row is marked **Offline**. With **Hide offline channels** on, viewers don't see it until it plays again; one good check brings it back.",
+      "counts": "The card shows how many channels are working, offline and not checked yet, and when the last check ran. Press the offline count to list those channels, and **Check now** on one to look straight away."
+    },
     "kids": {
       "title": "Kids accounts",
-      "text": "Kids accounts see only the channels marked **Allow for kids**. None are allowed until you pick them, so Live TV stays out of a kids account's menu until then."
+      "text": "Kids accounts see only the channels marked **Allow for kids**, and the channels in a line-up marked **Allow for kids**. None are allowed until you pick them, so Live TV stays out of a kids account's menu until then."
     },
     "watching": {
       "title": "Watching",
-      "channels": "**Channels**: every channel with what's on now and next. Search, or narrow it to a group.",
+      "channels": "**Channels**: tabs for Favourites, Recent, each line-up and All channels (with categories to pick from), each channel with what's on now and next.",
       "guide": "**Guide**: a timetable of what's on across channels. Tap a programme for its details and a **Watch** button.",
       "player": "**The player**: up and down arrows (or the buttons) change channel. Picture-in-picture and full screen work where the browser supports them.",
       "throughServer": "Streams come through this server, so anyone who can reach Plinthio can watch, at home or away. Each viewer uses the server's internet connection."
+    },
+    "yours": {
+      "title": "Each viewer's own choices",
+      "intro": "Everyone who watches can make Live TV their own. These choices belong to their account and don't change anything for anyone else.",
+      "favourites": "**Favourites**: the star on a channel adds it to a **Favourites** tab, shown first. Favourites also appear in a **Live now** row on the Home page with what's on, which can be hidden from that row.",
+      "recent": "**Recent**: the last channels watched get their own tab, and the player's **Last channel** button (or the {key} key) jumps back to the one before.",
+      "hiding": "**Hide for me**: a channel's menu hides that channel, or its whole group, just for you. **Hidden for me** on the Live TV page lists what you've hidden, with a way to bring each back, and turns the Home row on or off.",
+      "search": "**Search** finds channels by name and programmes by title, over the next day and a half. In the guide, **Now**, **Tonight** and **Tomorrow** jump straight to that time."
     },
     "publicSources": {
       "title": "About public channels",
@@ -333,7 +357,15 @@
       },
       "missingChannel": {
         "title": "A channel I want is missing",
-        "text": "A filter under **Choose what to show** may hide it. Under **Channels**, choose **Hidden by filter**: each channel says which filter hides it, and **Always show** brings it back."
+        "text": "A filter under **Choose what to show** may hide it, or it may be offline. Under **Channels**, choose **Hidden by filter** or **Offline**: each channel says why, and **Always show** or **Check now** helps. A viewer may also have hidden it for themselves; it's listed under **Hidden for me** on their Live TV page."
+      },
+      "offline": {
+        "title": "A channel is marked \"Offline\"",
+        "text": "It failed its last two checks. It's checked again about once a day and comes back by itself when it plays; **Check now** looks straight away. If it keeps failing, hide it, or switch off **Hide offline channels** to list it anyway."
+      },
+      "numberTaken": {
+        "title": "A channel number won't save",
+        "text": "Each number can belong to only one channel. Give the other channel a different number (or clear it) first."
       },
       "noGuide": {
         "title": "The guide is empty for some channels",

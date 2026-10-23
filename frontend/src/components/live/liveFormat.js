@@ -50,6 +50,18 @@ export function nowAndNext(programmes, now) {
   return { now: null, next: list.find((p) => p.start > now) || null };
 }
 
+// A list item's programme on air at `now`. Between refreshes its "now" can run out; its
+// "next" takes over until the next fetch brings the schedule up to date.
+export function airingNow(ch, now) {
+  if (ch?.now && ch.now.start <= now && now < ch.now.stop) return ch.now;
+  if (ch?.next && ch.next.start <= now && now < ch.next.stop) return ch.next;
+  return null;
+}
+
+export function upNextAfter(ch, now) {
+  return ch?.next && ch.next.start > now ? ch.next : null;
+}
+
 // The current time, ticking every `everyMs` — enough to move progress bars and the
 // guide's "now" line without a re-render every second.
 export function useNow(everyMs = 30000) {

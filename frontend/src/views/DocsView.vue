@@ -588,6 +588,26 @@
             <p class="text-xs text-muted-foreground leading-relaxed">{{ $t('docs.liveTv.choosing.kept') }}</p>
           </div>
 
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.lineups.title') }}</h2>
+            <DocText keypath="docs.liveTv.lineups.intro" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <DocText v-for="key in ['create', 'order', 'kids', 'rules', 'numbers']" :key="key" :keypath="`docs.liveTv.lineups.${key}`" tag="li" />
+            </ul>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.health.title') }}</h2>
+            <DocText keypath="docs.liveTv.health.intro" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+            <div class="p-4 rounded-xl bg-muted/30 border border-border flex items-start gap-2">
+              <Activity class="w-4 h-4 text-primary flex-shrink-0 mt-px" />
+              <DocText keypath="docs.liveTv.health.light" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+            </div>
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <DocText v-for="key in ['offline', 'counts']" :key="key" :keypath="`docs.liveTv.health.${key}`" tag="li" />
+            </ul>
+          </div>
+
           <div class="p-4 rounded-xl border border-border bg-card space-y-1.5">
             <div class="flex items-center gap-2 font-semibold text-xs text-foreground">
               <Baby class="w-4 h-4 text-sky-500" /> {{ $t('docs.liveTv.kids.title') }}
@@ -601,6 +621,20 @@
               <DocText v-for="key in ['channels', 'guide', 'player']" :key="key" :keypath="`docs.liveTv.watching.${key}`" tag="li" />
             </ul>
             <p class="text-xs text-muted-foreground leading-relaxed">{{ $t('docs.liveTv.watching.throughServer') }}</p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
+              <Star class="w-4 h-4 text-amber-500" /> {{ $t('docs.liveTv.yours.title') }}
+            </h2>
+            <p class="text-xs text-muted-foreground leading-relaxed">{{ $t('docs.liveTv.yours.intro') }}</p>
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <DocText keypath="docs.liveTv.yours.favourites" tag="li" />
+              <DocText keypath="docs.liveTv.yours.recent" tag="li">
+                <template #key><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px] text-foreground">L</kbd></template>
+              </DocText>
+              <DocText v-for="key in ['hiding', 'search']" :key="key" :keypath="`docs.liveTv.yours.${key}`" tag="li" />
+            </ul>
           </div>
 
           <div class="p-4 rounded-xl bg-muted/30 border border-border space-y-2">
@@ -949,7 +983,9 @@ import {
   CircleAlert,
   Bug,
   Baby,
-  RadioTower
+  RadioTower,
+  Activity,
+  Star
 } from '@lucide/vue';
 import { reportProblemUrl, serverVersion } from '../utils/reportProblem';
 import { useAuthStore } from '../stores/auth';
@@ -1016,6 +1052,8 @@ const liveTvProblems = [
   { id: 'listFailed', code: 'P702' },
   { id: 'notPlayable' },
   { id: 'missingChannel' },
+  { id: 'offline' },
+  { id: 'numberTaken' },
   { id: 'noGuide' },
   { id: 'notInMenu' }
 ];

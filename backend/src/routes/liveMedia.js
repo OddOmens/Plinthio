@@ -4,7 +4,8 @@ import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { sendError } from '../errors.js';
 import {
-  isLiveTvEnabled, isKidsUser, channelPrivateHost, getLiveFilters, isFilteredOut, USER_AGENT
+  isLiveTvEnabled, isKidsUser, channelPrivateHost, getLiveFilters, isFilteredOut, getHealthSettings,
+  upstreamHeaders, USER_AGENT
 } from '../services/liveTv.js';
 import { openUpstream, readBody, peek, byteLimit } from '../services/safeFetch.js';
 import {
@@ -41,14 +42,17 @@ const SANDBOX_CSP = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
 const STREAM_LINK_INVALID = 'This stream link is not valid';
 const CHANNEL_NOT_FOUND = 'Channel not found';
 
-// The same rules as the channel list (visibleChannels in services/liveTv.js), for one row
-// read with CHANNEL_COLUMNS. The filters are held in memory, so this costs no extra query.
+// The same rules as the channel list (channelIndex in services/liveTv.js), for one row read
+// with CHANNEL_COLUMNS. The filters and settings are held in memory, so this costs no extra query.
 const CHANNEL_COLUMNS = `c.hidden, c.unsupported, c.kids_allowed, c.pinned, c.geo_blocked, c.groups, c.languages,
-       c.country, c.stream_url, s.enabled AS source_enabled`;
+       c.country, c.stream_url, c.health, s.enabled AS source_enabled,
+       EXISTS (SELECT 1 FROM live_lineup_channels lc JOIN live_lineups l ON l.id = lc.lineup_id
+               WHERE lc.channel_id = c.id AND l.kids_allowed = 1) AS lineup_kids`;
 
 async function mayWatch(db, channel, user) {
   if (!channel.source_enabled || channel.hidden || channel.unsupported) return false;
-  if (isKidsUser(user) && !channel.kids_allowed) return false;
+  if (isKidsUser(user) && !channel.kids_allowed && !channel.lineup_kids) return false;
+  if (channel.health === 'offline' && (await getHealthSettings(db)).hideOffline) return false;
   return !isFilteredOut(channel, (await getLiveFilters(db)).compiled);
 }
 
@@ -79,21 +83,9 @@ function sendPlaylist(res, text) {
   res.send(text);
 }
 
-function upstreamHeaders(channel) {
-  let extra = {};
-  try {
-    extra = channel.http_headers ? JSON.parse(channel.http_headers) : {};
-  } catch {
-    extra = {};
-  }
-  const headers = { 'user-agent': extra.userAgent || USER_AGENT, 'accept-encoding': 'identity' };
-  if (extra.referrer) headers.referer = extra.referrer;
-  return headers;
-}
-
 router.use(authenticateToken);
 
-// A channel's logo. Not behind the Live TV switch or the viewing rules for admins, whose
+// A channel's logo (the admin's own choice, else the playlist's). Not behind the Live TV switch or the viewing rules for admins, whose
 // channel manager lists hidden and unplayable channels too (and works while Live TV is off).
 // Any failure is a bare 404 — the app shows its own placeholder.
 router.get('/:logoChannel/logo', async (req, res) => {
@@ -102,7 +94,7 @@ router.get('/:logoChannel/logo', async (req, res) => {
     if (!CHANNEL_ID_RE.test(req.params.logoChannel)) return notFound();
     const db = await getDb();
     const channel = await db.get(
-      `SELECT c.logo, ${CHANNEL_COLUMNS}
+      `SELECT COALESCE(c.custom_logo, c.logo) AS logo, ${CHANNEL_COLUMNS}
        FROM live_channels c JOIN live_sources s ON s.id = c.source_id WHERE c.id = ?`,
       [req.params.logoChannel]
     );

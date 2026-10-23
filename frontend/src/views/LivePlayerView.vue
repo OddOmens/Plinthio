@@ -48,6 +48,17 @@
           <div class="flex items-center gap-2 min-w-0">
             <span class="text-xs font-mono text-white/60 tabular-nums flex-shrink-0">{{ channel.number }}</span>
             <h1 class="text-base font-semibold truncate drop-shadow">{{ channel.name }}</h1>
+            <button
+              type="button"
+              @click="toggleFavourite"
+              :aria-pressed="String(favourite)"
+              :aria-label="favourite ? $t('live.favourites.remove', { channel: channel.name }) : $t('live.favourites.add', { channel: channel.name })"
+              :title="favourite ? $t('live.favourites.removeShort') : $t('live.favourites.addShort')"
+              class="w-9 h-9 -my-1.5 rounded-lg flex items-center justify-center flex-shrink-0 hover:bg-white/10 active:scale-90 transition"
+              :class="favourite ? 'text-amber-400' : 'text-white/70 hover:text-white'"
+            >
+              <Star class="w-[18px] h-[18px]" :class="favourite ? 'fill-current' : ''" />
+            </button>
           </div>
           <button
             type="button"
@@ -158,6 +169,17 @@
 
         <div class="flex-1" />
 
+        <button
+          v-if="previousId"
+          type="button"
+          :aria-label="$t('live.player.lastChannel')"
+          :title="$t('live.player.lastChannelHint')"
+          @click="goToLastChannel"
+          :class="[ctrlClass, 'sm:w-auto sm:px-2.5 gap-1.5']"
+        >
+          <ArrowLeftRight class="w-5 h-5 sm:w-4 sm:h-4" />
+          <span class="hidden sm:inline text-xs font-medium">{{ $t('live.player.lastChannel') }}</span>
+        </button>
         <template v-if="channels.length > 1">
           <button type="button" :aria-label="$t('live.player.channelDown')" :title="$t('live.player.channelDownHint')" @click="switchChannel(-1)" :class="ctrlClass">
             <ChevronDown class="w-5 h-5" />
@@ -248,18 +270,20 @@ import { getMediaToken, setMediaToken } from '../utils/mediaToken';
 import { translateServerMessage } from '../i18n/serverErrors';
 import { useIsPhone } from '../composables/useIsPhone';
 import { useCustomizationStore } from '../stores/customization';
+import { useLiveStore } from '../stores/live';
 import ChannelLogo from '../components/live/ChannelLogo.vue';
 import { clock, progressPercent, nowAndNext, useNow } from '../components/live/liveFormat';
 import { t } from '../i18n';
 import {
   ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, PictureInPicture2,
-  ChevronUp, ChevronDown, Info, Loader2, AlertCircle, RadioTower
+  ChevronUp, ChevronDown, Info, Loader2, AlertCircle, RadioTower, Star, ArrowLeftRight
 } from '@lucide/vue';
 
 const route = useRoute();
 const router = useRouter();
 const isPhone = useIsPhone();
 const customizationStore = useCustomizationStore();
+const liveStore = useLiveStore();
 const now = useNow(15000);
 
 const rootEl = ref(null);
@@ -274,10 +298,16 @@ const streamPath = ref('');
 const loadingChannel = ref(true);
 let scheduleLoadedAt = 0;
 let loadId = 0;
+// The channel whose playback was reported (once per tune: pausing and playing again isn't
+// watching it again).
+let playingFor = null;
 
-// Channel up/down walks the list the viewer came from (a group, or every channel).
+// Channel up/down walks the list the viewer came from: favourites, recently watched, a
+// line-up, or every channel (or one group of them).
 const channels = ref([]);
+const listTab = computed(() => (typeof route.query.tab === 'string' ? route.query.tab : ''));
 const group = computed(() => (typeof route.query.group === 'string' ? route.query.group : ''));
+const listKey = computed(() => `${listTab.value}|${group.value}`);
 
 const current = computed(() => {
   const found = nowAndNext(programmes.value, now.value);
@@ -291,13 +321,61 @@ const current = computed(() => {
   };
 });
 
+function listRequest() {
+  const tab = listTab.value;
+  if (tab === 'recent') return api.get('/live/recent');
+  if (tab === 'favourites') return api.get('/live/channels', { params: { lineup: 'favourites' } });
+  if (tab.startsWith('lineup:')) return api.get('/live/channels', { params: { lineup: tab.slice('lineup:'.length) } });
+  return api.get('/live/channels', { params: group.value ? { group: group.value } : {} });
+}
+
 async function loadChannels() {
   try {
-    const res = await api.get('/live/channels', { params: group.value ? { group: group.value } : {} });
-    channels.value = res.data?.channels || [];
+    const res = await listRequest();
+    channels.value = (res.data?.channels || []).filter((ch) => !liveStore.isHiddenForMe(ch));
+    liveStore.learn(channels.value);
   } catch (err) {
     channels.value = [];
   }
+}
+
+// Every channel, for a typed number that isn't in the list on screen — asked for once,
+// and only then.
+let everyChannel = null;
+async function findByNumber(wanted) {
+  const inList = channels.value.find((c) => Number(c.number) === wanted);
+  if (inList) return { channel: inList, query: route.query };
+  // The list on screen is already every channel.
+  if ((!listTab.value || listTab.value === 'all') && !group.value) return null;
+  if (!everyChannel) {
+    try {
+      const res = await api.get('/live/channels');
+      everyChannel = res.data?.channels || [];
+    } catch (err) {
+      return null;
+    }
+  }
+  const found = everyChannel.find((c) => Number(c.number) === wanted);
+  // Up/down from there walks every channel.
+  return found ? { channel: found, query: { tab: 'all' } } : null;
+}
+
+// ── Favourite ─────────────────────────────────────────────────────────────────────────
+const favourite = computed(() => liveStore.isFavourite(channel.value));
+function toggleFavourite() {
+  if (!channel.value) return;
+  liveStore.toggleFavourite(channel.value).catch(() => { /* the star went back */ });
+  revealControls();
+}
+
+// ── Last channel (this session's previous one) ────────────────────────────────────────
+const previousId = computed(() => liveStore.previousChannel(route.params.id));
+function goToLastChannel() {
+  const id = previousId.value;
+  if (!id) return;
+  const known = channels.value.find((ch) => ch.id === id) || everyChannel?.find((ch) => ch.id === id);
+  openChannel(known || { id, number: '', name: '' });
+  revealControls();
 }
 
 async function loadSchedule(id) {
@@ -311,6 +389,8 @@ async function loadSchedule(id) {
 
 async function tune(id) {
   const myLoad = ++loadId;
+  liveStore.stopped();
+  playingFor = null;
   teardown();
   errorState.value = null;
   needsTap.value = false;
@@ -421,6 +501,10 @@ function playNow() {
 }
 
 function onPlaying() {
+  if (playingFor !== route.params.id) {
+    playingFor = route.params.id;
+    liveStore.playing(playingFor);
+  }
   loadingChannel.value = false;
   buffering.value = false;
   networkRetries = 0;
@@ -547,17 +631,17 @@ const osd = ref(null);
 let osdTimer = null;
 
 function showOsd(ch) {
-  if (!ch) return;
+  if (!ch || (!ch.number && !ch.name)) return;
   osd.value = { number: ch.number, name: ch.name };
   clearTimeout(osdTimer);
   osdTimer = setTimeout(() => { osd.value = null; }, 2500);
 }
 
-function openChannel(ch) {
+function openChannel(ch, query = route.query) {
   if (!ch || ch.id === route.params.id) return;
   showOsd(ch);
   // A swap, not a step: Back still returns to the list or guide.
-  router.replace({ name: 'live-channel', params: { id: ch.id }, query: route.query });
+  router.replace({ name: 'live-channel', params: { id: ch.id }, query });
 }
 
 // +1 is channel up (the next number), −1 channel down; both wrap around.
@@ -578,11 +662,11 @@ function typeDigit(digit) {
   osd.value = { number: digits, name: '' };
   clearTimeout(osdTimer);
   clearTimeout(digitsTimer);
-  digitsTimer = setTimeout(() => {
+  digitsTimer = setTimeout(async () => {
     const wanted = Number(digits);
     digits = '';
-    const ch = channels.value.find((c) => Number(c.number) === wanted);
-    if (ch) openChannel(ch);
+    const found = await findByNumber(wanted);
+    if (found) openChannel(found.channel, found.query);
     else osdTimer = setTimeout(() => { osd.value = null; }, 600);
   }, 1200);
 }
@@ -759,6 +843,7 @@ function onKeyDown(e) {
   else if (key === 'f') toggleFullscreen();
   else if (key === 'i') showInfo.value = !showInfo.value;
   else if (key === 'p' && pipSupported.value) togglePip();
+  else if (key === 'l' && previousId.value) goToLastChannel();
   else if (/^[0-9]$/.test(key)) typeDigit(key);
   else return;
   revealControls();
@@ -768,7 +853,12 @@ function goBack() {
   // Back to the list or guide this channel was opened from, when that's where we came from.
   const back = window.history.state?.back;
   if (typeof back === 'string' && back.startsWith('/live') && !back.startsWith('/live/')) router.back();
-  else router.push({ path: '/live', query: group.value ? { group: group.value } : {} });
+  else {
+    const query = {};
+    if (listTab.value) query.tab = listTab.value;
+    if (group.value) query.group = group.value;
+    router.push({ path: '/live', query });
+  }
 }
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────────────
@@ -787,7 +877,7 @@ watch(now, (n) => {
   if (stale) loadSchedule(route.params.id).catch(() => {});
 });
 
-watch(group, loadChannels);
+watch(listKey, loadChannels);
 
 onMounted(async () => {
   const video = videoEl.value;
@@ -810,6 +900,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   loadId += 1;
+  liveStore.stopped();
   window.removeEventListener('keydown', onKeyDown);
   document.removeEventListener('fullscreenchange', onFullscreenChange);
   document.removeEventListener('webkitfullscreenchange', onFullscreenChange);

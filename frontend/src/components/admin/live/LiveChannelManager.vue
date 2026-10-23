@@ -70,6 +70,9 @@
         <button type="button" @click="bulk({ pinned: false })" :disabled="!selected.size || busy" class="btn btn-secondary h-8" :title="$t('admin.liveTv.channels.followFiltersHint')">
           {{ $t('admin.liveTv.channels.followFilters') }}
         </button>
+        <button v-if="lineups.length" type="button" @click="pickingLineup = true" :disabled="!selected.size || busy" class="btn btn-secondary h-8">
+          <ListPlus class="w-3.5 h-3.5" /> {{ $t('admin.liveTv.channels.addToLineup') }}
+        </button>
       </div>
     </div>
 
@@ -98,12 +101,23 @@
           <Tv v-else class="w-4 h-4 text-muted-foreground" />
         </div>
         <div class="min-w-0 flex-1">
-          <p class="text-xs font-semibold truncate" :class="ch.hidden ? 'text-muted-foreground' : 'text-foreground'">{{ ch.name }}</p>
+          <p class="text-xs font-semibold truncate" :class="ch.hidden ? 'text-muted-foreground' : 'text-foreground'">
+            <span v-if="ch.number" class="font-mono text-muted-foreground mr-1" :title="$t('admin.liveTv.channels.numberHint')">{{ ch.number }}</span>{{ ch.customName || ch.name }}
+            <span v-if="ch.customName && ch.customName !== ch.name" class="font-normal text-muted-foreground"> · {{ ch.name }}</span>
+          </p>
           <p class="text-[12px] text-muted-foreground truncate">
             <span v-if="ch.country" :title="countryName(ch.country)">{{ flagEmoji(ch.country) || ch.country }} </span>
             {{ details(ch) }}
           </p>
-          <p v-if="ch.hidden || ch.kidsAllowed || ch.geoBlocked || ch.unsupported || (ch.filteredBy?.length && !ch.pinned)" class="flex flex-wrap items-center gap-1 mt-1">
+          <p v-if="ch.hidden || ch.kidsAllowed || ch.geoBlocked || ch.unsupported || ch.health === 'offline' || ch.lineupIds?.length || (ch.filteredBy?.length && !ch.pinned)" class="flex flex-wrap items-center gap-1 mt-1">
+            <!-- Failed its last checks: probably gone for now -->
+            <span
+              v-if="ch.health === 'offline'"
+              class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-destructive/15 text-destructive"
+              :title="ch.healthCheckedAt ? $t('admin.liveTv.channels.badges.offlineHint', { date: formatDateTime(ch.healthCheckedAt) }) : ''"
+            >
+              <WifiOff class="w-2.5 h-2.5" /> {{ $t('admin.liveTv.channels.badges.offline') }}
+            </span>
             <span v-if="ch.unsupported" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400" :title="$t('admin.liveTv.channels.badges.unsupportedHint')">
               <Ban class="w-2.5 h-2.5" /> {{ $t('admin.liveTv.channels.badges.unsupported') }}
             </span>
@@ -116,6 +130,10 @@
             <span v-if="ch.geoBlocked" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground" :title="$t('admin.liveTv.channels.badges.geoBlockedHint')">
               <MapPinOff class="w-2.5 h-2.5" /> {{ $t('admin.liveTv.channels.badges.geoBlocked') }}
             </span>
+            <span v-if="lineupNames(ch)" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground max-w-full" :title="$t('admin.liveTv.channels.badges.inLineupsHint', { names: lineupNames(ch) })">
+              <ListOrdered class="w-2.5 h-2.5 flex-shrink-0" />
+              <span class="truncate">{{ lineupNames(ch) }}</span>
+            </span>
             <!-- Hidden by a filter (and which), unless it's always shown -->
             <span
               v-if="ch.filteredBy?.length && !ch.pinned"
@@ -126,21 +144,45 @@
               <span class="truncate">{{ $t('admin.liveTv.channels.badges.filtered', { reasons: filterReasons(ch) }) }}</span>
             </span>
           </p>
-          <!-- The way back for one channel a filter hides: on (pressed) keeps it shown -->
-          <button
-            v-if="ch.filteredBy?.length || ch.pinned"
-            type="button"
-            @click="setOne(ch, { pinned: !ch.pinned })"
-            :aria-pressed="String(!!ch.pinned)"
-            :aria-label="$t('admin.liveTv.channels.pinAria', { name: ch.name })"
-            :title="pinTitle(ch)"
-            :class="['mt-1.5 inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border text-[12px] font-medium transition', ch.pinned ? 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15' : 'border-border bg-background text-foreground hover:bg-muted']"
-          >
-            <component :is="ch.pinned ? Check : Pin" class="w-3.5 h-3.5" />
-            {{ $t('admin.liveTv.channels.alwaysShow') }}
-          </button>
+          <div v-if="ch.filteredBy?.length || ch.pinned || ch.health === 'offline'" class="mt-1.5 flex flex-wrap items-center gap-1.5">
+            <!-- The way back for one channel a filter hides: on (pressed) keeps it shown -->
+            <button
+              v-if="ch.filteredBy?.length || ch.pinned"
+              type="button"
+              @click="setOne(ch, { pinned: !ch.pinned })"
+              :aria-pressed="String(!!ch.pinned)"
+              :aria-label="$t('admin.liveTv.channels.pinAria', { name: ch.name })"
+              :title="pinTitle(ch)"
+              :class="['inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border text-[12px] font-medium transition', ch.pinned ? 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15' : 'border-border bg-background text-foreground hover:bg-muted']"
+            >
+              <component :is="ch.pinned ? Check : Pin" class="w-3.5 h-3.5" />
+              {{ $t('admin.liveTv.channels.alwaysShow') }}
+            </button>
+            <!-- An offline channel may be back: look now rather than wait for its turn -->
+            <button
+              v-if="ch.health === 'offline'"
+              type="button"
+              @click="checkNow(ch)"
+              :disabled="checking.has(ch.id)"
+              :aria-label="$t('admin.liveTv.channels.checkNowAria', { name: ch.name })"
+              class="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border bg-background text-foreground text-[12px] font-medium transition hover:bg-muted disabled:opacity-60"
+            >
+              <Loader2 v-if="checking.has(ch.id)" class="w-3.5 h-3.5 animate-spin" />
+              <Activity v-else class="w-3.5 h-3.5" />
+              {{ checking.has(ch.id) ? $t('admin.liveTv.channels.checking') : stillOffline.has(ch.id) ? $t('admin.liveTv.channels.stillOffline') : $t('admin.liveTv.channels.checkNow') }}
+            </button>
+          </div>
         </div>
         <div class="flex items-center gap-0.5 flex-shrink-0">
+          <button
+            type="button"
+            @click="editing = ch"
+            :aria-label="$t('admin.liveTv.channels.editAria', { name: ch.name })"
+            :title="$t('admin.liveTv.channels.edit')"
+            class="btn btn-ghost btn-icon"
+          >
+            <Pencil class="w-4 h-4" />
+          </button>
           <button
             type="button"
             @click="setOne(ch, { kidsAllowed: !ch.kidsAllowed })"
@@ -182,31 +224,61 @@
       <span class="text-[12px] text-muted-foreground">{{ $t('admin.liveTv.channelCount', { count: total, number: $n(total) }) }}</span>
     </template>
   </SettingsCard>
+
+  <LiveChannelEditDialog :channel="editing" @close="editing = null" @saved="onEdited" @checked="onChecked(editing, $event)" />
+
+  <!-- Which line-up the ticked channels go into -->
+  <SettingsDialog :open="pickingLineup" :title="$t('admin.liveTv.channels.addToLineup')" :subtitle="$t('admin.liveTv.channels.selected', { count: selected.size, number: $n(selected.size) })" @close="pickingLineup = false">
+    <ul class="flex flex-col gap-1.5">
+      <li v-for="lineup in lineups" :key="lineup.id">
+        <button type="button" @click="addToLineup(lineup)" :disabled="busy" class="w-full min-h-12 px-3 py-2 rounded-lg border border-border bg-background text-left flex items-center gap-3 transition hover:bg-muted disabled:opacity-60">
+          <ListOrdered class="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          <span class="min-w-0 flex-1">
+            <span class="block text-xs font-semibold text-foreground truncate">{{ lineup.name }}</span>
+            <span class="block text-[12px] text-muted-foreground">{{ $t('admin.liveTv.channelCount', { count: lineup.channelCount || 0, number: $n(lineup.channelCount || 0) }) }}</span>
+          </span>
+          <Plus class="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        </button>
+      </li>
+    </ul>
+    <template #footer>
+      <button type="button" @click="pickingLineup = false" class="btn btn-secondary ml-auto">{{ $t('common.cancel') }}</button>
+    </template>
+  </SettingsDialog>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
-import { Search, Eye, EyeOff, Baby, Tv, Ban, MapPinOff, ChevronLeft, ChevronRight, Filter, Pin, Check } from '@lucide/vue';
+import { Search, Eye, EyeOff, Baby, Tv, Ban, MapPinOff, ChevronLeft, ChevronRight, Filter, Pin, Check, Pencil, WifiOff, Activity, Loader2, ListOrdered, ListPlus, Plus } from '@lucide/vue';
 import api from '../../../api/client';
 import { useSaveStatus } from '../../../composables/useSaveStatus';
+import { useDialogStore } from '../../../stores/dialog';
+import { formatDateTime } from '../../../utils/settingsFormat';
 import SettingsCard from '../../settings/SettingsCard.vue';
+import SettingsDialog from '../../settings/SettingsDialog.vue';
 import SaveStatus from '../../settings/SaveStatus.vue';
-import { t, list, locale } from '../../../i18n';
+import LiveChannelEditDialog from './LiveChannelEditDialog.vue';
+import { t, n, list, locale } from '../../../i18n';
 import { logoUrl } from '../../live/liveFormat';
 import { countryName, flagEmoji, languageName } from './liveNames';
 
 const props = defineProps({
   sources: { type: Array, default: () => [] },
   // Changes when the channels may have changed elsewhere (a list loaded or removed).
-  version: { type: Number, default: 0 }
+  version: { type: Number, default: 0 },
+  // The line-ups ({ id, name, channelCount }), to add ticked channels to and name on each row.
+  lineups: { type: Array, default: () => [] }
 });
-// After a change has saved, so the "Showing … of …" count can look again.
-const emit = defineEmits(['changed']);
+// changed: a change has saved, so the "Showing … of …" count can look again.
+// checked: a channel was checked, so the health counts can look again.
+// lineups-changed: channels were added to a line-up.
+const emit = defineEmits(['changed', 'checked', 'lineups-changed']);
+const dialog = useDialogStore();
 
 const PAGE_SIZE = 100;
 const save = useSaveStatus();
 
-const statusFilters = computed(() => ['all', 'visible', 'hidden', 'filtered', 'pinned', 'kids', 'unsupported'].map((id) => ({
+const statusFilters = computed(() => ['all', 'visible', 'hidden', 'filtered', 'pinned', 'offline', 'kids', 'unsupported'].map((id) => ({
   id,
   label: t(`admin.liveTv.channels.status.${id}`)
 })));
@@ -252,6 +324,12 @@ function filterReasons(ch) {
   locale.value;
   const labels = [...new Set((ch.filteredBy || []).map(filterLabel).filter(Boolean))];
   return labels.length ? list(labels, { type: 'unit', style: 'short' }) : '';
+}
+// The line-ups a channel is in, by name.
+function lineupNames(ch) {
+  if (!ch.lineupIds?.length) return '';
+  const names = props.lineups.filter((l) => ch.lineupIds.includes(l.id)).map((l) => l.name);
+  return names.length ? list(names, { type: 'unit', style: 'short' }) : '';
 }
 
 // Only the newest request's answer is shown, so typing fast can't leave an older page up.
@@ -363,4 +441,67 @@ async function bulk(patch) {
     busy.value = false;
   }
 }
+
+// ─── Number, name and logo ─────────────────────────────────────────────────
+const editing = ref(null);
+// The server has the whole picture (a number another channel gave up, the logo's own address).
+function onEdited() {
+  load();
+}
+
+// ─── Checking a channel now ────────────────────────────────────────────────
+const checking = reactive(new Set());
+// Checked now and still not playing: said on its button, so the press visibly did something.
+const stillOffline = reactive(new Set());
+
+function onChecked(channel, result) {
+  if (!channel) return;
+  if (result?.health !== undefined) channel.health = result.health;
+  if (result?.checkedAt !== undefined) channel.healthCheckedAt = result.checkedAt;
+  emit('checked');
+}
+
+// A check follows the playlist a few hops and waits up to 10 s on each, so longer than
+// the usual request timeout.
+async function checkNow(channel) {
+  checking.add(channel.id);
+  try {
+    const res = await api.post(`/live/admin/channels/${channel.id}/check`, null, { timeout: 60000 });
+    onChecked(channel, res.data);
+    if (channel.health === 'offline') stillOffline.add(channel.id);
+    else stillOffline.delete(channel.id);
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || t('admin.liveTv.channels.couldNotCheck'));
+  } finally {
+    checking.delete(channel.id);
+  }
+}
+
+// ─── Adding to a line-up ───────────────────────────────────────────────────
+const pickingLineup = ref(false);
+
+async function addToLineup(lineup) {
+  busy.value = true;
+  const ids = [...selected.value];
+  try {
+    const { ok } = await save.run(() => api.post(`/live/admin/lineups/${lineup.id}/channels`, { ids }), {
+      saved: t('admin.liveTv.channels.addedToLineup', { count: ids.length, number: n(ids.length), name: lineup.name })
+    });
+    if (!ok) return;
+    pickingLineup.value = false;
+    for (const c of channels.value) {
+      if (selected.value.has(c.id) && !(c.lineupIds || []).includes(lineup.id)) c.lineupIds = [...(c.lineupIds || []), lineup.id];
+    }
+    emit('lineups-changed');
+  } finally {
+    busy.value = false;
+  }
+}
+
+// Opens the list on one status (from the health card's Offline count).
+function showStatus(id) {
+  if (status.value === id) load();
+  else status.value = id;
+}
+defineExpose({ showStatus });
 </script>

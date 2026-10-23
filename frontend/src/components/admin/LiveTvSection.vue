@@ -95,9 +95,25 @@
   </SettingsCard>
 
   <!-- Whole sets to hide: categories, languages, countries, stream hosts -->
-  <LiveFilters v-if="sources.length" :version="channelsVersion + channelEditsVersion" @changed="filtersVersion++" />
+  <LiveFilters v-if="sources.length" :version="channelsVersion + channelEditsVersion + healthVersion" @changed="filtersVersion++" />
 
-  <LiveChannelManager v-if="sources.length" :sources="sources" :version="channelsVersion + filtersVersion" @changed="channelEditsVersion++" />
+  <!-- Spotting channels that have gone offline -->
+  <LiveHealth v-if="sources.length" :version="channelsVersion + checksVersion" @changed="healthVersion++" @show-offline="showOffline" />
+
+  <!-- The admin's own sets of channels, in their own order -->
+  <LiveLineups v-if="sources.length" @update:lineups="lineups = $event" :version="channelsVersion + lineupsVersion" @changed="lineupEditsVersion++" />
+
+  <div v-if="sources.length" ref="managerEl" class="scroll-mt-4">
+    <LiveChannelManager
+      ref="manager"
+      :sources="sources"
+      :lineups="lineups"
+      :version="channelsVersion + filtersVersion + healthVersion + lineupEditsVersion"
+      @changed="channelEditsVersion++"
+      @checked="checksVersion++"
+      @lineups-changed="lineupsVersion++"
+    />
+  </div>
 
   <LiveAddDialog
     :open="showAdd"
@@ -129,7 +145,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { Plus, RefreshCw, Trash2, Pencil, Loader2, AlertTriangle, Info, RadioTower, ListVideo, ShieldAlert } from '@lucide/vue';
 import api from '../../api/client';
 import { useCustomizationStore } from '../../stores/customization';
@@ -145,6 +161,8 @@ import SaveStatus from '../settings/SaveStatus.vue';
 import LiveAddDialog from './live/LiveAddDialog.vue';
 import LiveChannelManager from './live/LiveChannelManager.vue';
 import LiveFilters from './live/LiveFilters.vue';
+import LiveHealth from './live/LiveHealth.vue';
+import LiveLineups from './live/LiveLineups.vue';
 import { t, n } from '../../i18n';
 
 const store = useCustomizationStore();
@@ -163,13 +181,30 @@ const channelsVersion = ref(0);
 const filtersVersion = ref(0);
 // Bumped when a channel was hidden, shown or set to always show in the channel manager.
 const channelEditsVersion = ref(0);
+// Bumped when hiding offline channels was switched: which channels are shown may have changed.
+const healthVersion = ref(0);
+// Bumped when a channel was checked now, so the health counts look again.
+const checksVersion = ref(0);
+// Bumped when channels were added to a line-up from the channel manager (counts change).
+const lineupsVersion = ref(0);
+// Bumped when a line-up's channels or kids choice changed in its editor.
+const lineupEditsVersion = ref(0);
+const lineups = ref([]);
 const showAdd = ref(false);
 // Asked once per server, before the first public list is added.
 const publicListsAcknowledged = ref(false);
 
 // Channels arriving or going (or a filter hiding them) can bring Live TV into the menu or
 // take it out; ask again.
-watch([channelsVersion, filtersVersion, channelEditsVersion], () => store.loadLiveStatus?.(authStore.user?.id, { force: true }));
+watch([channelsVersion, filtersVersion, channelEditsVersion, healthVersion, lineupEditsVersion], () => store.loadLiveStatus?.(authStore.user?.id, { force: true }));
+
+// The health card's Offline count: those channels, in the channel manager.
+const manager = ref(null);
+const managerEl = ref(null);
+function showOffline() {
+  manager.value?.showStatus('offline');
+  nextTick(() => managerEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+}
 
 async function loadSources() {
   try {

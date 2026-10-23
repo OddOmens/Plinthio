@@ -86,10 +86,50 @@ test('Live TV: an admin turns it on and adds a playlist; viewers see the guide a
   }
 });
 
+test('Live TV for viewers: a line-up tab, a favourite, and the Live now row on Home', async ({ page, request }) => {
+  const { server, base } = await startIptvFixture();
+  const admin = await (await request.post('/api/auth/login', { data: ADMIN })).json();
+  const auth = { Authorization: `Bearer ${admin.token}` };
+  try {
+    await request.patch('/api/customization', { headers: auth, data: { liveTvEnabled: true } });
+    const { source } = await (await request.post('/api/live/admin/sources', {
+      headers: auth, data: { kind: 'm3u', name: 'Fixture lineup', playlistUrl: `${base}/playlist.m3u`, guideUrl: `${base}/guide.xml` }
+    })).json();
+    await expect.poll(async () => {
+      const { sources } = await (await request.get('/api/live/admin/sources', { headers: auth })).json();
+      return sources.find((s) => s.id === source.id)?.refreshing;
+    }, { timeout: 20000 }).toBe(false);
+
+    // An admin's line-up becomes a tab for viewers.
+    const { channels } = await (await request.get('/api/live/admin/channels', { headers: auth })).json();
+    const news = channels.find((c) => c.name === 'Fixture News');
+    const { lineup } = await (await request.post('/api/live/admin/lineups', { headers: auth, data: { name: 'Mornings' } })).json();
+    await request.put(`/api/live/admin/lineups/${lineup.id}/channels`, { headers: auth, data: { ids: [news.id] } });
+
+    await signIn(page, request);
+    await page.goto('/live');
+    await page.getByRole('tab', { name: 'Mornings' }).click();
+    await expect(page.getByText('Fixture News').first()).toBeVisible();
+    await expect(page.getByText('Fixture Shop')).toHaveCount(0);
+
+    // Star it: a Favourites tab appears, and Home shows it under Live now.
+    await page.getByRole('button', { name: 'Add Fixture News to favourites' }).first().click();
+    await expect(page.getByRole('tab', { name: 'Favourites' })).toBeVisible();
+    await page.goto('/');
+    const row = page.getByRole('region', { name: 'Live now' });
+    await expect(row.getByText('Fixture News')).toBeVisible();
+  } finally {
+    await cleanUp(request, auth);
+    server.close();
+  }
+});
+
 // Leaves Live TV as the other tests expect it: off, no lists, default filters.
 async function cleanUp(request, auth) {
   const { sources } = await (await request.get('/api/live/admin/sources', { headers: auth })).json();
   for (const source of sources) await request.delete(`/api/live/admin/sources/${source.id}`, { headers: auth });
+  const { lineups } = await (await request.get('/api/live/admin/lineups', { headers: auth })).json();
+  for (const lineup of lineups) await request.delete(`/api/live/admin/lineups/${lineup.id}`, { headers: auth });
   await request.patch('/api/live/admin/filters', { headers: auth, data: { hiddenGroups: [] } });
   await request.patch('/api/customization', { headers: auth, data: { liveTvEnabled: false } });
 }

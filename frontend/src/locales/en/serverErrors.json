@@ -513,7 +513,19 @@
     "hiddenCategoriesMustBeA": "Hidden categories must be a list of up to 5000 names",
     "hiddenLanguagesMustBeA": "Hidden languages must be a list of up to 5000 names",
     "hiddenCountriesMustBeTwo": "Hidden countries must be two-letter country codes",
-    "hiddenStreamHostsMustBe": "Hidden stream hosts must be host names, like example.com"
+    "hiddenStreamHostsMustBe": "Hidden stream hosts must be host names, like example.com",
+    "lineUpNotFound": "Line-up not found",
+    "channelNumbersGoFrom1": "Channel numbers go from 1 to 9999",
+    "enterANameForTheChannel": "Enter a name for the channel, or leave it empty",
+    "theLogoAddressMustStart": "The logo address must start with http:// or https://",
+    "anotherChannelAlreadyHasThat": "Another channel already has that number",
+    "enterANameForTheLineUp": "Enter a name for the line-up",
+    "sendTheLineUpsIn": "Send the line-ups in their new order",
+    "kidsAllowedMustBeTrue": "kidsAllowed must be true or false",
+    "hideOfflineMustBeTrue": "hideOffline must be true or false",
+    "enabledMustBeTrueOr": "enabled must be true or false",
+    "chooseUpTo5000Channels": "Choose up to 5000 channels",
+    "youCanHaveUpTo": "You can have up to 500 favourite channels"
   },
   "patterns": {
     "noMetadataSource": "No metadata source for {type} yet",

@@ -52,10 +52,55 @@ In **Admin → Live TV → Channels**, search and filter the channels and:
 - **Hide** the ones you don't want. Hidden channels stay hidden when the list reloads.
 - **Always show** a channel that a filter hides. Choose **Hidden by filter** to see them; each
   says which filter hides it. A channel you hide by hand stays hidden either way.
-- **Allow for kids.** Kids accounts see only the channels allowed here, and none are allowed
-  until you pick them, since live channels have no age ratings.
+- **Allow for kids.** Kids accounts see only the channels allowed here (or in a line-up that
+  allows kids), and none are allowed until you pick them, since live channels have no age
+  ratings.
+- **Number, name and logo.** The pencil on a channel gives it its own channel number
+  (1–9999, each used once), a different name, or a logo address (http or https). Leave a field
+  empty to go back to what the list gives. These stay when the list reloads.
 
 The same stream offered by two lists appears once.
+
+## Line-ups and channel numbers
+
+**Admin → Live TV → Line-ups** lets you make your own sets of channels, such as *News*,
+*Sport* or *For the kids*. Each line-up is a tab on the Live TV page, in the order you put
+them.
+
+- **New line-up** asks for a name, then opens it. Add channels by **Search** (one at a time,
+  or every match at once) or by **Whole category**, which adds all of a category's channels in
+  one go. Under **Channels** you can also tick channels and press **Add to line-up**.
+- The up and down arrows put the line-ups, and the channels inside each one, in order.
+  **A–Z** and **By number** sort a whole line-up at once.
+- **Allow for kids** on a line-up lets kids accounts watch every channel in it, on top of the
+  channels allowed one by one.
+- A line-up doesn't bring back a channel you've hidden or one that's offline, and the filters
+  still apply unless the channel is set to **Always show**. Removing a channel from a line-up
+  doesn't hide it anywhere else; deleting a line-up keeps its channels.
+
+**Numbering.** Channels with a number you gave them use it. The others follow on after your
+highest number, in their usual order (so with numbers up to 20, the first unnumbered channel
+is 21). Viewers change channel up and down, or type a number in the player, using these
+numbers.
+
+## Channel health
+
+Public channels stop working now and then. **Admin → Live TV → Channel health** finds the ones
+that have stopped.
+
+- With **Check channels in the background** on (the default), Plinthio checks about 20
+  channels every 10 minutes while Live TV is on, two at a time, oldest check first. About
+  1,500 channels are each checked roughly once a day.
+- A check is deliberately light and network-only: the server fetches the channel's playlist
+  (following it to the first video playlist) and asks for the first 2 KB of one segment.
+  Nothing is played, decoded or converted, and each step gives up after 10 seconds.
+- A channel that fails **two checks in a row** is marked **Offline**; one good check marks it
+  working again. Offline channels are checked again about once a day.
+- With **Hide offline channels** on (the default), viewers don't see offline channels until
+  they play again.
+- The card shows how many channels are working, offline and not checked yet, and when the
+  last check ran. Press the offline count to list them under **Channels**, where **Check now**
+  on a channel looks straight away.
 
 ## Your responsibility
 
@@ -75,6 +120,24 @@ may not be licensed in your country.
 - The **player** has channel up/down (or the ↑/↓ keys, or type a channel number),
   picture-in-picture where the browser supports it, fullscreen, and *Go live* when you've
   fallen behind.
+
+The Channels view has tabs, each shown only when it has something in it: **Favourites**,
+**Recent**, one per **line-up**, and **All channels** (with its categories). It opens on
+Favourites if you have any, else the first line-up, and remembers the last tab on each device.
+
+### Each viewer's own choices
+
+These belong to each account and don't change anything for anyone else.
+
+- **Favourites.** The star on a channel adds it to **Favourites**. Favourites also show in a
+  **Live now** row on Home, with what's on; the row can be hidden.
+- **Recent.** The last ten channels watched. In the player, **Last channel** (or the `L` key)
+  jumps back to the one you watched before.
+- **Hide for me.** A channel's menu hides that channel, or its whole group, just for you.
+  **Hidden for me** on the Live TV page lists what you've hidden, with a way to bring each
+  back, and turns the Home row on or off.
+- **Search** finds channels by name and programmes by title over the next day and a half. In
+  the guide, **Now**, **Tonight** (8 pm) and **Tomorrow** (8 am) jump to that time.
 
 ## How playback works (and why it's safe)
 
@@ -103,6 +166,16 @@ your server's internet connection.
 | P702 | A channel list couldn't be loaded. Admin → Live TV shows the reason under the list. |
 
 See [Error codes](error-codes.md) for every code.
+
+## Troubleshooting
+
+- **A channel is marked Offline.** It failed its last two checks. It comes back by itself once
+  a check succeeds; **Check now** looks straight away. To list it anyway, switch off **Hide
+  offline channels**.
+- **A channel number won't save.** Each number can belong to one channel only. Clear it on
+  the other channel first.
+- **A channel is missing for one person.** They may have hidden it, or its group, for
+  themselves; it's listed under **Hidden for me** on their Live TV page.
 
 ## Not yet
 
