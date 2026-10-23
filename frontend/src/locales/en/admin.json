@@ -49,6 +49,10 @@
         "label": "Playback",
         "desc": "Hardware acceleration, opening clip"
       },
+      "liveTv": {
+        "label": "Live TV",
+        "desc": "Channels, programme guide, kids"
+      },
       "network": {
         "label": "Network",
         "desc": "Away from home, Tailscale, two-factor"
@@ -308,6 +312,139 @@
     "deleteMessage": "Delete \"{name}\"? Your files aren't touched, and progress and bookmarks come back if you add the same folder again. Its titles, covers and details are removed until it's scanned again.",
     "couldNotDelete": "Could not delete that library",
     "couldNotAdd": "Could not add that library"
+  },
+  "liveTv": {
+    "title": "Live TV",
+    "description": "Live channels with a programme guide, from public lists or your own playlists. Changes save as you make them.",
+    "channelCount": {
+      "one": "{number} channel",
+      "other": "{number} channels"
+    },
+    "switch": {
+      "label": "Live TV",
+      "desc": "Adds a Live TV page with channels and a programme guide for everyone on this server. Off by default; turning it off hides Live TV everywhere, but keeps your lists and choices here."
+    },
+    "publicNote": "Channels come from public sources on the internet. Some may be offline, break now and then, or only play in certain countries. Adult channels are never added.",
+    "sources": {
+      "title": "Channel lists",
+      "desc": "Each list is reloaded every 12 hours while Live TV is on, along with its programme guide.",
+      "add": "Add channels",
+      "empty": "No channels yet. Add a ready-made list or your own playlist to get started.",
+      "off": "Off",
+      "kinds": {
+        "public": "Public list",
+        "own": "Your playlist"
+      },
+      "refreshing": "Loading channels and guide…",
+      "failed": "Couldn't load: {error}",
+      "updated": "Updated {date}",
+      "notLoaded": "Not loaded yet",
+      "enabledAria": "Use {name}",
+      "turnOn": "Turn on",
+      "turnOff": "Turn off",
+      "editAria": "Edit {name}",
+      "removeAria": "Remove {name}",
+      "removeTitle": "Remove channel list",
+      "removeMessage": {
+        "one": "Remove {name}? Its {number} channel goes too, along with whether it was hidden or allowed for kids.",
+        "other": "Remove {name}? Its {number} channels go too, along with which were hidden or allowed for kids."
+      },
+      "offHint": "Live TV is switched off, so nobody sees these channels yet. You can get them ready first.",
+      "couldNotLoad": "Could not load the channel lists",
+      "couldNotRefresh": "Could not reload the list",
+      "couldNotSave": "Could not save the list",
+      "couldNotRemove": "Could not remove the list"
+    },
+    "editDialog": {
+      "title": "Edit channel list",
+      "guideHint": "Leave empty to use the guide the playlist names, if it has one."
+    },
+    "addDialog": {
+      "title": "Add channels",
+      "tabs": {
+        "public": "Public channels",
+        "own": "Your own playlist"
+      },
+      "adding": "Adding…",
+      "couldNotAdd": "Could not add the channels",
+      "public": {
+        "intro": "Free channels from the public iptv-org lists, updated daily. Pick one or more; each is added as its own list.",
+        "listBy": "List channels by",
+        "kinds": {
+          "countries": "Country",
+          "languages": "Language",
+          "categories": "Category"
+        },
+        "search": {
+          "countries": "Search countries",
+          "languages": "Search languages",
+          "categories": "Search categories"
+        },
+        "noMatches": "Nothing matches that.",
+        "added": "Added",
+        "selected": {
+          "one": "{number} picked",
+          "other": "{number} picked"
+        },
+        "addLists": {
+          "one": "Add list",
+          "other": "Add {number} lists"
+        },
+        "note": "These channels come from public sources, so some may be offline or only play in certain countries. Adult channels are never added.",
+        "couldNotLoad": "Could not load the public lists"
+      },
+      "own": {
+        "name": "Name",
+        "namePlaceholder": "e.g. Home antenna",
+        "playlistUrl": "Playlist address (M3U)",
+        "playlistHint": "An address the server can reach. Channels that stream in HLS (.m3u8) play; others are listed as not playable.",
+        "guideUrl": "Programme guide address (XMLTV, optional)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "Leave empty to use the guide the playlist names, if it has one. Compressed .xml.gz files work too.",
+        "add": "Add playlist"
+      }
+    },
+    "channels": {
+      "title": "Channels",
+      "desc": "Hide the ones you don't want. Kids accounts see only the channels allowed for kids here, and none are allowed until you pick them.",
+      "searchPlaceholder": "Search channels",
+      "sourceFilter": "Channel list",
+      "allSources": "All lists",
+      "statusFilter": "Show",
+      "status": {
+        "all": "All",
+        "visible": "Showing",
+        "hidden": "Hidden",
+        "kids": "Allowed for kids",
+        "unsupported": "Not playable"
+      },
+      "selectPage": "Select this page",
+      "selected": {
+        "one": "{number} selected",
+        "other": "{number} selected"
+      },
+      "selectAria": "Select {name}",
+      "hide": "Hide",
+      "show": "Show",
+      "hideAria": "Hide {name}",
+      "showAria": "Show {name}",
+      "allowKids": "Allow for kids",
+      "disallowKids": "Not for kids",
+      "allowKidsAria": "Allow {name} for kids",
+      "disallowKidsAria": "Stop allowing {name} for kids",
+      "badges": {
+        "hidden": "Hidden",
+        "kids": "Kids",
+        "geoBlocked": "Geo-blocked",
+        "geoBlockedHint": "Marked as only playing in certain countries",
+        "unsupported": "Not playable",
+        "unsupportedHint": "Not an HLS stream, so it isn't offered to anyone"
+      },
+      "range": "{from}–{to} of {total}",
+      "empty": "No channels yet. They appear here once a list has loaded.",
+      "noMatches": "No channels match.",
+      "couldNotLoad": "Could not load the channels"
+    }
   },
   "logs": {
     "title": "Logs",

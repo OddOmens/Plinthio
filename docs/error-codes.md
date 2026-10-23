@@ -361,3 +361,23 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 *HTTP 409.* A party holds up to 20 people, and a server runs up to 20 parties at once.
 
 **What to do:** Try again when someone leaves or a party ends.
+
+## Live TV
+
+### P700: Live TV is turned off
+
+*HTTP 404.* An admin has not turned on Live TV, or has turned it off.
+
+**What to do:** An admin can turn it on in Admin → Live TV.
+
+### P701: Channel unavailable
+
+*HTTP 502.* The channel's stream did not answer, answered with an error, or points somewhere Plinthio will not connect to. Channels from public sources go offline or change address, and some only play in certain countries.
+
+**What to do:** Try another channel, or try again later. An admin can refresh the source in Admin → Live TV, or hide channels that stay offline.
+
+### P702: Source could not be loaded
+
+*HTTP 502.* Plinthio could not download or read a playlist, a programme guide, or the list of public channel presets.
+
+**What to do:** Check the server can reach the internet (or the playlist's address), then try again. Admin → Live TV shows each source's last error.

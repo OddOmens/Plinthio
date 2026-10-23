@@ -22,6 +22,7 @@
       <AppearanceSection v-else-if="section === 'appearance'" />
       <FeaturesSection v-else-if="section === 'features'" />
       <PlaybackSection v-else-if="section === 'playback'" />
+      <LiveTvSection v-else-if="section === 'liveTv'" />
       <NetworkSettings v-else-if="section === 'network'" />
       <BackupsSection v-else-if="section === 'backups'" />
       <LogsSection v-else-if="section === 'logs'" />
@@ -33,7 +34,7 @@
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue';
 import {
   LayoutDashboard, Folder, HeartPulse, Sparkles, Baby, Users, History, Palette, ToggleRight,
-  MonitorPlay, Globe, DatabaseBackup, ScrollText, UserRound, ArrowRight
+  MonitorPlay, RadioTower, Globe, DatabaseBackup, ScrollText, UserRound, ArrowRight
 } from '@lucide/vue';
 import api from '../api/client';
 import { t } from '../i18n';
@@ -51,6 +52,7 @@ import LogsSection from '../components/admin/LogsSection.vue';
 const LibraryHealth = defineAsyncComponent(() => import('../components/LibraryHealth.vue'));
 const NetworkSettings = defineAsyncComponent(() => import('../components/NetworkSettings.vue'));
 const MetadataSection = defineAsyncComponent(() => import('../components/admin/MetadataSection.vue'));
+const LiveTvSection = defineAsyncComponent(() => import('../components/admin/LiveTvSection.vue'));
 
 const layout = ref(null);
 
@@ -71,7 +73,7 @@ const groups = computed(() => [
   {
     label: t('admin.nav.groups.settings'),
     items: [
-      item('appearance', Palette), item('features', ToggleRight), item('playback', MonitorPlay),
+      item('appearance', Palette), item('features', ToggleRight), item('playback', MonitorPlay), item('liveTv', RadioTower),
       item('network', Globe), item('backups', DatabaseBackup)
     ]
   },

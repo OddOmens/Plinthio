@@ -335,6 +335,24 @@
       "message": "That watch party is full",
       "meaning": "A party holds up to 20 people, and a server runs up to 20 parties at once.",
       "fix": "Try again when someone leaves or a party ends."
+    },
+    "P700": {
+      "title": "Live TV is turned off",
+      "message": "Live TV is turned off on this server",
+      "meaning": "An admin has not turned on Live TV, or has turned it off.",
+      "fix": "An admin can turn it on in Admin → Live TV."
+    },
+    "P701": {
+      "title": "Channel unavailable",
+      "message": "This channel could not be played right now",
+      "meaning": "The channel's stream did not answer, answered with an error, or points somewhere Plinthio will not connect to. Channels from public sources go offline or change address, and some only play in certain countries.",
+      "fix": "Try another channel, or try again later. An admin can refresh the source in Admin → Live TV, or hide channels that stay offline."
+    },
+    "P702": {
+      "title": "Source could not be loaded",
+      "message": "The channel list could not be loaded",
+      "meaning": "Plinthio could not download or read a playlist, a programme guide, or the list of public channel presets.",
+      "fix": "Check the server can reach the internet (or the playlist's address), then try again. Admin → Live TV shows each source's last error."
     }
   },
   "messages": {
@@ -477,7 +495,19 @@
     "useAFullPathStartingWith": "Use a full path, starting with /.",
     "thatSInsideTheServerS": "That's inside the server's own data folder; pick a folder somewhere else.",
     "thatFolderContainsTheServerS": "That folder contains the server's data folder; pick one beside it or elsewhere.",
-    "thatSAFileNotA": "That's a file, not a folder."
+    "thatSAFileNotA": "That's a file, not a folder.",
+    "channelNotFound": "Channel not found",
+    "sourceNotFound": "Source not found",
+    "thisStreamLinkIsNot": "This stream link is not valid",
+    "chooseACountryLanguageOr": "Choose a country, language or category",
+    "thoseChannelsAreAlreadyAdded": "Those channels are already added",
+    "enterANameForThese": "Enter a name for these channels",
+    "enterThePlaylistAddressStarting": "Enter the playlist address, starting with http:// or https://",
+    "theGuideAddressMustStart": "The guide address must start with http:// or https://",
+    "thatPlaylistIsAlreadyAdded": "That playlist is already added",
+    "chooseWhatKindOfChannels": "Choose what kind of channels to add",
+    "chooseUpTo1000Channels": "Choose up to 1000 channels",
+    "nothingToChange": "Nothing to change"
   },
   "patterns": {
     "noMetadataSource": "No metadata source for {type} yet",
