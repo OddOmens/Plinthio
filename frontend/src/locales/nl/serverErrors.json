@@ -513,7 +513,19 @@
     "hiddenCategoriesMustBeA": "Verborgen categorieën moeten een lijst van maximaal 5000 namen zijn",
     "hiddenLanguagesMustBeA": "Verborgen talen moeten een lijst van maximaal 5000 namen zijn",
     "hiddenCountriesMustBeTwo": "Verborgen landen moeten landcodes van twee letters zijn",
-    "hiddenStreamHostsMustBe": "Verborgen streamservers moeten hostnamen zijn, zoals example.com"
+    "hiddenStreamHostsMustBe": "Verborgen streamservers moeten hostnamen zijn, zoals example.com",
+    "lineUpNotFound": "Zenderselectie niet gevonden",
+    "channelNumbersGoFrom1": "Zendernummers lopen van 1 tot 9999",
+    "enterANameForTheChannel": "Voer een naam in voor de zender, of laat het leeg",
+    "theLogoAddressMustStart": "Het logo-adres moet beginnen met http:// of https://",
+    "anotherChannelAlreadyHasThat": "Een andere zender heeft dat nummer al",
+    "enterANameForTheLineUp": "Voer een naam in voor de zenderselectie",
+    "sendTheLineUpsIn": "Stuur de zenderselecties in hun nieuwe volgorde",
+    "kidsAllowedMustBeTrue": "kidsAllowed moet true of false zijn",
+    "hideOfflineMustBeTrue": "hideOffline moet true of false zijn",
+    "enabledMustBeTrueOr": "enabled moet true of false zijn",
+    "chooseUpTo5000Channels": "Kies maximaal 5000 zenders",
+    "youCanHaveUpTo": "Je kunt maximaal 500 favoriete zenders hebben"
   },
   "patterns": {
     "noMetadataSource": "Nog geen metadatabron voor {type}",

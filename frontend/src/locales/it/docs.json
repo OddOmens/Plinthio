@@ -298,16 +298,40 @@
       "text": "In **Canali**, cerca o filtra per elenco, poi premi **Nascondi** sui canali che non vuoi. Spuntane diversi (o un'intera pagina) per modificarli tutti insieme. Le modifiche si salvano subito.",
       "kept": "I canali nascosti e le scelte per i bambini restano quando un elenco si ricarica. Un canale che sparisce dalla sua playlist viene rimosso."
     },
+    "lineups": {
+      "title": "Selezioni e numeri dei canali",
+      "intro": "In **Selezioni di canali**, crea i tuoi gruppi di canali, come Notizie, Sport o Per i bambini. Ogni selezione diventa una scheda nella pagina TV in diretta, nell'ordine in cui le metti.",
+      "create": "**Nuova selezione** chiede un nome, poi la apre. Aggiungi canali con **Ricerca** (uno alla volta, o tutti i risultati insieme) o con **Categoria intera**, che aggiunge in un colpo tutti i canali di una categoria. Puoi anche spuntare dei canali in **Canali** e premere **Aggiungi alla selezione**.",
+      "order": "Usa le frecce su e giù per mettere in ordine le selezioni e i canali al loro interno. **A–Z** e **Per numero** ordinano un'intera selezione in una volta. Togliere un canale da una selezione non lo nasconde altrove.",
+      "kids": "**Consenti ai bambini** su una selezione permette agli account bambini di guardare tutti i suoi canali, oltre a quelli consentiti uno per uno.",
+      "rules": "Una selezione non fa ricomparire i canali che hai nascosto o che sono offline, e i filtri valgono comunque, a meno che un canale non sia impostato su **Mostra sempre**.",
+      "numbers": "**Numeri, nomi e loghi**: premi la matita accanto a un canale in **Canali** per dargli un numero suo (da 1 a 9999, ognuno usato una sola volta), un nome o un indirizzo del logo. Gli spettatori possono digitare un numero nel lettore per passare a quel canale. I canali senza numero vengono dopo il tuo numero più alto. Lascia vuoto un campo per tornare a quello indicato dall'elenco."
+    },
+    "health": {
+      "title": "Stato dei canali",
+      "intro": "I canali pubblici ogni tanto smettono di funzionare. Con **Controlla i canali in background** attivo (lo è fin dall'inizio), Plinthio controlla circa 20 canali ogni 10 minuti mentre la TV in diretta è attiva, così ognuno viene verificato più o meno una volta al giorno.",
+      "light": "Un controllo è volutamente leggero: il server scarica la playlist del canale e i primi kilobyte di video, nient'altro. Niente viene riprodotto, decodificato o convertito, quindi non costa quasi nulla.",
+      "offline": "Un canale che non supera due controlli di fila viene segnato come **Offline**. Con **Nascondi i canali offline** attivo, gli spettatori non lo vedono finché non torna a funzionare; basta un controllo riuscito per farlo ricomparire.",
+      "counts": "Il riquadro mostra quanti canali funzionano, quanti sono offline e quanti non sono ancora stati controllati, e quando è stato fatto l'ultimo controllo. Premi il numero degli offline per elencare quei canali, e **Controlla ora** su uno per verificarlo subito."
+    },
     "kids": {
       "title": "Account bambini",
-      "text": "Gli account bambini vedono solo i canali segnati con **Consenti ai bambini**. Nessuno è consentito finché non lo scegli tu, quindi fino ad allora la TV in diretta non compare nel menu di un account bambini."
+      "text": "Gli account bambini vedono solo i canali segnati con **Consenti ai bambini** e i canali di una selezione segnata con **Consenti ai bambini**. Nessuno è consentito finché non lo scegli tu, quindi fino ad allora la TV in diretta non compare nel menu di un account bambini."
     },
     "watching": {
       "title": "Guardare",
-      "channels": "**Canali**: ogni canale con cosa va in onda ora e dopo. Cerca, o restringi a un gruppo.",
+      "channels": "**Canali**: schede per Preferiti, Recenti, ogni selezione e Tutti i canali (con categorie tra cui scegliere), e ogni canale con cosa va in onda ora e dopo.",
       "guide": "**Guida TV**: una tabella oraria di cosa va in onda sui vari canali. Tocca un programma per vederne i dettagli e un pulsante **Guarda**.",
       "player": "**Il lettore**: le frecce su e giù (o i pulsanti) cambiano canale. Picture in picture e schermo intero funzionano dove il browser li supporta.",
       "throughServer": "Gli stream passano da questo server, quindi chiunque possa raggiungere Plinthio può guardare, a casa o fuori. Ogni spettatore usa la connessione internet del server."
+    },
+    "yours": {
+      "title": "Le scelte di ogni spettatore",
+      "intro": "Chiunque guardi può adattare la TV in diretta a sé. Queste scelte appartengono al suo account e non cambiano nulla per gli altri.",
+      "favourites": "**Preferiti**: la stella su un canale lo aggiunge alla scheda **Preferiti**, mostrata per prima. I preferiti compaiono anche in una riga **In onda ora** nella Home, con cosa va in onda; la riga si può nascondere da lì.",
+      "recent": "**Recenti**: gli ultimi canali guardati hanno una scheda tutta loro, e il pulsante **Canale precedente** del lettore (o il tasto {key}) torna a quello di prima.",
+      "hiding": "**Nascondi per me**: il menu di un canale nasconde quel canale, o il suo intero gruppo, solo per te. **Nascosti per me** nella pagina TV in diretta elenca ciò che hai nascosto, con un modo per far ricomparire ciascuno, e attiva o disattiva la riga nella Home.",
+      "search": "**Cerca** trova i canali per nome e i programmi per titolo, nel giorno e mezzo successivo. Nella guida, **Ora**, **Stasera** e **Domani** portano direttamente a quell'ora."
     },
     "publicSources": {
       "title": "I canali pubblici",
@@ -333,7 +357,15 @@
       },
       "missingChannel": {
         "title": "Manca un canale che voglio",
-        "text": "Potrebbe nasconderlo un filtro in **Scegli cosa mostrare**. In **Canali**, scegli **Nascosti da filtro**: ogni canale indica quale filtro lo nasconde, e **Mostra sempre** lo fa ricomparire."
+        "text": "Potrebbe nasconderlo un filtro in **Scegli cosa mostrare**, oppure potrebbe essere offline. In **Canali**, scegli **Nascosti da filtro** o **Offline**: ogni canale indica il motivo, e **Mostra sempre** o **Controlla ora** ti aiutano. Può anche darsi che uno spettatore l'abbia nascosto solo per sé; in quel caso è elencato in **Nascosti per me** nella sua pagina TV in diretta."
+      },
+      "offline": {
+        "title": "Un canale è segnato come «Offline»",
+        "text": "Non ha superato gli ultimi due controlli. Viene ricontrollato circa una volta al giorno e ricompare da solo quando torna a funzionare; **Controlla ora** lo verifica subito. Se continua a non funzionare, nascondilo, oppure disattiva **Nascondi i canali offline** per elencarlo comunque."
+      },
+      "numberTaken": {
+        "title": "Il numero di un canale non si salva",
+        "text": "Ogni numero può appartenere a un solo canale. Prima dai all'altro canale un numero diverso (o cancellalo)."
       },
       "noGuide": {
         "title": "La guida è vuota per alcuni canali",

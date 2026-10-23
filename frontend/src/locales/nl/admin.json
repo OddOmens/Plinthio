@@ -488,7 +488,7 @@
     },
     "channels": {
       "title": "Zenders",
-      "desc": "Verberg de zenders die je niet wilt. Kinderaccounts zien alleen de zenders die hier voor kinderen zijn toegestaan, en tot je ze kiest is er geen enkele toegestaan.",
+      "desc": "Verberg de zenders die je niet wilt, of druk op het potlood om een zender een eigen nummer, naam of logo te geven. Kinderaccounts zien alleen de zenders die hier voor kinderen zijn toegestaan of in een selectie staan die voor kinderen is toegestaan, en tot je ze kiest is er geen enkele toegestaan.",
       "searchPlaceholder": "Zenders zoeken",
       "sourceFilter": "Zenderlijst",
       "allSources": "Alle lijsten",
@@ -499,6 +499,7 @@
         "hidden": "Verborgen",
         "filtered": "Verborgen door filter",
         "pinned": "Altijd getoond",
+        "offline": "Offline",
         "kids": "Voor kinderen",
         "unsupported": "Niet afspeelbaar"
       },
@@ -532,12 +533,147 @@
         "filteredHint": "Verborgen door Kies wat je toont ({reasons}). Gebruik Altijd tonen om deze zender toch te houden.",
         "pinnedHint": "Altijd getoond, wat de filters ook zeggen. Druk nogmaals om de filters te laten beslissen.",
         "pinnedOverHint": "Altijd getoond, ook al verbergt een filter {reasons}. Druk nogmaals om de filters te laten beslissen.",
-        "regionLocked": "Regiogebonden"
+        "regionLocked": "Regiogebonden",
+        "offline": "Offline",
+        "offlineHint": "Speelde niet af bij de laatste twee controles (laatst gecontroleerd {date})",
+        "inLineupsHint": "In zenderselecties: {names}"
       },
       "range": "{from}–{to} van {total}",
       "empty": "Nog geen zenders. Ze verschijnen hier zodra een lijst is geladen.",
       "noMatches": "Geen zenders gevonden.",
-      "couldNotLoad": "Kon de zenders niet laden"
+      "couldNotLoad": "Kon de zenders niet laden",
+      "edit": "Nummer, naam en logo",
+      "editAria": "Nummer, naam en logo van {name} bewerken",
+      "numberHint": "Zendernummer",
+      "checkNow": "Nu controleren",
+      "checkNowAria": "Controleren of {name} nu afspeelt",
+      "checking": "Controleren…",
+      "couldNotCheck": "Kon de zender niet controleren",
+      "addToLineup": "Aan selectie toevoegen",
+      "addedToLineup": {
+        "one": "{number} zender toegevoegd aan {name}",
+        "other": "{number} zenders toegevoegd aan {name}"
+      },
+      "stillOffline": "Nog steeds offline · Opnieuw controleren"
+    },
+    "health": {
+      "title": "Zenderstatus",
+      "desc": "Openbare zenders komen en gaan. Plinthio controleert er op de achtergrond steeds een paar tegelijk, om de zenders te vinden die niet meer werken. Elke controle vraagt de stream alleen om de eerste paar kilobytes, dus er wordt niets afgespeeld of omgezet en de server merkt er nauwelijks iets van.",
+      "enabled": {
+        "label": "Zenders op de achtergrond controleren",
+        "desc": "Ongeveer 20 zenders per 10 minuten zolang Live tv aanstaat, zodat elke zender ongeveer één keer per dag aan de beurt komt."
+      },
+      "hideOffline": {
+        "label": "Offline zenders verbergen",
+        "desc": "Een zender die twee controles achter elkaar niet haalt, wordt verborgen voor kijkers. Hij wordt ongeveer één keer per dag opnieuw gecontroleerd en komt vanzelf terug zodra hij weer afspeelt."
+      },
+      "counts": {
+        "ok": "Werkend",
+        "offline": "Offline",
+        "unchecked": "Nog niet gecontroleerd"
+      },
+      "showOffline": "Offline zenders tonen",
+      "lastChecked": "Laatste controle {date}.",
+      "neverChecked": "Nog geen controles.",
+      "pace": "Zenders worden een paar tegelijk gecontroleerd; met Nu controleren bij een zender kijk je meteen.",
+      "paused": "Controles op de achtergrond staan uit, dus deze aantallen blijven zoals ze zijn.",
+      "couldNotLoad": "Kon de zenderstatus niet laden"
+    },
+    "editChannel": {
+      "title": "Zender bewerken",
+      "number": "Zendernummer",
+      "automatic": "Automatisch",
+      "useAutomatic": "Automatisch gebruiken",
+      "numberHint": "1 tot 9999, elk nummer één keer. Kijkers kunnen het intypen om naar deze zender te springen. Zenders zonder nummer komen na je hoogste nummer.",
+      "numberInvalid": "Gebruik een heel getal van 1 tot 9999.",
+      "name": "Naam",
+      "useOriginal": "Origineel gebruiken",
+      "nameHint": "Laat leeg om de naam uit de lijst te gebruiken: {name}",
+      "logo": "Logo-adres",
+      "useOriginalLogo": "Origineel logo gebruiken",
+      "logoHint": "Een link naar een afbeelding (http of https). Laat leeg om het logo uit de lijst te gebruiken. Het nieuwe logo verschijnt na het opslaan.",
+      "checkHint": "Kijk of deze zender nu afspeelt. Een zender wordt pas als offline gemarkeerd na twee mislukte controles achter elkaar.",
+      "health": {
+        "ok": "Werkt (gecontroleerd {date})",
+        "offline": "Offline (gecontroleerd {date})",
+        "unchecked": "Nog niet gecontroleerd"
+      },
+      "couldNotSave": "Kon de zender niet opslaan",
+      "checkOk": "Hij speelt af.",
+      "checkFailed": "Deze keer speelde hij niet af: {error}",
+      "checkFailedNoReason": "Deze keer speelde hij niet af."
+    },
+    "lineups": {
+      "title": "Zenderselecties",
+      "desc": "Stel je eigen sets zenders samen, zoals Nieuws, Sport of Voor de kinderen, in de volgorde die je wilt. Elke selectie is een tabblad op de Live tv-pagina, in de volgorde die hier staat.",
+      "create": "Nieuwe selectie",
+      "createTitle": "Nieuwe zenderselectie",
+      "empty": "Nog geen zenderselecties. Tot je er een maakt, zien kijkers alle zenders per categorie.",
+      "footer": "In een selectie zien kijkers nog steeds geen zenders die je hebt verborgen of die offline zijn, en de filters blijven gelden, tenzij een zender op Altijd tonen staat.",
+      "name": "Naam",
+      "namePlaceholder": "bijv. Nieuws",
+      "nameHint": "Kijkers zien dit als naam van het tabblad.",
+      "openAria": "Zenderselectie {name} openen",
+      "moveUp": "Omhoog",
+      "moveDown": "Omlaag",
+      "moveUpAria": "Zenderselectie {name} omhoog verplaatsen",
+      "moveDownAria": "Zenderselectie {name} omlaag verplaatsen",
+      "kids": {
+        "label": "Toestaan voor kinderen",
+        "desc": "Kinderaccounts mogen elke zender in deze selectie kijken, naast de zenders die los voor kinderen zijn toegestaan."
+      },
+      "delete": "Selectie verwijderen",
+      "deleteTitle": "Zenderselectie verwijderen",
+      "deleteMessage": "{name} verwijderen? De zenders blijven waar ze zijn; alleen de selectie verdwijnt.",
+      "couldNotLoad": "Kon de zenderselecties niet laden",
+      "couldNotLoadChannels": "Kon de zenders van deze selectie niet laden",
+      "couldNotCreate": "Kon de selectie niet maken",
+      "couldNotAdd": "Kon de zenders niet toevoegen",
+      "couldNotDelete": "Kon de selectie niet verwijderen",
+      "editor": {
+        "subtitle": "Wijzigingen worden meteen opgeslagen",
+        "tabs": {
+          "channels": "Zenders",
+          "add": "Zenders toevoegen"
+        },
+        "empty": "Nog geen zenders in deze selectie.",
+        "addChannels": "Zenders toevoegen",
+        "sortName": "A–Z",
+        "sortNumber": "Op nummer",
+        "moveUpAria": "{name} omhoog verplaatsen",
+        "moveDownAria": "{name} omlaag verplaatsen",
+        "remove": "Uit selectie halen",
+        "removeAria": "{name} uit deze selectie halen",
+        "addBy": "Zenders toevoegen via",
+        "kinds": {
+          "search": "Zoeken",
+          "categories": "Hele categorie"
+        },
+        "search": {
+          "search": "Zenders zoeken",
+          "categories": "Categorieën zoeken"
+        },
+        "searchHint": "Typ een deel van de naam van een zender.",
+        "inLineup": "Toegevoegd",
+        "addAria": "{name} aan deze selectie toevoegen",
+        "addFound": {
+          "one": "{number} gevonden toevoegen",
+          "other": "Alle {number} gevonden toevoegen"
+        },
+        "moreResults": {
+          "one": "Nog {number} resultaat; typ meer om te verfijnen.",
+          "other": "Nog {number} resultaten; typ meer om te verfijnen."
+        },
+        "addAll": "Alles toevoegen",
+        "addCategoryAria": "Alle zenders in {name} toevoegen",
+        "categoryHidden": "verborgen door een filter",
+        "hiddenByFilter": "Verborgen door filter",
+        "nothingNew": "Alle zenders uit die categorie staan er al in.",
+        "added": {
+          "one": "{number} zender toegevoegd",
+          "other": "{number} zenders toegevoegd"
+        }
+      }
     }
   },
   "logs": {

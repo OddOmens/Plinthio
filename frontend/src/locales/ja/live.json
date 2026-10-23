@@ -7,7 +7,7 @@
     "channels": "チャンネル",
     "guide": "番組表"
   },
-  "searchPlaceholder": "チャンネルを検索…",
+  "searchPlaceholder": "チャンネルと番組を検索…",
   "groupsLabel": "チャンネルグループ",
   "channelCount": {
     "other": "{count}チャンネル"
@@ -42,6 +42,8 @@
   "guide": {
     "channel": "チャンネル",
     "now": "現在",
+    "tonight": "今夜",
+    "tomorrow": "明日",
     "earlier": "前の時間帯",
     "later": "後の時間帯",
     "notLoadedTitle": "番組表はまだ読み込まれていません",
@@ -69,6 +71,8 @@
     "channelDown": "チャンネルダウン",
     "channelUpHint": "チャンネルアップ（↑）",
     "channelDownHint": "チャンネルダウン（↓）",
+    "lastChannel": "前のチャンネル",
+    "lastChannelHint": "前のチャンネル（L）",
     "nextChannel": "次のチャンネル",
     "info": "番組情報",
     "pip": "ピクチャーインピクチャー",
@@ -84,5 +88,55 @@
       "decode": "このブラウザーでは、このチャンネルの映像を再生できません。",
       "unsupportedBrowser": "このブラウザーではライブ配信を再生できません。"
     }
+  },
+  "undo": "元に戻す",
+  "lists": {
+    "label": "チャンネル一覧",
+    "favourites": "お気に入り",
+    "recent": "最近",
+    "all": "全チャンネル"
+  },
+  "favourites": {
+    "add": "{channel}をお気に入りに追加",
+    "remove": "{channel}をお気に入りから削除",
+    "addShort": "お気に入りに追加",
+    "removeShort": "お気に入りから削除"
+  },
+  "menu": {
+    "options": "その他のオプション",
+    "optionsFor": "{channel}のオプション",
+    "hideChannel": "自分だけ非表示にする",
+    "hideGroup": "「{group}」をすべて自分だけ非表示にする"
+  },
+  "hidden": {
+    "channel": "{channel}を自分だけ非表示にしました",
+    "group": "「{group}」を自分だけ非表示にしました"
+  },
+  "search": {
+    "channels": "チャンネル",
+    "programmes": "番組",
+    "noResultsTitle": "見つかりませんでした",
+    "noResults": "「{query}」に一致するチャンネルや番組はありません。",
+    "clear": "検索をクリア",
+    "errorTitle": "検索できませんでした"
+  },
+  "mine": {
+    "button": "自分だけ非表示",
+    "title": "自分だけ非表示",
+    "subtitle": "これらの設定はあなたにだけ適用され、どのデバイスでも共通です。",
+    "showOnHome": "ホームに「放送中」を表示",
+    "showOnHomeHint": "お気に入りのチャンネルでいま放送中の番組が並ぶ欄です。",
+    "hiddenTitle": "非表示にしたチャンネルとグループ",
+    "nothingHidden": "何も非表示にしていません。チャンネルのメニューから、そのチャンネルやグループ全体を自分だけ非表示にできます。",
+    "wholeGroup": "グループ全体",
+    "show": "表示",
+    "showAll": "すべて表示",
+    "saveFailed": "保存できませんでした。接続を確認して、もう一度お試しください。"
+  },
+  "home": {
+    "title": "放送中",
+    "allChannels": "全チャンネル",
+    "hideRow": "この欄を非表示",
+    "hideRowHint": "この欄を非表示（ライブTV → 自分だけ非表示 で元に戻せます）"
   }
 }

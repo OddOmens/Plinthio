@@ -7,7 +7,7 @@
     "channels": "Canais",
     "guide": "Guia"
   },
-  "searchPlaceholder": "Buscar canais…",
+  "searchPlaceholder": "Buscar canais e programas…",
   "groupsLabel": "Grupos de canais",
   "channelCount": {
     "one": "{count} canal",
@@ -44,6 +44,8 @@
   "guide": {
     "channel": "Canal",
     "now": "Agora",
+    "tonight": "Hoje à noite",
+    "tomorrow": "Amanhã",
     "earlier": "Antes",
     "later": "Depois",
     "notLoadedTitle": "O guia de programação ainda não carregou",
@@ -73,6 +75,8 @@
     "channelDown": "Canal abaixo",
     "channelUpHint": "Canal acima (↑)",
     "channelDownHint": "Canal abaixo (↓)",
+    "lastChannel": "Canal anterior",
+    "lastChannelHint": "Canal anterior (L)",
     "nextChannel": "Próximo canal",
     "info": "O que está passando",
     "pip": "Picture-in-picture",
@@ -88,5 +92,55 @@
       "decode": "Este navegador não consegue reproduzir o vídeo deste canal.",
       "unsupportedBrowser": "Este navegador não consegue reproduzir transmissões ao vivo."
     }
+  },
+  "undo": "Desfazer",
+  "lists": {
+    "label": "Listas de canais",
+    "favourites": "Favoritos",
+    "recent": "Recentes",
+    "all": "Todos os canais"
+  },
+  "favourites": {
+    "add": "Adicionar {channel} aos favoritos",
+    "remove": "Remover {channel} dos favoritos",
+    "addShort": "Adicionar aos favoritos",
+    "removeShort": "Remover dos favoritos"
+  },
+  "menu": {
+    "options": "Mais opções",
+    "optionsFor": "Opções de {channel}",
+    "hideChannel": "Ocultar para mim",
+    "hideGroup": "Ocultar todo o grupo “{group}” para mim"
+  },
+  "hidden": {
+    "channel": "{channel} está oculto para você",
+    "group": "“{group}” está oculto para você"
+  },
+  "search": {
+    "channels": "Canais",
+    "programmes": "Programas",
+    "noResultsTitle": "Nada encontrado",
+    "noResults": "Nenhum canal ou programa corresponde a “{query}”.",
+    "clear": "Limpar busca",
+    "errorTitle": "Não foi possível buscar"
+  },
+  "mine": {
+    "button": "Ocultos para mim",
+    "title": "Ocultos para mim",
+    "subtitle": "Só você vê essas escolhas, em todos os seus dispositivos.",
+    "showOnHome": "Mostrar “Ao vivo agora” no Início",
+    "showOnHomeHint": "Uma fileira com o que está passando nos seus canais favoritos.",
+    "hiddenTitle": "Canais e grupos que você ocultou",
+    "nothingHidden": "Você não ocultou nada. Use o menu de um canal para ocultá-lo, ou o grupo inteiro, só para você.",
+    "wholeGroup": "Grupo inteiro",
+    "show": "Mostrar",
+    "showAll": "Mostrar tudo",
+    "saveFailed": "Não foi possível salvar. Verifique sua conexão e tente de novo."
+  },
+  "home": {
+    "title": "Ao vivo agora",
+    "allChannels": "Todos os canais",
+    "hideRow": "Ocultar esta fileira",
+    "hideRowHint": "Ocultar esta fileira (traga de volta em TV ao vivo → Ocultos para mim)"
   }
 }

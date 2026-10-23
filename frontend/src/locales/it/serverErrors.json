@@ -513,7 +513,19 @@
     "hiddenCategoriesMustBeA": "Le categorie nascoste devono essere un elenco di massimo 5000 nomi",
     "hiddenLanguagesMustBeA": "Le lingue nascoste devono essere un elenco di massimo 5000 nomi",
     "hiddenCountriesMustBeTwo": "I paesi nascosti devono essere codici paese di due lettere",
-    "hiddenStreamHostsMustBe": "I server di streaming nascosti devono essere nomi host, come example.com"
+    "hiddenStreamHostsMustBe": "I server di streaming nascosti devono essere nomi host, come example.com",
+    "lineUpNotFound": "Selezione non trovata",
+    "channelNumbersGoFrom1": "I numeri dei canali vanno da 1 a 9999",
+    "enterANameForTheChannel": "Inserisci un nome per il canale, oppure lascia vuoto",
+    "theLogoAddressMustStart": "L'indirizzo del logo deve iniziare con http:// o https://",
+    "anotherChannelAlreadyHasThat": "Un altro canale ha già quel numero",
+    "enterANameForTheLineUp": "Inserisci un nome per la selezione",
+    "sendTheLineUpsIn": "Invia le selezioni nel loro nuovo ordine",
+    "kidsAllowedMustBeTrue": "kidsAllowed deve essere true o false",
+    "hideOfflineMustBeTrue": "hideOffline deve essere true o false",
+    "enabledMustBeTrueOr": "enabled deve essere true o false",
+    "chooseUpTo5000Channels": "Scegli al massimo 5000 canali",
+    "youCanHaveUpTo": "Puoi avere al massimo 500 canali preferiti"
   },
   "patterns": {
     "noMetadataSource": "Ancora nessuna fonte di metadati per {type}",

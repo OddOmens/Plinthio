@@ -476,7 +476,7 @@
     },
     "channels": {
       "title": "채널",
-      "desc": "원하지 않는 채널은 숨기세요. 키즈 계정에는 여기서 키즈 허용한 채널만 보이며, 직접 고르기 전에는 허용된 채널이 없어요.",
+      "desc": "원하지 않는 채널은 숨기거나, 연필을 눌러 고유한 번호, 이름, 로고를 정하세요. 키즈 계정에는 여기서 키즈 허용한 채널과 키즈 허용한 라인업의 채널만 보이며, 직접 고르기 전에는 허용된 채널이 없어요.",
       "searchPlaceholder": "채널 검색",
       "sourceFilter": "채널 목록",
       "allSources": "모든 목록",
@@ -487,6 +487,7 @@
         "hidden": "숨김",
         "filtered": "필터로 숨김",
         "pinned": "항상 표시",
+        "offline": "오프라인",
         "kids": "키즈 허용",
         "unsupported": "재생 불가"
       },
@@ -519,12 +520,143 @@
         "filteredHint": "'표시할 항목 고르기'에서 숨겨졌어요({reasons}). 그래도 이 채널을 남기려면 '항상 표시'를 사용하세요.",
         "pinnedHint": "필터 설정과 상관없이 항상 표시돼요. 다시 누르면 필터에 맡겨요.",
         "pinnedOverHint": "필터가 {reasons}을(를) 숨기지만 항상 표시돼요. 다시 누르면 필터에 맡겨요.",
-        "regionLocked": "지역 제한"
+        "regionLocked": "지역 제한",
+        "offline": "오프라인",
+        "offlineHint": "최근 두 번의 확인에서 재생되지 않았어요(마지막 확인: {date})",
+        "inLineupsHint": "라인업: {names}"
       },
       "range": "{total}개 중 {from}–{to}",
       "empty": "아직 채널이 없어요. 목록을 불러오면 여기에 나타나요.",
       "noMatches": "일치하는 채널이 없어요.",
-      "couldNotLoad": "채널을 불러올 수 없어요"
+      "couldNotLoad": "채널을 불러올 수 없어요",
+      "edit": "번호, 이름, 로고",
+      "editAria": "{name}의 번호, 이름, 로고 편집",
+      "numberHint": "채널 번호",
+      "checkNow": "지금 확인",
+      "checkNowAria": "{name}이(가) 지금 재생되는지 확인",
+      "checking": "확인 중…",
+      "couldNotCheck": "채널을 확인할 수 없어요",
+      "addToLineup": "라인업에 추가",
+      "addedToLineup": {
+        "other": "{name}에 채널 {number}개를 추가했어요"
+      },
+      "stillOffline": "아직 오프라인 · 다시 확인"
+    },
+    "health": {
+      "title": "채널 상태",
+      "desc": "공개 채널은 생겼다 사라졌다 해요. Plinthio는 백그라운드에서 몇 개씩 확인해서 작동을 멈춘 채널을 찾아요. 확인할 때는 스트림의 처음 몇 킬로바이트만 받아 오므로 아무것도 재생하거나 변환하지 않고, 서버에도 부담이 거의 없어요.",
+      "enabled": {
+        "label": "백그라운드에서 채널 확인",
+        "desc": "실시간 TV가 켜져 있는 동안 10분마다 채널 약 20개를 확인하므로, 각 채널은 대략 하루에 한 번 확인돼요."
+      },
+      "hideOffline": {
+        "label": "오프라인 채널 숨기기",
+        "desc": "두 번 연속으로 확인에 실패한 채널은 시청자에게 숨겨져요. 그 뒤로도 대략 하루에 한 번 다시 확인하고, 재생되면 저절로 다시 나타나요."
+      },
+      "counts": {
+        "ok": "정상",
+        "offline": "오프라인",
+        "unchecked": "확인 전"
+      },
+      "showOffline": "오프라인 채널 보기",
+      "lastChecked": "마지막 확인: {date}.",
+      "neverChecked": "아직 확인하지 않았어요.",
+      "pace": "채널은 몇 개씩 차례로 확인해요. 채널에서 '지금 확인'을 누르면 바로 확인해요.",
+      "paused": "백그라운드 확인이 꺼져 있어서 이 숫자는 그대로 유지돼요.",
+      "couldNotLoad": "채널 상태를 불러올 수 없어요"
+    },
+    "editChannel": {
+      "title": "채널 편집",
+      "number": "채널 번호",
+      "automatic": "자동",
+      "useAutomatic": "자동으로 설정",
+      "numberHint": "1~9999 사이로, 번호 하나는 한 채널에만 쓸 수 있어요. 시청자는 이 번호를 입력해 이 채널로 바로 갈 수 있어요. 번호가 없는 채널은 가장 큰 번호 뒤에 이어져요.",
+      "numberInvalid": "1~9999 사이의 정수를 입력하세요.",
+      "name": "이름",
+      "useOriginal": "원래 이름 사용",
+      "nameHint": "비워 두면 목록의 이름을 써요: {name}",
+      "logo": "로고 주소",
+      "useOriginalLogo": "원래 로고 사용",
+      "logoHint": "이미지 링크(http 또는 https)예요. 비워 두면 목록에 있는 로고를 써요. 새 로고는 저장한 뒤에 나타나요.",
+      "checkHint": "이 채널이 지금 재생되는지 확인해요. 두 번 연속으로 확인에 실패해야만 오프라인으로 표시돼요.",
+      "health": {
+        "ok": "정상({date} 확인)",
+        "offline": "오프라인({date} 확인)",
+        "unchecked": "확인 전"
+      },
+      "couldNotSave": "채널을 저장할 수 없어요",
+      "checkOk": "재생돼요.",
+      "checkFailed": "이번에는 재생되지 않았어요: {error}",
+      "checkFailedNoReason": "이번에는 재생되지 않았어요."
+    },
+    "lineups": {
+      "title": "라인업",
+      "desc": "뉴스, 스포츠, 어린이용처럼 원하는 채널 모음을 원하는 순서로 만들어 보세요. 각 라인업은 실시간 TV 페이지에 탭으로 나타나며, 여기 표시된 순서를 따라요.",
+      "create": "새 라인업",
+      "createTitle": "새 라인업",
+      "empty": "아직 라인업이 없어요. 라인업을 만들기 전까지 시청자에게는 모든 채널이 카테고리별로 보여요.",
+      "footer": "라인업 안에서도 숨긴 채널이나 오프라인 채널은 시청자에게 보이지 않으며, '항상 표시'로 설정한 채널이 아니면 필터도 그대로 적용돼요.",
+      "name": "이름",
+      "namePlaceholder": "예: 뉴스",
+      "nameHint": "시청자에게 탭 이름으로 표시돼요.",
+      "openAria": "라인업 {name} 열기",
+      "moveUp": "위로 이동",
+      "moveDown": "아래로 이동",
+      "moveUpAria": "라인업 {name} 위로 이동",
+      "moveDownAria": "라인업 {name} 아래로 이동",
+      "kids": {
+        "label": "키즈 허용",
+        "desc": "키즈 계정은 하나씩 키즈 허용한 채널과 함께 이 라인업의 모든 채널을 볼 수 있어요."
+      },
+      "delete": "라인업 삭제",
+      "deleteTitle": "라인업 삭제",
+      "deleteMessage": "{name}을(를) 삭제할까요? 채널은 그대로 남고 라인업만 사라져요.",
+      "couldNotLoad": "라인업을 불러올 수 없어요",
+      "couldNotLoadChannels": "이 라인업의 채널을 불러올 수 없어요",
+      "couldNotCreate": "라인업을 만들 수 없어요",
+      "couldNotAdd": "채널을 추가할 수 없어요",
+      "couldNotDelete": "라인업을 삭제할 수 없어요",
+      "editor": {
+        "subtitle": "변경 사항은 바로 저장돼요",
+        "tabs": {
+          "channels": "채널",
+          "add": "채널 추가"
+        },
+        "empty": "이 라인업에는 아직 채널이 없어요.",
+        "addChannels": "채널 추가",
+        "sortName": "이름순",
+        "sortNumber": "번호순",
+        "moveUpAria": "{name} 위로 이동",
+        "moveDownAria": "{name} 아래로 이동",
+        "remove": "라인업에서 빼기",
+        "removeAria": "이 라인업에서 {name} 빼기",
+        "addBy": "채널 추가 방법",
+        "kinds": {
+          "search": "검색",
+          "categories": "카테고리 전체"
+        },
+        "search": {
+          "search": "채널 검색",
+          "categories": "카테고리 검색"
+        },
+        "searchHint": "채널 이름의 일부를 입력하세요.",
+        "inLineup": "추가됨",
+        "addAria": "이 라인업에 {name} 추가",
+        "addFound": {
+          "other": "찾은 {number}개 모두 추가"
+        },
+        "moreResults": {
+          "other": "{number}개가 더 있어요. 더 입력해서 범위를 좁혀 보세요."
+        },
+        "addAll": "모두 추가",
+        "addCategoryAria": "{name}의 채널 모두 추가",
+        "categoryHidden": "필터로 숨김",
+        "hiddenByFilter": "필터로 숨김",
+        "nothingNew": "이 카테고리의 채널은 이미 모두 들어 있어요.",
+        "added": {
+          "other": "채널 {number}개를 추가했어요"
+        }
+      }
     }
   },
   "logs": {

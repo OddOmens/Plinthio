@@ -298,16 +298,40 @@
       "text": "En **Canales**, busca o filtra por lista y pulsa **Ocultar** en los canales que no quieras. Marca varios (o una página entera) para cambiarlos a la vez. Los cambios se guardan al instante.",
       "kept": "Los canales ocultos y las elecciones para niños se conservan al recargar una lista. Un canal que desaparece de su lista de reproducción se elimina."
     },
+    "lineups": {
+      "title": "Selecciones de canales y números",
+      "intro": "En **Selecciones de canales**, crea tus propios grupos de canales, como Noticias, Deportes o Para los niños. Cada selección se convierte en una pestaña de la página de TV en vivo, en el orden en que las pongas.",
+      "create": "**Nueva selección** pide un nombre y luego la abre. Añade canales por **Búsqueda** (de uno en uno, o todos los resultados a la vez) o por **Categoría entera**, que añade todos los canales de una categoría de golpe. También puedes marcar canales en **Canales** y pulsar **Añadir a una selección**.",
+      "order": "Usa las flechas arriba y abajo para ordenar las selecciones y los canales dentro de cada una. **A–Z** y **Por número** ordenan una selección entera de una vez. Quitar un canal de una selección no lo oculta en ningún otro sitio.",
+      "kids": "**Permitir para niños** en una selección deja que las cuentas infantiles vean todos sus canales, además de los permitidos uno a uno.",
+      "rules": "Una selección no recupera canales que hayas ocultado o que estén sin señal, y los filtros se siguen aplicando salvo que un canal esté en **Mostrar siempre**.",
+      "numbers": "**Números, nombres y logotipos**: pulsa el lápiz junto a un canal en **Canales** para darle su propio número (de 1 a 9999, cada uno una sola vez), un nombre o una dirección de logotipo. Los espectadores pueden escribir un número en el reproductor para ir directo a ese canal. Los canales sin número van después del más alto que hayas puesto. Deja un campo vacío para volver a lo que indica la lista."
+    },
+    "health": {
+      "title": "Estado de los canales",
+      "intro": "Los canales públicos dejan de funcionar de vez en cuando. Con **Comprobar canales en segundo plano** activado (lo está de entrada), Plinthio revisa unos 20 canales cada 10 minutos mientras la TV en vivo está activada, así que cada uno se comprueba más o menos una vez al día.",
+      "light": "La comprobación es ligera a propósito: el servidor descarga la lista de reproducción del canal y los primeros kilobytes de vídeo, nada más. No se reproduce, decodifica ni convierte nada, así que casi no cuesta nada.",
+      "offline": "Un canal que falla dos comprobaciones seguidas se marca como **Sin señal**. Con **Ocultar canales sin señal** activado, los espectadores no lo ven hasta que vuelva a reproducirse; basta una comprobación correcta para que reaparezca.",
+      "counts": "La tarjeta muestra cuántos canales funcionan, cuántos están sin señal y cuántos siguen sin comprobar, y cuándo fue la última comprobación. Pulsa el recuento de sin señal para ver esos canales, y **Comprobar ahora** en uno para revisarlo al momento."
+    },
     "kids": {
       "title": "Cuentas infantiles",
-      "text": "Las cuentas infantiles solo ven los canales marcados con **Permitir para niños**. No hay ninguno permitido hasta que los elijas, así que hasta entonces la TV en vivo no aparece en el menú de una cuenta infantil."
+      "text": "Las cuentas infantiles solo ven los canales marcados con **Permitir para niños** y los canales de una selección marcada con **Permitir para niños**. No hay ninguno permitido hasta que los elijas, así que hasta entonces la TV en vivo no aparece en el menú de una cuenta infantil."
     },
     "watching": {
       "title": "Ver la TV",
-      "channels": "**Canales**: todos los canales con lo que se emite ahora y a continuación. Busca o limita la vista a un grupo.",
+      "channels": "**Canales**: pestañas para Favoritos, Recientes, cada selección y Todos los canales (con categorías para elegir), y cada canal con lo que se emite ahora y a continuación.",
       "guide": "**Guía**: una parrilla con lo que se emite en los distintos canales. Toca un programa para ver sus detalles y un botón **Ver**.",
       "player": "**El reproductor**: las flechas arriba y abajo (o los botones) cambian de canal. Imagen en imagen y pantalla completa funcionan si el navegador lo permite.",
       "throughServer": "Las emisiones pasan por este servidor, así que cualquiera que pueda llegar a Plinthio puede verlas, en casa o fuera. Cada espectador usa la conexión a internet del servidor."
+    },
+    "yours": {
+      "title": "Las elecciones de cada espectador",
+      "intro": "Cada persona que ve la TV puede adaptarla a su gusto. Estas elecciones son de su cuenta y no cambian nada para nadie más.",
+      "favourites": "**Favoritos**: la estrella de un canal lo añade a una pestaña **Favoritos**, que se muestra primero. Los favoritos también aparecen en una fila **En vivo ahora** en la página de Inicio con lo que se emite; esa fila se puede ocultar.",
+      "recent": "**Recientes**: los últimos canales vistos tienen su propia pestaña, y el botón **Canal anterior** del reproductor (o la tecla {key}) vuelve al canal de antes.",
+      "hiding": "**Ocultar para mí**: el menú de un canal oculta ese canal, o todo su grupo, solo para ti. **Ocultos para mí**, en la página de TV en vivo, muestra lo que has ocultado, con una forma de recuperar cada cosa, y activa o desactiva la fila de Inicio.",
+      "search": "**Buscar** encuentra canales por nombre y programas por título, en el próximo día y medio. En la guía, **Ahora**, **Esta noche** y **Mañana** saltan directamente a ese momento."
     },
     "publicSources": {
       "title": "Sobre los canales públicos",
@@ -333,7 +357,15 @@
       },
       "missingChannel": {
         "title": "Falta un canal que quiero",
-        "text": "Puede que lo oculte un filtro de **Elige qué mostrar**. En **Canales**, elige **Ocultos por filtro**: cada canal indica qué filtro lo oculta, y **Mostrar siempre** lo recupera."
+        "text": "Puede que lo oculte un filtro de **Elige qué mostrar**, o que esté sin señal. En **Canales**, elige **Ocultos por filtro** o **Sin señal**: cada canal indica el motivo, y **Mostrar siempre** o **Comprobar ahora** te ayudan. También puede que un espectador lo haya ocultado solo para sí; en ese caso aparece en **Ocultos para mí**, en su página de TV en vivo."
+      },
+      "offline": {
+        "title": "Un canal aparece como «Sin señal»",
+        "text": "Falló sus dos últimas comprobaciones. Se vuelve a comprobar más o menos una vez al día y reaparece solo cuando se reproduce; **Comprobar ahora** lo revisa al momento. Si sigue fallando, ocúltalo, o desactiva **Ocultar canales sin señal** para que aparezca de todos modos."
+      },
+      "numberTaken": {
+        "title": "No se guarda el número de un canal",
+        "text": "Cada número solo puede pertenecer a un canal. Primero dale otro número al otro canal (o bórraselo)."
       },
       "noGuide": {
         "title": "La guía está vacía en algunos canales",

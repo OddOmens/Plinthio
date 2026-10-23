@@ -488,7 +488,7 @@
     },
     "channels": {
       "title": "Canali",
-      "desc": "Nascondi quelli che non vuoi. Gli account bambini vedono solo i canali consentiti ai bambini qui, e nessuno è consentito finché non lo scegli tu.",
+      "desc": "Nascondi quelli che non vuoi, oppure premi la matita per dare a un canale un numero, un nome o un logo suoi. Gli account bambini vedono solo i canali consentiti ai bambini qui o in una selezione consentita ai bambini, e nessuno è consentito finché non lo scegli tu.",
       "searchPlaceholder": "Cerca canali",
       "sourceFilter": "Elenco di canali",
       "allSources": "Tutti gli elenchi",
@@ -499,6 +499,7 @@
         "hidden": "Nascosti",
         "filtered": "Nascosti da filtro",
         "pinned": "Sempre visibili",
+        "offline": "Offline",
         "kids": "Per bambini",
         "unsupported": "Non riproducibili"
       },
@@ -532,12 +533,147 @@
         "filteredHint": "Nascosto da Scegli cosa mostrare ({reasons}). Usa Mostra sempre per tenere comunque questo canale.",
         "pinnedHint": "Sempre visibile, qualunque cosa dicano i filtri. Premi di nuovo per lasciar decidere ai filtri.",
         "pinnedOverHint": "Sempre visibile, anche se un filtro nasconde {reasons}. Premi di nuovo per lasciar decidere ai filtri.",
-        "regionLocked": "Limitato per area"
+        "regionLocked": "Limitato per area",
+        "offline": "Offline",
+        "offlineHint": "Non è partito negli ultimi due controlli (ultimo controllo {date})",
+        "inLineupsHint": "Nelle selezioni: {names}"
       },
       "range": "{from}–{to} di {total}",
       "empty": "Ancora nessun canale. Compaiono qui quando un elenco è stato caricato.",
       "noMatches": "Nessun canale corrisponde.",
-      "couldNotLoad": "Impossibile caricare i canali"
+      "couldNotLoad": "Impossibile caricare i canali",
+      "edit": "Numero, nome e logo",
+      "editAria": "Modifica numero, nome e logo di {name}",
+      "numberHint": "Numero del canale",
+      "checkNow": "Controlla ora",
+      "checkNowAria": "Controlla se {name} parte adesso",
+      "checking": "Controllo…",
+      "couldNotCheck": "Impossibile controllare il canale",
+      "addToLineup": "Aggiungi alla selezione",
+      "addedToLineup": {
+        "one": "Aggiunto {number} canale a {name}",
+        "other": "Aggiunti {number} canali a {name}"
+      },
+      "stillOffline": "Ancora offline · Ricontrolla"
+    },
+    "health": {
+      "title": "Stato dei canali",
+      "desc": "I canali pubblici vanno e vengono. Plinthio ne controlla alcuni alla volta in background per trovare quelli che hanno smesso di funzionare. Ogni controllo chiede allo stream solo i primi kilobyte, quindi niente viene riprodotto o convertito e il server quasi non se ne accorge.",
+      "enabled": {
+        "label": "Controlla i canali in background",
+        "desc": "Circa 20 canali ogni 10 minuti mentre la TV in diretta è attiva, così ogni canale viene controllato più o meno una volta al giorno."
+      },
+      "hideOffline": {
+        "label": "Nascondi i canali offline",
+        "desc": "Un canale che non supera due controlli di fila viene nascosto agli spettatori. Viene ricontrollato circa una volta al giorno e ricompare da solo appena torna a funzionare."
+      },
+      "counts": {
+        "ok": "Funzionanti",
+        "offline": "Offline",
+        "unchecked": "Non ancora controllati"
+      },
+      "showOffline": "Mostra i canali offline",
+      "lastChecked": "Ultimo controllo {date}.",
+      "neverChecked": "Ancora nessun controllo.",
+      "pace": "I canali vengono controllati pochi alla volta; Controlla ora su un canale lo verifica subito.",
+      "paused": "I controlli in background sono disattivati, quindi questi conteggi restano così.",
+      "couldNotLoad": "Impossibile caricare lo stato dei canali"
+    },
+    "editChannel": {
+      "title": "Modifica canale",
+      "number": "Numero del canale",
+      "automatic": "Automatico",
+      "useAutomatic": "Usa automatico",
+      "numberHint": "Da 1 a 9999, ognuno usato una sola volta. Gli spettatori possono digitarlo per passare a questo canale. I canali senza numero vengono dopo il tuo numero più alto.",
+      "numberInvalid": "Usa un numero intero da 1 a 9999.",
+      "name": "Nome",
+      "useOriginal": "Usa l'originale",
+      "nameHint": "Lascia vuoto per usare il nome dell'elenco: {name}",
+      "logo": "Indirizzo del logo",
+      "useOriginalLogo": "Usa il logo originale",
+      "logoHint": "Un link a un'immagine (http o https). Lascia vuoto per usare il logo dell'elenco. Il nuovo logo compare dopo il salvataggio.",
+      "checkHint": "Verifica se questo canale parte adesso. Un canale viene segnato come offline solo dopo due controlli falliti di fila.",
+      "health": {
+        "ok": "Funziona (controllato {date})",
+        "offline": "Offline (controllato {date})",
+        "unchecked": "Non ancora controllato"
+      },
+      "couldNotSave": "Impossibile salvare il canale",
+      "checkOk": "Funziona.",
+      "checkFailed": "Questa volta non è partito: {error}",
+      "checkFailedNoReason": "Questa volta non è partito."
+    },
+    "lineups": {
+      "title": "Selezioni di canali",
+      "desc": "Crea i tuoi gruppi di canali, come Notizie, Sport o Per i bambini, nell'ordine che preferisci. Ogni selezione è una scheda nella pagina TV in diretta, nell'ordine mostrato qui.",
+      "create": "Nuova selezione",
+      "createTitle": "Nuova selezione",
+      "empty": "Ancora nessuna selezione. Finché non ne crei una, gli spettatori vedono tutti i canali per categoria.",
+      "footer": "In una selezione, gli spettatori continuano a non vedere i canali che hai nascosto o che sono offline, e i filtri valgono comunque, a meno che un canale non sia impostato su Mostra sempre.",
+      "name": "Nome",
+      "namePlaceholder": "es. Notizie",
+      "nameHint": "Gli spettatori lo vedono come nome della scheda.",
+      "openAria": "Apri la selezione {name}",
+      "moveUp": "Sposta su",
+      "moveDown": "Sposta giù",
+      "moveUpAria": "Sposta su la selezione {name}",
+      "moveDownAria": "Sposta giù la selezione {name}",
+      "kids": {
+        "label": "Consenti ai bambini",
+        "desc": "Gli account bambini possono guardare tutti i canali di questa selezione, oltre a quelli consentiti ai bambini uno per uno."
+      },
+      "delete": "Elimina selezione",
+      "deleteTitle": "Elimina selezione",
+      "deleteMessage": "Eliminare {name}? I suoi canali restano dove sono; sparisce solo la selezione.",
+      "couldNotLoad": "Impossibile caricare le selezioni",
+      "couldNotLoadChannels": "Impossibile caricare i canali di questa selezione",
+      "couldNotCreate": "Impossibile creare la selezione",
+      "couldNotAdd": "Impossibile aggiungere i canali",
+      "couldNotDelete": "Impossibile eliminare la selezione",
+      "editor": {
+        "subtitle": "Le modifiche si salvano man mano",
+        "tabs": {
+          "channels": "Canali",
+          "add": "Aggiungi canali"
+        },
+        "empty": "Ancora nessun canale in questa selezione.",
+        "addChannels": "Aggiungi canali",
+        "sortName": "A–Z",
+        "sortNumber": "Per numero",
+        "moveUpAria": "Sposta su {name}",
+        "moveDownAria": "Sposta giù {name}",
+        "remove": "Togli dalla selezione",
+        "removeAria": "Togli {name} da questa selezione",
+        "addBy": "Aggiungi canali per",
+        "kinds": {
+          "search": "Ricerca",
+          "categories": "Categoria intera"
+        },
+        "search": {
+          "search": "Cerca canali",
+          "categories": "Cerca categorie"
+        },
+        "searchHint": "Scrivi parte del nome di un canale.",
+        "inLineup": "Aggiunto",
+        "addAria": "Aggiungi {name} a questa selezione",
+        "addFound": {
+          "one": "Aggiungi {number} trovato",
+          "other": "Aggiungi tutti i {number} trovati"
+        },
+        "moreResults": {
+          "one": "Ancora {number} risultato; scrivi di più per restringere.",
+          "other": "Altri {number} risultati; scrivi di più per restringere."
+        },
+        "addAll": "Aggiungi tutti",
+        "addCategoryAria": "Aggiungi tutti i canali di {name}",
+        "categoryHidden": "nascosta da un filtro",
+        "hiddenByFilter": "Nascosto da filtro",
+        "nothingNew": "Tutti i canali di quella categoria sono già qui.",
+        "added": {
+          "one": "Aggiunto {number} canale",
+          "other": "Aggiunti {number} canali"
+        }
+      }
     }
   },
   "logs": {

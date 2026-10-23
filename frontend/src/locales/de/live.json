@@ -7,7 +7,7 @@
     "channels": "Sender",
     "guide": "TV-Programm"
   },
-  "searchPlaceholder": "Sender suchen…",
+  "searchPlaceholder": "Sender und Sendungen suchen…",
   "groupsLabel": "Sendergruppen",
   "channelCount": {
     "one": "{count} Sender",
@@ -44,6 +44,8 @@
   "guide": {
     "channel": "Sender",
     "now": "Jetzt",
+    "tonight": "Heute Abend",
+    "tomorrow": "Morgen",
     "earlier": "Früher",
     "later": "Später",
     "notLoadedTitle": "Das TV-Programm ist noch nicht geladen",
@@ -73,6 +75,8 @@
     "channelDown": "Sender runter",
     "channelUpHint": "Sender hoch (↑)",
     "channelDownHint": "Sender runter (↓)",
+    "lastChannel": "Letzter Sender",
+    "lastChannelHint": "Letzter Sender (L)",
     "nextChannel": "Nächster Sender",
     "info": "Was läuft",
     "pip": "Bild-im-Bild",
@@ -88,5 +92,55 @@
       "decode": "Dieser Browser kann das Video dieses Senders nicht abspielen.",
       "unsupportedBrowser": "Dieser Browser kann keine Livestreams abspielen."
     }
+  },
+  "undo": "Rückgängig",
+  "lists": {
+    "label": "Senderlisten",
+    "favourites": "Favoriten",
+    "recent": "Zuletzt gesehen",
+    "all": "Alle Sender"
+  },
+  "favourites": {
+    "add": "{channel} zu Favoriten hinzufügen",
+    "remove": "{channel} aus Favoriten entfernen",
+    "addShort": "Zu Favoriten hinzufügen",
+    "removeShort": "Aus Favoriten entfernen"
+  },
+  "menu": {
+    "options": "Weitere Optionen",
+    "optionsFor": "Optionen für {channel}",
+    "hideChannel": "Für mich ausblenden",
+    "hideGroup": "Gruppe „{group}“ für mich ausblenden"
+  },
+  "hidden": {
+    "channel": "{channel} ist für dich ausgeblendet",
+    "group": "„{group}“ ist für dich ausgeblendet"
+  },
+  "search": {
+    "channels": "Sender",
+    "programmes": "Sendungen",
+    "noResultsTitle": "Nichts gefunden",
+    "noResults": "Keine Sender oder Sendungen passen zu „{query}“.",
+    "clear": "Suche löschen",
+    "errorTitle": "Suche fehlgeschlagen"
+  },
+  "mine": {
+    "button": "Für mich ausgeblendet",
+    "title": "Für mich ausgeblendet",
+    "subtitle": "Nur du siehst diese Auswahl, auf all deinen Geräten.",
+    "showOnHome": "„Jetzt live“ auf der Startseite zeigen",
+    "showOnHomeHint": "Eine Reihe mit dem, was auf deinen Favoriten läuft.",
+    "hiddenTitle": "Sender und Gruppen, die du ausgeblendet hast",
+    "nothingHidden": "Du hast nichts ausgeblendet. Über das Menü eines Senders kannst du ihn oder seine ganze Gruppe nur für dich ausblenden.",
+    "wholeGroup": "Ganze Gruppe",
+    "show": "Einblenden",
+    "showAll": "Alles einblenden",
+    "saveFailed": "Konnte nicht gespeichert werden. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "home": {
+    "title": "Jetzt live",
+    "allChannels": "Alle Sender",
+    "hideRow": "Reihe ausblenden",
+    "hideRowHint": "Diese Reihe ausblenden (zurückholen unter Live-TV → Für mich ausgeblendet)"
   }
 }

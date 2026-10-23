@@ -7,7 +7,7 @@
     "channels": "Kanały",
     "guide": "Program TV"
   },
-  "searchPlaceholder": "Szukaj kanałów…",
+  "searchPlaceholder": "Szukaj kanałów i programów…",
   "groupsLabel": "Grupy kanałów",
   "channelCount": {
     "one": "{count} kanał",
@@ -48,6 +48,8 @@
   "guide": {
     "channel": "Kanał",
     "now": "Teraz",
+    "tonight": "Dziś wieczorem",
+    "tomorrow": "Jutro",
     "earlier": "Wcześniej",
     "later": "Później",
     "notLoadedTitle": "Program TV jeszcze się nie wczytał",
@@ -81,6 +83,8 @@
     "channelDown": "Poprzedni kanał",
     "channelUpHint": "Następny kanał (↑)",
     "channelDownHint": "Poprzedni kanał (↓)",
+    "lastChannel": "Poprzednio oglądany",
+    "lastChannelHint": "Poprzednio oglądany (L)",
     "nextChannel": "Następny kanał",
     "info": "Co leci",
     "pip": "Obraz w obrazie",
@@ -96,5 +100,55 @@
       "decode": "Ta przeglądarka nie może odtworzyć obrazu z tego kanału.",
       "unsupportedBrowser": "Ta przeglądarka nie obsługuje transmisji na żywo."
     }
+  },
+  "undo": "Cofnij",
+  "lists": {
+    "label": "Listy kanałów",
+    "favourites": "Ulubione",
+    "recent": "Ostatnie",
+    "all": "Wszystkie kanały"
+  },
+  "favourites": {
+    "add": "Dodaj {channel} do ulubionych",
+    "remove": "Usuń {channel} z ulubionych",
+    "addShort": "Dodaj do ulubionych",
+    "removeShort": "Usuń z ulubionych"
+  },
+  "menu": {
+    "options": "Więcej opcji",
+    "optionsFor": "Opcje kanału {channel}",
+    "hideChannel": "Ukryj dla mnie",
+    "hideGroup": "Ukryj dla mnie całą grupę „{group}”"
+  },
+  "hidden": {
+    "channel": "Kanał {channel} jest teraz dla ciebie ukryty",
+    "group": "Grupa „{group}” jest teraz dla ciebie ukryta"
+  },
+  "search": {
+    "channels": "Kanały",
+    "programmes": "Programy",
+    "noResultsTitle": "Nic nie znaleziono",
+    "noResults": "Żaden kanał ani program nie pasuje do „{query}”.",
+    "clear": "Wyczyść wyszukiwanie",
+    "errorTitle": "Nie udało się wyszukać"
+  },
+  "mine": {
+    "button": "Ukryte dla mnie",
+    "title": "Ukryte dla mnie",
+    "subtitle": "Tylko ty widzisz te wybory, na każdym urządzeniu.",
+    "showOnHome": "Pokazuj „Teraz na żywo” na stronie głównej",
+    "showOnHomeHint": "Wiersz z tym, co leci na twoich ulubionych kanałach.",
+    "hiddenTitle": "Ukryte kanały i grupy",
+    "nothingHidden": "Nic nie jest ukryte. Użyj menu kanału, aby ukryć go albo całą grupę tylko dla siebie.",
+    "wholeGroup": "Cała grupa",
+    "show": "Pokaż",
+    "showAll": "Pokaż wszystko",
+    "saveFailed": "Nie udało się tego zapisać. Sprawdź połączenie i spróbuj ponownie."
+  },
+  "home": {
+    "title": "Teraz na żywo",
+    "allChannels": "Wszystkie kanały",
+    "hideRow": "Ukryj ten wiersz",
+    "hideRowHint": "Ukryj ten wiersz (przywrócisz go w TV na żywo → Ukryte dla mnie)"
   }
 }

@@ -513,7 +513,19 @@
     "hiddenCategoriesMustBeA": "Les catégories masquées doivent être une liste de 5000 noms au maximum",
     "hiddenLanguagesMustBeA": "Les langues masquées doivent être une liste de 5000 noms au maximum",
     "hiddenCountriesMustBeTwo": "Les pays masqués doivent être des codes pays à deux lettres",
-    "hiddenStreamHostsMustBe": "Les serveurs de flux masqués doivent être des noms d'hôte, comme example.com"
+    "hiddenStreamHostsMustBe": "Les serveurs de flux masqués doivent être des noms d'hôte, comme example.com",
+    "lineUpNotFound": "Sélection introuvable",
+    "channelNumbersGoFrom1": "Les numéros de chaîne vont de 1 à 9999",
+    "enterANameForTheChannel": "Saisissez un nom pour la chaîne, ou laissez vide",
+    "theLogoAddressMustStart": "L'adresse du logo doit commencer par http:// ou https://",
+    "anotherChannelAlreadyHasThat": "Une autre chaîne a déjà ce numéro",
+    "enterANameForTheLineUp": "Saisissez un nom pour la sélection",
+    "sendTheLineUpsIn": "Envoyez les sélections dans leur nouvel ordre",
+    "kidsAllowedMustBeTrue": "kidsAllowed doit valoir true ou false",
+    "hideOfflineMustBeTrue": "hideOffline doit valoir true ou false",
+    "enabledMustBeTrueOr": "enabled doit valoir true ou false",
+    "chooseUpTo5000Channels": "Choisissez jusqu'à 5000 chaînes",
+    "youCanHaveUpTo": "Vous pouvez avoir jusqu'à 500 chaînes favorites"
   },
   "patterns": {
     "noMetadataSource": "Pas encore de source de métadonnées pour {type}",

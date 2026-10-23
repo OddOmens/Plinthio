@@ -488,7 +488,7 @@
     },
     "channels": {
       "title": "Chaînes",
-      "desc": "Masquez celles dont vous ne voulez pas. Les comptes enfants ne voient que les chaînes autorisées aux enfants ici, et aucune ne l'est tant que vous ne les avez pas choisies.",
+      "desc": "Masquez celles dont vous ne voulez pas, ou appuyez sur le crayon pour donner à l'une d'elles son propre numéro, nom ou logo. Les comptes enfants ne voient que les chaînes autorisées aux enfants ici ou dans une sélection autorisée aux enfants, et aucune ne l'est tant que vous ne les avez pas choisies.",
       "searchPlaceholder": "Rechercher une chaîne",
       "sourceFilter": "Liste de chaînes",
       "allSources": "Toutes les listes",
@@ -499,6 +499,7 @@
         "hidden": "Masquées",
         "filtered": "Masquées par un filtre",
         "pinned": "Toujours affichées",
+        "offline": "Hors ligne",
         "kids": "Autorisées aux enfants",
         "unsupported": "Non lisibles"
       },
@@ -532,12 +533,147 @@
         "filteredHint": "Masquée par Choisir ce qui s'affiche ({reasons}). Utilisez Toujours afficher pour garder cette chaîne malgré tout.",
         "pinnedHint": "Toujours affichée, quels que soient les filtres. Appuyez à nouveau pour laisser les filtres décider.",
         "pinnedOverHint": "Toujours affichée, même si un filtre masque {reasons}. Appuyez à nouveau pour laisser les filtres décider.",
-        "regionLocked": "Géobloquée"
+        "regionLocked": "Géobloquée",
+        "offline": "Hors ligne",
+        "offlineHint": "N'a pas fonctionné lors de ses deux dernières vérifications (dernière le {date})",
+        "inLineupsHint": "Dans les sélections : {names}"
       },
       "range": "{from}–{to} sur {total}",
       "empty": "Aucune chaîne pour l'instant. Elles apparaissent ici une fois qu'une liste est chargée.",
       "noMatches": "Aucune chaîne ne correspond.",
-      "couldNotLoad": "Impossible de charger les chaînes"
+      "couldNotLoad": "Impossible de charger les chaînes",
+      "edit": "Numéro, nom et logo",
+      "editAria": "Modifier le numéro, le nom et le logo de {name}",
+      "numberHint": "Numéro de chaîne",
+      "checkNow": "Vérifier",
+      "checkNowAria": "Vérifier si {name} fonctionne maintenant",
+      "checking": "Vérification…",
+      "couldNotCheck": "Impossible de vérifier la chaîne",
+      "addToLineup": "Ajouter à la sélection",
+      "addedToLineup": {
+        "one": "{number} chaîne ajoutée à {name}",
+        "other": "{number} chaînes ajoutées à {name}"
+      },
+      "stillOffline": "Toujours hors ligne · Revérifier"
+    },
+    "health": {
+      "title": "État des chaînes",
+      "desc": "Les chaînes publiques vont et viennent. Plinthio en vérifie quelques-unes à la fois en arrière-plan pour repérer celles qui ne fonctionnent plus. Chaque vérification ne demande au flux que ses premiers kilo-octets : rien n'est lu ni converti, et le serveur le remarque à peine.",
+      "enabled": {
+        "label": "Vérifier les chaînes en arrière-plan",
+        "desc": "Environ 20 chaînes toutes les 10 minutes tant que la TV en direct est activée, soit chaque chaîne environ une fois par jour."
+      },
+      "hideOffline": {
+        "label": "Masquer les chaînes hors ligne",
+        "desc": "Une chaîne qui échoue à deux vérifications d'affilée est masquée pour les spectateurs. Elle est revérifiée environ une fois par jour et revient d'elle-même dès qu'elle fonctionne."
+      },
+      "counts": {
+        "ok": "Fonctionnelles",
+        "offline": "Hors ligne",
+        "unchecked": "Pas encore vérifiées"
+      },
+      "showOffline": "Afficher les chaînes hors ligne",
+      "lastChecked": "Dernière vérification le {date}.",
+      "neverChecked": "Aucune vérification pour l'instant.",
+      "pace": "Les chaînes sont vérifiées quelques-unes à la fois ; Vérifier sur une chaîne la contrôle immédiatement.",
+      "paused": "Les vérifications en arrière-plan sont désactivées : ces chiffres restent tels quels.",
+      "couldNotLoad": "Impossible de charger l'état des chaînes"
+    },
+    "editChannel": {
+      "title": "Modifier la chaîne",
+      "number": "Numéro de chaîne",
+      "automatic": "Automatique",
+      "useAutomatic": "Utiliser l'automatique",
+      "numberHint": "De 1 à 9999, chacun utilisé une seule fois. Les spectateurs peuvent le taper pour passer directement à cette chaîne. Les chaînes sans numéro viennent après votre numéro le plus élevé.",
+      "numberInvalid": "Indiquez un nombre entier de 1 à 9999.",
+      "name": "Nom",
+      "useOriginal": "Utiliser l'original",
+      "nameHint": "Laissez vide pour utiliser le nom de la liste : {name}",
+      "logo": "Adresse du logo",
+      "useOriginalLogo": "Utiliser le logo d'origine",
+      "logoHint": "Un lien vers une image (http ou https). Laissez vide pour utiliser le logo de la liste. Le nouveau logo s'affiche une fois enregistré.",
+      "checkHint": "Vérifiez si cette chaîne fonctionne en ce moment. Une chaîne n'est marquée hors ligne qu'après deux vérifications échouées d'affilée.",
+      "health": {
+        "ok": "Fonctionne (vérifiée le {date})",
+        "offline": "Hors ligne (vérifiée le {date})",
+        "unchecked": "Pas encore vérifiée"
+      },
+      "couldNotSave": "Impossible d'enregistrer la chaîne",
+      "checkOk": "Elle fonctionne.",
+      "checkFailed": "Elle n'a pas fonctionné cette fois : {error}",
+      "checkFailedNoReason": "Elle n'a pas fonctionné cette fois."
+    },
+    "lineups": {
+      "title": "Sélections de chaînes",
+      "desc": "Créez vos propres ensembles de chaînes, comme Infos, Sport ou Pour les enfants, dans l'ordre de votre choix. Chaque sélection devient un onglet de la page TV en direct, dans l'ordre affiché ici.",
+      "create": "Nouvelle sélection",
+      "createTitle": "Nouvelle sélection",
+      "empty": "Aucune sélection pour l'instant. Les spectateurs voient toutes les chaînes par catégorie tant que vous n'en créez pas.",
+      "footer": "Dans une sélection, les spectateurs ne voient toujours pas les chaînes que vous avez masquées ou qui sont hors ligne, et les filtres s'appliquent toujours, sauf pour une chaîne réglée sur Toujours afficher.",
+      "name": "Nom",
+      "namePlaceholder": "ex. Infos",
+      "nameHint": "Affiché aux spectateurs comme nom de l'onglet.",
+      "openAria": "Ouvrir la sélection {name}",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "moveUpAria": "Monter la sélection {name}",
+      "moveDownAria": "Descendre la sélection {name}",
+      "kids": {
+        "label": "Autoriser aux enfants",
+        "desc": "Les comptes enfants peuvent regarder toutes les chaînes de cette sélection, en plus des chaînes autorisées aux enfants une par une."
+      },
+      "delete": "Supprimer la sélection",
+      "deleteTitle": "Supprimer la sélection",
+      "deleteMessage": "Supprimer {name} ? Ses chaînes restent en place ; seule la sélection disparaît.",
+      "couldNotLoad": "Impossible de charger les sélections",
+      "couldNotLoadChannels": "Impossible de charger les chaînes de cette sélection",
+      "couldNotCreate": "Impossible de créer la sélection",
+      "couldNotAdd": "Impossible d'ajouter les chaînes",
+      "couldNotDelete": "Impossible de supprimer la sélection",
+      "editor": {
+        "subtitle": "Les modifications sont enregistrées au fur et à mesure",
+        "tabs": {
+          "channels": "Chaînes",
+          "add": "Ajouter"
+        },
+        "empty": "Aucune chaîne dans cette sélection pour l'instant.",
+        "addChannels": "Ajouter des chaînes",
+        "sortName": "A–Z",
+        "sortNumber": "Par numéro",
+        "moveUpAria": "Monter {name}",
+        "moveDownAria": "Descendre {name}",
+        "remove": "Retirer de la sélection",
+        "removeAria": "Retirer {name} de cette sélection",
+        "addBy": "Ajouter des chaînes par",
+        "kinds": {
+          "search": "Recherche",
+          "categories": "Catégorie entière"
+        },
+        "search": {
+          "search": "Rechercher une chaîne",
+          "categories": "Rechercher une catégorie"
+        },
+        "searchHint": "Tapez une partie du nom d'une chaîne.",
+        "inLineup": "Ajoutée",
+        "addAria": "Ajouter {name} à cette sélection",
+        "addFound": {
+          "one": "Ajouter le résultat",
+          "other": "Ajouter les {number} résultats"
+        },
+        "moreResults": {
+          "one": "{number} autre résultat ; précisez la recherche pour affiner.",
+          "other": "{number} autres résultats ; précisez la recherche pour affiner."
+        },
+        "addAll": "Tout ajouter",
+        "addCategoryAria": "Ajouter toutes les chaînes de {name}",
+        "categoryHidden": "masquée par un filtre",
+        "hiddenByFilter": "Masquée par un filtre",
+        "nothingNew": "Toutes les chaînes de cette catégorie sont déjà là.",
+        "added": {
+          "one": "{number} chaîne ajoutée",
+          "other": "{number} chaînes ajoutées"
+        }
+      }
     }
   },
   "logs": {

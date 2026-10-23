@@ -513,7 +513,19 @@
     "hiddenCategoriesMustBeA": "隐藏的类别必须是最多包含5000个名称的列表",
     "hiddenLanguagesMustBeA": "隐藏的语言必须是最多包含5000个名称的列表",
     "hiddenCountriesMustBeTwo": "隐藏的国家/地区必须是两个字母的国家/地区代码",
-    "hiddenStreamHostsMustBe": "隐藏的直播流服务器必须是主机名，例如 example.com"
+    "hiddenStreamHostsMustBe": "隐藏的直播流服务器必须是主机名，例如 example.com",
+    "lineUpNotFound": "未找到频道合集",
+    "channelNumbersGoFrom1": "频道编号范围为1到9999",
+    "enterANameForTheChannel": "请输入频道名称，或留空",
+    "theLogoAddressMustStart": "台标地址必须以 http:// 或 https:// 开头",
+    "anotherChannelAlreadyHasThat": "已有其他频道使用该编号",
+    "enterANameForTheLineUp": "请输入频道合集名称",
+    "sendTheLineUpsIn": "请按新顺序发送频道合集",
+    "kidsAllowedMustBeTrue": "kidsAllowed 必须为 true 或 false",
+    "hideOfflineMustBeTrue": "hideOffline 必须为 true 或 false",
+    "enabledMustBeTrueOr": "enabled 必须为 true 或 false",
+    "chooseUpTo5000Channels": "最多选择5000个频道",
+    "youCanHaveUpTo": "最多可以收藏500个频道"
   },
   "patterns": {
     "noMetadataSource": "暂无{type}的元数据来源",
