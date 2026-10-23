@@ -42,10 +42,12 @@ export function proxyPath(channelId, url, tokenQuery = '') {
 // A channel logo's address on this server (add ?token=<media token>). Logos come from
 // hundreds of different hosts, which the app's Content-Security-Policy (images from this
 // server only, plus the metadata providers) would otherwise block — and fetching them here
-// keeps viewers' addresses away from those hosts too.
-export function logoPath(channelId, logo) {
+// keeps viewers' addresses away from those hosts too. A logo the admin chose themselves
+// (`custom`) gets a version in its address, so browsers drop the old one when it changes.
+export function logoPath(channelId, logo, { custom = false } = {}) {
   if (!logo || !/^https?:\/\//i.test(logo)) return null;
-  return `/api/media/live/${channelId}/logo`;
+  const path = `/api/media/live/${channelId}/logo`;
+  return custom ? `${path}?v=${crypto.createHash('sha256').update(logo).digest('hex').slice(0, 10)}` : path;
 }
 
 /** Whether a body is an HLS/M3U playlist (by its first line). */

@@ -776,13 +776,53 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_live_programmes_start ON live_programmes(start);
   `);
   // Added with the admin's filters (where a channel is from, what it speaks, "always show").
-  for (const col of ['pinned INTEGER DEFAULT 0', 'country TEXT', 'languages TEXT']) {
+  // Then with line-ups: the admin's own number, name and logo for a channel, and the result of
+  // the background check that spots dead streams. Like hidden / pinned, refreshes keep them.
+  for (const col of [
+    'pinned INTEGER DEFAULT 0', 'country TEXT', 'languages TEXT',
+    'custom_number INTEGER', 'custom_name TEXT', 'custom_logo TEXT',
+    'health TEXT', 'health_checked_at DATETIME', 'health_fails INTEGER DEFAULT 0'
+  ]) {
     try {
       await db.exec(`ALTER TABLE live_channels ADD COLUMN ${col}`);
     } catch (e) {
       // Column already exists
     }
   }
+  // Line-ups are the admin's own channel lists (with their own order); favourites and the
+  // recently watched list (newest 10) are each viewer's. All go with the channel they name.
+  await db.exec(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_live_channels_number ON live_channels(custom_number)
+      WHERE custom_number IS NOT NULL;
+    CREATE TABLE IF NOT EXISTS live_lineups (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      position INTEGER,
+      kids_allowed INTEGER DEFAULT 0, -- every channel in it is watchable on kids accounts
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS live_lineup_channels (
+      lineup_id TEXT NOT NULL REFERENCES live_lineups(id) ON DELETE CASCADE,
+      channel_id TEXT NOT NULL REFERENCES live_channels(id) ON DELETE CASCADE,
+      position INTEGER,
+      PRIMARY KEY (lineup_id, channel_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_live_lineup_channels_channel ON live_lineup_channels(channel_id);
+    CREATE TABLE IF NOT EXISTS live_favourites (
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      channel_id TEXT NOT NULL REFERENCES live_channels(id) ON DELETE CASCADE,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (user_id, channel_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_live_favourites_channel ON live_favourites(channel_id);
+    CREATE TABLE IF NOT EXISTS live_recent (
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      channel_id TEXT NOT NULL REFERENCES live_channels(id) ON DELETE CASCADE,
+      watched_at INTEGER NOT NULL, -- epoch ms
+      PRIMARY KEY (user_id, channel_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_live_recent_channel ON live_recent(channel_id);
+  `);
 
   console.log('Database initialized successfully at:', config.dbPath);
 }

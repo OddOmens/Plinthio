@@ -7,7 +7,7 @@
     "channels": "Channels",
     "guide": "Guide"
   },
-  "searchPlaceholder": "Search channels…",
+  "searchPlaceholder": "Search channels and programmes…",
   "groupsLabel": "Channel groups",
   "channelCount": {
     "one": "{count} channel",
@@ -44,6 +44,8 @@
   "guide": {
     "channel": "Channel",
     "now": "Now",
+    "tonight": "Tonight",
+    "tomorrow": "Tomorrow",
     "earlier": "Earlier",
     "later": "Later",
     "notLoadedTitle": "The programme guide hasn't loaded yet",
@@ -73,6 +75,8 @@
     "channelDown": "Channel down",
     "channelUpHint": "Channel up (↑)",
     "channelDownHint": "Channel down (↓)",
+    "lastChannel": "Last channel",
+    "lastChannelHint": "Last channel (L)",
     "nextChannel": "Next channel",
     "info": "What's on",
     "pip": "Picture in picture",
@@ -88,5 +92,55 @@
       "decode": "This browser can't play this channel's video.",
       "unsupportedBrowser": "This browser can't play live streams."
     }
+  },
+  "undo": "Undo",
+  "lists": {
+    "label": "Channel lists",
+    "favourites": "Favourites",
+    "recent": "Recent",
+    "all": "All channels"
+  },
+  "favourites": {
+    "add": "Add {channel} to favourites",
+    "remove": "Remove {channel} from favourites",
+    "addShort": "Add to favourites",
+    "removeShort": "Remove from favourites"
+  },
+  "menu": {
+    "options": "More options",
+    "optionsFor": "Options for {channel}",
+    "hideChannel": "Hide for me",
+    "hideGroup": "Hide all of “{group}” for me"
+  },
+  "hidden": {
+    "channel": "{channel} is hidden for you",
+    "group": "“{group}” is hidden for you"
+  },
+  "search": {
+    "channels": "Channels",
+    "programmes": "Programmes",
+    "noResultsTitle": "Nothing found",
+    "noResults": "No channels or programmes match “{query}”.",
+    "clear": "Clear search",
+    "errorTitle": "Couldn't search"
+  },
+  "mine": {
+    "button": "Hidden for me",
+    "title": "Hidden for me",
+    "subtitle": "Only you see these choices, on every device.",
+    "showOnHome": "Show “Live now” on Home",
+    "showOnHomeHint": "A row with what's on your favourite channels.",
+    "hiddenTitle": "Channels and groups you've hidden",
+    "nothingHidden": "You haven't hidden anything. Use a channel's menu to hide it, or a whole group, just for you.",
+    "wholeGroup": "Whole group",
+    "show": "Show",
+    "showAll": "Show everything",
+    "saveFailed": "Couldn't save that. Check your connection and try again."
+  },
+  "home": {
+    "title": "Live now",
+    "allChannels": "All channels",
+    "hideRow": "Hide this row",
+    "hideRowHint": "Hide this row (bring it back in Live TV → Hidden for me)"
   }
 }

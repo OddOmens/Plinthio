@@ -19,7 +19,7 @@
           @click="goToNow"
           :disabled="loading"
           class="h-8 px-3 rounded-md text-xs font-semibold transition"
-          :class="showingNow ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-background'"
+          :class="showingNow && !jumped ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-background'"
         >
           {{ $t('live.guide.now') }}
         </button>
@@ -34,7 +34,22 @@
           <ChevronRight class="w-4 h-4" />
         </button>
       </div>
-      <p class="text-xs sm:text-sm font-medium text-foreground truncate">{{ dayLabel }}</p>
+      <!-- Jumps: this evening and tomorrow morning, as far as the schedule goes. -->
+      <div class="flex items-center p-0.5 rounded-lg border border-border bg-muted/40">
+        <button
+          v-for="jump in jumps"
+          :key="jump.id"
+          type="button"
+          @click="jumpTo(jump)"
+          :disabled="loading || !jump.available"
+          :aria-pressed="String(jumped === jump.id)"
+          class="h-8 px-2.5 sm:px-3 rounded-md text-xs font-semibold transition whitespace-nowrap disabled:opacity-40 disabled:pointer-events-none"
+          :class="jumped === jump.id ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-background'"
+        >
+          {{ jump.label }}
+        </button>
+      </div>
+      <p class="hidden sm:block text-xs sm:text-sm font-medium text-foreground truncate">{{ dayLabel }}</p>
       <Loader2 v-if="loading || loadingMore" class="w-4 h-4 animate-spin text-muted-foreground flex-shrink-0" />
       <span v-if="total" class="ml-auto text-xs text-muted-foreground whitespace-nowrap">{{ $t('live.channelCount', { count: total }) }}</span>
     </div>
@@ -50,7 +65,7 @@
       </button>
     </div>
 
-    <LiveEmpty v-else-if="loaded && !channels.length" :filtered="!!(group || q)" @clear="$emit('clear-filters')" />
+    <LiveEmpty v-else-if="loaded && !channels.length" :filtered="!!(group || q || lineup)" @clear="$emit('clear-filters')" />
 
     <template v-else>
       <!-- Channels but no schedule: the guide hasn't been fetched yet, or the source has none. -->
@@ -103,7 +118,7 @@
           </template>
 
           <!-- Channel rows -->
-          <div v-for="ch in channels" :key="ch.id" class="flex border-b border-border/60" :style="{ height: `${rowH}px` }">
+          <div v-for="ch in shown" :key="ch.id" class="flex border-b border-border/60" :style="{ height: `${rowH}px` }">
             <router-link
               :to="channelLink(ch)"
               class="sticky left-0 z-20 flex-shrink-0 bg-card border-r border-border flex items-center gap-2 px-2 hover:bg-muted transition focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50"
@@ -212,6 +227,7 @@ import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router';
 import api from '../../api/client';
 import { useIsPhone } from '../../composables/useIsPhone';
+import { useLiveStore } from '../../stores/live';
 import SettingsDialog from '../settings/SettingsDialog.vue';
 import ChannelLogo from './ChannelLogo.vue';
 import LiveEmpty from './LiveEmpty.vue';
@@ -221,11 +237,16 @@ import { ChevronLeft, ChevronRight, Loader2, AlertCircle, CalendarClock, Play } 
 
 const props = defineProps({
   group: { type: String, default: '' },
-  q: { type: String, default: '' }
+  q: { type: String, default: '' },
+  // A line-up's id, or 'favourites'.
+  lineup: { type: String, default: '' },
+  // Carried into the player, so channel up/down walks the same list.
+  linkQuery: { type: Object, default: () => ({}) }
 });
 const emit = defineEmits(['clear-filters', 'off']);
 
 const router = useRouter();
+const liveStore = useLiveStore();
 const isPhone = useIsPhone();
 const now = useNow(30000);
 
@@ -265,18 +286,19 @@ const loaded = ref(false);
 const loadError = ref('');
 let requestId = 0;
 
-const noGuide = computed(() => loaded.value && channels.value.length > 0 &&
-  channels.value.every((ch) => !ch.programmes || !ch.programmes.length));
+const noGuide = computed(() => loaded.value && shown.value.length > 0 &&
+  shown.value.every((ch) => !ch.programmes || !ch.programmes.length));
 
 async function fetchPage(offset) {
   const params = { from: from.value, hours: HOURS, offset, limit: PAGE };
   if (props.group) params.group = props.group;
   if (props.q) params.q = props.q;
+  if (props.lineup) params.lineup = props.lineup;
   const res = await api.get('/live/guide', { params });
   return res.data || {};
 }
 
-// `scrollTo`: where to put the time axis once loaded — 'now', 'start' or 'end'.
+// `scrollTo`: where to put the time axis once loaded — 'now', 'start', 'end' or a time (ms).
 async function reload(scrollTo = 'now') {
   const id = ++requestId;
   loading.value = true;
@@ -291,7 +313,8 @@ async function reload(scrollTo = 'now') {
     measure();
     if (scroller.value) {
       scroller.value.scrollTop = 0;
-      if (scrollTo === 'end') scroller.value.scrollLeft = scroller.value.scrollWidth;
+      if (typeof scrollTo === 'number') scroller.value.scrollLeft = Math.max(0, ((scrollTo - from.value) / MIN) * ppm.value - 48);
+      else if (scrollTo === 'end') scroller.value.scrollLeft = scroller.value.scrollWidth;
       else if (scrollTo === 'start') scroller.value.scrollLeft = 0;
       else scrollToNow();
     }
@@ -325,18 +348,53 @@ async function loadMore() {
 
 function shift(ms) {
   from.value += ms;
+  jumped.value = '';
   reload(ms < 0 ? 'end' : 'start');
 }
 
 function goToNow() {
+  jumped.value = '';
   const target = defaultFrom();
   if (target === from.value && channels.value.length) return scrollToNow(true);
   from.value = target;
   reload('now');
 }
 
+// Tonight (8 pm today) and tomorrow morning (8 am), in the viewer's own time.
+const jumped = ref('');
+const jumps = computed(() => {
+  const tonight = new Date(now.value);
+  tonight.setHours(20, 0, 0, 0);
+  const tomorrow = new Date(now.value);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(8, 0, 0, 0);
+  const limit = now.value + KEEP_AFTER;
+  return [
+    { id: 'tonight', label: t('live.guide.tonight'), at: tonight.getTime(), available: tonight.getTime() < limit },
+    { id: 'tomorrow', label: t('live.guide.tomorrow'), at: tomorrow.getTime(), available: tomorrow.getTime() < limit }
+  ];
+});
+
+// The window opens half an hour before the time asked for, kept inside what the server holds.
+function jumpTo(jump) {
+  const earliest = floorToSlot(now.value) - KEEP_BEFORE;
+  const latest = floorToSlot(now.value + KEEP_AFTER - WINDOW_MS);
+  const target = Math.min(latest, Math.max(earliest, floorToSlot(jump.at) - SLOT_MIN * MIN));
+  jumped.value = jump.id;
+  if (target === from.value && channels.value.length) {
+    const el = scroller.value;
+    el?.scrollTo({ left: Math.max(0, ((jump.at - from.value) / MIN) * ppm.value - 48), behavior: 'smooth' });
+    return;
+  }
+  from.value = target;
+  reload(jump.at);
+}
+
+// Channels this viewer hid a moment ago go at once (the server drops them on the next page).
+const shown = computed(() => channels.value.filter((ch) => !liveStore.isHiddenForMe(ch)));
+
 // New filters start again from the top, with the time axis on now.
-watch(() => [props.group, props.q], () => reload('now'));
+watch(() => [props.group, props.q, props.lineup], () => reload('now'));
 
 // ── Layout ────────────────────────────────────────────────────────────────────────────
 const scroller = ref(null);
@@ -407,7 +465,7 @@ function blockClass(p) {
 }
 
 function channelLink(ch) {
-  return { name: 'live-channel', params: { id: ch.id }, query: props.group ? { group: props.group } : {} };
+  return { name: 'live-channel', params: { id: ch.id }, query: props.linkQuery };
 }
 
 // ── Programme details ─────────────────────────────────────────────────────────────────

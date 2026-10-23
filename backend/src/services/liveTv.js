@@ -10,6 +10,7 @@ import { openUpstream, readBody, decodedBody, hostOf, lanHostOf } from './safeFe
 import { parseM3u, isHlsUrl, isAdultGroup } from './m3u.js';
 import { parseXmltv } from './xmltv.js';
 import { logoPath } from './liveProxy.js';
+import { checkStream, nextHealth } from './liveHealth.js';
 
 // Live TV: channels from M3U playlists, with programme guides from XMLTV. Off until an admin
 // turns it on (Admin → Live TV). Two kinds of source:
@@ -26,6 +27,12 @@ import { logoPath } from './liveProxy.js';
 // countries or stream hosts, and region-locked channels): rules kept in settings rather than
 // per-channel flags, so they hold across refreshes and catch channels a list adds later. A
 // channel marked "always show" (pinned) passes them by; a channel the admin hid stays hidden.
+//
+// The admin can also give channels their own number, name and logo, and gather them into
+// line-ups (a line-up can open its channels to kids accounts). A light background check
+// (services/liveHealth.js) spots channels whose stream has gone and, by default, hides them.
+// Viewers' own favourites, recently watched list and "hide for me" choices are applied on top
+// of the shared per-audience channel list, so none of them costs more than a small query.
 
 const SETTING_KEY = 'live_tv_enabled';
 
@@ -407,10 +414,12 @@ export function isFilteredOut(row, compiled) {
  */
 export async function filterOverview(db) {
   const { filters } = await getLiveFilters(db);
+  // Channels the dead-channel check hides aren't counted either: no filter brings them back.
+  const { hideOffline } = await getHealthSettings(db);
   const rows = await db.all(
     `SELECT c.groups, c.languages, c.country, c.stream_url, c.geo_blocked
      FROM live_channels c JOIN live_sources s ON s.id = c.source_id
-     WHERE s.enabled = 1 AND c.unsupported = 0
+     WHERE s.enabled = 1 AND c.unsupported = 0${hideOffline ? OFFLINE_SQL : ''}
      ORDER BY s.created_at, s.rowid, c.position`
   );
   const groups = new Map();
@@ -454,6 +463,50 @@ export async function filterOverview(db) {
   };
 }
 
+// ─── Dead-channel check: settings ───────────────────────────────────────────
+
+const HEALTH_KEY = 'live_tv_health';
+export const DEFAULT_HEALTH = Object.freeze({ enabled: true, hideOffline: true });
+
+// Leaves out channels the check found offline (for queries on live_channels c).
+const OFFLINE_SQL = " AND (c.health IS NULL OR c.health <> 'offline')";
+
+let healthSettings = null;
+
+/** Whether the check runs and whether offline channels are hidden, read once and kept. */
+export async function getHealthSettings(db) {
+  if (!healthSettings) {
+    const row = await db.get('SELECT value FROM settings WHERE key = ?', [HEALTH_KEY]);
+    let raw = null;
+    try {
+      raw = row ? JSON.parse(row.value) : null;
+    } catch {
+      raw = null;
+    }
+    healthSettings = { ...DEFAULT_HEALTH };
+    for (const key of Object.keys(DEFAULT_HEALTH)) {
+      if (typeof raw?.[key] === 'boolean') healthSettings[key] = raw[key];
+    }
+  }
+  return healthSettings;
+}
+
+export async function saveHealthSettings(db, changes) {
+  const next = { ...await getHealthSettings(db) };
+  for (const key of Object.keys(DEFAULT_HEALTH)) {
+    if (typeof changes[key] === 'boolean') next[key] = changes[key];
+  }
+  await db.run(
+    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+    [HEALTH_KEY, JSON.stringify(next)]
+  );
+  const hideChanged = next.hideOffline !== healthSettings.hideOffline;
+  healthSettings = next;
+  if (hideChanged) channelsChanged();
+  return next;
+}
+
 // ─── Public lists acknowledgement ───────────────────────────────────────────
 
 // Before the first public list, an admin confirms they've read what public channels are
@@ -488,42 +541,131 @@ export function channelsChanged() {
 
 export const splitGroups = (value) => (value ? String(value).split(';').filter(Boolean) : []);
 
+// The channel rows viewers may get, before the admin's filters (which need the row) and the
+// per-stream de-duplication. A kids account gets channels allowed for kids, one by one or
+// through a line-up that allows kids.
+const KIDS_SQL = ` AND (c.kids_allowed = 1 OR c.id IN (
+  SELECT lc.channel_id FROM live_lineup_channels lc JOIN live_lineups l ON l.id = lc.lineup_id WHERE l.kids_allowed = 1))`;
+
+const isCustomised = (row) => row.custom_number != null || !!row.custom_name || !!row.custom_logo;
+
 /**
- * The channels `user` may watch, in order, each numbered 1…n: enabled sources (oldest first,
- * then playlist order), without hidden or unplayable channels or those the admin's filters
- * catch (unless pinned), and for a kids account only those allowed for kids. A channel two
- * sources both carry (a country preset and a language preset overlap a lot) is listed once.
+ * Everything one audience ('all' or 'kids') may watch, built once and cached until channels,
+ * filters, line-ups or settings change:
+ *
+ *   channels  in order, each with its number — the admin's own number first (in number
+ *             order), then the rest in list order, numbered on from the highest of those
+ *   byId      channel id → channel, also for the copies the de-duplication dropped (a
+ *             favourite or line-up entry naming a copy still finds the channel)
+ *   lineups   [{ id, name, channels }] in the admin's order, each channel list in the
+ *             line-up's own order and only with channels this audience may watch
+ *
+ * Enabled sources (oldest first, then playlist order), without hidden or unplayable channels
+ * or those the admin's filters catch (unless pinned), nor — when the admin hides them —
+ * those the dead-channel check found offline. A channel two sources both carry (a country
+ * preset and a language preset overlap a lot) is listed once, under its first copy, unless
+ * a later copy is the one the admin gave a number, name or logo.
  */
-export async function visibleChannels(db, user) {
+export async function channelIndex(db, user) {
   const audience = isKidsUser(user) ? 'kids' : 'all';
   const cached = listCache.get(audience);
   if (cached) return cached;
 
   const version = channelsVersion;
   const { compiled } = await getLiveFilters(db);
+  const { hideOffline } = await getHealthSettings(db);
   const rows = await db.all(
-    `SELECT c.id, c.tvg_id, c.name, c.logo, c.groups, c.stream_url, c.geo_blocked, c.country, c.languages, c.pinned
+    `SELECT c.id, c.tvg_id, c.name, c.logo, c.groups, c.stream_url, c.geo_blocked, c.country, c.languages, c.pinned,
+       c.custom_number, c.custom_name, c.custom_logo
      FROM live_channels c JOIN live_sources s ON s.id = c.source_id
-     WHERE s.enabled = 1 AND c.hidden = 0 AND c.unsupported = 0${audience === 'kids' ? ' AND c.kids_allowed = 1' : ''}
+     WHERE s.enabled = 1 AND c.hidden = 0 AND c.unsupported = 0${audience === 'kids' ? KIDS_SQL : ''}${hideOffline ? OFFLINE_SQL : ''}
      ORDER BY s.created_at, s.rowid, c.position`
   );
-  const seen = new Set();
-  const channels = [];
+
+  const kept = []; // rows, in list order
+  const byStream = new Map(); // stream_url → index in kept
+  const aliases = new Map(); // dropped copy's id → the id kept for that stream
   for (const row of rows) {
-    if (seen.has(row.stream_url) || isFilteredOut(row, compiled)) continue;
-    seen.add(row.stream_url);
-    channels.push({
-      id: row.id,
-      tvgId: row.tvg_id,
-      name: row.name,
-      logo: logoPath(row.id, row.logo),
-      groups: splitGroups(row.groups),
-      number: channels.length + 1,
-      geoBlocked: !!row.geo_blocked
-    });
+    if (isFilteredOut(row, compiled)) continue;
+    const at = byStream.get(row.stream_url);
+    if (at === undefined) {
+      byStream.set(row.stream_url, kept.length);
+      kept.push(row);
+    } else if (isCustomised(row) && !isCustomised(kept[at])) {
+      aliases.set(kept[at].id, row.id);
+      kept[at] = row;
+    } else {
+      aliases.set(row.id, kept[at].id);
+    }
   }
-  if (version === channelsVersion) listCache.set(audience, channels);
-  return channels;
+
+  const numbered = kept.filter((r) => r.custom_number != null).sort((a, b) => a.custom_number - b.custom_number);
+  let next = numbered.length ? numbered[numbered.length - 1].custom_number + 1 : 1;
+  const channels = [...numbered, ...kept.filter((r) => r.custom_number == null)].map((row) => ({
+    id: row.id,
+    tvgId: row.tvg_id,
+    name: row.custom_name || row.name,
+    logo: row.custom_logo ? logoPath(row.id, row.custom_logo, { custom: true }) : logoPath(row.id, row.logo),
+    groups: splitGroups(row.groups),
+    number: row.custom_number ?? next++,
+    geoBlocked: !!row.geo_blocked
+  }));
+  const byId = new Map(channels.map((c) => [c.id, c]));
+  for (const [from, to] of aliases) {
+    // An alias can point at a copy that was itself replaced later on; follow it through.
+    let target = to;
+    while (!byId.has(target) && aliases.has(target)) target = aliases.get(target);
+    if (byId.has(target)) byId.set(from, byId.get(target));
+  }
+
+  const lineupRows = await db.all('SELECT id, name FROM live_lineups ORDER BY position, created_at, rowid');
+  const members = await db.all('SELECT lineup_id, channel_id FROM live_lineup_channels ORDER BY lineup_id, position, rowid');
+  const lineupChannels = new Map(lineupRows.map((l) => [l.id, []]));
+  const lineupSeen = new Map(lineupRows.map((l) => [l.id, new Set()]));
+  for (const m of members) {
+    const channel = byId.get(m.channel_id);
+    const seen = lineupSeen.get(m.lineup_id);
+    if (!channel || !seen || seen.has(channel.id)) continue;
+    seen.add(channel.id);
+    lineupChannels.get(m.lineup_id).push(channel);
+  }
+  const lineups = lineupRows.map((l) => ({ id: l.id, name: l.name, channels: lineupChannels.get(l.id) }));
+
+  const entry = { channels, byId, lineups };
+  if (version === channelsVersion) listCache.set(audience, entry);
+  return entry;
+}
+
+/** The channels `user` may watch, in order, each with its number (see channelIndex). */
+export async function visibleChannels(db, user) {
+  return (await channelIndex(db, user)).channels;
+}
+
+// ─── A viewer's own choices ─────────────────────────────────────────────────
+
+const PERSONAL_LIST_MAX = 5000;
+
+const stringList = (value) => (Array.isArray(value)
+  ? value.filter((v) => typeof v === 'string' && v && v.length <= 200).slice(0, PERSONAL_LIST_MAX)
+  : []);
+
+/**
+ * What a viewer hid for themselves (preferences.liveTv: hiddenChannels, hiddenGroups; any
+ * other keys are ignored), as Sets — channel ids resolved through `index` so a hidden copy
+ * hides its channel.
+ */
+export function personalHiding(user, index) {
+  const liveTv = user?.preferences?.liveTv;
+  const prefs = liveTv && typeof liveTv === 'object' && !Array.isArray(liveTv) ? liveTv : {};
+  const channels = new Set();
+  for (const id of stringList(prefs.hiddenChannels)) channels.add(index?.byId.get(id)?.id || id);
+  return { channels, groups: new Set(stringList(prefs.hiddenGroups)) };
+}
+
+/** A test for channels the viewer didn't hide for themselves. */
+export function notHiddenBy(hiding) {
+  if (!hiding.channels.size && !hiding.groups.size) return () => true;
+  return (c) => !hiding.channels.has(c.id) && !c.groups.some((g) => hiding.groups.has(g));
 }
 
 /**
@@ -531,17 +673,20 @@ export async function visibleChannels(db, user) {
  * Bounded by the start index: nothing runs for more than 12 hours, and "next" only looks 12
  * hours ahead.
  */
-export async function nowAndNext(db, now = Date.now()) {
+export async function nowAndNext(db, now = Date.now(), tvgIds = null) {
   const span = 12 * 60 * 60 * 1000;
+  // For a handful of channels (favourites, a search), only theirs are read.
+  const only = tvgIds ? ' AND tvg_id IN (SELECT value FROM json_each(?))' : '';
+  const ids = tvgIds ? [JSON.stringify([...tvgIds])] : [];
   const current = await db.all(
-    'SELECT tvg_id, title, subtitle, start, stop FROM live_programmes WHERE start > ? AND start <= ? AND stop > ?',
-    [now - span, now, now]
+    `SELECT tvg_id, title, subtitle, start, stop FROM live_programmes WHERE start > ? AND start <= ? AND stop > ?${only}`,
+    [now - span, now, now, ...ids]
   );
   const upcoming = await db.all(
     `SELECT p.tvg_id, p.title, p.start, p.stop FROM live_programmes p
-     JOIN (SELECT tvg_id, MIN(start) AS start FROM live_programmes WHERE start > ? AND start <= ? GROUP BY tvg_id) n
+     JOIN (SELECT tvg_id, MIN(start) AS start FROM live_programmes WHERE start > ? AND start <= ?${only} GROUP BY tvg_id) n
        ON n.tvg_id = p.tvg_id AND n.start = p.start`,
-    [now, now + span]
+    [now, now + span, ...ids]
   );
   const nowMap = new Map(current.map((p) => [p.tvg_id, { title: p.title, subtitle: p.subtitle, start: p.start, stop: p.stop }]));
   const nextMap = new Map(upcoming.map((p) => [p.tvg_id, { title: p.title, start: p.start, stop: p.stop }]));
@@ -594,6 +739,19 @@ function sourcePrivateHosts(source) {
 /** The private host a channel's stream may use: its own LAN host, and only for an admin's own playlist. */
 export function channelPrivateHost(channel) {
   return channel.source_kind === 'm3u' ? lanHostOf(channel.stream_url) : null;
+}
+
+/** The headers a channel's stream is fetched with (its playlist's #EXTVLCOPT User-Agent / Referer). */
+export function upstreamHeaders(channel) {
+  let extra = {};
+  try {
+    extra = channel.http_headers ? JSON.parse(channel.http_headers) : {};
+  } catch {
+    extra = {};
+  }
+  const headers = { 'user-agent': extra.userAgent || USER_AGENT, 'accept-encoding': 'identity' };
+  if (extra.referrer) headers.referer = extra.referrer;
+  return headers;
 }
 
 /**
@@ -723,8 +881,9 @@ async function loadPlaylist(source) {
   return { channels, guideUrls };
 }
 
-// Upserts on (source_id, stable_key), which keeps hidden / kids_allowed / pinned; whatever
-// this refresh didn't touch has left the playlist and goes. With `keepDetails`, a channel's
+// Upserts on (source_id, stable_key), which keeps hidden / kids_allowed / pinned and the
+// admin's own number, name and logo; whatever this refresh didn't touch has left the playlist
+// and goes. A channel whose stream moved starts over with the dead-channel check. With `keepDetails`, a channel's
 // country and languages from an earlier refresh win over what this one could find.
 async function saveChannels(w, source, channels, stamp, { keepDetails = false } = {}) {
   const detail = (column) => (keepDetails
@@ -738,6 +897,9 @@ async function saveChannels(w, source, channels, stamp, { keepDetails = false } 
        tvg_id = excluded.tvg_id, name = excluded.name, logo = excluded.logo, groups = excluded.groups,
        stream_url = excluded.stream_url, http_headers = excluded.http_headers, geo_blocked = excluded.geo_blocked,
        unsupported = excluded.unsupported, ${detail('country')}, ${detail('languages')},
+       health = CASE WHEN live_channels.stream_url = excluded.stream_url THEN live_channels.health END,
+       health_checked_at = CASE WHEN live_channels.stream_url = excluded.stream_url THEN live_channels.health_checked_at END,
+       health_fails = CASE WHEN live_channels.stream_url = excluded.stream_url THEN live_channels.health_fails ELSE 0 END,
        position = excluded.position, updated_at = excluded.updated_at`
   );
   try {
@@ -847,6 +1009,141 @@ async function importGuide(w, source, guideUrl) {
   }
 }
 
+// ─── Dead-channel check: schedule ───────────────────────────────────────────
+
+// Each schedule tick (every 10 minutes) checks up to 20 channels, two at a time, the longest
+// unchecked first: about 2,900 checks a day, so ~1,500 channels are each looked at about once
+// a day. A channel that failed once is asked again after an hour (a second failure in a row
+// makes it offline); an offline one only after a day.
+const HEALTH_BATCH = 20;
+const HEALTH_PARALLEL = 2;
+const HEALTH_RECHECK_MS = 20 * 60 * 60 * 1000;
+const HEALTH_RETRY_MS = 60 * 60 * 1000;
+const HEALTH_OFFLINE_RECHECK_MS = 24 * 60 * 60 * 1000;
+
+const HEALTH_COLUMNS = `c.id, c.stream_url, c.http_headers, c.health, c.health_fails, c.pinned, c.geo_blocked,
+       c.groups, c.languages, c.country, s.kind AS source_kind`;
+
+/**
+ * The channels due a check, the longest unchecked first: playable channels of enabled
+ * sources that viewers could get (not hidden by the admin or caught by a filter).
+ */
+export async function healthCandidates(db, { now = Date.now(), limit = HEALTH_BATCH } = {}) {
+  const before = (ms) => new Date(now - ms).toISOString();
+  const rows = await db.all(
+    `SELECT ${HEALTH_COLUMNS}
+     FROM live_channels c JOIN live_sources s ON s.id = c.source_id
+     WHERE s.enabled = 1 AND c.hidden = 0 AND c.unsupported = 0
+       AND (c.health_checked_at IS NULL
+         OR (c.health = 'offline' AND c.health_checked_at < ?)
+         OR (COALESCE(c.health, '') <> 'offline' AND c.health_fails > 0 AND c.health_checked_at < ?)
+         OR (COALESCE(c.health, '') <> 'offline' AND COALESCE(c.health_fails, 0) = 0 AND c.health_checked_at < ?))
+     ORDER BY c.health_checked_at IS NOT NULL, c.health_checked_at, s.created_at, s.rowid, c.position`,
+    [before(HEALTH_OFFLINE_RECHECK_MS), before(HEALTH_RETRY_MS), before(HEALTH_RECHECK_MS)]
+  );
+  const { compiled } = await getLiveFilters(db);
+  const out = [];
+  for (const row of rows) {
+    if (isFilteredOut(row, compiled)) continue;
+    out.push(row);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+const checking = new Map(); // channel id → the check under way
+
+async function runCheck(db, channel) {
+  const result = await checkStream(channel.stream_url, {
+    allowPrivateHosts: [channelPrivateHost(channel)],
+    headers: upstreamHeaders(channel)
+  });
+  const { health, fails } = nextHealth({ health: channel.health, fails: channel.health_fails }, result.ok);
+  const checkedAt = new Date().toISOString();
+  // Only if the stream is still the one checked (a refresh may have moved it meanwhile).
+  await db.run(
+    'UPDATE live_channels SET health = ?, health_checked_at = ?, health_fails = ? WHERE id = ? AND stream_url = ?',
+    [health, checkedAt, fails, channel.id, channel.stream_url]
+  );
+  if ((health === 'offline') !== (channel.health === 'offline') && (await getHealthSettings(db)).hideOffline) {
+    channelsChanged();
+  }
+  if (!result.ok && health === 'offline' && channel.health !== 'offline') {
+    logger.info('media', `Live TV: channel ${channel.id} looks offline: ${result.error}`);
+  }
+  return { health, checkedAt, error: result.ok ? null : result.error };
+}
+
+/** Checks one channel row (HEALTH_COLUMNS) now; joins a check of it already under way. */
+export function checkChannelHealth(db, channel) {
+  if (!checking.has(channel.id)) {
+    checking.set(channel.id, runCheck(db, channel).finally(() => checking.delete(channel.id)));
+  }
+  return checking.get(channel.id);
+}
+
+/** Loads a channel by id and checks it now. Resolves null for no such channel. */
+export async function checkChannelById(db, id) {
+  const channel = await db.get(
+    `SELECT ${HEALTH_COLUMNS} FROM live_channels c JOIN live_sources s ON s.id = c.source_id WHERE c.id = ?`,
+    [id]
+  );
+  return channel ? checkChannelHealth(db, channel) : null;
+}
+
+let healthRun = null;
+
+/** One batch of checks (see above). A batch still running when the next tick comes is left to finish. */
+export function runHealthChecks({ now } = {}) {
+  if (healthRun) return healthRun;
+  healthRun = (async () => {
+    const db = await getDb();
+    const batch = await healthCandidates(db, { now });
+    let next = 0;
+    const worker = async () => {
+      while (next < batch.length) {
+        const channel = batch[next++];
+        try {
+          await checkChannelHealth(db, channel);
+        } catch (err) {
+          logger.warn('media', `Live TV: checking channel ${channel.id} failed: ${err.message}`);
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: HEALTH_PARALLEL }, worker));
+    return batch.length;
+  })()
+    .catch((err) => {
+      logger.warn('media', `Live TV channel check failed: ${err.message}`);
+      return 0;
+    })
+    .finally(() => { healthRun = null; });
+  return healthRun;
+}
+
+/**
+ * The check's settings with how many channels it found working, offline or hasn't checked
+ * yet — of those it covers (see healthCandidates), so channels a filter hides don't count.
+ */
+export async function healthOverview(db) {
+  const settings = await getHealthSettings(db);
+  const { compiled } = await getLiveFilters(db);
+  const rows = await db.all(
+    `SELECT c.health, c.health_checked_at, c.pinned, c.geo_blocked, c.groups, c.languages, c.country, c.stream_url
+     FROM live_channels c JOIN live_sources s ON s.id = c.source_id
+     WHERE s.enabled = 1 AND c.hidden = 0 AND c.unsupported = 0`
+  );
+  const counts = { ok: 0, offline: 0, unchecked: 0 };
+  let lastCheckedAt = null;
+  for (const row of rows) {
+    if (isFilteredOut(row, compiled)) continue;
+    if (row.health === 'ok' || row.health === 'offline') counts[row.health]++;
+    else counts.unchecked++;
+    if (row.health_checked_at && (!lastCheckedAt || row.health_checked_at > lastCheckedAt)) lastCheckedAt = row.health_checked_at;
+  }
+  return { enabled: settings.enabled, hideOffline: settings.hideOffline, counts, lastCheckedAt };
+}
+
 // ─── Schedule ───────────────────────────────────────────────────────────────
 
 export function isRefreshDue(lastRefreshedAt, lastFailureMs, now = Date.now()) {
@@ -855,7 +1152,9 @@ export function isRefreshDue(lastRefreshedAt, lastFailureMs, now = Date.now()) {
   return !Number.isFinite(last) || now - last >= REFRESH_EVERY_MS;
 }
 
-async function tick() {
+// `checks`: whether this pass also runs a batch of channel checks. Only the regular ticks
+// do, so switching Live TV on and off never sets off extra ones.
+async function tick({ checks = true } = {}) {
   try {
     const db = await getDb();
     if (!await isLiveTvEnabled(db)) return;
@@ -864,6 +1163,7 @@ async function tick() {
     for (const source of sources) {
       if (isRefreshDue(source.last_refreshed_at, lastFailure.get(source.id))) refreshSource(source.id);
     }
+    if (checks && (await getHealthSettings(db)).enabled) runHealthChecks();
   } catch (err) {
     logger.warn('media', `Live TV schedule tick failed: ${err.message}`);
   }
@@ -871,7 +1171,7 @@ async function tick() {
 
 /** Runs a schedule pass now (after Live TV is switched on). */
 export function kickLiveTv() {
-  tick();
+  tick({ checks: false });
 }
 
 let started = false;
@@ -881,6 +1181,6 @@ let started = false;
 export function initLiveTv() {
   if (started) return;
   started = true;
-  setTimeout(tick, 60 * 1000).unref();
-  setInterval(tick, TICK_MS).unref();
+  setTimeout(() => tick(), 60 * 1000).unref();
+  setInterval(() => tick(), TICK_MS).unref();
 }

@@ -488,7 +488,7 @@
     },
     "channels": {
       "title": "Channels",
-      "desc": "Hide the ones you don't want. Kids accounts see only the channels allowed for kids here, and none are allowed until you pick them.",
+      "desc": "Hide the ones you don't want, or press the pencil to give one its own number, name or logo. Kids accounts see only the channels allowed for kids here or in a line-up that allows kids, and none are allowed until you pick them.",
       "searchPlaceholder": "Search channels",
       "sourceFilter": "Channel list",
       "allSources": "All lists",
@@ -499,6 +499,7 @@
         "hidden": "Hidden",
         "filtered": "Hidden by filter",
         "pinned": "Always shown",
+        "offline": "Offline",
         "kids": "Allowed for kids",
         "unsupported": "Not playable"
       },
@@ -532,12 +533,147 @@
         "filteredHint": "Hidden by Choose what to show ({reasons}). Use Always show to keep this channel anyway.",
         "pinnedHint": "Always shown, whatever the filters say. Press again to let the filters decide.",
         "pinnedOverHint": "Always shown, even though a filter hides {reasons}. Press again to let the filters decide.",
-        "regionLocked": "Region-locked"
+        "regionLocked": "Region-locked",
+        "offline": "Offline",
+        "offlineHint": "Didn't play in its last two checks (last checked {date})",
+        "inLineupsHint": "In line-ups: {names}"
       },
       "range": "{from}–{to} of {total}",
       "empty": "No channels yet. They appear here once a list has loaded.",
       "noMatches": "No channels match.",
-      "couldNotLoad": "Could not load the channels"
+      "couldNotLoad": "Could not load the channels",
+      "edit": "Number, name and logo",
+      "editAria": "Edit number, name and logo of {name}",
+      "numberHint": "Channel number",
+      "checkNow": "Check now",
+      "checkNowAria": "Check whether {name} plays now",
+      "checking": "Checking…",
+      "couldNotCheck": "Could not check the channel",
+      "addToLineup": "Add to line-up",
+      "addedToLineup": {
+        "one": "Added {number} channel to {name}",
+        "other": "Added {number} channels to {name}"
+      },
+      "stillOffline": "Still offline · Check again"
+    },
+    "health": {
+      "title": "Channel health",
+      "desc": "Public channels come and go. Plinthio checks a few at a time in the background to find the ones that have stopped working. Each check only asks the stream for its first couple of kilobytes, so nothing is played or converted and the server hardly notices.",
+      "enabled": {
+        "label": "Check channels in the background",
+        "desc": "About 20 channels every 10 minutes while Live TV is on, so each channel is looked at roughly once a day."
+      },
+      "hideOffline": {
+        "label": "Hide offline channels",
+        "desc": "A channel that fails two checks in a row is hidden from viewers. It's checked again about once a day and comes back on its own once it plays."
+      },
+      "counts": {
+        "ok": "Working",
+        "offline": "Offline",
+        "unchecked": "Not checked yet"
+      },
+      "showOffline": "Show the offline channels",
+      "lastChecked": "Last check {date}.",
+      "neverChecked": "No checks yet.",
+      "pace": "Channels are checked a few at a time; Check now on a channel looks straight away.",
+      "paused": "Background checks are off, so these counts stay as they are.",
+      "couldNotLoad": "Could not load channel health"
+    },
+    "editChannel": {
+      "title": "Edit channel",
+      "number": "Channel number",
+      "automatic": "Automatic",
+      "useAutomatic": "Use automatic",
+      "numberHint": "1 to 9999, each used once. Viewers can type it to jump to this channel. Channels without a number follow on after your highest one.",
+      "numberInvalid": "Use a whole number from 1 to 9999.",
+      "name": "Name",
+      "useOriginal": "Use original",
+      "nameHint": "Leave empty to use the list's name: {name}",
+      "logo": "Logo address",
+      "useOriginalLogo": "Use original logo",
+      "logoHint": "A link to a picture (http or https). Leave empty to use the list's own logo. The new logo shows once saved.",
+      "checkHint": "See whether this channel plays right now. A channel is marked offline only after two failed checks in a row.",
+      "health": {
+        "ok": "Working (checked {date})",
+        "offline": "Offline (checked {date})",
+        "unchecked": "Not checked yet"
+      },
+      "couldNotSave": "Could not save the channel",
+      "checkOk": "It plays.",
+      "checkFailed": "It didn't play this time: {error}",
+      "checkFailedNoReason": "It didn't play this time."
+    },
+    "lineups": {
+      "title": "Line-ups",
+      "desc": "Make your own sets of channels, such as News, Sport or For the kids, in the order you like. Each line-up is a tab on the Live TV page, in the order shown here.",
+      "create": "New line-up",
+      "createTitle": "New line-up",
+      "empty": "No line-ups yet. Viewers see all channels by category until you make one.",
+      "footer": "In a line-up, viewers still don't see channels you've hidden or that are offline, and the filters still apply unless a channel is set to Always show.",
+      "name": "Name",
+      "namePlaceholder": "e.g. News",
+      "nameHint": "Shown to viewers as the tab's name.",
+      "openAria": "Open line-up {name}",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "moveUpAria": "Move line-up {name} up",
+      "moveDownAria": "Move line-up {name} down",
+      "kids": {
+        "label": "Allow for kids",
+        "desc": "Kids accounts may watch every channel in this line-up, as well as the channels allowed for kids one by one."
+      },
+      "delete": "Delete line-up",
+      "deleteTitle": "Delete line-up",
+      "deleteMessage": "Delete {name}? Its channels stay where they are; only the line-up goes.",
+      "couldNotLoad": "Could not load the line-ups",
+      "couldNotLoadChannels": "Could not load this line-up's channels",
+      "couldNotCreate": "Could not create the line-up",
+      "couldNotAdd": "Could not add the channels",
+      "couldNotDelete": "Could not delete the line-up",
+      "editor": {
+        "subtitle": "Changes save as you make them",
+        "tabs": {
+          "channels": "Channels",
+          "add": "Add channels"
+        },
+        "empty": "No channels in this line-up yet.",
+        "addChannels": "Add channels",
+        "sortName": "A–Z",
+        "sortNumber": "By number",
+        "moveUpAria": "Move {name} up",
+        "moveDownAria": "Move {name} down",
+        "remove": "Remove from line-up",
+        "removeAria": "Remove {name} from this line-up",
+        "addBy": "Add channels by",
+        "kinds": {
+          "search": "Search",
+          "categories": "Whole category"
+        },
+        "search": {
+          "search": "Search channels",
+          "categories": "Search categories"
+        },
+        "searchHint": "Type part of a channel's name.",
+        "inLineup": "Added",
+        "addAria": "Add {name} to this line-up",
+        "addFound": {
+          "one": "Add {number} found",
+          "other": "Add all {number} found"
+        },
+        "moreResults": {
+          "one": "{number} more match; type more to narrow it down.",
+          "other": "{number} more matches; type more to narrow it down."
+        },
+        "addAll": "Add all",
+        "addCategoryAria": "Add every channel in {name}",
+        "categoryHidden": "hidden by a filter",
+        "hiddenByFilter": "Hidden by filter",
+        "nothingNew": "Every channel from that category is already here.",
+        "added": {
+          "one": "Added {number} channel",
+          "other": "Added {number} channels"
+        }
+      }
     }
   },
   "logs": {
