@@ -24,6 +24,12 @@ export const useCustomizationStore = defineStore('customization', {
     showMissingFilms: true,
     // Watch parties — off until an admin turns them on.
     partyModeEnabled: false,
+    // Live TV — off until an admin turns it on. liveChannelCount is how many channels this
+    // account may watch (GET /api/live/status), asked once per app load while it's on, so the
+    // nav only offers Live TV when there's something to watch.
+    liveTvEnabled: false,
+    liveChannelCount: 0,
+    liveStatusFor: null,
     // What the video player shows while paused: simple | details | cinematic | bedtime.
     pauseScreen: 'details',
     // The language for anyone who hasn't picked one: 'auto' (their browser's) or a code.
@@ -41,6 +47,7 @@ export const useCustomizationStore = defineStore('customization', {
   }),
 
   getters: {
+    showLiveTv: (state) => state.liveTvEnabled && state.liveChannelCount > 0,
     ratingsEnabled: (state) => state.ratings.showPersonal || state.ratings.showCommunity || state.ratings.showExternal,
     isCustomizationAllowed: (state) => (feature) => {
       if (!state.userCustomization || state.userCustomization.enabled === false) return false;
@@ -89,6 +96,7 @@ export const useCustomizationStore = defineStore('customization', {
           if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
+          if (typeof res.data.liveTvEnabled === 'boolean') this.setLiveTvEnabled(res.data.liveTvEnabled);
           if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
           if (res.data.defaultLanguage) this.defaultLanguage = res.data.defaultLanguage;
           this.applyIntro(res.data);
@@ -117,6 +125,7 @@ export const useCustomizationStore = defineStore('customization', {
           if (res.data.ratings) this.ratings = { ...this.ratings, ...res.data.ratings };
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
+          if (typeof res.data.liveTvEnabled === 'boolean') this.setLiveTvEnabled(res.data.liveTvEnabled);
           if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
           if (res.data.defaultLanguage) this.defaultLanguage = res.data.defaultLanguage;
           this.applyIntro(res.data);
@@ -125,6 +134,30 @@ export const useCustomizationStore = defineStore('customization', {
         return res.data;
       } finally {
         this.loading = false;
+      }
+    },
+
+    setLiveTvEnabled(enabled) {
+      if (enabled === this.liveTvEnabled) return;
+      this.liveTvEnabled = enabled;
+      // Switched on or off: the channel count has to be asked again.
+      this.liveStatusFor = null;
+      if (!enabled) this.liveChannelCount = 0;
+    },
+
+    // Asks the server how many Live TV channels this account can watch — once per app load
+    // and account (a kids account may have none). `userId` keys the answer so signing in as
+    // someone else asks again.
+    async loadLiveStatus(userId, { force = false } = {}) {
+      if (!this.liveTvEnabled || !userId) return;
+      if (!force && this.liveStatusFor === userId) return;
+      this.liveStatusFor = userId;
+      try {
+        const res = await api.get('/live/status');
+        this.liveChannelCount = res.data?.enabled === false ? 0 : Number(res.data?.channelCount) || 0;
+      } catch (err) {
+        // Off on the server (P700) or unreachable: no Live TV in the nav this time.
+        this.liveChannelCount = 0;
       }
     },
 

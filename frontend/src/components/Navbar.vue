@@ -11,10 +11,14 @@
 
       <!-- Center Media Type Filter Tabs (shadcn tabs style) -->
       <nav class="hidden lg:flex items-center gap-0.5 lg:gap-1 bg-muted/50 p-1 rounded-xl border border-border flex-shrink min-w-0 overflow-x-auto no-scrollbar">
+        <!-- Narrower desktops can't fit every name (longer still in some languages): there each
+             tab but the current one shows its icon, with the name as its tooltip. -->
         <button
           v-for="tab in visibleMediaTabs"
           :key="tab.value"
           @click="$emit('filter-type', tab.value)"
+          :title="tab.label"
+          :aria-label="tab.label"
           :class="[
             'h-8 lg:h-8.5 px-2.5 lg:px-3 rounded-lg text-xs lg:text-sm font-medium transition-all flex items-center gap-1.5 lg:gap-2 flex-shrink-0 whitespace-nowrap',
             activeType === tab.value
@@ -23,12 +27,14 @@
           ]"
         >
           <component :is="tab.icon" class="w-3.5 h-3.5 lg:w-4 lg:h-4" />
-          {{ tab.label }}
+          <span :class="activeType === tab.value ? '' : 'hidden min-[1440px]:inline'">{{ tab.label }}</span>
         </button>
         <!-- Lists: a place of its own, not a media type, so it sits after a divider -->
         <span class="w-px h-5 bg-border mx-1 flex-shrink-0" aria-hidden="true" />
         <router-link
           to="/lists"
+          :title="$t('nav.lists')"
+          :aria-label="$t('nav.lists')"
           :class="[
             'h-8 lg:h-8.5 px-2.5 lg:px-3 rounded-lg text-xs lg:text-sm font-medium transition-all flex items-center gap-1.5 lg:gap-2 flex-shrink-0 whitespace-nowrap',
             onLists
@@ -37,7 +43,22 @@
           ]"
         >
           <ListOrdered class="w-3.5 h-3.5 lg:w-4 lg:h-4" />
-          {{ $t('nav.lists') }}
+          <span :class="onLists ? '' : 'hidden min-[1440px]:inline'">{{ $t('nav.lists') }}</span>
+        </router-link>
+        <router-link
+          v-if="showLiveTv"
+          to="/live"
+          :title="$t('nav.liveTv')"
+          :aria-label="$t('nav.liveTv')"
+          :class="[
+            'h-8 lg:h-8.5 px-2.5 lg:px-3 rounded-lg text-xs lg:text-sm font-medium transition-all flex items-center gap-1.5 lg:gap-2 flex-shrink-0 whitespace-nowrap',
+            onLive
+              ? 'bg-background text-foreground shadow-sm font-semibold'
+              : 'text-muted-foreground hover:text-foreground'
+          ]"
+        >
+          <RadioTower class="w-3.5 h-3.5 lg:w-4 lg:h-4" />
+          <span :class="onLive ? '' : 'hidden min-[1440px]:inline'">{{ $t('nav.liveTv') }}</span>
         </router-link>
       </nav>
 
@@ -128,6 +149,20 @@
         <ListOrdered class="w-3.5 h-3.5" />
         <span>{{ $t('nav.lists') }}</span>
       </router-link>
+      <router-link
+        v-if="showLiveTv"
+        to="/live"
+        :data-active="onLive || undefined"
+        :class="[
+          'h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex items-center gap-1.5 sm:gap-2 flex-shrink-0 active:scale-95',
+          onLive
+            ? 'bg-foreground text-background font-semibold shadow-sm'
+            : 'bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/50'
+        ]"
+      >
+        <RadioTower class="w-3.5 h-3.5" />
+        <span>{{ $t('nav.liveTv') }}</span>
+      </router-link>
     </div>
   </header>
 </template>
@@ -140,6 +175,7 @@ import { useAuthStore } from '../stores/auth';
 import { ALL_MEDIA_TYPES } from '../constants/media';
 import { useCustomizationStore } from '../stores/customization';
 import UserMenu from './UserMenu.vue';
+import { useLiveNav } from './live/useLiveNav';
 import { t } from '../i18n';
 import {
   
@@ -152,7 +188,8 @@ import {
   Tv,
   Film,
   Sparkles,
-  ListOrdered
+  ListOrdered,
+  RadioTower
 } from '@lucide/vue';
 
 const props = defineProps({
@@ -166,6 +203,7 @@ const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
 const route = useRoute();
 const onLists = computed(() => route.path.startsWith('/lists'));
+const { showLiveTv, onLive } = useLiveNav();
 
 // Labels are getters so they follow the current language.
 const tab = (value, icon) => ({
@@ -220,6 +258,8 @@ function revealActivePill(smooth) {
 }
 
 watch(() => props.activeType, () => nextTick(() => revealActivePill(true)));
+// Live TV's pill appears once the server has said there are channels — after mount.
+watch(showLiveTv, () => nextTick(() => revealActivePill(false)));
 onMounted(() => {
   nextTick(() => revealActivePill(false));
   window.addEventListener('resize', updatePillEdges, { passive: true });

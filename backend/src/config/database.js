@@ -723,6 +723,56 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_user_ratings_item ON user_ratings(item_id);
   `);
 
+  // Live TV (services/liveTv.js). A source is one M3U playlist — a public preset or the
+  // admin's own — and its channels are re-read from it on every refresh, upserted on
+  // (source_id, stable_key) so the admin's hidden / kids choices survive. Programmes are
+  // keyed by the guide's channel id (tvg_id) and only kept for a day and a half ahead.
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS live_sources (
+      id TEXT PRIMARY KEY,
+      kind TEXT NOT NULL CHECK (kind IN ('iptv-org', 'm3u')),
+      name TEXT NOT NULL,
+      preset TEXT,            -- iptv-org only, e.g. 'countries/us'
+      playlist_url TEXT NOT NULL,
+      guide_url TEXT,         -- set by the admin; else the playlist's own x-tvg-url
+      enabled INTEGER DEFAULT 1,
+      last_refreshed_at DATETIME,
+      last_error TEXT,
+      channel_count INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS live_channels (
+      id TEXT PRIMARY KEY,
+      source_id TEXT NOT NULL REFERENCES live_sources(id) ON DELETE CASCADE,
+      stable_key TEXT NOT NULL, -- tvg-id, else the name
+      tvg_id TEXT,
+      name TEXT NOT NULL,
+      logo TEXT,
+      groups TEXT,              -- ';'-joined
+      stream_url TEXT NOT NULL,
+      http_headers TEXT,        -- JSON { userAgent, referrer } from #EXTVLCOPT, if any
+      geo_blocked INTEGER DEFAULT 0,
+      unsupported INTEGER DEFAULT 0,
+      hidden INTEGER DEFAULT 0,
+      kids_allowed INTEGER DEFAULT 0,
+      position INTEGER,
+      updated_at DATETIME,
+      UNIQUE (source_id, stable_key)
+    );
+    CREATE INDEX IF NOT EXISTS idx_live_channels_tvg ON live_channels(tvg_id);
+    CREATE TABLE IF NOT EXISTS live_programmes (
+      tvg_id TEXT NOT NULL,
+      start INTEGER NOT NULL,   -- epoch ms
+      stop INTEGER NOT NULL,
+      title TEXT,
+      subtitle TEXT,
+      description TEXT,
+      category TEXT,
+      PRIMARY KEY (tvg_id, start)
+    );
+    CREATE INDEX IF NOT EXISTS idx_live_programmes_start ON live_programmes(start);
+  `);
+
   console.log('Database initialized successfully at:', config.dbPath);
 }
 

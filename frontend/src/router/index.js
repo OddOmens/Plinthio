@@ -13,6 +13,8 @@ const ListsView = () => import('../views/ListsView.vue');
 const RequestsView = () => import('../views/RequestsView.vue');
 const DownloadsView = () => import('../views/DownloadsView.vue');
 const PartyView = () => import('../views/PartyView.vue');
+const LiveView = () => import('../views/LiveView.vue');
+const LivePlayerView = () => import('../views/LivePlayerView.vue');
 import { useAuthStore } from '../stores/auth';
 
 const routes = [
@@ -82,6 +84,20 @@ const routes = [
     path: '/downloads',
     name: 'downloads',
     component: DownloadsView,
+    meta: { requiresAuth: true }
+  },
+  {
+    // Live TV: the channel list and guide (?view=guide), and a channel playing. Both show
+    // a "Live TV is off" notice when an admin has it switched off (the API answers P700).
+    path: '/live',
+    name: 'live',
+    component: LiveView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/live/:id',
+    name: 'live-channel',
+    component: LivePlayerView,
     meta: { requiresAuth: true }
   },
   {
