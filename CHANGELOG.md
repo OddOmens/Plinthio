@@ -9,8 +9,17 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-10-23
+
 ### Added
 - **Live TV.** Live channels with a programme guide, next to your library. Off until an admin turns it on in Admin → Live TV. Add ready-made public lists by country, language or category in one click (adult channels are never added), or your own M3U playlist with an XMLTV guide, including one on your home network. Watch from a channel list with what's on now and next, or a guide grid; the player has channel up/down, picture-in-picture and fullscreen. Kids accounts see only the channels you allow. Streams and logos play through your server, which only fetches the links it signed and never reaches into your network for a public list. See `docs/live-tv.md`.
+- **Choose which channels to show.** Admin → Live TV → Choose what to show hides whole categories, languages, countries or stream hosts at once, with counts and search. These are rules, not deletions, so they still apply after every list reload. Region-locked channels and one third-party redirect service are hidden to start with; **Always show** keeps a single channel a filter would hide. Before the first public list, admins confirm once that they're responsible for what they add.
+- **Line-ups and channel numbers.** Admins can make their own sets of channels (*News*, *Sport*, *For the kids*…), shown to viewers as tabs, in the order you choose, and allow a whole line-up for kids. Give any channel its own number, name or logo; channel up/down and typing a number in the player follow your numbers. These survive list reloads.
+- **Dead channels are found for you.** A light background check (network only, nothing is played or decoded) looks at about 20 channels every 10 minutes. Channels that fail twice in a row are marked Offline and hidden from viewers until they work again. Admin → Live TV → Channel health shows how many are working.
+- **Favourites and more for each viewer.** Star channels to get a Favourites tab and a **Live now** row on Home. Recent channels and a last-channel button (`L`), **Hide for me** for channels or whole groups, search across channels and programmes, and **Tonight** / **Tomorrow** jumps in the guide. These are per account and change nothing for anyone else.
+
+### Fixed
+- **Security updates:** two libraries Plinthio uses (`follow-redirects` and `ip-address`) are updated to versions with published security fixes.
 
 ## [1.5.0] - 2026-10-22
 
