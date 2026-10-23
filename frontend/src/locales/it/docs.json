@@ -19,6 +19,7 @@
       "roles": "Ruoli e permessi utente",
       "pwa": "Configurare l'app PWA per dispositivi mobili",
       "remote": "Accesso remoto e Tailscale",
+      "liveTv": "TV in diretta",
       "shortcuts": "Scorciatoie da tastiera",
       "backups": "Backup e sicurezza dei dati",
       "api": "API REST e webhook",
@@ -266,6 +267,116 @@
       "guide": "La guida completa, con la risoluzione dei problemi: {doc} su GitHub."
     }
   },
+  "liveTv": {
+    "title": "TV in diretta",
+    "intro": "Canali in diretta e una guida TV, accanto ai tuoi contenuti. I canali arrivano da playlist M3U: elenchi pubblici già pronti, oppure i tuoi.",
+    "turnOn": {
+      "title": "Attivarla",
+      "text": "La TV in diretta resta disattivata finché un amministratore non la attiva in **Amministrazione → TV in diretta**. Quando è attiva e ha dei canali, **TV in diretta** compare nel menu di chiunque possa guardare almeno un canale.",
+      "off": "Disattivarla nasconde subito la TV in diretta ovunque. Gli elenchi di canali e ogni scelta fatta su di essi restano, per quando verrà riattivata."
+    },
+    "adding": {
+      "title": "Aggiungere canali",
+      "intro": "In **Amministrazione → TV in diretta**, premi **Aggiungi canali** e scegli uno dei due tipi:",
+      "public": "**Canali pubblici**: elenchi gratuiti già pronti del progetto pubblico iptv-org, per paese, lingua o categoria. Spuntane quanti vuoi; ognuno viene aggiunto come elenco a sé.",
+      "own": "**La tua playlist**: l'indirizzo di qualsiasi playlist M3U che il server può raggiungere, per esempio quella di un sintonizzatore TV nella tua rete. I canali in streaming HLS ({m3u8}) si possono guardare; gli altri restano, ma vengono indicati come **Non riproducibile**.",
+      "guide": "**Guida TV**: un indirizzo XMLTV che indichi tu, oppure la guida indicata dalla playlist stessa (tutti gli elenchi pubblici ne hanno una). Funzionano anche i file compressi {gz}. La guida copre il giorno e mezzo successivo.",
+      "refresh": "Ogni elenco e la sua guida si ricaricano ogni 12 ore mentre la TV in diretta è attiva. **Aggiorna** su un elenco lo ricarica subito; l'elenco mostra quando è stato caricato l'ultima volta, o perché non è stato possibile.",
+      "acknowledge": "La prima volta che viene aggiunto un elenco pubblico, Plinthio mostra una breve nota sui canali pubblici da confermare. Viene chiesto una sola volta per server."
+    },
+    "filters": {
+      "title": "Scegliere cosa mostrare",
+      "intro": "In **Scegli cosa mostrare**, nascondi interi gruppi di canali in una volta. Sono regole, non eliminazioni: continuano a valere dopo ogni ricaricamento, e anche i nuovi canali che corrispondono vengono nascosti. Il riquadro mostra quanti canali restano visibili.",
+      "region": "I **canali limitati per area** sono nascosti fin dall'inizio, perché di solito funzionano solo nel loro paese d'origine. Disattiva **Nascondi i canali limitati per area** per elencarli.",
+      "sets": "**Categorie, lingue, paesi e server di streaming**: ogni scheda li elenca con il numero di canali di ciascuno. Toccane uno per mostrarlo o nasconderlo, cercane uno, oppure usa **Mostra tutti** e **Nascondi tutti**. Per tenerne solo alcuni, premi **Nascondi tutti**, poi riattiva quelli.",
+      "languages": "Un canale in più lingue viene nascosto solo quando tutte le sue lingue sono nascoste. I canali senza una lingua o un paese indicato non sono interessati da quelle schede.",
+      "hosts": "**Server di streaming**: alcuni canali pubblici non sono trasmessi dall'emittente, ma reindirizzati tramite un servizio di terzi. Plinthio nasconde uno di questi servizi, {host}, finché non lo mostri tu. Mostralo solo se hai la certezza di poter guardare quei canali.",
+      "exceptions": "**Eccezioni**: per tenere un canale che un filtro nasconde, trovalo in **Canali** (scegli **Nascosti da filtro** per vederli tutti) e premi **Mostra sempre**. Un canale che nascondi a mano resta comunque nascosto."
+    },
+    "choosing": {
+      "title": "Scegliere i canali",
+      "text": "In **Canali**, cerca o filtra per elenco, poi premi **Nascondi** sui canali che non vuoi. Spuntane diversi (o un'intera pagina) per modificarli tutti insieme. Le modifiche si salvano subito.",
+      "kept": "I canali nascosti e le scelte per i bambini restano quando un elenco si ricarica. Un canale che sparisce dalla sua playlist viene rimosso."
+    },
+    "lineups": {
+      "title": "Selezioni e numeri dei canali",
+      "intro": "In **Selezioni di canali**, crea i tuoi gruppi di canali, come Notizie, Sport o Per i bambini. Ogni selezione diventa una scheda nella pagina TV in diretta, nell'ordine in cui le metti.",
+      "create": "**Nuova selezione** chiede un nome, poi la apre. Aggiungi canali con **Ricerca** (uno alla volta, o tutti i risultati insieme) o con **Categoria intera**, che aggiunge in un colpo tutti i canali di una categoria. Puoi anche spuntare dei canali in **Canali** e premere **Aggiungi alla selezione**.",
+      "order": "Usa le frecce su e giù per mettere in ordine le selezioni e i canali al loro interno. **A–Z** e **Per numero** ordinano un'intera selezione in una volta. Togliere un canale da una selezione non lo nasconde altrove.",
+      "kids": "**Consenti ai bambini** su una selezione permette agli account bambini di guardare tutti i suoi canali, oltre a quelli consentiti uno per uno.",
+      "rules": "Una selezione non fa ricomparire i canali che hai nascosto o che sono offline, e i filtri valgono comunque, a meno che un canale non sia impostato su **Mostra sempre**.",
+      "numbers": "**Numeri, nomi e loghi**: premi la matita accanto a un canale in **Canali** per dargli un numero suo (da 1 a 9999, ognuno usato una sola volta), un nome o un indirizzo del logo. Gli spettatori possono digitare un numero nel lettore per passare a quel canale. I canali senza numero vengono dopo il tuo numero più alto. Lascia vuoto un campo per tornare a quello indicato dall'elenco."
+    },
+    "health": {
+      "title": "Stato dei canali",
+      "intro": "I canali pubblici ogni tanto smettono di funzionare. Con **Controlla i canali in background** attivo (lo è fin dall'inizio), Plinthio controlla circa 20 canali ogni 10 minuti mentre la TV in diretta è attiva, così ognuno viene verificato più o meno una volta al giorno.",
+      "light": "Un controllo è volutamente leggero: il server scarica la playlist del canale e i primi kilobyte di video, nient'altro. Niente viene riprodotto, decodificato o convertito, quindi non costa quasi nulla.",
+      "offline": "Un canale che non supera due controlli di fila viene segnato come **Offline**. Con **Nascondi i canali offline** attivo, gli spettatori non lo vedono finché non torna a funzionare; basta un controllo riuscito per farlo ricomparire.",
+      "counts": "Il riquadro mostra quanti canali funzionano, quanti sono offline e quanti non sono ancora stati controllati, e quando è stato fatto l'ultimo controllo. Premi il numero degli offline per elencare quei canali, e **Controlla ora** su uno per verificarlo subito."
+    },
+    "kids": {
+      "title": "Account bambini",
+      "text": "Gli account bambini vedono solo i canali segnati con **Consenti ai bambini** e i canali di una selezione segnata con **Consenti ai bambini**. Nessuno è consentito finché non lo scegli tu, quindi fino ad allora la TV in diretta non compare nel menu di un account bambini."
+    },
+    "watching": {
+      "title": "Guardare",
+      "channels": "**Canali**: schede per Preferiti, Recenti, ogni selezione e Tutti i canali (con categorie tra cui scegliere), e ogni canale con cosa va in onda ora e dopo.",
+      "guide": "**Guida TV**: una tabella oraria di cosa va in onda sui vari canali. Tocca un programma per vederne i dettagli e un pulsante **Guarda**.",
+      "player": "**Il lettore**: le frecce su e giù (o i pulsanti) cambiano canale. Picture in picture e schermo intero funzionano dove il browser li supporta.",
+      "throughServer": "Gli stream passano da questo server, quindi chiunque possa raggiungere Plinthio può guardare, a casa o fuori. Ogni spettatore usa la connessione internet del server."
+    },
+    "yours": {
+      "title": "Le scelte di ogni spettatore",
+      "intro": "Chiunque guardi può adattare la TV in diretta a sé. Queste scelte appartengono al suo account e non cambiano nulla per gli altri.",
+      "favourites": "**Preferiti**: la stella su un canale lo aggiunge alla scheda **Preferiti**, mostrata per prima. I preferiti compaiono anche in una riga **In onda ora** nella Home, con cosa va in onda; la riga si può nascondere da lì.",
+      "recent": "**Recenti**: gli ultimi canali guardati hanno una scheda tutta loro, e il pulsante **Canale precedente** del lettore (o il tasto {key}) torna a quello di prima.",
+      "hiding": "**Nascondi per me**: il menu di un canale nasconde quel canale, o il suo intero gruppo, solo per te. **Nascosti per me** nella pagina TV in diretta elenca ciò che hai nascosto, con un modo per far ricomparire ciascuno, e attiva o disattiva la riga nella Home.",
+      "search": "**Cerca** trova i canali per nome e i programmi per titolo, nel giorno e mezzo successivo. Nella guida, **Ora**, **Stasera** e **Domani** portano direttamente a quell'ora."
+    },
+    "publicSources": {
+      "title": "I canali pubblici",
+      "text": "I canali pubblici sono raccolti dagli stream gratuiti delle emittenti stesse. Vanno e vengono: alcuni possono essere offline, interrompersi o funzionare solo in certi paesi (segnati come «Limitato per area»). I canali per adulti non vengono mai aggiunti."
+    },
+    "responsibility": {
+      "title": "La tua responsabilità",
+      "text": "Plinthio riproduce i canali che gli fornisci. Non ospita, non verifica e non approva alcun canale, e non ne include nessuno. Sei tu a scegliere quali elenchi e canali aggiungere, e sei tu responsabile di avere il diritto di guardarli dove ti trovi: gli elenchi pubblici rimandano a stream gestiti da altri, e alcuni potrebbero non avere la licenza nel tuo paese."
+    },
+    "troubleshooting": {
+      "title": "Quando qualcosa va storto",
+      "wontPlay": {
+        "title": "Un canale non parte",
+        "text": "Non è stato possibile raggiungere lo stream del canale ({code}). I canali pubblici vanno offline ogni tanto, e quelli limitati per area funzionano solo in alcuni paesi. Riprova più tardi, o nascondilo."
+      },
+      "listFailed": {
+        "title": "Un elenco mostra «Caricamento non riuscito»",
+        "text": "Il server non è riuscito a scaricare la playlist ({code}). Controlla che l'indirizzo si apra dalla rete del server, poi premi **Aggiorna**. I canali già caricati restano fino al prossimo caricamento riuscito."
+      },
+      "notPlayable": {
+        "title": "Canali segnati come «Non riproducibile»",
+        "text": "La TV in diretta riproduce stream HLS. I canali in altri formati restano nell'elenco perché tu possa vederli, ma non vengono mostrati a nessun altro."
+      },
+      "missingChannel": {
+        "title": "Manca un canale che voglio",
+        "text": "Potrebbe nasconderlo un filtro in **Scegli cosa mostrare**, oppure potrebbe essere offline. In **Canali**, scegli **Nascosti da filtro** o **Offline**: ogni canale indica il motivo, e **Mostra sempre** o **Controlla ora** ti aiutano. Può anche darsi che uno spettatore l'abbia nascosto solo per sé; in quel caso è elencato in **Nascosti per me** nella sua pagina TV in diretta."
+      },
+      "offline": {
+        "title": "Un canale è segnato come «Offline»",
+        "text": "Non ha superato gli ultimi due controlli. Viene ricontrollato circa una volta al giorno e ricompare da solo quando torna a funzionare; **Controlla ora** lo verifica subito. Se continua a non funzionare, nascondilo, oppure disattiva **Nascondi i canali offline** per elencarlo comunque."
+      },
+      "numberTaken": {
+        "title": "Il numero di un canale non si salva",
+        "text": "Ogni numero può appartenere a un solo canale. Prima dai all'altro canale un numero diverso (o cancellalo)."
+      },
+      "noGuide": {
+        "title": "La guida è vuota per alcuni canali",
+        "text": "Non tutti i canali hanno dati per la guida, e la guida si carica un po' dopo i canali. Indicare per un elenco un suo indirizzo della guida può colmare i vuoti."
+      },
+      "notInMenu": {
+        "title": "La TV in diretta non è nel menu",
+        "text": "Deve essere attivata, con almeno un canale che quella persona può guardare: uno non nascosto e riproducibile e, per un account bambini, consentito ai bambini."
+      }
+    }
+  },
   "shortcuts": {
     "title": "Scorciatoie da tastiera e controlli del lettore",
     "intro": "Ogni lettore supporta la navigazione completa da tastiera su desktop, insieme ai controlli a schermo con tocchi e scorrimenti sui dispositivi mobili.",
@@ -390,7 +501,8 @@
       "playback": "Riproduzione",
       "metadata": "Fornitori di metadati",
       "lists": "Liste e richieste",
-      "watchParties": "Watch party"
+      "watchParties": "Watch party",
+      "liveTv": "TV in diretta"
     }
   },
   "troubleshooting": {

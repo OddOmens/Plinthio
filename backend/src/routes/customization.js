@@ -7,6 +7,7 @@ import { getRatingSettings, saveRatingSettings } from '../services/ratings.js';
 import { getShowMissingFilms, saveShowMissingFilms } from '../services/collections.js';
 import { isPartyModeEnabled, savePartyModeEnabled } from './party.js';
 import { endAllParties } from '../services/party.js';
+import { isLiveTvEnabled, saveLiveTvEnabled } from '../services/liveTv.js';
 import multer from 'multer';
 import { getIntroSettings, saveIntroSettings, installIntro, removeIntro, INTRO_MAX_BYTES } from '../services/intro.js';
 
@@ -91,6 +92,8 @@ router.get('/', async (req, res) => {
     config.showMissingFilms = await getShowMissingFilms(db);
     // Watch parties — off unless an admin turns them on.
     config.partyModeEnabled = await isPartyModeEnabled(db);
+    // Live TV — off unless an admin turns it on.
+    config.liveTvEnabled = await isLiveTvEnabled(db);
     // The opening sequence played before movies and episodes.
     Object.assign(config, await getIntroSettings(db));
 
@@ -116,6 +119,7 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
     ratings,
     showMissingFilms,
     partyModeEnabled,
+    liveTvEnabled,
     pauseScreen,
     defaultLanguage,
     introEnabled,
@@ -241,6 +245,10 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       if (!partyModeEnabled) endAllParties();
     }
 
+    if (typeof liveTvEnabled === 'boolean') {
+      await saveLiveTvEnabled(db, liveTvEnabled);
+    }
+
     await saveIntroSettings(db, { introEnabled, introMovies, introShows });
 
     logger.info('system', `Customization updated by admin ${req.user.username}`);
@@ -276,6 +284,7 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
     result.ratings = await getRatingSettings(db);
     result.showMissingFilms = await getShowMissingFilms(db);
     result.partyModeEnabled = await isPartyModeEnabled(db);
+    result.liveTvEnabled = await isLiveTvEnabled(db);
     Object.assign(result, await getIntroSettings(db));
 
     res.json({ message: 'Customization updated successfully', ...result });

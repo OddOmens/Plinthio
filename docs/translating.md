@@ -105,7 +105,13 @@ cd frontend
 npm run check:i18n           # every language has every key, placeholders match,
                              # and every t('…') used in code exists
 npm run check:i18n -- title  # just one namespace
+npm run check:i18n -- --changed-since=origin/main
+                             # also lists English strings rewritten since then
 ```
+
+The key checks can't tell when English *wording* changes under an existing key: the other
+languages keep saying the old thing. When you reword English, run with `--changed-since`
+and update (or flag in your pull request) those strings in every language.
 
 CI runs the same check. To add a language: add its folder under `src/locales/` with every
 namespace file, and an entry in `LANGUAGES` in `src/i18n/index.js`.

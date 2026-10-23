@@ -9,6 +9,9 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **Live TV.** Live channels with a programme guide, next to your library. Off until an admin turns it on in Admin → Live TV. Add ready-made public lists by country, language or category in one click (adult channels are never added), or your own M3U playlist with an XMLTV guide, including one on your home network. Watch from a channel list with what's on now and next, or a guide grid; the player has channel up/down, picture-in-picture and fullscreen. Kids accounts see only the channels you allow. Streams and logos play through your server, which only fetches the links it signed and never reaches into your network for a public list. See `docs/live-tv.md`.
+
 ## [1.5.0] - 2026-10-22
 
 ### Added

@@ -335,6 +335,24 @@
       "message": "Die watchparty is vol",
       "meaning": "Er passen maximaal 20 mensen in een watchparty, en een server kan maximaal 20 watchparty's tegelijk hebben.",
       "fix": "Probeer het opnieuw als er iemand vertrekt of een watchparty eindigt."
+    },
+    "P700": {
+      "title": "Live tv staat uit",
+      "message": "Live tv staat uit op deze server",
+      "meaning": "Een admin heeft Live tv niet aangezet, of heeft het uitgezet.",
+      "fix": "Een admin kan het aanzetten via Admin → Live tv."
+    },
+    "P701": {
+      "title": "Zender niet beschikbaar",
+      "message": "Deze zender kan nu niet worden afgespeeld",
+      "meaning": "De stream van de zender reageerde niet, gaf een fout, of verwijst naar een adres waarmee Plinthio geen verbinding maakt. Zenders uit openbare bronnen gaan offline of veranderen van adres, en sommige spelen alleen in bepaalde landen.",
+      "fix": "Probeer een andere zender, of probeer het later opnieuw. Een admin kan de bron vernieuwen via Admin → Live tv, of zenders verbergen die offline blijven."
+    },
+    "P702": {
+      "title": "Bron kon niet worden geladen",
+      "message": "De zenderlijst kon niet worden geladen",
+      "meaning": "Plinthio kon een playlist, een tv-gids of de lijst met openbare zenderpresets niet downloaden of lezen.",
+      "fix": "Controleer of de server internet (of het adres van de playlist) kan bereiken en probeer het opnieuw. Admin → Live tv toont de laatste fout van elke bron."
     }
   },
   "messages": {
@@ -477,7 +495,37 @@
     "useAFullPathStartingWith": "Gebruik een volledig pad dat begint met /.",
     "thatSInsideTheServerS": "Dat ligt in de eigen datamap van de server; kies ergens anders een map.",
     "thatFolderContainsTheServerS": "Die map bevat de datamap van de server; kies er een ernaast of ergens anders.",
-    "thatSAFileNotA": "Dat is een bestand, geen map."
+    "thatSAFileNotA": "Dat is een bestand, geen map.",
+    "channelNotFound": "Zender niet gevonden",
+    "sourceNotFound": "Bron niet gevonden",
+    "thisStreamLinkIsNot": "Deze streamlink is niet geldig",
+    "chooseACountryLanguageOr": "Kies een land, taal of categorie",
+    "thoseChannelsAreAlreadyAdded": "Die zenders zijn al toegevoegd",
+    "enterANameForThese": "Voer een naam in voor deze zenders",
+    "enterThePlaylistAddressStarting": "Voer het playlistadres in, beginnend met http:// of https://",
+    "theGuideAddressMustStart": "Het gidsadres moet beginnen met http:// of https://",
+    "thatPlaylistIsAlreadyAdded": "Die playlist is al toegevoegd",
+    "chooseWhatKindOfChannels": "Kies wat voor zenders je wilt toevoegen",
+    "chooseUpTo1000Channels": "Kies maximaal 1000 zenders",
+    "nothingToChange": "Niets te wijzigen",
+    "confirmTheNoteAboutPublic": "Bevestig eerst de notitie over openbare zenders",
+    "hideGeoBlockedMustBeTrue": "hideGeoBlocked moet true of false zijn",
+    "hiddenCategoriesMustBeA": "Verborgen categorieën moeten een lijst van maximaal 5000 namen zijn",
+    "hiddenLanguagesMustBeA": "Verborgen talen moeten een lijst van maximaal 5000 namen zijn",
+    "hiddenCountriesMustBeTwo": "Verborgen landen moeten landcodes van twee letters zijn",
+    "hiddenStreamHostsMustBe": "Verborgen streamservers moeten hostnamen zijn, zoals example.com",
+    "lineUpNotFound": "Zenderselectie niet gevonden",
+    "channelNumbersGoFrom1": "Zendernummers lopen van 1 tot 9999",
+    "enterANameForTheChannel": "Voer een naam in voor de zender, of laat het leeg",
+    "theLogoAddressMustStart": "Het logo-adres moet beginnen met http:// of https://",
+    "anotherChannelAlreadyHasThat": "Een andere zender heeft dat nummer al",
+    "enterANameForTheLineUp": "Voer een naam in voor de zenderselectie",
+    "sendTheLineUpsIn": "Stuur de zenderselecties in hun nieuwe volgorde",
+    "kidsAllowedMustBeTrue": "kidsAllowed moet true of false zijn",
+    "hideOfflineMustBeTrue": "hideOffline moet true of false zijn",
+    "enabledMustBeTrueOr": "enabled moet true of false zijn",
+    "chooseUpTo5000Channels": "Kies maximaal 5000 zenders",
+    "youCanHaveUpTo": "Je kunt maximaal 500 favoriete zenders hebben"
   },
   "patterns": {
     "noMetadataSource": "Nog geen metadatabron voor {type}",

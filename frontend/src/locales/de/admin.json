@@ -49,6 +49,10 @@
         "label": "Wiedergabe",
         "desc": "Hardwarebeschleunigung, Intro-Clip"
       },
+      "liveTv": {
+        "label": "Live-TV",
+        "desc": "Sender, TV-Programm, Kinder"
+      },
       "network": {
         "label": "Netzwerk",
         "desc": "Unterwegs, Tailscale, Zwei-Faktor"
@@ -308,6 +312,369 @@
     "deleteMessage": "„{name}“ löschen? Deine Dateien bleiben unberührt, und Fortschritt und Lesezeichen kommen zurück, wenn du denselben Ordner wieder hinzufügst. Titel, Cover und Details verschwinden, bis erneut gescannt wird.",
     "couldNotDelete": "Die Bibliothek konnte nicht gelöscht werden",
     "couldNotAdd": "Die Bibliothek konnte nicht hinzugefügt werden"
+  },
+  "liveTv": {
+    "title": "Live-TV",
+    "description": "Live-Sender mit TV-Programm, aus öffentlichen Listen oder deinen eigenen Playlists. Änderungen werden sofort gespeichert.",
+    "channelCount": {
+      "one": "{number} Sender",
+      "other": "{number} Sender"
+    },
+    "switch": {
+      "label": "Live-TV",
+      "desc": "Fügt eine Live-TV-Seite mit Sendern und TV-Programm für alle auf diesem Server hinzu. Standardmäßig aus; Ausschalten blendet Live-TV überall aus, behält hier aber deine Listen und Einstellungen."
+    },
+    "publicNote": "Die Sender stammen aus öffentlichen Quellen im Internet. Manche sind vielleicht offline, fallen ab und zu aus oder laufen nur in bestimmten Ländern. Sender für Erwachsene werden nie hinzugefügt.",
+    "responsibility": "Du wählst, welche Sender du hinzufügst, und bist dafür verantwortlich, dass du sie dort, wo du bist, schauen darfst. Plinthio hostet, prüft oder befürwortet keinen Sender.",
+    "sources": {
+      "title": "Senderlisten",
+      "desc": "Jede Liste wird samt TV-Programm alle 12 Stunden neu geladen, solange Live-TV an ist.",
+      "add": "Sender hinzufügen",
+      "empty": "Noch keine Sender. Füge eine fertige Liste oder deine eigene Playlist hinzu, um loszulegen.",
+      "off": "Aus",
+      "kinds": {
+        "public": "Öffentliche Liste",
+        "own": "Deine Playlist"
+      },
+      "refreshing": "Sender und Programm werden geladen…",
+      "failed": "Laden fehlgeschlagen: {error}",
+      "updated": "Aktualisiert: {date}",
+      "notLoaded": "Noch nicht geladen",
+      "enabledAria": "{name} verwenden",
+      "turnOn": "Einschalten",
+      "turnOff": "Ausschalten",
+      "editAria": "{name} bearbeiten",
+      "removeAria": "{name} entfernen",
+      "removeTitle": "Senderliste entfernen",
+      "removeMessage": {
+        "one": "{name} entfernen? Damit wird auch {number} Sender entfernt, samt der Angabe, ob er ausgeblendet oder für Kinder freigegeben war.",
+        "other": "{name} entfernen? Damit werden auch die {number} Sender darin entfernt, samt der Angaben, welche ausgeblendet oder für Kinder freigegeben waren."
+      },
+      "offHint": "Live-TV ist ausgeschaltet, deshalb sieht noch niemand diese Sender. Du kannst sie schon vorbereiten.",
+      "couldNotLoad": "Senderlisten konnten nicht geladen werden",
+      "couldNotRefresh": "Liste konnte nicht neu geladen werden",
+      "couldNotSave": "Liste konnte nicht gespeichert werden",
+      "couldNotRemove": "Liste konnte nicht entfernt werden"
+    },
+    "editDialog": {
+      "title": "Senderliste bearbeiten",
+      "guideHint": "Leer lassen, um das in der Playlist angegebene Programm zu verwenden, falls es eins gibt."
+    },
+    "addDialog": {
+      "title": "Sender hinzufügen",
+      "tabs": {
+        "public": "Öffentliche Sender",
+        "own": "Eigene Playlist"
+      },
+      "adding": "Wird hinzugefügt…",
+      "couldNotAdd": "Sender konnten nicht hinzugefügt werden",
+      "public": {
+        "intro": "Kostenlose Sender aus den öffentlichen iptv-org-Listen, täglich aktualisiert. Wähle eine oder mehrere; jede wird als eigene Liste hinzugefügt.",
+        "listBy": "Sender auflisten nach",
+        "kinds": {
+          "countries": "Land",
+          "languages": "Sprache",
+          "categories": "Kategorie"
+        },
+        "search": {
+          "countries": "Länder suchen",
+          "languages": "Sprachen suchen",
+          "categories": "Kategorien suchen"
+        },
+        "noMatches": "Keine Treffer.",
+        "added": "Hinzugefügt",
+        "selected": {
+          "one": "{number} gewählt",
+          "other": "{number} gewählt"
+        },
+        "addLists": {
+          "one": "Liste hinzufügen",
+          "other": "{number} Listen hinzufügen"
+        },
+        "note": "Diese Sender stammen aus öffentlichen Quellen, daher sind manche vielleicht offline oder laufen nur in bestimmten Ländern. Sender für Erwachsene werden nie hinzugefügt.",
+        "couldNotLoad": "Öffentliche Listen konnten nicht geladen werden"
+      },
+      "own": {
+        "name": "Name",
+        "namePlaceholder": "z. B. Antenne zu Hause",
+        "playlistUrl": "Playlist-Adresse (M3U)",
+        "playlistHint": "Eine Adresse, die der Server erreichen kann. Sender, die per HLS (.m3u8) streamen, laufen; andere werden als nicht abspielbar aufgeführt.",
+        "guideUrl": "Adresse des TV-Programms (XMLTV, optional)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "Leer lassen, um das in der Playlist angegebene Programm zu verwenden, falls es eins gibt. Komprimierte .xml.gz-Dateien gehen auch.",
+        "add": "Playlist hinzufügen"
+      }
+    },
+    "acknowledge": {
+      "title": "Bevor du öffentliche Sender hinzufügst",
+      "points": {
+        "links": "Öffentliche Listen sind Links zu Streams von Dritten. Plinthio hostet und prüft keinen davon und steht für keinen davon ein.",
+        "licensing": "Manche Sender laufen nur in bestimmten Ländern (geo-gesperrt), und manche sind dort, wo du bist, vielleicht nicht lizenziert.",
+        "yourCall": "Füge nur Sender hinzu, die du schauen darfst. Welche Sender du hinzufügst, liegt bei dir – und ebenso die Verantwortung dafür.",
+        "adult": "Sender für Erwachsene werden nie hinzugefügt."
+      },
+      "understand": "Ich habe verstanden",
+      "continue": "Weiter",
+      "couldNotSave": "Konnte nicht gespeichert werden, versuch es erneut"
+    },
+    "filters": {
+      "title": "Anzeige auswählen",
+      "desc": "Blende ganze Gruppen von Sendern auf einmal aus. Diese Auswahl bleibt erhalten, wenn die Listen neu geladen werden, und neue passende Sender werden ebenfalls ausgeblendet. Um einen einzelnen Sender aus einer ausgeblendeten Gruppe zu behalten, nutze Immer anzeigen unter Sender.",
+      "summary": {
+        "one": "{visible} von {number} Sender angezeigt",
+        "other": "{visible} von {number} Sendern angezeigt"
+      },
+      "noChannels": "Noch keine abspielbaren Sender. Die Zahlen erscheinen hier, sobald eine Liste geladen ist.",
+      "geoBlocked": {
+        "label": "Geo-gesperrte Sender ausblenden",
+        "desc": {
+          "one": "{number} Sender ist als Geo-gesperrt markiert: Er läuft nur in bestimmten Ländern und schlägt anderswo meist fehl.",
+          "other": "{number} Sender sind als Geo-gesperrt markiert: Sie laufen nur in bestimmten Ländern und schlagen anderswo meist fehl."
+        }
+      },
+      "hideBy": "Sender ausblenden nach",
+      "tabs": {
+        "groups": "Kategorien",
+        "languages": "Sprachen",
+        "countries": "Länder",
+        "hosts": "Stream-Server"
+      },
+      "hiddenCount": {
+        "one": "{number} ausgeblendet",
+        "other": "{number} ausgeblendet"
+      },
+      "hints": {
+        "groups": "Die Kategorien stammen aus den Listen selbst. Ein Sender in mehreren Kategorien wird ausgeblendet, sobald eine davon ausgeblendet ist.",
+        "languages": "Ein Sender in mehreren Sprachen wird nur ausgeblendet, wenn alle davon ausgeblendet sind. Sender ohne angegebene Sprache sind nicht betroffen.",
+        "countries": "Das Land, aus dem ein Sender kommt. Sender ohne angegebenes Land sind nicht betroffen.",
+        "hosts": "Manche öffentlichen Sender werden nicht von der Sendeanstalt selbst gestreamt, sondern über einen Dienst von Dritten umgeleitet. Blendest du einen Server aus, fallen alle seine Sender weg. Plinthio blendet einen solchen Dienst, jmp2.uk, aus, bis du ihn einblendest; tu das nur, wenn du sicher bist, dass du diese Sender schauen darfst."
+      },
+      "search": {
+        "groups": "Kategorien suchen",
+        "languages": "Sprachen suchen",
+        "countries": "Länder suchen",
+        "hosts": "Stream-Server suchen"
+      },
+      "showing": {
+        "label": "Liste",
+        "all": "Alle",
+        "shown": "Sichtbar",
+        "hidden": "Ausgeblendet"
+      },
+      "showAll": "Alle einblenden",
+      "hideAll": "Alle ausblenden",
+      "showMatching": {
+        "one": "{number} Treffer einblenden",
+        "other": "{number} Treffer einblenden"
+      },
+      "hideMatching": {
+        "one": "{number} Treffer ausblenden",
+        "other": "{number} Treffer ausblenden"
+      },
+      "tip": "Tipp: Um nur ein paar zu behalten, drücke Alle ausblenden und schalte dann die gewünschten wieder ein.",
+      "hiddenLabel": "Ausgeblendet",
+      "more": {
+        "one": "{number} weiteren anzeigen",
+        "other": "{number} weitere anzeigen"
+      },
+      "noMatches": "Keine Treffer.",
+      "empty": {
+        "groups": "Keiner der Sender hat eine Kategorie.",
+        "languages": "Bei keinem Sender ist eine Sprache angegeben.",
+        "countries": "Bei keinem Sender ist ein Land angegeben.",
+        "hosts": "Noch keine Stream-Server."
+      },
+      "couldNotLoad": "Filter konnten nicht geladen werden"
+    },
+    "channels": {
+      "title": "Sender",
+      "desc": "Blende die aus, die du nicht willst, oder drücke auf den Stift, um einem Sender eine eigene Nummer, einen Namen oder ein Logo zu geben. Kinderkonten sehen nur die Sender, die hier oder in einer für Kinder freigegebenen Senderauswahl für Kinder freigegeben sind, und keiner ist freigegeben, bis du welche auswählst.",
+      "searchPlaceholder": "Sender suchen",
+      "sourceFilter": "Senderliste",
+      "allSources": "Alle Listen",
+      "statusFilter": "Anzeigen",
+      "status": {
+        "all": "Alle",
+        "visible": "Sichtbar",
+        "hidden": "Ausgeblendet",
+        "filtered": "Per Filter ausgeblendet",
+        "pinned": "Immer angezeigt",
+        "offline": "Offline",
+        "kids": "Für Kinder freigegeben",
+        "unsupported": "Nicht abspielbar"
+      },
+      "selectPage": "Diese Seite auswählen",
+      "selected": {
+        "one": "{number} ausgewählt",
+        "other": "{number} ausgewählt"
+      },
+      "selectAria": "{name} auswählen",
+      "hide": "Ausblenden",
+      "show": "Einblenden",
+      "hideAria": "{name} ausblenden",
+      "showAria": "{name} einblenden",
+      "allowKids": "Für Kinder freigeben",
+      "disallowKids": "Nicht für Kinder",
+      "allowKidsAria": "{name} für Kinder freigeben",
+      "disallowKidsAria": "Freigabe von {name} für Kinder aufheben",
+      "alwaysShow": "Immer anzeigen",
+      "alwaysShowHint": "Auch anzeigen, wenn ein Filter unter Anzeige auswählen ihn ausblendet",
+      "followFilters": "Filtern folgen",
+      "followFiltersHint": "Nicht mehr immer anzeigen, damit die Filter wieder gelten",
+      "pinAria": "{name} immer anzeigen",
+      "badges": {
+        "hidden": "Ausgeblendet",
+        "kids": "Kinder",
+        "geoBlocked": "Geo-gesperrt",
+        "geoBlockedHint": "Als nur in bestimmten Ländern abspielbar markiert",
+        "unsupported": "Nicht abspielbar",
+        "unsupportedHint": "Kein HLS-Stream, wird daher niemandem angeboten",
+        "filtered": "Per Filter ausgeblendet: {reasons}",
+        "filteredHint": "Ausgeblendet durch Anzeige auswählen ({reasons}). Mit Immer anzeigen behältst du diesen Sender trotzdem.",
+        "pinnedHint": "Immer angezeigt, egal was die Filter sagen. Drücke erneut, um die Filter entscheiden zu lassen.",
+        "pinnedOverHint": "Immer angezeigt, obwohl ein Filter {reasons} ausblendet. Drücke erneut, um die Filter entscheiden zu lassen.",
+        "regionLocked": "Geo-gesperrt",
+        "offline": "Offline",
+        "offlineHint": "Lief bei den letzten zwei Prüfungen nicht (zuletzt geprüft: {date})",
+        "inLineupsHint": "In Senderauswahlen: {names}"
+      },
+      "range": "{from}–{to} von {total}",
+      "empty": "Noch keine Sender. Sie erscheinen hier, sobald eine Liste geladen ist.",
+      "noMatches": "Keine passenden Sender.",
+      "couldNotLoad": "Sender konnten nicht geladen werden",
+      "edit": "Nummer, Name und Logo",
+      "editAria": "Nummer, Name und Logo von {name} bearbeiten",
+      "numberHint": "Sendernummer",
+      "checkNow": "Jetzt prüfen",
+      "checkNowAria": "Prüfen, ob {name} gerade läuft",
+      "checking": "Wird geprüft…",
+      "couldNotCheck": "Sender konnte nicht geprüft werden",
+      "addToLineup": "Zur Senderauswahl hinzufügen",
+      "addedToLineup": {
+        "one": "{number} Sender zu {name} hinzugefügt",
+        "other": "{number} Sender zu {name} hinzugefügt"
+      },
+      "stillOffline": "Immer noch offline · Erneut prüfen"
+    },
+    "health": {
+      "title": "Senderstatus",
+      "desc": "Öffentliche Sender kommen und gehen. Plinthio prüft im Hintergrund immer ein paar auf einmal, um die zu finden, die nicht mehr funktionieren. Jede Prüfung fragt beim Stream nur die ersten paar Kilobyte ab, es wird also nichts abgespielt oder umgewandelt, und der Server merkt es kaum.",
+      "enabled": {
+        "label": "Sender im Hintergrund prüfen",
+        "desc": "Etwa 20 Sender alle 10 Minuten, solange Live-TV an ist – so kommt jeder Sender ungefähr einmal am Tag dran."
+      },
+      "hideOffline": {
+        "label": "Offline-Sender ausblenden",
+        "desc": "Ein Sender, der zwei Prüfungen hintereinander nicht besteht, wird für Zuschauer ausgeblendet. Er wird etwa einmal am Tag erneut geprüft und kommt von selbst zurück, sobald er wieder läuft."
+      },
+      "counts": {
+        "ok": "Funktionieren",
+        "offline": "Offline",
+        "unchecked": "Noch nicht geprüft"
+      },
+      "showOffline": "Offline-Sender anzeigen",
+      "lastChecked": "Letzte Prüfung: {date}.",
+      "neverChecked": "Noch keine Prüfungen.",
+      "pace": "Die Sender werden nach und nach geprüft; Jetzt prüfen bei einem Sender prüft sofort.",
+      "paused": "Die Prüfungen im Hintergrund sind aus, deshalb bleiben diese Zahlen, wie sie sind.",
+      "couldNotLoad": "Senderstatus konnte nicht geladen werden"
+    },
+    "editChannel": {
+      "title": "Sender bearbeiten",
+      "number": "Sendernummer",
+      "automatic": "Automatisch",
+      "useAutomatic": "Automatisch verwenden",
+      "numberHint": "1 bis 9999, jede nur einmal. Zuschauer können sie eintippen, um direkt zu diesem Sender zu springen. Sender ohne Nummer folgen nach deiner höchsten.",
+      "numberInvalid": "Gib eine ganze Zahl von 1 bis 9999 ein.",
+      "name": "Name",
+      "useOriginal": "Original verwenden",
+      "nameHint": "Leer lassen, um den Namen aus der Liste zu verwenden: {name}",
+      "logo": "Logo-Adresse",
+      "useOriginalLogo": "Original-Logo verwenden",
+      "logoHint": "Ein Link zu einem Bild (http oder https). Leer lassen, um das Logo aus der Liste zu verwenden. Das neue Logo erscheint nach dem Speichern.",
+      "checkHint": "Prüfe, ob dieser Sender gerade läuft. Ein Sender wird erst nach zwei fehlgeschlagenen Prüfungen hintereinander als offline markiert.",
+      "health": {
+        "ok": "Funktioniert (geprüft: {date})",
+        "offline": "Offline (geprüft: {date})",
+        "unchecked": "Noch nicht geprüft"
+      },
+      "couldNotSave": "Sender konnte nicht gespeichert werden",
+      "checkOk": "Er läuft.",
+      "checkFailed": "Diesmal lief er nicht: {error}",
+      "checkFailedNoReason": "Diesmal lief er nicht."
+    },
+    "lineups": {
+      "title": "Senderauswahlen",
+      "desc": "Stelle eigene Sendergruppen zusammen, etwa Nachrichten, Sport oder Für Kinder, in der Reihenfolge, die du willst. Jede Senderauswahl ist ein Tab auf der Live-TV-Seite, in der Reihenfolge wie hier.",
+      "create": "Neue Senderauswahl",
+      "createTitle": "Neue Senderauswahl",
+      "empty": "Noch keine Senderauswahlen. Bis du eine anlegst, sehen Zuschauer alle Sender nach Kategorie.",
+      "footer": "Auch in einer Senderauswahl sehen Zuschauer keine Sender, die du ausgeblendet hast oder die offline sind, und die Filter gelten weiter – außer für Sender mit Immer anzeigen.",
+      "name": "Name",
+      "namePlaceholder": "z. B. Nachrichten",
+      "nameHint": "Wird Zuschauern als Name des Tabs angezeigt.",
+      "openAria": "Senderauswahl {name} öffnen",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "moveUpAria": "Senderauswahl {name} nach oben verschieben",
+      "moveDownAria": "Senderauswahl {name} nach unten verschieben",
+      "kids": {
+        "label": "Für Kinder freigeben",
+        "desc": "Kinderkonten dürfen jeden Sender in dieser Senderauswahl schauen, zusätzlich zu den einzeln für Kinder freigegebenen Sendern."
+      },
+      "delete": "Senderauswahl löschen",
+      "deleteTitle": "Senderauswahl löschen",
+      "deleteMessage": "{name} löschen? Die Sender bleiben, wo sie sind; nur die Senderauswahl verschwindet.",
+      "couldNotLoad": "Senderauswahlen konnten nicht geladen werden",
+      "couldNotLoadChannels": "Die Sender dieser Senderauswahl konnten nicht geladen werden",
+      "couldNotCreate": "Senderauswahl konnte nicht angelegt werden",
+      "couldNotAdd": "Sender konnten nicht hinzugefügt werden",
+      "couldNotDelete": "Senderauswahl konnte nicht gelöscht werden",
+      "editor": {
+        "subtitle": "Änderungen werden sofort gespeichert",
+        "tabs": {
+          "channels": "Sender",
+          "add": "Hinzufügen"
+        },
+        "empty": "Noch keine Sender in dieser Senderauswahl.",
+        "addChannels": "Sender hinzufügen",
+        "sortName": "A–Z",
+        "sortNumber": "Nach Nummer",
+        "moveUpAria": "{name} nach oben verschieben",
+        "moveDownAria": "{name} nach unten verschieben",
+        "remove": "Aus der Senderauswahl entfernen",
+        "removeAria": "{name} aus dieser Senderauswahl entfernen",
+        "addBy": "Sender hinzufügen per",
+        "kinds": {
+          "search": "Suche",
+          "categories": "Ganze Kategorie"
+        },
+        "search": {
+          "search": "Sender suchen",
+          "categories": "Kategorien suchen"
+        },
+        "searchHint": "Tippe einen Teil des Sendernamens ein.",
+        "inLineup": "Hinzugefügt",
+        "addAria": "{name} zu dieser Senderauswahl hinzufügen",
+        "addFound": {
+          "one": "{number} Treffer hinzufügen",
+          "other": "Alle {number} Treffer hinzufügen"
+        },
+        "moreResults": {
+          "one": "{number} weiterer Treffer; tippe mehr, um einzugrenzen.",
+          "other": "{number} weitere Treffer; tippe mehr, um einzugrenzen."
+        },
+        "addAll": "Alle hinzufügen",
+        "addCategoryAria": "Alle Sender aus {name} hinzufügen",
+        "categoryHidden": "per Filter ausgeblendet",
+        "hiddenByFilter": "Per Filter ausgeblendet",
+        "nothingNew": "Alle Sender dieser Kategorie sind schon drin.",
+        "added": {
+          "one": "{number} Sender hinzugefügt",
+          "other": "{number} Sender hinzugefügt"
+        }
+      }
+    }
   },
   "logs": {
     "title": "Protokolle",

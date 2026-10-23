@@ -33,6 +33,9 @@ import settingRoutes from './routes/settings.js';
 import metadataRoutes from './routes/metadata.js';
 import customizationRoutes from './routes/customization.js';
 import partyRoutes from './routes/party.js';
+import liveRoutes from './routes/live.js';
+import liveMediaRoutes from './routes/liveMedia.js';
+import { initLiveTv } from './services/liveTv.js';
 import { startPartySweeper } from './services/party.js';
 import activityRoutes from './routes/activity.js';
 import seriesRoutes from './routes/series.js';
@@ -170,6 +173,8 @@ const mediaLimiter = rateLimit({
   legacyHeaders: false
 });
 app.use('/api/media/video', mediaLimiter, videoRoutes);
+// Live TV streams: a playlist every few seconds plus every segment, like video.
+app.use('/api/media/live', mediaLimiter, liveMediaRoutes);
 app.use('/api/media', mediaLimiter, mediaRoutes);
 // Sync apps: Mihon's Komga extension and tracker at Komga's own paths, and KOReader's
 // progress sync. Mihon fetches pages one by one, so these sit under the media limiter.
@@ -247,6 +252,7 @@ app.use('/api/settings', settingRoutes);
 app.use('/api/metadata', metadataRoutes);
 app.use('/api/customization', customizationRoutes);
 app.use('/api/party', partyRoutes);
+app.use('/api/live', liveRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/series', seriesRoutes);
 app.use('/api/ratings', ratingRoutes);
@@ -345,6 +351,9 @@ async function start() {
 
     // Watch parties: drop ones everyone has left, release anyone stuck buffering.
     startPartySweeper();
+
+    // Live TV: refresh each channel source's playlist and guide every 12 hours while it's on.
+    initLiveTv();
 
     // Films not yet looked up on TMDB: fill in their credits and collections (Shrek 1–4 as
     // one "Shrek Collection"). Delayed so it doesn't compete with startup.

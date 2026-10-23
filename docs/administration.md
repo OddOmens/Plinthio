@@ -10,7 +10,7 @@ Its sections are grouped in a sidebar (on a phone, a list you tap into):
 | Server | Overview |
 | Library | Libraries, Health, Metadata, Kids Mode |
 | People | Users, Activity |
-| Settings | Appearance, Features, Playback, Network, Backups |
+| Settings | Appearance, Features, Playback, Live TV, Network, Backups |
 | System | Logs |
 
 Most settings save as you change them, with "Saved" shown beside them. Backups and custom CSS
@@ -93,6 +93,13 @@ collections, and watch parties.
 ## Playback
 
 Hardware acceleration (with **Test**, which runs a real encode) and the opening sequence.
+
+## Live TV
+
+The switch for Live TV (off by default), the channel lists (public lists by country, language
+or category, or your own M3U playlist and XMLTV guide), each with its status, **Refresh**, an
+on/off switch and **Remove**, and the channel manager: search, filter, **Hide**/**Show** and
+**Allow for kids**, one at a time or a page at once. See [Live TV](live-tv.md).
 
 ## Network
 

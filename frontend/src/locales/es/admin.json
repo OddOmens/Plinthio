@@ -9,19 +9,62 @@
       "system": "Sistema"
     },
     "items": {
-      "overview": { "label": "Resumen", "desc": "Versión, actualizaciones y contenido" },
-      "libraries": { "label": "Bibliotecas", "desc": "Carpetas y escaneo automático" },
-      "health": { "label": "Estado", "desc": "Archivos que faltan y qué hay que arreglar" },
-      "metadata": { "label": "Metadatos", "desc": "Clave de TMDB y coincidencia de títulos" },
-      "kids": { "label": "Modo Niños", "desc": "Qué pueden ver las cuentas infantiles" },
-      "users": { "label": "Usuarios", "desc": "Cuentas, roles, límites" },
-      "activity": { "label": "Actividad", "desc": "Inicios de sesión y qué se está reproduciendo" },
-      "appearance": { "label": "Apariencia", "desc": "Valores predeterminados, nombre, CSS propio" },
-      "features": { "label": "Funciones", "desc": "Vistas de estantes, valoraciones, watch parties" },
-      "playback": { "label": "Reproducción", "desc": "Aceleración por hardware, clip de apertura" },
-      "network": { "label": "Red", "desc": "Fuera de casa, Tailscale, verificación en dos pasos" },
-      "backups": { "label": "Copias de seguridad", "desc": "Programación, segunda copia, puntos de restauración" },
-      "logs": { "label": "Registros", "desc": "Lo que ha estado haciendo el servidor" }
+      "overview": {
+        "label": "Resumen",
+        "desc": "Versión, actualizaciones y contenido"
+      },
+      "libraries": {
+        "label": "Bibliotecas",
+        "desc": "Carpetas y escaneo automático"
+      },
+      "health": {
+        "label": "Estado",
+        "desc": "Archivos que faltan y qué hay que arreglar"
+      },
+      "metadata": {
+        "label": "Metadatos",
+        "desc": "Clave de TMDB y coincidencia de títulos"
+      },
+      "kids": {
+        "label": "Modo Niños",
+        "desc": "Qué pueden ver las cuentas infantiles"
+      },
+      "users": {
+        "label": "Usuarios",
+        "desc": "Cuentas, roles, límites"
+      },
+      "activity": {
+        "label": "Actividad",
+        "desc": "Inicios de sesión y qué se está reproduciendo"
+      },
+      "appearance": {
+        "label": "Apariencia",
+        "desc": "Valores predeterminados, nombre, CSS propio"
+      },
+      "features": {
+        "label": "Funciones",
+        "desc": "Vistas de estantes, valoraciones, watch parties"
+      },
+      "playback": {
+        "label": "Reproducción",
+        "desc": "Aceleración por hardware, clip de apertura"
+      },
+      "liveTv": {
+        "label": "TV en vivo",
+        "desc": "Canales, guía de programación, niños"
+      },
+      "network": {
+        "label": "Red",
+        "desc": "Fuera de casa, Tailscale, verificación en dos pasos"
+      },
+      "backups": {
+        "label": "Copias de seguridad",
+        "desc": "Programación, segunda copia, puntos de restauración"
+      },
+      "logs": {
+        "label": "Registros",
+        "desc": "Lo que ha estado haciendo el servidor"
+      }
     }
   },
   "activity": {
@@ -128,15 +171,30 @@
       "desc": "Alfabético y Creador siempre están. Desactivar una vista de carpetas la oculta para todos."
     },
     "folderModes": {
-      "diskFolder": { "label": "Carpetas del disco", "desc": "Explora por las carpetas del servidor." },
-      "customFolder": { "label": "Carpetas personalizadas", "desc": "Las carpetas que cada persona crea en la app, con una carpeta «Sin organizar» para todo lo demás." }
+      "diskFolder": {
+        "label": "Carpetas del disco",
+        "desc": "Explora por las carpetas del servidor."
+      },
+      "customFolder": {
+        "label": "Carpetas personalizadas",
+        "desc": "Las carpetas que cada persona crea en la app, con una carpeta «Sin organizar» para todo lo demás."
+      }
     },
     "ratings": {
       "title": "Valoraciones",
       "desc": "Qué valoraciones aparecen. Una desactivada se oculta en todas partes y el servidor deja de enviarla.",
-      "personal": { "label": "Valoraciones personales", "desc": "Cada persona puede dar de 1 a 5 estrellas y ve las suyas." },
-      "community": { "label": "Valoraciones de {name}", "desc": "La media de todos en este servidor." },
-      "external": { "label": "Valoraciones mundiales (TMDB)", "desc": "La puntuación de TMDB para películas, series y anime. Necesita una clave de TMDB." }
+      "personal": {
+        "label": "Valoraciones personales",
+        "desc": "Cada persona puede dar de 1 a 5 estrellas y ve las suyas."
+      },
+      "community": {
+        "label": "Valoraciones de {name}",
+        "desc": "La media de todos en este servidor."
+      },
+      "external": {
+        "label": "Valoraciones mundiales (TMDB)",
+        "desc": "La puntuación de TMDB para películas, series y anime. Necesita una clave de TMDB."
+      }
     },
     "movies": {
       "title": "Películas y ver en compañía",
@@ -158,7 +216,10 @@
       "desc": "Todo lo que haya en estas bibliotecas, ahora y en el futuro."
     },
     "noLibraries": "Todavía no hay bibliotecas.",
-    "items": { "one": "{number} elemento", "other": "{number} elementos" },
+    "items": {
+      "one": "{number} elemento",
+      "other": "{number} elementos"
+    },
     "titles": {
       "title": "Series y títulos sueltos",
       "desc": "Añade más desde la página de cualquier serie o título con su botón {button}.",
@@ -176,7 +237,10 @@
     "add": "Añadir biblioteca",
     "empty": "Todavía no hay bibliotecas. Añade una para indicarle a Plinthio una carpeta de contenido.",
     "kids": "Niños",
-    "items": { "one": "{number} elemento", "other": "{number} elementos" },
+    "items": {
+      "one": "{number} elemento",
+      "other": "{number} elementos"
+    },
     "scanning": "Escaneando…",
     "scan": "Escanear",
     "deleteAria": "Eliminar {name}",
@@ -249,6 +313,369 @@
     "couldNotDelete": "No se pudo eliminar esa biblioteca",
     "couldNotAdd": "No se pudo añadir esa biblioteca"
   },
+  "liveTv": {
+    "title": "TV en vivo",
+    "description": "Canales en vivo con guía de programación, de listas públicas o de tus propias listas de reproducción. Los cambios se guardan sobre la marcha.",
+    "channelCount": {
+      "one": "{number} canal",
+      "other": "{number} canales"
+    },
+    "switch": {
+      "label": "TV en vivo",
+      "desc": "Añade una página de TV en vivo con canales y guía de programación para todos en este servidor. Desactivada por defecto; al desactivarla se oculta en todas partes, pero tus listas y elecciones se conservan aquí."
+    },
+    "publicNote": "Los canales vienen de fuentes públicas de internet. Algunos pueden estar sin conexión, fallar de vez en cuando o verse solo en ciertos países. Nunca se añaden canales para adultos.",
+    "responsibility": "Tú eliges qué canales añadir y eres responsable de tener derecho a verlos donde estás. Plinthio no aloja, revisa ni respalda ningún canal.",
+    "sources": {
+      "title": "Listas de canales",
+      "desc": "Cada lista se recarga cada 12 horas mientras la TV en vivo está activada, junto con su guía de programación.",
+      "add": "Añadir canales",
+      "empty": "Aún no hay canales. Añade una lista ya preparada o tu propia lista de reproducción para empezar.",
+      "off": "Desactivada",
+      "kinds": {
+        "public": "Lista pública",
+        "own": "Lista propia"
+      },
+      "refreshing": "Cargando canales y guía…",
+      "failed": "No se pudo cargar: {error}",
+      "updated": "Actualizada: {date}",
+      "notLoaded": "Aún sin cargar",
+      "enabledAria": "Usar {name}",
+      "turnOn": "Activar",
+      "turnOff": "Desactivar",
+      "editAria": "Editar {name}",
+      "removeAria": "Quitar {name}",
+      "removeTitle": "Quitar lista de canales",
+      "removeMessage": {
+        "one": "¿Quitar {name}? Su {number} canal también se quita, junto con si estaba oculto o permitido para niños.",
+        "other": "¿Quitar {name}? Sus {number} canales también se quitan, junto con cuáles estaban ocultos o permitidos para niños."
+      },
+      "offHint": "La TV en vivo está desactivada, así que nadie ve estos canales todavía. Puedes prepararlos antes.",
+      "couldNotLoad": "No se pudieron cargar las listas de canales",
+      "couldNotRefresh": "No se pudo recargar la lista",
+      "couldNotSave": "No se pudo guardar la lista",
+      "couldNotRemove": "No se pudo quitar la lista"
+    },
+    "editDialog": {
+      "title": "Editar lista de canales",
+      "guideHint": "Déjalo vacío para usar la guía que indica la lista de reproducción, si tiene una."
+    },
+    "addDialog": {
+      "title": "Añadir canales",
+      "tabs": {
+        "public": "Canales públicos",
+        "own": "Lista propia"
+      },
+      "adding": "Añadiendo…",
+      "couldNotAdd": "No se pudieron añadir los canales",
+      "public": {
+        "intro": "Canales gratuitos de las listas públicas de iptv-org, actualizadas a diario. Elige una o varias; cada una se añade como una lista aparte.",
+        "listBy": "Listar canales por",
+        "kinds": {
+          "countries": "País",
+          "languages": "Idioma",
+          "categories": "Categoría"
+        },
+        "search": {
+          "countries": "Buscar países",
+          "languages": "Buscar idiomas",
+          "categories": "Buscar categorías"
+        },
+        "noMatches": "No hay coincidencias.",
+        "added": "Añadida",
+        "selected": {
+          "one": "{number} elegida",
+          "other": "{number} elegidas"
+        },
+        "addLists": {
+          "one": "Añadir lista",
+          "other": "Añadir {number} listas"
+        },
+        "note": "Estos canales vienen de fuentes públicas, así que algunos pueden estar sin conexión o verse solo en ciertos países. Nunca se añaden canales para adultos.",
+        "couldNotLoad": "No se pudieron cargar las listas públicas"
+      },
+      "own": {
+        "name": "Nombre",
+        "namePlaceholder": "p. ej., Antena de casa",
+        "playlistUrl": "Dirección de la lista (M3U)",
+        "playlistHint": "Una dirección a la que pueda llegar el servidor. Los canales que emiten en HLS (.m3u8) se pueden ver; los demás aparecen como no reproducibles.",
+        "guideUrl": "Dirección de la guía de programación (XMLTV, opcional)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "Déjalo vacío para usar la guía que indica la lista de reproducción, si tiene una. También funcionan los archivos comprimidos .xml.gz.",
+        "add": "Añadir lista"
+      }
+    },
+    "acknowledge": {
+      "title": "Antes de añadir canales públicos",
+      "points": {
+        "links": "Las listas públicas son enlaces a emisiones de terceros. Plinthio no aloja, revisa ni garantiza ninguna de ellas.",
+        "licensing": "Algunos canales solo se ven en ciertos países (restringidos por región), y puede que algunos no tengan licencia donde estás.",
+        "yourCall": "Añade solo canales que tengas permiso para ver. Qué canales añades lo decides tú, y la responsabilidad sobre ellos también es tuya.",
+        "adult": "Nunca se añaden canales para adultos."
+      },
+      "understand": "Lo entiendo",
+      "continue": "Continuar",
+      "couldNotSave": "No se pudo guardar, inténtalo de nuevo"
+    },
+    "filters": {
+      "title": "Elige qué mostrar",
+      "desc": "Oculta grupos enteros de canales de una vez. Estas elecciones se mantienen cuando se recargan las listas, y los canales nuevos que coincidan también se ocultan. Para conservar un canal de un grupo oculto, usa Mostrar siempre en Canales.",
+      "summary": {
+        "one": "Mostrando {visible} de {number} canal",
+        "other": "Mostrando {visible} de {number} canales"
+      },
+      "noChannels": "Aún no hay canales reproducibles. Los recuentos aparecen aquí cuando se carga una lista.",
+      "geoBlocked": {
+        "label": "Ocultar canales restringidos por región",
+        "desc": {
+          "one": "{number} canal está marcado como Geobloqueado: solo se ve en ciertos países y suele fallar en el resto.",
+          "other": "{number} canales están marcados como Geobloqueado: solo se ven en ciertos países y suelen fallar en el resto."
+        }
+      },
+      "hideBy": "Ocultar canales por",
+      "tabs": {
+        "groups": "Categorías",
+        "languages": "Idiomas",
+        "countries": "Países",
+        "hosts": "Servidores de emisión"
+      },
+      "hiddenCount": {
+        "one": "{number} no visible",
+        "other": "{number} no visibles"
+      },
+      "hints": {
+        "groups": "Las categorías vienen de las propias listas. Un canal con varias categorías se oculta si cualquiera de ellas está oculta.",
+        "languages": "Un canal en varios idiomas solo se oculta si todos ellos están ocultos. Los canales sin idioma indicado no se ven afectados.",
+        "countries": "El país de origen del canal. Los canales sin país indicado no se ven afectados.",
+        "hosts": "Algunos canales públicos no los emite la propia cadena, sino que se redirigen a través de un servicio de terceros. Ocultar un servidor deja fuera todos sus canales. Plinthio oculta uno de esos servicios, jmp2.uk, hasta que lo muestres; hazlo solo si estás seguro de que puedes ver esos canales."
+      },
+      "search": {
+        "groups": "Buscar categorías",
+        "languages": "Buscar idiomas",
+        "countries": "Buscar países",
+        "hosts": "Buscar servidores de emisión"
+      },
+      "showing": {
+        "label": "Ver",
+        "all": "Todo",
+        "shown": "Visibles",
+        "hidden": "No visibles"
+      },
+      "showAll": "Mostrar todo",
+      "hideAll": "Ocultar todo",
+      "showMatching": {
+        "one": "Mostrar {number} resultado",
+        "other": "Mostrar {number} resultados"
+      },
+      "hideMatching": {
+        "one": "Ocultar {number} resultado",
+        "other": "Ocultar {number} resultados"
+      },
+      "tip": "Consejo: para quedarte solo con unos pocos, pulsa Ocultar todo y luego activa los que quieras.",
+      "hiddenLabel": "No visible",
+      "more": {
+        "one": "Mostrar {number} más",
+        "other": "Mostrar {number} más"
+      },
+      "noMatches": "No hay coincidencias.",
+      "empty": {
+        "groups": "Ningún canal tiene categoría.",
+        "languages": "Ningún canal tiene idioma indicado.",
+        "countries": "Ningún canal tiene país indicado.",
+        "hosts": "Aún no hay servidores de emisión."
+      },
+      "couldNotLoad": "No se pudieron cargar los filtros"
+    },
+    "channels": {
+      "title": "Canales",
+      "desc": "Oculta los que no quieras, o pulsa el lápiz para darle a uno su propio número, nombre o logotipo. Las cuentas infantiles solo ven los canales permitidos para niños aquí o en una selección permitida para niños, y no hay ninguno permitido hasta que los elijas.",
+      "searchPlaceholder": "Buscar canales",
+      "sourceFilter": "Lista de canales",
+      "allSources": "Todas las listas",
+      "statusFilter": "Mostrar",
+      "status": {
+        "all": "Todos",
+        "visible": "Visibles",
+        "hidden": "Ocultos",
+        "filtered": "Ocultos por filtro",
+        "pinned": "Siempre visibles",
+        "offline": "Sin señal",
+        "kids": "Permitidos para niños",
+        "unsupported": "No reproducibles"
+      },
+      "selectPage": "Seleccionar esta página",
+      "selected": {
+        "one": "{number} seleccionado",
+        "other": "{number} seleccionados"
+      },
+      "selectAria": "Seleccionar {name}",
+      "hide": "Ocultar",
+      "show": "Mostrar",
+      "hideAria": "Ocultar {name}",
+      "showAria": "Mostrar {name}",
+      "allowKids": "Permitir para niños",
+      "disallowKids": "No para niños",
+      "allowKidsAria": "Permitir {name} para niños",
+      "disallowKidsAria": "Dejar de permitir {name} para niños",
+      "alwaysShow": "Mostrar siempre",
+      "alwaysShowHint": "Mostrarlo aunque un filtro de Elige qué mostrar lo oculte",
+      "followFilters": "Seguir filtros",
+      "followFiltersHint": "Dejar de mostrarlo siempre, para que los filtros vuelvan a aplicarse",
+      "pinAria": "Mostrar siempre {name}",
+      "badges": {
+        "hidden": "Oculto",
+        "kids": "Niños",
+        "geoBlocked": "Geobloqueado",
+        "geoBlockedHint": "Marcado como visible solo en ciertos países",
+        "unsupported": "No reproducible",
+        "unsupportedHint": "No es una emisión HLS, así que no se ofrece a nadie",
+        "filtered": "Oculto por filtro: {reasons}",
+        "filteredHint": "Oculto por Elige qué mostrar ({reasons}). Usa Mostrar siempre para conservar este canal de todos modos.",
+        "pinnedHint": "Siempre visible, digan lo que digan los filtros. Pulsa de nuevo para que decidan los filtros.",
+        "pinnedOverHint": "Siempre visible, aunque lo oculte un filtro ({reasons}). Pulsa de nuevo para que decidan los filtros.",
+        "regionLocked": "Restringido por región",
+        "offline": "Sin señal",
+        "offlineHint": "No se reprodujo en sus dos últimas comprobaciones (última: {date})",
+        "inLineupsHint": "En las selecciones: {names}"
+      },
+      "range": "{from}–{to} de {total}",
+      "empty": "Aún no hay canales. Aparecen aquí cuando se carga una lista.",
+      "noMatches": "Ningún canal coincide.",
+      "couldNotLoad": "No se pudieron cargar los canales",
+      "edit": "Número, nombre y logotipo",
+      "editAria": "Editar número, nombre y logotipo de {name}",
+      "numberHint": "Número de canal",
+      "checkNow": "Comprobar ahora",
+      "checkNowAria": "Comprobar si {name} se reproduce ahora",
+      "checking": "Comprobando…",
+      "couldNotCheck": "No se pudo comprobar el canal",
+      "addToLineup": "Añadir a una selección",
+      "addedToLineup": {
+        "one": "Se añadió {number} canal a {name}",
+        "other": "Se añadieron {number} canales a {name}"
+      },
+      "stillOffline": "Sigue sin señal · Comprobar de nuevo"
+    },
+    "health": {
+      "title": "Estado de los canales",
+      "desc": "Los canales públicos van y vienen. Plinthio comprueba unos pocos a la vez en segundo plano para encontrar los que han dejado de funcionar. Cada comprobación solo pide a la emisión sus primeros kilobytes, así que no se reproduce ni se convierte nada y el servidor apenas lo nota.",
+      "enabled": {
+        "label": "Comprobar canales en segundo plano",
+        "desc": "Unos 20 canales cada 10 minutos mientras la TV en vivo está activada, así que cada canal se revisa más o menos una vez al día."
+      },
+      "hideOffline": {
+        "label": "Ocultar canales sin señal",
+        "desc": "Un canal que falla dos comprobaciones seguidas se oculta a los espectadores. Se vuelve a comprobar más o menos una vez al día y reaparece solo en cuanto se reproduce."
+      },
+      "counts": {
+        "ok": "Funcionan",
+        "offline": "Sin señal",
+        "unchecked": "Sin comprobar"
+      },
+      "showOffline": "Mostrar los canales sin señal",
+      "lastChecked": "Última comprobación: {date}.",
+      "neverChecked": "Aún no hay comprobaciones.",
+      "pace": "Los canales se comprueban unos pocos a la vez; Comprobar ahora en un canal lo revisa al momento.",
+      "paused": "Las comprobaciones en segundo plano están desactivadas, así que estos recuentos no cambian.",
+      "couldNotLoad": "No se pudo cargar el estado de los canales"
+    },
+    "editChannel": {
+      "title": "Editar canal",
+      "number": "Número de canal",
+      "automatic": "Automático",
+      "useAutomatic": "Usar automático",
+      "numberHint": "De 1 a 9999, cada uno una sola vez. Los espectadores pueden escribirlo para ir directo a este canal. Los canales sin número van después del más alto que hayas puesto.",
+      "numberInvalid": "Usa un número entero del 1 al 9999.",
+      "name": "Nombre",
+      "useOriginal": "Usar el original",
+      "nameHint": "Déjalo vacío para usar el nombre de la lista: {name}",
+      "logo": "Dirección del logotipo",
+      "useOriginalLogo": "Usar el logotipo original",
+      "logoHint": "Un enlace a una imagen (http o https). Déjalo vacío para usar el logotipo de la lista. El nuevo logotipo aparece al guardar.",
+      "checkHint": "Comprueba si este canal se reproduce ahora mismo. Un canal solo se marca sin señal tras dos comprobaciones fallidas seguidas.",
+      "health": {
+        "ok": "Funciona (comprobado: {date})",
+        "offline": "Sin señal (comprobado: {date})",
+        "unchecked": "Sin comprobar"
+      },
+      "couldNotSave": "No se pudo guardar el canal",
+      "checkOk": "Se reproduce.",
+      "checkFailed": "Esta vez no se reprodujo: {error}",
+      "checkFailedNoReason": "Esta vez no se reprodujo."
+    },
+    "lineups": {
+      "title": "Selecciones de canales",
+      "desc": "Crea tus propios grupos de canales, como Noticias, Deportes o Para los niños, en el orden que quieras. Cada selección es una pestaña en la página de TV en vivo, en el orden que se muestra aquí.",
+      "create": "Nueva selección",
+      "createTitle": "Nueva selección",
+      "empty": "Aún no hay selecciones. Hasta que crees una, los espectadores ven todos los canales por categoría.",
+      "footer": "En una selección, los espectadores siguen sin ver los canales que has ocultado o que están sin señal, y los filtros se siguen aplicando salvo que un canal esté en Mostrar siempre.",
+      "name": "Nombre",
+      "namePlaceholder": "p. ej., Noticias",
+      "nameHint": "Los espectadores lo ven como nombre de la pestaña.",
+      "openAria": "Abrir la selección {name}",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "moveUpAria": "Subir la selección {name}",
+      "moveDownAria": "Bajar la selección {name}",
+      "kids": {
+        "label": "Permitir para niños",
+        "desc": "Las cuentas infantiles pueden ver todos los canales de esta selección, además de los canales permitidos para niños uno a uno."
+      },
+      "delete": "Eliminar selección",
+      "deleteTitle": "Eliminar selección",
+      "deleteMessage": "¿Eliminar {name}? Sus canales siguen donde están; solo se elimina la selección.",
+      "couldNotLoad": "No se pudieron cargar las selecciones",
+      "couldNotLoadChannels": "No se pudieron cargar los canales de esta selección",
+      "couldNotCreate": "No se pudo crear la selección",
+      "couldNotAdd": "No se pudieron añadir los canales",
+      "couldNotDelete": "No se pudo eliminar la selección",
+      "editor": {
+        "subtitle": "Los cambios se guardan sobre la marcha",
+        "tabs": {
+          "channels": "Canales",
+          "add": "Añadir canales"
+        },
+        "empty": "Aún no hay canales en esta selección.",
+        "addChannels": "Añadir canales",
+        "sortName": "A–Z",
+        "sortNumber": "Por número",
+        "moveUpAria": "Subir {name}",
+        "moveDownAria": "Bajar {name}",
+        "remove": "Quitar de la selección",
+        "removeAria": "Quitar {name} de esta selección",
+        "addBy": "Añadir canales por",
+        "kinds": {
+          "search": "Búsqueda",
+          "categories": "Categoría entera"
+        },
+        "search": {
+          "search": "Buscar canales",
+          "categories": "Buscar categorías"
+        },
+        "searchHint": "Escribe parte del nombre de un canal.",
+        "inLineup": "Añadido",
+        "addAria": "Añadir {name} a esta selección",
+        "addFound": {
+          "one": "Añadir {number} resultado",
+          "other": "Añadir los {number} resultados"
+        },
+        "moreResults": {
+          "one": "{number} coincidencia más; escribe más para acotar.",
+          "other": "{number} coincidencias más; escribe más para acotar."
+        },
+        "addAll": "Añadir todo",
+        "addCategoryAria": "Añadir todos los canales de {name}",
+        "categoryHidden": "oculta por un filtro",
+        "hiddenByFilter": "Oculto por filtro",
+        "nothingNew": "Todos los canales de esa categoría ya están aquí.",
+        "added": {
+          "one": "Se añadió {number} canal",
+          "other": "Se añadieron {number} canales"
+        }
+      }
+    }
+  },
   "logs": {
     "title": "Registros",
     "description": "Escaneos, errores y lo que ha estado haciendo el servidor, primero lo más reciente.",
@@ -315,9 +742,18 @@
       "accounts": "Cuentas"
     },
     "byMediaType": "Por tipo de contenido",
-    "files": { "one": "{number} archivo", "other": "{number} archivos" },
-    "series": { "one": "{number} serie", "other": "{number} series" },
-    "creators": { "one": "{number} creador", "other": "{number} creadores" }
+    "files": {
+      "one": "{number} archivo",
+      "other": "{number} archivos"
+    },
+    "series": {
+      "one": "{number} serie",
+      "other": "{number} series"
+    },
+    "creators": {
+      "one": "{number} creador",
+      "other": "{number} creadores"
+    }
   },
   "playback": {
     "title": "Reproducción",
@@ -392,15 +828,36 @@
     "outside": "fuera",
     "roles": {
       "label": "Rol",
-      "viewer": { "label": "Espectador", "desc": "Explora, lee, ve y escucha; sigue su propio progreso." },
-      "editor": { "label": "Editor", "desc": "Además corrige títulos, portadas y detalles compartidos." },
-      "admin": { "label": "Admin", "desc": "Todo, incluidas las bibliotecas, los usuarios y esta página." }
+      "viewer": {
+        "label": "Espectador",
+        "desc": "Explora, lee, ve y escucha; sigue su propio progreso."
+      },
+      "editor": {
+        "label": "Editor",
+        "desc": "Además corrige títulos, portadas y detalles compartidos."
+      },
+      "admin": {
+        "label": "Admin",
+        "desc": "Todo, incluidas las bibliotecas, los usuarios y esta página."
+      }
     },
     "durations": {
-      "day": { "one": "{count} día", "other": "{count} días" },
-      "week": { "one": "{count} semana", "other": "{count} semanas" },
-      "month": { "one": "{count} mes", "other": "{count} meses" },
-      "year": { "one": "{count} año", "other": "{count} años" }
+      "day": {
+        "one": "{count} día",
+        "other": "{count} días"
+      },
+      "week": {
+        "one": "{count} semana",
+        "other": "{count} semanas"
+      },
+      "month": {
+        "one": "{count} mes",
+        "other": "{count} meses"
+      },
+      "year": {
+        "one": "{count} año",
+        "other": "{count} años"
+      }
     },
     "addDialog": {
       "title": "Añadir un usuario",
@@ -450,8 +907,14 @@
     "newPasswordPlaceholder": "Déjala en blanco para mantener la suya",
     "newPasswordHint": "Al menos 8 caracteres. Establecer una cierra su sesión en todas partes.",
     "accessEnded": "Acceso terminado",
-    "hoursLeft": { "one": "Queda {count} h", "other": "Quedan {count} h" },
-    "daysLeft": { "one": "Queda {count} día", "other": "Quedan {count} días" },
+    "hoursLeft": {
+      "one": "Queda {count} h",
+      "other": "Quedan {count} h"
+    },
+    "daysLeft": {
+      "one": "Queda {count} día",
+      "other": "Quedan {count} días"
+    },
     "badges": {
       "twoFactor": "Dos pasos",
       "twoFactorTitle": "También inicia sesión con un código de una app de autenticación",
@@ -489,8 +952,14 @@
     },
     "allClear": "Todo parece estar bien.",
     "libraries": "Bibliotecas",
-    "itemsTotal": { "one": "{number} elemento en total", "other": "{number} elementos en total" },
-    "items": { "one": "{number} elemento", "other": "{number} elementos" },
+    "itemsTotal": {
+      "one": "{number} elemento en total",
+      "other": "{number} elementos en total"
+    },
+    "items": {
+      "one": "{number} elemento",
+      "other": "{number} elementos"
+    },
     "scanned": "Escaneada el {time}",
     "neverScanned": "Nunca escaneada",
     "unreachable": "No se puede acceder a la carpeta — comprueba que la unidad esté montada y que el volumen de Docker esté asignado. Los elementos siguen en el catálogo hasta que vuelva.",
@@ -513,7 +982,10 @@
     "duplicates": {
       "title": "Posibles duplicados",
       "hint": "Mismo título y exactamente el mismo tamaño de archivo — normalmente el mismo archivo en dos carpetas o bibliotecas.",
-      "copies": { "one": "{count} copia", "other": "{count} copias" }
+      "copies": {
+        "one": "{count} copia",
+        "other": "{count} copias"
+      }
     },
     "clashes": {
       "title": "Conflictos de tomo / episodio",
@@ -544,7 +1016,10 @@
     },
     "couldNotRun": "No se pudo hacer la comprobación de estado",
     "groupSeason": "{name}, temporada {season}",
-    "titlesCount": { "one": "{count} título", "other": "{count} títulos" },
+    "titlesCount": {
+      "one": "{count} título",
+      "other": "{count} títulos"
+    },
     "keepTitle": "¿Guardar como historial?",
     "keepMessage": {
       "one": "{label} se quedará en su página, en gris, con el progreso de todos, pero no se podrá reproducir. Si los archivos vuelven, se restaurará solo.",
@@ -554,14 +1029,20 @@
     "couldNotUndo": "No se pudo deshacer",
     "removeTitle": "¿Quitar definitivamente?",
     "removeMessage": "¿Quitar {name} del catálogo? El progreso y las valoraciones se guardan en la base de datos y se vuelven a vincular si alguna vez se escanean los mismos archivos, pero hasta entonces no se muestra nada.",
-    "skipped": { "one": "{count} conservado: sus archivos han vuelto.", "other": "{count} conservados: sus archivos han vuelto." },
+    "skipped": {
+      "one": "{count} conservado: sus archivos han vuelto.",
+      "other": "{count} conservados: sus archivos han vuelto."
+    },
     "couldNotRemove": "No se pudo quitar",
     "removeMissingTitle": "¿Quitar los títulos que faltan?",
     "removeMissingMessage": {
       "one": "¿Quitar definitivamente {count} título que falta del catálogo? Se conserva todo aquello cuyo archivo haya vuelto, y también lo que se guarde como historial. El progreso de lectura y las valoraciones también se conservan y se vuelven a vincular si alguna vez se escanean los mismos archivos.",
       "other": "¿Quitar definitivamente {count} títulos que faltan del catálogo? Se conserva todo aquello cuyo archivo haya vuelto, y también lo que se guarde como historial. El progreso de lectura y las valoraciones también se conservan y se vuelven a vincular si alguna vez se escanean los mismos archivos."
     },
-    "removed": { "one": "Se quitó {count} título.", "other": "Se quitaron {count} títulos." },
+    "removed": {
+      "one": "Se quitó {count} título.",
+      "other": "Se quitaron {count} títulos."
+    },
     "removedSkipped": {
       "one": "Se quitó {count} título ({skipped} conservados — sus archivos han vuelto).",
       "other": "Se quitaron {count} títulos ({skipped} conservados — sus archivos han vuelto)."
@@ -569,8 +1050,14 @@
     "couldNotRemoveMissing": "No se pudieron quitar los títulos que faltan",
     "scanComplete": "Escaneo de «{name}» completado: {added} añadidos, {updated} actualizados, {removed} quitados.",
     "scanFailed": "Falló el escaneo",
-    "episodes": { "one": "{count} episodio", "other": "{count} episodios" },
-    "files": { "one": "{count} archivo", "other": "{count} archivos" },
+    "episodes": {
+      "one": "{count} episodio",
+      "other": "{count} episodios"
+    },
+    "files": {
+      "one": "{count} archivo",
+      "other": "{count} archivos"
+    },
     "stillOnDisk": {
       "one": "{count} sigue en el disco: bórralo para liberar el espacio.",
       "other": "{count} siguen en el disco: bórralos para liberar el espacio."

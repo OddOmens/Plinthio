@@ -1,0 +1,146 @@
+{
+  "title": "TV ao vivo",
+  "badge": "Ao vivo",
+  "intro": "Canais transmitindo agora e o que vem a seguir.",
+  "openAdmin": "Abrir configurações da TV ao vivo",
+  "tabs": {
+    "channels": "Canais",
+    "guide": "Guia"
+  },
+  "searchPlaceholder": "Buscar canais e programas…",
+  "groupsLabel": "Grupos de canais",
+  "channelCount": {
+    "one": "{count} canal",
+    "other": "{count} canais"
+  },
+  "minutesLeft": {
+    "one": "Falta {count} min",
+    "other": "Faltam {count} min"
+  },
+  "nextAt": "A seguir, às {time}: {title}",
+  "noGuideInfo": "Sem informações da programação",
+  "geoBlocked": "Restrito por região",
+  "geoBlockedHint": "Este canal talvez só funcione no país de origem.",
+  "watchChannel": "Assistir {channel}",
+  "off": {
+    "title": "A TV ao vivo está desativada",
+    "intro": "A TV ao vivo não está disponível neste servidor no momento.",
+    "admin": "Ative em Administração → TV ao vivo e depois adicione alguns canais.",
+    "viewer": "Um administrador pode ativar a TV ao vivo neste servidor."
+  },
+  "empty": {
+    "noChannelsTitle": "Nenhum canal ainda",
+    "noChannels": "Ainda não há canais para você assistir. Peça a um administrador para adicionar alguns.",
+    "noChannelsAdmin": "Adicione canais de uma lista pronta ou da sua própria playlist em Administração → TV ao vivo.",
+    "noMatchesTitle": "Nenhum canal encontrado",
+    "noMatches": "Nenhum canal corresponde à sua busca ou ao grupo escolhido.",
+    "clearFilters": "Mostrar todos os canais"
+  },
+  "errors": {
+    "loadTitle": "Não foi possível carregar os canais",
+    "guideTitle": "Não foi possível carregar o guia",
+    "unreachable": "Não foi possível acessar o servidor. Verifique sua conexão e tente de novo."
+  },
+  "guide": {
+    "channel": "Canal",
+    "now": "Agora",
+    "tonight": "Hoje à noite",
+    "tomorrow": "Amanhã",
+    "earlier": "Antes",
+    "later": "Depois",
+    "notLoadedTitle": "O guia de programação ainda não carregou",
+    "notLoaded": "Os canais funcionam mesmo assim. O guia é preenchido depois que as fontes são atualizadas, o que acontece duas vezes por dia.",
+    "onNow": {
+      "one": "No ar · falta {count} min",
+      "other": "No ar · faltam {count} min"
+    },
+    "startsIn": {
+      "one": "Começa em {count} min",
+      "other": "Começa em {count} min"
+    },
+    "startsAt": "Começa às {time}",
+    "ended": "Encerrado",
+    "watchNow": "Assistir agora",
+    "watchChannel": "Assistir ao canal"
+  },
+  "player": {
+    "back": "Voltar aos canais",
+    "tuning": "Sintonizando…",
+    "now": "Agora",
+    "goLive": "Voltar ao vivo",
+    "mute": "Silenciar",
+    "unmute": "Ativar som",
+    "volume": "Volume",
+    "channelUp": "Canal acima",
+    "channelDown": "Canal abaixo",
+    "channelUpHint": "Canal acima (↑)",
+    "channelDownHint": "Canal abaixo (↓)",
+    "lastChannel": "Canal anterior",
+    "lastChannelHint": "Canal anterior (L)",
+    "nextChannel": "Próximo canal",
+    "info": "O que está passando",
+    "pip": "Picture-in-picture",
+    "fullscreen": "Tela cheia",
+    "cantPlay": "Este canal não está reproduzindo",
+    "errorHelp": "Erro {code}: o que significa",
+    "geoBlockedHint": "Este canal está marcado como restrito por região, então talvez só funcione no país de origem.",
+    "errors": {
+      "unavailable": "Não foi possível acessar a transmissão do canal. Ele pode estar fora do ar no momento — tente mais tarde ou escolha outro canal.",
+      "notFound": "Este canal não está mais disponível.",
+      "offline": "A conexão com o servidor caiu. Verifique sua rede e tente de novo.",
+      "tokenExpired": "Seu acesso à mídia expirou e não pôde ser renovado. Recarregue a página, ou saia e entre de novo.",
+      "decode": "Este navegador não consegue reproduzir o vídeo deste canal.",
+      "unsupportedBrowser": "Este navegador não consegue reproduzir transmissões ao vivo."
+    }
+  },
+  "undo": "Desfazer",
+  "lists": {
+    "label": "Listas de canais",
+    "favourites": "Favoritos",
+    "recent": "Recentes",
+    "all": "Todos os canais"
+  },
+  "favourites": {
+    "add": "Adicionar {channel} aos favoritos",
+    "remove": "Remover {channel} dos favoritos",
+    "addShort": "Adicionar aos favoritos",
+    "removeShort": "Remover dos favoritos"
+  },
+  "menu": {
+    "options": "Mais opções",
+    "optionsFor": "Opções de {channel}",
+    "hideChannel": "Ocultar para mim",
+    "hideGroup": "Ocultar todo o grupo “{group}” para mim"
+  },
+  "hidden": {
+    "channel": "{channel} está oculto para você",
+    "group": "“{group}” está oculto para você"
+  },
+  "search": {
+    "channels": "Canais",
+    "programmes": "Programas",
+    "noResultsTitle": "Nada encontrado",
+    "noResults": "Nenhum canal ou programa corresponde a “{query}”.",
+    "clear": "Limpar busca",
+    "errorTitle": "Não foi possível buscar"
+  },
+  "mine": {
+    "button": "Ocultos para mim",
+    "title": "Ocultos para mim",
+    "subtitle": "Só você vê essas escolhas, em todos os seus dispositivos.",
+    "showOnHome": "Mostrar “Ao vivo agora” no Início",
+    "showOnHomeHint": "Uma fileira com o que está passando nos seus canais favoritos.",
+    "hiddenTitle": "Canais e grupos que você ocultou",
+    "nothingHidden": "Você não ocultou nada. Use o menu de um canal para ocultá-lo, ou o grupo inteiro, só para você.",
+    "wholeGroup": "Grupo inteiro",
+    "show": "Mostrar",
+    "showAll": "Mostrar tudo",
+    "saveFailed": "Não foi possível salvar. Verifique sua conexão e tente de novo."
+  },
+  "home": {
+    "title": "Ao vivo agora",
+    "allChannels": "Todos os canais",
+    "hideRow": "Ocultar esta fileira",
+    "hideRowHint": "Ocultar esta fileira (traga de volta em TV ao vivo → Ocultos para mim)"
+  }
+}

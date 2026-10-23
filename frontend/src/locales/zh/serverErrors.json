@@ -335,6 +335,24 @@
       "message": "这场一起看人数已满",
       "meaning": "一场一起看最多容纳20人，一台服务器最多同时进行20场。",
       "fix": "等有人离开或某场一起看结束后再试。"
+    },
+    "P700": {
+      "title": "电视直播已关闭",
+      "message": "此服务器已关闭电视直播",
+      "meaning": "管理员尚未开启电视直播，或已将其关闭。",
+      "fix": "管理员可以在“管理 → 电视直播”中开启。"
+    },
+    "P701": {
+      "title": "频道不可用",
+      "message": "此频道目前无法播放",
+      "meaning": "该频道的直播流没有响应、返回了错误，或指向 Plinthio 不会连接的地址。来自公共来源的频道可能会离线或更改地址，有些只能在特定国家/地区播放。",
+      "fix": "换一个频道，或稍后重试。管理员可以在“管理 → 电视直播”中刷新来源，或隐藏一直离线的频道。"
+    },
+    "P702": {
+      "title": "无法加载来源",
+      "message": "无法加载频道列表",
+      "meaning": "Plinthio 无法下载或读取播放列表、节目单或公共频道预设列表。",
+      "fix": "检查服务器能否访问互联网（或播放列表地址），然后重试。“管理 → 电视直播”中会显示每个来源最近一次的错误。"
     }
   },
   "messages": {
@@ -477,7 +495,37 @@
     "useAFullPathStartingWith": "请使用以/开头的完整路径。",
     "thatSInsideTheServerS": "该位置在服务器自己的数据文件夹内；请选择其他位置的文件夹。",
     "thatFolderContainsTheServerS": "该文件夹包含服务器的数据文件夹；请选择它旁边或其他位置的文件夹。",
-    "thatSAFileNotA": "这是一个文件，不是文件夹。"
+    "thatSAFileNotA": "这是一个文件，不是文件夹。",
+    "channelNotFound": "未找到频道",
+    "sourceNotFound": "未找到来源",
+    "thisStreamLinkIsNot": "此直播流链接无效",
+    "chooseACountryLanguageOr": "请选择国家/地区、语言或类别",
+    "thoseChannelsAreAlreadyAdded": "这些频道已添加",
+    "enterANameForThese": "请为这些频道输入名称",
+    "enterThePlaylistAddressStarting": "请输入以 http:// 或 https:// 开头的播放列表地址",
+    "theGuideAddressMustStart": "节目单地址必须以 http:// 或 https:// 开头",
+    "thatPlaylistIsAlreadyAdded": "该播放列表已添加",
+    "chooseWhatKindOfChannels": "请选择要添加的频道类型",
+    "chooseUpTo1000Channels": "最多选择1000个频道",
+    "nothingToChange": "没有需要更改的内容",
+    "confirmTheNoteAboutPublic": "请先确认关于公共频道的说明",
+    "hideGeoBlockedMustBeTrue": "hideGeoBlocked 必须为 true 或 false",
+    "hiddenCategoriesMustBeA": "隐藏的类别必须是最多包含5000个名称的列表",
+    "hiddenLanguagesMustBeA": "隐藏的语言必须是最多包含5000个名称的列表",
+    "hiddenCountriesMustBeTwo": "隐藏的国家/地区必须是两个字母的国家/地区代码",
+    "hiddenStreamHostsMustBe": "隐藏的直播流服务器必须是主机名，例如 example.com",
+    "lineUpNotFound": "未找到频道合集",
+    "channelNumbersGoFrom1": "频道编号范围为1到9999",
+    "enterANameForTheChannel": "请输入频道名称，或留空",
+    "theLogoAddressMustStart": "台标地址必须以 http:// 或 https:// 开头",
+    "anotherChannelAlreadyHasThat": "已有其他频道使用该编号",
+    "enterANameForTheLineUp": "请输入频道合集名称",
+    "sendTheLineUpsIn": "请按新顺序发送频道合集",
+    "kidsAllowedMustBeTrue": "kidsAllowed 必须为 true 或 false",
+    "hideOfflineMustBeTrue": "hideOffline 必须为 true 或 false",
+    "enabledMustBeTrueOr": "enabled 必须为 true 或 false",
+    "chooseUpTo5000Channels": "最多选择5000个频道",
+    "youCanHaveUpTo": "最多可以收藏500个频道"
   },
   "patterns": {
     "noMetadataSource": "暂无{type}的元数据来源",

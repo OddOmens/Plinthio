@@ -26,6 +26,9 @@
         <span class="flex-1">{{ $t('shelf.offline.message') }}</span>
         <span class="font-semibold whitespace-nowrap">{{ $t('shelf.offline.openDownloads') }}</span>
       </router-link>
+      <!-- Live now: the viewer's favourite channels (it hides itself when there's nothing). -->
+      <LiveNowRow v-if="activeType === 'all' && !searchQuery && !filtersActive && groupBy === 'series'" />
+
       <!-- Continue Watching (video only, shown as its own row on the "All" view) -->
       <section :key="`watching-${activeType}`" v-if="continueWatchingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="shelf-fade-in flex flex-col gap-3">
         <div class="flex items-center justify-between">
@@ -409,6 +412,7 @@ import Sidebar from '../components/Sidebar.vue';
 import BookCard from '../components/BookCard.vue';
 import SeriesCard from '../components/SeriesCard.vue';
 import ShelfEntryGrid from '../components/ShelfEntryGrid.vue';
+import LiveNowRow from '../components/live/LiveNowRow.vue';
 import { buildShelfEntries, entryFolder, groupEntries } from '../utils/shelfEntries';
 import { detailRoute, creatorLabel, realCreator } from '../utils/mediaVocab';
 import { normalizeShelfModes, userShelfModes } from '../utils/shelfModes';

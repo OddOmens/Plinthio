@@ -1,0 +1,142 @@
+{
+  "title": "실시간 TV",
+  "badge": "실시간",
+  "intro": "지금 방송 중인 채널과 곧 방송될 프로그램이에요.",
+  "openAdmin": "실시간 TV 설정 열기",
+  "tabs": {
+    "channels": "채널",
+    "guide": "편성표"
+  },
+  "searchPlaceholder": "채널 및 프로그램 검색…",
+  "groupsLabel": "채널 그룹",
+  "channelCount": {
+    "other": "채널 {count}개"
+  },
+  "minutesLeft": {
+    "other": "{count}분 남음"
+  },
+  "nextAt": "다음 {time}: {title}",
+  "noGuideInfo": "프로그램 정보 없음",
+  "geoBlocked": "지역 제한",
+  "geoBlockedHint": "이 채널은 방송 국가에서만 재생될 수 있어요.",
+  "watchChannel": "{channel} 시청",
+  "off": {
+    "title": "실시간 TV가 꺼져 있어요",
+    "intro": "지금은 이 서버에서 실시간 TV를 쓸 수 없어요.",
+    "admin": "관리 → 실시간 TV에서 켠 다음 채널을 추가하세요.",
+    "viewer": "관리자가 이 서버의 실시간 TV를 켤 수 있어요."
+  },
+  "empty": {
+    "noChannelsTitle": "아직 채널이 없어요",
+    "noChannels": "아직 볼 수 있는 채널이 없어요. 관리자에게 추가를 요청하세요.",
+    "noChannelsAdmin": "관리 → 실시간 TV에서 기본 제공 목록이나 내 재생 목록으로 채널을 추가하세요.",
+    "noMatchesTitle": "채널을 찾을 수 없어요",
+    "noMatches": "검색어나 선택한 그룹과 일치하는 채널이 없어요.",
+    "clearFilters": "모든 채널 보기"
+  },
+  "errors": {
+    "loadTitle": "채널을 불러올 수 없어요",
+    "guideTitle": "편성표를 불러올 수 없어요",
+    "unreachable": "서버에 연결할 수 없어요. 연결 상태를 확인하고 다시 시도하세요."
+  },
+  "guide": {
+    "channel": "채널",
+    "now": "지금",
+    "tonight": "오늘 밤",
+    "tomorrow": "내일",
+    "earlier": "이전 시간대",
+    "later": "다음 시간대",
+    "notLoadedTitle": "편성표를 아직 불러오지 않았어요",
+    "notLoaded": "채널은 재생돼요. 편성표는 소스를 새로 고친 뒤에 채워지며, 새로 고침은 하루에 두 번 이뤄져요.",
+    "onNow": {
+      "other": "방송 중 · {count}분 남음"
+    },
+    "startsIn": {
+      "other": "{count}분 후 시작"
+    },
+    "startsAt": "{time} 시작",
+    "ended": "종료됨",
+    "watchNow": "지금 시청",
+    "watchChannel": "채널 시청"
+  },
+  "player": {
+    "back": "채널 목록으로 돌아가기",
+    "tuning": "채널 연결 중…",
+    "now": "지금",
+    "goLive": "실시간으로",
+    "mute": "음소거",
+    "unmute": "음소거 해제",
+    "volume": "볼륨",
+    "channelUp": "채널 올리기",
+    "channelDown": "채널 내리기",
+    "channelUpHint": "채널 올리기 (↑)",
+    "channelDownHint": "채널 내리기 (↓)",
+    "lastChannel": "이전 채널",
+    "lastChannelHint": "이전 채널 (L)",
+    "nextChannel": "다음 채널",
+    "info": "방송 정보",
+    "pip": "화면 속 화면",
+    "fullscreen": "전체 화면",
+    "cantPlay": "이 채널을 재생할 수 없어요",
+    "errorHelp": "오류 {code}: 무슨 뜻인가요?",
+    "geoBlockedHint": "이 채널은 지역 제한으로 표시되어 있어서 방송 국가에서만 재생될 수 있어요.",
+    "errors": {
+      "unavailable": "채널 스트림에 연결할 수 없어요. 잠시 오프라인일 수 있어요. 나중에 다시 시도하거나 다른 채널을 고르세요.",
+      "notFound": "이 채널은 더 이상 볼 수 없어요.",
+      "offline": "서버와 연결이 끊겼어요. 네트워크를 확인하고 다시 시도하세요.",
+      "tokenExpired": "미디어 접근 권한이 만료되었고 갱신할 수 없었어요. 페이지를 새로 고치거나 로그아웃 후 다시 로그인하세요.",
+      "decode": "이 브라우저에서는 이 채널의 영상을 재생할 수 없어요.",
+      "unsupportedBrowser": "이 브라우저에서는 실시간 스트림을 재생할 수 없어요."
+    }
+  },
+  "undo": "실행 취소",
+  "lists": {
+    "label": "채널 목록",
+    "favourites": "즐겨찾기",
+    "recent": "최근",
+    "all": "전체 채널"
+  },
+  "favourites": {
+    "add": "{channel}을(를) 즐겨찾기에 추가",
+    "remove": "{channel}을(를) 즐겨찾기에서 삭제",
+    "addShort": "즐겨찾기에 추가",
+    "removeShort": "즐겨찾기에서 삭제"
+  },
+  "menu": {
+    "options": "옵션 더 보기",
+    "optionsFor": "{channel} 옵션",
+    "hideChannel": "나에게만 숨기기",
+    "hideGroup": "'{group}' 전체를 나에게만 숨기기"
+  },
+  "hidden": {
+    "channel": "{channel}을(를) 나에게만 숨겼어요",
+    "group": "'{group}'을(를) 나에게만 숨겼어요"
+  },
+  "search": {
+    "channels": "채널",
+    "programmes": "프로그램",
+    "noResultsTitle": "검색 결과 없음",
+    "noResults": "'{query}'와(과) 일치하는 채널이나 프로그램이 없어요.",
+    "clear": "검색어 지우기",
+    "errorTitle": "검색할 수 없어요"
+  },
+  "mine": {
+    "button": "내가 숨긴 항목",
+    "title": "내가 숨긴 항목",
+    "subtitle": "이 선택은 나에게만 보이며 모든 기기에 적용돼요.",
+    "showOnHome": "홈에 '지금 방송 중' 표시",
+    "showOnHomeHint": "즐겨찾기 채널에서 방송 중인 프로그램을 보여 주는 줄이에요.",
+    "hiddenTitle": "숨긴 채널과 그룹",
+    "nothingHidden": "숨긴 항목이 없어요. 채널 메뉴에서 그 채널이나 그룹 전체를 나에게만 숨길 수 있어요.",
+    "wholeGroup": "그룹 전체",
+    "show": "표시",
+    "showAll": "모두 표시",
+    "saveFailed": "저장할 수 없어요. 연결 상태를 확인하고 다시 시도하세요."
+  },
+  "home": {
+    "title": "지금 방송 중",
+    "allChannels": "전체 채널",
+    "hideRow": "이 줄 숨기기",
+    "hideRowHint": "이 줄 숨기기 (실시간 TV → 내가 숨긴 항목에서 다시 켤 수 있어요)"
+  }
+}

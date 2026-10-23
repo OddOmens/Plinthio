@@ -49,6 +49,7 @@ troubleshooting and the API in depth.
 * Title pages with cast & crew, seasons with episode stills, movie collections (with the films you don't have, requestable), and extras (trailers, featurettes) kept off the shelf.
 * **Skip buttons** with per-person amounts (5 s to 5 min), **pause screens** (Details, Cinematic with TMDB facts, Bedtime clock), scrub previews, skip intro/credits, up-next, Chromecast and AirPlay.
 * **Watch parties:** watch together from different places, in sync, with chat.
+* **Live TV** (off by default): live channels with a programme guide, from public lists or your own M3U playlists, with easy filters by category, language, country and stream host. You choose which channels to add and are responsible for having the right to watch them.
 
 ### 🗂️ Library
 * One shelf model for every type: **Alphabetical**, **Creator**, **Disk Folders** and **Custom Folders**, always one card per series; every title opens a detail page first.
@@ -89,9 +90,9 @@ A factual summary; details in [docs/accounts-and-access.md](docs/accounts-and-ac
 * **Logs** strip `?token=` from URLs.
 * **Proxies:** `TRUST_PROXY` is opt-in, for use behind a reverse proxy only. The Tailscale and public-address add-ons set it to `loopback`, so only a proxy running right next to Plinthio is believed.
 * **TLS:** optional add-ons: Tailscale (a trusted `https://….ts.net` address, private) or a public web address with Caddy and Let's Encrypt, for guests. Without either, HTTPS on port 8443 with a local certificate authority you install on your devices (name-constrained to private addresses and local names).
-* **Network calls:** only metadata lookups you trigger (MangaDex, Google Books, Open Library, TMDB, with the built-in key or your own) and a twice-daily anonymous release check (`UPDATE_CHECK=false` turns it off). No telemetry.
+* **Network calls:** only metadata lookups you trigger (MangaDex, Google Books, Open Library, TMDB, with the built-in key or your own), a twice-daily anonymous release check (`UPDATE_CHECK=false` turns it off) and, only if an admin turns Live TV on, the channel lists and guides they add plus the streams and logos people watch, fetched by the server. No telemetry.
 
-Plinthio is built for trusted-network self-hosting (your home, and people you invite). It has not been audited for hostile multi-tenant or public-internet deployment, and has no 2FA.
+Plinthio is built for trusted-network self-hosting (your home, and people you invite). It has not been audited for hostile multi-tenant or public-internet deployment. Optional two-factor sign-in is available, and admins can require it for sign-ins from outside the home network.
 
 ---
 
