@@ -51,3 +51,32 @@ test('a language picked in Settings is saved to the account', async ({ page, req
   await expect(second.getByRole('heading', { name: 'Darstellung' })).toBeVisible();
   await other.close();
 });
+
+// The server answers in English; the app shows its messages in the reader's language.
+test('a server error appears in the chosen language, with its code', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByLabel('Language').selectOption('fr');
+  await page.getByLabel("Nom d'utilisateur").fill('admin');
+  await page.getByLabel('Mot de passe', { exact: true }).fill('not-the-password');
+  await page.getByRole('button', { name: 'Se connecter' }).click();
+
+  const fr = await import('../src/locales/fr/serverErrors.json', { with: { type: 'json' } });
+  await expect(page.getByText(`${fr.default.codes.P107.message} (P107)`)).toBeVisible();
+});
+
+// Someone who hasn't chosen gets the admin's default, not their browser's language.
+test('the server default language reaches people who have not chosen one', async ({ page, request }) => {
+  const admin = await (await request.post('/api/auth/login', { data: ADMIN })).json();
+  const auth = { Authorization: `Bearer ${admin.token}` };
+  expect((await request.patch('/api/customization', { headers: auth, data: { defaultLanguage: 'de' } })).ok()).toBeTruthy();
+  try {
+    await page.goto('/login');
+    await expect(page.getByRole('button', { name: 'Anmelden' })).toBeVisible();
+
+    // A choice on this device still wins.
+    await page.getByLabel('Sprache').selectOption('en');
+    await expect(page.getByRole('button', { name: 'Sign In' })).toBeVisible();
+  } finally {
+    await request.patch('/api/customization', { headers: auth, data: { defaultLanguage: 'auto' } });
+  }
+});
