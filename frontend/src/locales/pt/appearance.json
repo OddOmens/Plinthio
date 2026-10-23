@@ -81,5 +81,9 @@
       "label": "Hora de dormir",
       "desc": "Um relógio discreto com o horário em que termina e, nas séries, quando o resto da temporada terminaria. Confortável para os olhos em um quarto escuro."
     }
+  },
+  "defaultLanguage": {
+    "title": "Idioma padrão",
+    "desc": "Para quem ainda não escolheu o seu. Automático segue o navegador de cada pessoa; qualquer um pode escolher outro em Configurações."
   }
 }

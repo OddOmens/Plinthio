@@ -66,24 +66,34 @@ async function load(code) {
   loaded.value = { ...loaded.value, [code]: bundle(Object.fromEntries(modules)) };
 }
 
-// The choice a device remembers before anyone signs in ('auto' or a language code).
+// The choice this device remembers ('auto' or a language code), or null if none was made.
 export function storedLanguageChoice() {
   try {
-    return localStorage.getItem(STORAGE_KEY) || 'auto';
+    return localStorage.getItem(STORAGE_KEY) || null;
   } catch (e) {
-    return 'auto';
+    return null;
   }
 }
 
-// Switches the whole UI. `choice` is 'auto' or a language code; it's remembered on this
-// device so the sign-in page already speaks it. Saving it to the account is the caller's job.
+// Whose choice wins: the account's, then this device's, then the server's default (Admin →
+// Appearance), then the browser. 'auto' at any step is a choice too — it means the browser.
+export function languageChoice(user, serverDefault) {
+  return user?.preferences?.language || storedLanguageChoice() || serverDefault || 'auto';
+}
+
+// Switches the whole UI and remembers the choice on this device, so the sign-in page already
+// speaks it. Saving it to the account is the caller's job.
 export async function setLanguage(choice) {
   try {
-    if (choice && choice !== 'auto') localStorage.setItem(STORAGE_KEY, choice);
-    else localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem(STORAGE_KEY, choice || 'auto');
   } catch (e) {
     // Storage unavailable — the choice still applies until the page reloads.
   }
+  await applyLanguage(choice);
+}
+
+// Switches the whole UI without remembering anything (for the account's or server's choice).
+export async function applyLanguage(choice) {
   const code = resolveLanguage(choice);
   try {
     await load(code);
@@ -139,6 +149,11 @@ export function t(key, params) {
   return format(message, params);
 }
 
+// English messages of one namespace, for matching text that arrives in English (server errors).
+export function englishNamespace(namespace) {
+  return english[namespace] || {};
+}
+
 // True when the key exists (in the current language or English) — for optional messages.
 export function te(key) {
   return lookup(locale.value, key) !== undefined || lookup(DEFAULT_LANGUAGE, key) !== undefined;
@@ -174,7 +189,7 @@ export function list(items, options = { type: 'conjunction' }) {
 }
 
 export function useI18n() {
-  return { t, te, n, d, relative, list, locale, languages: LANGUAGES, setLanguage, current: computed(() => locale.value) };
+  return { t, te, n, d, relative, list, locale, languages: LANGUAGES, setLanguage, applyLanguage, current: computed(() => locale.value) };
 }
 
 export default {

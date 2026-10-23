@@ -103,6 +103,28 @@ for (const file of walk(root)) {
   }
 }
 
+// Server messages: serverErrors.json mirrors the backend's catalog, and every fixed message
+// it lists must still be sent somewhere, so an edited server message can't silently lose its
+// translations. (frontend/src/i18n/serverErrors.js explains the file.)
+if (!only.length || only.includes('serverErrors')) {
+  const backend = join(root, '..', '..', 'backend', 'src');
+  const { ERROR_CODES } = await import(join(backend, 'errors.js'));
+  const en = JSON.parse(readFileSync(join(localesDir, 'en', 'serverErrors.json'), 'utf8'));
+  for (const [code, entry] of Object.entries(ERROR_CODES)) {
+    for (const field of ['title', 'message', 'meaning', 'fix']) {
+      if (en.codes?.[code]?.[field] !== entry[field]) problems.push(`en/serverErrors: codes.${code}.${field} differs from backend/src/errors.js`);
+    }
+  }
+  for (const code of Object.keys(en.codes || {})) {
+    if (!ERROR_CODES[code]) problems.push(`en/serverErrors: codes.${code} is not in backend/src/errors.js`);
+  }
+  const sources = walk(backend).map((file) => readFileSync(file, 'utf8')).join('\n');
+  for (const [key, text] of Object.entries(en.messages || {})) {
+    const quoted = [`'${text.replace(/'/g, "\\'")}'`, `"${text}"`, `'${text}'`];
+    if (!quoted.some((q) => sources.includes(q))) problems.push(`en/serverErrors: messages.${key} is no longer sent by the server ("${text}")`);
+  }
+}
+
 if (problems.length) {
   console.error(problems.join('\n'));
   console.error(`\n${problems.length} problem(s).`);

@@ -18,7 +18,7 @@ import UpdateBanner from './components/UpdateBanner.vue';
 const OnboardingFlow = defineAsyncComponent(() => import('./components/OnboardingFlow.vue'));
 import { useAuthStore } from './stores/auth';
 import { useCustomizationStore } from './stores/customization';
-import { setLanguage } from './i18n';
+import { applyLanguage, languageChoice } from './i18n';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -47,10 +47,9 @@ watchEffect(() => {
   document.documentElement.classList.toggle('page-contained', width === 'contained');
 });
 
-// Signing in (or changing it on another device) brings the account's language along.
-watch(() => authStore.user?.preferences?.language, (language) => {
-  if (language) setLanguage(language);
-});
+// Signing in brings the account's language along; an admin changing the server's default
+// reaches everyone who hasn't chosen their own.
+watch(() => languageChoice(authStore.user, customizationStore.defaultLanguage), (choice) => applyLanguage(choice));
 
 const showOnboarding = computed(() => {
   if (onboardingDone.value || !authStore.isAuthenticated) return false;

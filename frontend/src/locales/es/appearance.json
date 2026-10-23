@@ -81,5 +81,9 @@
       "label": "Hora de dormir",
       "desc": "Un reloj tenue con la hora de fin y, en las series, cuándo terminaría el resto de la temporada. Descansa la vista en una habitación oscura."
     }
+  },
+  "defaultLanguage": {
+    "title": "Idioma predeterminado",
+    "desc": "Para quien no haya elegido uno. Automático sigue el navegador de cada persona; cualquiera puede elegir otro en Ajustes."
   }
 }

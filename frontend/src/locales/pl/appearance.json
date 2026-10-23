@@ -81,5 +81,9 @@
       "label": "Na dobranoc",
       "desc": "Przygaszony zegar z godziną zakończenia, a w serialach także końca reszty sezonu. Łagodny dla oczu w ciemnym pokoju."
     }
+  },
+  "defaultLanguage": {
+    "title": "Domyślny język",
+    "desc": "Dla osób, które nie wybrały własnego. Automatycznie oznacza język przeglądarki danej osoby; każdy może wybrać inny w Ustawieniach."
   }
 }

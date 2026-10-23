@@ -81,5 +81,9 @@
       "label": "Schlafenszeit",
       "desc": "Eine gedimmte Uhr mit der Endzeit und bei Serien, wann der Rest der Staffel enden würde. Angenehm für die Augen im dunklen Raum."
     }
+  },
+  "defaultLanguage": {
+    "title": "Standardsprache",
+    "desc": "Für alle, die keine eigene gewählt haben. Automatisch folgt dem Browser der jeweiligen Person; in den Einstellungen kann jede und jeder eine andere wählen."
   }
 }

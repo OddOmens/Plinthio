@@ -333,7 +333,7 @@ async function finish(skipped) {
     };
     // A language picked on the sign-in page becomes the account's, unless it already has one.
     const deviceLanguage = storedLanguageChoice();
-    if (!preferences.language && deviceLanguage !== 'auto') preferences.language = deviceLanguage;
+    if (!preferences.language && deviceLanguage && deviceLanguage !== 'auto') preferences.language = deviceLanguage;
 
     await api.patch('/users/preferences', preferences);
     authStore.user = { ...authStore.user, preferences };
