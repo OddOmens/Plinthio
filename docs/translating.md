@@ -3,8 +3,9 @@
 Plinthio's interface is available in English, German, Spanish, French, Italian, Dutch, Polish,
 Brazilian Portuguese, Japanese, Korean and Simplified Chinese.
 Each person picks their language in **Settings → Appearance → Language** (it's saved to their
-account); before signing in, the sign-in page and setup wizard have a language switch, and
-**Automatic** follows the browser.
+account); before signing in, the sign-in page and setup wizard have a language switch. For
+anyone who hasn't picked, **Admin → Appearance → Default language** applies, and its
+**Automatic** follows each browser.
 
 ## Where the strings live
 
@@ -60,7 +61,25 @@ showError(t('title.errors.couldNotLoad'));
   object with a getter (`{ ...option }`) freezes today's wording — map inside a `computed`.
 - Not translated: the name Plinthio, people's library/list/title names, and product or
   protocol names (TMDB, Tailscale, Funnel, EPUB, PDF, KOReader, Mihon, OPDS, HTTPS…).
-  Messages that come from the server (API error text) are English for now.
+- **Messages from the server** arrive in English and are translated in the web app, from
+  `serverErrors.json` (see below).
+
+## Server messages
+
+The server always answers in English. `src/i18n/serverErrors.js` turns its errors and
+confirmations into the reader's language as they arrive, so screens just show
+`err.response.data.error` as before (`errorEnglish` keeps the original). `serverErrors.json`
+has three groups:
+
+- `codes.P###`: the catalog in `backend/src/errors.js` (title, message, meaning, fix), which is
+  also the error reference on the Docs page.
+- `messages.<key>`: the other fixed messages routes send, matched on their exact English text.
+- `patterns.<key>`: the few built at runtime, matched with their `{placeholders}`.
+
+When you add or change a server message, add or change it in `en/serverErrors.json` too (and
+the other languages). `check:i18n` fails if a code's English differs from `errors.js`, or if a
+listed message is no longer sent anywhere. A message that isn't listed still works; it just
+stays in English. Developer-only validation messages (`itemId is required`) don't need listing.
 
 ## Style
 
