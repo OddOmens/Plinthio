@@ -31,7 +31,8 @@
         <div class="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0" :class="src.enabled ? '' : 'opacity-50'">
           <component :is="src.kind === 'iptv-org' ? RadioTower : ListVideo" class="w-5 h-5 text-muted-foreground" />
         </div>
-        <div class="min-w-0 flex-1">
+        <!-- On a phone the name keeps its room and the buttons wrap onto a line of their own. -->
+        <div class="min-w-[10rem] sm:min-w-0 flex-1">
           <p class="text-xs font-semibold text-foreground truncate flex items-center gap-2">
             <span class="truncate">{{ src.name }}</span>
             <span v-if="!src.enabled" class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground flex-shrink-0">{{ $t('admin.liveTv.sources.off') }}</span>
