@@ -1,0 +1,189 @@
+{
+  "fields": {
+    "title": "Titre",
+    "author": "Auteur",
+    "authors": "Auteur(s)",
+    "director": "Réalisateur",
+    "directors": "Réalisateur(s)",
+    "artists": "Artiste(s)",
+    "artistsShort": "Artistes",
+    "cast": "Distribution",
+    "castActors": "Distribution / Acteurs",
+    "series": "Série",
+    "releaseDate": "Date de sortie",
+    "date": "Date",
+    "ageRating": "Classification",
+    "status": "Statut",
+    "publisher": "Éditeur",
+    "genres": "Genres",
+    "themes": "Thèmes",
+    "description": "Description",
+    "cover": "Couverture"
+  },
+  "ageRatings": {
+    "everyone": "Tout public",
+    "teen": "Adolescents",
+    "mature": "Adultes",
+    "explicit": "Explicite"
+  },
+  "edit": {
+    "title": "Modifier les métadonnées",
+    "appliesToAll": {
+      "one": "S'applique à tous les volumes ({count})",
+      "other": "S'applique aux {count} volumes"
+    },
+    "coverPreview": "Aperçu de la couverture",
+    "replaceCover": "Remplacer la couverture",
+    "coverSaving": "Enregistrement",
+    "setForSeries": "Pour la série",
+    "replace": "Remplacer",
+    "unknownAuthor": "Auteur inconnu",
+    "commaSeparated": "Séparés par des virgules",
+    "commaSeparatedActors": "Acteurs, séparés par des virgules",
+    "seriesName": "Nom de la série",
+    "releaseDateExample": "par ex. 2019 ou 2019-06-26",
+    "sameAsSeries": "Comme la série",
+    "unrated": "Non classé",
+    "statusExample": "par ex. En cours, Terminé",
+    "descriptionPlaceholder": "Synopsis / description",
+    "saving": "Enregistrement…",
+    "searchToFill": "Chercher sur {provider} pour compléter les infos manquantes",
+    "externalSources": "des sources externes",
+    "searchPlaceholder": "Rechercher un titre…",
+    "year": "Année",
+    "yearHint": "Filtrer par année de sortie (par ex. 2002)",
+    "searching": "Recherche…",
+    "searchingProvider": "Recherche sur {provider}…",
+    "noResults": "Aucun résultat. Essayez une autre recherche.",
+    "searchedAs": "Recherché sous : {query}",
+    "resultDirector": "Réal. : {name}",
+    "resultCast": "Avec : {names}",
+    "resultArt": "Dessin : {names}",
+    "useAll": "Tout utiliser",
+    "uploadFailed": "Impossible d'importer cette image.",
+    "searchFailed": "La recherche auprès des fournisseurs de métadonnées a échoué — consultez la console du navigateur pour plus de détails.",
+    "savedTitle": "Métadonnées enregistrées",
+    "savedSeries": {
+      "one": "{count} élément de la série mis à jour.",
+      "other": "Les {count} éléments de la série ont été mis à jour."
+    },
+    "savedOne": "« {title} » mis à jour.",
+    "saveFailed": "Impossible d'enregistrer les métadonnées — consultez la console du navigateur pour plus de détails."
+  },
+  "manager": {
+    "title": "Nettoyage des titres et correspondance",
+    "description": "Retirez les tags de release des noms de fichiers, et récupérez affiches, résumés, distribution et dates de sortie depuis TMDB.",
+    "stats": {
+      "total": "Total des médias",
+      "totalHint": "Tout le contenu indexé",
+      "dirty": "Titres à nettoyer",
+      "dirtyHint": "Tags de release ou année dans le titre",
+      "missingCover": "Illustration manquante",
+      "missingCoverHint": "Aucune affiche ni couverture",
+      "missingMeta": "Résumé / date manquants",
+      "missingMetaHint": "Résumé TMDB à récupérer"
+    },
+    "filters": {
+      "allLibraries": "Toutes les bibliothèques",
+      "allMediaTypes": "Tous les types de médias",
+      "tvShows": "Séries TV",
+      "needsCleanup": "À nettoyer",
+      "searchPlaceholder": "Filtrer par titre ou chemin…"
+    },
+    "batch": {
+      "selectAll": "Tout sélectionner ({count})",
+      "selected": {
+        "one": "{count} sélectionné",
+        "other": "{count} sélectionnés"
+      },
+      "overwritePosters": "Remplacer les affiches",
+      "useCanonicalTitle": "Utiliser le titre officiel",
+      "cleanHint": "Retirer les tags de release et les années finales des titres en base",
+      "cleanCount": "Nettoyer les titres ({count})",
+      "findHint": "Chercher chaque titre sélectionné auprès des fournisseurs de métadonnées (TMDB, MangaDex, Google Books, Open Library) : illustration, résumé, date de sortie",
+      "findCount": "Trouver les métadonnées ({count})",
+      "stop": "Arrêter",
+      "stopping": "Arrêt…"
+    },
+    "summary": {
+      "matched": "{matched} sur {total} trouvés.",
+      "matchedStopped": "{matched} sur {total} trouvés avant l'arrêt.",
+      "notFound": {
+        "one": "{count} sans correspondance — signalé ci-dessous ; essayez {action} dessus.",
+        "other": "{count} sans correspondance — signalés ci-dessous ; essayez {action} dessus."
+      },
+      "needsKey": {
+        "one": "{count} est une vidéo, qui nécessite une clé TMDB — ajoutez-en une dans {where} et relancez.",
+        "other": "{count} sont des vidéos, qui nécessitent une clé TMDB — ajoutez-en une dans {where} et relancez."
+      },
+      "adminMetadata": "Administration → Métadonnées",
+      "failed": {
+        "one": "{count} a échoué (voir la ligne pour la raison).",
+        "other": "{count} ont échoué (voir chaque ligne pour la raison)."
+      }
+    },
+    "dismiss": "Fermer",
+    "list": {
+      "analyzing": "Analyse des titres et des métadonnées…",
+      "empty": "Aucun média ne correspond aux filtres sélectionnés."
+    },
+    "badges": {
+      "frameTag": "IMAGE",
+      "tvEpisode": "Épisode TV",
+      "poster": "Affiche",
+      "frame": "Image",
+      "frameHint": "Image provisoire tirée de la vidéo — lancez Correspondance auto pour récupérer l'affiche officielle",
+      "noPoster": "Sans affiche",
+      "synopsis": "Résumé",
+      "noSynopsis": "Sans résumé",
+      "noDate": "Sans date"
+    },
+    "cleanLabel": "Nettoyé :",
+    "actions": {
+      "autoMatch": "Correspondance auto",
+      "autoMatchHint": "Chercher auprès des fournisseurs de métadonnées et mettre à jour ce titre",
+      "editSearch": "Modifier / Rechercher",
+      "editSearchHint": "Rechercher manuellement sur TMDB, choisir une illustration ou modifier les champs"
+    },
+    "match": {
+      "matchedAs": "Trouvé : « {title} »",
+      "needsKey": "Une clé TMDB est nécessaire — ajoutez-en une ci-dessus",
+      "noMatch": "Aucune correspondance — essayez Modifier / Rechercher",
+      "failed": "La correspondance a échoué — réessayez"
+    },
+    "errors": {
+      "loadFailed": "Impossible de charger les éléments"
+    },
+    "clean": {
+      "confirmTitle": {
+        "one": "Nettoyer {count} titre ?",
+        "other": "Nettoyer {count} titres ?"
+      },
+      "confirmMessage": {
+        "one": "Les tags de scène, codecs, résolutions et années de sortie finales seront retirés de {count} titre sélectionné dans la base de données.",
+        "other": "Les tags de scène, codecs, résolutions et années de sortie finales seront retirés des {count} titres sélectionnés dans la base de données."
+      },
+      "confirm": "Nettoyer les titres",
+      "progress": {
+        "one": "Nettoyage de {count} titre…",
+        "other": "Nettoyage de {count} titres…"
+      },
+      "doneTitle": "Titres nettoyés",
+      "doneMessage": {
+        "one": "{count} titre nettoyé.",
+        "other": "{count} titres nettoyés."
+      },
+      "failedTitle": "Échec du nettoyage"
+    },
+    "find": {
+      "confirmTitle": {
+        "one": "Trouver les métadonnées de {count} élément ?",
+        "other": "Trouver les métadonnées de {count} éléments ?"
+      },
+      "confirmMessage": "Chaque titre sélectionné est recherché auprès des fournisseurs de métadonnées (TMDB, MangaDex, Google Books, Open Library), et son illustration, son résumé et sa date de sortie sont mis à jour. Les résultats s'affichent sur chaque ligne ; vous pouvez arrêter à tout moment.",
+      "confirm": "Lancer la recherche",
+      "itemFallback": "élément",
+      "progress": "Recherche {current} sur {total} : {title}"
+    }
+  }
+}

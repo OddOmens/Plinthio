@@ -1,0 +1,139 @@
+{
+  "offline": {
+    "message": "オフラインです。ダウンロード済みの本、コミック、オーディオブックは引き続き利用できます。",
+    "openDownloads": "ダウンロードを開く →"
+  },
+  "continue": {
+    "watching": "続きを見る",
+    "all": "続きから",
+    "audiobook": "続きを聴く",
+    "manga": "続きを読む",
+    "book": "続きを読む",
+    "movie": "続きを見る",
+    "show": "続きを見る",
+    "anime": "続きを見る"
+  },
+  "sectionTitle": {
+    "results": "「{query}」の検索結果",
+    "audiobook": "オーディオブック",
+    "manga": "マンガ・コミック",
+    "book": "電子書籍・ドキュメント",
+    "movie": "映画",
+    "show": "番組",
+    "anime": "アニメ",
+    "all": "すべてのメディア"
+  },
+  "counts": {
+    "folders": {
+      "other": "{count}個のフォルダ"
+    },
+    "series": "{count}シリーズ",
+    "titles": {
+      "other": "{count}タイトル"
+    },
+    "seriesAndTitles": "{series}、{titles}",
+    "items": {
+      "other": "{count}件"
+    }
+  },
+  "modes": {
+    "alphabetical": "名前順",
+    "alphabeticalShort": "A–Z",
+    "diskFolders": "ディスクのフォルダ",
+    "diskFoldersShort": "ディスク",
+    "customFolders": "カスタムフォルダ",
+    "customFoldersShort": "カスタム"
+  },
+  "filters": {
+    "progress": "進捗",
+    "status": "状態",
+    "notStarted": "未開始",
+    "inProgress": "進行中",
+    "finished": "完了",
+    "skipped": "スキップ",
+    "genre": "ジャンル",
+    "added": "追加日",
+    "thisWeek": "今週",
+    "thisMonth": "今月",
+    "last3Months": "過去3か月",
+    "clear": "フィルタをクリア"
+  },
+  "sort": {
+    "label": "並び順",
+    "title": "A–Z",
+    "added": "新着順",
+    "recent": "最近開いた順",
+    "release": "公開日"
+  },
+  "collections": {
+    "label": "映画コレクション",
+    "grouped": "コレクション",
+    "all": "すべての映画"
+  },
+  "empty": {
+    "title": "メディアが見つかりません",
+    "noMatches": "一致するものがありません。別の検索を試すか、フィルタをクリアしてください",
+    "noLibrary": "管理 → ライブラリでライブラリを追加し、フォルダをスキャンして棚を作りましょう",
+    "goToSettings": "設定を開く"
+  },
+  "loadedMore": {
+    "other": "{count}タイトルを読み込み済み・スクロールすると続きを読み込みます"
+  },
+  "customFolders": {
+    "heading": "アプリ内のカスタムフォルダ",
+    "newPlaceholder": "新しいフォルダ名…",
+    "catchAll": "未分類",
+    "delete": "フォルダを削除",
+    "empty": "このフォルダは空です。タイトルの3点メニュー（{dots}）から追加できます。"
+  },
+  "deleteFolder": {
+    "title": "カスタムフォルダを削除",
+    "message": "フォルダ「{name}」を削除しますか？中のアイテムは棚から削除されません。",
+    "confirm": "フォルダを削除"
+  },
+  "errors": {
+    "createFolder": "フォルダを作成できませんでした",
+    "deleteFolder": "フォルダを削除できませんでした",
+    "removeItem": "アイテムを削除できませんでした",
+    "updateFolder": "フォルダを更新できませんでした"
+  },
+  "rootFolder": "ルート",
+  "series": {
+    "ariaLabel": "{name} — {units}",
+    "removeFromThisFolder": "{name}をこのフォルダから削除",
+    "removeFromFolder": "フォルダから削除",
+    "caughtUp": "最新まで完了",
+    "skipped": "{count}件スキップ",
+    "doneCount": "{count}/{total}完了"
+  },
+  "card": {
+    "availableOffline": "オフラインで利用可能",
+    "downloading": "ダウンロード中…",
+    "options": "オプション",
+    "optionsFor": "{title}のオプション",
+    "markInProgress": "進行中にする",
+    "markFinished": "完了にする",
+    "addToFolder": "フォルダに追加…",
+    "removeFromFolder": "フォルダから削除",
+    "bookmarks": "ブックマークとメモ…",
+    "removeDownload": "ダウンロードを削除",
+    "cancelDownload": "ダウンロードを中止",
+    "downloadOffline": "オフライン用にダウンロード",
+    "editMetadata": "メタデータを編集…",
+    "hide": "棚から非表示",
+    "pages": {
+      "other": "{count}ページ"
+    },
+    "finished": "完了",
+    "durationHours": "{hours}時間{minutes}分",
+    "durationMinutes": "{minutes}分"
+  },
+  "folderModal": {
+    "title": "フォルダまたはリストに追加",
+    "loading": "フォルダを読み込み中…",
+    "empty": "カスタムフォルダはまだありません。下で作成してメディアを整理しましょう！",
+    "newFolder": "新しいカスタムフォルダ",
+    "placeholder": "例：お気に入り、寝る前に…",
+    "adding": "追加中…"
+  }
+}

@@ -1,0 +1,661 @@
+{
+  "nav": {
+    "backToShelf": "Terug naar de plank",
+    "shelf": "Plank",
+    "details": "Details",
+    "returnToShelf": "Terug naar de plank"
+  },
+  "errors": {
+    "loadHint": "Deze serie kon niet worden geladen of is mogelijk verwijderd.",
+    "notFound": "Item niet gevonden",
+    "noSeries": "Geen serie opgegeven",
+    "loadFailed": "Details van de serie laden mislukt",
+    "changeFailed": "Dat kon niet worden gewijzigd",
+    "seasonFailed": "Status van het seizoen bijwerken mislukt",
+    "partyFailed": "Kon geen watchparty starten",
+    "markAllFailed": "Alles als gelezen markeren mislukt",
+    "resetFailed": "Leesgeschiedenis wissen mislukt",
+    "skipFailed": "Kon niet bijwerken wat er wordt overgeslagen",
+    "markEarlierFailed": "Kon die niet als uit markeren",
+    "kidsFailed": "Kon de kindermodus niet wijzigen"
+  },
+  "meta": {
+    "pages": {
+      "one": "{pages} pagina",
+      "other": "{pages} pagina's"
+    },
+    "seasons": {
+      "one": "{count} seizoen",
+      "other": "{count} seizoenen"
+    },
+    "episodes": {
+      "one": "{count} aflevering",
+      "other": "{count} afleveringen"
+    }
+  },
+  "duration": {
+    "minutes": "{m} min",
+    "hoursMinutes": "{h} u {m} min"
+  },
+  "date": {
+    "today": "Vandaag",
+    "yesterday": "Gisteren"
+  },
+  "position": {
+    "pageShort": "p. {page}",
+    "page": "Pagina {page}",
+    "pageOf": "Pagina {page} van {total}",
+    "timeOf": "{at} van {total}",
+    "withPercent": "{position} ({percent})"
+  },
+  "status": {
+    "upNext": "Hierna",
+    "offloaded": "Gearchiveerd",
+    "watched": "Bekeken",
+    "skipped": "Overgeslagen",
+    "new": "Nieuw",
+    "done": "Klaar",
+    "finished": "Uit",
+    "notStarted": "Niet begonnen"
+  },
+  "progress": {
+    "label": "Voortgang"
+  },
+  "offloaded": {
+    "single": "Van de server verwijderd om ruimte vrij te maken. Je geschiedenis en beoordelingen blijven bewaard, en het komt vanzelf terug als het bestand wordt teruggezet.",
+    "dialogMessage": "‘{title}’ is van de server verwijderd om ruimte vrij te maken. Je geschiedenis blijft bewaard, en het komt vanzelf terug als het bestand wordt teruggezet."
+  },
+  "overview": {
+    "readMore": "Meer lezen"
+  },
+  "facts": {
+    "genres": "Genres",
+    "createdBy": "Gemaakt door",
+    "director": "Regisseur",
+    "writers": "Schrijvers",
+    "studios": "Studio's",
+    "network": "Zender",
+    "artists": "Tekenaars",
+    "publisher": "Uitgever",
+    "released": "Verschenen",
+    "runtime": "Speelduur",
+    "length": "Lengte",
+    "pages": "Pagina's",
+    "cast": "Cast",
+    "status": "Status",
+    "format": "Formaat",
+    "fileSize": "Bestandsgrootte",
+    "library": "Bibliotheek",
+    "lastOpened": "Laatst geopend",
+    "totalLength": "Totale lengte",
+    "totalPages": "Totaal pagina's"
+  },
+  "sections": {
+    "seasons": "Seizoenen",
+    "episodes": "Afleveringen",
+    "castCrew": "Cast en crew",
+    "extras": "Extra's",
+    "mediaInfo": "Media-info"
+  },
+  "season": {
+    "label": "Seizoen {number}",
+    "specials": "Specials",
+    "other": "Overig",
+    "markUnwatched": "Markeren als niet bekeken",
+    "markWatched": "{season} markeren als bekeken",
+    "episodes": {
+      "one": "{count} aflevering",
+      "other": "{count} afleveringen"
+    },
+    "episodesWatched": {
+      "one": "{watched} van {count} aflevering",
+      "other": "{watched} van {count} afleveringen"
+    },
+    "offloaded": "{count} gearchiveerd"
+  },
+  "sort": {
+    "firstToLast": "Volgorde: eerste naar laatste",
+    "lastToFirst": "Volgorde: laatste naar eerste",
+    "oldestFirst": "Oudste eerst",
+    "newestFirst": "Nieuwste eerst"
+  },
+  "episode": {
+    "play": "{title} afspelen",
+    "markUnwatched": "Markeren als niet bekeken"
+  },
+  "rating": {
+    "yourRating": "Jouw beoordeling",
+    "youRated": "Je gaf dit een {rating}/5 — wijzig het bovenaan",
+    "yourRatingChange": "Jouw beoordeling: {rating}/5 — wijzigen",
+    "rateEntry": "{label} beoordelen",
+    "community": {
+      "one": "Gemiddeld {average} van {users} gebruiker van {server}",
+      "other": "Gemiddeld {average} van {users} gebruikers van {server}"
+    },
+    "communityNone": "Nog geen beoordelingen op {server}",
+    "tmdb": {
+      "one": "{rating}/{scale} op TMDB uit {votes} stem",
+      "other": "{rating}/{scale} op TMDB uit {votes} stemmen"
+    },
+    "saveFailed": "Kon niet opslaan",
+    "outOfFive": "{value} van 5 sterren",
+    "stars": {
+      "one": "{count} ster",
+      "other": "{count} sterren"
+    },
+    "clear": "Beoordeling wissen"
+  },
+  "collection": {
+    "countOf": "{owned} van {total}",
+    "comingSoon": "Binnenkort",
+    "moreIn": "Meer in {name}",
+    "viewAll": "Alle {count} bekijken",
+    "watchAgain": "Opnieuw kijken: {title}",
+    "resume": "Hervatten: {title}",
+    "play": "Afspelen: {title}"
+  },
+  "filter": {
+    "label": "Filter: {label}",
+    "notStarted": "Niet begonnen",
+    "inProgress": "Bezig",
+    "completed": "Voltooid",
+    "emptyTitle": "Niets in dit filter"
+  },
+  "layout": {
+    "label": "Weergave",
+    "grid": "Rasterweergave",
+    "list": "Lijstweergave"
+  },
+  "volume": {
+    "again": "Opnieuw",
+    "moreFor": "Meer voor {label}",
+    "actions": "Acties voor {label}",
+    "markNotStarted": "Markeren als niet begonnen",
+    "markNotStartedShort": "Niet begonnen"
+  },
+  "skip": {
+    "skippedHint": "Overgeslagen — tik om terug te zetten",
+    "skip": "Overslaan",
+    "unskip": "Niet overslaan",
+    "hintStory": "Ken je het verhaal al tot een bepaald punt — heb je bijvoorbeeld de anime gezien?",
+    "hintOther": "Heb je sommige hiervan al ergens anders gezien of gehoord?",
+    "through": "Ik ken alles tot en met",
+    "unskipAll": "Alles terugzetten ({count})",
+    "confirm": "{count} overslaan"
+  },
+  "bookmarks": {
+    "title": "Bladwijzers en notities",
+    "label": "Bladwijzers en notities",
+    "short": "Bladwijzers"
+  },
+  "download": {
+    "downloaded": "Gedownload — tik om te verwijderen",
+    "downloading": "Bezig met downloaden — tik om te annuleren",
+    "forOffline": "Downloaden voor offline",
+    "doneShort": "Gedownload",
+    "busyShort": "Downloaden…",
+    "remaining": "Rest downloaden ({count})",
+    "httpsTitle": "Downloads vereisen HTTPS",
+    "httpsMessage": "Browsers staan offline opslaan alleen toe via een beveiligde verbinding, en deze pagina is geopend via gewoon http://. Open Plinthio in plaats daarvan via een HTTPS-adres (Tailscale is de makkelijkste manier), dan werken downloads en de installeerbare app wel.",
+    "httpsConfirm": "Laat zien hoe",
+    "httpsCancel": "Niet nu"
+  },
+  "markEarlier": {
+    "markAll": "Alles markeren",
+    "noThanks": "Nee, bedankt"
+  },
+  "actions": {
+    "more": "Meer acties",
+    "watchTogether": "Samen kijken",
+    "watchTogetherTitle": "Bekijk dit samen met mensen op andere plekken",
+    "resetHistory": "Geschiedenis wissen",
+    "resetHistoryTitle": "Je geschiedenis hiervoor wissen",
+    "editMetadata": "Metadata bewerken",
+    "metadataOne": "Metadata-bronnen doorzoeken en op deze titel toepassen",
+    "undoOffload": "Archivering ongedaan maken",
+    "undoOffloadTitle": "{target} weer tonen als aanwezig op de server",
+    "keepAsHistory": "Bewaren als geschiedenis",
+    "keepAsHistoryTitle": "{target} archiveren: de geschiedenis bewaren nadat je de bestanden hebt verwijderd",
+    "inKidsMode": "In kindermodus",
+    "kids": "Kinderen"
+  },
+  "offload": {
+    "targetTitle": "‘{title}’",
+    "targetSeason": "{name}, seizoen {number}",
+    "targetSpecials": "{name}, specials",
+    "targetOther": "{name}, overig",
+    "targetAll": "heel {name}",
+    "confirmTitle": "Bewaren als geschiedenis?",
+    "confirmMessage": "{target} wordt verborgen in planken en zoekresultaten en kan niet worden afgespeeld, maar blijft hier staan, grijs, met ieders voortgang. Verwijder daarna de bestanden om ruimte vrij te maken. Komen ze terug, dan wordt alles vanzelf hersteld.",
+    "confirmButton": "Bewaren als geschiedenis"
+  },
+  "kids": {
+    "viaLibrary": "De hele bibliotheek staat in de kindermodus (wijzig dat bij Admin → Kindermodus)",
+    "viaSeries": "De serie staat in de kindermodus — wijzig dat op de pagina van de serie",
+    "allowed": "Kinderaccounts kunnen dit zien — klik om het uit de kindermodus te halen",
+    "allow": "Accounts in kindermodus dit laten zien"
+  },
+  "reset": {
+    "title": "Voortgang wissen",
+    "message": "Al je voortgang voor ‘{name}’ wissen?",
+    "confirm": "Voortgang wissen"
+  },
+  "extraTypes": {
+    "trailer": "Trailer",
+    "featurette": "Featurette",
+    "behindthescenes": "Achter de schermen",
+    "deletedscene": "Verwijderde scène",
+    "interview": "Interview",
+    "scene": "Scène",
+    "short": "Korte film",
+    "extra": "Extra"
+  },
+  "availability": {
+    "notOnServer": "Niet op deze server",
+    "notInLibrary": "Niet in bibliotheek",
+    "offloadedOn": "Op {date} van de server verwijderd om ruimte vrij te maken. Je geschiedenis blijft bewaard; het komt terug als het bestand terugkomt.",
+    "offloaded": "Van de server verwijderd om ruimte vrij te maken. Je geschiedenis blijft bewaard; het komt terug als het bestand terugkomt."
+  },
+  "request": {
+    "request": "Aanvragen",
+    "again": "Opnieuw aanvragen",
+    "coming": "Verwacht in {year}",
+    "announced": "Aangekondigd",
+    "requested": "Aangevraagd",
+    "approved": "Aanvraag goedgekeurd",
+    "addedSoon": "Binnenkort toegevoegd",
+    "failed": "Kon die aanvraag niet versturen."
+  },
+  "typed": {
+    "units": {
+      "manga": {
+        "one": "{count} deel",
+        "other": "{count} delen"
+      },
+      "book": {
+        "one": "{count} boek",
+        "other": "{count} boeken"
+      },
+      "audiobook": {
+        "one": "{count} boek",
+        "other": "{count} boeken"
+      },
+      "show": {
+        "one": "{count} aflevering",
+        "other": "{count} afleveringen"
+      },
+      "anime": {
+        "one": "{count} aflevering",
+        "other": "{count} afleveringen"
+      },
+      "movie": {
+        "one": "{count} film",
+        "other": "{count} films"
+      }
+    },
+    "progressOf": {
+      "manga": {
+        "one": "{read} van {count} deel",
+        "other": "{read} van {count} delen"
+      },
+      "book": {
+        "one": "{read} van {count} boek",
+        "other": "{read} van {count} boeken"
+      },
+      "audiobook": {
+        "one": "{read} van {count} boek",
+        "other": "{read} van {count} boeken"
+      },
+      "show": {
+        "one": "{read} van {count} aflevering",
+        "other": "{read} van {count} afleveringen"
+      },
+      "anime": {
+        "one": "{read} van {count} aflevering",
+        "other": "{read} van {count} afleveringen"
+      },
+      "movie": {
+        "one": "{read} van {count} film",
+        "other": "{read} van {count} films"
+      }
+    },
+    "progressOfSkipped": {
+      "manga": {
+        "one": "{read} + {count} overgeslagen van {total} delen",
+        "other": "{read} + {count} overgeslagen van {total} delen"
+      },
+      "book": {
+        "one": "{read} + {count} overgeslagen van {total} boeken",
+        "other": "{read} + {count} overgeslagen van {total} boeken"
+      },
+      "audiobook": {
+        "one": "{read} + {count} overgeslagen van {total} boeken",
+        "other": "{read} + {count} overgeslagen van {total} boeken"
+      },
+      "show": {
+        "one": "{read} + {count} overgeslagen van {total} afleveringen",
+        "other": "{read} + {count} overgeslagen van {total} afleveringen"
+      },
+      "anime": {
+        "one": "{read} + {count} overgeslagen van {total} afleveringen",
+        "other": "{read} + {count} overgeslagen van {total} afleveringen"
+      },
+      "movie": {
+        "one": "{read} + {count} overgeslagen van {total} films",
+        "other": "{read} + {count} overgeslagen van {total} films"
+      }
+    },
+    "offloadedSome": {
+      "manga": {
+        "one": "{count} van deze {total} delen is gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard.",
+        "other": "{count} van deze {total} delen zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard."
+      },
+      "book": {
+        "one": "{count} van deze {total} boeken is gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard.",
+        "other": "{count} van deze {total} boeken zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard."
+      },
+      "audiobook": {
+        "one": "{count} van deze {total} boeken is gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard.",
+        "other": "{count} van deze {total} boeken zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard."
+      },
+      "show": {
+        "one": "{count} van deze {total} afleveringen is gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard.",
+        "other": "{count} van deze {total} afleveringen zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard."
+      },
+      "anime": {
+        "one": "{count} van deze {total} afleveringen is gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard.",
+        "other": "{count} van deze {total} afleveringen zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard."
+      },
+      "movie": {
+        "one": "{count} van deze {total} films is gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard.",
+        "other": "{count} van deze {total} films zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard."
+      }
+    },
+    "offloadedAll": {
+      "manga": "Al deze delen zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard.",
+      "book": "Al deze boeken zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard.",
+      "audiobook": "Al deze boeken zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard.",
+      "show": "Al deze afleveringen zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard.",
+      "anime": "Al deze afleveringen zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard.",
+      "movie": "Al deze films zijn gearchiveerd om ruimte vrij te maken; de geschiedenis blijft bewaard."
+    },
+    "emptyHint": {
+      "manga": "Ga naar het tabblad ‘Alles’ om elk deel te zien.",
+      "book": "Ga naar het tabblad ‘Alles’ om elk boek te zien.",
+      "audiobook": "Ga naar het tabblad ‘Alles’ om elk boek te zien.",
+      "show": "Ga naar het tabblad ‘Alles’ om elke aflevering te zien.",
+      "anime": "Ga naar het tabblad ‘Alles’ om elke aflevering te zien.",
+      "movie": "Ga naar het tabblad ‘Alles’ om elke film te zien."
+    },
+    "markAs": {
+      "manga": "Markeren als gelezen",
+      "book": "Markeren als gelezen",
+      "audiobook": "Markeren als beluisterd",
+      "show": "Markeren als bekeken",
+      "anime": "Markeren als bekeken",
+      "movie": "Markeren als bekeken"
+    },
+    "skipUnit": {
+      "manga": "Deel overslaan",
+      "book": "Boek overslaan",
+      "audiobook": "Boek overslaan",
+      "show": "Aflevering overslaan",
+      "anime": "Aflevering overslaan",
+      "movie": "Film overslaan"
+    },
+    "unskipUnit": {
+      "manga": "Deel niet overslaan",
+      "book": "Boek niet overslaan",
+      "audiobook": "Boek niet overslaan",
+      "show": "Aflevering niet overslaan",
+      "anime": "Aflevering niet overslaan",
+      "movie": "Film niet overslaan"
+    },
+    "skipThis": {
+      "manga": "Dit deel overslaan",
+      "book": "Dit boek overslaan",
+      "audiobook": "Dit boek overslaan",
+      "show": "Deze aflevering overslaan",
+      "anime": "Deze aflevering overslaan",
+      "movie": "Deze film overslaan"
+    },
+    "rateThis": {
+      "manga": "Dit deel beoordelen",
+      "book": "Dit boek beoordelen",
+      "audiobook": "Dit boek beoordelen",
+      "show": "Deze aflevering beoordelen",
+      "anime": "Deze aflevering beoordelen",
+      "movie": "Deze film beoordelen"
+    },
+    "rateInHeader": {
+      "manga": "Beoordeel dit deel bovenaan",
+      "book": "Beoordeel dit boek bovenaan",
+      "audiobook": "Beoordeel dit boek bovenaan",
+      "show": "Beoordeel deze aflevering bovenaan",
+      "anime": "Beoordeel deze aflevering bovenaan",
+      "movie": "Beoordeel deze film bovenaan"
+    },
+    "again": {
+      "manga": "Opnieuw lezen",
+      "book": "Opnieuw lezen",
+      "audiobook": "Opnieuw luisteren",
+      "show": "Opnieuw kijken",
+      "anime": "Opnieuw kijken",
+      "movie": "Opnieuw kijken"
+    },
+    "againLower": {
+      "manga": "Opnieuw lezen",
+      "book": "Opnieuw lezen",
+      "audiobook": "Opnieuw luisteren",
+      "show": "Opnieuw kijken",
+      "anime": "Opnieuw kijken",
+      "movie": "Opnieuw kijken"
+    },
+    "markDone": {
+      "manga": "Gelezen",
+      "book": "Gelezen",
+      "audiobook": "Beluisterd",
+      "show": "Bekeken",
+      "anime": "Bekeken",
+      "movie": "Bekeken"
+    },
+    "markAllDone": {
+      "manga": "Alles gelezen",
+      "book": "Alles gelezen",
+      "audiobook": "Alles beluisterd",
+      "show": "Alles bekeken",
+      "anime": "Alles bekeken",
+      "movie": "Alles bekeken"
+    },
+    "markAllTitle": {
+      "manga": "Alles markeren als gelezen",
+      "book": "Alles markeren als gelezen",
+      "audiobook": "Alles markeren als beluisterd",
+      "show": "Alles markeren als bekeken",
+      "anime": "Alles markeren als bekeken",
+      "movie": "Alles markeren als bekeken"
+    },
+    "markEverything": {
+      "manga": "Alles markeren als gelezen",
+      "book": "Alles markeren als gelezen",
+      "audiobook": "Alles markeren als beluisterd",
+      "show": "Alles markeren als bekeken",
+      "anime": "Alles markeren als bekeken",
+      "movie": "Alles markeren als bekeken"
+    },
+    "markEveryConfirm": {
+      "manga": "Elk deel van ‘{name}’ markeren als gelezen?",
+      "book": "Elk boek van ‘{name}’ markeren als gelezen?",
+      "audiobook": "Elk boek van ‘{name}’ markeren als beluisterd?",
+      "show": "Elke aflevering van ‘{name}’ markeren als bekeken?",
+      "anime": "Elke aflevering van ‘{name}’ markeren als bekeken?",
+      "movie": "Elke film van ‘{name}’ markeren als bekeken?"
+    },
+    "showUnits": {
+      "manga": "Delen tonen",
+      "book": "Boeken tonen",
+      "audiobook": "Boeken tonen",
+      "show": "Afleveringen tonen",
+      "anime": "Afleveringen tonen",
+      "movie": "Films tonen"
+    },
+    "markEarlier": {
+      "manga": {
+        "one": "Het {count} eerdere deel ook als gelezen markeren?",
+        "other": "De {count} eerdere delen ook als gelezen markeren?"
+      },
+      "book": {
+        "one": "Het {count} eerdere boek ook als gelezen markeren?",
+        "other": "De {count} eerdere boeken ook als gelezen markeren?"
+      },
+      "audiobook": {
+        "one": "Het {count} eerdere boek ook als beluisterd markeren?",
+        "other": "De {count} eerdere boeken ook als beluisterd markeren?"
+      },
+      "show": {
+        "one": "De {count} eerdere aflevering ook als bekeken markeren?",
+        "other": "De {count} eerdere afleveringen ook als bekeken markeren?"
+      },
+      "anime": {
+        "one": "De {count} eerdere aflevering ook als bekeken markeren?",
+        "other": "De {count} eerdere afleveringen ook als bekeken markeren?"
+      },
+      "movie": {
+        "one": "De {count} eerdere film ook als bekeken markeren?",
+        "other": "De {count} eerdere films ook als bekeken markeren?"
+      }
+    },
+    "skipUnits": {
+      "manga": "Delen overslaan",
+      "book": "Boeken overslaan",
+      "audiobook": "Boeken overslaan",
+      "show": "Afleveringen overslaan",
+      "anime": "Afleveringen overslaan",
+      "movie": "Films overslaan"
+    },
+    "skipUnitsMenu": {
+      "manga": "Delen overslaan…",
+      "book": "Boeken overslaan…",
+      "audiobook": "Boeken overslaan…",
+      "show": "Afleveringen overslaan…",
+      "anime": "Afleveringen overslaan…",
+      "movie": "Films overslaan…"
+    },
+    "skipCovered": {
+      "manga": "Delen overslaan die je al kent",
+      "book": "Boeken overslaan die je al kent",
+      "audiobook": "Boeken overslaan die je al kent",
+      "show": "Afleveringen overslaan die je al kent",
+      "anime": "Afleveringen overslaan die je al kent",
+      "movie": "Films overslaan die je al kent"
+    },
+    "skipBody": {
+      "manga": "{hint} Overgeslagen delen tellen mee voor je voortgang en ‘Verder’ gaat erna verder. Je geschiedenis verandert niet, en als je een overgeslagen deel opent, wordt het niet meer overgeslagen.",
+      "book": "{hint} Overgeslagen boeken tellen mee voor je voortgang en ‘Verder’ gaat erna verder. Je geschiedenis verandert niet, en als je een overgeslagen boek opent, wordt het niet meer overgeslagen.",
+      "audiobook": "{hint} Overgeslagen boeken tellen mee voor je voortgang en ‘Verder’ gaat erna verder. Je geschiedenis verandert niet, en als je een overgeslagen boek opent, wordt het niet meer overgeslagen.",
+      "show": "{hint} Overgeslagen afleveringen tellen mee voor je voortgang en ‘Verder’ gaat erna verder. Je geschiedenis verandert niet, en als je een overgeslagen aflevering opent, wordt die niet meer overgeslagen.",
+      "anime": "{hint} Overgeslagen afleveringen tellen mee voor je voortgang en ‘Verder’ gaat erna verder. Je geschiedenis verandert niet, en als je een overgeslagen aflevering opent, wordt die niet meer overgeslagen.",
+      "movie": "{hint} Overgeslagen films tellen mee voor je voortgang en ‘Verder’ gaat erna verder. Je geschiedenis verandert niet, en als je een overgeslagen film opent, wordt die niet meer overgeslagen."
+    },
+    "skips": {
+      "manga": {
+        "one": "Slaat {n} deel over dat je nog niet uit hebt ({range}).",
+        "other": "Slaat {n} delen over die je nog niet uit hebt ({range})."
+      },
+      "book": {
+        "one": "Slaat {n} boek over dat je nog niet uit hebt ({range}).",
+        "other": "Slaat {n} boeken over die je nog niet uit hebt ({range})."
+      },
+      "audiobook": {
+        "one": "Slaat {n} boek over dat je nog niet uit hebt ({range}).",
+        "other": "Slaat {n} boeken over die je nog niet uit hebt ({range})."
+      },
+      "show": {
+        "one": "Slaat {n} aflevering over die je nog niet uit hebt ({range}).",
+        "other": "Slaat {n} afleveringen over die je nog niet uit hebt ({range})."
+      },
+      "anime": {
+        "one": "Slaat {n} aflevering over die je nog niet uit hebt ({range}).",
+        "other": "Slaat {n} afleveringen over die je nog niet uit hebt ({range})."
+      },
+      "movie": {
+        "one": "Slaat {n} film over die je nog niet uit hebt ({range}).",
+        "other": "Slaat {n} films over die je nog niet uit hebt ({range})."
+      }
+    },
+    "nothingToSkip": {
+      "manga": "Niets om over te slaan — die zijn al gelezen of overgeslagen.",
+      "book": "Niets om over te slaan — die zijn al gelezen of overgeslagen.",
+      "audiobook": "Niets om over te slaan — die zijn al beluisterd of overgeslagen.",
+      "show": "Niets om over te slaan — die zijn al bekeken of overgeslagen.",
+      "anime": "Niets om over te slaan — die zijn al bekeken of overgeslagen.",
+      "movie": "Niets om over te slaan — die zijn al bekeken of overgeslagen."
+    },
+    "allUnits": {
+      "manga": "Alle delen",
+      "book": "Alle boeken",
+      "audiobook": "Alle boeken",
+      "show": "Alle afleveringen",
+      "anime": "Alle afleveringen",
+      "movie": "Alle films"
+    },
+    "start": {
+      "manga": "Begin met lezen",
+      "book": "Begin met lezen",
+      "audiobook": "Begin met luisteren",
+      "show": "Begin met kijken",
+      "anime": "Begin met kijken",
+      "movie": "Begin met kijken"
+    },
+    "continue": {
+      "manga": "Verder lezen",
+      "book": "Verder lezen",
+      "audiobook": "Verder luisteren",
+      "show": "Verder kijken",
+      "anime": "Verder kijken",
+      "movie": "Verder kijken"
+    },
+    "downloadRemaining": {
+      "manga": {
+        "one": "{count} deel dat je nog niet uit hebt downloaden voor offline gebruik",
+        "other": "{count} delen die je nog niet uit hebt downloaden voor offline gebruik"
+      },
+      "book": {
+        "one": "{count} boek dat je nog niet uit hebt downloaden voor offline gebruik",
+        "other": "{count} boeken die je nog niet uit hebt downloaden voor offline gebruik"
+      },
+      "audiobook": {
+        "one": "{count} boek dat je nog niet uit hebt downloaden voor offline gebruik",
+        "other": "{count} boeken die je nog niet uit hebt downloaden voor offline gebruik"
+      },
+      "show": {
+        "one": "{count} aflevering die je nog niet uit hebt downloaden voor offline gebruik",
+        "other": "{count} afleveringen die je nog niet uit hebt downloaden voor offline gebruik"
+      },
+      "anime": {
+        "one": "{count} aflevering die je nog niet uit hebt downloaden voor offline gebruik",
+        "other": "{count} afleveringen die je nog niet uit hebt downloaden voor offline gebruik"
+      },
+      "movie": {
+        "one": "{count} film die je nog niet uit hebt downloaden voor offline gebruik",
+        "other": "{count} films die je nog niet uit hebt downloaden voor offline gebruik"
+      }
+    },
+    "metadataAll": {
+      "manga": "Metadata-bronnen doorzoeken en op alle delen toepassen",
+      "book": "Metadata-bronnen doorzoeken en op alle boeken toepassen",
+      "audiobook": "Metadata-bronnen doorzoeken en op alle boeken toepassen",
+      "show": "Metadata-bronnen doorzoeken en op alle afleveringen toepassen",
+      "anime": "Metadata-bronnen doorzoeken en op alle afleveringen toepassen",
+      "movie": "Metadata-bronnen doorzoeken en op alle films toepassen"
+    },
+    "totalUnits": {
+      "manga": "Totaal delen",
+      "book": "Totaal boeken",
+      "audiobook": "Totaal boeken",
+      "show": "Totaal afleveringen",
+      "anime": "Totaal afleveringen",
+      "movie": "Totaal films"
+    }
+  }
+}

@@ -1,0 +1,709 @@
+{
+  "nav": {
+    "yourSettings": "Your settings",
+    "groups": {
+      "server": "Server",
+      "library": "Library",
+      "people": "People",
+      "settings": "Settings",
+      "system": "System"
+    },
+    "items": {
+      "overview": {
+        "label": "Overview",
+        "desc": "Version, updates and what's in it"
+      },
+      "libraries": {
+        "label": "Libraries",
+        "desc": "Folders and automatic scanning"
+      },
+      "health": {
+        "label": "Health",
+        "desc": "Missing files and what needs fixing"
+      },
+      "metadata": {
+        "label": "Metadata",
+        "desc": "TMDB key and matching titles"
+      },
+      "kids": {
+        "label": "Kids Mode",
+        "desc": "What kids accounts can see"
+      },
+      "users": {
+        "label": "Users",
+        "desc": "Accounts, roles, limits"
+      },
+      "activity": {
+        "label": "Activity",
+        "desc": "Sign-ins and what's being played"
+      },
+      "appearance": {
+        "label": "Appearance",
+        "desc": "Defaults, name, custom CSS"
+      },
+      "features": {
+        "label": "Features",
+        "desc": "Shelf views, ratings, watch parties"
+      },
+      "playback": {
+        "label": "Playback",
+        "desc": "Hardware acceleration, opening clip"
+      },
+      "network": {
+        "label": "Network",
+        "desc": "Away from home, Tailscale, two-factor"
+      },
+      "backups": {
+        "label": "Backups",
+        "desc": "Schedule, second copy, restore points"
+      },
+      "logs": {
+        "label": "Logs",
+        "desc": "What the server has been doing"
+      }
+    }
+  },
+  "activity": {
+    "title": "Activity",
+    "description": "Sign-ins, and what's being read, watched and listened to, on every account.",
+    "show": "Show",
+    "everyone": "Everyone"
+  },
+  "appearance": {
+    "title": "Appearance",
+    "description": "How Plinthio looks for everyone: the server's defaults, its name, and your own CSS. Changes save as you make them.",
+    "personalize": {
+      "label": "Let people personalize",
+      "desc": "Each person can pick their own colour, navigation, width and pause screen in Settings → Appearance. Turn off to use the server's look for everyone."
+    },
+    "usersCanChange": "Users can change",
+    "cards": {
+      "accent": "The highlight colour on buttons, badges and the current tab.",
+      "pageWidth": "How wide pages get on a big screen.",
+      "pauseScreen": "What appears after a couple of seconds paused; it fades when someone moves the mouse or touches the screen. Cast, crew and facts come from TMDB when a key is set."
+    },
+    "branding": {
+      "title": "Name and sign-in notice",
+      "desc": "Your server's name, and an optional notice on the sign-in page.",
+      "serverName": "Server name",
+      "notice": "Sign-in notice",
+      "removeNotice": "Remove the sign-in notice"
+    },
+    "css": {
+      "title": "Custom CSS",
+      "desc": "Your own style rules, added to every page for everyone. Try them here first; they go live when you save.",
+      "cheatsheet": "CSS cheatsheet",
+      "example": "/* For example */",
+      "save": "Save CSS",
+      "tryIt": "Try it on this page",
+      "notSaved": "Not saved",
+      "couldNotSave": "Could not save the CSS"
+    }
+  },
+  "backups": {
+    "title": "Backups",
+    "description": "Snapshots of the database: accounts, everyone's progress, bookmarks, highlights and notes, ratings, lists, libraries and metadata. Not your media files. A snapshot is also taken before every upgrade, and the newest five of those are always kept.",
+    "automatic": "Automatic backups",
+    "schedule": {
+      "label": "Back up on a schedule",
+      "desc": "Saved on the server in /config/backups."
+    },
+    "howOften": "How often",
+    "frequency": {
+      "every6h": "Every 6 hours",
+      "every12h": "Every 12 hours",
+      "daily": "Daily",
+      "every3d": "Every 3 days",
+      "weekly": "Weekly"
+    },
+    "keepLast": "Keep the last",
+    "destination": {
+      "label": "Also copy backups to",
+      "why": "/config/backups is on the same disk as the server. A copy on another drive, a NAS or a synced cloud folder survives that disk failing.",
+      "placeholder": "Not copied anywhere else",
+      "browseAria": "Browse for a backup folder",
+      "browse": "Browse",
+      "testAria": "Test backup folder",
+      "test": "Test",
+      "checking": "Checking…",
+      "writable": "The server can write there.",
+      "writableFree": "The server can write there · {free} free.",
+      "sameDisk": "It's on the same disk as the server's data, so it guards against mistakes but not a failed disk. A folder on another drive is better.",
+      "otherDisk": "It's on a different disk from the server's data.",
+      "hint": "A folder as the server sees it. In Docker: anywhere under {media} that isn't read-only, or another drive mounted at {backups} (Docs → Backups & Data Safety).",
+      "keepThere": "Keep there",
+      "copyFiles": "Also copy profile pictures, covers, the sign-in key and HTTPS certificates",
+      "couldNotCheck": "Couldn't check that folder",
+      "pickerTitle": "Copy backups to"
+    },
+    "saveAria": "Save backup settings",
+    "savedCopying": "Saved. The backups you have are being copied to {path}.",
+    "copyFailed": "Copying to {path} failed: {error}. It's tried again every 15 minutes.",
+    "copiedTo": "Copied to {path} {when}",
+    "notYet": "— not yet",
+    "copying": "Copying…",
+    "copyNow": "Copy now",
+    "stored": "Stored backups",
+    "storedCount": "Stored backups ({count})",
+    "backingUp": "Backing up…",
+    "backUpNow": "Back up now",
+    "preparing": "Preparing…",
+    "downloadSnapshot": "Download a snapshot",
+    "empty": "No backups yet. Turn on automatic backups or back up now.",
+    "downloadThis": "Download this backup",
+    "deleteThis": "Delete this backup",
+    "couldNotBackUp": "Could not make a backup",
+    "couldNotSnapshot": "Could not make a snapshot. The browser console has the details.",
+    "couldNotDownload": "Could not download that backup. The browser console has the details.",
+    "deleteTitle": "Delete backup",
+    "deleteMessage": "Delete the backup from {date}? This can't be undone.",
+    "couldNotDelete": "Could not delete that backup"
+  },
+  "features": {
+    "title": "Features",
+    "description": "What's switched on for everyone on this server. Changes save as you make them.",
+    "shelfViews": {
+      "title": "Shelf views",
+      "desc": "Alphabetical and Creator are always there. Turning a folder view off hides it for everyone."
+    },
+    "folderModes": {
+      "diskFolder": {
+        "label": "Disk folders",
+        "desc": "Browse by the folders on the server."
+      },
+      "customFolder": {
+        "label": "Custom folders",
+        "desc": "People's own in-app folders, with an Unorganized catch-all."
+      }
+    },
+    "ratings": {
+      "title": "Ratings",
+      "desc": "Which ratings appear. One turned off is hidden everywhere, and the server stops sending it.",
+      "personal": {
+        "label": "Personal ratings",
+        "desc": "Each person can give 1–5 stars, and sees their own."
+      },
+      "community": {
+        "label": "{name} ratings",
+        "desc": "The average from everyone on this server."
+      },
+      "external": {
+        "label": "World ratings (TMDB)",
+        "desc": "TMDB's score for movies, shows and anime. Needs a TMDB key."
+      }
+    },
+    "movies": {
+      "title": "Movies and watching together",
+      "missingFilms": {
+        "label": "Show missing films in collections",
+        "desc": "A collection like Shrek or Star Wars also lists the films you don't have, greyed out with a Request button. They never appear on the Movies shelf. Needs a TMDB key."
+      },
+      "watchParties": {
+        "label": "Watch parties",
+        "desc": "A Watch Together button on movies and episodes: watch in sync from different places, with chat. Content limits still apply to everyone in a party. Friends away from home need to be able to reach this server (see Network). Turning it off ends any party in progress."
+      }
+    }
+  },
+  "kids": {
+    "title": "Kids Mode",
+    "description": "Kids accounts see only what's switched on here. Make an account a kids account in Users.",
+    "libraries": {
+      "title": "Whole libraries",
+      "desc": "Everything in these libraries, now and later."
+    },
+    "noLibraries": "No libraries yet.",
+    "items": {
+      "one": "{number} item",
+      "other": "{number} items"
+    },
+    "titles": {
+      "title": "Single series and titles",
+      "desc": "Add more from any series or title page with its {button} button.",
+      "button": "Kids"
+    },
+    "noneYet": "None yet.",
+    "series": "Series",
+    "singleTitle": "Title",
+    "removeAria": "Remove {name} from Kids Mode",
+    "couldNotRemove": "Could not remove it from Kids Mode"
+  },
+  "libraries": {
+    "title": "Libraries",
+    "description": "The folders Plinthio reads your media from. It never changes your files.",
+    "add": "Add library",
+    "empty": "No libraries yet. Add one to point Plinthio at a folder of media.",
+    "kids": "Kids",
+    "items": {
+      "one": "{number} item",
+      "other": "{number} items"
+    },
+    "scanning": "Scanning…",
+    "scan": "Scan",
+    "deleteAria": "Delete {name}",
+    "deleteLibrary": "Delete library",
+    "types": {
+      "movies": "Movies",
+      "shows": "TV shows",
+      "anime": "Anime",
+      "books": "Books",
+      "manga": "Manga & comics",
+      "audiobooks": "Audiobooks"
+    },
+    "autoScan": {
+      "title": "Automatic scanning",
+      "desc": "Picks up media added to your library folders without anyone pressing Scan.",
+      "scheduled": {
+        "label": "Re-scan on a schedule",
+        "desc": "The dependable one: works on network shares and mounts that report no changes."
+      },
+      "schedule": "Schedule",
+      "modes": {
+        "interval": "At regular intervals",
+        "times": "At set times each day"
+      },
+      "every": "Re-scan every",
+      "intervals": {
+        "15": "15 minutes",
+        "30": "30 minutes",
+        "60": "hour",
+        "360": "6 hours",
+        "1440": "day"
+      },
+      "at": "Re-scan at",
+      "timeAria": "Scan time {number}",
+      "removeTime": "Remove {time}",
+      "thisTime": "this time",
+      "addTime": "Add time",
+      "timesHint": "In the server's time zone. If the server was off at a set time, it scans once when it's back.",
+      "watch": {
+        "label": "Watch folders for changes",
+        "desc": "Scans about 30 seconds after a file appears, where the filesystem reports it. Works with or without the schedule."
+      },
+      "manual": "Automatic scanning is off. New media won't show up until an admin presses Scan on a library.",
+      "noSchedule": "Without a schedule, changes on network shares or mounts that send no file events won't be noticed until you press Scan.",
+      "noTimes": "No times set, so the schedule never runs. Add a time, or switch to regular intervals."
+    },
+    "addDialog": {
+      "title": "Add a library",
+      "folder": "Folder",
+      "browse": "Browse",
+      "folderHint": "As the server sees it. In Docker, your media is mounted at {path}.",
+      "name": "Name",
+      "namePlaceholder": "e.g. Audiobooks",
+      "whatsInIt": "What's in it",
+      "adding": "Adding…",
+      "addAndScan": "Add and scan",
+      "pickerTitle": "Choose the library folder"
+    },
+    "scanResult": {
+      "title": "Scanned {name}",
+      "added": "{count} added",
+      "renamed": "{count} renamed or moved",
+      "updated": "{count} updated",
+      "removed": "{count} removed",
+      "summary": "{parts}.",
+      "nothingNew": "Nothing new."
+    },
+    "scanFailed": "Scan failed",
+    "deleteMessage": "Delete \"{name}\"? Your files aren't touched, and progress and bookmarks come back if you add the same folder again. Its titles, covers and details are removed until it's scanned again.",
+    "couldNotDelete": "Could not delete that library",
+    "couldNotAdd": "Could not add that library"
+  },
+  "logs": {
+    "title": "Logs",
+    "description": "Scans, errors and what the server has been doing, newest first.",
+    "live": "Live",
+    "paused": "Paused",
+    "refreshNow": "Refresh now",
+    "searchPlaceholder": "Search messages and categories",
+    "searchAria": "Search logs",
+    "level": "Level",
+    "levels": {
+      "all": "all",
+      "info": "info",
+      "warn": "warn",
+      "error": "error"
+    },
+    "nothingMatches": "Nothing matches.",
+    "clearTitle": "Clear logs",
+    "clearMessage": "Delete every log entry from the database?",
+    "couldNotClear": "Could not clear the logs"
+  },
+  "metadata": {
+    "title": "Metadata",
+    "description": "Where posters, descriptions, cast and ratings come from, and tidying titles that came in from file names.",
+    "tmdb": {
+      "title": "TMDB key",
+      "descBuiltIn": "Movies, shows and anime get their details from TMDB, using the key built into Plinthio. You can paste your own TMDB key to use it instead. Manga (MangaDex) and books (Google Books, Open Library) need nothing.",
+      "descNeedsKey": "Movies, shows and anime get their details from TMDB, which needs a free key. Manga (MangaDex) and books (Google Books, Open Library) need nothing.",
+      "sources": {
+        "custom": "Your own",
+        "environment": "From TMDB_API_KEY",
+        "builtin": "Built in",
+        "set": "Set",
+        "notSet": "Not set"
+      },
+      "keyLabel": "TMDB API key",
+      "placeholderReplace": "Paste a new key to replace it",
+      "placeholderOptional": "Paste your own TMDB key (optional)",
+      "placeholderToken": "Paste your TMDB API Read Access Token",
+      "saveKey": "Save key",
+      "useBuiltIn": "Use built-in key",
+      "getOne": "Get one free at {link}.",
+      "getOneLink": "themoviedb.org → Settings → API",
+      "attribution": "This product uses the TMDB API but is not endorsed or certified by TMDB.",
+      "removeTitle": "Remove the TMDB key",
+      "removeMessage": "Movies, shows and anime stop getting new posters, details and world ratings until a key is added again."
+    }
+  },
+  "overview": {
+    "title": "Overview",
+    "description": "This server at a glance: its version, what's in it and who uses it.",
+    "checksOff": "Update checks are off (UPDATE_CHECK=false).",
+    "available": "{version} is available.",
+    "updateWith": "Update with {command}",
+    "upToDate": "You're up to date.",
+    "upToDateCheckFailed": "You're up to date (last check failed — offline?).",
+    "notChecked": "Not checked yet.",
+    "releaseNotes": "Release notes",
+    "checking": "Checking…",
+    "checkNow": "Check now",
+    "tiles": {
+      "files": "Files",
+      "onDisk": "On disk",
+      "audio": "Audio",
+      "accounts": "Accounts"
+    },
+    "byMediaType": "By media type",
+    "files": {
+      "one": "{number} file",
+      "other": "{number} files"
+    },
+    "series": {
+      "one": "{number} series",
+      "other": "{number} series"
+    },
+    "creators": {
+      "one": "{number} creator",
+      "other": "{number} creators"
+    }
+  },
+  "playback": {
+    "title": "Playback",
+    "description": "How video reaches people's screens, and the clip that can play before it.",
+    "hwaccel": {
+      "title": "Hardware acceleration",
+      "desc": "Plinthio plays files as they are whenever the browser can, and only converts what it can't. A graphics chip makes converting far cheaper.",
+      "found": "Found on this machine",
+      "noneCpu": "None — using the CPU",
+      "use": "Use",
+      "auto": "Whatever is found (recommended)",
+      "cpu": "Always the CPU",
+      "always": "Always {method}",
+      "testing": "Testing…",
+      "test": "Test",
+      "works": "{method} works on this machine.",
+      "failed": "{method} didn't work: {error}",
+      "testHint": "Test runs a short real conversion: ffmpeg listing an encoder doesn't prove the driver under it works.",
+      "testFailed": "Test failed",
+      "howItWorks": "How playback works, and setting up a graphics chip",
+      "tips": {
+        "direct": {
+          "title": "Direct play and direct stream:",
+          "text": "video the browser can decode (H.264, or HEVC in Chrome, Edge, Vivaldi and Safari) is sent untouched, up to 4K, even from MKV files. Only audio it can't play (EAC3, Atmos, DTS) is converted, to AAC."
+        },
+        "browser": {
+          "title": "The browser's side:",
+          "text": "for 4K, check the browser decodes video in hardware ({page} → Video Decode: Hardware accelerated)."
+        },
+        "docker": {
+          "title": "Intel Quick Sync and VAAPI in Docker:",
+          "text": "pass {dri} through under {devices}, and add the host's {render} group ID under {groupAdd}."
+        },
+        "small": {
+          "title": "Small machines:",
+          "text": "converting on the CPU is held to two threads at the fastest preset, and preview thumbnails are made separately, so a mini PC doesn't overheat."
+        }
+      }
+    },
+    "intro": {
+      "title": "Opening sequence",
+      "desc": "A short clip played full-screen when someone presses Play on a movie or episode. Never before autoplayed episodes, trailers or watch parties, and anyone can skip it.",
+      "checking": "Checking…",
+      "upload": "Upload a clip",
+      "custom": "Your own clip.",
+      "builtIn": "Plinthio's built-in clip. Replace it with your own:",
+      "requirements": "MP4 (H.264), 1–10 seconds, up to 20 MB. 1080p at about 8 Mbps is plenty.",
+      "thisOne": "This one is {seconds} seconds.",
+      "replace": "Replace",
+      "useBuiltIn": "Use the built-in clip",
+      "play": "Play the opening sequence",
+      "offUntil": "Off until you turn it on.",
+      "uploadFirst": "Upload a clip first.",
+      "beforeMovies": "Before movies",
+      "beforeShows": "Before shows and anime",
+      "tooBig": "That file is over 20 MB. Export it shorter or at a lower bitrate.",
+      "uploadFailed": "Upload failed",
+      "removeTitle": "Remove your clip",
+      "removeMessage": "Remove your clip and go back to Plinthio's built-in opening sequence?",
+      "couldNotRemove": "Could not remove it"
+    }
+  },
+  "users": {
+    "title": "Users",
+    "description": "Everyone who can sign in to this server. There's no self sign-up: accounts are made here.",
+    "add": "Add user",
+    "editAria": "Edit {name}",
+    "you": "You",
+    "lastIn": "Last in {date}",
+    "neverSignedIn": "Never signed in",
+    "network": "({network})",
+    "outside": "outside",
+    "roles": {
+      "label": "Role",
+      "viewer": {
+        "label": "Viewer",
+        "desc": "Browses, reads, watches and listens; tracks their own progress."
+      },
+      "editor": {
+        "label": "Editor",
+        "desc": "Also fixes shared titles, covers and details."
+      },
+      "admin": {
+        "label": "Admin",
+        "desc": "Everything, including libraries, users and this page."
+      }
+    },
+    "durations": {
+      "day": {
+        "one": "{count} day",
+        "other": "{count} days"
+      },
+      "week": {
+        "one": "{count} week",
+        "other": "{count} weeks"
+      },
+      "month": {
+        "one": "{count} month",
+        "other": "{count} months"
+      },
+      "year": {
+        "one": "{count} year",
+        "other": "{count} years"
+      }
+    },
+    "addDialog": {
+      "title": "Add a user",
+      "passwordHint": "At least 8 characters. They can change it in Settings → Security.",
+      "adding": "Adding…"
+    },
+    "access": "Access",
+    "noEndDate": "No end date",
+    "noEndDateSentence": "No end date.",
+    "forDuration": "For {duration}",
+    "untilDate": "Until a date…",
+    "accessEnds": "Access ends",
+    "editDialog": {
+      "title": "Edit {name}",
+      "joined": "Joined {date}"
+    },
+    "ended": "Ended {date}",
+    "ends": "Ends {date}",
+    "extendBy": "+{duration}",
+    "removeEndDate": "Remove end date",
+    "setAccess": "Set access",
+    "setNewEnd": "Or set a new end…",
+    "keepNoEnd": "Keep no end date",
+    "fromNow": "{duration} from now",
+    "remote": {
+      "label": "Can use Plinthio away from home",
+      "desc": "When the server allows outside access (Network). Off: only at home and over Tailscale."
+    },
+    "kidsAccount": {
+      "label": "Kids account",
+      "desc": "Sees only what's switched on in Kids Mode."
+    },
+    "twoFactorOn": "Two-factor is on",
+    "twoFactorHelp": "Lost their phone and backup codes? Reset it so they can sign in with their password and set it up again.",
+    "contentLimit": "Content limit",
+    "noLimit": "No limit",
+    "everyoneOnly": "Everyone only",
+    "upTo": "Up to {rating}",
+    "ageRatings": {
+      "everyone": "Everyone",
+      "teen": "Teen",
+      "mature": "Mature"
+    },
+    "allowUnrated": "Also show titles that haven't been rated. Off is strict: only rated titles at or under the limit.",
+    "ratingsHint": "Ratings are set on each series or title.",
+    "newPassword": "New password",
+    "newPasswordPlaceholder": "Leave blank to keep theirs",
+    "newPasswordHint": "At least 8 characters. Setting one signs them out everywhere.",
+    "accessEnded": "Access ended",
+    "hoursLeft": {
+      "one": "{count}h left",
+      "other": "{count}h left"
+    },
+    "daysLeft": {
+      "one": "{count}d left",
+      "other": "{count}d left"
+    },
+    "badges": {
+      "twoFactor": "Two-factor",
+      "twoFactorTitle": "Signs in with a code from an authenticator app too",
+      "homeOnly": "Home only",
+      "homeOnlyTitle": "Can only use Plinthio from the home network",
+      "kids": "Kids",
+      "unratedHidden": "Unrated titles are hidden too",
+      "unratedAllowed": "Unrated titles are allowed"
+    },
+    "couldNotAdd": "Could not add that user",
+    "couldNotChangeAccess": "Could not change their access",
+    "passwordTooShort": "The new password needs at least 8 characters.",
+    "couldNotSave": "Could not save those changes",
+    "resetTitle": "Reset two-factor?",
+    "resetMessage": "{name} will be signed out everywhere, can then sign in with just their password, and can set two-factor up again in Settings → Security.",
+    "couldNotReset": "Could not reset two-factor",
+    "deleteTitle": "Delete user",
+    "deleteMessage": "Delete {name}? Their progress, bookmarks, highlights, lists and ratings go with them.",
+    "deleteUser": "Delete user",
+    "couldNotDelete": "Could not delete that user"
+  },
+  "health": {
+    "title": "Health",
+    "description": "What needs attention across your libraries.",
+    "checked": "Checked {time}.",
+    "checking": "Checking…",
+    "runCheck": "Run check",
+    "tiles": {
+      "libraries": "Unreachable libraries",
+      "missing": "Missing files",
+      "duplicates": "Duplicates",
+      "clashes": "Volume clashes",
+      "metadata": "No cover art",
+      "transcode": "Encode failures"
+    },
+    "allClear": "Everything looks healthy.",
+    "libraries": "Libraries",
+    "itemsTotal": {
+      "one": "{number} item total",
+      "other": "{number} items total"
+    },
+    "items": {
+      "one": "{number} item",
+      "other": "{number} items"
+    },
+    "scanned": "Scanned {time}",
+    "neverScanned": "Never scanned",
+    "unreachable": "Folder not reachable — check the drive is mounted and the Docker volume is mapped. Items stay in the catalog until it's back.",
+    "rescan": "Rescan",
+    "noLibraries": "No libraries yet.",
+    "missing": {
+      "title": "Missing files",
+      "hint": "Gone from disk. Deleted them on purpose to free space? Keep them as history: they stay on their title page, greyed, with everyone's progress. Otherwise they're kept hidden for now (a drive can be briefly unavailable) and come back on their own if the files return; remove them for good once you're sure.",
+      "keepAll": "Keep all as history",
+      "removing": "Removing…",
+      "removeAll": "Remove all for good"
+    },
+    "keepAsHistory": "Keep as history",
+    "removeForGood": "Remove for good",
+    "offloaded": {
+      "title": "Offloaded (kept as history)",
+      "hint": "Removed to free space and kept as history: hidden from shelves and search, shown greyed on their title page with everyone's progress. If the files come back, they're restored by themselves.",
+      "undo": "Undo"
+    },
+    "duplicates": {
+      "title": "Likely duplicates",
+      "hint": "Same title and exact same file size — usually the same file in two folders or libraries.",
+      "copies": {
+        "one": "{count} copy",
+        "other": "{count} copies"
+      }
+    },
+    "clashes": {
+      "title": "Volume / episode clashes",
+      "hint": "Different files that both claim the same volume or episode number in a series. Usually a misnamed file."
+    },
+    "metadata": {
+      "title": "Missing artwork or metadata",
+      "hint": "{noCover} without cover art, {noAuthor} books/manga/audiobooks without an author, {noDescription} without a description. Fix them in the Metadata tab.",
+      "open": "Open Metadata",
+      "noCover": "No cover",
+      "noAuthor": "No author"
+    },
+    "unrated": {
+      "title": "Unrated titles",
+      "hint": "Titles with no age rating on themselves or their series. Only matters if you use content limits for some users — rate series from their series sheet, single titles from the metadata editor."
+    },
+    "transcode": {
+      "title": "Recent playback encode failures",
+      "hint": "ffmpeg errors while preparing video. Often a hardware-acceleration driver problem — try Admin → Playback → Test."
+    },
+    "mediaTypes": {
+      "movie": "movie",
+      "show": "show",
+      "anime": "anime",
+      "manga": "manga",
+      "book": "book",
+      "audiobook": "audiobook"
+    },
+    "couldNotRun": "Could not run the health check",
+    "groupSeason": "{name}, season {season}",
+    "titlesCount": {
+      "one": "{count} title",
+      "other": "{count} titles"
+    },
+    "keepTitle": "Keep as history?",
+    "keepMessage": {
+      "one": "{label} will stay on its title page, greyed, with everyone's progress, but can't be played. If the files come back, it's restored by itself.",
+      "other": "{label} will stay on their title page, greyed, with everyone's progress, but can't be played. If the files come back, they're restored by themselves."
+    },
+    "couldNotKeep": "Could not keep those as history",
+    "couldNotUndo": "Could not undo that",
+    "removeTitle": "Remove for good?",
+    "removeMessage": "Remove {name} from the catalog? Progress and ratings are kept in the database and re-attach if the same files are ever scanned again, but nothing shows it until then.",
+    "skipped": {
+      "one": "{count} kept: their files are back.",
+      "other": "{count} kept: their files are back."
+    },
+    "couldNotRemove": "Could not remove that",
+    "removeMissingTitle": "Remove missing titles?",
+    "removeMissingMessage": {
+      "one": "Remove {count} missing title from the catalog for good? Anything whose file has come back is kept, and so is anything kept as history. Reading progress and ratings are kept too, and re-attach if the same files are ever scanned again.",
+      "other": "Remove {count} missing titles from the catalog for good? Anything whose file has come back is kept, and so is anything kept as history. Reading progress and ratings are kept too, and re-attach if the same files are ever scanned again."
+    },
+    "removed": {
+      "one": "Removed {count} title.",
+      "other": "Removed {count} titles."
+    },
+    "removedSkipped": {
+      "one": "Removed {count} title ({skipped} kept — their files are back).",
+      "other": "Removed {count} titles ({skipped} kept — their files are back)."
+    },
+    "couldNotRemoveMissing": "Could not remove missing titles",
+    "scanComplete": "Scan of \"{name}\" complete: {added} added, {updated} updated, {removed} removed.",
+    "scanFailed": "Scan failed",
+    "episodes": {
+      "one": "{count} episode",
+      "other": "{count} episodes"
+    },
+    "files": {
+      "one": "{count} file",
+      "other": "{count} files"
+    },
+    "stillOnDisk": {
+      "one": "{count} still on disk: delete it to free the space.",
+      "other": "{count} still on disk: delete them to free the space."
+    }
+  },
+  "folderPicker": {
+    "title": "Choose a folder",
+    "up": "Up one folder",
+    "empty": "No folders in here.",
+    "newFolder": "New folder inside this one (optional)",
+    "newFolderPlaceholder": "e.g. Plinthio Backups",
+    "useNew": "Use new folder",
+    "useThis": "Use this folder",
+    "couldNotOpen": "Couldn't open that folder"
+  }
+}

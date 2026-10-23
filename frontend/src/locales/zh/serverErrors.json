@@ -1,0 +1,488 @@
+{
+  "codes": {
+    "P000": {
+      "title": "意外的服务器错误",
+      "message": "服务器出了点问题",
+      "meaning": "服务器遇到了一个没有专门代码的错误。",
+      "fix": "在“管理 → 日志”（或`docker logs plinthio`）中查看完整错误。管理员还能直接在错误消息中看到原因。"
+    },
+    "P001": {
+      "title": "无效请求",
+      "message": "请求无效",
+      "meaning": "缺少必填字段，或某个值超出了范围。",
+      "fix": "错误消息会指明是哪个字段。如果请求来自网页应用，请刷新页面。旧的缓存版本可能会发送过时的请求。"
+    },
+    "P002": {
+      "title": "未找到",
+      "message": "未找到",
+      "meaning": "请求的内容不存在，或对此帐户隐藏。",
+      "fix": "它可能已被删除，或在重新扫描时被移动。请刷新页面。"
+    },
+    "P003": {
+      "title": "不允许",
+      "message": "你没有执行此操作的权限",
+      "meaning": "帐户已登录，但无权执行此操作。",
+      "fix": "如有需要，请让管理员更改你的角色或访问权限。"
+    },
+    "P004": {
+      "title": "冲突",
+      "message": "与已有内容冲突",
+      "meaning": "此操作与现有数据冲突，例如名称重复。",
+      "fix": "错误消息会说明冲突的内容。请先重命名或移除现有项目。"
+    },
+    "P005": {
+      "title": "请求过多",
+      "message": "请求过多，请放慢速度，稍后再试",
+      "meaning": "触发了频率限制。",
+      "fix": "等一分钟后再试。如果多人通过反向代理共用一个IP，请设置TRUST_PROXY=1，让每个人分别计算限制。"
+    },
+    "P006": {
+      "title": "暂时不可用",
+      "message": "服务器繁忙，请稍后再试",
+      "meaning": "服务器现在无法处理此请求。",
+      "fix": "几秒钟后再试。"
+    },
+    "P007": {
+      "title": "上传被拒绝",
+      "message": "无法上传该文件",
+      "meaning": "上传的文件太大，或类型不对。",
+      "fix": "图片必须小于15 MB。备份必须是Plinthio备份文件。"
+    },
+    "P100": {
+      "title": "需要登录",
+      "message": "需要身份验证",
+      "meaning": "请求中没有会话、媒体令牌或API密钥。",
+      "fix": "请重新登录。脚本请发送X-API-Key请求头。"
+    },
+    "P101": {
+      "title": "会话已过期",
+      "message": "会话已过期，请重新登录",
+      "meaning": "会话令牌已过期、格式错误，或因更改密码或“在所有设备上退出登录”而被吊销。",
+      "fix": "请重新登录。"
+    },
+    "P102": {
+      "title": "令牌用错了地方",
+      "message": "此令牌在这里无效",
+      "meaning": "媒体令牌被放在Authorization请求头中发送，或在/api/media之外使用；或者会话令牌被放进了URL。媒体令牌只能以?token=的形式用于媒体URL，会话令牌只能用于Authorization请求头。",
+      "fix": "这是发出请求的客户端的问题。在网页应用中，请刷新页面。如果问题仍然存在，请附上此代码报告问题。"
+    },
+    "P103": {
+      "title": "帐户已过期",
+      "message": "你的帐户访问权限已过期。请联系管理员。",
+      "meaning": "帐户设置了到期日期，且已经过期。",
+      "fix": "管理员可以在“管理 → 用户”中延长或清除到期日期。"
+    },
+    "P104": {
+      "title": "API密钥无效",
+      "message": "API密钥无效",
+      "meaning": "X-API-Key（或HTTP Basic密码）与任何密钥都不匹配。",
+      "fix": "在“设置 → 应用和 API 密钥”中创建新密钥。密钥只在创建时显示一次。"
+    },
+    "P105": {
+      "title": "仅限管理员",
+      "message": "需要管理员权限",
+      "meaning": "此操作需要管理员角色。",
+      "fix": "请让管理员来操作，或让管理员提升你的帐户角色。"
+    },
+    "P106": {
+      "title": "仅限编辑者或管理员",
+      "message": "需要编辑者权限",
+      "meaning": "此操作需要编辑者或管理员角色。",
+      "fix": "请让管理员将你的帐户设为编辑者。"
+    },
+    "P107": {
+      "title": "用户名或密码错误",
+      "message": "用户名或密码无效",
+      "meaning": "登录信息与任何帐户都不匹配。",
+      "fix": "检查用户名和密码。管理员可以在“管理 → 用户”中重置密码。"
+    },
+    "P108": {
+      "title": "登录尝试次数过多",
+      "message": "登录尝试次数过多，请稍后再试",
+      "meaning": "登录有频率限制，以减缓密码猜测。",
+      "fix": "等15分钟后再试。"
+    },
+    "P109": {
+      "title": "外出时不可用",
+      "message": "此服务器只能在其家庭网络中使用",
+      "meaning": "请求来自家庭网络之外（不是家庭或Tailscale地址），而服务器只允许在家访问。",
+      "fix": "在家使用Plinthio，或通过Tailscale使用。管理员可以在“管理 → 网络”中允许外部访问。"
+    },
+    "P110": {
+      "title": "此帐户仅限在家使用",
+      "message": "此帐户只能在家庭网络中使用",
+      "meaning": "服务器允许外部访问，但此帐户不允许。",
+      "fix": "在家使用Plinthio，或请管理员允许此帐户在外出时使用（“管理 → 用户”）。"
+    },
+    "P111": {
+      "title": "两步验证码错误",
+      "message": "验证码不正确，或已被使用过",
+      "meaning": "六位验证码（或备用码）不匹配。验证码每30秒变化一次，每个只能用一次。",
+      "fix": "输入身份验证器应用中当前的验证码。检查手机时间是否设为自动。手机丢了？使用备用码，或请管理员重置两步验证。"
+    },
+    "P112": {
+      "title": "外出时需要两步验证",
+      "message": "从家庭网络之外登录需要两步验证，但此帐户尚未设置",
+      "meaning": "服务器要求从家庭网络之外登录时使用两步验证。",
+      "fix": "先在家登录一次，然后在“设置 → 安全”中开启两步验证。"
+    },
+    "P113": {
+      "title": "登录步骤已过期",
+      "message": "登录耗时太久，请重新开始",
+      "meaning": "登录中的两步验证步骤只有几分钟时间完成，或者输错验证码的次数过多。",
+      "fix": "重新输入用户名和密码。"
+    },
+    "P200": {
+      "title": "未找到媒体库文件夹",
+      "message": "未找到媒体库文件夹",
+      "meaning": "媒体库指向的文件夹在服务器（或容器）中不存在。",
+      "fix": "在Docker中，你的媒体挂载在/media，因此媒体库路径类似/media/Movies。检查docker/.env中的MEDIA_DIR是否指向正确的宿主机文件夹。"
+    },
+    "P201": {
+      "title": "媒体库文件夹无法读取（I/O错误）",
+      "message": "无法读取媒体文件夹（I/O错误）",
+      "meaning": "读取文件夹时出现EIO错误。几乎总是因为背后的硬盘断开连接或被重新挂载，留下了失效的挂载点。重新挂载的USB硬盘可能会出现在新路径下，例如/media/you/Drive1。",
+      "fix": "检查硬盘是否已连接并挂载（`mount | grep media`）。将MEDIA_DIR指向它当前的挂载路径，然后重新创建容器。在/etc/fstab中按UUID挂载硬盘可以让路径保持不变。"
+    },
+    "P202": {
+      "title": "媒体库文件夹权限被拒绝",
+      "message": "服务器没有读取该文件夹的权限",
+      "meaning": "文件夹存在，但Plinthio进程无法读取（EACCES）。",
+      "fix": "给容器用户授予媒体文件夹的读取权限，例如在宿主机文件夹上执行`chmod -R o+rX`，或设置匹配的PUID/PGID。"
+    },
+    "P203": {
+      "title": "不是文件夹",
+      "message": "该路径不是文件夹",
+      "meaning": "媒体库路径指向的是文件而不是目录。",
+      "fix": "选择存放你媒体的文件夹。"
+    },
+    "P300": {
+      "title": "未找到媒体",
+      "message": "未找到媒体",
+      "meaning": "不存在该ID的项目，或管理员或家长控制已对此帐户隐藏了它。",
+      "fix": "刷新媒体库。重新扫描可能已替换了该项目。"
+    },
+    "P301": {
+      "title": "媒体文件丢失",
+      "message": "磁盘上找不到该媒体文件",
+      "meaning": "该项目在媒体库中，但文件已不在了。它被移动、重命名或删除，或者硬盘没有挂载。",
+      "fix": "检查硬盘是否已挂载，然后重新扫描媒体库。"
+    },
+    "P302": {
+      "title": "媒体文件无法读取",
+      "message": "无法读取该媒体文件",
+      "meaning": "读取文件失败。通常是硬盘断开连接（EIO）、权限问题或文件损坏。",
+      "fix": "硬盘和权限问题请参阅P201/P202。在“管理 → 日志”中查看底层错误。"
+    },
+    "P303": {
+      "title": "ffmpeg不可用",
+      "message": "视频转换不可用：无法启动ffmpeg",
+      "meaning": "ffmpeg或ffprobe缺失或无法启动，因此需要转换的视频无法播放。",
+      "fix": "Docker镜像已包含ffmpeg。如果是直接安装在系统上，请安装ffmpeg并确保它在PATH中。查看“管理 → 日志”。"
+    },
+    "P304": {
+      "title": "转换失败",
+      "message": "服务器转换此视频失败",
+      "meaning": "ffmpeg已启动，但在转换视频时出错退出。通常是文件损坏、不支持的编解码器或硬件转码问题。",
+      "fix": "“管理 → 日志”中会显示ffmpeg错误。如果提到VAAPI/QSV/NVENC，请在“管理 → 播放”中关闭硬件加速，然后再试。"
+    },
+    "P305": {
+      "title": "仍在准备",
+      "message": "仍在准备此视频，请稍后再试",
+      "meaning": "转换正在进行，但还没有生成所请求的部分。",
+      "fix": "播放器会自动重试。如果一直无法完成，可能是服务器太慢，无法以此画质实时转码。请选择较低的画质。"
+    },
+    "P306": {
+      "title": "无效的串流请求",
+      "message": "无效的串流请求",
+      "meaning": "串流URL指定了未知的画质、音轨、片段或预览图。",
+      "fix": "重新加载播放器。这通常意味着视频重新扫描后URL已过时。"
+    },
+    "P307": {
+      "title": "未找到字幕轨道",
+      "message": "未找到字幕轨道",
+      "meaning": "请求的字幕轨道不存在，或无法提取。",
+      "fix": "选择其他轨道。基于图像的字幕（PGS/VobSub）无法以文本形式显示。"
+    },
+    "P308": {
+      "title": "PDF阅读器不可用",
+      "message": "无法显示PDF页面：服务器上未安装poppler",
+      "meaning": "Plinthio使用poppler（pdftoppm和pdfinfo）将PDF页面转为图片，但无法启动它们。",
+      "fix": "Docker镜像已包含poppler。如果是直接安装在系统上，请安装poppler-utils（apt install poppler-utils、brew install poppler）并重启。"
+    },
+    "P309": {
+      "title": "PDF页面无法渲染",
+      "message": "无法渲染此PDF页面",
+      "meaning": "poppler已启动，但处理此文件时失败。通常是PDF已损坏或受密码保护。",
+      "fix": "用其他PDF阅读器打开该文件检查。受密码保护的PDF需要先解锁。“管理 → 日志”中有错误信息。"
+    },
+    "P350": {
+      "title": "浏览器无法播放此格式",
+      "message": "此浏览器无法播放此视频",
+      "meaning": "即使服务器转换后，浏览器仍拒绝了该串流。",
+      "fix": "换一个浏览器试试（Chrome、Edge或Safari）。如果所有浏览器都这样，可能是文件本身已损坏。"
+    },
+    "P351": {
+      "title": "播放时连接中断",
+      "message": "与服务器的连接已断开",
+      "meaning": "播放器无法连接服务器来加载视频的下一部分。",
+      "fix": "检查网络连接，然后点按“重试”。"
+    },
+    "P352": {
+      "title": "媒体链接无法续期",
+      "message": "你的媒体访问权限已过期，且无法续期",
+      "meaning": "媒体URL带有一个短期有效的令牌。它已过期，应用也无法获取新的令牌。",
+      "fix": "刷新页面。如果没用，请退出登录后重新登录。"
+    },
+    "P400": {
+      "title": "未配置TMDB密钥",
+      "message": "未配置TMDB API密钥。管理员需要在“管理 → 元数据”中添加。",
+      "meaning": "电影、剧集和动画的元数据来自TMDB，需要API密钥。正式发布的镜像内置了密钥；如果你看到此错误，说明你使用的是从源码构建的版本，或者TMDB已不再接受内置密钥。",
+      "fix": "在themoviedb.org → Settings → API创建密钥，然后粘贴到“管理 → 元数据”中。"
+    },
+    "P401": {
+      "title": "提供方拒绝了API密钥",
+      "message": "元数据提供方拒绝了配置的API密钥",
+      "meaning": "服务器连上了提供方，但提供方拒绝了该密钥。",
+      "fix": "对于TMDB，请将TMDB帐户中的“API Key”或“API Read Access Token”粘贴到“管理 → 元数据”中。"
+    },
+    "P402": {
+      "title": "提供方频率限制",
+      "message": "元数据提供方正在限制此服务器的请求频率。请稍等片刻再试。",
+      "meaning": "由于请求过多，提供方正在拒绝请求。",
+      "fix": "等一分钟。批量匹配大型媒体库可能会触发此限制。"
+    },
+    "P403": {
+      "title": "无法连接提供方",
+      "message": "服务器无法连接元数据提供方",
+      "meaning": "发往提供方的请求超时，或在网络层面失败。",
+      "fix": "检查服务器（容器）能否访问外网以及DNS是否正常。"
+    },
+    "P500": {
+      "title": "未找到清单",
+      "message": "未找到清单",
+      "meaning": "该清单或文件夹不存在，或属于其他人。",
+      "fix": "刷新清单页面。"
+    },
+    "P501": {
+      "title": "作品类型与清单不符",
+      "message": "此类作品不能加入这个清单",
+      "meaning": "每个清单只容纳一个类别：电影、剧集、动画、阅读或收听。",
+      "fix": "将它添加到对应类别的清单中。"
+    },
+    "P502": {
+      "title": "已在清单中",
+      "message": "该作品已在此清单中",
+      "meaning": "该作品之前已添加到此清单。",
+      "fix": "无需操作。"
+    },
+    "P503": {
+      "title": "已请求",
+      "message": "该作品已被请求",
+      "meaning": "已有人对该作品提交了未处理的请求。",
+      "fix": "可在请求页面查看其状态。"
+    },
+    "P504": {
+      "title": "已在媒体库中",
+      "message": "该作品已添加到媒体库",
+      "meaning": "对该作品的请求已被接受并标记为已添加。",
+      "fix": "在媒体库中搜索它。"
+    },
+    "P505": {
+      "title": "请求已无法撤回",
+      "message": "只能撤回待处理的请求",
+      "meaning": "管理员或编辑者已经处理了此请求。",
+      "fix": "如果你想移除它，请联系管理员或编辑者。"
+    },
+    "P506": {
+      "title": "未找到请求",
+      "message": "未找到请求",
+      "meaning": "该请求已被删除，或从未存在。",
+      "fix": "刷新请求页面。"
+    },
+    "P600": {
+      "title": "一起看已关闭",
+      "message": "此服务器已关闭一起看",
+      "meaning": "管理员尚未开启一起看。",
+      "fix": "管理员可以在“管理 → 功能 → 一起看”中开启。"
+    },
+    "P601": {
+      "title": "未找到一起看",
+      "message": "这场一起看已结束或从未存在",
+      "meaning": "房主结束了一起看、所有人都已离开，或服务器已重启。",
+      "fix": "向房主索取新的邀请链接。"
+    },
+    "P602": {
+      "title": "只有房主可以这样做",
+      "message": "只有房主可以这样做",
+      "meaning": "房主将播放控制权留给了自己。",
+      "fix": "请房主操作，或请房主允许所有人控制播放。"
+    },
+    "P603": {
+      "title": "你的帐户无法观看",
+      "message": "这场一起看正在播放你的帐户无法打开的内容",
+      "meaning": "该作品对你隐藏，或超出了你帐户的内容限制。",
+      "fix": "向管理员询问你帐户的内容设置。"
+    },
+    "P604": {
+      "title": "不是所有人都能观看",
+      "message": "一起看中有人无法打开该作品",
+      "meaning": "该作品对某位观看者隐藏，或超出了其内容限制。",
+      "fix": "选择一起看中所有人都能观看的内容。"
+    },
+    "P605": {
+      "title": "人数已满",
+      "message": "这场一起看人数已满",
+      "meaning": "一场一起看最多容纳20人，一台服务器最多同时进行20场。",
+      "fix": "等有人离开或某场一起看结束后再试。"
+    }
+  },
+  "messages": {
+    "tooManyAuthenticationAttemptsPleaseTry": "身份验证尝试次数过多。请稍后再试。",
+    "tooManyLoginAttemptsPleaseWait": "登录尝试次数过多。请稍等后再试。",
+    "tooManyBackupRequestsPleaseWait": "备份请求过多。请稍等后再试。",
+    "plinthioIsNotUsingItsOwn": "Plinthio没有使用自己的证书颁发机构",
+    "couldNotReadFile": "无法读取文件",
+    "thisAccountNoLongerExists": "此帐户已不存在",
+    "sessionWasSignedOutPleaseLog": "会话已退出登录，请重新登录",
+    "noOpeningSequence": "没有片头",
+    "invalidItemId": "项目ID无效",
+    "noStillForThisVideo": "此视频没有剧照",
+    "pageNotFound": "未找到页面",
+    "thatWouldLockOutTheDevice": "这会把你正在使用的设备锁在外面。请在家庭网络中更改。",
+    "itemNotFound": "未找到项目",
+    "ratingMustBeAWholeNumber": "评分必须是1到5之间的整数",
+    "personalRatingsAreTurnedOffOn": "此服务器已关闭个人评分",
+    "ratingRemoved": "已移除评分",
+    "seriesNotFound": "未找到系列",
+    "nothingToRemove": "没有可移除的内容",
+    "notInKidsMode": "不在儿童模式中",
+    "addedToKidsMode": "已添加到儿童模式",
+    "removedFromKidsMode": "已从儿童模式移除",
+    "invalidUserId": "用户ID无效",
+    "avatarNotFound": "未找到头像",
+    "failedToReadAvatar": "读取头像失败",
+    "avatarImageMustBeSmallerThan": "头像图片必须小于5 MB",
+    "noAvatarImageFileProvided": "未提供头像图片文件",
+    "failedToProcessAndSaveAvatar": "处理并保存头像图片失败",
+    "currentPasswordIsRequired": "需要输入当前密码",
+    "newPasswordMustBeAtLeast": "新密码至少需要8个字符",
+    "currentPasswordIncorrect": "当前密码不正确",
+    "usernameAndPasswordMin8Characters": "需要用户名和密码（至少8个字符）",
+    "usernameAlreadyTaken": "用户名已被占用",
+    "userNotFound": "未找到用户",
+    "cannotChangeYourOwnRole": "不能更改你自己的角色",
+    "cannotSetAnExpirationDateOn": "不能为你自己的帐户设置到期日期",
+    "cannotRestrictYourOwnAccount": "不能限制你自己的帐户",
+    "cannotPutYourOwnAccountIn": "不能将你自己的帐户设为儿童模式",
+    "anAdminAccountCanTBe": "管理员帐户不能是儿童帐户",
+    "nothingToUpdate": "没有需要更新的内容",
+    "cannotDeleteYourOwnAccount": "不能删除你自己的帐户",
+    "youReAwayFromHomeRight": "你现在不在家，这样做会让你退出登录。请在家庭网络中更改。",
+    "twoFactorIsnTOnFor": "该帐户未开启两步验证",
+    "avatarUploadedSuccessfully": "头像已上传",
+    "avatarRemovedSuccessfully": "头像已移除",
+    "preferencesUpdated": "偏好设置已更新",
+    "passwordUpdatedSuccessfullyYouWillNeed": "密码已更新。你需要重新登录。",
+    "userCreatedSuccessfully": "用户已创建",
+    "userUpdatedSuccessfully": "用户已更新",
+    "twoFactorTurnedOffTheyCan": "两步验证已关闭。对方可以用密码登录，然后重新设置。",
+    "passwordResetSuccessfully": "密码已重置",
+    "roleUpdatedSuccessfully": "角色已更新",
+    "userDeletedSuccessfully": "用户已删除",
+    "bookmarkNotFound": "未找到书签",
+    "bookmarkCreated": "书签已创建",
+    "bookmarkUpdated": "书签已更新",
+    "bookmarkDeleted": "书签已删除",
+    "logsClearedSuccessfully": "日志已清除",
+    "sessionAlreadyClosed": "会话已关闭",
+    "sessionClosed": "会话已关闭",
+    "segmentNotAvailable": "片段不可用",
+    "couldNotLoadScrubPreviews": "无法加载拖动预览",
+    "sheetNotFound": "未找到预览图",
+    "couldNotLoadScrubPreview": "无法加载拖动预览",
+    "markerMustEndAfterItStarts": "标记的结束时间必须晚于开始时间",
+    "markersSaved": "标记已保存",
+    "unknownMediaType": "未知的媒体类型",
+    "requestSent": "请求已发送",
+    "requestUpdated": "请求已更新",
+    "requestRemoved": "请求已移除",
+    "serverIsAlreadySetUp": "服务器已设置完成",
+    "adminUsernameAndPasswordMin8": "需要管理员用户名和密码（至少8个字符）",
+    "setupIsAlreadyInProgress": "设置已在进行中",
+    "serverIsAlreadySetUpPlease": "服务器已设置完成。请登录。",
+    "serverSetupFailedCheckTheServer": "服务器设置失败。请查看服务器日志了解详情。",
+    "usernameAndPasswordAreRequired": "需要用户名和密码",
+    "loginFailedCheckTheServerLogs": "登录失败。请查看服务器日志了解详情。",
+    "signInFailedCheckTheServer": "登录失败。请查看服务器日志了解详情。",
+    "signInWithYourPasswordTo": "请用密码登录后再更改两步验证",
+    "twoFactorIsAlreadyOnTurn": "两步验证已开启。请先关闭，再重新设置。",
+    "twoFactorIsAlreadyOn": "两步验证已开启",
+    "startSettingUpTwoFactorFirst": "请先开始设置两步验证",
+    "twoFactorIsOff": "两步验证已关闭",
+    "setPlinthioUpFromYourHome": "请在家庭网络中设置Plinthio",
+    "serverInitializedSuccessfully": "服务器初始化成功",
+    "allSessionsSignedOutPleaseSign": "所有会话已退出登录。请重新登录。",
+    "highlightNotFound": "未找到高亮",
+    "highlightDeleted": "高亮已删除",
+    "pickAMovieOrEpisodeTo": "选择一部电影或一集来一起看",
+    "joinThePartyFirst": "请先加入一起看",
+    "saySomething": "说点什么",
+    "noImageUploaded": "未上传图片",
+    "couldNotProcessThatImage": "无法处理该图片",
+    "seriesNameIsRequired": "需要填写系列名称",
+    "coverArtUpdated": "封面已更新",
+    "theMetadataProviderRejectedTheConfigured": "元数据提供方拒绝了配置的API密钥。对于TMDB，请将TMDB帐户设置中的“API Key”或“API Read Access Token”复制到“管理 → 元数据”中。服务器能正常连上提供方，所以问题出在凭据上，而不是网络。",
+    "itemMatchedAndUpdated": "项目已匹配并更新",
+    "metadataUpdated": "元数据已更新",
+    "keyNameIsRequired": "需要填写密钥名称",
+    "apiKeyGeneratedSuccessfully": "API密钥已生成",
+    "apiKeyRevoked": "API密钥已吊销",
+    "libraryNotFound": "未找到媒体库",
+    "libraryCreatedAndScanningStarted": "媒体库已创建，并已开始扫描",
+    "libraryDeletedSuccessfully": "媒体库已删除",
+    "markedAllVolumesAsRead": "已将所有卷标记为已读",
+    "markedAllVolumesAsUnread": "已将所有卷标记为未读",
+    "itemHiddenFromShelf": "已从书架隐藏",
+    "itemRestoredToShelf": "已恢复到书架",
+    "seriesSettingsSaved": "系列设置已保存",
+    "folderNameIsRequired": "需要填写文件夹名称",
+    "folderCreated": "文件夹已创建",
+    "folderOrListNotFound": "未找到文件夹或清单",
+    "folderDeleted": "文件夹已删除",
+    "itemAddedToFolder": "已添加到文件夹",
+    "readingOrderSaved": "阅读顺序已保存",
+    "itemRemovedFromFolder": "已从文件夹移除",
+    "addedToList": "已添加到清单",
+    "removedFromList": "已从清单移除",
+    "noValidItemIds": "没有有效的项目ID",
+    "progressSaved": "进度已保存",
+    "unknownHardwareAccelerationPreference": "未知的硬件加速偏好",
+    "unknownHardwareAccelerationMethod": "未知的硬件加速方式",
+    "intervalMustBeBetween1And": "间隔必须在1到168小时之间",
+    "retentionMustBeBetween1And": "保留的备份数必须在1到30之间",
+    "copiesKeptMustBeBetween1": "保留的副本数必须在1到365之间",
+    "scanIntervalMustBeBetween5": "扫描间隔必须在5分钟到7天之间",
+    "noBackupDestinationIsSet": "未设置备份位置",
+    "shelfViewsUpdated": "书架视图已更新",
+    "transcodingSettingsSaved": "转码设置已保存",
+    "backupScheduleUpdated": "备份计划已更新",
+    "automaticScanningUpdated": "自动扫描已更新",
+    "backupCreated": "备份已创建",
+    "backupDeleted": "备份已删除",
+    "couldNotLoadServerCustomization": "无法加载服务器自定义设置",
+    "chooseAnMp4FileToUpload": "选择要上传的MP4文件",
+    "customizationUpdatedSuccessfully": "自定义设置已更新",
+    "chooseAFolder": "请选择一个文件夹。",
+    "useAFullPathStartingWith": "请使用以/开头的完整路径。",
+    "thatSInsideTheServerS": "该位置在服务器自己的数据文件夹内；请选择其他位置的文件夹。",
+    "thatFolderContainsTheServerS": "该文件夹包含服务器的数据文件夹；请选择它旁边或其他位置的文件夹。",
+    "thatSAFileNotA": "这是一个文件，不是文件夹。"
+  },
+  "patterns": {
+    "noMetadataSource": "暂无{type}的元数据来源",
+    "folderMissing": "该文件夹和{parent}都不存在。在Docker中，需要先把文件夹挂载到容器内。",
+    "cantWriteFolder": "无法写入该文件夹：{reason}。",
+    "backupFailed": "备份失败：{reason}"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "title": "Download",
+  "intro": "Libri, fumetti e audiolibri salvati su questo dispositivo per leggerli senza connessione.",
+  "offline": "Sei offline. I download si aprono comunque; i progressi di lettura si sincronizzano quando torni online.",
+  "needsHttps": "I download richiedono una connessione sicura, e questa pagina è stata aperta con un semplice http://. {link} per scaricare contenuti da leggere e ascoltare offline.",
+  "switchToHttps": "Passa a HTTPS",
+  "unsupported": "Questo browser non può salvare download (servono Service Worker e Cache Storage).",
+  "summary": {
+    "one": "{size} in {count} download",
+    "other": "{size} in {count} download"
+  },
+  "usage": "{used} di {quota} usati su questo dispositivo",
+  "tiedToAccount": "I download sono legati a questo browser e al tuo account: se esci, vengono rimossi.",
+  "downloading": "Download in corso",
+  "untitled": "Download",
+  "pagesProgress": "{done} / {total} pagine",
+  "bytesProgress": "{received} di {total}",
+  "dismiss": "Ignora",
+  "read": "Leggi",
+  "openItem": "Apri {title}",
+  "removeItemLabel": "Rimuovi il download di {title}",
+  "remove": "Rimuovi download",
+  "removeConfirm": "Rimuovere “{title}” da questo dispositivo? Resta nella tua libreria.",
+  "empty": {
+    "title": "Ancora nessun download",
+    "hint": "Usa {action} nel menu ⋮ di un titolo, oppure il pulsante di download su un volume manga.",
+    "action": "Scarica per offline"
+  },
+  "size": {
+    "B": "{value} B",
+    "KB": "{value} KB",
+    "MB": "{value} MB",
+    "GB": "{value} GB",
+    "TB": "{value} TB"
+  },
+  "errors": {
+    "failed": "Download non riuscito",
+    "failedStatus": "Download non riuscito ({status})",
+    "pageList": "Impossibile leggere l'elenco delle pagine ({status})"
+  }
+}

@@ -2,6 +2,7 @@
 // library and media type too, since two libraries — or a manga and its anime — can share
 // a name) and one per title with no series. Every shelf view uses this, so no view ever
 // lays out individual volumes or episodes.
+import { t } from '../i18n';
 
 function compareVolumes(a, b) {
   if (a.volume == null && b.volume == null) return a.title.localeCompare(b.title, undefined, { numeric: true });
@@ -59,7 +60,7 @@ export function entryFolder(entry) {
     common.push(split[0][i]);
   }
   // The last two segments keep group names readable ("Night Shift", "Manga/One Piece").
-  return common.slice(-2).join('/') || 'Root';
+  return common.slice(-2).join('/') || t('shelf.rootFolder');
 }
 
 // Groups entries under a heading computed per entry, alphabetically by heading.

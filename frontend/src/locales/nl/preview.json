@@ -1,0 +1,44 @@
+{
+  "live": "Live voorbeeld",
+  "views": {
+    "shelf": "Plank",
+    "title": "Titel",
+    "login": "Inloggen",
+    "pause": "Pauze"
+  },
+  "titles": {
+    "one": "{count}+ titels",
+    "other": "{count}+ titels"
+  },
+  "yourLibrary": "Je bibliotheek",
+  "continueWatching": "Verder kijken",
+  "runtime": "{hours} u {minutes} min",
+  "yourRating": "Jouw beoordeling",
+  "ratingsHidden": "Beoordelingen zijn verborgen",
+  "watchTogether": "Samen kijken",
+  "collection": "Onderdeel van de collectie",
+  "request": "Aanvragen",
+  "sample": {
+    "tagline": "Sommige berichten doen er een leven lang over.",
+    "description": "Een vuurtorenwachter op een afgelegen eiland vindt een flessenpost die haar terugtrekt naar het leven dat ze achterliet."
+  },
+  "captions": {
+    "shelf": "De startplank op een groot scherm: navigatie {layout}, breedte {width} en accentkleur {accent}.",
+    "title": "Een filmpagina met de instellingen voor beoordelingen, watchparty's en collecties hierboven.",
+    "login": "Het inlogscherm, met de naam en mededeling van je server.",
+    "pause": {
+      "simple": "Eenvoudig: niets bedekt het beeld. Kies een andere stijl om die hier te zien.",
+      "details": "Details: verschijnt na een paar seconden pauze. Beweeg over een stijl om te vergelijken.",
+      "cinematic": "Filmisch: castfoto's en feiten komen van TMDB als er een sleutel is ingesteld.",
+      "bedtime": "Bedtijd: een gedimde klok en wanneer het afgelopen is."
+    }
+  },
+  "layouts": {
+    "sidebar": "zijbalk",
+    "topnav": "bovenaan"
+  },
+  "widths": {
+    "contained": "begrensd",
+    "full": "volledig"
+  }
+}

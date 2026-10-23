@@ -1,0 +1,153 @@
+{
+  "offline": {
+    "message": "Vous êtes hors ligne. Vos livres, BD et livres audio téléchargés restent disponibles.",
+    "openDownloads": "Ouvrir les téléchargements →"
+  },
+  "continue": {
+    "watching": "Reprendre le visionnage",
+    "all": "Reprendre",
+    "audiobook": "Reprendre l'écoute",
+    "manga": "Reprendre la lecture",
+    "book": "Reprendre la lecture",
+    "movie": "Reprendre le visionnage",
+    "show": "Reprendre le visionnage",
+    "anime": "Reprendre le visionnage"
+  },
+  "sectionTitle": {
+    "results": "Résultats pour « {query} »",
+    "audiobook": "Livres audio",
+    "manga": "Mangas et BD",
+    "book": "Livres numériques et documents",
+    "movie": "Films",
+    "show": "Séries",
+    "anime": "Anime",
+    "all": "Tous les médias"
+  },
+  "counts": {
+    "folders": {
+      "one": "{count} dossier",
+      "other": "{count} dossiers"
+    },
+    "series": {
+      "one": "{count} série",
+      "other": "{count} séries"
+    },
+    "titles": {
+      "one": "{count} titre",
+      "other": "{count} titres"
+    },
+    "seriesAndTitles": "{series}, {titles}",
+    "items": {
+      "one": "{count} élément",
+      "other": "{count} éléments"
+    }
+  },
+  "modes": {
+    "alphabetical": "Alphabétique",
+    "alphabeticalShort": "A–Z",
+    "diskFolders": "Dossiers du disque",
+    "diskFoldersShort": "Disque",
+    "customFolders": "Dossiers perso",
+    "customFoldersShort": "Perso"
+  },
+  "filters": {
+    "progress": "Progression",
+    "status": "Statut",
+    "notStarted": "Pas commencé",
+    "inProgress": "En cours",
+    "finished": "Terminé",
+    "skipped": "Sauté",
+    "genre": "Genre",
+    "added": "Ajout",
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois-ci",
+    "last3Months": "3 derniers mois",
+    "clear": "Effacer les filtres"
+  },
+  "sort": {
+    "label": "Ordre de tri",
+    "title": "A–Z",
+    "added": "Plus récents",
+    "recent": "Ouverts récemment",
+    "release": "Date de sortie"
+  },
+  "collections": {
+    "label": "Collections de films",
+    "grouped": "Collections",
+    "all": "Tous les films"
+  },
+  "empty": {
+    "title": "Aucun média trouvé",
+    "noMatches": "Aucun résultat — essayez une autre recherche ou effacez les filtres",
+    "noLibrary": "Ajoutez une bibliothèque dans Administration → Bibliothèques et analysez vos dossiers pour remplir votre étagère",
+    "goToSettings": "Aller aux réglages"
+  },
+  "loadedMore": {
+    "one": "{count} titre chargé · la suite arrive en défilant",
+    "other": "{count} titres chargés · la suite arrive en défilant"
+  },
+  "customFolders": {
+    "heading": "Dossiers personnalisés",
+    "newPlaceholder": "Nom du nouveau dossier…",
+    "catchAll": "Divers",
+    "delete": "Supprimer le dossier",
+    "empty": "Ce dossier est vide. Cliquez sur les trois points ({dots}) d'un titre pour l'ajouter ici."
+  },
+  "deleteFolder": {
+    "title": "Supprimer le dossier personnalisé",
+    "message": "Voulez-vous vraiment supprimer le dossier « {name} » ? Son contenu restera sur votre étagère.",
+    "confirm": "Supprimer le dossier"
+  },
+  "errors": {
+    "createFolder": "Impossible de créer le dossier",
+    "deleteFolder": "Impossible de supprimer le dossier",
+    "removeItem": "Impossible de retirer l'élément",
+    "updateFolder": "Impossible de mettre à jour le dossier"
+  },
+  "rootFolder": "Racine",
+  "series": {
+    "ariaLabel": "{name} — {units}",
+    "removeFromThisFolder": "Retirer {name} de ce dossier",
+    "removeFromFolder": "Retirer du dossier",
+    "caughtUp": "À jour",
+    "skipped": {
+      "one": "{count} sauté",
+      "other": "{count} sautés"
+    },
+    "doneCount": {
+      "one": "{count}/{total} terminé",
+      "other": "{count}/{total} terminés"
+    }
+  },
+  "card": {
+    "availableOffline": "Disponible hors ligne",
+    "downloading": "Téléchargement…",
+    "options": "Options",
+    "optionsFor": "Options de {title}",
+    "markInProgress": "Marquer en cours",
+    "markFinished": "Marquer comme terminé",
+    "addToFolder": "Ajouter à un dossier…",
+    "removeFromFolder": "Retirer du dossier",
+    "bookmarks": "Signets et notes…",
+    "removeDownload": "Supprimer le téléchargement",
+    "cancelDownload": "Annuler le téléchargement",
+    "downloadOffline": "Télécharger hors ligne",
+    "editMetadata": "Modifier les métadonnées…",
+    "hide": "Masquer de l'étagère",
+    "pages": {
+      "one": "{count} page",
+      "other": "{count} pages"
+    },
+    "finished": "Terminé",
+    "durationHours": "{hours} h {minutes} min",
+    "durationMinutes": "{minutes} min"
+  },
+  "folderModal": {
+    "title": "Ajouter à un dossier ou une liste",
+    "loading": "Chargement des dossiers…",
+    "empty": "Aucun dossier personnalisé pour l'instant. Créez-en un ci-dessous pour organiser vos médias !",
+    "newFolder": "Nouveau dossier personnalisé",
+    "placeholder": "ex. Favoris, Avant de dormir…",
+    "adding": "Ajout…"
+  }
+}

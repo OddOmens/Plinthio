@@ -1,0 +1,159 @@
+{
+  "offline": {
+    "message": "Jesteś offline. Pobrane książki, komiksy i audiobooki są nadal dostępne.",
+    "openDownloads": "Otwórz Pobrane →"
+  },
+  "continue": {
+    "watching": "Oglądaj dalej",
+    "all": "Kontynuuj",
+    "audiobook": "Słuchaj dalej",
+    "manga": "Czytaj dalej mangę",
+    "book": "Czytaj dalej książki",
+    "movie": "Oglądaj dalej filmy",
+    "show": "Oglądaj dalej seriale",
+    "anime": "Oglądaj dalej anime"
+  },
+  "sectionTitle": {
+    "results": "Wyniki dla „{query}”",
+    "audiobook": "Audiobooki",
+    "manga": "Manga i komiksy",
+    "book": "E-booki i dokumenty",
+    "movie": "Filmy",
+    "show": "Seriale",
+    "anime": "Anime",
+    "all": "Wszystkie media"
+  },
+  "counts": {
+    "folders": {
+      "one": "{count} folder",
+      "few": "{count} foldery",
+      "many": "{count} folderów",
+      "other": "{count} folderu"
+    },
+    "series": {
+      "one": "{count} seria",
+      "few": "{count} serie",
+      "many": "{count} serii",
+      "other": "{count} serii"
+    },
+    "titles": {
+      "one": "{count} tytuł",
+      "few": "{count} tytuły",
+      "many": "{count} tytułów",
+      "other": "{count} tytułu"
+    },
+    "seriesAndTitles": "{series}, {titles}",
+    "items": {
+      "one": "{count} pozycja",
+      "few": "{count} pozycje",
+      "many": "{count} pozycji",
+      "other": "{count} pozycji"
+    }
+  },
+  "modes": {
+    "alphabetical": "Alfabetycznie",
+    "alphabeticalShort": "A–Z",
+    "diskFolders": "Foldery na dysku",
+    "diskFoldersShort": "Dysk",
+    "customFolders": "Własne foldery",
+    "customFoldersShort": "Własne"
+  },
+  "filters": {
+    "progress": "Postęp",
+    "status": "Status",
+    "notStarted": "Nierozpoczęte",
+    "inProgress": "W toku",
+    "finished": "Ukończone",
+    "skipped": "Pominięte",
+    "genre": "Gatunek",
+    "added": "Dodano",
+    "thisWeek": "W tym tygodniu",
+    "thisMonth": "W tym miesiącu",
+    "last3Months": "Ostatnie 3 miesiące",
+    "clear": "Wyczyść filtry"
+  },
+  "sort": {
+    "label": "Kolejność sortowania",
+    "title": "A–Z",
+    "added": "Najnowsze",
+    "recent": "Ostatnio otwierane",
+    "release": "Data wydania"
+  },
+  "collections": {
+    "label": "Kolekcje filmów",
+    "grouped": "Kolekcje",
+    "all": "Wszystkie filmy"
+  },
+  "empty": {
+    "title": "Nie znaleziono mediów",
+    "noMatches": "Nic nie pasuje — spróbuj innego wyszukiwania lub wyczyść filtry",
+    "noLibrary": "Dodaj bibliotekę w Administracja → Biblioteki i przeskanuj foldery, aby zapełnić półkę",
+    "goToSettings": "Przejdź do ustawień"
+  },
+  "loadedMore": {
+    "one": "Wczytano {count} tytuł · kolejne wczytają się podczas przewijania",
+    "few": "Wczytano {count} tytuły · kolejne wczytają się podczas przewijania",
+    "many": "Wczytano {count} tytułów · kolejne wczytają się podczas przewijania",
+    "other": "Wczytano {count} tytułu · kolejne wczytają się podczas przewijania"
+  },
+  "customFolders": {
+    "heading": "Własne foldery w aplikacji",
+    "newPlaceholder": "Nazwa nowego folderu...",
+    "catchAll": "Pozostałe",
+    "delete": "Usuń folder",
+    "empty": "Ten folder jest pusty. Kliknij trzy kropki ({dots}) przy dowolnym tytule, aby go tu dodać."
+  },
+  "deleteFolder": {
+    "title": "Usuń własny folder",
+    "message": "Na pewno usunąć folder „{name}”? Pozycje w nim nie zostaną usunięte z półki.",
+    "confirm": "Usuń folder"
+  },
+  "errors": {
+    "createFolder": "Nie udało się utworzyć folderu",
+    "deleteFolder": "Nie udało się usunąć folderu",
+    "removeItem": "Nie udało się usunąć pozycji",
+    "updateFolder": "Nie udało się zaktualizować folderu"
+  },
+  "rootFolder": "Katalog główny",
+  "series": {
+    "ariaLabel": "{name} — {units}",
+    "removeFromThisFolder": "Usuń {name} z tego folderu",
+    "removeFromFolder": "Usuń z folderu",
+    "caughtUp": "Na bieżąco",
+    "skipped": "Pominięte: {count}",
+    "doneCount": "Ukończono {count}/{total}"
+  },
+  "card": {
+    "availableOffline": "Dostępne offline",
+    "downloading": "Pobieranie…",
+    "options": "Opcje",
+    "optionsFor": "Opcje: {title}",
+    "markInProgress": "Oznacz jako w toku",
+    "markFinished": "Oznacz jako ukończone",
+    "addToFolder": "Dodaj do folderu...",
+    "removeFromFolder": "Usuń z folderu",
+    "bookmarks": "Zakładki i notatki...",
+    "removeDownload": "Usuń pobrany plik",
+    "cancelDownload": "Anuluj pobieranie",
+    "downloadOffline": "Pobierz do trybu offline",
+    "editMetadata": "Edytuj metadane...",
+    "hide": "Ukryj na półce",
+    "pages": {
+      "one": "{count} strona",
+      "few": "{count} strony",
+      "many": "{count} stron",
+      "other": "{count} strony"
+    },
+    "finished": "Ukończone",
+    "durationHours": "{hours} godz. {minutes} min",
+    "durationMinutes": "{minutes} min"
+  },
+  "folderModal": {
+    "title": "Dodaj do folderu lub listy",
+    "loading": "Wczytywanie folderów...",
+    "empty": "Nie utworzono jeszcze własnych folderów. Utwórz jeden poniżej, aby uporządkować swoje media!",
+    "newFolder": "Nowy własny folder",
+    "placeholder": "np. Ulubione, Na dobranoc...",
+    "adding": "Dodawanie..."
+  }
+}

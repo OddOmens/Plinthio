@@ -1,0 +1,125 @@
+{
+  "title": "Rede",
+  "description": "De onde o Plinthio pode ser usado, e a verificação em duas etapas fora de casa.",
+  "checkAgain": "Verificar de novo",
+  "device": {
+    "connectingFrom": "Este dispositivo está se conectando de {where}",
+    "where": {
+      "home": "sua rede de casa",
+      "tailscaleHome": "Tailscale (conta como casa)",
+      "tailscaleOutside": "Tailscale (conta como fora)",
+      "outside": "fora da rede de casa",
+      "unknown": "algum lugar desconhecido"
+    },
+    "address": "Endereço {ip}. Para testar o acesso de fora, abra esta página em um celular usando dados móveis (Wi-Fi desligado). Deve aparecer \"fora\".",
+    "unknownIp": "desconhecido"
+  },
+  "tailscale": {
+    "hideGuide": "Ocultar guia de configuração",
+    "guide": "Guia de configuração",
+    "setUp": "Configurar o Tailscale",
+    "working": "Funcionando em {link}",
+    "lastUsed": "usado pela última vez {time}",
+    "setUpAt": "Configurado em {address}, sem uso desde que o Plinthio iniciou pela última vez. Abra a partir de um dispositivo com Tailscale para conferir.",
+    "notSetUp": "Não configurado, até onde o Plinthio consegue ver. O Tailscale dá a você um endereço {address} confiável em casa e fora dela; com o Funnel, também vira um link que qualquer pessoa pode abrir, sem domínio. Abra o guia para configurar.",
+    "funnelWorking": "O Funnel está funcionando: um visitante da internet, {time}.",
+    "funnelNeedsAccess": "Os visitantes do Funnel vêm da internet, e o acesso de fora está desativado, então eles vão ver \"disponível só em casa\".",
+    "allowOutside": "Permitir acesso de fora"
+  },
+  "proxy": {
+    "title": "Há um proxy na frente do Plinthio, mas TRUST_PROXY não está definido",
+    "text": "Todo visitante parece vir do proxy ({from}), geralmente um endereço de casa, então não dá para distinguir o acesso de fora. Os complementos do Tailscale e de endereço público definem isso para você. Para outro proxy, veja docs/remote-access.md.",
+    "localAddress": "um endereço local"
+  },
+  "adminsWithout2fa": {
+    "title": {
+      "one": "{count} conta de administrador sem verificação em duas etapas",
+      "other": "{count} contas de administrador sem verificação em duas etapas"
+    },
+    "text": "O servidor está aberto para a internet. É altamente recomendado ativar a verificação em duas etapas para administradores (Configurações → Segurança)."
+  },
+  "settings": {
+    "remoteAccess": {
+      "title": "Permitir acesso de fora da rede de casa",
+      "text": "Desativado: só dispositivos em casa (e no Tailscale, abaixo) podem entrar ou usar qualquer coisa; a internet recebe \"disponível só em casa\". Ativado: qualquer pessoa com uma conta liberada fora de casa pode entrar de qualquer lugar. Isto só decide quem pode entrar: chegar ao servidor pela internet também exige o Tailscale Funnel (sem precisar de domínio) ou um endereço web (o complemento de endereço público)."
+    },
+    "tailscaleIsHome": {
+      "title": "Dispositivos no Tailscale contam como casa",
+      "text": "Ativado (o padrão): tudo na sua tailnet é tratado como a sua rede de casa. Desative se você compartilha o servidor com usuários do Tailscale que prefere tratar como de fora."
+    },
+    "require2fa": {
+      "title": "Exigir verificação em duas etapas fora de casa",
+      "text": "Opcional. Logins de fora precisam de um código de um app no celular. Em casa a senha continua bastando, então quem não tem verificação em duas etapas pode entrar lá e configurá-la (Configurações → Segurança).",
+      "onlyWhenOn": "Só vale quando o acesso de fora está ativado."
+    }
+  },
+  "accounts": {
+    "total": "Contas",
+    "withTwoFactor": "Com duas etapas",
+    "homeOnly": "Só em casa",
+    "adminsWithoutTwoFactor": "Administradores sem duas etapas",
+    "hint": "Defina quem pode usar o Plinthio fora de casa, e redefina a verificação em duas etapas de alguém, na aba Usuários."
+  },
+  "recent": {
+    "title": "Logins recentes de fora",
+    "none": "Nenhum ainda.",
+    "signedIn": "entrou",
+    "failed": "falhou"
+  },
+  "docsHint": "Como acessar o Plinthio de fora (Tailscale, ou um endereço web para convidados), passo a passo: {link}, ou {file} no GitHub.",
+  "docsLink": "Documentação → Acesso remoto e Tailscale",
+  "confirm": {
+    "title": "Permitir acesso de fora?",
+    "message": "Qualquer pessoa com uma conta (liberada fora de casa) vai poder entrar pela internet, assim que o servidor tiver um endereço web. Use senhas fortes e considere exigir a verificação em duas etapas fora de casa.",
+    "allow": "Permitir"
+  },
+  "errors": {
+    "load": "Não foi possível carregar as configurações de rede",
+    "save": "Não foi possível salvar isso"
+  },
+  "guide": {
+    "private": "Privado: meus dispositivos e as pessoas que eu adicionar",
+    "funnel": "Também um link para amigos sem Tailscale (Funnel)",
+    "privateText": "O Plinthio recebe {address}, confiável em todo dispositivo conectado ao seu Tailscale. Nada é aberto para a internet.",
+    "funnelText": "O mesmo endereço também abre no navegador de qualquer pessoa, sem Tailscale, domínio ou mudanças no roteador. O Tailscale limita a banda do Funnel: ler e ouvir funcionam bem, vídeo pode travar para carregar.",
+    "account": {
+      "title": "Crie uma conta gratuita no Tailscale"
+    },
+    "dns": {
+      "title": "Ative o MagicDNS e os certificados HTTPS",
+      "text": "Na página DNS do console de administração. Os dois são chaves de ligar e desligar.",
+      "link": "Abrir a página DNS"
+    },
+    "key": {
+      "title": "Crie uma chave de autenticação",
+      "text": "Settings → Keys → Generate auth key. Deixe a página aberta; você vai colar a chave no próximo passo. (Opcional: sem ela, o servidor mostra um link de login.)",
+      "link": "Abrir Keys"
+    },
+    "server": {
+      "title": "Adicione o Tailscale ao Plinthio",
+      "name": "Nome na sua tailnet",
+      "download": "No servidor, na pasta com {file}, baixe o complemento:",
+      "env": "Adicione estas linhas ao arquivo {env} nessa pasta (crie um, se não existir), com a sua chave no lugar de {key}:",
+      "start": "Depois inicie. {flag} faz uma configuração alterada ter efeito; o Plinthio reinicia por alguns segundos:",
+      "noDocker": "Não usa Docker, ou o Tailscale já está no servidor?",
+      "runThis": "Rode isto no servidor (8088 é a porta do Plinthio):",
+      "trustProxy": "Sem Docker, defina também {setting} para o Plinthio. Com Docker e o Tailscale no host, use o complemento para que o Plinthio consiga diferenciar os dispositivos."
+    },
+    "funnelStep": {
+      "title": "Abra para a internet",
+      "text": "Os visitantes do Funnel vêm da internet, então o Plinthio precisa do {outsideAccess} ativado ({where}). Considere também exigir a verificação em duas etapas fora de casa. Na primeira vez, o Tailscale pode pedir que você permita o Funnel na sua tailnet: se {command} disser isso, siga o link dele ou permita em Access controls.",
+      "outsideAccess": "acesso de fora",
+      "whereSetup": "este passo da configuração faz isso por você",
+      "whereAdmin": "Administração → Rede, acima",
+      "link": "Abrir Access controls"
+    },
+    "devices": {
+      "title": "Instale o Tailscale nos seus celulares e computadores",
+      "funnelTitle": "Teste e mande o link para os amigos",
+      "text": "Entre com a mesma conta, depois abra {address} (o console de administração mostra o endereço exato em Machines) e adicione-o à tela inicial a partir dali.",
+      "funnelText": "Em um celular com o Wi-Fi desligado e o Tailscale fechado, abra o endereço. Deve aparecer a página de login. Depois crie contas para os seus amigos (Administração → Usuários) e mande o link para eles."
+    },
+    "moreDetail": "Tudo com mais detalhes, incluindo solução de problemas: {file} no GitHub.",
+    "markDone": "Marcar como feito"
+  }
+}

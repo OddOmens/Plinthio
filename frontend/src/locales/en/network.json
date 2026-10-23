@@ -1,0 +1,125 @@
+{
+  "title": "Network",
+  "description": "Where Plinthio can be used from, and two-factor away from home.",
+  "checkAgain": "Check again",
+  "device": {
+    "connectingFrom": "This device is connecting from {where}",
+    "where": {
+      "home": "your home network",
+      "tailscaleHome": "Tailscale (counts as home)",
+      "tailscaleOutside": "Tailscale (counts as outside)",
+      "outside": "outside the home network",
+      "unknown": "somewhere unknown"
+    },
+    "address": "Address {ip}. To check outside access, open this page on a phone using mobile data (Wi-Fi off). It should say \"outside\".",
+    "unknownIp": "unknown"
+  },
+  "tailscale": {
+    "hideGuide": "Hide setup guide",
+    "guide": "Setup guide",
+    "setUp": "Set up Tailscale",
+    "working": "Working at {link}",
+    "lastUsed": "last used {time}",
+    "setUpAt": "Set up at {address}, not used since Plinthio last started. Open it from a Tailscale device to check.",
+    "notSetUp": "Not set up, as far as Plinthio can tell. Tailscale gives you a trusted {address} address at home and away; with Funnel, it's also a link anyone can open, with no domain. Open the guide to set it up.",
+    "funnelWorking": "Funnel is working: a visitor from the internet, {time}.",
+    "funnelNeedsAccess": "Funnel visitors come from the internet, and outside access is off, so they'll see \"available at home only\".",
+    "allowOutside": "Allow outside access"
+  },
+  "proxy": {
+    "title": "A proxy is in front of Plinthio, but TRUST_PROXY isn't set",
+    "text": "Every visitor looks like they come from the proxy ({from}), usually a home address, so outside access can't be told apart. The Tailscale and public-address add-ons set it for you. For another proxy, see docs/remote-access.md.",
+    "localAddress": "a local address"
+  },
+  "adminsWithout2fa": {
+    "title": {
+      "one": "{count} admin account without two-factor",
+      "other": "{count} admin accounts without two-factor"
+    },
+    "text": "The server is open to the internet. Turning on two-factor for admins (Settings → Security) is strongly recommended."
+  },
+  "settings": {
+    "remoteAccess": {
+      "title": "Allow access from outside the home network",
+      "text": "Off: only devices at home (and on Tailscale, below) can sign in or use anything; the internet gets \"available at home only\". On: anyone with an account allowed away from home can sign in from anywhere. This only decides who's let in: reaching the server from the internet also needs Tailscale Funnel (no domain needed) or a web address (the public-address add-on)."
+    },
+    "tailscaleIsHome": {
+      "title": "Tailscale devices count as home",
+      "text": "On (the default): anything on your tailnet is treated like your home network. Turn off if you share the server with Tailscale users you'd rather treat as outside."
+    },
+    "require2fa": {
+      "title": "Require two-factor away from home",
+      "text": "Optional. Sign-ins from outside need a code from a phone app. At home a password is still enough, so anyone without two-factor can sign in there and set it up (Settings → Security).",
+      "onlyWhenOn": "Only applies when outside access is on."
+    }
+  },
+  "accounts": {
+    "total": "Accounts",
+    "withTwoFactor": "With two-factor",
+    "homeOnly": "Home only",
+    "adminsWithoutTwoFactor": "Admins without two-factor",
+    "hint": "Set who may use Plinthio away from home, and reset someone's two-factor, in the Users tab."
+  },
+  "recent": {
+    "title": "Recent sign-ins from outside",
+    "none": "None yet.",
+    "signedIn": "signed in",
+    "failed": "failed"
+  },
+  "docsHint": "How to reach Plinthio from outside (Tailscale, or a web address for guests), step by step: {link}, or {file} on GitHub.",
+  "docsLink": "Docs → Remote Access & Tailscale",
+  "confirm": {
+    "title": "Allow access from outside?",
+    "message": "Anyone with an account (that's allowed away from home) will be able to sign in from the internet, once the server has a web address. Use strong passwords, and consider requiring two-factor away from home.",
+    "allow": "Allow"
+  },
+  "errors": {
+    "load": "Could not load network settings",
+    "save": "Could not save that"
+  },
+  "guide": {
+    "private": "Private: my devices and people I add",
+    "funnel": "Also a link for friends without Tailscale (Funnel)",
+    "privateText": "Plinthio gets {address}, trusted on every device signed in to your Tailscale. Nothing is opened to the internet.",
+    "funnelText": "The same address also opens in anyone's browser, with no Tailscale, domain or router changes. Tailscale limits Funnel's bandwidth: reading and listening are fine, video may buffer.",
+    "account": {
+      "title": "Make a free Tailscale account"
+    },
+    "dns": {
+      "title": "Turn on MagicDNS and HTTPS Certificates",
+      "text": "On the DNS page of the admin console. Both are switches.",
+      "link": "Open the DNS page"
+    },
+    "key": {
+      "title": "Make an auth key",
+      "text": "Settings → Keys → Generate auth key. Keep the page open; you'll paste it in the next step. (Optional: without one, the server prints a sign-in link instead.)",
+      "link": "Open Keys"
+    },
+    "server": {
+      "title": "Add Tailscale to Plinthio",
+      "name": "Name on your tailnet",
+      "download": "On the server, in the folder with {file}, download the add-on:",
+      "env": "Add these lines to the {env} file in that folder (make one if there isn't), with your key in place of {key}:",
+      "start": "Then start it. {flag} makes a changed setting take effect; Plinthio restarts for a few seconds:",
+      "noDocker": "Not using Docker, or Tailscale is already on the server?",
+      "runThis": "Run this on the server (8088 being Plinthio's port):",
+      "trustProxy": "Without Docker, also set {setting} for Plinthio. With Docker and Tailscale on the host, use the add-on instead so Plinthio can tell devices apart."
+    },
+    "funnelStep": {
+      "title": "Let the internet in",
+      "text": "Funnel visitors come from the internet, so Plinthio needs {outsideAccess} on ({where}). Consider requiring two-factor away from home too. The first time, Tailscale may ask you to allow Funnel for your tailnet: if {command} says so, follow its link or allow it under Access controls.",
+      "outsideAccess": "outside access",
+      "whereSetup": "this setup step does that for you",
+      "whereAdmin": "Admin → Network, above",
+      "link": "Open Access controls"
+    },
+    "devices": {
+      "title": "Install Tailscale on your phones and computers",
+      "funnelTitle": "Try it, and send friends the link",
+      "text": "Sign in with the same account, then open {address} (the admin console lists the exact address under Machines) and add it to your home screen from there.",
+      "funnelText": "On a phone with Wi-Fi off and Tailscale not running, open the address. You should get the sign-in page. Then make your friends accounts (Admin → Users) and send them the link."
+    },
+    "moreDetail": "Everything in more detail, with troubleshooting: {file} on GitHub.",
+    "markDone": "Mark as done"
+  }
+}

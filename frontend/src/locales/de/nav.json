@@ -1,0 +1,46 @@
+{
+  "lists": "Listen",
+  "searchLibrary": "Bibliothek durchsuchen...",
+  "searchEverything": "Titel, Autoren, Reihen suchen...",
+  "clearSearch": "Suche löschen",
+  "openMenu": "Menü öffnen",
+  "closeMenu": "Menü schließen",
+  "backToShelves": "Zurück zu den Regalen",
+  "account": {
+    "menuTitle": "Kontomenü ({name})",
+    "menuLabel": "Kontomenü von {name}",
+    "someone": "Benutzer",
+    "avatar": "Avatar",
+    "expires": "Konto läuft ab: {date}",
+    "expired": "Abgelaufen",
+    "hoursLeft": "noch {count} Std.",
+    "daysLeft": {
+      "one": "noch {count} Tag",
+      "other": "noch {count} Tage"
+    }
+  },
+  "roles": {
+    "admin": "Admin",
+    "editor": "Redakteur",
+    "viewer": "Betrachter"
+  },
+  "menu": {
+    "downloads": "Downloads",
+    "requests": "Anfragen",
+    "docs": "Dokumente",
+    "reportProblem": "Problem melden",
+    "lightMode": "Heller Modus",
+    "darkMode": "Dunkler Modus",
+    "logOut": "Abmelden"
+  },
+  "update": {
+    "available": "{release} ist verfügbar",
+    "current": "— du nutzt {version}.",
+    "whatsNew": "Neuerungen",
+    "howToUpdate": "So aktualisierst du",
+    "dismissLabel": "Hinweis zum Update {version} ausblenden",
+    "dismissTitle": "Bis zur nächsten Version ausblenden",
+    "where": "Auf dem Rechner, auf dem Plinthio läuft, im Ordner mit deiner {file}:",
+    "backup": "Deine Datenbank wird automatisch in {folder} gesichert, bevor die neue Version startet."
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "percent": "{percent}%",
+  "pageN": "{page}페이지",
+  "closeBook": "책 닫기",
+  "opening": "책을 여는 중…",
+  "couldNotOpen": "이 책을 열 수 없어요.",
+  "notebookButton": "목차, 책갈피, 하이라이트",
+  "notebookTooltip": "목차 및 노트",
+  "searchButton": "책에서 검색",
+  "searchTooltip": "검색 (Ctrl+F)",
+  "displaySettings": "보기 설정",
+  "position": "책 내 위치",
+  "positionMeasuring": "책 내 위치 (아직 책을 측정하는 중)",
+  "progressShowing": "표시: {option}. 탭해서 바꿀 수 있어요.",
+  "progress": {
+    "lastPageInChapter": "챕터 마지막 페이지",
+    "pagesLeftInChapter": {
+      "other": "챕터에 {count}페이지 남음"
+    },
+    "location": "위치 {current}/{total}"
+  },
+  "copyFailed": "여기서는 복사할 수 없어요",
+  "bookmark": {
+    "label": "책갈피",
+    "bookmarks": "책갈피",
+    "thisPage": "이 페이지에 책갈피",
+    "removeFromPage": "이 페이지의 책갈피 제거",
+    "remove": "책갈피 제거",
+    "delete": "책갈피 삭제",
+    "deleteNamed": "책갈피 삭제: {title}",
+    "close": "책갈피 닫기",
+    "added": "책갈피를 추가했어요",
+    "percentThrough": "{percent}% 지점",
+    "noneYet": "아직 책갈피가 없어요.",
+    "noneYetRibbon": "아직 책갈피가 없어요. 오른쪽 위의 리본을 탭해서 페이지에 책갈피를 추가하세요.",
+    "couldNotSave": "책갈피를 저장할 수 없어요",
+    "couldNotRemove": "책갈피를 제거할 수 없어요"
+  },
+  "highlight": {
+    "toolbar": "하이라이트",
+    "edit": "하이라이트 편집",
+    "inColor": "{color}으로 하이라이트",
+    "recolor": "{color}으로 변경",
+    "onlyColor": "{color} 하이라이트만",
+    "withNote": "하이라이트하고 메모 추가",
+    "remove": "하이라이트 삭제",
+    "noneYet": "아직 하이라이트가 없어요. 텍스트를 선택해 색으로 표시하거나 메모를 추가해 보세요.",
+    "noneInColor": "이 색의 하이라이트가 없어요.",
+    "couldNotSave": "하이라이트를 저장할 수 없어요",
+    "couldNotRecolor": "색을 바꿀 수 없어요",
+    "couldNotRemove": "하이라이트를 삭제할 수 없어요"
+  },
+  "note": {
+    "title": "메모",
+    "close": "메모 닫기",
+    "add": "메모 추가",
+    "edit": "메모 편집",
+    "placeholder": "메모를 입력하세요…",
+    "save": "메모 저장",
+    "couldNotSave": "메모를 저장할 수 없어요"
+  },
+  "display": {
+    "title": "보기",
+    "close": "보기 설정 닫기",
+    "pageColour": "페이지 색",
+    "themePage": "{theme} 페이지",
+    "font": "글꼴",
+    "textSize": "글자 크기",
+    "smaller": "글자 작게",
+    "larger": "글자 크게",
+    "lineSpacing": "줄 간격",
+    "margins": "여백",
+    "alignment": "정렬",
+    "layout": "레이아웃",
+    "pages": "페이지",
+    "scroll": "스크롤",
+    "twoOnWide": "넓은 화면에서 2단",
+    "alwaysOne": "항상 1단",
+    "cornerShows": "하단 모서리 표시",
+    "appliesEverywhere": "읽는 모든 책과 모든 기기에 적용돼요."
+  },
+  "notebook": {
+    "title": "노트",
+    "close": "노트 닫기",
+    "contents": "목차",
+    "highlights": "하이라이트",
+    "noContents": "이 책에는 목차가 없어요."
+  },
+  "search": {
+    "close": "검색 닫기",
+    "placeholder": "이 책에서 검색…",
+    "find": "찾기",
+    "matches": {
+      "other": "{count}개 결과"
+    },
+    "matchesCapped": "{count}개 이상 결과",
+    "noMatches": "결과 없음"
+  },
+  "themes": {
+    "auto": "자동",
+    "white": "흰색",
+    "sepia": "세피아",
+    "green": "녹색",
+    "gray": "회색",
+    "black": "검정"
+  },
+  "fonts": {
+    "publisher": "원본",
+    "serif": "명조",
+    "sans": "고딕",
+    "readable": "읽기 쉬움",
+    "mono": "고정폭"
+  },
+  "lineHeights": {
+    "compact": "좁게",
+    "normal": "보통",
+    "loose": "넓게"
+  },
+  "margins": {
+    "narrow": "좁게",
+    "normal": "보통",
+    "wide": "넓게"
+  },
+  "align": {
+    "publisher": "원본",
+    "left": "왼쪽",
+    "justify": "양쪽 정렬"
+  },
+  "progressOptions": {
+    "percent": "책 진행률",
+    "chapter": "챕터 남은 페이지",
+    "location": "위치",
+    "none": "표시 안 함"
+  },
+  "highlightColors": {
+    "yellow": "노란색",
+    "green": "초록색",
+    "blue": "파란색",
+    "pink": "분홍색",
+    "orange": "주황색"
+  },
+  "manga": {
+    "backToShelf": "책장로 돌아가기",
+    "loadingPages": "페이지를 불러오는 중…",
+    "pageOf": "{page} / {total}페이지",
+    "pagesOf": "{from}–{to} / {total}페이지",
+    "singlePageView": "한 페이지 보기",
+    "onePage": "1페이지",
+    "spreadView": "두 페이지 펼쳐 보기",
+    "twoPage": "2페이지",
+    "fadeTransition": "페이드 전환",
+    "fade": "페이드",
+    "flipTransition": "실감 나는 페이지 넘김",
+    "flip": "넘김",
+    "modes": {
+      "rtl": {
+        "short": "우→좌",
+        "label": "오른쪽에서 왼쪽 (일본 만화)"
+      },
+      "ltr": {
+        "short": "좌→우",
+        "label": "왼쪽에서 오른쪽 (코믹스)"
+      },
+      "webtoon": {
+        "short": "스크롤",
+        "label": "세로 연속 스크롤 (웹툰)"
+      }
+    },
+    "previousPage": "이전 페이지",
+    "nextPage": "다음 페이지",
+    "volumeComplete": "이번 권 완독!",
+    "nextTitle": "다음: {title}",
+    "nextVolume": "다음 권",
+    "pageBookmarks": "페이지 책갈피",
+    "bookmarkPage": "이 페이지 책갈피",
+    "optionalNote": "메모 (선택)…",
+    "couldNotSaveBookmark": "책갈피를 저장할 수 없어요"
+  },
+  "bookmarksModal": {
+    "title": "책갈피: {title}",
+    "newBookmark": "새 책갈피",
+    "timestampHint": "타임스탬프 (hh:mm:ss 또는 초)",
+    "pageNumber": "페이지 번호",
+    "timestampPlaceholder": "예: 01:15:30 또는 4500",
+    "pagePlaceholder": "예: 42",
+    "titlePlaceholder": "제목 / 라벨 (선택)",
+    "notesPlaceholder": "메모, 인용구, 생각 (선택)…",
+    "add": "책갈피 추가",
+    "loading": "책갈피를 불러오는 중…",
+    "empty": "아직 저장된 책갈피가 없어요. 위 양식으로 위치나 페이지에 책갈피를 추가하세요.",
+    "jumpTooltip": "이 위치로 이동",
+    "jump": "이동",
+    "couldNotCreate": "책갈피를 만들 수 없어요",
+    "couldNotDelete": "책갈피를 삭제할 수 없어요"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "title": "Solicitudes",
+  "intro": "Pide películas, series, anime, libros y audiolibros que la biblioteca aún no tiene.",
+  "newRequest": "Nueva solicitud",
+  "request": "Solicitar",
+  "mine": "Mis solicitudes",
+  "reviewQueue": "Por revisar",
+  "filterByStatus": "Filtrar por estado",
+  "allStatuses": "Todos los estados",
+  "emptyReview": "No hay solicitudes por revisar",
+  "emptyMine": "Aún no has solicitado nada",
+  "emptyMineHint": "Busca arriba o usa el botón Solicitar en un título de una de tus listas.",
+  "requestedBy": "Solicitado por {name}",
+  "deletedUser": "usuario eliminado",
+  "quotedNote": "“{note}”",
+  "notePlaceholder": "Nota para quien lo solicitó (opcional)",
+  "deleteRequest": "Eliminar solicitud",
+  "withdraw": "Retirar",
+  "status": {
+    "pending": "Pendiente",
+    "accepted_pending": "Aceptada · Pendiente de añadir",
+    "accepted_added": "Aceptada · Añadida",
+    "rejected": "Rechazada"
+  },
+  "actions": {
+    "acceptPending": "Aceptar · Pendiente de añadir",
+    "acceptAdded": "Aceptar · Añadida",
+    "reject": "Rechazar",
+    "backToPending": "Volver a pendiente"
+  },
+  "confirm": {
+    "withdrawTitle": "¿Retirar la solicitud?",
+    "deleteTitle": "¿Eliminar la solicitud?",
+    "withdrawMessage": "Tu solicitud de «{title}» se retirará.",
+    "deleteMessage": "La solicitud de «{title}» se eliminará para todos."
+  },
+  "errors": {
+    "load": "No se pudieron cargar las solicitudes.",
+    "send": "No se pudo enviar la solicitud.",
+    "update": "No se pudo actualizar la solicitud.",
+    "remove": "No se pudo quitar la solicitud."
+  },
+  "search": {
+    "placeholder": {
+      "movie": "Buscar películas…",
+      "show": "Buscar series…",
+      "anime": "Buscar anime…",
+      "book": "Buscar libros…",
+      "manga": "Buscar manga…",
+      "audiobook": "Buscar audiolibros…",
+      "titles": "Buscar títulos…"
+    },
+    "noResults": "No hay resultados para «{query}».",
+    "failed": "La búsqueda falló. Vuelve a intentarlo en un momento."
+  }
+}

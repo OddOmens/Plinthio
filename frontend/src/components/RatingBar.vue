@@ -7,7 +7,7 @@
     :class="[justifyClass, compact ? 'text-[12px]' : 'text-xs']"
   >
     <div v-if="ratings.showPersonal" class="inline-flex items-center gap-1.5">
-      <span v-if="!compact" :class="mutedClass" class="font-medium">{{ label || 'Your rating' }}</span>
+      <span v-if="!compact" :class="mutedClass" class="font-medium">{{ label || $t('title.rating.yourRating') }}</span>
       <StarRating
         :modelValue="userRating"
         :disabled="saving"
@@ -30,15 +30,15 @@
         class="items-center gap-1"
         :class="communityEmpty ? 'hidden sm:inline-flex' : 'inline-flex'"
         :title="summary.community.count > 0
-          ? `${summary.community.average.toFixed(1)} average from ${summary.community.count} ${serverName} ${summary.community.count === 1 ? 'user' : 'users'}`
-          : `No ${serverName} ratings yet`"
+          ? $t('title.rating.community', { average: oneDecimal(summary.community.average), count: summary.community.count, users: $n(summary.community.count), server: serverName })
+          : $t('title.rating.communityNone', { server: serverName })"
       >
         <Users class="w-3.5 h-3.5" :class="mutedClass" />
         <span :class="mutedClass">{{ serverName }}</span>
         <template v-if="summary.community.count > 0">
           <Star class="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-          <span :class="strongClass" class="font-semibold">{{ summary.community.average.toFixed(1) }}</span>
-          <span :class="mutedClass">({{ summary.community.count.toLocaleString() }})</span>
+          <span :class="strongClass" class="font-semibold">{{ oneDecimal(summary.community.average) }}</span>
+          <span :class="mutedClass">({{ $n(summary.community.count) }})</span>
         </template>
         <span v-else :class="mutedClass">—</span>
       </div>
@@ -46,11 +46,11 @@
       <div
         v-if="summary.external"
         class="inline-flex items-center gap-1"
-        :title="`${summary.external.rating.toFixed(1)}/${summary.external.scale} on TMDB from ${summary.external.votes.toLocaleString()} votes`"
+        :title="$t('title.rating.tmdb', { rating: oneDecimal(summary.external.rating), scale: summary.external.scale, count: summary.external.votes, votes: $n(summary.external.votes) })"
       >
         <Globe class="w-3.5 h-3.5" :class="mutedClass" />
         <span :class="mutedClass">TMDB</span>
-        <span :class="strongClass" class="font-semibold">{{ summary.external.rating.toFixed(1) }}</span>
+        <span :class="strongClass" class="font-semibold">{{ oneDecimal(summary.external.rating) }}</span>
         <span :class="mutedClass">/{{ summary.external.scale }}</span>
       </div>
     </template>
@@ -63,6 +63,7 @@ import api from '../api/client';
 import { useCustomizationStore } from '../stores/customization';
 import StarRating from './StarRating.vue';
 import { Star, Users, Globe } from '@lucide/vue';
+import { t, n } from '../i18n';
 
 const props = defineProps({
   item: { type: Object, default: null },
@@ -91,6 +92,8 @@ const justifyClass = computed(() => ({
 }[props.align] || 'justify-start'));
 const mutedClass = computed(() => (props.tone === 'dark' ? 'text-white/65' : 'text-muted-foreground'));
 const strongClass = computed(() => (props.tone === 'dark' ? 'text-white' : 'text-foreground'));
+// 4.5 → "4.5" / "4,5".
+const oneDecimal = (value) => n(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const communityEmpty = computed(() => summary.value?.community?.count === 0);
 const dividerClass = computed(() => (props.tone === 'dark' ? 'bg-white/25' : 'bg-border'));
 
@@ -128,7 +131,7 @@ async function rate(value) {
     emit('rated', { itemId: props.item.id, rating: userRating.value });
   } catch (err) {
     userRating.value = previous;
-    saveError.value = err.response?.data?.error || 'Could not save';
+    saveError.value = err.response?.data?.error || t('title.rating.saveFailed');
   } finally {
     saving.value = false;
   }

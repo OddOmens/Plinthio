@@ -1,0 +1,119 @@
+{
+  "anyCreator": "Twórca",
+  "manga": {
+    "unit": "Tom",
+    "units": "Tomy",
+    "short": "T.",
+    "verb": "Czytaj",
+    "verbing": "Czytanie",
+    "done": "Przeczytany",
+    "creator": "Autor",
+    "series": "Seria mangi",
+    "count": {
+      "one": "{count} tom",
+      "few": "{count} tomy",
+      "many": "{count} tomów",
+      "other": "{count} tomu"
+    },
+    "entry": "Tom {number}",
+    "allDone": "Wszystko przeczytane",
+    "progress": "Przeczytano {count}/{total}"
+  },
+  "book": {
+    "unit": "Książka",
+    "units": "Książki",
+    "short": "Tom",
+    "verb": "Czytaj",
+    "verbing": "Czytanie",
+    "done": "Przeczytana",
+    "creator": "Autor",
+    "series": "Seria książek",
+    "count": {
+      "one": "{count} książka",
+      "few": "{count} książki",
+      "many": "{count} książek",
+      "other": "{count} książki"
+    },
+    "entry": "Tom {number}",
+    "allDone": "Wszystko przeczytane",
+    "progress": "Przeczytano {count}/{total}"
+  },
+  "audiobook": {
+    "unit": "Książka",
+    "units": "Książki",
+    "short": "Tom",
+    "verb": "Słuchaj",
+    "verbing": "Słuchanie",
+    "done": "Wysłuchana",
+    "creator": "Autor",
+    "series": "Seria audiobooków",
+    "count": {
+      "one": "{count} książka",
+      "few": "{count} książki",
+      "many": "{count} książek",
+      "other": "{count} książki"
+    },
+    "entry": "Tom {number}",
+    "allDone": "Wszystko wysłuchane",
+    "progress": "Wysłuchano {count}/{total}"
+  },
+  "show": {
+    "unit": "Odcinek",
+    "units": "Odcinki",
+    "short": "Odc.",
+    "verb": "Oglądaj",
+    "verbing": "Oglądanie",
+    "done": "Obejrzany",
+    "creator": "Twórca",
+    "series": "Serial TV",
+    "count": {
+      "one": "{count} odcinek",
+      "few": "{count} odcinki",
+      "many": "{count} odcinków",
+      "other": "{count} odcinka"
+    },
+    "entry": "S{season} · O{episode}",
+    "season": "S{season}",
+    "allDone": "Wszystko obejrzane",
+    "progress": "Obejrzano {count}/{total}"
+  },
+  "anime": {
+    "unit": "Odcinek",
+    "units": "Odcinki",
+    "short": "Odc.",
+    "verb": "Oglądaj",
+    "verbing": "Oglądanie",
+    "done": "Obejrzany",
+    "creator": "Studio",
+    "series": "Seria anime",
+    "count": {
+      "one": "{count} odcinek",
+      "few": "{count} odcinki",
+      "many": "{count} odcinków",
+      "other": "{count} odcinka"
+    },
+    "entry": "S{season} · O{episode}",
+    "season": "S{season}",
+    "allDone": "Wszystko obejrzane",
+    "progress": "Obejrzano {count}/{total}"
+  },
+  "movie": {
+    "unit": "Film",
+    "units": "Filmy",
+    "short": "Część",
+    "verb": "Oglądaj",
+    "verbing": "Oglądanie",
+    "done": "Obejrzany",
+    "creator": "Reżyser",
+    "series": "Kolekcja filmów",
+    "count": {
+      "one": "{count} film",
+      "few": "{count} filmy",
+      "many": "{count} filmów",
+      "other": "{count} filmu"
+    },
+    "entry": "Część {number}",
+    "allDone": "Wszystko obejrzane",
+    "progress": "Obejrzano {count}/{total}"
+  }
+}

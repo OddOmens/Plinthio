@@ -1,50 +1,65 @@
 <template>
-  <SectionHeader title="Playback" description="How video reaches people's screens, and the clip that can play before it." />
+  <SectionHeader :title="$t('admin.playback.title')" :description="$t('admin.playback.description')" />
 
-  <SettingsCard title="Hardware acceleration" description="Plinthio plays files as they are whenever the browser can, and only converts what it can't. A graphics chip makes converting far cheaper.">
+  <SettingsCard :title="$t('admin.playback.hwaccel.title')" :description="$t('admin.playback.hwaccel.desc')">
     <template #actions><SaveStatus :status="save.status.value" :message="save.message.value" /></template>
     <div class="flex flex-col gap-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <span class="text-xs font-semibold text-foreground">Found on this machine</span>
+        <span class="text-xs font-semibold text-foreground">{{ $t('admin.playback.hwaccel.found') }}</span>
         <span :class="['text-[11px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border', transcoding.detected ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : 'text-muted-foreground border-border bg-muted/40']">
-          {{ transcoding.detected || 'None — using the CPU' }}
+          {{ transcoding.detected || $t('admin.playback.hwaccel.noneCpu') }}
         </span>
       </div>
       <div>
-        <label for="hwaccel" class="field-label">Use</label>
+        <label for="hwaccel" class="field-label">{{ $t('admin.playback.hwaccel.use') }}</label>
         <div class="flex gap-2">
           <select id="hwaccel" v-model="transcoding.preference" @change="saveTranscoding" class="field flex-1 min-w-0">
-            <option value="auto">Whatever is found (recommended)</option>
-            <option value="none">Always the CPU</option>
-            <option v-for="method in transcoding.available" :key="method" :value="method">Always {{ method.toUpperCase() }}</option>
+            <option value="auto">{{ $t('admin.playback.hwaccel.auto') }}</option>
+            <option value="none">{{ $t('admin.playback.hwaccel.cpu') }}</option>
+            <option v-for="method in transcoding.available" :key="method" :value="method">{{ $t('admin.playback.hwaccel.always', { method: method.toUpperCase() }) }}</option>
           </select>
           <button @click="runHwaccelTest" :disabled="testing || !testableMethod" class="btn btn-secondary flex-shrink-0">
-            {{ testing ? 'Testing…' : 'Test' }}
+            {{ testing ? $t('admin.playback.hwaccel.testing') : $t('admin.playback.hwaccel.test') }}
           </button>
         </div>
         <p v-if="testResult" :class="['text-xs mt-2 flex items-start gap-1.5', testResult.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive']">
           <CheckCircle v-if="testResult.ok" class="w-3.5 h-3.5 mt-px flex-shrink-0" />
           <AlertTriangle v-else class="w-3.5 h-3.5 mt-px flex-shrink-0" />
-          {{ testResult.ok ? `${testableMethod.toUpperCase()} works on this machine.` : `${testableMethod.toUpperCase()} didn't work: ${testResult.error}` }}
+          {{ testResult.ok
+            ? $t('admin.playback.hwaccel.works', { method: testableMethod.toUpperCase() })
+            : $t('admin.playback.hwaccel.failed', { method: testableMethod.toUpperCase(), error: testResult.error }) }}
         </p>
-        <p v-else class="field-hint">Test runs a short real conversion: ffmpeg listing an encoder doesn't prove the driver under it works.</p>
+        <p v-else class="field-hint">{{ $t('admin.playback.hwaccel.testHint') }}</p>
       </div>
 
       <details class="group rounded-lg bg-muted/40 border border-border">
         <summary class="px-3 py-2 text-xs font-medium text-foreground cursor-pointer select-none flex items-center gap-1.5">
-          <ChevronRight class="w-3.5 h-3.5 transition-transform group-open:rotate-90" /> How playback works, and setting up a graphics chip
+          <ChevronRight class="w-3.5 h-3.5 transition-transform group-open:rotate-90" /> {{ $t('admin.playback.hwaccel.howItWorks') }}
         </summary>
         <ul class="list-disc pl-8 pr-3 pb-3 space-y-1.5 text-[12px] text-muted-foreground leading-relaxed">
-          <li><strong class="text-foreground">Direct play and direct stream:</strong> video the browser can decode (H.264, or HEVC in Chrome, Edge, Vivaldi and Safari) is sent untouched, up to 4K, even from MKV files. Only audio it can't play (EAC3, Atmos, DTS) is converted, to AAC.</li>
-          <li><strong class="text-foreground">The browser's side:</strong> for 4K, check the browser decodes video in hardware (<code class="bg-muted px-1 rounded">chrome://gpu</code> → Video Decode: Hardware accelerated).</li>
-          <li><strong class="text-foreground">Intel Quick Sync and VAAPI in Docker:</strong> pass <code class="bg-muted px-1 rounded">/dev/dri</code> through under <code class="bg-muted px-1 rounded">devices</code>, and add the host's <code class="bg-muted px-1 rounded">render</code> group ID under <code class="bg-muted px-1 rounded">group_add</code>.</li>
-          <li><strong class="text-foreground">Small machines:</strong> converting on the CPU is held to two threads at the fastest preset, and preview thumbnails are made separately, so a mini PC doesn't overheat.</li>
+          <li><strong class="text-foreground">{{ $t('admin.playback.hwaccel.tips.direct.title') }}</strong> {{ $t('admin.playback.hwaccel.tips.direct.text') }}</li>
+          <li>
+            <strong class="text-foreground">{{ $t('admin.playback.hwaccel.tips.browser.title') }}</strong>
+            <I18nT keypath="admin.playback.hwaccel.tips.browser.text">
+              <template #page><code class="bg-muted px-1 rounded">chrome://gpu</code></template>
+            </I18nT>
+          </li>
+          <li>
+            <strong class="text-foreground">{{ $t('admin.playback.hwaccel.tips.docker.title') }}</strong>
+            <I18nT keypath="admin.playback.hwaccel.tips.docker.text">
+              <template #dri><code class="bg-muted px-1 rounded">/dev/dri</code></template>
+              <template #devices><code class="bg-muted px-1 rounded">devices</code></template>
+              <template #render><code class="bg-muted px-1 rounded">render</code></template>
+              <template #groupAdd><code class="bg-muted px-1 rounded">group_add</code></template>
+            </I18nT>
+          </li>
+          <li><strong class="text-foreground">{{ $t('admin.playback.hwaccel.tips.small.title') }}</strong> {{ $t('admin.playback.hwaccel.tips.small.text') }}</li>
         </ul>
       </details>
     </div>
   </SettingsCard>
 
-  <SettingsCard title="Opening sequence" description="A short clip played full-screen when someone presses Play on a movie or episode. Never before autoplayed episodes, trailers or watch parties, and anyone can skip it.">
+  <SettingsCard :title="$t('admin.playback.intro.title')" :description="$t('admin.playback.intro.desc')">
     <template #actions><SaveStatus :status="introSave.status.value" :message="introSave.message.value" /></template>
     <div class="flex flex-col sm:flex-row gap-4">
       <div class="sm:w-64 flex-shrink-0">
@@ -66,40 +81,40 @@
         >
           <Loader2 v-if="introBusy" class="w-5 h-5 animate-spin" />
           <Film v-else class="w-5 h-5" />
-          <span class="text-xs font-medium">{{ introBusy ? 'Checking…' : 'Upload a clip' }}</span>
+          <span class="text-xs font-medium">{{ introBusy ? $t('admin.playback.intro.checking') : $t('admin.playback.intro.upload') }}</span>
         </button>
       </div>
 
       <div class="flex-1 min-w-0 flex flex-col gap-3">
         <p class="text-[12px] text-muted-foreground leading-relaxed">
-          {{ store.introCustom ? 'Your own clip.' : 'Plinthio\'s built-in clip. Replace it with your own:' }}
-          MP4 (H.264), 1–10 seconds, up to 20 MB. 1080p at about 8 Mbps is plenty.
-          <template v-if="store.introDuration"> This one is {{ store.introDuration.toFixed(1) }} seconds.</template>
+          {{ store.introCustom ? $t('admin.playback.intro.custom') : $t('admin.playback.intro.builtIn') }}
+          {{ $t('admin.playback.intro.requirements') }}
+          <template v-if="store.introDuration"> {{ $t('admin.playback.intro.thisOne', { seconds: $n(store.introDuration, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }) }}</template>
         </p>
         <div class="flex flex-wrap items-center gap-2">
           <input ref="introFileInput" type="file" accept="video/mp4,.mp4" class="hidden" @change="uploadIntro" />
           <button v-if="store.introVersion" type="button" @click="introFileInput?.click()" :disabled="introBusy" class="btn btn-secondary">
             <Loader2 v-if="introBusy" class="w-3.5 h-3.5 animate-spin" />
             <Upload v-else class="w-3.5 h-3.5" />
-            Replace
+            {{ $t('admin.playback.intro.replace') }}
           </button>
           <button v-if="store.introCustom" type="button" @click="removeIntro" :disabled="introBusy" class="btn btn-ghost">
-            Use the built-in clip
+            {{ $t('admin.playback.intro.useBuiltIn') }}
           </button>
         </div>
         <p v-if="introError" class="text-xs text-destructive">{{ introError }}</p>
 
         <div class="divide-y divide-border border-t border-border pt-3">
           <ToggleRow
-            label="Play the opening sequence"
-            :description="store.introVersion ? 'Off until you turn it on.' : 'Upload a clip first.'"
+            :label="$t('admin.playback.intro.play')"
+            :description="store.introVersion ? $t('admin.playback.intro.offUntil') : $t('admin.playback.intro.uploadFirst')"
             :disabled="!store.introVersion || introBusy"
             :model-value="store.introEnabled"
             @update:model-value="saveIntro({ introEnabled: $event })"
           />
           <template v-if="store.introEnabled">
-            <ToggleRow label="Before movies" :model-value="store.introMovies" @update:model-value="saveIntro({ introMovies: $event })" />
-            <ToggleRow label="Before shows and anime" :model-value="store.introShows" @update:model-value="saveIntro({ introShows: $event })" />
+            <ToggleRow :label="$t('admin.playback.intro.beforeMovies')" :model-value="store.introMovies" @update:model-value="saveIntro({ introMovies: $event })" />
+            <ToggleRow :label="$t('admin.playback.intro.beforeShows')" :model-value="store.introShows" @update:model-value="saveIntro({ introShows: $event })" />
           </template>
         </div>
       </div>
@@ -120,6 +135,8 @@ import SectionHeader from '../settings/SectionHeader.vue';
 import SettingsCard from '../settings/SettingsCard.vue';
 import ToggleRow from '../settings/ToggleRow.vue';
 import SaveStatus from '../settings/SaveStatus.vue';
+import I18nT from '../../i18n/I18nT.vue';
+import { t } from '../../i18n';
 
 const store = useCustomizationStore();
 const dialog = useDialogStore();
@@ -147,7 +164,7 @@ async function runHwaccelTest() {
     const res = await api.post('/settings/transcoding/test', { method: testableMethod.value });
     testResult.value = res.data;
   } catch (err) {
-    testResult.value = { ok: false, error: err.response?.data?.error || 'Test failed' };
+    testResult.value = { ok: false, error: err.response?.data?.error || t('admin.playback.hwaccel.testFailed') };
   } finally {
     testing.value = false;
   }
@@ -172,7 +189,7 @@ async function uploadIntro(event) {
   if (!file) return;
   introError.value = '';
   if (file.size > 20 * 1024 * 1024) {
-    introError.value = 'That file is over 20 MB. Export it shorter or at a lower bitrate.';
+    introError.value = t('admin.playback.intro.tooBig');
     return;
   }
   introBusy.value = true;
@@ -182,7 +199,7 @@ async function uploadIntro(event) {
     const res = await api.post('/customization/intro', form);
     store.applyIntro(res.data);
   } catch (err) {
-    introError.value = err.response?.data?.error || 'Upload failed';
+    introError.value = err.response?.data?.error || t('admin.playback.intro.uploadFailed');
   } finally {
     introBusy.value = false;
   }
@@ -190,9 +207,9 @@ async function uploadIntro(event) {
 
 async function removeIntro() {
   const confirmed = await dialog.confirm({
-    title: 'Remove your clip',
-    message: 'Remove your clip and go back to Plinthio\'s built-in opening sequence?',
-    confirmText: 'Remove',
+    title: t('admin.playback.intro.removeTitle'),
+    message: t('admin.playback.intro.removeMessage'),
+    confirmText: t('common.remove'),
     danger: true
   });
   if (!confirmed) return;
@@ -202,7 +219,7 @@ async function removeIntro() {
     const res = await api.delete('/customization/intro');
     store.applyIntro(res.data);
   } catch (err) {
-    introError.value = err.response?.data?.error || 'Could not remove it';
+    introError.value = err.response?.data?.error || t('admin.playback.intro.couldNotRemove');
   } finally {
     introBusy.value = false;
   }

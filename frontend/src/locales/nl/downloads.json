@@ -1,0 +1,41 @@
+{
+  "title": "Downloads",
+  "intro": "Boeken, strips en luisterboeken die op dit apparaat zijn opgeslagen om zonder verbinding te lezen.",
+  "offline": "Je bent offline. Downloads openen nog steeds; je leesvoortgang wordt gesynchroniseerd zodra je weer online bent.",
+  "needsHttps": "Downloads hebben een beveiligde verbinding nodig, en deze pagina is geopend via gewoon http://. {link} om dingen te downloaden om offline te lezen en te luisteren.",
+  "switchToHttps": "Overschakelen naar HTTPS",
+  "unsupported": "Deze browser kan geen downloads opslaan (ondersteuning voor Service Worker en Cache Storage is nodig).",
+  "summary": {
+    "one": "{size} in {count} download",
+    "other": "{size} in {count} downloads"
+  },
+  "usage": "{used} van {quota} gebruikt op dit apparaat",
+  "tiedToAccount": "Downloads horen bij deze browser en je account — uitloggen verwijdert ze.",
+  "downloading": "Downloaden",
+  "untitled": "Download",
+  "pagesProgress": "{done} / {total} pagina's",
+  "bytesProgress": "{received} van {total}",
+  "dismiss": "Sluiten",
+  "read": "Lezen",
+  "openItem": "{title} openen",
+  "removeItemLabel": "Download van {title} verwijderen",
+  "remove": "Download verwijderen",
+  "removeConfirm": "‘{title}’ van dit apparaat verwijderen? Het blijft in je bibliotheek.",
+  "empty": {
+    "title": "Nog niets gedownload",
+    "hint": "Gebruik {action} in het ⋮-menu van een titel, of de downloadknop bij een mangadeel.",
+    "action": "Downloaden voor offline"
+  },
+  "size": {
+    "B": "{value} B",
+    "KB": "{value} KB",
+    "MB": "{value} MB",
+    "GB": "{value} GB",
+    "TB": "{value} TB"
+  },
+  "errors": {
+    "failed": "Download mislukt",
+    "failedStatus": "Download mislukt ({status})",
+    "pageList": "Kon de paginalijst niet lezen ({status})"
+  }
+}

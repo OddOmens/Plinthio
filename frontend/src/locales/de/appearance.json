@@ -1,0 +1,89 @@
+{
+  "section": {
+    "title": "Darstellung",
+    "description": "Wie Plinthio für dich aussieht. Änderungen erscheinen in der Vorschau und werden sofort gespeichert – nur für dein Konto.",
+    "locked": "Dein Admin legt fest, wie Plinthio auf diesem Server aussieht, daher kannst du das hier nicht ändern. Die Vorschau zeigt, was alle sehen."
+  },
+  "language": {
+    "auto": "Automatisch",
+    "desc": "Die Sprache, in der Plinthio mit dir spricht. Automatisch folgt deinem Browser."
+  },
+  "cards": {
+    "accent": {
+      "title": "Akzentfarbe",
+      "desc": "Deine Hervorhebungsfarbe für Schaltflächen, Abzeichen und den aktuellen Tab."
+    },
+    "layout": {
+      "title": "Navigation",
+      "desc": "Wo die Hauptnavigation sitzt."
+    },
+    "pageWidth": {
+      "title": "Seitenbreite",
+      "desc": "Wie breit Seiten auf großen Bildschirmen werden. Volle Breite zeigt mehr Poster pro Reihe."
+    },
+    "pauseScreen": {
+      "title": "Pausenbildschirm",
+      "desc": "Was erscheint, wenn ein Film oder eine Folge ein paar Sekunden pausiert ist."
+    }
+  },
+  "accents": {
+    "zinc": "Zink",
+    "slate": "Schiefer",
+    "red": "Rot",
+    "orange": "Orange",
+    "amber": "Bernstein",
+    "lime": "Limette",
+    "emerald": "Smaragd",
+    "teal": "Petrol",
+    "sky": "Himmelblau",
+    "blue": "Blau",
+    "indigo": "Indigo",
+    "violet": "Violett",
+    "purple": "Lila",
+    "fuchsia": "Fuchsia",
+    "pink": "Pink",
+    "rose": "Rosé"
+  },
+  "layouts": {
+    "topnav": {
+      "label": "Navigation oben",
+      "desc": "Klassische horizontale Kopfleiste"
+    },
+    "sidebar": {
+      "label": "Seitenleiste",
+      "desc": "Vertikale Navigation links"
+    }
+  },
+  "pageWidths": {
+    "full": {
+      "label": "Volle Breite",
+      "desc": "Nutzt den ganzen Bildschirm für mehr Poster"
+    },
+    "contained": {
+      "label": "Begrenzt",
+      "desc": "Zentriert, höchstens 1440 px breit"
+    }
+  },
+  "pauseScreens": {
+    "simple": {
+      "label": "Einfach",
+      "desc": "Nur die Steuerelemente – nichts verdeckt das Bild."
+    },
+    "details": {
+      "label": "Details",
+      "desc": "Poster, Titel, Tagline, Inhalt, Regie und Besetzung sowie die Endzeit."
+    },
+    "cinematic": {
+      "label": "Kino",
+      "desc": "Das Bild wird hinter einer Vollbild-Titelkarte abgedunkelt, mit Fotos der Besetzung und Fakten von TMDB – Einspielergebnis, Originaltitel, Schlagwörter."
+    },
+    "bedtime": {
+      "label": "Schlafenszeit",
+      "desc": "Eine gedimmte Uhr mit der Endzeit und bei Serien, wann der Rest der Staffel enden würde. Angenehm für die Augen im dunklen Raum."
+    }
+  },
+  "defaultLanguage": {
+    "title": "Standardsprache",
+    "desc": "Für alle, die keine eigene gewählt haben. Automatisch folgt dem Browser der jeweiligen Person; in den Einstellungen kann jede und jeder eine andere wählen."
+  }
+}

@@ -1,27 +1,27 @@
 <template>
-  <SectionHeader title="Logs" description="Scans, errors and what the server has been doing, newest first.">
+  <SectionHeader :title="$t('admin.logs.title')" :description="$t('admin.logs.description')">
     <button
       @click="autoRefresh = !autoRefresh"
       :class="['btn', autoRefresh ? 'bg-primary/10 text-primary border border-primary/20' : 'btn-secondary']"
       :aria-pressed="String(autoRefresh)"
     >
       <span class="w-2 h-2 rounded-full" :class="autoRefresh ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground'"></span>
-      {{ autoRefresh ? 'Live' : 'Paused' }}
+      {{ autoRefresh ? $t('admin.logs.live') : $t('admin.logs.paused') }}
     </button>
-    <button @click="load" class="btn btn-secondary btn-icon" aria-label="Refresh now" title="Refresh now">
+    <button @click="load" class="btn btn-secondary btn-icon" :aria-label="$t('admin.logs.refreshNow')" :title="$t('admin.logs.refreshNow')">
       <RefreshCw class="w-3.5 h-3.5" :class="loading ? 'animate-spin' : ''" />
     </button>
     <button @click="clearLogs" class="btn btn-danger">
-      <Trash2 class="w-3.5 h-3.5" /> Clear
+      <Trash2 class="w-3.5 h-3.5" /> {{ $t('common.clear') }}
     </button>
   </SectionHeader>
 
   <div class="flex flex-col sm:flex-row gap-2">
     <div class="relative flex-1">
       <Search class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-      <input v-model="search" @input="scheduleLoad" placeholder="Search messages and categories" aria-label="Search logs" class="field pl-8" />
+      <input v-model="search" @input="scheduleLoad" :placeholder="$t('admin.logs.searchPlaceholder')" :aria-label="$t('admin.logs.searchAria')" class="field pl-8" />
     </div>
-    <div class="flex items-center gap-1 bg-card border border-border rounded-lg p-1" role="radiogroup" aria-label="Level">
+    <div class="flex items-center gap-1 bg-card border border-border rounded-lg p-1" role="radiogroup" :aria-label="$t('admin.logs.level')">
       <button
         v-for="lvl in ['all', 'info', 'warn', 'error']"
         :key="lvl"
@@ -29,13 +29,13 @@
         :aria-checked="level === lvl"
         @click="level = lvl; load()"
         :class="['h-7 px-2.5 rounded-md text-[12px] font-medium capitalize transition', level === lvl ? 'bg-muted text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground']"
-      >{{ lvl }}</button>
+      >{{ $t(`admin.logs.levels.${lvl}`) }}</button>
     </div>
   </div>
 
   <div class="bg-zinc-950 text-zinc-100 border border-border rounded-xl p-2 sm:p-3 font-mono text-[12px] leading-relaxed max-h-[65vh] overflow-y-auto shadow-inner flex flex-col gap-0.5 select-text">
     <div v-if="!logs.length" class="py-12 text-center text-zinc-500 font-sans text-xs">
-      {{ loading ? 'Loading…' : 'Nothing matches.' }}
+      {{ loading ? $t('common.loading') : $t('admin.logs.nothingMatches') }}
     </div>
     <div v-for="log in logs" :key="log.id" class="flex flex-wrap sm:flex-nowrap items-start gap-x-2 gap-y-0.5 hover:bg-white/5 px-2 py-1 rounded transition-colors">
       <span class="text-zinc-500 whitespace-nowrap select-none text-[11px]">{{ formatLogTime(log.timestamp) }}</span>
@@ -60,6 +60,7 @@ import { RefreshCw, Trash2, Search } from '@lucide/vue';
 import api from '../../api/client';
 import { useDialogStore } from '../../stores/dialog';
 import SectionHeader from '../settings/SectionHeader.vue';
+import { t, d } from '../../i18n';
 
 const dialog = useDialogStore();
 const logs = ref([]);
@@ -103,14 +104,14 @@ watch(autoRefresh, (on) => (on ? startPolling() : stopPolling()));
 
 function formatLogTime(ts) {
   if (!ts) return '';
-  return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  return d(ts, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 }
 
 async function clearLogs() {
   const confirmed = await dialog.confirm({
-    title: 'Clear logs',
-    message: 'Delete every log entry from the database?',
-    confirmText: 'Clear logs',
+    title: t('admin.logs.clearTitle'),
+    message: t('admin.logs.clearMessage'),
+    confirmText: t('admin.logs.clearTitle'),
     danger: true
   });
   if (!confirmed) return;
@@ -118,7 +119,7 @@ async function clearLogs() {
     await api.delete('/admin/logs');
     logs.value = [];
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Could not clear the logs');
+    dialog.alert(err.response?.data?.error || t('admin.logs.couldNotClear'));
   }
 }
 

@@ -1,0 +1,69 @@
+{
+  "backTo": "Retour à {server}",
+  "joining": "Connexion à la soirée de visionnage…",
+  "watchParty": "Soirée de visionnage",
+  "showPanel": "Afficher la soirée de visionnage",
+  "hidePanel": "Masquer la soirée de visionnage",
+  "reconnecting": "Reconnexion…",
+  "waitingFor": "En attente de {names}…",
+  "closePanel": "Fermer le panneau",
+  "invite": "Inviter",
+  "inviteHint": "Toute personne ayant un compte sur ce serveur peut rejoindre avec le lien ou le code {code}.",
+  "watching": "Spectateurs ({count})",
+  "you": "(vous)",
+  "loading": "Chargement",
+  "host": "Hôte",
+  "whoControls": "Qui peut lire, mettre en pause et avancer",
+  "onlyMe": "Moi uniquement",
+  "everyone": "Tout le monde",
+  "chatEmpty": "Dites bonjour — les messages sont envoyés à tous les spectateurs.",
+  "messagePlaceholder": "Message",
+  "send": "Envoyer",
+  "leave": "Quitter",
+  "endForEveryone": "Terminer pour tous",
+  "tapToJoin": "Appuyez sur lecture pour vous joindre",
+  "hostInControl": "C'est l'hôte qui contrôle la lecture",
+  "unreachable": "Impossible de joindre la soirée",
+  "messageNotSent": "Message non envoyé",
+  "moveOnFailed": "Impossible de passer à la suite",
+  "copyPrompt": "Copiez ce lien d'invitation :",
+  "endConfirm": {
+    "title": "Terminer la soirée de visionnage ?",
+    "message": "La soirée s'arrêtera pour tous les spectateurs.",
+    "confirm": "Terminer"
+  },
+  "problems": {
+    "P600": {
+      "title": "Les soirées de visionnage sont désactivées",
+      "message": "Un administrateur doit d'abord activer les soirées de visionnage sur ce serveur."
+    },
+    "P601": {
+      "title": "Cette soirée est terminée",
+      "message": "L'hôte l'a terminée, ou tout le monde est parti. Demandez un nouveau lien d'invitation."
+    },
+    "P603": {
+      "title": "Non disponible pour vous",
+      "message": "Cette soirée regarde un contenu auquel votre compte n'a pas accès."
+    },
+    "P605": {
+      "title": "Cette soirée est complète",
+      "message": "Une soirée de visionnage accueille jusqu'à 20 personnes. Réessayez quand quelqu'un sera parti."
+    },
+    "disabled": {
+      "title": "Les soirées de visionnage ont été désactivées",
+      "message": "Un administrateur a désactivé les soirées de visionnage, ce qui a mis fin à celle-ci."
+    },
+    "over": {
+      "title": "La soirée est terminée",
+      "message": "L'hôte a mis fin à la soirée de visionnage. Merci d'avoir regardé !"
+    },
+    "couldntJoin": {
+      "title": "Impossible de rejoindre",
+      "message": "Une erreur s'est produite en rejoignant cette soirée."
+    },
+    "couldntLoad": {
+      "title": "Impossible de charger la vidéo",
+      "message": "Essayez de rouvrir le lien d'invitation."
+    }
+  }
+}

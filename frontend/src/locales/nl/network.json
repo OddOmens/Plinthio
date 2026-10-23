@@ -1,0 +1,125 @@
+{
+  "title": "Netwerk",
+  "description": "Waar Plinthio vandaan gebruikt kan worden, en tweestapsverificatie buiten de deur.",
+  "checkAgain": "Opnieuw controleren",
+  "device": {
+    "connectingFrom": "Dit apparaat maakt verbinding vanaf {where}",
+    "where": {
+      "home": "je thuisnetwerk",
+      "tailscaleHome": "Tailscale (telt als thuis)",
+      "tailscaleOutside": "Tailscale (telt als buiten)",
+      "outside": "buiten het thuisnetwerk",
+      "unknown": "een onbekende plek"
+    },
+    "address": "Adres {ip}. Om toegang van buitenaf te controleren, open je deze pagina op een telefoon met mobiele data (wifi uit). Er hoort ‘buiten’ te staan.",
+    "unknownIp": "onbekend"
+  },
+  "tailscale": {
+    "hideGuide": "Handleiding verbergen",
+    "guide": "Handleiding",
+    "setUp": "Tailscale instellen",
+    "working": "Werkt op {link}",
+    "lastUsed": "laatst gebruikt {time}",
+    "setUpAt": "Ingesteld op {address}, niet meer gebruikt sinds Plinthio voor het laatst is gestart. Open het vanaf een Tailscale-apparaat om te controleren.",
+    "notSetUp": "Niet ingesteld, voor zover Plinthio kan zien. Tailscale geeft je een vertrouwd {address}-adres, thuis en onderweg; met Funnel is het ook een link die iedereen kan openen, zonder domein. Open de handleiding om het in te stellen.",
+    "funnelWorking": "Funnel werkt: een bezoeker van internet, {time}.",
+    "funnelNeedsAccess": "Funnel-bezoekers komen van internet, en toegang van buitenaf staat uit, dus ze zien ‘alleen thuis beschikbaar’.",
+    "allowOutside": "Toegang van buitenaf toestaan"
+  },
+  "proxy": {
+    "title": "Er staat een proxy voor Plinthio, maar TRUST_PROXY is niet ingesteld",
+    "text": "Elke bezoeker lijkt van de proxy te komen ({from}), meestal een thuisadres, dus toegang van buitenaf is niet te onderscheiden. De add-ons voor Tailscale en een openbaar adres stellen dit voor je in. Zie docs/remote-access.md voor een andere proxy.",
+    "localAddress": "een lokaal adres"
+  },
+  "adminsWithout2fa": {
+    "title": {
+      "one": "{count} adminaccount zonder tweestapsverificatie",
+      "other": "{count} adminaccounts zonder tweestapsverificatie"
+    },
+    "text": "De server is bereikbaar vanaf internet. Tweestapsverificatie aanzetten voor admins (Instellingen → Beveiliging) wordt sterk aangeraden."
+  },
+  "settings": {
+    "remoteAccess": {
+      "title": "Toegang van buiten het thuisnetwerk toestaan",
+      "text": "Uit: alleen apparaten thuis (en op Tailscale, hieronder) kunnen inloggen of iets gebruiken; internet krijgt ‘alleen thuis beschikbaar’. Aan: iedereen met een account dat buitenshuis mag, kan overal vandaan inloggen. Dit bepaalt alleen wie erin mag: om de server vanaf internet te bereiken heb je ook Tailscale Funnel (geen domein nodig) of een webadres (de add-on voor een openbaar adres) nodig."
+    },
+    "tailscaleIsHome": {
+      "title": "Tailscale-apparaten tellen als thuis",
+      "text": "Aan (standaard): alles op je tailnet wordt behandeld als je thuisnetwerk. Zet dit uit als je de server deelt met Tailscale-gebruikers die je liever als buiten behandelt."
+    },
+    "require2fa": {
+      "title": "Tweestapsverificatie verplicht buitenshuis",
+      "text": "Optioneel. Inloggen van buitenaf vraagt dan om een code uit een telefoonapp. Thuis is een wachtwoord nog genoeg, dus iedereen zonder tweestapsverificatie kan daar inloggen en het instellen (Instellingen → Beveiliging).",
+      "onlyWhenOn": "Geldt alleen als toegang van buitenaf aan staat."
+    }
+  },
+  "accounts": {
+    "total": "Accounts",
+    "withTwoFactor": "Met tweestapsverificatie",
+    "homeOnly": "Alleen thuis",
+    "adminsWithoutTwoFactor": "Admins zonder tweestapsverificatie",
+    "hint": "Stel in het tabblad Gebruikers in wie Plinthio buitenshuis mag gebruiken, en reset daar iemands tweestapsverificatie."
+  },
+  "recent": {
+    "title": "Recente aanmeldingen van buitenaf",
+    "none": "Nog geen.",
+    "signedIn": "ingelogd",
+    "failed": "mislukt"
+  },
+  "docsHint": "Zo bereik je Plinthio van buitenaf (Tailscale, of een webadres voor gasten), stap voor stap: {link}, of {file} op GitHub.",
+  "docsLink": "Documentatie → Toegang op afstand & Tailscale",
+  "confirm": {
+    "title": "Toegang van buitenaf toestaan?",
+    "message": "Iedereen met een account (dat buitenshuis mag) kan dan via internet inloggen, zodra de server een webadres heeft. Gebruik sterke wachtwoorden, en overweeg tweestapsverificatie verplicht te maken buitenshuis.",
+    "allow": "Toestaan"
+  },
+  "errors": {
+    "load": "Kon de netwerkinstellingen niet laden",
+    "save": "Kon dat niet opslaan"
+  },
+  "guide": {
+    "private": "Privé: mijn apparaten en mensen die ik toevoeg",
+    "funnel": "Ook een link voor vrienden zonder Tailscale (Funnel)",
+    "privateText": "Plinthio krijgt {address}, vertrouwd op elk apparaat dat bij je Tailscale is ingelogd. Er wordt niets opengezet naar internet.",
+    "funnelText": "Hetzelfde adres opent ook in ieders browser, zonder Tailscale, domein of wijzigingen aan je router. Tailscale beperkt de bandbreedte van Funnel: lezen en luisteren gaan prima, video kan haperen.",
+    "account": {
+      "title": "Maak een gratis Tailscale-account"
+    },
+    "dns": {
+      "title": "Zet MagicDNS en HTTPS Certificates aan",
+      "text": "Op de DNS-pagina van de beheerconsole. Het zijn allebei schakelaars.",
+      "link": "DNS-pagina openen"
+    },
+    "key": {
+      "title": "Maak een auth key",
+      "text": "Settings → Keys → Generate auth key. Laat de pagina open; je plakt de sleutel in de volgende stap. (Optioneel: zonder sleutel toont de server in plaats daarvan een inloglink.)",
+      "link": "Keys openen"
+    },
+    "server": {
+      "title": "Voeg Tailscale toe aan Plinthio",
+      "name": "Naam op je tailnet",
+      "download": "Download de add-on op de server, in de map met {file}:",
+      "env": "Voeg deze regels toe aan het bestand {env} in die map (maak het aan als het er niet is), met je sleutel in plaats van {key}:",
+      "start": "Start het daarna. Met {flag} wordt een gewijzigde instelling actief; Plinthio herstart een paar seconden:",
+      "noDocker": "Geen Docker, of staat Tailscale al op de server?",
+      "runThis": "Voer dit uit op de server (8088 is de poort van Plinthio):",
+      "trustProxy": "Stel zonder Docker ook {setting} in voor Plinthio. Met Docker en Tailscale op de host gebruik je beter de add-on, zodat Plinthio apparaten uit elkaar kan houden."
+    },
+    "funnelStep": {
+      "title": "Laat internet binnen",
+      "text": "Funnel-bezoekers komen van internet, dus Plinthio heeft {outsideAccess} aan nodig ({where}). Overweeg ook tweestapsverificatie verplicht te maken buitenshuis. De eerste keer kan Tailscale vragen om Funnel toe te staan voor je tailnet: als {command} dat zegt, volg dan de link of sta het toe onder Access controls.",
+      "outsideAccess": "toegang van buitenaf",
+      "whereSetup": "deze installatiestap regelt dat voor je",
+      "whereAdmin": "Admin → Netwerk, hierboven",
+      "link": "Access controls openen"
+    },
+    "devices": {
+      "title": "Installeer Tailscale op je telefoons en computers",
+      "funnelTitle": "Probeer het, en stuur vrienden de link",
+      "text": "Log in met hetzelfde account, open dan {address} (de beheerconsole toont het exacte adres onder Machines) en zet het vanaf daar op je beginscherm.",
+      "funnelText": "Open het adres op een telefoon met wifi uit en Tailscale niet actief. Je hoort de inlogpagina te zien. Maak daarna accounts voor je vrienden (Admin → Gebruikers) en stuur ze de link."
+    },
+    "moreDetail": "Alles in meer detail, met probleemoplossing: {file} op GitHub.",
+    "markDone": "Markeren als klaar"
+  }
+}

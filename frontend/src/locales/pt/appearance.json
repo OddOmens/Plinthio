@@ -1,0 +1,89 @@
+{
+  "section": {
+    "title": "Aparência",
+    "description": "Como o Plinthio aparece para você. As mudanças aparecem na prévia e são salvas na hora, só para a sua conta.",
+    "locked": "Seu administrador define a aparência do Plinthio neste servidor, então não dá para mudar isso aqui. A prévia mostra o que todo mundo vê."
+  },
+  "language": {
+    "auto": "Automático",
+    "desc": "O idioma em que o Plinthio fala com você. Automático segue o seu navegador."
+  },
+  "cards": {
+    "accent": {
+      "title": "Cor de destaque",
+      "desc": "Sua cor de destaque em botões, selos e na aba atual."
+    },
+    "layout": {
+      "title": "Navegação",
+      "desc": "Onde fica a navegação principal."
+    },
+    "pageWidth": {
+      "title": "Largura da página",
+      "desc": "Até que largura as páginas vão em uma tela grande. Largura total cabe mais pôsteres por linha."
+    },
+    "pauseScreen": {
+      "title": "Tela de pausa",
+      "desc": "O que aparece depois de alguns segundos com um filme ou episódio pausado."
+    }
+  },
+  "accents": {
+    "zinc": "Zinco",
+    "slate": "Ardósia",
+    "red": "Vermelho",
+    "orange": "Laranja",
+    "amber": "Âmbar",
+    "lime": "Lima",
+    "emerald": "Esmeralda",
+    "teal": "Verde-azulado",
+    "sky": "Céu",
+    "blue": "Azul",
+    "indigo": "Índigo",
+    "violet": "Violeta",
+    "purple": "Roxo",
+    "fuchsia": "Fúcsia",
+    "pink": "Rosa",
+    "rose": "Rosé"
+  },
+  "layouts": {
+    "topnav": {
+      "label": "Navegação superior",
+      "desc": "Barra de cabeçalho horizontal clássica"
+    },
+    "sidebar": {
+      "label": "Barra lateral",
+      "desc": "Navegação vertical à esquerda"
+    }
+  },
+  "pageWidths": {
+    "full": {
+      "label": "Largura total",
+      "desc": "Usa a tela inteira, com mais pôsteres"
+    },
+    "contained": {
+      "label": "Limitada",
+      "desc": "Centralizada, com no máximo 1440px de largura"
+    }
+  },
+  "pauseScreens": {
+    "simple": {
+      "label": "Simples",
+      "desc": "Só os controles do player — nada cobre a imagem."
+    },
+    "details": {
+      "label": "Detalhes",
+      "desc": "Pôster, título, slogan, sinopse, direção e elenco, e quando vai terminar."
+    },
+    "cinematic": {
+      "label": "Cinematográfica",
+      "desc": "A imagem escurece atrás de um cartão de título em tela cheia com fotos do elenco e informações do TMDB — bilheteria, título original, palavras-chave."
+    },
+    "bedtime": {
+      "label": "Hora de dormir",
+      "desc": "Um relógio discreto com o horário em que termina e, nas séries, quando o resto da temporada terminaria. Confortável para os olhos em um quarto escuro."
+    }
+  },
+  "defaultLanguage": {
+    "title": "Idioma padrão",
+    "desc": "Para quem ainda não escolheu o seu. Automático segue o navegador de cada pessoa; qualquer um pode escolher outro em Configurações."
+  }
+}

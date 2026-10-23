@@ -1,0 +1,56 @@
+{
+  "title": "リクエスト",
+  "intro": "ライブラリにまだない映画、番組、アニメ、本、オーディオブックをリクエストできます。",
+  "newRequest": "新しいリクエスト",
+  "request": "リクエスト",
+  "mine": "自分のリクエスト",
+  "reviewQueue": "確認待ち",
+  "filterByStatus": "ステータスで絞り込み",
+  "allStatuses": "すべてのステータス",
+  "emptyReview": "確認待ちのリクエストはありません",
+  "emptyMine": "まだ何もリクエストしていません",
+  "emptyMineHint": "上で検索するか、リスト内のタイトルにあるリクエストボタンを使ってください。",
+  "requestedBy": "リクエスト者：{name}",
+  "deletedUser": "削除されたユーザー",
+  "quotedNote": "「{note}」",
+  "notePlaceholder": "リクエストした人へのメモ（任意）",
+  "deleteRequest": "リクエストを削除",
+  "withdraw": "取り下げ",
+  "status": {
+    "pending": "保留中",
+    "accepted_pending": "承認済み・追加待ち",
+    "accepted_added": "承認済み・追加済み",
+    "rejected": "却下"
+  },
+  "actions": {
+    "acceptPending": "承認・追加待ち",
+    "acceptAdded": "承認・追加済み",
+    "reject": "却下",
+    "backToPending": "保留中に戻す"
+  },
+  "confirm": {
+    "withdrawTitle": "リクエストを取り下げますか？",
+    "deleteTitle": "リクエストを削除しますか？",
+    "withdrawMessage": "「{title}」のリクエストを取り下げます。",
+    "deleteMessage": "「{title}」のリクエストは全員に対して削除されます。"
+  },
+  "errors": {
+    "load": "リクエストを読み込めませんでした。",
+    "send": "リクエストを送信できませんでした。",
+    "update": "リクエストを更新できませんでした。",
+    "remove": "リクエストを削除できませんでした。"
+  },
+  "search": {
+    "placeholder": {
+      "movie": "映画を検索…",
+      "show": "番組を検索…",
+      "anime": "アニメを検索…",
+      "book": "本を検索…",
+      "manga": "マンガを検索…",
+      "audiobook": "オーディオブックを検索…",
+      "titles": "タイトルを検索…"
+    },
+    "noResults": "「{query}」の検索結果はありません。",
+    "failed": "検索に失敗しました。しばらくしてからもう一度お試しください。"
+  }
+}

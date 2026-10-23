@@ -1,31 +1,31 @@
 <template>
-  <SectionHeader title="Security" description="Your password, two-factor sign-in, and the devices signed in as you." />
+  <SectionHeader :title="$t('settings.security.title')" :description="$t('settings.security.description')" />
 
-  <SettingsCard title="Password" description="Changing it signs you out everywhere, this browser included.">
+  <SettingsCard :title="$t('common.password')" :description="$t('settings.security.password.desc')">
     <form @submit.prevent="changePassword" class="flex flex-col gap-3 max-w-sm">
       <div>
-        <label for="current-password" class="field-label">Current password</label>
+        <label for="current-password" class="field-label">{{ $t('settings.security.password.current') }}</label>
         <input id="current-password" v-model="passwords.current" type="password" autocomplete="current-password" required class="field" />
       </div>
       <div>
-        <label for="new-password" class="field-label">New password</label>
+        <label for="new-password" class="field-label">{{ $t('settings.security.password.new') }}</label>
         <input id="new-password" v-model="passwords.new" type="password" autocomplete="new-password" required minlength="8" class="field" />
-        <p class="field-hint">At least 8 characters.</p>
+        <p class="field-hint">{{ $t('settings.security.password.hint') }}</p>
       </div>
       <button type="submit" :disabled="changing" class="btn btn-primary self-start">
-        {{ changing ? 'Changing…' : 'Change password' }}
+        {{ changing ? $t('settings.security.password.changing') : $t('settings.security.password.change') }}
       </button>
     </form>
   </SettingsCard>
 
-  <SettingsCard id="two-factor" class="scroll-mt-24" title="Two-factor sign-in" description="A code from your phone as well as your password. Worth it if you use Plinthio away from home.">
+  <SettingsCard id="two-factor" class="scroll-mt-24" :title="$t('settings.security.twoFactor.title')" :description="$t('settings.security.twoFactor.desc')">
     <TwoFactorSetup />
   </SettingsCard>
 
-  <SettingsCard title="Signed-in devices" description="Every phone, browser and TV you've signed in on keeps you signed in. If you've signed in somewhere you no longer control, sign out everywhere.">
+  <SettingsCard :title="$t('settings.security.devices.title')" :description="$t('settings.security.devices.desc')">
     <button @click="signOutEverywhere" :disabled="signingOutEverywhere" class="btn btn-danger">
       <LogOut class="w-3.5 h-3.5" />
-      {{ signingOutEverywhere ? 'Signing out…' : 'Sign out of all devices' }}
+      {{ signingOutEverywhere ? $t('settings.security.devices.signingOut') : $t('settings.security.devices.signOutAll') }}
     </button>
   </SettingsCard>
 </template>
@@ -36,6 +36,7 @@ import { LogOut } from '@lucide/vue';
 import api from '../../../api/client';
 import { useAuthStore } from '../../../stores/auth';
 import { useDialogStore } from '../../../stores/dialog';
+import { t } from '../../../i18n';
 import SectionHeader from '../SectionHeader.vue';
 import SettingsCard from '../SettingsCard.vue';
 import TwoFactorSetup from '../../TwoFactorSetup.vue';
@@ -56,10 +57,10 @@ async function changePassword() {
     passwords.value = { current: '', new: '' };
     // Changing the password invalidates every token, this tab's too: sign out now rather
     // than leave a "session expired" for the next click.
-    await dialog.alert('Password changed. Sign in again with your new password.');
+    await dialog.alert(t('settings.security.password.changed'));
     authStore.logout();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Could not change your password');
+    dialog.alert(err.response?.data?.error || t('settings.security.password.changeFailed'));
   } finally {
     changing.value = false;
   }
@@ -68,9 +69,9 @@ async function changePassword() {
 const signingOutEverywhere = ref(false);
 async function signOutEverywhere() {
   const confirmed = await dialog.confirm({
-    title: 'Sign out everywhere',
-    message: 'Every device signed in to this account will be signed out straight away, including this one.',
-    confirmText: 'Sign out everywhere',
+    title: t('settings.security.devices.confirmTitle'),
+    message: t('settings.security.devices.confirmMessage'),
+    confirmText: t('settings.security.devices.confirmTitle'),
     danger: true
   });
   if (!confirmed) return;
@@ -78,7 +79,7 @@ async function signOutEverywhere() {
   try {
     await authStore.signOutEverywhere();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Could not sign out of all devices');
+    dialog.alert(err.response?.data?.error || t('settings.security.devices.signOutFailed'));
     signingOutEverywhere.value = false;
   }
 }

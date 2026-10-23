@@ -1,0 +1,56 @@
+{
+  "title": "Anfragen",
+  "intro": "Wünsch dir Filme, Serien, Anime, Bücher und Hörbücher, die die Bibliothek noch nicht hat.",
+  "newRequest": "Neue Anfrage",
+  "request": "Anfragen",
+  "mine": "Meine Anfragen",
+  "reviewQueue": "Zu prüfen",
+  "filterByStatus": "Nach Status filtern",
+  "allStatuses": "Alle Status",
+  "emptyReview": "Keine Anfragen zu prüfen",
+  "emptyMine": "Du hast noch nichts angefragt",
+  "emptyMineHint": "Suche oben oder nutze den Button „Anfragen“ bei einem Titel in einer deiner Listen.",
+  "requestedBy": "Angefragt von {name}",
+  "deletedUser": "gelöschter Benutzer",
+  "quotedNote": "„{note}“",
+  "notePlaceholder": "Notiz an die anfragende Person (optional)",
+  "deleteRequest": "Anfrage löschen",
+  "withdraw": "Zurückziehen",
+  "status": {
+    "pending": "Ausstehend",
+    "accepted_pending": "Angenommen · Wird hinzugefügt",
+    "accepted_added": "Angenommen · Hinzugefügt",
+    "rejected": "Abgelehnt"
+  },
+  "actions": {
+    "acceptPending": "Annehmen · Wird hinzugefügt",
+    "acceptAdded": "Annehmen · Hinzugefügt",
+    "reject": "Ablehnen",
+    "backToPending": "Zurück auf ausstehend"
+  },
+  "confirm": {
+    "withdrawTitle": "Anfrage zurückziehen?",
+    "deleteTitle": "Anfrage löschen?",
+    "withdrawMessage": "Deine Anfrage für „{title}“ wird zurückgezogen.",
+    "deleteMessage": "Die Anfrage für „{title}“ wird für alle gelöscht."
+  },
+  "errors": {
+    "load": "Anfragen konnten nicht geladen werden.",
+    "send": "Die Anfrage konnte nicht gesendet werden.",
+    "update": "Die Anfrage konnte nicht aktualisiert werden.",
+    "remove": "Die Anfrage konnte nicht entfernt werden."
+  },
+  "search": {
+    "placeholder": {
+      "movie": "Filme suchen…",
+      "show": "Serien suchen…",
+      "anime": "Anime suchen…",
+      "book": "Bücher suchen…",
+      "manga": "Manga suchen…",
+      "audiobook": "Hörbücher suchen…",
+      "titles": "Titel suchen…"
+    },
+    "noResults": "Keine Ergebnisse für „{query}“.",
+    "failed": "Suche fehlgeschlagen. Versuch es gleich noch mal."
+  }
+}

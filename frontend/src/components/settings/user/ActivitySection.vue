@@ -1,5 +1,5 @@
 <template>
-  <SectionHeader title="Activity" description="What you've read, watched and listened to, and your recent sign-ins." />
+  <SectionHeader :title="$t('settings.activity.title')" :description="$t('settings.activity.description')" />
 
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
     <div v-for="tile in tiles" :key="tile.label" class="bg-card border border-border rounded-xl p-4 flex flex-col gap-1">
@@ -10,7 +10,7 @@
     </div>
   </div>
 
-  <SettingsCard title="Recent activity" flush>
+  <SettingsCard :title="$t('settings.activity.recent')" flush>
     <ActivityList :entries="activity" :loading="loading" />
   </SettingsCard>
 </template>
@@ -20,6 +20,7 @@ import { ref, computed, onMounted } from 'vue';
 import { Headphones, BookOpen, CheckCircle, Clock } from '@lucide/vue';
 import api from '../../../api/client';
 import { formatHours } from '../../../utils/settingsFormat';
+import { t, n } from '../../../i18n';
 import SectionHeader from '../SectionHeader.vue';
 import SettingsCard from '../SettingsCard.vue';
 import ActivityList from '../ActivityList.vue';
@@ -29,10 +30,10 @@ const activity = ref([]);
 const loading = ref(true);
 
 const tiles = computed(() => [
-  { label: 'Time listened', icon: Headphones, value: formatHours(stats.value.totalSecondsListened) },
-  { label: 'Pages read', icon: BookOpen, value: (stats.value.totalPagesRead || 0).toLocaleString() },
-  { label: 'Finished', icon: CheckCircle, tone: 'text-emerald-500', value: stats.value.completedCount || 0 },
-  { label: 'In progress', icon: Clock, value: stats.value.inProgressCount || 0 }
+  { label: t('settings.activity.tiles.listened'), icon: Headphones, value: formatHours(stats.value.totalSecondsListened) },
+  { label: t('settings.activity.tiles.pagesRead'), icon: BookOpen, value: n(stats.value.totalPagesRead || 0) },
+  { label: t('settings.activity.tiles.finished'), icon: CheckCircle, tone: 'text-emerald-500', value: n(stats.value.completedCount || 0) },
+  { label: t('settings.activity.tiles.inProgress'), icon: Clock, value: n(stats.value.inProgressCount || 0) }
 ]);
 
 onMounted(async () => {

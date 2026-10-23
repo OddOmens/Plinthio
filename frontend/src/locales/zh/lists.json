@@ -1,0 +1,81 @@
+{
+  "title": "清单",
+  "intro": "按你的顺序排好想看、想读和想听的内容。清单里也可以放服务器上还没有的作品。",
+  "requests": "请求",
+  "categories": {
+    "movies": "电影",
+    "shows": "剧集",
+    "anime": "动画",
+    "read": "阅读",
+    "listen": "收听"
+  },
+  "titleCount": {
+    "other": "{count}部作品"
+  },
+  "newList": "新建清单",
+  "newListName": {
+    "movies": "电影清单名称",
+    "shows": "剧集清单名称",
+    "anime": "动画清单名称",
+    "read": "阅读清单名称",
+    "listen": "收听清单名称"
+  },
+  "noLists": {
+    "movies": "还没有电影清单。",
+    "shows": "还没有剧集清单。",
+    "anime": "还没有动画清单。",
+    "read": "还没有阅读清单。",
+    "listen": "还没有收听清单。"
+  },
+  "allLists": "所有清单",
+  "listFallback": "清单",
+  "notInLibrary": "{count}部不在媒体库中",
+  "addTitles": "添加作品",
+  "deleteList": "删除清单",
+  "inList": "已在清单中",
+  "seriesTitle": "{series}：{title}",
+  "empty": {
+    "title": "清单里还没有内容",
+    "hint": "使用“{addTitles}”搜索任何作品，不论服务器上有没有。"
+  },
+  "moveEarlier": "上移",
+  "moveLater": "下移",
+  "removeFromList": "从清单移除",
+  "request": "请求",
+  "requestHint": "请管理员把它添加到媒体库",
+  "requestStatus": {
+    "pending": "待处理",
+    "accepted_pending": "已接受 · 待添加",
+    "accepted_added": "已接受 · 已添加",
+    "rejected": "已拒绝"
+  },
+  "deleteDialog": {
+    "title": "删除清单？",
+    "message": "“{name}”将被删除。媒体库中的内容不会被移除。",
+    "thisList": "此清单"
+  },
+  "addButton": {
+    "inNamed": "在“{list}”中",
+    "title": "添加到你的清单",
+    "list": "清单",
+    "dialogLabel": "将“{title}”添加到清单",
+    "heading": "添加到清单",
+    "loading": "正在加载你的清单…",
+    "newPlaceholder": "新清单…",
+    "firstPlaceholder": "为你的第一个清单命名，例如“想看”"
+  },
+  "errors": {
+    "loadLists": "无法加载清单。",
+    "loadYourLists": "无法加载你的清单。",
+    "createList": "无法创建清单。",
+    "createThatList": "无法创建该清单。",
+    "gone": "该清单已不存在。",
+    "loadList": "无法加载此清单。",
+    "deleteList": "无法删除该清单。",
+    "addTitle": "无法添加该作品。",
+    "addToList": "无法将其添加到该清单。",
+    "request": "无法发送该请求。",
+    "reorder": "无法保存新的顺序。",
+    "remove": "无法移除该条目。"
+  }
+}

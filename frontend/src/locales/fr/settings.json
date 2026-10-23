@@ -1,0 +1,176 @@
+{
+  "nav": {
+    "serverAdmin": "Administration du serveur",
+    "groups": {
+      "account": "Compte",
+      "yours": "Votre Plinthio",
+      "connect": "Connexions"
+    },
+    "profile": { "label": "Profil", "desc": "Votre photo et votre rôle" },
+    "security": { "label": "Sécurité", "desc": "Mot de passe, double authentification, appareils" },
+    "appearance": { "label": "Apparence", "desc": "Couleur, navigation, largeur, écran de pause" },
+    "shelves": { "label": "Étagères", "desc": "Types de médias, page d'accueil, vues" },
+    "hidden": { "label": "Titres masqués", "desc": "Les titres que vous avez masqués" },
+    "activity": { "label": "Activité", "desc": "Vos statistiques et connexions" },
+    "apps": { "label": "Applis et clés d'API", "desc": "Mihon, KOReader, OPDS, scripts" }
+  },
+  "layout": {
+    "backTo": "Retour à {title}",
+    "backToShelves": "Retour aux étagères",
+    "sections": "Sections de {title}"
+  },
+  "saveStatus": {
+    "error": "Échec de l'enregistrement"
+  },
+  "activityList": {
+    "empty": "Aucune activité enregistrée pour le moment.",
+    "deletedItem": "un élément supprimé",
+    "you": {
+      "signedIn": "Connexion réussie",
+      "signInFailed": "Tentative de connexion échouée",
+      "viewed": "Vous avez consulté {title}",
+      "viewing": "Vous consultez {title}"
+    },
+    "someone": {
+      "signedIn": "{user} s'est connecté",
+      "signInFailed": "{user} n'a pas réussi à se connecter",
+      "viewed": "{user} a consulté {title}",
+      "viewing": "{user} consulte {title}"
+    }
+  },
+  "mediaTypes": {
+    "movie": { "label": "Films", "desc": "Longs métrages" },
+    "show": { "label": "Séries TV", "desc": "Séries et épisodes" },
+    "anime": { "label": "Anime", "desc": "Séries et films d'animation" },
+    "book": { "label": "Livres", "desc": "EPUB, PDF et texte" },
+    "manga": { "label": "Mangas et BD", "desc": "CBZ, CBR et romans graphiques" },
+    "audiobook": { "label": "Livres audio", "desc": "Textes lus et fictions audio" }
+  },
+  "format": {
+    "size": "{value} {unit}",
+    "units": { "B": "o", "KB": "Ko", "MB": "Mo", "GB": "Go", "TB": "To" },
+    "seconds": "{value} s",
+    "minutes": "{value} min",
+    "hours": "{value} h",
+    "hoursMinutes": "{hours} {minutes}"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Votre photo et la configuration de votre compte sur ce serveur.",
+    "avatar": "Avatar",
+    "changePicture": "Changer de photo",
+    "uploadPicture": "Importer une photo",
+    "pictureHint": "JPG, PNG, WebP ou GIF jusqu'à 5 Mo, recadré en carré.",
+    "notAnImage": "Choisissez un fichier image (PNG, JPG, WebP ou GIF).",
+    "tooBig": "Cette image dépasse 5 Mo.",
+    "uploadFailed": "Impossible d'importer cette photo",
+    "removeTitle": "Supprimer la photo",
+    "removeMessage": "Supprimer votre photo de profil ? Vos initiales s'afficheront à la place.",
+    "removeFailed": "Impossible de supprimer la photo",
+    "roles": {
+      "admin": { "label": "Admin", "desc": "gère ce serveur" },
+      "editor": { "label": "Éditeur", "desc": "peut aussi corriger les titres, les couvertures et les détails" },
+      "viewer": { "label": "Lecteur", "desc": "parcourt, lit, regarde et écoute" }
+    }
+  },
+  "security": {
+    "title": "Sécurité",
+    "description": "Votre mot de passe, la double authentification et les appareils connectés à votre compte.",
+    "password": {
+      "desc": "Le changer vous déconnecte partout, y compris dans ce navigateur.",
+      "current": "Mot de passe actuel",
+      "new": "Nouveau mot de passe",
+      "hint": "Au moins 8 caractères.",
+      "change": "Changer le mot de passe",
+      "changing": "Modification…",
+      "changed": "Mot de passe modifié. Reconnectez-vous avec votre nouveau mot de passe.",
+      "changeFailed": "Impossible de changer votre mot de passe"
+    },
+    "twoFactor": {
+      "title": "Double authentification",
+      "desc": "Un code envoyé sur votre téléphone en plus de votre mot de passe. Utile si vous utilisez Plinthio hors de chez vous."
+    },
+    "devices": {
+      "title": "Appareils connectés",
+      "desc": "Chaque téléphone, navigateur et téléviseur sur lequel vous vous êtes connecté reste connecté. Si vous vous êtes connecté sur un appareil que vous ne contrôlez plus, déconnectez-vous partout.",
+      "signOutAll": "Se déconnecter de tous les appareils",
+      "signingOut": "Déconnexion…",
+      "confirmTitle": "Se déconnecter partout",
+      "confirmMessage": "Tous les appareils connectés à ce compte seront déconnectés immédiatement, y compris celui-ci.",
+      "signOutFailed": "Impossible de se déconnecter de tous les appareils"
+    }
+  },
+  "shelves": {
+    "title": "Étagères",
+    "description": "Ce qui figure sur vos étagères et où Plinthio s'ouvre. Enregistré au fur et à mesure.",
+    "mediaTypes": {
+      "title": "Types de médias",
+      "desc": "Les types de médias affichés sur vos étagères. Gardez-en au moins un."
+    },
+    "startOn": {
+      "title": "Ouvrir sur",
+      "desc": "L'étagère sur laquelle Plinthio s'ouvre.",
+      "all": "Tous les médias"
+    },
+    "views": {
+      "title": "Vues des étagères",
+      "desc": "Les vues au-dessus de votre étagère. Chacune affiche une carte par série ; la vue alphabétique est toujours présente.",
+      "offByAdmin": "Désactivé par votre admin",
+      "modes": {
+        "alphabetical": { "label": "Alphabétique", "desc": "Toujours activée. Toutes les séries et tous les titres de A à Z." },
+        "creator": { "label": "Créateur", "desc": "Regroupés par auteur, réalisateur ou studio." },
+        "diskFolders": { "label": "Dossiers du disque", "desc": "Les dossiers du serveur." },
+        "customFolders": { "label": "Dossiers personnalisés", "desc": "Vos propres dossiers dans l'appli, avec un dossier « Non classé » pour le reste." }
+      }
+    }
+  },
+  "hidden": {
+    "title": "Titres masqués",
+    "description": "Les titres que vous avez masqués de vos étagères. Vous seul ne les voyez plus ; vous pouvez les réafficher à tout moment.",
+    "empty": "Rien de masqué. Masquez un titre depuis sa page et il apparaîtra ici.",
+    "unhide": "Réafficher",
+    "unhideFailed": "Impossible de réafficher ce titre"
+  },
+  "activity": {
+    "title": "Activité",
+    "description": "Ce que vous avez lu, regardé et écouté, et vos connexions récentes.",
+    "recent": "Activité récente",
+    "tiles": {
+      "listened": "Temps d'écoute",
+      "pagesRead": "Pages lues",
+      "finished": "Terminés",
+      "inProgress": "En cours"
+    }
+  },
+  "apps": {
+    "title": "Applis et clés d'API",
+    "description": "Utilisez Plinthio depuis des applis de lecture, des scripts et des tableaux de bord. Chacun se connecte avec une clé d'API créée ici.",
+    "reading": {
+      "title": "Applis de lecture",
+      "desc": "Lisez vos BD, mangas, PDF et livres dans d'autres applis. Connectez-vous avec votre nom d'utilisateur ({username}) et une clé d'API comme mot de passe. Créez une clé par appli, pour pouvoir en déconnecter une en supprimant sa clé.",
+      "address": "Adresse pour {app}",
+      "mihon": "Installez l'extension Komga, ouvrez ses paramètres et saisissez cette adresse, votre nom d'utilisateur et une clé d'API comme mot de passe. Ensuite, dans Paramètres → Suivi de Mihon, activez Komga pour que ce que vous lisez dans Mihon soit marqué comme lu ici.",
+      "koreader": "Ouvrez un livre, puis Outils → Synchronisation de la progression → Serveur de synchronisation personnalisé : saisissez cette adresse. Choisissez Connexion (et non Inscription) avec votre nom d'utilisateur et une clé d'API comme mot de passe. Votre position dans les PDF et les BD se synchronise dans les deux sens ; les positions EPUB se synchronisent entre appareils KOReader, et Plinthio indique où vous en êtes. Les clés créées avant Plinthio 1.0 ne fonctionnent pas ici — créez-en une nouvelle.",
+      "opdsName": "Lecteurs OPDS (Chunky, Panels, KyBook, Moon+ Reader)",
+      "opds": "Ajoutez cette adresse comme catalogue OPDS, avec votre nom d'utilisateur et une clé d'API comme mot de passe."
+    },
+    "keys": {
+      "title": "Clés d'API",
+      "desc": "Une clé agit en votre nom. Envoyez-la dans l'en-tête {header} ou utilisez-la comme mot de passe dans une appli.",
+      "name": "Nom de la clé",
+      "namePlaceholder": "À quoi elle sert, par ex. Mihon sur mon téléphone",
+      "make": "Créer une clé",
+      "makeFailed": "Impossible de créer une clé",
+      "copyNow": "Copiez votre nouvelle clé maintenant. Elle ne sera plus affichée.",
+      "copyKey": "Copier la clé",
+      "empty": "Aucune clé pour le moment.",
+      "made": "créée le {date}",
+      "revokeNamed": "Révoquer {name}",
+      "revokeKey": "Révoquer la clé",
+      "revokeTitle": "Révoquer la clé d'API",
+      "revokeMessage": "Révoquer « {name} » ? Tout ce qui l'utilise est déconnecté immédiatement.",
+      "revoke": "Révoquer",
+      "revokeFailed": "Impossible de révoquer cette clé"
+    }
+  }
+}

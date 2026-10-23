@@ -1,0 +1,43 @@
+{
+  "live": "ライブプレビュー",
+  "views": {
+    "shelf": "棚",
+    "title": "作品",
+    "login": "サインイン",
+    "pause": "一時停止"
+  },
+  "titles": {
+    "other": "{count} 作品以上"
+  },
+  "yourLibrary": "ライブラリ",
+  "continueWatching": "続きを観る",
+  "runtime": "{hours}時間{minutes}分",
+  "yourRating": "あなたの評価",
+  "ratingsHidden": "評価は非表示です",
+  "watchTogether": "一緒に観る",
+  "collection": "コレクションの作品",
+  "request": "リクエスト",
+  "sample": {
+    "tagline": "届くまでに一生かかるメッセージもある。",
+    "description": "離島の灯台守の女性が瓶に入った手紙を見つけ、置き去りにしてきた人生へと引き戻されていく。"
+  },
+  "captions": {
+    "shelf": "大画面でのホームの棚：ナビゲーションは{layout}、幅は{width}、アクセントカラーは{accent}です。",
+    "title": "上の評価、ウォッチパーティー、コレクションの設定を反映した映画ページです。",
+    "login": "サーバー名とお知らせが表示されるサインイン画面です。",
+    "pause": {
+      "simple": "シンプル：画面を覆うものはありません。ほかのスタイルを選ぶとここに表示されます。",
+      "details": "詳細：一時停止して数秒後に表示されます。スタイルにカーソルを合わせると比較できます。",
+      "cinematic": "シネマティック：キーが設定されていれば、キャストの写真や情報を TMDB から取得します。",
+      "bedtime": "おやすみ：暗めの時計と終了時刻を表示します。"
+    }
+  },
+  "layouts": {
+    "sidebar": "サイドバー",
+    "topnav": "上部"
+  },
+  "widths": {
+    "contained": "中央寄せ",
+    "full": "全幅"
+  }
+}

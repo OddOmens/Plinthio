@@ -1,0 +1,189 @@
+{
+  "percent": "{percent}%",
+  "pageN": "Page {page}",
+  "closeBook": "Close book",
+  "opening": "Opening book…",
+  "couldNotOpen": "This book couldn't be opened.",
+  "notebookButton": "Contents, bookmarks and highlights",
+  "notebookTooltip": "Contents & notebook",
+  "searchButton": "Search in book",
+  "searchTooltip": "Search (Ctrl+F)",
+  "displaySettings": "Display settings",
+  "position": "Position in book",
+  "positionMeasuring": "Position in book (still measuring the book)",
+  "progressShowing": "Showing: {option}. Tap to change.",
+  "progress": {
+    "lastPageInChapter": "Last page in chapter",
+    "pagesLeftInChapter": {
+      "one": "{count} page left in chapter",
+      "other": "{count} pages left in chapter"
+    },
+    "location": "Loc {current} of {total}"
+  },
+  "copyFailed": "Couldn't copy here",
+  "bookmark": {
+    "label": "Bookmark",
+    "bookmarks": "Bookmarks",
+    "thisPage": "Bookmark this page",
+    "removeFromPage": "Remove bookmark from this page",
+    "remove": "Remove bookmark",
+    "delete": "Delete bookmark",
+    "deleteNamed": "Delete bookmark {title}",
+    "close": "Close bookmarks",
+    "added": "Page bookmarked",
+    "percentThrough": "{percent}% through",
+    "noneYet": "No bookmarks yet.",
+    "noneYetRibbon": "No bookmarks yet. Tap the ribbon at the top right to bookmark a page.",
+    "couldNotSave": "Couldn't save the bookmark",
+    "couldNotRemove": "Couldn't remove the bookmark"
+  },
+  "highlight": {
+    "toolbar": "Highlight",
+    "edit": "Edit highlight",
+    "inColor": "Highlight {color}",
+    "recolor": "Make it {color}",
+    "onlyColor": "Only {color} highlights",
+    "withNote": "Highlight and add a note",
+    "remove": "Remove highlight",
+    "noneYet": "No highlights yet. Select some text to highlight it in a colour, or add a note.",
+    "noneInColor": "No highlights in this colour.",
+    "couldNotSave": "Couldn't save the highlight",
+    "couldNotRecolor": "Couldn't change the colour",
+    "couldNotRemove": "Couldn't remove the highlight"
+  },
+  "note": {
+    "title": "Note",
+    "close": "Close note",
+    "add": "Add a note",
+    "edit": "Edit note",
+    "placeholder": "Your note…",
+    "save": "Save note",
+    "couldNotSave": "Couldn't save the note"
+  },
+  "display": {
+    "title": "Display",
+    "close": "Close display",
+    "pageColour": "Page colour",
+    "themePage": "{theme} page",
+    "font": "Font",
+    "textSize": "Text size",
+    "smaller": "Smaller text",
+    "larger": "Larger text",
+    "lineSpacing": "Line spacing",
+    "margins": "Margins",
+    "alignment": "Alignment",
+    "layout": "Layout",
+    "pages": "Pages",
+    "scroll": "Scroll",
+    "twoOnWide": "Two on wide screens",
+    "alwaysOne": "Always one",
+    "cornerShows": "Bottom corner shows",
+    "appliesEverywhere": "Applies to every book you read, on all your devices."
+  },
+  "notebook": {
+    "title": "Notebook",
+    "close": "Close notebook",
+    "contents": "Contents",
+    "highlights": "Highlights",
+    "noContents": "This book has no table of contents."
+  },
+  "search": {
+    "close": "Close search",
+    "placeholder": "Search this book…",
+    "find": "Find",
+    "matches": {
+      "one": "{count} match",
+      "other": "{count} matches"
+    },
+    "matchesCapped": "{count}+ matches",
+    "noMatches": "No matches"
+  },
+  "themes": {
+    "auto": "Auto",
+    "white": "White",
+    "sepia": "Sepia",
+    "green": "Green",
+    "gray": "Gray",
+    "black": "Black"
+  },
+  "fonts": {
+    "publisher": "Original",
+    "serif": "Serif",
+    "sans": "Sans",
+    "readable": "Readable",
+    "mono": "Mono"
+  },
+  "lineHeights": {
+    "compact": "Compact",
+    "normal": "Normal",
+    "loose": "Loose"
+  },
+  "margins": {
+    "narrow": "Narrow",
+    "normal": "Normal",
+    "wide": "Wide"
+  },
+  "align": {
+    "publisher": "Original",
+    "left": "Left",
+    "justify": "Justified"
+  },
+  "progressOptions": {
+    "percent": "Percent of book",
+    "chapter": "Pages left in chapter",
+    "location": "Location",
+    "none": "Nothing"
+  },
+  "highlightColors": {
+    "yellow": "yellow",
+    "green": "green",
+    "blue": "blue",
+    "pink": "pink",
+    "orange": "orange"
+  },
+  "manga": {
+    "backToShelf": "Back to shelf",
+    "loadingPages": "Loading pages...",
+    "pageOf": "Page {page} of {total}",
+    "pagesOf": "Pages {from}–{to} of {total}",
+    "singlePageView": "Single Page view",
+    "onePage": "1-Page",
+    "spreadView": "2-Page Spread view",
+    "twoPage": "2-Page",
+    "fadeTransition": "Fade page transition",
+    "fade": "Fade",
+    "flipTransition": "Realistic page-flip transition",
+    "flip": "Flip",
+    "modes": {
+      "rtl": { "short": "RTL", "label": "Right to Left (Japanese Manga)" },
+      "ltr": { "short": "LTR", "label": "Left to Right (Comics)" },
+      "webtoon": { "short": "Scroll", "label": "Continuous Vertical Scroll (Webtoon)" }
+    },
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "volumeComplete": "Volume Complete!",
+    "nextTitle": "Next: {title}",
+    "nextVolume": "Next Vol",
+    "pageBookmarks": "Page Bookmarks",
+    "bookmarkPage": "Bookmark page",
+    "optionalNote": "Optional note...",
+    "couldNotSaveBookmark": "Failed to save bookmark"
+  },
+  "bookmarksModal": {
+    "title": "Bookmarks: {title}",
+    "newBookmark": "New Bookmark",
+    "timestampHint": "Timestamp (hh:mm:ss or seconds)",
+    "pageNumber": "Page Number",
+    "timestampPlaceholder": "e.g. 01:15:30 or 4500",
+    "pagePlaceholder": "e.g. 42",
+    "titlePlaceholder": "Title / Label (optional)",
+    "notesPlaceholder": "Add notes, quotes, or thoughts (optional)...",
+    "add": "Add Bookmark",
+    "loading": "Loading bookmarks...",
+    "empty": "No bookmarks saved yet. Use the form above to bookmark a position or page.",
+    "jumpTooltip": "Jump to position",
+    "jump": "Jump",
+    "couldNotCreate": "Failed to create bookmark",
+    "couldNotDelete": "Failed to delete bookmark"
+  }
+}

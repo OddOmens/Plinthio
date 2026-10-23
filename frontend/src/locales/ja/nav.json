@@ -1,0 +1,43 @@
+{
+  "lists": "リスト",
+  "searchLibrary": "ライブラリを検索...",
+  "searchEverything": "タイトル、著者、シリーズを検索...",
+  "clearSearch": "検索をクリア",
+  "openMenu": "メニューを開く",
+  "closeMenu": "メニューを閉じる",
+  "backToShelves": "棚に戻る",
+  "account": {
+    "menuTitle": "アカウントメニュー（{name}）",
+    "menuLabel": "{name}のアカウントメニュー",
+    "someone": "ユーザー",
+    "avatar": "アバター",
+    "expires": "アカウントの有効期限：{date}",
+    "expired": "期限切れ",
+    "hoursLeft": "残り{count}時間",
+    "daysLeft": "残り{count}日"
+  },
+  "roles": {
+    "admin": "管理者",
+    "editor": "編集者",
+    "viewer": "閲覧者"
+  },
+  "menu": {
+    "downloads": "ダウンロード",
+    "requests": "リクエスト",
+    "docs": "ドキュメント",
+    "reportProblem": "問題を報告",
+    "lightMode": "ライトモード",
+    "darkMode": "ダークモード",
+    "logOut": "ログアウト"
+  },
+  "update": {
+    "available": "{release}が利用可能です",
+    "current": "— 現在のバージョンは{version}です。",
+    "whatsNew": "新機能",
+    "howToUpdate": "アップデート方法",
+    "dismissLabel": "{version}のアップデート通知を閉じる",
+    "dismissTitle": "次のバージョンまで表示しない",
+    "where": "Plinthioを実行しているマシンの、{file}があるフォルダで：",
+    "backup": "新しいバージョンが起動する前に、データベースは自動的に{folder}にバックアップされます。"
+  }
+}

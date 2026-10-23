@@ -1,0 +1,89 @@
+{
+  "section": {
+    "title": "Wygląd",
+    "description": "Jak Plinthio wygląda dla ciebie. Zmiany widać w podglądzie i zapisują się od razu, tylko na twoim koncie.",
+    "locked": "Wygląd Plinthio na tym serwerze ustala administrator, więc nie możesz go tu zmienić. Podgląd pokazuje to, co widzą wszyscy."
+  },
+  "language": {
+    "auto": "Automatycznie",
+    "desc": "Język, w którym Plinthio do ciebie mówi. Automatycznie oznacza język przeglądarki."
+  },
+  "cards": {
+    "accent": {
+      "title": "Kolor akcentu",
+      "desc": "Twój kolor wyróżnień na przyciskach, plakietkach i bieżącej karcie."
+    },
+    "layout": {
+      "title": "Nawigacja",
+      "desc": "Gdzie znajduje się główna nawigacja."
+    },
+    "pageWidth": {
+      "title": "Szerokość strony",
+      "desc": "Jak szerokie są strony na dużym ekranie. Pełna szerokość mieści więcej plakatów w rzędzie."
+    },
+    "pauseScreen": {
+      "title": "Ekran pauzy",
+      "desc": "Co pojawia się po kilku sekundach pauzy w filmie lub odcinku."
+    }
+  },
+  "accents": {
+    "zinc": "Cynk",
+    "slate": "Łupek",
+    "red": "Czerwony",
+    "orange": "Pomarańczowy",
+    "amber": "Bursztynowy",
+    "lime": "Limonkowy",
+    "emerald": "Szmaragdowy",
+    "teal": "Morski",
+    "sky": "Błękitny",
+    "blue": "Niebieski",
+    "indigo": "Indygo",
+    "violet": "Fiołkowy",
+    "purple": "Fioletowy",
+    "fuchsia": "Fuksja",
+    "pink": "Różowy",
+    "rose": "Malinowy"
+  },
+  "layouts": {
+    "topnav": {
+      "label": "Górna nawigacja",
+      "desc": "Klasyczny poziomy pasek u góry"
+    },
+    "sidebar": {
+      "label": "Pasek boczny",
+      "desc": "Pionowa nawigacja po lewej"
+    }
+  },
+  "pageWidths": {
+    "full": {
+      "label": "Pełna szerokość",
+      "desc": "Cały ekran, więcej plakatów"
+    },
+    "contained": {
+      "label": "Ograniczona",
+      "desc": "Wyśrodkowana, maks. 1440px szerokości"
+    }
+  },
+  "pauseScreens": {
+    "simple": {
+      "label": "Prosty",
+      "desc": "Tylko sterowanie odtwarzaczem — nic nie zasłania obrazu."
+    },
+    "details": {
+      "label": "Szczegóły",
+      "desc": "Plakat, tytuł, hasło, opis, reżyser i obsada oraz godzina zakończenia."
+    },
+    "cinematic": {
+      "label": "Kinowy",
+      "desc": "Obraz przygasa za pełnoekranową kartą tytułową ze zdjęciami obsady i faktami z TMDB — wpływy z kin, tytuł oryginalny, słowa kluczowe."
+    },
+    "bedtime": {
+      "label": "Na dobranoc",
+      "desc": "Przygaszony zegar z godziną zakończenia, a w serialach także końca reszty sezonu. Łagodny dla oczu w ciemnym pokoju."
+    }
+  },
+  "defaultLanguage": {
+    "title": "Domyślny język",
+    "desc": "Dla osób, które nie wybrały własnego. Automatycznie oznacza język przeglądarki danej osoby; każdy może wybrać inny w Ustawieniach."
+  }
+}

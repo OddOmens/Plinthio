@@ -1,0 +1,202 @@
+{
+  "percent": "{percent}%",
+  "pageN": "Strona {page}",
+  "closeBook": "Zamknij książkę",
+  "opening": "Otwieranie książki…",
+  "couldNotOpen": "Nie udało się otworzyć tej książki.",
+  "notebookButton": "Spis treści, zakładki i zakreślenia",
+  "notebookTooltip": "Spis treści i notatnik",
+  "searchButton": "Szukaj w książce",
+  "searchTooltip": "Szukaj (Ctrl+F)",
+  "displaySettings": "Ustawienia wyświetlania",
+  "position": "Pozycja w książce",
+  "positionMeasuring": "Pozycja w książce (książka jest jeszcze mierzona)",
+  "progressShowing": "Wyświetlane: {option}. Stuknij, aby zmienić.",
+  "progress": {
+    "lastPageInChapter": "Ostatnia strona rozdziału",
+    "pagesLeftInChapter": {
+      "one": "Do końca rozdziału: {count} strona",
+      "few": "Do końca rozdziału: {count} strony",
+      "many": "Do końca rozdziału: {count} stron",
+      "other": "Do końca rozdziału: {count} strony"
+    },
+    "location": "Poz. {current} z {total}"
+  },
+  "copyFailed": "Nie udało się tu skopiować",
+  "bookmark": {
+    "label": "Zakładka",
+    "bookmarks": "Zakładki",
+    "thisPage": "Dodaj zakładkę na tej stronie",
+    "removeFromPage": "Usuń zakładkę z tej strony",
+    "remove": "Usuń zakładkę",
+    "delete": "Usuń zakładkę",
+    "deleteNamed": "Usuń zakładkę {title}",
+    "close": "Zamknij zakładki",
+    "added": "Dodano zakładkę",
+    "percentThrough": "{percent}% książki",
+    "noneYet": "Brak zakładek.",
+    "noneYetRibbon": "Brak zakładek. Stuknij wstążkę w prawym górnym rogu, aby dodać zakładkę na stronie.",
+    "couldNotSave": "Nie udało się zapisać zakładki",
+    "couldNotRemove": "Nie udało się usunąć zakładki"
+  },
+  "highlight": {
+    "toolbar": "Zakreśl",
+    "edit": "Edytuj zakreślenie",
+    "inColor": "Zakreśl kolorem: {color}",
+    "recolor": "Zmień kolor na: {color}",
+    "onlyColor": "Tylko zakreślenia: {color}",
+    "withNote": "Zakreśl i dodaj notatkę",
+    "remove": "Usuń zakreślenie",
+    "noneYet": "Brak zakreśleń. Zaznacz tekst, aby zakreślić go kolorem lub dodać notatkę.",
+    "noneInColor": "Brak zakreśleń w tym kolorze.",
+    "couldNotSave": "Nie udało się zapisać zakreślenia",
+    "couldNotRecolor": "Nie udało się zmienić koloru",
+    "couldNotRemove": "Nie udało się usunąć zakreślenia"
+  },
+  "note": {
+    "title": "Notatka",
+    "close": "Zamknij notatkę",
+    "add": "Dodaj notatkę",
+    "edit": "Edytuj notatkę",
+    "placeholder": "Twoja notatka…",
+    "save": "Zapisz notatkę",
+    "couldNotSave": "Nie udało się zapisać notatki"
+  },
+  "display": {
+    "title": "Wyświetlanie",
+    "close": "Zamknij wyświetlanie",
+    "pageColour": "Kolor strony",
+    "themePage": "Strona: {theme}",
+    "font": "Czcionka",
+    "textSize": "Rozmiar tekstu",
+    "smaller": "Mniejszy tekst",
+    "larger": "Większy tekst",
+    "lineSpacing": "Odstęp między wierszami",
+    "margins": "Marginesy",
+    "alignment": "Wyrównanie",
+    "layout": "Układ",
+    "pages": "Strony",
+    "scroll": "Przewijanie",
+    "twoOnWide": "Dwie na szerokich ekranach",
+    "alwaysOne": "Zawsze jedna",
+    "cornerShows": "W dolnym rogu",
+    "appliesEverywhere": "Dotyczy każdej czytanej książki, na wszystkich twoich urządzeniach."
+  },
+  "notebook": {
+    "title": "Notatnik",
+    "close": "Zamknij notatnik",
+    "contents": "Spis treści",
+    "highlights": "Zakreślenia",
+    "noContents": "Ta książka nie ma spisu treści."
+  },
+  "search": {
+    "close": "Zamknij wyszukiwanie",
+    "placeholder": "Szukaj w tej książce…",
+    "find": "Znajdź",
+    "matches": {
+      "one": "{count} wynik",
+      "few": "{count} wyniki",
+      "many": "{count} wyników",
+      "other": "{count} wyniku"
+    },
+    "matchesCapped": "{count}+ wyników",
+    "noMatches": "Brak wyników"
+  },
+  "themes": {
+    "auto": "Auto",
+    "white": "Biały",
+    "sepia": "Sepia",
+    "green": "Zielony",
+    "gray": "Szary",
+    "black": "Czarny"
+  },
+  "fonts": {
+    "publisher": "Oryginalna",
+    "serif": "Szeryfowa",
+    "sans": "Bezszeryfowa",
+    "readable": "Czytelna",
+    "mono": "Mono"
+  },
+  "lineHeights": {
+    "compact": "Zwarty",
+    "normal": "Normalny",
+    "loose": "Luźny"
+  },
+  "margins": {
+    "narrow": "Wąskie",
+    "normal": "Normalne",
+    "wide": "Szerokie"
+  },
+  "align": {
+    "publisher": "Oryginalne",
+    "left": "Do lewej",
+    "justify": "Wyjustowane"
+  },
+  "progressOptions": {
+    "percent": "Procent książki",
+    "chapter": "Strony do końca rozdziału",
+    "location": "Pozycja",
+    "none": "Nic"
+  },
+  "highlightColors": {
+    "yellow": "żółty",
+    "green": "zielony",
+    "blue": "niebieski",
+    "pink": "różowy",
+    "orange": "pomarańczowy"
+  },
+  "manga": {
+    "backToShelf": "Wróć do półki",
+    "loadingPages": "Wczytywanie stron...",
+    "pageOf": "Strona {page} z {total}",
+    "pagesOf": "Strony {from}–{to} z {total}",
+    "singlePageView": "Widok pojedynczej strony",
+    "onePage": "1 strona",
+    "spreadView": "Widok rozkładówki",
+    "twoPage": "2 strony",
+    "fadeTransition": "Przejście z zanikaniem",
+    "fade": "Zanikanie",
+    "flipTransition": "Realistyczne przewracanie stron",
+    "flip": "Przewracanie",
+    "modes": {
+      "rtl": {
+        "short": "RTL",
+        "label": "Od prawej do lewej (manga japońska)"
+      },
+      "ltr": {
+        "short": "LTR",
+        "label": "Od lewej do prawej (komiksy)"
+      },
+      "webtoon": {
+        "short": "Przewijanie",
+        "label": "Ciągłe przewijanie w pionie (webtoon)"
+      }
+    },
+    "previousPage": "Poprzednia strona",
+    "nextPage": "Następna strona",
+    "volumeComplete": "Tom ukończony!",
+    "nextTitle": "Dalej: {title}",
+    "nextVolume": "Następny tom",
+    "pageBookmarks": "Zakładki stron",
+    "bookmarkPage": "Dodaj zakładkę",
+    "optionalNote": "Opcjonalna notatka...",
+    "couldNotSaveBookmark": "Nie udało się zapisać zakładki"
+  },
+  "bookmarksModal": {
+    "title": "Zakładki: {title}",
+    "newBookmark": "Nowa zakładka",
+    "timestampHint": "Czas (hh:mm:ss lub sekundy)",
+    "pageNumber": "Numer strony",
+    "timestampPlaceholder": "np. 01:15:30 lub 4500",
+    "pagePlaceholder": "np. 42",
+    "titlePlaceholder": "Tytuł / etykieta (opcjonalnie)",
+    "notesPlaceholder": "Dodaj notatki, cytaty lub przemyślenia (opcjonalnie)...",
+    "add": "Dodaj zakładkę",
+    "loading": "Wczytywanie zakładek...",
+    "empty": "Brak zapisanych zakładek. Użyj formularza powyżej, aby dodać zakładkę dla pozycji lub strony.",
+    "jumpTooltip": "Przejdź do pozycji",
+    "jump": "Przejdź",
+    "couldNotCreate": "Nie udało się utworzyć zakładki",
+    "couldNotDelete": "Nie udało się usunąć zakładki"
+  }
+}

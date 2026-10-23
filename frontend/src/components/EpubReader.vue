@@ -11,26 +11,26 @@
       class="absolute top-0 inset-x-0 z-30 h-[calc(3.25rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] flex items-center gap-1 bg-background border-b border-border transition-opacity duration-200"
       :class="chromeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'"
     >
-      <button aria-label="Close book" title="Close book" @click="closeReader" class="reader-btn">
+      <button :aria-label="$t('reader.closeBook')" :title="$t('reader.closeBook')" @click="closeReader" class="reader-btn">
         <ArrowLeft class="w-5 h-5" />
       </button>
       <div class="min-w-0 flex-1 px-1">
         <h2 class="text-sm font-semibold truncate leading-tight">{{ item.title }}</h2>
         <p v-if="item.author" class="text-xs text-muted-foreground truncate leading-tight">{{ item.author }}</p>
       </div>
-      <button aria-label="Contents, bookmarks and highlights" title="Contents & notebook" @click="togglePanel('notebook')" :class="['reader-btn', openPanel === 'notebook' ? 'bg-muted' : '']">
+      <button :aria-label="$t('reader.notebookButton')" :title="$t('reader.notebookTooltip')" @click="togglePanel('notebook')" :class="['reader-btn', openPanel === 'notebook' ? 'bg-muted' : '']">
         <BookMarked class="w-5 h-5" />
       </button>
-      <button aria-label="Search in book" title="Search (Ctrl+F)" @click="togglePanel('search')" :class="['reader-btn', openPanel === 'search' ? 'bg-muted' : '']">
+      <button :aria-label="$t('reader.searchButton')" :title="$t('reader.searchTooltip')" @click="togglePanel('search')" :class="['reader-btn', openPanel === 'search' ? 'bg-muted' : '']">
         <Search class="w-5 h-5" />
       </button>
-      <button aria-label="Display settings" title="Display settings" @click="togglePanel('display')" :class="['reader-btn', openPanel === 'display' ? 'bg-muted' : '']">
+      <button :aria-label="$t('reader.displaySettings')" :title="$t('reader.displaySettings')" @click="togglePanel('display')" :class="['reader-btn', openPanel === 'display' ? 'bg-muted' : '']">
         <span class="text-[15px] font-semibold leading-none tracking-tight" aria-hidden="true">Aa</span>
       </button>
       <button
-        :aria-label="pageBookmark ? 'Remove bookmark from this page' : 'Bookmark this page'"
+        :aria-label="pageBookmark ? $t('reader.bookmark.removeFromPage') : $t('reader.bookmark.thisPage')"
         :aria-pressed="String(!!pageBookmark)"
-        :title="pageBookmark ? 'Remove bookmark' : 'Bookmark this page'"
+        :title="pageBookmark ? $t('reader.bookmark.remove') : $t('reader.bookmark.thisPage')"
         @click="togglePageBookmark"
         class="reader-btn"
       >
@@ -45,7 +45,7 @@
       <div v-if="loading" class="absolute inset-0 z-10 flex items-center justify-center bg-background">
         <div class="flex flex-col items-center gap-3 text-muted-foreground">
           <Loader2 class="w-7 h-7 animate-spin" />
-          <span class="text-sm">Opening book…</span>
+          <span class="text-sm">{{ $t('reader.opening') }}</span>
         </div>
       </div>
       <div v-if="loadError" class="absolute inset-0 z-10 flex items-center justify-center p-6 text-center text-sm text-muted-foreground">
@@ -68,7 +68,7 @@
       :class="chromeVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'"
     >
       <div class="flex items-center gap-3">
-        <span class="text-xs tabular-nums text-muted-foreground w-10 text-right">{{ Math.round(scrubValue) }}%</span>
+        <span class="text-xs tabular-nums text-muted-foreground w-10 text-right">{{ $t('reader.percent', { percent: Math.round(scrubValue) }) }}</span>
         <input
           type="range" min="0" max="100" step="0.1"
           :value="scrubValue"
@@ -76,7 +76,7 @@
           @input="scrubValue = Number($event.target.value)"
           @change="goToPercent(Number($event.target.value))"
           class="flex-1 accent-primary disabled:opacity-40"
-          :aria-label="locationsReady ? 'Position in book' : 'Position in book (still measuring the book)'"
+          :aria-label="locationsReady ? $t('reader.position') : $t('reader.positionMeasuring')"
         />
         <span class="text-xs text-muted-foreground w-10">{{ locationsReady ? '' : '…' }}</span>
       </div>
@@ -91,7 +91,7 @@
         type="button"
         @click="cycleProgressDisplay"
         class="flex-shrink-0 tabular-nums h-full px-1 hover:text-foreground transition"
-        :title="`Showing: ${progressOptionLabel}. Tap to change.`"
+        :title="$t('reader.progressShowing', { option: progressOptionLabel })"
       >{{ progressLabel || '·' }}</button>
     </footer>
 
@@ -101,7 +101,7 @@
       class="fixed z-[60] flex items-center gap-1 rounded-2xl border border-border bg-popover text-popover-foreground shadow-2xl p-1.5"
       :style="popupStyle(selection)"
       role="toolbar"
-      aria-label="Highlight"
+      :aria-label="$t('reader.highlight.toolbar')"
       @mousedown.prevent
     >
       <button
@@ -110,16 +110,16 @@
         type="button"
         @click="createHighlight(c.id)"
         class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition"
-        :aria-label="`Highlight ${c.label.toLowerCase()}`"
-        :title="`Highlight ${c.label.toLowerCase()}`"
+        :aria-label="$t('reader.highlight.inColor', { color: c.label })"
+        :title="$t('reader.highlight.inColor', { color: c.label })"
       >
         <span class="w-6 h-6 rounded-full ring-1 ring-black/10" :style="{ background: c.fill }" />
       </button>
       <span class="w-px h-6 bg-border mx-0.5" aria-hidden="true" />
-      <button type="button" @click="createHighlight('yellow', true)" class="popup-btn" aria-label="Highlight and add a note" title="Add a note">
+      <button type="button" @click="createHighlight('yellow', true)" class="popup-btn" :aria-label="$t('reader.highlight.withNote')" :title="$t('reader.note.add')">
         <StickyNote class="w-4 h-4" />
       </button>
-      <button type="button" @click="copyText(selection.text)" class="popup-btn" aria-label="Copy" title="Copy">
+      <button type="button" @click="copyText(selection.text)" class="popup-btn" :aria-label="$t('common.copy')" :title="$t('common.copy')">
         <Copy class="w-4 h-4" />
       </button>
     </div>
@@ -130,7 +130,7 @@
       class="fixed z-[60] flex items-center gap-1 rounded-2xl border border-border bg-popover text-popover-foreground shadow-2xl p-1.5"
       :style="popupStyle(activeHighlight)"
       role="toolbar"
-      aria-label="Edit highlight"
+      :aria-label="$t('reader.highlight.edit')"
     >
       <button
         v-for="c in HIGHLIGHT_COLORS"
@@ -138,7 +138,7 @@
         type="button"
         @click="recolorHighlight(activeHighlight.hl, c.id)"
         class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition"
-        :aria-label="`Make it ${c.label.toLowerCase()}`"
+        :aria-label="$t('reader.highlight.recolor', { color: c.label })"
         :aria-pressed="String(activeHighlight.hl.color === c.id)"
       >
         <span class="w-6 h-6 rounded-full ring-1 ring-black/10 flex items-center justify-center" :style="{ background: c.fill }">
@@ -146,13 +146,13 @@
         </span>
       </button>
       <span class="w-px h-6 bg-border mx-0.5" aria-hidden="true" />
-      <button type="button" @click="openNoteEditor(activeHighlight.hl)" class="popup-btn" :aria-label="activeHighlight.hl.note ? 'Edit note' : 'Add a note'" :title="activeHighlight.hl.note ? 'Edit note' : 'Add a note'">
+      <button type="button" @click="openNoteEditor(activeHighlight.hl)" class="popup-btn" :aria-label="activeHighlight.hl.note ? $t('reader.note.edit') : $t('reader.note.add')" :title="activeHighlight.hl.note ? $t('reader.note.edit') : $t('reader.note.add')">
         <StickyNote class="w-4 h-4" />
       </button>
-      <button type="button" @click="copyText(activeHighlight.hl.text)" class="popup-btn" aria-label="Copy" title="Copy">
+      <button type="button" @click="copyText(activeHighlight.hl.text)" class="popup-btn" :aria-label="$t('common.copy')" :title="$t('common.copy')">
         <Copy class="w-4 h-4" />
       </button>
-      <button type="button" @click="deleteHighlight(activeHighlight.hl)" class="popup-btn hover:!text-destructive" aria-label="Remove highlight" title="Remove highlight">
+      <button type="button" @click="deleteHighlight(activeHighlight.hl)" class="popup-btn hover:!text-destructive" :aria-label="$t('reader.highlight.remove')" :title="$t('reader.highlight.remove')">
         <Trash2 class="w-4 h-4" />
       </button>
     </div>
@@ -165,10 +165,10 @@
     </Transition>
 
     <!-- Display settings ("Aa") -->
-    <ReaderPanel :open="openPanel === 'display'" title="Display" @close="openPanel = null">
+    <ReaderPanel :open="openPanel === 'display'" :title="$t('reader.display.title')" :close-label="$t('reader.display.close')" @close="openPanel = null">
       <div class="flex flex-col gap-5 text-sm">
         <section class="flex flex-col gap-2">
-          <h3 class="reader-label">Page colour</h3>
+          <h3 class="reader-label">{{ $t('reader.display.pageColour') }}</h3>
           <div class="grid grid-cols-6 gap-2">
             <button
               v-for="t in THEME_OPTIONS"
@@ -176,7 +176,7 @@
               type="button"
               @click="prefs.theme = t.id"
               :aria-pressed="String(prefs.theme === t.id)"
-              :aria-label="`${t.label} page`"
+              :aria-label="$t('reader.display.themePage', { theme: t.label })"
               class="flex flex-col items-center gap-1 text-[11px] text-muted-foreground"
             >
               <span
@@ -190,7 +190,7 @@
         </section>
 
         <section class="flex flex-col gap-2">
-          <h3 class="reader-label">Font</h3>
+          <h3 class="reader-label">{{ $t('reader.display.font') }}</h3>
           <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
             <button
               v-for="f in FONT_OPTIONS"
@@ -206,31 +206,31 @@
 
         <section class="flex flex-col gap-2">
           <div class="flex items-center justify-between">
-            <h3 class="reader-label">Text size</h3>
+            <h3 class="reader-label">{{ $t('reader.display.textSize') }}</h3>
             <span class="text-xs tabular-nums text-muted-foreground">{{ prefs.fontSize }}px</span>
           </div>
           <div class="flex items-center gap-3">
-            <button type="button" aria-label="Smaller text" @click="prefs.fontSize = Math.max(FONT_SIZE_MIN, prefs.fontSize - 1)" class="reader-step text-xs">A</button>
-            <input type="range" :min="FONT_SIZE_MIN" :max="FONT_SIZE_MAX" step="1" v-model.number="prefs.fontSize" class="flex-1 accent-primary" aria-label="Text size" />
-            <button type="button" aria-label="Larger text" @click="prefs.fontSize = Math.min(FONT_SIZE_MAX, prefs.fontSize + 1)" class="reader-step text-lg">A</button>
+            <button type="button" :aria-label="$t('reader.display.smaller')" @click="prefs.fontSize = Math.max(FONT_SIZE_MIN, prefs.fontSize - 1)" class="reader-step text-xs">A</button>
+            <input type="range" :min="FONT_SIZE_MIN" :max="FONT_SIZE_MAX" step="1" v-model.number="prefs.fontSize" class="flex-1 accent-primary" :aria-label="$t('reader.display.textSize')" />
+            <button type="button" :aria-label="$t('reader.display.larger')" @click="prefs.fontSize = Math.min(FONT_SIZE_MAX, prefs.fontSize + 1)" class="reader-step text-lg">A</button>
           </div>
         </section>
 
         <section class="grid grid-cols-1 gap-4">
           <div class="flex flex-col gap-2">
-            <h3 class="reader-label">Line spacing</h3>
+            <h3 class="reader-label">{{ $t('reader.display.lineSpacing') }}</h3>
             <div class="grid grid-cols-3 gap-1.5">
               <button v-for="o in LINE_HEIGHT_OPTIONS" :key="o.id" type="button" @click="prefs.lineHeight = o.id" :aria-pressed="String(prefs.lineHeight === o.id)" :class="['reader-choice', prefs.lineHeight === o.id ? 'reader-choice-on' : '']">{{ o.label }}</button>
             </div>
           </div>
           <div class="flex flex-col gap-2">
-            <h3 class="reader-label">Margins</h3>
+            <h3 class="reader-label">{{ $t('reader.display.margins') }}</h3>
             <div class="grid grid-cols-3 gap-1.5">
               <button v-for="o in MARGIN_OPTIONS" :key="o.id" type="button" @click="prefs.margins = o.id" :aria-pressed="String(prefs.margins === o.id)" :class="['reader-choice', prefs.margins === o.id ? 'reader-choice-on' : '']">{{ o.label }}</button>
             </div>
           </div>
           <div class="flex flex-col gap-2">
-            <h3 class="reader-label">Alignment</h3>
+            <h3 class="reader-label">{{ $t('reader.display.alignment') }}</h3>
             <div class="grid grid-cols-3 gap-1.5">
               <button v-for="o in ALIGN_OPTIONS" :key="o.id" type="button" @click="prefs.align = o.id" :aria-pressed="String(prefs.align === o.id)" :class="['reader-choice', prefs.align === o.id ? 'reader-choice-on' : '']">{{ o.label }}</button>
             </div>
@@ -238,41 +238,41 @@
         </section>
 
         <section class="flex flex-col gap-2">
-          <h3 class="reader-label">Layout</h3>
+          <h3 class="reader-label">{{ $t('reader.display.layout') }}</h3>
           <div class="grid grid-cols-2 gap-1.5">
             <button type="button" @click="prefs.layout = 'paged'" :aria-pressed="String(prefs.layout === 'paged')" :class="['reader-choice flex items-center justify-center gap-1.5', prefs.layout === 'paged' ? 'reader-choice-on' : '']">
-              <BookOpen class="w-4 h-4" /> Pages
+              <BookOpen class="w-4 h-4" /> {{ $t('reader.display.pages') }}
             </button>
             <button type="button" @click="prefs.layout = 'scrolled'" :aria-pressed="String(prefs.layout === 'scrolled')" :class="['reader-choice flex items-center justify-center gap-1.5', prefs.layout === 'scrolled' ? 'reader-choice-on' : '']">
-              <ScrollText class="w-4 h-4" /> Scroll
+              <ScrollText class="w-4 h-4" /> {{ $t('reader.display.scroll') }}
             </button>
           </div>
           <div v-if="prefs.layout === 'paged'" class="grid grid-cols-2 gap-1.5">
             <button type="button" @click="prefs.columns = 'auto'" :aria-pressed="String(prefs.columns === 'auto')" :class="['reader-choice flex items-center justify-center gap-1.5', prefs.columns === 'auto' ? 'reader-choice-on' : '']">
-              <Columns2 class="w-4 h-4" /> Two on wide screens
+              <Columns2 class="w-4 h-4" /> {{ $t('reader.display.twoOnWide') }}
             </button>
             <button type="button" @click="prefs.columns = 'single'" :aria-pressed="String(prefs.columns === 'single')" :class="['reader-choice flex items-center justify-center gap-1.5', prefs.columns === 'single' ? 'reader-choice-on' : '']">
-              <Square class="w-4 h-4" /> Always one
+              <Square class="w-4 h-4" /> {{ $t('reader.display.alwaysOne') }}
             </button>
           </div>
         </section>
 
         <section class="flex flex-col gap-2">
-          <h3 class="reader-label">Bottom corner shows</h3>
+          <h3 class="reader-label">{{ $t('reader.display.cornerShows') }}</h3>
           <div class="grid grid-cols-2 gap-1.5">
             <button v-for="o in PROGRESS_OPTIONS" :key="o.id" type="button" @click="prefs.progress = o.id" :aria-pressed="String(prefs.progress === o.id)" :class="['reader-choice', prefs.progress === o.id ? 'reader-choice-on' : '']">{{ o.label }}</button>
           </div>
         </section>
 
         <div class="flex items-center justify-between gap-3 pt-1 border-t border-border">
-          <p class="text-xs text-muted-foreground pt-3">Applies to every book you read, on all your devices.</p>
-          <button type="button" @click="resetPrefs" class="text-xs font-medium text-primary hover:underline pt-3 flex-shrink-0">Reset</button>
+          <p class="text-xs text-muted-foreground pt-3">{{ $t('reader.display.appliesEverywhere') }}</p>
+          <button type="button" @click="resetPrefs" class="text-xs font-medium text-primary hover:underline pt-3 flex-shrink-0">{{ $t('common.reset') }}</button>
         </div>
       </div>
     </ReaderPanel>
 
     <!-- Notebook: contents, bookmarks, highlights -->
-    <ReaderPanel :open="openPanel === 'notebook'" title="Notebook" side="left" @close="openPanel = null">
+    <ReaderPanel :open="openPanel === 'notebook'" :title="$t('reader.notebook.title')" :close-label="$t('reader.notebook.close')" side="left" @close="openPanel = null">
       <template #header>
         <div class="px-4 pb-3 flex-shrink-0">
           <div class="grid grid-cols-3 p-0.5 rounded-lg bg-muted/60 border border-border text-xs" role="tablist">
@@ -302,7 +302,7 @@
             <span class="flex-1 min-w-0 truncate">{{ entry.label }}</span>
           </button>
         </li>
-        <li v-if="!tocEntries.length" class="py-6 text-center text-xs text-muted-foreground">This book has no table of contents.</li>
+        <li v-if="!tocEntries.length" class="py-6 text-center text-xs text-muted-foreground">{{ $t('reader.notebook.noContents') }}</li>
       </ul>
 
       <!-- Bookmarks -->
@@ -313,23 +313,23 @@
           class="mb-2 h-10 rounded-lg border border-dashed border-border text-sm font-medium hover:bg-muted/60 transition flex items-center justify-center gap-2"
         >
           <Bookmark class="w-4 h-4" :class="pageBookmark ? 'fill-primary text-primary' : ''" />
-          {{ pageBookmark ? 'Remove bookmark from this page' : 'Bookmark this page' }}
+          {{ pageBookmark ? $t('reader.bookmark.removeFromPage') : $t('reader.bookmark.thisPage') }}
         </button>
         <div v-for="bm in sortedBookmarks" :key="bm.id" class="group flex items-start gap-2 rounded-lg hover:bg-muted/60 transition">
           <button type="button" @click="goToCfi(bm.cfi)" class="flex-1 min-w-0 text-left px-2 py-2.5 flex items-start gap-2.5">
             <Bookmark class="w-4 h-4 mt-0.5 flex-shrink-0 fill-primary text-primary" />
             <span class="min-w-0">
-              <span class="block text-sm text-foreground truncate">{{ bm.title || 'Bookmark' }}</span>
-              <span class="block text-xs text-muted-foreground tabular-nums">{{ Math.round(bm.position) }}% · {{ formatDate(bm.created_at) }}</span>
+              <span class="block text-sm text-foreground truncate">{{ bm.title || $t('reader.bookmark.label') }}</span>
+              <span class="block text-xs text-muted-foreground tabular-nums">{{ $t('reader.percent', { percent: Math.round(bm.position) }) }} · {{ formatDate(bm.created_at) }}</span>
               <span v-if="bm.notes" class="block text-xs text-muted-foreground mt-0.5 line-clamp-2">{{ bm.notes }}</span>
             </span>
           </button>
-          <button type="button" :aria-label="`Delete bookmark ${bm.title || ''}`" @click="deleteBookmark(bm)" class="w-9 h-9 mt-1 flex-shrink-0 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive transition">
+          <button type="button" :aria-label="$t('reader.bookmark.deleteNamed', { title: bm.title || '' })" @click="deleteBookmark(bm)" class="w-9 h-9 mt-1 flex-shrink-0 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive transition">
             <Trash2 class="w-4 h-4" />
           </button>
         </div>
         <p v-if="!bookmarks.length" class="py-6 text-center text-xs text-muted-foreground">
-          No bookmarks yet. Tap the ribbon at the top right to bookmark a page.
+          {{ $t('reader.bookmark.noneYetRibbon') }}
         </p>
       </div>
 
@@ -341,14 +341,14 @@
             @click="highlightFilter = null"
             :aria-pressed="String(highlightFilter === null)"
             :class="['h-8 px-3 rounded-full border text-xs font-medium transition', highlightFilter === null ? 'bg-foreground text-background border-foreground' : 'border-border text-muted-foreground hover:text-foreground']"
-          >All</button>
+          >{{ $t('common.all') }}</button>
           <button
             v-for="c in HIGHLIGHT_COLORS"
             :key="c.id"
             type="button"
             @click="highlightFilter = highlightFilter === c.id ? null : c.id"
             :aria-pressed="String(highlightFilter === c.id)"
-            :aria-label="`Only ${c.label.toLowerCase()} highlights`"
+            :aria-label="$t('reader.highlight.onlyColor', { color: c.label })"
             :class="['w-8 h-8 rounded-full border flex items-center justify-center transition', highlightFilter === c.id ? 'border-foreground' : 'border-transparent']"
           >
             <span class="w-5 h-5 rounded-full ring-1 ring-black/10" :style="{ background: c.fill }" />
@@ -367,26 +367,26 @@
             </button>
             <div class="flex items-center gap-1 px-2 pb-1.5">
               <span class="flex-1 min-w-0 truncate text-[11px] text-muted-foreground px-1">
-                {{ [hl.chapter, hl.progress != null ? `${Math.round(hl.progress)}%` : null].filter(Boolean).join(' · ') }}
+                {{ [hl.chapter, hl.progress != null ? $t('reader.percent', { percent: Math.round(hl.progress) }) : null].filter(Boolean).join(' · ') }}
               </span>
-              <button type="button" @click="openNoteEditor(hl)" class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition" :aria-label="hl.note ? 'Edit note' : 'Add a note'">
+              <button type="button" @click="openNoteEditor(hl)" class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition" :aria-label="hl.note ? $t('reader.note.edit') : $t('reader.note.add')">
                 <StickyNote class="w-4 h-4" />
               </button>
-              <button type="button" @click="deleteHighlight(hl)" class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-muted transition" aria-label="Remove highlight">
+              <button type="button" @click="deleteHighlight(hl)" class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-muted transition" :aria-label="$t('reader.highlight.remove')">
                 <Trash2 class="w-4 h-4" />
               </button>
             </div>
           </div>
         </article>
         <p v-if="!highlights.length" class="py-6 text-center text-xs text-muted-foreground">
-          No highlights yet. Select some text to highlight it in a colour, or add a note.
+          {{ $t('reader.highlight.noneYet') }}
         </p>
-        <p v-else-if="!filteredHighlights.length" class="py-6 text-center text-xs text-muted-foreground">No highlights in this colour.</p>
+        <p v-else-if="!filteredHighlights.length" class="py-6 text-center text-xs text-muted-foreground">{{ $t('reader.highlight.noneInColor') }}</p>
       </div>
     </ReaderPanel>
 
     <!-- Search -->
-    <ReaderPanel :open="openPanel === 'search'" title="Search" @close="openPanel = null">
+    <ReaderPanel :open="openPanel === 'search'" :title="$t('common.search')" :close-label="$t('reader.search.close')" @close="openPanel = null">
       <form @submit.prevent="runSearch" class="flex items-center gap-2">
         <div class="relative flex-1">
           <Search class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
@@ -394,17 +394,17 @@
             ref="searchInputEl"
             v-model="bookSearch"
             type="search"
-            placeholder="Search this book…"
+            :placeholder="$t('reader.search.placeholder')"
             class="w-full h-10 bg-background border border-border rounded-lg pl-8 pr-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
           />
         </div>
         <button type="submit" :disabled="searching || bookSearch.trim().length < 2" class="h-10 px-3.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50">
           <Loader2 v-if="searching" class="w-3.5 h-3.5 animate-spin" />
-          <span v-else>Find</span>
+          <span v-else>{{ $t('reader.search.find') }}</span>
         </button>
       </form>
       <p v-if="searchDone" class="mt-3 text-[12px] text-muted-foreground">
-        {{ searchResults.length ? `${searchResults.length}${searchResults.length >= SEARCH_LIMIT ? '+' : ''} match${searchResults.length === 1 ? '' : 'es'}` : 'No matches' }}
+        {{ searchSummary }}
       </p>
       <ul class="mt-2 -mx-2 divide-y divide-border/60">
         <li v-for="(result, idx) in searchResults" :key="idx">
@@ -417,7 +417,7 @@
     </ReaderPanel>
 
     <!-- Note on a highlight -->
-    <ReaderPanel :open="!!noteEditor" title="Note" @close="noteEditor = null">
+    <ReaderPanel :open="!!noteEditor" :title="$t('reader.note.title')" :close-label="$t('reader.note.close')" @close="noteEditor = null">
       <template v-if="noteEditor">
         <blockquote class="text-sm text-muted-foreground border-l-4 pl-3 py-0.5 mb-3 line-clamp-4" :style="{ borderColor: highlightFill(noteEditor.hl.color) }">
           {{ noteEditor.hl.text }}
@@ -426,14 +426,14 @@
           ref="noteInputEl"
           v-model="noteEditor.text"
           rows="5"
-          placeholder="Your note…"
+          :placeholder="$t('reader.note.placeholder')"
           class="w-full bg-background border border-border rounded-lg p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 resize-y"
           @keydown.meta.enter="saveNote"
           @keydown.ctrl.enter="saveNote"
         />
         <div class="mt-3 flex justify-end gap-2">
-          <button type="button" @click="noteEditor = null" class="h-10 px-4 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium">Cancel</button>
-          <button type="button" @click="saveNote" class="h-10 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium">Save note</button>
+          <button type="button" @click="noteEditor = null" class="h-10 px-4 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium">{{ $t('common.cancel') }}</button>
+          <button type="button" @click="saveNote" class="h-10 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium">{{ $t('reader.note.save') }}</button>
         </div>
       </template>
     </ReaderPanel>
@@ -453,6 +453,7 @@ import { useDialogStore } from '../stores/dialog';
 import { useViewSession } from '../composables/useViewSession';
 import RatingBar from './RatingBar.vue';
 import ReaderPanel from './ReaderPanel.vue';
+import { t, d } from '../i18n';
 import {
   EBOOK_DEFAULTS, FONT_SIZE_MIN, FONT_SIZE_MAX, THEME_OPTIONS, FONT_OPTIONS,
   LINE_HEIGHT_OPTIONS, MARGINS, MARGIN_OPTIONS, ALIGN_OPTIONS, PROGRESS_OPTIONS, HIGHLIGHT_COLORS,
@@ -568,14 +569,16 @@ const progressLabel = computed(() => {
     case 'none': return '';
     case 'chapter': {
       const cp = chapterPages.value;
-      if (!cp || prefs.layout !== 'paged' || !cp.total) return `${Math.round(percent.value)}%`;
+      if (!cp || prefs.layout !== 'paged' || !cp.total) return t('reader.percent', { percent: Math.round(percent.value) });
       const left = cp.total - cp.page;
-      return left <= 0 ? 'Last page in chapter' : `${left} ${left === 1 ? 'page' : 'pages'} left in chapter`;
+      return left <= 0 ? t('reader.progress.lastPageInChapter') : t('reader.progress.pagesLeftInChapter', { count: left });
     }
     case 'location':
-      return locationsReady.value ? `Loc ${locationIndex.value + 1} of ${book.locations.length()}` : `${Math.round(percent.value)}%`;
+      return locationsReady.value
+        ? t('reader.progress.location', { current: locationIndex.value + 1, total: book.locations.length() })
+        : t('reader.percent', { percent: Math.round(percent.value) });
     default:
-      return `${Math.round(percent.value)}%`;
+      return t('reader.percent', { percent: Math.round(percent.value) });
   }
 });
 const progressOptionLabel = computed(() => PROGRESS_OPTIONS.find((o) => o.id === prefs.progress)?.label || '');
@@ -732,7 +735,7 @@ async function init() {
     generateLocations().catch((err) => console.warn('Could not measure the book:', err));
   } catch (err) {
     console.error('Failed to open book:', err);
-    loadError.value = "This book couldn't be opened.";
+    loadError.value = t('reader.couldNotOpen');
     loading.value = false;
   }
 }
@@ -837,9 +840,9 @@ function togglePanel(name) {
 }
 
 const notebookTabs = computed(() => [
-  { id: 'contents', label: 'Contents', count: 0 },
-  { id: 'bookmarks', label: 'Bookmarks', count: bookmarks.value.length },
-  { id: 'highlights', label: 'Highlights', count: highlights.value.length }
+  { id: 'contents', label: t('reader.notebook.contents'), count: 0 },
+  { id: 'bookmarks', label: t('reader.bookmark.bookmarks'), count: bookmarks.value.length },
+  { id: 'highlights', label: t('reader.notebook.highlights'), count: highlights.value.length }
 ]);
 
 function closePanelOnPhone() {
@@ -860,8 +863,8 @@ async function goToCfi(cfi) {
 
 function formatDate(value) {
   if (!value) return '';
-  const d = new Date(String(value).includes('T') ? value : `${String(value).replace(' ', 'T')}Z`);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  const date = new Date(String(value).includes('T') ? value : `${String(value).replace(' ', 'T')}Z`);
+  return d(date, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 // ─── Bookmarks ───────────────────────────────────────────────────────────────
@@ -903,13 +906,13 @@ async function togglePageBookmark() {
       itemId: props.item.id,
       type: 'book',
       position: Math.round(percent.value * 10) / 10,
-      title: chapterTitle.value || `${Math.round(percent.value)}% through`,
+      title: chapterTitle.value || t('reader.bookmark.percentThrough', { percent: Math.round(percent.value) }),
       cfi: currentCfi.value
     });
     bookmarks.value = [...bookmarks.value, res.data.bookmark];
-    showToast('Page bookmarked');
+    showToast(t('reader.bookmark.added'));
   } catch (err) {
-    dialog.alert(err.response?.data?.error || "Couldn't save the bookmark");
+    dialog.alert(err.response?.data?.error || t('reader.bookmark.couldNotSave'));
   }
 }
 
@@ -918,7 +921,7 @@ async function deleteBookmark(bm) {
     await api.delete(`/bookmarks/${bm.id}`);
     bookmarks.value = bookmarks.value.filter((b) => b.id !== bm.id);
   } catch (err) {
-    dialog.alert(err.response?.data?.error || "Couldn't remove the bookmark");
+    dialog.alert(err.response?.data?.error || t('reader.bookmark.couldNotRemove'));
   }
 }
 
@@ -1041,7 +1044,7 @@ async function createHighlight(color, withNote = false) {
     clearSelection();
     if (withNote) openNoteEditor(hl);
   } catch (err) {
-    dialog.alert(err.response?.data?.error || "Couldn't save the highlight");
+    dialog.alert(err.response?.data?.error || t('reader.highlight.couldNotSave'));
   }
 }
 
@@ -1054,7 +1057,7 @@ async function recolorHighlight(hl, color) {
     addMark(hl);
     activeHighlight.value = null;
   } catch (err) {
-    dialog.alert(err.response?.data?.error || "Couldn't change the colour");
+    dialog.alert(err.response?.data?.error || t('reader.highlight.couldNotRecolor'));
   }
 }
 
@@ -1065,7 +1068,7 @@ async function deleteHighlight(hl) {
     highlights.value = highlights.value.filter((h) => h.id !== hl.id);
     activeHighlight.value = null;
   } catch (err) {
-    dialog.alert(err.response?.data?.error || "Couldn't remove the highlight");
+    dialog.alert(err.response?.data?.error || t('reader.highlight.couldNotRemove'));
   }
 }
 
@@ -1084,7 +1087,7 @@ async function saveNote() {
     highlights.value = [...highlights.value];
     noteEditor.value = null;
   } catch (err) {
-    dialog.alert(err.response?.data?.error || "Couldn't save the note");
+    dialog.alert(err.response?.data?.error || t('reader.note.couldNotSave'));
   }
 }
 
@@ -1099,9 +1102,9 @@ function showToast(message) {
 async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);
-    showToast('Copied');
+    showToast(t('common.copied'));
   } catch {
-    showToast("Couldn't copy here");
+    showToast(t('reader.copyFailed'));
   }
   clearSelection();
   activeHighlight.value = null;
@@ -1113,6 +1116,11 @@ const bookSearch = ref('');
 const searchResults = ref([]);
 const searching = ref(false);
 const searchDone = ref(false);
+const searchSummary = computed(() => {
+  const count = searchResults.value.length;
+  if (!count) return t('reader.search.noMatches');
+  return count >= SEARCH_LIMIT ? t('reader.search.matchesCapped', { count }) : t('reader.search.matches', { count });
+});
 let searchHitCfi = null;
 
 // epub.js searches one spine section at a time; each is loaded, searched and unloaded in

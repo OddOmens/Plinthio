@@ -1,0 +1,82 @@
+{
+  "title": "Lijsten",
+  "intro": "Dingen om te kijken, lezen en luisteren, in jouw volgorde. Ze kunnen ook titels bevatten die nog niet op de server staan.",
+  "requests": "Verzoeken",
+  "categories": {
+    "movies": "Films",
+    "shows": "Series",
+    "anime": "Anime",
+    "read": "Lezen",
+    "listen": "Luisteren"
+  },
+  "titleCount": {
+    "one": "{count} titel",
+    "other": "{count} titels"
+  },
+  "newList": "Nieuwe lijst",
+  "newListName": {
+    "movies": "Naam filmlijst",
+    "shows": "Naam serielijst",
+    "anime": "Naam animelijst",
+    "read": "Naam leeslijst",
+    "listen": "Naam luisterlijst"
+  },
+  "noLists": {
+    "movies": "Nog geen filmlijsten.",
+    "shows": "Nog geen serielijsten.",
+    "anime": "Nog geen animelijsten.",
+    "read": "Nog geen leeslijsten.",
+    "listen": "Nog geen luisterlijsten."
+  },
+  "allLists": "Alle lijsten",
+  "listFallback": "Lijst",
+  "notInLibrary": "{count} niet in de bibliotheek",
+  "addTitles": "Titels toevoegen",
+  "deleteList": "Lijst verwijderen",
+  "inList": "In lijst",
+  "seriesTitle": "{series}: {title}",
+  "empty": {
+    "title": "Nog niets in deze lijst",
+    "hint": "Gebruik {addTitles} om naar van alles te zoeken, of het nu op de server staat of niet."
+  },
+  "moveEarlier": "Naar voren",
+  "moveLater": "Naar achteren",
+  "removeFromList": "Uit lijst halen",
+  "request": "Aanvragen",
+  "requestHint": "Vraag een admin om dit aan de bibliotheek toe te voegen",
+  "requestStatus": {
+    "pending": "In afwachting",
+    "accepted_pending": "Geaccepteerd · Wordt toegevoegd",
+    "accepted_added": "Geaccepteerd · Toegevoegd",
+    "rejected": "Afgewezen"
+  },
+  "deleteDialog": {
+    "title": "Lijst verwijderen?",
+    "message": "‘{name}’ wordt verwijderd. Er verdwijnt niets uit je bibliotheek.",
+    "thisList": "Deze lijst"
+  },
+  "addButton": {
+    "inNamed": "In {list}",
+    "title": "Aan een van je lijsten toevoegen",
+    "list": "Lijst",
+    "dialogLabel": "{title} aan een lijst toevoegen",
+    "heading": "Aan een lijst toevoegen",
+    "loading": "Je lijsten laden…",
+    "newPlaceholder": "Nieuwe lijst…",
+    "firstPlaceholder": "Geef je eerste lijst een naam, bijv. Kijklijst"
+  },
+  "errors": {
+    "loadLists": "Kon de lijsten niet laden.",
+    "loadYourLists": "Kon je lijsten niet laden.",
+    "createList": "Kon de lijst niet aanmaken.",
+    "createThatList": "Kon die lijst niet aanmaken.",
+    "gone": "Die lijst bestaat niet meer.",
+    "loadList": "Kon deze lijst niet laden.",
+    "deleteList": "Kon die lijst niet verwijderen.",
+    "addTitle": "Kon die titel niet toevoegen.",
+    "addToList": "Kon het niet aan die lijst toevoegen.",
+    "request": "Kon dat verzoek niet versturen.",
+    "reorder": "Kon de nieuwe volgorde niet opslaan.",
+    "remove": "Kon dat item niet weghalen."
+  }
+}

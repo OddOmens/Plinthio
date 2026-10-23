@@ -1,0 +1,176 @@
+{
+  "nav": {
+    "serverAdmin": "Serververwaltung",
+    "groups": {
+      "account": "Konto",
+      "yours": "Dein Plinthio",
+      "connect": "Verbinden"
+    },
+    "profile": { "label": "Profil", "desc": "Dein Bild und deine Rolle" },
+    "security": { "label": "Sicherheit", "desc": "Passwort, Zwei-Faktor, Geräte" },
+    "appearance": { "label": "Darstellung", "desc": "Farbe, Navigation, Breite, Pausenbildschirm" },
+    "shelves": { "label": "Regale", "desc": "Medientypen, Startseite, Ansichten" },
+    "hidden": { "label": "Ausgeblendete Titel", "desc": "Titel, die du ausgeblendet hast" },
+    "activity": { "label": "Aktivität", "desc": "Deine Statistiken und Anmeldungen" },
+    "apps": { "label": "Apps & API-Schlüssel", "desc": "Mihon, KOReader, OPDS, Skripte" }
+  },
+  "layout": {
+    "backTo": "Zurück zu {title}",
+    "backToShelves": "Zurück zu den Regalen",
+    "sections": "Bereiche: {title}"
+  },
+  "saveStatus": {
+    "error": "Speichern fehlgeschlagen"
+  },
+  "activityList": {
+    "empty": "Noch keine Aktivität aufgezeichnet.",
+    "deletedItem": "einen gelöschten Eintrag",
+    "you": {
+      "signedIn": "Angemeldet",
+      "signInFailed": "Fehlgeschlagener Anmeldeversuch",
+      "viewed": "{title} angesehen",
+      "viewing": "Du siehst gerade {title}"
+    },
+    "someone": {
+      "signedIn": "{user} hat sich angemeldet",
+      "signInFailed": "{user} konnte sich nicht anmelden",
+      "viewed": "{user} hat {title} angesehen",
+      "viewing": "{user} sieht gerade {title}"
+    }
+  },
+  "mediaTypes": {
+    "movie": { "label": "Filme", "desc": "Spielfilme" },
+    "show": { "label": "Serien", "desc": "Serien und Folgen" },
+    "anime": { "label": "Anime", "desc": "Anime-Serien und -Filme" },
+    "book": { "label": "Bücher", "desc": "EPUB, PDF und Text" },
+    "manga": { "label": "Manga & Comics", "desc": "CBZ, CBR und Graphic Novels" },
+    "audiobook": { "label": "Hörbücher", "desc": "Gesprochenes Wort und Hörspiele" }
+  },
+  "format": {
+    "size": "{value} {unit}",
+    "units": { "B": "B", "KB": "KB", "MB": "MB", "GB": "GB", "TB": "TB" },
+    "seconds": "{value} Sek.",
+    "minutes": "{value} Min.",
+    "hours": "{value} Std.",
+    "hoursMinutes": "{hours} {minutes}"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Dein Bild und wie dein Konto auf diesem Server eingerichtet ist.",
+    "avatar": "Avatar",
+    "changePicture": "Bild ändern",
+    "uploadPicture": "Bild hochladen",
+    "pictureHint": "JPG, PNG, WebP oder GIF bis 5 MB, quadratisch zugeschnitten.",
+    "notAnImage": "Wähle eine Bilddatei (PNG, JPG, WebP oder GIF).",
+    "tooBig": "Das Bild ist größer als 5 MB.",
+    "uploadFailed": "Das Bild konnte nicht hochgeladen werden",
+    "removeTitle": "Bild entfernen",
+    "removeMessage": "Dein Profilbild entfernen? Stattdessen werden deine Initialen angezeigt.",
+    "removeFailed": "Das Bild konnte nicht entfernt werden",
+    "roles": {
+      "admin": { "label": "Admin", "desc": "verwaltet diesen Server" },
+      "editor": { "label": "Redakteur", "desc": "kann außerdem Titel, Cover und Details korrigieren" },
+      "viewer": { "label": "Zuschauer", "desc": "stöbert, liest, schaut und hört" }
+    }
+  },
+  "security": {
+    "title": "Sicherheit",
+    "description": "Dein Passwort, die Zwei-Faktor-Anmeldung und die Geräte, auf denen du angemeldet bist.",
+    "password": {
+      "desc": "Eine Änderung meldet dich überall ab, auch in diesem Browser.",
+      "current": "Aktuelles Passwort",
+      "new": "Neues Passwort",
+      "hint": "Mindestens 8 Zeichen.",
+      "change": "Passwort ändern",
+      "changing": "Wird geändert…",
+      "changed": "Passwort geändert. Melde dich mit deinem neuen Passwort wieder an.",
+      "changeFailed": "Dein Passwort konnte nicht geändert werden"
+    },
+    "twoFactor": {
+      "title": "Zwei-Faktor-Anmeldung",
+      "desc": "Ein Code von deinem Handy zusätzlich zu deinem Passwort. Lohnt sich, wenn du Plinthio auch unterwegs nutzt."
+    },
+    "devices": {
+      "title": "Angemeldete Geräte",
+      "desc": "Auf jedem Handy, Browser und Fernseher, auf dem du dich angemeldet hast, bleibst du angemeldet. Wenn du dich irgendwo angemeldet hast, wo du keinen Zugriff mehr hast, melde dich überall ab.",
+      "signOutAll": "Von allen Geräten abmelden",
+      "signingOut": "Wird abgemeldet…",
+      "confirmTitle": "Überall abmelden",
+      "confirmMessage": "Alle Geräte, die mit diesem Konto angemeldet sind, werden sofort abgemeldet – auch dieses.",
+      "signOutFailed": "Abmelden von allen Geräten fehlgeschlagen"
+    }
+  },
+  "shelves": {
+    "title": "Regale",
+    "description": "Was in deinen Regalen steht und wo Plinthio startet. Wird sofort gespeichert.",
+    "mediaTypes": {
+      "title": "Medientypen",
+      "desc": "Welche Medienarten in deinen Regalen erscheinen. Mindestens einer muss bleiben."
+    },
+    "startOn": {
+      "title": "Starten mit",
+      "desc": "Das Regal, mit dem Plinthio startet.",
+      "all": "Alle Medien"
+    },
+    "views": {
+      "title": "Regalansichten",
+      "desc": "Die Ansichten über deinem Regal. Jede zeigt eine Karte pro Reihe; Alphabetisch ist immer dabei.",
+      "offByAdmin": "Von deinem Admin deaktiviert",
+      "modes": {
+        "alphabetical": { "label": "Alphabetisch", "desc": "Immer an. Alle Reihen und Titel von A bis Z." },
+        "creator": { "label": "Urheber", "desc": "Nach Autor, Regie oder Studio gruppiert." },
+        "diskFolders": { "label": "Ordner auf dem Server", "desc": "Die Ordner auf dem Server." },
+        "customFolders": { "label": "Eigene Ordner", "desc": "Deine eigenen Ordner in der App, mit „Unsortiert“ für den Rest." }
+      }
+    }
+  },
+  "hidden": {
+    "title": "Ausgeblendete Titel",
+    "description": "Titel, die du aus deinen Regalen ausgeblendet hast. Nur du siehst sie nicht mehr; du kannst sie jederzeit zurückholen.",
+    "empty": "Nichts ausgeblendet. Blende einen Titel auf seiner Seite aus, dann erscheint er hier.",
+    "unhide": "Einblenden",
+    "unhideFailed": "Der Titel konnte nicht wieder eingeblendet werden"
+  },
+  "activity": {
+    "title": "Aktivität",
+    "description": "Was du gelesen, geschaut und gehört hast, und deine letzten Anmeldungen.",
+    "recent": "Letzte Aktivität",
+    "tiles": {
+      "listened": "Hörzeit",
+      "pagesRead": "Gelesene Seiten",
+      "finished": "Abgeschlossen",
+      "inProgress": "Begonnen"
+    }
+  },
+  "apps": {
+    "title": "Apps & API-Schlüssel",
+    "description": "Nutze Plinthio aus Lese-Apps, Skripten und Dashboards. Jede meldet sich mit einem API-Schlüssel an, den du hier erstellst.",
+    "reading": {
+      "title": "Lese-Apps",
+      "desc": "Lies deine Comics, Manga, PDFs und Bücher in anderen Apps. Melde dich mit deinem Benutzernamen ({username}) und einem API-Schlüssel als Passwort an. Erstelle einen Schlüssel pro App, damit du eine App abmelden kannst, indem du ihren Schlüssel löschst.",
+      "address": "Adresse für {app}",
+      "mihon": "Installiere die Komga-Erweiterung, öffne ihre Einstellungen und gib diese Adresse, deinen Benutzernamen und einen API-Schlüssel als Passwort ein. Aktiviere dann in Mihon unter Einstellungen → Tracking Komga, damit alles, was du in Mihon liest, hier als gelesen markiert wird.",
+      "koreader": "Öffne ein Buch, dann Werkzeuge → Fortschrittssynchronisation → Eigener Sync-Server: Gib diese Adresse ein. Wähle Anmelden (nicht Registrieren) mit deinem Benutzernamen und einem API-Schlüssel als Passwort. Deine Position in PDFs und Comics wird in beide Richtungen synchronisiert; EPUB-Positionen werden zwischen KOReader-Geräten synchronisiert, und Plinthio zeigt, wie weit du bist. Schlüssel, die vor Plinthio 1.0 erstellt wurden, funktionieren hier nicht – erstelle einen neuen.",
+      "opdsName": "OPDS-Reader (Chunky, Panels, KyBook, Moon+ Reader)",
+      "opds": "Füge dies als OPDS-Katalog hinzu, mit deinem Benutzernamen und einem API-Schlüssel als Passwort."
+    },
+    "keys": {
+      "title": "API-Schlüssel",
+      "desc": "Ein Schlüssel handelt in deinem Namen. Sende ihn im Header {header} oder nutze ihn in einer App als Passwort.",
+      "name": "Name des Schlüssels",
+      "namePlaceholder": "Wofür er ist, z. B. Mihon auf meinem Handy",
+      "make": "Schlüssel erstellen",
+      "makeFailed": "Der Schlüssel konnte nicht erstellt werden",
+      "copyNow": "Kopiere deinen neuen Schlüssel jetzt. Er wird nicht noch einmal angezeigt.",
+      "copyKey": "Schlüssel kopieren",
+      "empty": "Noch keine Schlüssel.",
+      "made": "erstellt am {date}",
+      "revokeNamed": "{name} widerrufen",
+      "revokeKey": "Schlüssel widerrufen",
+      "revokeTitle": "API-Schlüssel widerrufen",
+      "revokeMessage": "„{name}“ widerrufen? Alles, was ihn nutzt, wird sofort abgemeldet.",
+      "revoke": "Widerrufen",
+      "revokeFailed": "Der Schlüssel konnte nicht widerrufen werden"
+    }
+  }
+}

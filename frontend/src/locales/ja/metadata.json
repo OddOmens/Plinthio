@@ -1,0 +1,176 @@
+{
+  "fields": {
+    "title": "タイトル",
+    "author": "著者",
+    "authors": "著者",
+    "director": "監督",
+    "directors": "監督",
+    "artists": "作画",
+    "artistsShort": "作画",
+    "cast": "キャスト",
+    "castActors": "キャスト",
+    "series": "シリーズ",
+    "releaseDate": "公開日",
+    "date": "日付",
+    "ageRating": "年齢制限",
+    "status": "ステータス",
+    "publisher": "出版社",
+    "genres": "ジャンル",
+    "themes": "テーマ",
+    "description": "説明",
+    "cover": "カバー"
+  },
+  "ageRatings": {
+    "everyone": "全年齢",
+    "teen": "ティーン",
+    "mature": "成人向け",
+    "explicit": "過激な表現"
+  },
+  "edit": {
+    "title": "メタデータを編集",
+    "appliesToAll": {
+      "other": "全 {count} 巻に適用"
+    },
+    "coverPreview": "カバーのプレビュー",
+    "replaceCover": "カバーアートを差し替え",
+    "coverSaving": "保存中",
+    "setForSeries": "シリーズに設定",
+    "replace": "差し替え",
+    "unknownAuthor": "著者不明",
+    "commaSeparated": "カンマ区切り",
+    "commaSeparatedActors": "俳優をカンマ区切りで",
+    "seriesName": "シリーズ名",
+    "releaseDateExample": "例: 2019 または 2019-06-26",
+    "sameAsSeries": "シリーズと同じ",
+    "unrated": "指定なし",
+    "statusExample": "例: 連載中、完結",
+    "descriptionPlaceholder": "あらすじ・説明",
+    "saving": "保存中…",
+    "searchToFill": "{provider} を検索して不足している情報を補う",
+    "externalSources": "外部ソース",
+    "searchPlaceholder": "タイトルを検索…",
+    "year": "年",
+    "yearHint": "公開年で絞り込み（例: 2002）",
+    "searching": "検索中…",
+    "searchingProvider": "{provider} を検索中…",
+    "noResults": "結果が見つかりません。別の検索語を試してください。",
+    "searchedAs": "検索した語句: {query}",
+    "resultDirector": "監督: {name}",
+    "resultCast": "キャスト: {names}",
+    "resultArt": "作画: {names}",
+    "useAll": "すべて使う",
+    "uploadFailed": "画像をアップロードできませんでした。",
+    "searchFailed": "メタデータプロバイダーを検索できませんでした。詳しくはブラウザのコンソールを確認してください。",
+    "savedTitle": "メタデータを保存しました",
+    "savedSeries": {
+      "other": "シリーズの全 {count} 件を更新しました。"
+    },
+    "savedOne": "「{title}」を更新しました。",
+    "saveFailed": "メタデータを保存できませんでした。詳しくはブラウザのコンソールを確認してください。"
+  },
+  "manager": {
+    "title": "タイトルの整理とマッチング",
+    "description": "ファイル名からリリースタグを取り除き、ポスター、あらすじ、キャスト、公開日を TMDB から取得します。",
+    "stats": {
+      "total": "メディアの総数",
+      "totalHint": "インデックス済みのすべてのコンテンツ",
+      "dirty": "タイトルの整理が必要",
+      "dirtyHint": "タイトルにリリースタグや年が含まれています",
+      "missingCover": "アートワークなし",
+      "missingCoverHint": "ポスターやカバーのファイルがありません",
+      "missingMeta": "あらすじ・日付なし",
+      "missingMetaHint": "TMDB のあらすじが必要です"
+    },
+    "filters": {
+      "allLibraries": "すべてのライブラリ",
+      "allMediaTypes": "すべてのメディアの種類",
+      "tvShows": "テレビ番組",
+      "needsCleanup": "整理が必要",
+      "searchPlaceholder": "タイトルまたはパスで絞り込み…"
+    },
+    "batch": {
+      "selectAll": "すべて選択（{count}）",
+      "selected": "{count} 件選択中",
+      "overwritePosters": "ポスターを上書き",
+      "useCanonicalTitle": "正式タイトルを使う",
+      "cleanHint": "データベースのタイトルからリリースタグと末尾の年を取り除きます",
+      "cleanCount": "タイトルを整理（{count}）",
+      "findHint": "選択した各タイトルをメタデータプロバイダー（TMDB、MangaDex、Google Books、Open Library）と照合します: アートワーク、あらすじ、公開日",
+      "findCount": "メタデータを検索（{count}）",
+      "stop": "停止",
+      "stopping": "停止中…"
+    },
+    "summary": {
+      "matched": "{total} 件中 {matched} 件が一致しました。",
+      "matchedStopped": "停止するまでに {total} 件中 {matched} 件が一致しました。",
+      "notFound": {
+        "other": "{count} 件は一致しませんでした。下に印が付いているので、{action} を試してください。"
+      },
+      "needsKey": {
+        "other": "{count} 件は動画のため TMDB キーが必要です。{where} で追加してから、もう一度実行してください。"
+      },
+      "adminMetadata": "管理 → メタデータ",
+      "failed": {
+        "other": "{count} 件は失敗しました（理由は各行に表示されます）。"
+      }
+    },
+    "dismiss": "閉じる",
+    "list": {
+      "analyzing": "タイトルとメタデータを分析中…",
+      "empty": "選択した条件に一致するメディアはありません。"
+    },
+    "badges": {
+      "frameTag": "フレーム",
+      "tvEpisode": "テレビエピソード",
+      "poster": "ポスター",
+      "frame": "フレーム",
+      "frameHint": "動画から取った仮のフレームです。自動マッチを実行すると公式ポスターを取得します",
+      "noPoster": "ポスターなし",
+      "synopsis": "あらすじ",
+      "noSynopsis": "あらすじなし",
+      "noDate": "日付なし"
+    },
+    "cleanLabel": "整理後:",
+    "actions": {
+      "autoMatch": "自動マッチ",
+      "autoMatchHint": "メタデータプロバイダーと照合して、このタイトルを更新します",
+      "editSearch": "編集・検索",
+      "editSearchHint": "TMDB を手動で検索したり、アートワークを選んだり、メタデータを編集したりします"
+    },
+    "match": {
+      "matchedAs": "「{title}」として一致しました",
+      "needsKey": "TMDB キーが必要です。上で追加してください",
+      "noMatch": "一致するものがありません。編集・検索を試してください",
+      "failed": "マッチングに失敗しました。もう一度お試しください"
+    },
+    "errors": {
+      "loadFailed": "項目を読み込めませんでした"
+    },
+    "clean": {
+      "confirmTitle": {
+        "other": "{count} 件のタイトルを整理しますか？"
+      },
+      "confirmMessage": {
+        "other": "選択した {count} 件のタイトルから、シーンタグ、コーデック、解像度、末尾の公開年をデータベース上で取り除きます。"
+      },
+      "confirm": "タイトルを整理",
+      "progress": {
+        "other": "{count} 件のタイトルを整理中…"
+      },
+      "doneTitle": "タイトルを整理しました",
+      "doneMessage": {
+        "other": "{count} 件のタイトルを整理しました。"
+      },
+      "failedTitle": "一括整理に失敗しました"
+    },
+    "find": {
+      "confirmTitle": {
+        "other": "{count} 件のメタデータを検索しますか？"
+      },
+      "confirmMessage": "選択した各タイトルをメタデータプロバイダー（TMDB、MangaDex、Google Books、Open Library）と照合し、アートワーク、あらすじ、公開日を更新します。結果は各行に表示され、いつでも停止できます。",
+      "confirm": "マッチングを開始",
+      "itemFallback": "項目",
+      "progress": "{total} 件中 {current} 件目をマッチング中: {title}"
+    }
+  }
+}

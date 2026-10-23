@@ -2,7 +2,7 @@
   <!-- Sign-ins and viewing sessions, newest first: Settings → Activity (yours) and
        Admin → Activity (everyone's, with names and addresses). -->
   <div v-if="!entries.length" class="py-12 text-center text-xs text-muted-foreground">
-    {{ loading ? 'Loading…' : 'No activity recorded yet.' }}
+    {{ loading ? $t('common.loading') : $t('settings.activityList.empty') }}
   </div>
   <ul v-else class="divide-y divide-border">
     <li v-for="entry in entries" :key="`${entry.type}-${entry.id}`" class="px-4 sm:px-5 py-3 flex items-center gap-3">
@@ -15,14 +15,10 @@
       </div>
       <div class="min-w-0 flex-1">
         <p class="text-xs text-foreground truncate">
-          <template v-if="showUser"><span class="font-semibold">{{ entry.username }}</span>{{ ' ' }}</template>
-          <template v-if="entry.type === 'login'">
-            {{ entry.success ? (showUser ? 'signed in' : 'Signed in') : (showUser ? 'failed to sign in' : 'Failed sign-in attempt') }}
-          </template>
-          <template v-else>
-            {{ entry.ended_at ? (showUser ? 'viewed' : 'Viewed') : (showUser ? 'is viewing' : 'Viewing') }}
-            <span class="italic">{{ entry.item_title || 'a deleted item' }}</span>
-          </template>
+          <I18nT :keypath="`settings.activityList.${showUser ? 'someone' : 'you'}.${entryKind(entry)}`" tag="">
+            <template #user><span class="font-semibold">{{ entry.username }}</span></template>
+            <template #title><span class="italic">{{ entry.item_title || $t('settings.activityList.deletedItem') }}</span></template>
+          </I18nT>
         </p>
         <p class="text-[12px] text-muted-foreground">
           {{ formatDateTime(entry.timestamp) }}
@@ -43,4 +39,10 @@ defineProps({
   loading: { type: Boolean, default: false },
   showUser: { type: Boolean, default: false }
 });
+
+// Which sentence an entry reads as: a sign-in (or a failed one), or a title viewed or being viewed.
+function entryKind(entry) {
+  if (entry.type === 'login') return entry.success ? 'signedIn' : 'signInFailed';
+  return entry.ended_at ? 'viewed' : 'viewing';
+}
 </script>

@@ -7,10 +7,10 @@
       <!-- Header -->
       <div class="px-5 py-4 border-b border-border flex items-center justify-between">
         <div class="min-w-0 pr-2">
-          <h3 class="text-sm font-semibold text-foreground truncate">Add to Folder or List</h3>
+          <h3 class="text-sm font-semibold text-foreground truncate">{{ $t('shelf.folderModal.title') }}</h3>
           <p class="text-xs text-muted-foreground truncate mt-0.5">{{ item?.title }}</p>
         </div>
-        <button aria-label="Close"
+        <button :aria-label="$t('common.close')"
           type="button"
           @click="close"
           class="p-2.5 -m-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
@@ -22,11 +22,11 @@
       <!-- Folder Selection List -->
       <div class="p-5 flex flex-col gap-4 max-h-[350px] overflow-y-auto">
         <div v-if="loading" class="py-6 text-center text-xs text-muted-foreground">
-          Loading folders...
+          {{ $t('shelf.folderModal.loading') }}
         </div>
 
         <div v-else-if="folders.length === 0" class="py-6 text-center text-xs text-muted-foreground">
-          No custom folders created yet. Create one below to organize your media!
+          {{ $t('shelf.folderModal.empty') }}
         </div>
 
         <div v-else class="flex flex-col gap-2">
@@ -53,13 +53,13 @@
         <div class="pt-3 border-t border-border flex flex-col gap-2.5">
           <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
             <FolderPlus class="w-3.5 h-3.5 text-muted-foreground" />
-            New Custom Folder
+            {{ $t('shelf.folderModal.newFolder') }}
           </span>
           <div class="flex gap-2">
             <input
               v-model="newFolderName"
               @keyup.enter="createFolder"
-              placeholder="e.g. Favorites, Bedtime..."
+              :placeholder="$t('shelf.folderModal.placeholder')"
               class="flex-1 bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
             <button
@@ -68,7 +68,7 @@
               :disabled="!newFolderName.trim() || creating"
               class="px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition disabled:opacity-50 shadow-sm"
             >
-              {{ creating ? 'Adding...' : 'Create' }}
+              {{ creating ? $t('shelf.folderModal.adding') : $t('common.create') }}
             </button>
           </div>
         </div>
@@ -81,7 +81,7 @@
           @click="close"
           class="px-3.5 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-medium transition"
         >
-          Done
+          {{ $t('common.done') }}
         </button>
       </div>
     </div>
@@ -92,6 +92,7 @@
 import { ref, watch } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
+import { t } from '../i18n';
 import { X, Folder, FolderPlus, ListOrdered } from '@lucide/vue';
 
 const dialog = useDialogStore();
@@ -145,7 +146,7 @@ async function toggleFolderItem(folder) {
   } catch (err) {
     // Revert on error
     folder.in_collection = willBeIn ? 0 : 1;
-    dialog.alert(err.response?.data?.error || 'Failed to update folder');
+    dialog.alert(err.response?.data?.error || t('shelf.errors.updateFolder'));
   }
 }
 
@@ -163,7 +164,7 @@ async function createFolder() {
     await loadItemFolders();
     emit('updated');
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Failed to create folder');
+    dialog.alert(err.response?.data?.error || t('shelf.errors.createFolder'));
   } finally {
     creating.value = false;
   }

@@ -10,7 +10,7 @@
           <span class="absolute inline-flex h-full w-full rounded-full bg-primary opacity-60 animate-ping"></span>
           <span class="relative inline-flex w-2 h-2 rounded-full bg-primary"></span>
         </span>
-        <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">Live preview</h3>
+        <h3 class="text-xs font-semibold text-foreground uppercase tracking-wider">{{ $t('preview.live') }}</h3>
       </div>
       <div v-if="shownViews.length > 1" class="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-lg border border-border text-[12px]">
         <button
@@ -59,7 +59,7 @@
               ><component :is="tab.icon" class="w-4 h-4" />{{ tab.label }}</span>
             </nav>
             <div class="flex items-center gap-2">
-              <div class="w-44 h-9 rounded-lg border border-border bg-muted/30 flex items-center gap-2 px-3 text-sm text-muted-foreground"><Search class="w-4 h-4" />Search</div>
+              <div class="w-44 h-9 rounded-lg border border-border bg-muted/30 flex items-center gap-2 px-3 text-sm text-muted-foreground"><Search class="w-4 h-4" />{{ $t('common.search') }}</div>
               <div class="w-9 h-9 rounded-full bg-secondary"></div>
             </div>
             </div>
@@ -68,10 +68,10 @@
           <main class="flex-1 min-w-0 w-full mx-auto px-8 py-6 flex flex-col gap-4 overflow-hidden" :style="widthStyle">
             <div class="flex items-end justify-between">
               <div>
-                <h1 class="text-2xl font-semibold tracking-tight">Movies</h1>
-                <p class="text-sm text-muted-foreground">{{ samples.length ? `${samples.length}+ titles` : 'Your library' }}</p>
+                <h1 class="text-2xl font-semibold tracking-tight">{{ $t('common.mediaTypes.movie') }}</h1>
+                <p class="text-sm text-muted-foreground">{{ samples.length ? $t('preview.titles', { count: samples.length }) : $t('preview.yourLibrary') }}</p>
               </div>
-              <span class="px-3 h-9 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1.5 shadow-sm"><Play class="w-4 h-4" />Continue watching</span>
+              <span class="px-3 h-9 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1.5 shadow-sm"><Play class="w-4 h-4" />{{ $t('preview.continueWatching') }}</span>
             </div>
             <div class="grid gap-5" :style="{ gridTemplateColumns: `repeat(${shelfColumns}, minmax(0, 1fr))` }">
               <div v-for="(card, i) in shelfCards" :key="i" class="flex flex-col gap-2 min-w-0">
@@ -94,13 +94,13 @@
               <div v-else class="w-full h-full bg-gradient-to-br from-muted to-secondary flex items-center justify-center"><Film class="w-10 h-10 text-muted-foreground/50" /></div>
             </div>
             <div class="flex flex-col gap-3 min-w-0 pt-2">
-              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Movie</p>
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{{ $t('common.mediaType.movie') }}</p>
               <h1 class="text-4xl font-bold tracking-tight leading-tight">{{ hero.title }}</h1>
               <p class="text-sm text-muted-foreground">{{ heroMeta }}</p>
 
               <div v-if="ratingsOn" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                 <div v-if="settings.ratings.showPersonal" class="inline-flex items-center gap-1.5">
-                  <span class="text-muted-foreground font-medium">Your rating</span>
+                  <span class="text-muted-foreground font-medium">{{ $t('preview.yourRating') }}</span>
                   <Star v-for="n in 5" :key="n" :class="['w-4 h-4', n <= 4 ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground/40']" />
                 </div>
                 <span v-if="settings.ratings.showPersonal && (settings.ratings.showCommunity || settings.ratings.showExternal)" class="h-3.5 w-px bg-border" />
@@ -113,19 +113,19 @@
                   <span class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-sky-600 text-white">TMDB</span><span class="font-semibold">7.8</span>
                 </div>
               </div>
-              <p v-else class="text-sm text-muted-foreground italic">Ratings are hidden</p>
+              <p v-else class="text-sm text-muted-foreground italic">{{ $t('preview.ratingsHidden') }}</p>
 
-              <p class="text-sm text-muted-foreground leading-relaxed line-clamp-3 max-w-2xl">{{ hero.description || sampleDescription }}</p>
+              <p class="text-sm text-muted-foreground leading-relaxed line-clamp-3 max-w-2xl">{{ hero.description || $t('preview.sample.description') }}</p>
               <div class="flex items-center gap-2 mt-1">
-                <span class="px-5 h-10 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-2 shadow-sm"><Play class="w-4 h-4 fill-current" />Play</span>
-                <span v-if="settings.partyModeEnabled" class="px-4 h-10 rounded-lg border border-border text-sm font-medium flex items-center gap-2"><Users class="w-4 h-4" />Watch Together</span>
+                <span class="px-5 h-10 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-2 shadow-sm"><Play class="w-4 h-4 fill-current" />{{ $t('common.play') }}</span>
+                <span v-if="settings.partyModeEnabled" class="px-4 h-10 rounded-lg border border-border text-sm font-medium flex items-center gap-2"><Users class="w-4 h-4" />{{ $t('preview.watchTogether') }}</span>
                 <span class="w-10 h-10 rounded-lg border border-border flex items-center justify-center"><Plus class="w-4 h-4" /></span>
               </div>
             </div>
           </div>
 
           <div class="flex flex-col gap-3">
-            <h2 class="text-lg font-semibold tracking-tight">Part of the collection</h2>
+            <h2 class="text-lg font-semibold tracking-tight">{{ $t('preview.collection') }}</h2>
             <div class="flex gap-4">
               <div v-for="(card, i) in collectionCards" :key="i" class="w-[130px] flex flex-col gap-1.5">
                 <div class="aspect-[2/3] rounded-lg overflow-hidden bg-muted border border-border relative" :class="card.missing ? 'opacity-40 grayscale' : ''">
@@ -133,7 +133,7 @@
                   <div v-else class="w-full h-full bg-gradient-to-br from-muted to-secondary"></div>
                 </div>
                 <p class="text-xs font-medium truncate" :class="card.missing ? 'text-muted-foreground' : ''">{{ card.title }}</p>
-                <span v-if="card.missing" class="self-start text-[11px] font-medium px-2 py-0.5 rounded-md border border-primary/40 text-primary">Request</span>
+                <span v-if="card.missing" class="self-start text-[11px] font-medium px-2 py-0.5 rounded-md border border-primary/40 text-primary">{{ $t('preview.request') }}</span>
               </div>
             </div>
           </div>
@@ -146,19 +146,19 @@
           <div class="relative w-[448px] flex flex-col items-center gap-8">
             <div class="flex flex-col items-center text-center gap-4">
               <AppLogo class="w-24 h-24" />
-              <h1 class="text-4xl font-bold tracking-tight leading-tight text-foreground">Welcome to {{ brand }}</h1>
-              <p class="text-base text-muted-foreground leading-relaxed">Books, comics, audiobooks, movies and shows. All in one place, and right where you left off.</p>
+              <h1 class="text-4xl font-bold tracking-tight leading-tight text-foreground">{{ $t('auth.welcome', { name: brand }) }}</h1>
+              <p class="text-base text-muted-foreground leading-relaxed">{{ $t('auth.tagline') }}</p>
             </div>
             <div class="w-full bg-card/80 border border-border rounded-2xl p-7 shadow-2xl flex flex-col gap-4">
               <div v-if="settings.loginMessage" class="flex items-start gap-2.5 p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-foreground leading-relaxed">
                 <Megaphone class="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                 <p class="whitespace-pre-line">{{ settings.loginMessage }}</p>
               </div>
-              <div v-for="field in ['Username', 'Password']" :key="field">
-                <p class="text-xs font-medium text-foreground mb-1.5">{{ field }}</p>
+              <div v-for="field in ['username', 'password']" :key="field">
+                <p class="text-xs font-medium text-foreground mb-1.5">{{ $t(`common.${field}`) }}</p>
                 <div class="w-full h-10 bg-background/70 border border-border rounded-lg"></div>
               </div>
-              <div class="w-full h-10 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center shadow-lg">Sign In</div>
+              <div class="w-full h-10 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center shadow-lg">{{ $t('auth.signIn') }}</div>
             </div>
           </div>
         </div>
@@ -172,7 +172,7 @@
             :key="`${pauseMode}-${hero.id}`"
             :mode="pauseMode"
             :item="pauseItem"
-            :credits="heroItem ? heroCredits : SAMPLE_CREDITS"
+            :credits="heroItem ? heroCredits : sampleCredits"
             :poster-url="heroItem ? '' : hero.cover"
             :current-time="pauseItem.duration * 0.42"
             :duration="pauseItem.duration"
@@ -199,6 +199,8 @@ import api from '../api/client';
 import { coverUrl } from '../utils/cover';
 import PauseScreen from './PauseScreen.vue';
 import { useThemeStore } from '../stores/theme';
+import { ACCENT_OPTIONS, optionLabel } from '../constants/appearance';
+import { t } from '../i18n';
 
 const props = defineProps({
   // { accentTheme, layoutMode, pageWidth, serverName, loginMessage, ratings, showMissingFilms, partyModeEnabled, pauseScreen }
@@ -209,15 +211,10 @@ const props = defineProps({
 });
 defineEmits(['update:view']);
 
-const views = [
-  { id: 'shelf', label: 'Shelf' },
-  { id: 'title', label: 'Title' },
-  { id: 'login', label: 'Sign-in' },
-  { id: 'pause', label: 'Pause' }
-];
+const views = computed(() => ['shelf', 'title', 'login', 'pause'].map((id) => ({ id, label: t(`preview.views.${id}`) })));
 
 const themeStore = useThemeStore();
-const shownViews = computed(() => (props.only ? views.filter((v) => props.only.includes(v.id)) : views));
+const shownViews = computed(() => (props.only ? views.value.filter((v) => props.only.includes(v.id)) : views.value));
 
 // The virtual screen: app views at a laptop's 16:10, the player at 16:9, and the shelf on a
 // 1920px monitor so the page width setting shows (Contained only differs past 1440px).
@@ -244,15 +241,17 @@ const ratingsOn = computed(() => {
 });
 const pauseMode = computed(() => props.settings.pauseScreen || 'simple');
 
-const navTabs = [
-  { label: 'All', icon: LayoutGrid },
-  { label: 'Movies', icon: Film, active: true },
-  { label: 'Shows', icon: Tv },
-  { label: 'Books', icon: Book },
-  { label: 'Audiobooks', icon: Headphones }
-];
+const navTabs = computed(() => [
+  { label: t('common.all'), icon: LayoutGrid },
+  { label: t('common.mediaTypes.movie'), icon: Film, active: true },
+  { label: t('common.mediaTypes.show'), icon: Tv },
+  { label: t('common.mediaTypes.book'), icon: Book },
+  { label: t('common.mediaTypes.audiobook'), icon: Headphones }
+]);
 
-// Sample titles: the server's own movies when it has some, placeholders otherwise.
+// Sample titles: the server's own movies when it has some, placeholders otherwise. The
+// placeholder titles, names and genres stand in for library metadata, so they stay as-is;
+// only the prose around them is translated.
 const samples = ref([]);
 const heroItem = ref(null);
 const heroCredits = ref(null);
@@ -267,15 +266,14 @@ function samplePoster(title, i) {
 <text x="32" y="540" font-family="system-ui,sans-serif" font-size="38" font-weight="700" fill="#fff">${title.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</text></svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
-const SAMPLE_CREDITS = {
-  tagline: 'Some messages take a lifetime to arrive.',
+const sampleCredits = computed(() => ({
+  tagline: t('preview.sample.tagline'),
   crew: [{ name: 'Maren Holt', job: 'Director' }, { name: 'Tomas Reyes', job: 'Original Music Composer' }, { name: 'Ada Kwan', job: 'Director of Photography' }],
   cast: ['Ingrid Solberg', 'Theo Marsh', 'Nadia Farouk', 'Sam Okafor'].map((name, i) => ({ name, character: ['Elin', 'Jonah', 'Mira', 'The Harbourmaster'][i] })),
   studios: ['Northlight Pictures'],
   keywords: ['lighthouse', 'island', 'letters', 'second chances'],
   facts: { originalLanguage: 'en', budget: 18000000, revenue: 64000000 }
-};
-const sampleDescription = 'A lighthouse keeper on a remote island finds a message in a bottle that pulls her back into the life she left behind.';
+}));
 
 const shelfCards = computed(() => Array.from({ length: shelfColumns.value * 3 }, (_, i) => {
   // A small library repeats rather than leaving gaps.
@@ -302,7 +300,7 @@ const heroMeta = computed(() => {
   const year = (item?.release_date || '').slice(0, 4);
   parts.push(year || '2021');
   const minutes = Math.round((item?.duration || 7440) / 60);
-  parts.push(`${Math.floor(minutes / 60)} h ${minutes % 60} min`);
+  parts.push(t('preview.runtime', { hours: Math.floor(minutes / 60), minutes: minutes % 60 }));
   if (item?.age_rating) parts.push(item.age_rating);
   parts.push(item?.genres ? String(item.genres).split(',').slice(0, 2).map((g) => g.trim()).join(', ') : 'Drama, Adventure');
   return parts.join(' · ');
@@ -324,28 +322,29 @@ const pauseItem = computed(() => heroItem.value
       id: null,
       title: 'The Long Voyage',
       media_type: 'movie',
-      description: sampleDescription,
+      description: t('preview.sample.description'),
       release_date: '2021-06-11',
       genres: 'Drama, Adventure',
       age_rating: 'PG-13',
       duration: 7440
     });
 const simpleTime = computed(() => {
-  const t = Math.round(pauseItem.value.duration * 0.42 / 60);
-  return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}:00`;
+  const mins = Math.round(pauseItem.value.duration * 0.42 / 60);
+  return `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, '0')}:00`;
 });
 
 const caption = computed(() => {
   switch (props.view) {
-    case 'title': return 'A movie page with the rating, watch party and collection settings above.';
-    case 'login': return 'The sign-in screen, with your server name and notice.';
-    case 'pause': return {
-      simple: 'Simple: nothing covers the picture. Pick another style to see it here.',
-      details: 'Details: shown after a couple of seconds paused. Hover a style to compare.',
-      cinematic: 'Cinematic: cast photos and facts come from TMDB when a key is set.',
-      bedtime: 'Bedtime: a dim clock and when it ends.'
-    }[pauseMode.value] || '';
-    default: return `The home shelf on a big screen: ${props.settings.layoutMode === 'sidebar' ? 'sidebar' : 'top navigation'} layout, ${contained.value ? 'contained' : 'full'} width and the ${props.settings.accentTheme || 'zinc'} accent.`;
+    case 'title': return t('preview.captions.title');
+    case 'login': return t('preview.captions.login');
+    case 'pause': return ['simple', 'details', 'cinematic', 'bedtime'].includes(pauseMode.value)
+      ? t(`preview.captions.pause.${pauseMode.value}`)
+      : '';
+    default: return t('preview.captions.shelf', {
+      layout: t(`preview.layouts.${props.settings.layoutMode === 'sidebar' ? 'sidebar' : 'topnav'}`),
+      width: t(`preview.widths.${contained.value ? 'contained' : 'full'}`),
+      accent: optionLabel(ACCENT_OPTIONS, props.settings.accentTheme || 'zinc')
+    });
   }
 });
 

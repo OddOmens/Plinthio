@@ -1,0 +1,69 @@
+{
+  "backTo": "Wróć do {server}",
+  "joining": "Dołączanie do wspólnego seansu…",
+  "watchParty": "Wspólny seans",
+  "showPanel": "Pokaż wspólny seans",
+  "hidePanel": "Ukryj wspólny seans",
+  "reconnecting": "Ponowne łączenie…",
+  "waitingFor": "Czekamy na: {names}…",
+  "closePanel": "Zamknij panel",
+  "invite": "Zaproś",
+  "inviteHint": "Każdy z kontem na tym serwerze może dołączyć przez link lub kod {code}.",
+  "watching": "Oglądają ({count})",
+  "you": "(ty)",
+  "loading": "Wczytywanie",
+  "host": "Gospodarz",
+  "whoControls": "Kto może odtwarzać, wstrzymywać i przewijać",
+  "onlyMe": "Tylko ja",
+  "everyone": "Wszyscy",
+  "chatEmpty": "Przywitaj się — wiadomości trafiają do wszystkich oglądających.",
+  "messagePlaceholder": "Wiadomość",
+  "send": "Wyślij",
+  "leave": "Opuść",
+  "endForEveryone": "Zakończ dla wszystkich",
+  "tapToJoin": "Stuknij odtwarzanie, aby dołączyć",
+  "hostInControl": "Odtwarzaniem steruje gospodarz",
+  "unreachable": "Nie udało się połączyć z seansem",
+  "messageNotSent": "Nie wysłano wiadomości",
+  "moveOnFailed": "Nie udało się przejść dalej",
+  "copyPrompt": "Skopiuj ten link z zaproszeniem:",
+  "endConfirm": {
+    "title": "Zakończyć wspólny seans?",
+    "message": "Seans zostanie zatrzymany dla wszystkich oglądających.",
+    "confirm": "Zakończ seans"
+  },
+  "problems": {
+    "P600": {
+      "title": "Wspólne seanse są wyłączone",
+      "message": "Administrator musi najpierw włączyć wspólne seanse na tym serwerze."
+    },
+    "P601": {
+      "title": "Ten seans się zakończył",
+      "message": "Gospodarz go zakończył albo wszyscy wyszli. Poproś o nowy link z zaproszeniem."
+    },
+    "P603": {
+      "title": "Niedostępne dla ciebie",
+      "message": "W tym seansie oglądany jest tytuł, którego twoje konto nie może otworzyć."
+    },
+    "P605": {
+      "title": "Ten seans jest pełny",
+      "message": "Wspólny seans mieści do 20 osób. Spróbuj ponownie, gdy ktoś wyjdzie."
+    },
+    "disabled": {
+      "title": "Wspólne seanse zostały wyłączone",
+      "message": "Administrator wyłączył wspólne seanse, co zakończyło ten seans."
+    },
+    "over": {
+      "title": "Seans dobiegł końca",
+      "message": "Gospodarz zakończył wspólny seans. Dzięki za wspólne oglądanie!"
+    },
+    "couldntJoin": {
+      "title": "Nie udało się dołączyć",
+      "message": "Coś poszło nie tak podczas dołączania do seansu."
+    },
+    "couldntLoad": {
+      "title": "Nie udało się wczytać wideo",
+      "message": "Spróbuj ponownie otworzyć link z zaproszeniem."
+    }
+  }
+}

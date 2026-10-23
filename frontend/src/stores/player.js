@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import api from '../api/client';
 import { useViewSession } from '../composables/useViewSession';
 import { coverUrl as buildCoverUrl } from '../utils/cover';
+import { t } from '../i18n';
 
 let audio = null;
 let saveInterval = null;
@@ -32,9 +33,9 @@ export const usePlayerStore = defineStore('player', {
 
   getters: {
     currentChapterIndex(state) {
-      const t = state.currentTime;
+      const now = state.currentTime;
       for (let i = state.chapters.length - 1; i >= 0; i--) {
-        if (t >= state.chapters[i].start - 0.5) return i;
+        if (now >= state.chapters[i].start - 0.5) return i;
       }
       return state.chapters.length ? 0 : -1;
     },
@@ -292,8 +293,8 @@ export const usePlayerStore = defineStore('player', {
       if (!('mediaSession' in navigator) || !this.currentItem) return;
 
       navigator.mediaSession.metadata = new MediaMetadata({
-        title: this.currentItem.title || 'Plinthio Audiobook',
-        artist: this.currentItem.author || 'Unknown Author',
+        title: this.currentItem.title || t('player.untitledAudiobook'),
+        artist: this.currentItem.author || t('player.unknownAuthor'),
         album: this.currentItem.series || 'Plinthio',
         artwork: [
           { src: buildCoverUrl(this.currentItem, { width: 360, raw: true }), sizes: '512x512', type: 'image/jpeg' }

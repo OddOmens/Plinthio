@@ -1,13 +1,13 @@
 <template>
-  <SectionHeader title="Features" description="What's switched on for everyone on this server. Changes save as you make them.">
+  <SectionHeader :title="$t('admin.features.title')" :description="$t('admin.features.description')">
     <SaveStatus :status="setting.status.value" :message="setting.message.value" />
   </SectionHeader>
 
-  <SettingsCard title="Shelf views" description="Alphabetical and Creator are always there. Turning a folder view off hides it for everyone.">
+  <SettingsCard :title="$t('admin.features.shelfViews.title')" :description="$t('admin.features.shelfViews.desc')">
     <template #actions><SaveStatus :status="filterSave.status.value" :message="filterSave.message.value" /></template>
     <div class="divide-y divide-border">
       <ToggleRow
-        v-for="mode in FOLDER_MODES"
+        v-for="mode in folderModes"
         :key="mode.id"
         :label="mode.label"
         :description="mode.desc"
@@ -17,7 +17,7 @@
     </div>
   </SettingsCard>
 
-  <SettingsCard title="Ratings" description="Which ratings appear. One turned off is hidden everywhere, and the server stops sending it.">
+  <SettingsCard :title="$t('admin.features.ratings.title')" :description="$t('admin.features.ratings.desc')">
     <div class="divide-y divide-border">
       <ToggleRow
         v-for="opt in ratingOptions"
@@ -30,17 +30,17 @@
     </div>
   </SettingsCard>
 
-  <SettingsCard title="Movies and watching together">
+  <SettingsCard :title="$t('admin.features.movies.title')">
     <div class="divide-y divide-border">
       <ToggleRow
-        label="Show missing films in collections"
-        description="A collection like Shrek or Star Wars also lists the films you don't have, greyed out with a Request button. They never appear on the Movies shelf. Needs a TMDB key."
+        :label="$t('admin.features.movies.missingFilms.label')"
+        :description="$t('admin.features.movies.missingFilms.desc')"
         :model-value="store.showMissingFilms"
         @update:model-value="setting.set({ showMissingFilms: $event })"
       />
       <ToggleRow
-        label="Watch parties"
-        description="A Watch Together button on movies and episodes: watch in sync from different places, with chat. Content limits still apply to everyone in a party. Friends away from home need to be able to reach this server (see Network). Turning it off ends any party in progress."
+        :label="$t('admin.features.movies.watchParties.label')"
+        :description="$t('admin.features.movies.watchParties.desc')"
         :model-value="store.partyModeEnabled"
         @update:model-value="setting.set({ partyModeEnabled: $event })"
       />
@@ -58,15 +58,16 @@ import SectionHeader from '../settings/SectionHeader.vue';
 import SettingsCard from '../settings/SettingsCard.vue';
 import ToggleRow from '../settings/ToggleRow.vue';
 import SaveStatus from '../settings/SaveStatus.vue';
+import { t } from '../../i18n';
 
 const store = useCustomizationStore();
 const setting = useServerSetting();
 const filterSave = useSaveStatus();
 
-const FOLDER_MODES = [
-  { id: 'disk_folder', label: 'Disk folders', desc: 'Browse by the folders on the server.' },
-  { id: 'custom_folder', label: 'Custom folders', desc: 'People\'s own in-app folders, with an Unorganized catch-all.' }
-];
+const folderModes = computed(() => [
+  { id: 'disk_folder', label: t('admin.features.folderModes.diskFolder.label'), desc: t('admin.features.folderModes.diskFolder.desc') },
+  { id: 'custom_folder', label: t('admin.features.folderModes.customFolder.label'), desc: t('admin.features.folderModes.customFolder.desc') }
+]);
 const allowedFilters = ref(['series', 'creator', 'disk_folder', 'custom_folder']);
 
 async function setFolderMode(id, on) {
@@ -78,9 +79,13 @@ async function setFolderMode(id, on) {
 }
 
 const ratingOptions = computed(() => [
-  { id: 'showPersonal', label: 'Personal ratings', desc: 'Each person can give 1–5 stars, and sees their own.' },
-  { id: 'showCommunity', label: `${store.serverName || 'Plinthio'} ratings`, desc: 'The average from everyone on this server.' },
-  { id: 'showExternal', label: 'World ratings (TMDB)', desc: 'TMDB\'s score for movies, shows and anime. Needs a TMDB key.' }
+  { id: 'showPersonal', label: t('admin.features.ratings.personal.label'), desc: t('admin.features.ratings.personal.desc') },
+  {
+    id: 'showCommunity',
+    label: t('admin.features.ratings.community.label', { name: store.serverName || 'Plinthio' }),
+    desc: t('admin.features.ratings.community.desc')
+  },
+  { id: 'showExternal', label: t('admin.features.ratings.external.label'), desc: t('admin.features.ratings.external.desc') }
 ]);
 
 onMounted(async () => {

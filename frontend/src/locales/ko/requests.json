@@ -1,0 +1,56 @@
+{
+  "title": "요청",
+  "intro": "라이브러리에 아직 없는 영화, 시리즈, 애니메이션, 책, 오디오북을 요청하세요.",
+  "newRequest": "새 요청",
+  "request": "요청",
+  "mine": "내 요청",
+  "reviewQueue": "검토 대기열",
+  "filterByStatus": "상태별 필터",
+  "allStatuses": "모든 상태",
+  "emptyReview": "검토할 요청이 없어요",
+  "emptyMine": "아직 요청한 항목이 없어요",
+  "emptyMineHint": "위에서 검색하거나, 목록에 있는 제목의 요청 버튼을 사용하세요.",
+  "requestedBy": "요청자: {name}",
+  "deletedUser": "삭제된 사용자",
+  "quotedNote": "“{note}”",
+  "notePlaceholder": "요청자에게 남길 메모(선택)",
+  "deleteRequest": "요청 삭제",
+  "withdraw": "철회",
+  "status": {
+    "pending": "대기 중",
+    "accepted_pending": "수락됨 · 추가 대기",
+    "accepted_added": "수락됨 · 추가됨",
+    "rejected": "거절됨"
+  },
+  "actions": {
+    "acceptPending": "수락 · 추가 대기",
+    "acceptAdded": "수락 · 추가됨",
+    "reject": "거절",
+    "backToPending": "대기 중으로 되돌리기"
+  },
+  "confirm": {
+    "withdrawTitle": "요청을 철회할까요?",
+    "deleteTitle": "요청을 삭제할까요?",
+    "withdrawMessage": "'{title}' 요청이 철회돼요.",
+    "deleteMessage": "'{title}' 요청이 모든 사용자에게서 삭제돼요."
+  },
+  "errors": {
+    "load": "요청을 불러올 수 없어요.",
+    "send": "요청을 보낼 수 없어요.",
+    "update": "요청을 업데이트할 수 없어요.",
+    "remove": "요청을 삭제할 수 없어요."
+  },
+  "search": {
+    "placeholder": {
+      "movie": "영화 검색…",
+      "show": "시리즈 검색…",
+      "anime": "애니메이션 검색…",
+      "book": "책 검색…",
+      "manga": "만화 검색…",
+      "audiobook": "오디오북 검색…",
+      "titles": "제목 검색…"
+    },
+    "noResults": "'{query}'에 대한 결과가 없어요.",
+    "failed": "검색에 실패했어요. 잠시 후 다시 시도하세요."
+  }
+}

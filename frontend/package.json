@@ -1,13 +1,14 @@
 {
   "name": "plinthio-frontend",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "check:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@lucide/vue": "^1.57.0",

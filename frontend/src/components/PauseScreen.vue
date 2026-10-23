@@ -17,7 +17,7 @@
           @error="poster = ''"
         />
         <div class="details-text min-w-0 flex flex-col">
-          <p class="pz-eyebrow font-semibold uppercase tracking-[0.2em] text-white/60">You're watching</p>
+          <p class="pz-eyebrow font-semibold uppercase tracking-[0.2em] text-white/60">{{ $t('player.pause.youreWatching') }}</p>
           <h2 class="pz-title font-bold leading-[1.05]">{{ heading }}</h2>
           <p v-if="subheading" class="pz-sub text-white/85">{{ subheading }}</p>
           <p v-if="metaLine" class="pz-body text-white/60">{{ metaLine }}</p>
@@ -28,7 +28,7 @@
               <dt class="text-white/50">{{ directorLabel }}</dt><dd class="text-white/90">{{ directors }}</dd>
             </template>
             <template v-if="starring">
-              <dt class="text-white/50">Starring</dt><dd class="text-white/90">{{ starring }}</dd>
+              <dt class="text-white/50">{{ $t('player.pause.starring') }}</dt><dd class="text-white/90">{{ starring }}</dd>
             </template>
           </dl>
           <p class="pz-sub text-white/80 font-medium">{{ remainingLine }}</p>
@@ -40,7 +40,7 @@
     <div v-else-if="mode === 'cinematic'" class="absolute inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center">
       <img v-if="poster" :src="poster" alt="" class="absolute inset-0 w-full h-full object-cover opacity-20 blur-2xl scale-110" @error="poster = ''" />
       <div class="cine-body relative w-full flex flex-col items-center text-center">
-        <p class="pz-eyebrow font-semibold uppercase tracking-[0.3em] text-white/50">Paused</p>
+        <p class="pz-eyebrow font-semibold uppercase tracking-[0.3em] text-white/50">{{ $t('player.pause.paused') }}</p>
         <h2 class="pz-title font-bold leading-[1.05]">{{ heading }}</h2>
         <p v-if="subheading" class="pz-sub text-white/80">{{ subheading }}</p>
         <p v-if="credits?.tagline" class="pz-sub italic text-white/80">“{{ credits.tagline }}”</p>
@@ -69,12 +69,11 @@
     <div v-else-if="mode === 'bedtime'" class="bed-body absolute inset-0 bg-black/95 flex flex-col items-center justify-center text-center">
       <p class="bed-clock font-light tabular-nums text-white/60 leading-none">{{ clock }}</p>
       <p class="pz-sub text-white/50">{{ heading }}<template v-if="subheading"> · {{ subheading }}</template></p>
-      <p class="pz-sub text-white/70">
-        {{ remainingShort }} left · ends at <span class="font-semibold text-white/85">{{ endsAt(remaining) }}</span>
-      </p>
+      <I18nT keypath="player.pause.leftEndsAt" tag="p" class="pz-sub text-white/70" :params="{ remaining: remainingShort }">
+        <template #time><span class="font-semibold text-white/85">{{ endsAt(remaining) }}</span></template>
+      </I18nT>
       <p v-if="seasonRest && seasonRest.count" class="pz-body text-white/45">
-        Rest of the season ({{ seasonRest.count }} more {{ seasonRest.count === 1 ? 'episode' : 'episodes' }}) would end at
-        {{ endsAt(remaining + seasonRest.seconds) }}
+        {{ $t('player.pause.seasonRest', { count: seasonRest.count, time: endsAt(remaining + seasonRest.seconds) }) }}
       </p>
     </div>
   </div>
@@ -83,6 +82,8 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { coverUrl } from '../utils/cover';
+import { t, n, d, locale } from '../i18n';
+import I18nT from '../i18n/I18nT.vue';
 
 const props = defineProps({
   mode: { type: String, required: true },
@@ -129,7 +130,7 @@ const metaLine = computed(() => {
 });
 
 const directorJobs = computed(() => (isEpisode.value ? null : ['Director']));
-const directorLabel = computed(() => (isEpisode.value ? 'Created by' : 'Directed by'));
+const directorLabel = computed(() => (isEpisode.value ? t('player.pause.createdBy') : t('player.pause.directedBy')));
 const directors = computed(() => {
   const c = props.credits;
   if (!c) return '';
@@ -139,14 +140,17 @@ const directors = computed(() => {
 const starring = computed(() => (props.credits?.cast || []).slice(0, 4).map((p) => p.name).join(', '));
 const castWithPhotos = computed(() => (props.credits?.cast || []).filter((p) => p.photo).slice(0, 6));
 
-const money = (n) => {
-  if (n >= 1e9) return `$${(n / 1e9).toFixed(n >= 1e10 ? 0 : 1)} billion`;
-  if (n >= 1e6) return `$${Math.round(n / 1e6)} million`;
-  return `$${n.toLocaleString()}`;
+// "$1.2 billion": Intl's long compact form picks the scale word (and 億/억 in Japanese and
+// Korean, which count large numbers in fours).
+const money = (value) => {
+  const amount = value >= 1e6
+    ? n(value, { notation: 'compact', compactDisplay: 'long', maximumFractionDigits: value >= 1e9 && value < 1e10 ? 1 : 0 })
+    : n(value);
+  return t('player.pause.dollars', { amount });
 };
 const languageName = (code) => {
   try {
-    return new Intl.DisplayNames([navigator.language || 'en'], { type: 'language' }).of(code);
+    return new Intl.DisplayNames([locale.value], { type: 'language' }).of(code);
   } catch (e) {
     return code;
   }
@@ -159,27 +163,35 @@ const facts = computed(() => {
   const f = c.facts || {};
   const out = [];
   if (f.originalTitle && f.originalTitle !== props.item.title && f.originalTitle !== props.item.series) {
-    out.push({ label: 'Original title', value: f.originalTitle });
+    out.push({ label: t('player.pause.facts.originalTitle'), value: f.originalTitle });
   }
-  if (f.originalLanguage && f.originalLanguage !== 'en') out.push({ label: 'Language', value: languageName(f.originalLanguage) });
-  if (f.budget) out.push({ label: 'Budget', value: money(f.budget) });
+  if (f.originalLanguage && f.originalLanguage !== 'en') out.push({ label: t('common.language'), value: languageName(f.originalLanguage) });
+  if (f.budget) out.push({ label: t('player.pause.facts.budget'), value: money(f.budget) });
   if (f.revenue) {
-    const multiple = f.budget ? ` (${(f.revenue / f.budget).toFixed(1)}× its budget)` : '';
-    out.push({ label: 'Box office', value: `${money(f.revenue)}${multiple}` });
+    const value = f.budget
+      ? t('player.pause.timesBudget', { amount: money(f.revenue), multiple: n(f.revenue / f.budget, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) })
+      : money(f.revenue);
+    out.push({ label: t('player.pause.facts.boxOffice'), value });
   }
-  if (f.seasons) out.push({ label: 'Series', value: `${f.seasons} ${f.seasons === 1 ? 'season' : 'seasons'}${f.episodes ? `, ${f.episodes} episodes` : ''}` });
+  if (f.seasons) {
+    const seasons = t('player.pause.seasons', { count: f.seasons });
+    out.push({
+      label: t('player.pause.facts.series'),
+      value: f.episodes ? t('player.pause.seasonsAndEpisodes', { seasons, episodes: t('player.pause.episodes', { count: f.episodes }) }) : seasons
+    });
+  }
   if (f.releaseDate && isEpisode.value) {
     const span = [f.releaseDate.slice(0, 4), c.status === 'Ended' && f.lastAirDate ? f.lastAirDate.slice(0, 4) : ''].filter(Boolean);
-    out.push({ label: 'On air', value: span.length === 2 && span[0] !== span[1] ? `${span[0]}–${span[1]}` : (c.status === 'Ended' ? span[0] : `since ${span[0]}`) });
+    out.push({ label: t('player.pause.facts.onAir'), value: span.length === 2 && span[0] !== span[1] ? `${span[0]}–${span[1]}` : (c.status === 'Ended' ? span[0] : t('player.pause.since', { year: span[0] })) });
   }
-  if (c.collection) out.push({ label: 'Part of', value: c.collection });
+  if (c.collection) out.push({ label: t('player.pause.facts.partOf'), value: c.collection });
   const makers = (isEpisode.value ? c.networks : c.studios) || [];
-  if (makers.length) out.push({ label: isEpisode.value ? 'Network' : 'Studio', value: makers.slice(0, 2).join(', ') });
+  if (makers.length) out.push({ label: isEpisode.value ? t('player.pause.facts.network') : t('player.pause.facts.studio'), value: makers.slice(0, 2).join(', ') });
   const composer = (c.crew || []).find((p) => p.job === 'Original Music Composer');
-  if (composer) out.push({ label: 'Music', value: composer.name });
+  if (composer) out.push({ label: t('player.pause.facts.music'), value: composer.name });
   const dop = (c.crew || []).find((p) => p.job === 'Director of Photography');
-  if (dop) out.push({ label: 'Cinematography', value: dop.name });
-  if (!isEpisode.value && directors.value) out.unshift({ label: 'Directed by', value: directors.value });
+  if (dop) out.push({ label: t('player.pause.facts.cinematography'), value: dop.name });
+  if (!isEpisode.value && directors.value) out.unshift({ label: t('player.pause.directedBy'), value: directors.value });
   return out.slice(0, 8);
 });
 const keywords = computed(() => (props.credits?.keywords || []).slice(0, 8).join(' · '));
@@ -188,8 +200,8 @@ const remaining = computed(() => Math.max(0, (props.duration || 0) - (props.curr
 
 function runtime(seconds) {
   const m = Math.round(seconds / 60);
-  if (m < 60) return `${m} min`;
-  return `${Math.floor(m / 60)} h ${m % 60} min`;
+  if (m < 60) return t('player.pause.runtimeMinutes', { minutes: m });
+  return t('player.pause.runtimeHours', { hours: Math.floor(m / 60), minutes: m % 60 });
 }
 const remainingShort = computed(() => runtime(remaining.value));
 
@@ -199,13 +211,13 @@ let tick = null;
 onMounted(() => { tick = setInterval(() => { now.value = Date.now(); }, 15000); });
 onUnmounted(() => clearInterval(tick));
 
-const timeFmt = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
-const clock = computed(() => timeFmt.format(now.value));
+const TIME = { hour: 'numeric', minute: '2-digit' };
+const clock = computed(() => d(now.value, TIME));
 function endsAt(seconds) {
-  return timeFmt.format(now.value + seconds * 1000);
+  return d(now.value + seconds * 1000, TIME);
 }
 const remainingLine = computed(() => (props.duration
-  ? `${remainingShort.value} left · ends at ${endsAt(remaining.value)}`
+  ? t('player.pause.leftEndsAt', { remaining: remainingShort.value, time: endsAt(remaining.value) })
   : ''));
 </script>
 

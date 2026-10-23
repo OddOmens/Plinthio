@@ -1,0 +1,60 @@
+{
+  "welcome": {
+    "title": "Welkom bij {name}",
+    "text": "Laten we alles instellen zoals jij het wilt. Dit duurt ongeveer dertig seconden, en je kunt alles later wijzigen in Instellingen."
+  },
+  "theme": {
+    "title": "Kies je stijl",
+    "text": "Dit is alleen voor jou — het verandert niets aan wat anderen zien."
+  },
+  "accent": {
+    "title": "Kies een accentkleur",
+    "text": "Knoppen, markeringen en voortgangsbalken gebruiken deze kleur.",
+    "admin": "Als admin stel je dit in voor de hele server. Mensen kunnen in Instellingen hun eigen kleur kiezen als je dat toestaat (Admin → Afspelen).",
+    "personal": "Dit is alleen voor jou; je kunt het altijd wijzigen in Instellingen."
+  },
+  "interests": {
+    "title": "Waarvoor ben je hier?",
+    "text": "We tonen deze op je plank en verbergen de rest. Kies er zoveel als je wilt.",
+    "pickOne": "Kies er minstens één, zodat je plank niet leeg is.",
+    "types": {
+      "manga": {
+        "label": "Manga",
+        "hint": "Strips & graphic novels"
+      },
+      "book": {
+        "label": "Boeken",
+        "hint": "EPUB & PDF lezen"
+      },
+      "audiobook": {
+        "label": "Luisterboeken",
+        "hint": "Luisteren en verder waar je was"
+      },
+      "movie": {
+        "label": "Films",
+        "hint": "Kijken in je browser"
+      },
+      "show": {
+        "label": "Tv-series",
+        "hint": "Seizoenen & afleveringen"
+      },
+      "anime": {
+        "label": "Anime",
+        "hint": "Ondertiteld & nagesynchroniseerd"
+      }
+    }
+  },
+  "security": {
+    "title": "Bescherm je account",
+    "text": "Optioneel. Tweestapsverificatie vraagt bij het inloggen om een code van je telefoon, zodat een wachtwoord alleen niet genoeg is. Je kunt het nu aanzetten of later in Instellingen → Beveiliging."
+  },
+  "done": {
+    "title": "Je bent er klaar voor",
+    "everything": "Je plank toont alles. Duik erin.",
+    "tuned": "Je plank is afgestemd op {list}. Je kunt altijd meer toevoegen via Instellingen."
+  },
+  "nav": {
+    "startBrowsing": "Begin met bladeren",
+    "notNow": "Niet nu"
+  }
+}

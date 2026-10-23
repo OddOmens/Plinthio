@@ -1,0 +1,433 @@
+{
+  "page": {
+    "title": "Documentatie",
+    "backToLibrary": "Terug naar bibliotheek",
+    "serverStatus": "Serverstatus",
+    "version": "Versie {version}"
+  },
+  "recommended": "Aanbevolen",
+  "nav": {
+    "groups": {
+      "basics": "Basis",
+      "using": "Plinthio gebruiken",
+      "admin": "Beheer",
+      "help": "Hulp"
+    },
+    "items": {
+      "overview": "Overzicht en opslag",
+      "media": "Ondersteunde media",
+      "roles": "Rollen en rechten",
+      "pwa": "PWA-app voor mobiel instellen",
+      "remote": "Toegang op afstand en Tailscale",
+      "shortcuts": "Sneltoetsen",
+      "backups": "Back-ups en gegevensveiligheid",
+      "api": "REST API en webhooks",
+      "css": "Eigen CSS-opmaak",
+      "troubleshooting": "Probleemoplossing en FAQ",
+      "errors": "Foutcodes"
+    }
+  },
+  "overview": {
+    "title": "Aan de slag met Plinthio",
+    "intro": "Plinthio is een snelle, lichte, zelf gehoste mediaserver en moderne PWA, gemaakt voor luisterboeken, manga, strips, boeken en video (films, tv-series en anime). Het scant je bestaande mappen rechtstserie — er wordt bij het inlezen niets gekopieerd, geconverteerd of opnieuw gecodeerd — en bouwt een doorzoekbare catalogus met covers, lees- en afspeelvoortgang per gebruiker, bladwijzers en optionele aanvulling van metadata.",
+    "cards": {
+      "audiobooks": {
+        "title": "Luisterboeken",
+        "text": "M4B met hoofdstukmarkeringen, MP3, FLAC, afspelen op de achtergrond en een schermvullende speler in de stijl van Apple Music."
+      },
+      "manga": {
+        "title": "Manga & strips",
+        "text": "CBZ en ZIP direct in het geheugen uitgepakt, dubbele-paginamodus, lezen van rechts naar links en directe paginacache."
+      },
+      "books": {
+        "title": "Boeken en documenten",
+        "text": "EPUB-lezer met paginakleuren, lettertypen en indelingen die je naar elk boek volgen, markeringen in vijf kleuren met notities, bladwijzers, en je plek gesynchroniseerd tussen apparaten."
+      },
+      "movies": {
+        "title": "Films",
+        "text": "MP4, MKV en WebM met byte-range-streaming, spoelen en hervatten vanaf je positie."
+      },
+      "shows": {
+        "title": "Tv-series",
+        "text": "Groepering per seizoen en aflevering met voortgang per aflevering, zodat verder kijken altijd bij de juiste aflevering uitkomt."
+      },
+      "anime": {
+        "title": "Anime",
+        "text": "Behandeld als een eigen bibliotheektype, zodat het los van live-action kan worden gefilterd, doorbladerd en aan metadata gekoppeld."
+      }
+    },
+    "libraries": {
+      "title": "Hoe bibliotheken werken",
+      "what": "Een **bibliotheek** is een map op schijf die aan één mediatype is gekoppeld (luisterboeken, manga en strips, e-books, tv-series, films of anime). Voeg bibliotheken toe via **Admin → Bibliotheken** — wijs Plinthio een map aan, kies het type, en het scant meteen. Een scan opnieuw uitvoeren is altijd veilig: het vergelijkt met wat al geïndexeerd is, herkent hernoemde of verplaatste bestanden aan de inhoud, voegt alles wat nieuw is toe en verwijdert catalogusitems voor bestanden die niet meer op schijf staan (zonder de bestanden zelf aan te raken).",
+      "deleting": "Een bibliotheek uit Plinthio verwijderen haalt alleen de catalogusitems weg (titels, covers, metadata) — bestanden op je bestandssysteem worden nooit aangeraakt. Leesvoortgang en bladwijzers blijven bewaard op basis van de identiteit van het bestand, dus als je dezelfde map opnieuw toevoegt en scant, worden ze automatisch weer gekoppeld."
+    },
+    "storage": {
+      "title": "Opslagindeling in Docker",
+      "text": "Plinthio verdeelt gegevens over configuratie, de metadatadatabase en alleen-lezen mediakoppelingen. Alleen de paden onder {path} hoeven te worden geback-upt om de staat van je server te bewaren (gebruikers, voortgang, bladwijzers, eigen mappen, instellingen) — je mediabestanden staan waar je ze ook koppelt en worden nooit gewijzigd.",
+      "paths": {
+        "database": "SQLite-database met WAL-modus",
+        "backups": "Geplande, handmatige en pre-upgrade momentopnamen van de database",
+        "covers": "Covers van boeken, series en films",
+        "avatars": "Geüploade profielfoto's",
+        "cache": "Gerenderde pagina's en videosegmenten (veilig te verwijderen)",
+        "ssl": "De ingebouwde HTTPS-certificaten",
+        "jwt": "Willekeurige inlogsleutel met hoge entropie",
+        "media": "Gekoppelde mediamappen op je host (alleen-lezen is prima)"
+      }
+    },
+    "setup": {
+      "title": "Vereisten en eerste installatie",
+      "docker": "Docker (of Docker Compose) is de ondersteunde manier om Plinthio te draaien — zie {file} in de repository.",
+      "firstLaunch": "Bij de eerste start, als er nog geen adminaccount is, word je doorgestuurd naar een eenmalig **Instellen**-scherm om de eerste admin aan te maken.",
+      "afterSetup": "Log na het instellen in en voeg je eerste bibliotheek toe via **Admin → Bibliotheken** om te beginnen met scannen.",
+      "noDatabase": "Er is geen externe database nodig — alles wordt opgeslagen in één SQLite-bestand met write-ahead logging, voor veilige gelijktijdige toegang."
+    }
+  },
+  "media": {
+    "title": "Ondersteunde media en metadata",
+    "intro": "Elk mediatype dat Plinthio indexeert, de bestandsformaten die het herkent, en waar de covers en beschrijvende metadata vandaan komen.",
+    "audiobooks": "Formaten: {m4b}, {mp3}, {flac}. Hoofdstukmarkeringen in M4B-bestanden worden direct gelezen en in de speler getoond. Covers worden uit ingesloten albumhoezen gehaald als die er zijn.",
+    "manga": "Formaten: {cbz}, {zip}. Pagina's worden op verzoek in het geheugen uitgepakt — er wordt niets naar schijf uitgepakt. Werkt direct met **MangaDex** als gratis metadatabron, zonder API-sleutel.",
+    "booksTitle": "Boeken en e-books",
+    "books": "Formaten: {epub}, {pdf}. Werkt direct met **Google Books** en **Open Library** voor metadata en covers, zonder API-sleutel.",
+    "videoTitle": "{movieIcon} Films, {tvIcon} tv-series en {animeIcon} anime",
+    "video": "Formaten: {mp4}, {mkv}, {webm}. Streaming gebruikt HTTP-range-verzoeken om te kunnen spoelen; inhoud die een browser niet zelf kan afspelen, wordt direct omgezet. Metadata en artwork komen van **TMDB (The Movie Database)**, waarvoor een gratis persoonlijke API-sleutel nodig is die een admin één keer instelt onder **Admin → Metadata**. Zonder sleutel worden deze drie bibliotheken nog steeds gewoon gescand en gestreamd — ze krijgen alleen geen automatische posters, samenvattingen of gegevens over cast en seizoenen.",
+    "applying": {
+      "title": "Metadata toepassen en overschrijven",
+      "text": "Admins en redacteuren kunnen vanuit de detailweergave van een item externe bronnen doorzoeken en een match toepassen, of direct een eigen cover uploaden. Handmatige wijzigingen worden nooit overschreven door een nieuwe scan — een scan vult alleen velden in die nog leeg zijn."
+    },
+    "cleanup": {
+      "title": "Titels opschonen en metadata in bulk koppelen (Admin → Metadata)",
+      "text": "Als videobestanden met scene-release-tags (bijv. {example}) worden gescand, haalt de titelopschoner de schone film- of serietitel eruit en zondert het jaartal van vier cijfers af.",
+      "titleCleanup": "**Titels opschonen:** met één klik worden titels in de database in bulk bijgewerkt naar leesbare namen, met behoud van gevonden jaartallen.",
+      "batchMatch": "**TMDB-match in bulk:** zoekt op TMDB met de schone titel en het exacte jaar om officiële posters, regisseur, cast, samenvattingen en releasedatums op te halen voor alle geselecteerde items.",
+      "manual": "**Handmatig overschrijven en identificeren:** zoek handmatig op TMDB met een titel en optioneel een jaar om andere posters te kiezen of onduidelijke titels te corrigeren."
+    }
+  },
+  "roles": {
+    "title": "Rollen en rechten",
+    "intro": "Elk account op de server heeft precies één rol, die bepaalt wat het kan zien en wijzigen.",
+    "admin": {
+      "name": "Admin",
+      "text": "Volledige controle: bibliotheken beheren en scans starten, andere gebruikers aanmaken, bewerken en verwijderen en hun wachtwoorden opnieuw instellen, live systeemlogs en serverbrede statistieken bekijken, algemene instellingen configureren (thema, navigatie-indeling, eigen CSS, TMDB-sleutel, databaseback-ups), plus alles wat een redacteur en kijker kunnen."
+    },
+    "editor": {
+      "name": "Redacteur",
+      "text": "Alles wat een kijker kan, plus gedeelde metadata bewerken die elke gebruiker ziet — titel, auteur, serie, covers, en externe metadatamatches toepassen. Redacteuren kunnen geen bibliotheken, gebruikers of serverinstellingen beheren."
+    },
+    "viewer": {
+      "name": "Kijker",
+      "text": "Kan bladeren, lezen, luisteren en kijken. Lees-, luister- en kijkvoortgang, bladwijzers, verborgen items en eigen mappen zijn allemaal privé per account — de voortgang van een kijker heeft nooit invloed op anderen en is voor niemand anders zichtbaar."
+    },
+    "manage": {
+      "title": "Accounts beheren (alleen admins)",
+      "intro": "Via **Admin → Gebruikers** kun je:",
+      "add": "**Gebruiker toevoegen** — een nieuw account aanmaken met een gebruikersnaam, een eerste wachtwoord en een rol.",
+      "role": "**Rol wijzigen** — gebruik de rolkeuze naast een gebruiker (je kunt je eigen rol niet wijzigen, zodat de server altijd minstens één admin houdt die rollen kan beheren).",
+      "edit": "**Bewerken** (potloodicoon) — het account van een gebruiker hernoemen en/of namens diegene het wachtwoord opnieuw instellen, zonder het huidige wachtwoord te kennen. Een nieuw wachtwoord instellen logt die gebruiker meteen overal uit, waarna diegene opnieuw moet inloggen met het nieuwe wachtwoord.",
+      "delete": "**Verwijderen** — verwijdert het account definitief (je kunt je eigen account niet verwijderen).",
+      "away": "**Buitenshuis** (bij Bewerken) — of het account buiten het thuisnetwerk mag worden gebruikt, als de server dat toestaat (Admin → Netwerk).",
+      "resetTwoFactor": "**Tweestapsverificatie terugzetten** (bij Bewerken) — voor iemand die telefoon en back-upcodes kwijt is. Het logt diegene uit; daarna kan diegene met alleen het wachtwoord inloggen en het opnieuw instellen.",
+      "ownPassword": "Elke gebruiker kan het eigen wachtwoord wijzigen via **Instellingen → Beveiliging**, waarvoor wel het huidige wachtwoord nodig is."
+    },
+    "twoFactor": {
+      "title": "Inloggen met tweestapsverificatie (optioneel)",
+      "intro": "Met tweestapsverificatie aan vraagt het inloggen naast je wachtwoord ook om een code van 6 cijfers uit een authenticator-app (Google Authenticator, Microsoft Authenticator, 1Password, Bitwarden, Aegis…).",
+      "turnOn": "**Zet het aan** in Instellingen → Beveiliging: scan de QR-code (of kopieer de sleutel naar de app) en typ daarna de code die de app toont.",
+      "backupCodes": "**Bewaar je back-upcodes.** Tien eenmalige codes voor als je je telefoon kwijt bent, maar één keer getoond. Met elke code kun je één keer inloggen in plaats van met een gewone code.",
+      "signingIn": "**Inloggen:** wachtwoord, daarna de code. Op het codescherm schakel je met ‘Telefoon kwijt?’ over naar een back-upcode.",
+      "turnOff": "**Uitzetten** vereist je wachtwoord en een actuele code. Kom je er niet meer in, dan kan een admin het terugzetten.",
+      "required": "Admins kunnen het verplicht stellen voor inlogs van **buiten het thuisnetwerk** (Admin → Netwerk). Thuis is het nooit verplicht."
+    },
+    "guests": {
+      "title": "Tijdelijke gastpassen en vervaldatums van accounts",
+      "intro": "Admins kunnen elk account een tijdgebonden toegang geven (vooral handig voor logés, vrienden die een luisterboek of stripserie lenen, of proeftoegang).",
+      "presetsTitle": "Vaste looptijden en eigen einddatums",
+      "presets": "Kies uit snelle opties (**1 dag**, **3 dagen**, **7 dagen**, **14 dagen**, **1 maand**, **3 maanden**, **6 maanden**, **1 jaar**), een eigen datum en tijd, of **Voor altijd / geen limiet**.",
+      "lockoutTitle": "Nette afsluiting",
+      "lockout": "Zodra een account de vervaltijd bereikt, worden alle actieve sessies meteen ingetrokken. Bij het inloggen verschijnt een apart vergrendelscherm dat de gebruiker laat weten dat de pas is verlopen en vraagt contact op te nemen met de admin.",
+      "renewTitle": "Verlengen met één klik:",
+      "renew": "Admins zien de vervalstatus van accounts ({active}, {expiring} of {expired}) direct in de tabel **Admin → Gebruikers** en kunnen op het **zandloper**-icoon bij een gebruiker klikken om met één klik dagen toe te voegen of het account onbeperkt te maken.",
+      "status": {
+        "active": "Actief",
+        "expiring": "Verloopt binnenkort",
+        "expired": "Verlopen"
+      }
+    }
+  },
+  "pwa": {
+    "title": "Mobiele app en PWA installeren",
+    "intro": "Installeer Plinthio direct op het beginscherm van je iOS- of Android-apparaat voor een echte app-ervaring met offline schil, schermvullende indeling en volledige mediabediening op het vergrendelscherm.",
+    "https": {
+      "title": "Stap 1: beveiligde verbinding (HTTPS)",
+      "why": "Via gewoon {http} waarschuwt je browser dat de verbinding niet veilig is, en telefoons voeren de offline functies van de app niet uit.",
+      "secure": "Je bent verbonden via HTTPS. Hier hoef je niets te doen.",
+      "tailscaleTitle": "De makkelijke manier: Tailscale",
+      "tailscale": "Tailscale geeft Plinthio een vertrouwd adres zoals {address} dat thuis en onderweg werkt. Er hoeft geen certificaat te worden geïnstalleerd: elk apparaat heeft alleen de gratis Tailscale-app nodig, ingelogd. Je admin stelt het één keer in op de server; zie {link}."
+    },
+    "cert": {
+      "title": "Of, alleen op je thuisnetwerk: Plinthio's eigen certificaat",
+      "intro": "Plinthio levert ook zelf HTTPS, met een eigen certificaat. Installeer dat certificaat één keer op elk apparaat en de waarschuwing verdwijnt voor dat adres.",
+      "download": "Certificaat downloaden",
+      "open": "{url} openen",
+      "ios": {
+        "title": "iPhone en iPad",
+        "download": "Tik in Safari op **Certificaat downloaden** en sta het downloaden van het profiel toe.",
+        "install": "Instellingen → **Profiel gedownload** → Installeer.",
+        "trust": "Instellingen → Algemeen → Info → **Instellingen voor certificaatvertrouwen** → zet ‘Plinthio Local CA’ aan.",
+        "open": "Open het HTTPS-adres hierboven en zet het daarna op je beginscherm (in plaats van een ouder http://-icoon)."
+      },
+      "android": {
+        "title": "Android",
+        "download": "Tik op **Certificaat downloaden**.",
+        "install": "Instellingen → Beveiliging → Meer beveiligingsinstellingen → Versleuteling en inloggegevens → **Een certificaat installeren → CA-certificaat**, en kies het gedownloade bestand.",
+        "open": "Open het HTTPS-adres hierboven in Chrome en installeer de app vanaf daar."
+      },
+      "desktop": {
+        "title": "Mac, Windows en Linux",
+        "text": "Mac: open het bestand en stel het daarna in Sleutelhangertoegang in op **Altijd vertrouwen**. Windows: open het → Certificaat installeren → Lokale computer → ‘Vertrouwde basiscertificeringsinstanties’. Firefox houdt een eigen lijst bij: Instellingen → Privacy en beveiliging → Certificaten → Certificaten bekijken → Organisaties → Importeren."
+      },
+      "note": "Het certificaat voegt elk adres toe op het moment dat een apparaat Plinthio daar voor het eerst via http:// opent. Zegt de browser dat het certificaat niet bij het adres past, open dan één keer de http://-versie, wacht een paar seconden en probeer HTTPS opnieuw. Het certificaat werkt alleen voor privé-netwerkadressen en lokale namen, dus door het te installeren kan geen enkele andere website worden onderschept.",
+      "off": "Plinthio's eigen HTTPS staat op deze server niet aan. Admins die liever geen Tailscale gebruiken: stel {setting} in (al de standaard in de Docker-image; zorg dat poort 8443 is gepubliceerd)."
+    },
+    "ios": {
+      "title": "Apple iOS (iPhone en iPad)",
+      "open": "Open **Safari** en ga naar je Plinthio-adres (bijv. {example}).",
+      "share": "Tik op de knop **Deel** (het vierkantje met een pijl omhoog) in de werkbalk onderaan.",
+      "addToHome": "Scrol omlaag en tik op **Zet op beginscherm**.",
+      "add": "Tik rechtsboven op **Voeg toe**.",
+      "launch": "Start de app vanaf je beginscherm. Hij opent schermvullend zonder adresbalk van de browser, net als een echte app!",
+      "note": "Moet vanuit Safari worden toegevoegd — Chrome en Firefox op iOS gebruiken de engine van Safari, maar bieden de installatie via ‘Zet op beginscherm’ niet aan."
+    },
+    "android": {
+      "title": "Android (Chrome en Firefox)",
+      "open": "Open **Google Chrome** en ga naar je Plinthio-URL.",
+      "menu": "Tik rechtsboven op het menu met de **drie puntjes**.",
+      "install": "Kies **App installeren** of **Toevoegen aan startscherm**.",
+      "confirm": "Bevestig de melding. Plinthio wordt in je app-lade geïnstalleerd, met offline caching en ondersteuning voor audio op de achtergrond.",
+      "note": "Chrome kan bij je eerste bezoek ook automatisch een banner ‘Plinthio installeren’ of een icoon in de adresbalk tonen, zodra het manifest en de service worker zijn geladen."
+    },
+    "safeArea": {
+      "title": "Veilige zone op iOS en verouderingsmeldingen",
+      "text": "Plinthio volgt de nieuwste richtlijnen van Apple voor web-apps, met moderne {meta} en CSS-safe-area-insets voor de viewport ({inset}) om overlap met de notch en de thuisbalk te voorkomen."
+    },
+    "gives": {
+      "title": "Wat de geïnstalleerde app je geeft",
+      "lockscreen": "**Bediening op het vergrendelscherm en op de achtergrond** voor luisterboeken (afspelen/pauzeren, overslaan, hoofdstuktitel) via de Media Session API.",
+      "offline": "**Offline app-schil** — de interface zelf laadt meteen, zelfs bij een wankele verbinding; je media worden nog steeds live van je server gestreamd.",
+      "edgeToEdge": "**Schermvullende indeling** met ruimte voor de thuisindicator en notch van iOS, plus categorieknoppen voor mobiel en aanraakdoelen die met één hand te bedienen zijn."
+    }
+  },
+  "remote": {
+    "title": "Plinthio buitenshuis gebruiken",
+    "intro": "Tailscale voor jou en mensen die je vertrouwt, privé; een webadres voor gasten die geen app zouden moeten hoeven installeren. Beide optioneel.",
+    "tailscale": {
+      "title": "Optie 1: Tailscale (aanbevolen en het makkelijkst)",
+      "subtitle": "Een privénetwerk tussen je apparaten, met een vertrouwd HTTPS-adres. Geen wijzigingen aan je router, geen certificaten om te installeren.",
+      "text": "Plinthio krijgt een adres zoals {address} dat elk apparaat dat in je tailnet is ingelogd vertrouwt, thuis of via mobiele data. Gratis voor persoonlijk gebruik.",
+      "serverTitle": "Op de server (admin, één keer)",
+      "console": "In de **Tailscale-beheerconsole**: DNS → zet **MagicDNS** en **HTTPS Certificates** aan.",
+      "docker": "**Docker:** download {file} naast je compose-bestand, zet {authKey} (Settings → Keys in de beheerconsole) en {composeFile} in {env}, en voer daarna {up} uit.",
+      "noDocker": "**Tailscale staat al op de server, of geen Docker:** voer {command} uit.",
+      "deviceTitle": "Op elke telefoon of computer",
+      "installApp": "Installeer de gratis **Tailscale**-app en log in op hetzelfde tailnet.",
+      "openAddress": "Open het adres {address} (de beheerconsole toont het onder Machines).",
+      "addToHome": "Zet het vanaf daar op je beginscherm, in plaats van een ouder {http}-icoon.",
+      "more": "Stapsgewijze details, en hoe je Plinthio deelt met de Tailscale van iemand anders, staan in {doc} op GitHub."
+    },
+    "funnel": {
+      "title": "Optie 2: Tailscale Funnel, een link voor iedereen (geen domein)",
+      "text": "Opent hetzelfde adres {address} voor iedereen, in een gewone browser: geen Tailscale voor je vrienden, geen domein, geen wijzigingen aan je router, en het werkt zelfs als je internetprovider inkomende verbindingen blokkeert. Het loopt via de servers van Tailscale, die de bandbreedte beperken: lezen en luisteren gaan prima, video kan haperen.",
+      "option1": "Stel optie 1 in met de Docker-add-on.",
+      "allow": "**Admin → Netwerk** → sta toegang van buitenaf toe (en overweeg tweestapsverificatie verplicht te stellen buitenshuis).",
+      "enable": "Voeg {setting} toe aan {env} en voer {up} uit.",
+      "check": "Controleer het op een telefoon met wifi en Tailscale uit, stuur vrienden daarna de link en maak accounts voor ze aan."
+    },
+    "domain": {
+      "title": "Optie 3: je eigen webadres (volle snelheid)",
+      "text": "Vrienden en familie openen iets als {url} en loggen in, zonder apps of certificaten te installeren. De add-on voor een openbaar adres draait Caddy, dat zelf een echt certificaat ophaalt en vernieuwt. Je inlogpagina staat dan op internet, dus gebruik sterke wachtwoorden en overweeg tweestapsverificatie.",
+      "needsTitle": "Wat ervoor nodig is (admin, één keer)",
+      "connection": "**Controleer of je internetverbinding het toelaat.** Thuisinternet via 5G/4G, Starlink en sommige providers (‘CGNAT’) laten het niet toe; de handleiding laat zien hoe je dat in een minuut controleert.",
+      "dns": "Een domein, met een DNS-**A-record** dat naar het openbare adres van je thuisverbinding wijst.",
+      "ports": "Poorten **80** en **443** op je router doorgestuurd naar de server.",
+      "allow": "**Admin → Netwerk** → sta toegang van buitenaf toe (en stel eventueel tweestapsverificatie verplicht buitenshuis).",
+      "compose": "Download {file} naast je compose-bestand, voeg {domain} en {composeFile} toe aan {env}, en voer {up} uit.",
+      "check": "Controleer het vanaf een telefoon met wifi uit, en open daar Admin → Netwerk: daar moet ‘buiten’ staan."
+    },
+    "who": {
+      "title": "Wie Plinthio waarvandaan kan gebruiken",
+      "network": "**Admin → Netwerk:** sta toegang van buiten het thuisnetwerk toe (uit bij nieuwe servers), behandel Tailscale als thuis, en stel eventueel tweestapsverificatie verplicht buitenshuis.",
+      "users": "**Admin → Gebruikers → Bewerken:** of iemand Plinthio buitenshuis mag gebruiken, bijv. de kinderen alleen thuis.",
+      "security": "**Instellingen → Beveiliging:** iedereen kan tweestapsverificatie aanzetten voor het eigen account."
+    },
+    "avoid": {
+      "title": "Vermijd: poort 8088 doorsturen, en tunnels voor video",
+      "text": "Poort 8088 rechtstserie naar Plinthio doorsturen zet een onversleutelde inlogpagina op internet: gebruik in plaats daarvan de add-on op 443. Tunnels zoals Cloudflare Tunnel besparen je wijzigingen aan de router, maar sturen al het verkeer via de servers van iemand anders en zijn niet bedoeld voor het streamen van video; voor boeken en luisterboeken zijn ze prima.",
+      "guide": "De volledige handleiding, met probleemoplossing: {doc} op GitHub."
+    }
+  },
+  "shortcuts": {
+    "title": "Sneltoetsen en spelerbediening",
+    "intro": "Elke lezer en speler is op de computer volledig met het toetsenbord te bedienen, naast de tik- en veegbediening op het scherm van mobiele apparaten.",
+    "keys": {
+      "space": "Spatie",
+      "esc": "Esc",
+      "ctrlF": "Ctrl F"
+    },
+    "actions": {
+      "previousPage": "Vorige pagina",
+      "nextPage": "Volgende pagina",
+      "closeReader": "Lezer sluiten",
+      "playPause": "Afspelen / pauzeren",
+      "seekBack": "10 s terugspoelen",
+      "seekForward": "10 s vooruitspoelen",
+      "closePlayer": "Speler sluiten",
+      "closeSettingsOrReader": "Instellingen / lezer sluiten",
+      "searchBook": "In het boek zoeken"
+    },
+    "manga": {
+      "title": "Manga- en striplezer",
+      "note": "Links en rechts worden automatisch omgedraaid als de modus rechts-naar-links aanstaat, zodat de pijltoetsen altijd overeenkomen met de richting waarin pagina's omslaan. Naar links en rechts vegen werkt precies zo op aanraakapparaten."
+    },
+    "video": {
+      "title": "Videospeler (films, tv, anime)"
+    },
+    "epub": {
+      "title": "EPUB-lezer"
+    },
+    "audiobook": {
+      "title": "Luisterboekspeler",
+      "text": "Bediend via tikdoelen in de schermvullende speler (afspelen/pauzeren, vooruit/terug, hoofdstukkenlijst, afspeelsnelheid) en, eenmaal geïnstalleerd als PWA, via de mediabediening op het vergrendelscherm of in de meldingen van je besturingssysteem — geen aparte sneltoetsen, omdat hij is gemaakt om op de achtergrond te luisteren."
+    }
+  },
+  "backups": {
+    "title": "Back-ups en gegevensveiligheid",
+    "intro": "Alles wat Plinthio weet, staat in één SQLite-database: accounts, ieders voortgang, bladwijzers, markeringen en notities, beoordelingen, lijsten, lezerinstellingen, bibliotheken en instellingen. Plinthio maakt er zelf back-ups van, en kan die back-ups kopiëren naar een tweede plek die je kiest.",
+    "automatic": {
+      "title": "Automatische back-ups (standaard aan)",
+      "where": "In **Admin → Back-ups**:",
+      "frequency": "**Hoe vaak**: elke 6 of 12 uur, dagelijks (de standaard), elke 3 dagen of wekelijks.",
+      "keepLast": "**Bewaar de laatste**: hoeveel daarvan er in {path} blijven (standaard 7).",
+      "upgrade": "Er wordt ook **vóór elke upgrade** een momentopname gemaakt; de nieuwste vijf daarvan blijven altijd bewaard, zodat je terug kunt."
+    },
+    "second": {
+      "title": "Een tweede plek voor back-ups",
+      "text": "{path} staat op dezelfde schijf als de server: het beschermt tegen vergissingen en mislukte upgrades, niet tegen een kapotte schijf. Kies onder **Back-ups ook kopiëren naar** een map op een andere schijf, een NAS-share of een gesynchroniseerde cloudmap (**Bladeren**, daarna **Testen** om te controleren of de server daar kan schrijven en of het op een andere schijf staat). Elke back-up wordt daarna direct daarheen gekopieerd, en wat er gemist is terwijl de map onbereikbaar was, wordt gekopieerd zodra hij terug is.",
+      "keepThere": "**Daar bewaren**: hoeveel er op de tweede plek worden bewaard (standaard 30), los van het aantal op de server zelf.",
+      "alsoCopied": "Ook gekopieerd, tenzij je het uitzet: profielfoto's, covers, de inlogsleutel (zodat niemand na een herstel wordt uitgelogd) en de HTTPS-certificaten (zodat apparaten de server blijven vertrouwen).",
+      "layout": "De kopie is ingedeeld als {database} en {files}. Als een kopie mislukt, staat op de kaart waarom, en wordt het elke 15 minuten opnieuw geprobeerd.",
+      "docker": "**In Docker** moet de map in de container zijn gekoppeld. Elke map onder {media} werkt als je media niet alleen-lezen zijn gekoppeld. Voor een andere schijf haal je het commentaarteken weg bij de regel {backups} in {compose}, stel je {variable} in {env} in, maak je de container opnieuw aan en kies je {backups}."
+    },
+    "manual": {
+      "title": "Handmatige back-ups",
+      "now": "**Nu back-up maken**: maakt direct een momentopname (en kopieert die naar de tweede plek).",
+      "download": "**Momentopname downloaden**: een verse momentopname direct naar je browser, handig vóór een riskante wijziging.",
+      "stored": "Elke opgeslagen back-up kan vanuit de lijst worden gedownload of verwijderd."
+    },
+    "notIncluded": {
+      "title": "In geen enkele back-up",
+      "text": "Je mediabestanden zelf. Een bibliotheek verwijderen haalt de catalogusgegevens meteen weg; een recente back-up is de manier om dat ongedaan te maken. Zie voor herstellen de herstelstappen in {doc}."
+    }
+  },
+  "api": {
+    "title": "REST API voor ontwikkelaars",
+    "intro": "Koppel externe scripts, widgets, Home Assistant of spelers van derden aan Plinthio.",
+    "auth": {
+      "title": "Authenticatie",
+      "text": "Geef je API-sleutel mee in de HTTP-header {header}. Maak en beheer sleutels in **Instellingen → API-sleutels**. Verzoeken vanuit de browser gebruiken in plaats daarvan een JWT Bearer-token dat bij het inloggen wordt uitgegeven, in de header {authHeader}. Media-URL's onder {mediaPath} nemen in plaats daarvan een kortlevend token alleen voor media ({tokenEndpoint}) als queryparameter {tokenParam} — het sessietoken zelf wordt in URL's geweigerd (nodig voor gewone {img}/{video}-tags, die geen headers kunnen meesturen).",
+      "scope": "Alle API-endpoints hebben een snelheidslimiet, en elk verzoek is beperkt tot de gebruiker die eigenaar is van de sleutel — een API-sleutel erft de rol van die gebruiker en ziet alleen wat die gebruiker kan zien."
+    },
+    "groups": {
+      "catalog": "Bibliotheek en catalogus",
+      "streaming": "Streamen en lezen",
+      "progress": "Voortgang en bladwijzers",
+      "admin": "Admin"
+    },
+    "endpoints": {
+      "items": "Media-items opvragen. Queryparameters: {params}.",
+      "item": "Alle details van één item, inclusief metadata, koppelingen naar serie en auteur, en de voortgang van de gebruiker die het verzoek doet.",
+      "series": "Alle onderdelen van een serie, in lees- of kijkvolgorde.",
+      "hide": "Een item verbergen in je eigen bibliotheekweergave (heeft geen invloed op andere gebruikers). {unhide} maakt dat ongedaan.",
+      "audioStream": "Audiostream-endpoint met ondersteuning voor HTTP 206 Partial Content-range-verzoeken en een mediatoken ({token}).",
+      "videoStream": "Videostream-endpoint met spoelen via ranges voor MP4, MKV en WebM.",
+      "playbackInfo": "Meldt of een bestand direct moet worden omgezet voordat de client de stream opvraagt.",
+      "mangaPages": "Geeft het totaal aantal pagina's en het afbeeldingsmanifest terug voor CBZ/ZIP-archieven.",
+      "bookFile": "Levert het ruwe EPUB/PDF-bestand voor de lezer in de browser.",
+      "progress": "Afspeel- of leesvoortgang bijwerken. JSON-body: {body}.",
+      "continue": "De plank ‘Verdergaan’ — elk item waarmee de huidige gebruiker bezig is, meest recente eerst.",
+      "bookmarks": "Een bladwijzer met tijdstempel of pagina aanmaken, met een optionele notitie.",
+      "stats": "Totalen voor de hele server en een volledig overzicht per mediatype (opslag, aantallen, auteurs, series). Vereist de rol Admin.",
+      "updateUser": "De gebruikersnaam en/of rol van een gebruiker bijwerken. Vereist de rol Admin.",
+      "resetPassword": "Het wachtwoord van een andere gebruiker opnieuw instellen. Vereist de rol Admin; het huidige wachtwoord is niet nodig.",
+      "scan": "Start meteen een nieuwe scan van een bibliotheek. Vereist de rol Admin.",
+      "backup": "Downloadt op verzoek een back-upbestand van de database. Vereist de rol Admin."
+    }
+  },
+  "css": {
+    "title": "Eigen CSS",
+    "intro": "Pas het uiterlijk van Plinthio aan met eigen CSS die live op je hele server wordt toegepast.",
+    "propertiesTitle": "CSS custom properties",
+    "examplesTitle": "Voorbeelden van eigen CSS",
+    "examples": {
+      "rounded": "Boekcovers extra rond en met gloed",
+      "compact": "Compacte weergave",
+      "hideSearch": "De zoekbalk verbergen",
+      "accent": "Eigen accentkleur"
+    },
+    "apply": "Ga voor eigen CSS naar **Admin → Uiterlijk → Eigen CSS** (alleen admins), plak je regels in de editor, gebruik **{tryIt}** om het live in je huidige tabblad te bekijken voordat je opslaat, en daarna **{save}** om het naar elke verbonden client te sturen."
+  },
+  "errors": {
+    "title": "Foutcodes",
+    "intro": "Elke foutmelding van Plinthio eindigt op een code zoals {example}. Zoek hem hier op om te zien wat er misging en hoe je het oplost. API-antwoorden bevatten dezelfde code in een veld {code}, en admins krijgen ook de onderliggende oorzaak in {detail}.",
+    "searchPlaceholder": "Zoek codes, bijv. P301 of ffmpeg",
+    "loadFailed": "Kon de lijst met foutcodes niet van de server laden. Dezelfde lijst staat in {file} in de repository.",
+    "raisedByApp": "Gemeld door de app",
+    "whatToDo": "Wat je kunt doen:",
+    "groups": {
+      "general": "Algemeen",
+      "signIn": "Inloggen en rechten",
+      "libraries": "Bibliotheken en scannen",
+      "playback": "Afspelen",
+      "metadata": "Metadatabronnen",
+      "lists": "Lijsten en aanvragen",
+      "watchParties": "Watchparty's"
+    }
+  },
+  "troubleshooting": {
+    "title": "Probleemoplossing en FAQ",
+    "intro": "Veelvoorkomende problemen en waar je eerst kijkt.",
+    "report": {
+      "title": "Kom je er nog niet uit? Meld een probleem",
+      "text": "Opent een bugmelding op GitHub waarin je Plinthio-versie en browser al zijn ingevuld. Er wordt niets verstuurd tot je hem indient."
+    },
+    "missingItems": {
+      "title": "Een bibliotheekscan is klaar, maar er ontbreken items",
+      "text": "Kijk in **Admin → Logboek** naar waarschuwingen tijdens die scan — niet-ondersteunde bestandsextensies en onleesbare archieven worden overgeslagen en gelogd, in plaats van de hele scan te laten mislukken. Controleer of de extensie van het bestand past bij de verwachte formaten van de bibliotheek (zie **Ondersteunde media en metadata**)."
+    },
+    "noPosters": {
+      "title": "Films, series of anime hebben geen posters of beschrijvingen",
+      "text": "Deze drie typen gebruiken TMDB voor metadata, waarvoor een gratis API-sleutel nodig is die een admin instelt onder **Admin → Metadata**. Zonder sleutel wordt inhoud nog steeds gescand en gestreamd — hij wordt alleen niet automatisch gekoppeld."
+    },
+    "forgotPassword": {
+      "title": "Een gebruiker is het wachtwoord vergeten",
+      "text": "Elke admin kan het voor diegene opnieuw instellen via **Admin → Gebruikers** met de knop Bewerken (potlood) — het oude wachtwoord hoeft niet bekend te zijn. Diegene wordt daardoor meteen overal uitgelogd."
+    },
+    "video": {
+      "title": "Video afspelen: haperen, bufferen of ‘Omzetten voor browser’",
+      "intro": "Plinthio gebruikt een afspeelsysteem met 3 niveaus, ontworpen voor maximale prestaties en minimale serverbelasting:",
+      "directPlay": "**Direct afspelen (0% serverbelasting):** als bestanden formaten gebruiken die de browser zelf kan afspelen (bijv. H.264 of HEVC met AAC in MP4), wordt het bestand rechtstserie van schijf gestreamd, zonder enige omzetting.",
+      "directStream": "**Direct streamen (remux):** als de video compatibel is (bijv. H.264 of HEVC in Chromium/Safari), maar de container MKV is of de audio EAC3 / Dolby Atmos / DTS, kopieert Plinthio de videostream ongewijzigd ({copy}) en zet het alleen het audiospoor om naar AAC. Dat kost ~0,5% CPU, start in <100 ms en behoudt de oorspronkelijke 4K/1080p-kwaliteit.",
+      "browserAcceleration": "**Hardwareversnelling in de browser:** zorg voor soepel afspelen en direct spoelen dat hardwarematige videodecodering in je browser aanstaat. Ga in Chrome, Edge of Vivaldi naar {vivaldi} of {chrome} en controleer of {status} actief is.",
+      "serverTranscoding": "**Hardwarematig omzetten op de server:** als de videostream zelf moet worden omgezet (bijv. 10-bit H.264), laat Plinthio het coderen over aan je GPU (Intel QuickSync, VAAPI of NVIDIA NVENC). Geef in Docker {device} en de GID van de groep {group} op de host door in {compose}.",
+      "thermal": "**Bescherming tegen oververhitting:** het maken van voorbeeldminiaturen op de achtergrond staat los van het afspelen van video, en terugvallen op software-omzetting is beperkt tot 2 threads, zodat zuinige Intel NUC's en mini-pc's niet oververhit raken."
+    },
+    "deletedLibrary": {
+      "title": "Ik heb per ongeluk een bibliotheek verwijderd",
+      "text": "Je mediabestanden zijn onaangeroerd — voeg opnieuw een bibliotheek toe die naar dezelfde map wijst en scan die. Leesvoortgang en bladwijzers worden automatisch weer gekoppeld op basis van de identiteit van het bestand. Heb je ook precies de eerdere metadatawijzigingen nodig, herstel dan in plaats daarvan een **databaseback-up**."
+    },
+    "awayFromHome": {
+      "title": "Ik kan de server buitenshuis niet bereiken vanaf mijn telefoon",
+      "text": "Zie **Toegang op afstand en Tailscale** — een kaal lokaal IP-adres zoals {ip} werkt alleen op hetzelfde wifinetwerk."
+    }
+  }
+}

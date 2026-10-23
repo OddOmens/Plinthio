@@ -1,0 +1,43 @@
+{
+  "lists": "목록",
+  "searchLibrary": "라이브러리 검색...",
+  "searchEverything": "제목, 저자, 시리즈 검색...",
+  "clearSearch": "검색어 지우기",
+  "openMenu": "메뉴 열기",
+  "closeMenu": "메뉴 닫기",
+  "backToShelves": "책장으로 돌아가기",
+  "account": {
+    "menuTitle": "계정 메뉴 ({name})",
+    "menuLabel": "{name}의 계정 메뉴",
+    "someone": "사용자",
+    "avatar": "아바타",
+    "expires": "계정 만료: {date}",
+    "expired": "만료됨",
+    "hoursLeft": "{count}시간 남음",
+    "daysLeft": "{count}일 남음"
+  },
+  "roles": {
+    "admin": "관리자",
+    "editor": "편집자",
+    "viewer": "열람자"
+  },
+  "menu": {
+    "downloads": "다운로드",
+    "requests": "요청",
+    "docs": "문서",
+    "reportProblem": "문제 신고",
+    "lightMode": "라이트 모드",
+    "darkMode": "다크 모드",
+    "logOut": "로그아웃"
+  },
+  "update": {
+    "available": "{release} 업데이트가 있어요",
+    "current": "— 현재 버전: {version}",
+    "whatsNew": "새로운 기능",
+    "howToUpdate": "업데이트 방법",
+    "dismissLabel": "{version} 업데이트 알림 닫기",
+    "dismissTitle": "다음 버전까지 숨기기",
+    "where": "Plinthio가 실행 중인 컴퓨터에서 {file} 파일이 있는 폴더로 이동해 실행하세요:",
+    "backup": "새 버전이 시작되기 전에 데이터베이스가 {folder}에 자동으로 백업돼요."
+  }
+}
