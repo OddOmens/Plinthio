@@ -19,6 +19,7 @@
       "roles": "Ruoli e permessi utente",
       "pwa": "Configurare l'app PWA per dispositivi mobili",
       "remote": "Accesso remoto e Tailscale",
+      "liveTv": "TV in diretta",
       "shortcuts": "Scorciatoie da tastiera",
       "backups": "Backup e sicurezza dei dati",
       "api": "API REST e webhook",
@@ -266,6 +267,66 @@
       "guide": "La guida completa, con la risoluzione dei problemi: {doc} su GitHub."
     }
   },
+  "liveTv": {
+    "title": "TV in diretta",
+    "intro": "Canali in diretta e una guida TV, accanto ai tuoi contenuti. I canali arrivano da playlist M3U: elenchi pubblici già pronti, oppure i tuoi.",
+    "turnOn": {
+      "title": "Attivarla",
+      "text": "La TV in diretta resta disattivata finché un amministratore non la attiva in **Amministrazione → TV in diretta**. Quando è attiva e ha dei canali, **TV in diretta** compare nel menu di chiunque possa guardare almeno un canale.",
+      "off": "Disattivarla nasconde subito la TV in diretta ovunque. Gli elenchi di canali e ogni scelta fatta su di essi restano, per quando verrà riattivata."
+    },
+    "adding": {
+      "title": "Aggiungere canali",
+      "intro": "In **Amministrazione → TV in diretta**, premi **Aggiungi canali** e scegli uno dei due tipi:",
+      "public": "**Canali pubblici**: elenchi gratuiti già pronti del progetto pubblico iptv-org, per paese, lingua o categoria. Spuntane quanti vuoi; ognuno viene aggiunto come elenco a sé.",
+      "own": "**La tua playlist**: l'indirizzo di qualsiasi playlist M3U che il server può raggiungere, per esempio quella di un sintonizzatore TV nella tua rete. I canali in streaming HLS ({m3u8}) si possono guardare; gli altri restano, ma vengono indicati come **Non riproducibile**.",
+      "guide": "**Guida TV**: un indirizzo XMLTV che indichi tu, oppure la guida indicata dalla playlist stessa (tutti gli elenchi pubblici ne hanno una). Funzionano anche i file compressi {gz}. La guida copre il giorno e mezzo successivo.",
+      "refresh": "Ogni elenco e la sua guida si ricaricano ogni 12 ore mentre la TV in diretta è attiva. **Aggiorna** su un elenco lo ricarica subito; l'elenco mostra quando è stato caricato l'ultima volta, o perché non è stato possibile."
+    },
+    "choosing": {
+      "title": "Scegliere i canali",
+      "text": "In **Canali**, cerca o filtra per elenco, poi premi **Nascondi** sui canali che non vuoi. Spuntane diversi (o un'intera pagina) per modificarli tutti insieme. Le modifiche si salvano subito.",
+      "kept": "I canali nascosti e le scelte per i bambini restano quando un elenco si ricarica. Un canale che sparisce dalla sua playlist viene rimosso."
+    },
+    "kids": {
+      "title": "Account bambini",
+      "text": "Gli account bambini vedono solo i canali segnati con **Consenti ai bambini**. Nessuno è consentito finché non lo scegli tu, quindi fino ad allora la TV in diretta non compare nel menu di un account bambini."
+    },
+    "watching": {
+      "title": "Guardare",
+      "channels": "**Canali**: ogni canale con cosa va in onda ora e dopo. Cerca, o restringi a un gruppo.",
+      "guide": "**Guida TV**: una tabella oraria di cosa va in onda sui vari canali. Tocca un programma per vederne i dettagli e un pulsante **Guarda**.",
+      "player": "**Il lettore**: le frecce su e giù (o i pulsanti) cambiano canale. Picture in picture e schermo intero funzionano dove il browser li supporta.",
+      "throughServer": "Gli stream passano da questo server, quindi chiunque possa raggiungere Plinthio può guardare, a casa o fuori. Ogni spettatore usa la connessione internet del server."
+    },
+    "publicSources": {
+      "title": "I canali pubblici",
+      "text": "I canali pubblici sono raccolti dagli stream gratuiti delle emittenti stesse. Vanno e vengono: alcuni possono essere offline, interrompersi o funzionare solo in certi paesi (segnati come «Limitato per area»). I canali per adulti non vengono mai aggiunti."
+    },
+    "troubleshooting": {
+      "title": "Quando qualcosa va storto",
+      "wontPlay": {
+        "title": "Un canale non parte",
+        "text": "Non è stato possibile raggiungere lo stream del canale ({code}). I canali pubblici vanno offline ogni tanto, e quelli limitati per area funzionano solo in alcuni paesi. Riprova più tardi, o nascondilo."
+      },
+      "listFailed": {
+        "title": "Un elenco mostra «Caricamento non riuscito»",
+        "text": "Il server non è riuscito a scaricare la playlist ({code}). Controlla che l'indirizzo si apra dalla rete del server, poi premi **Aggiorna**. I canali già caricati restano fino al prossimo caricamento riuscito."
+      },
+      "notPlayable": {
+        "title": "Canali segnati come «Non riproducibile»",
+        "text": "La TV in diretta riproduce stream HLS. I canali in altri formati restano nell'elenco perché tu possa vederli, ma non vengono mostrati a nessun altro."
+      },
+      "noGuide": {
+        "title": "La guida è vuota per alcuni canali",
+        "text": "Non tutti i canali hanno dati per la guida, e la guida si carica un po' dopo i canali. Indicare per un elenco un suo indirizzo della guida può colmare i vuoti."
+      },
+      "notInMenu": {
+        "title": "La TV in diretta non è nel menu",
+        "text": "Deve essere attivata, con almeno un canale che quella persona può guardare: uno non nascosto e riproducibile e, per un account bambini, consentito ai bambini."
+      }
+    }
+  },
   "shortcuts": {
     "title": "Scorciatoie da tastiera e controlli del lettore",
     "intro": "Ogni lettore supporta la navigazione completa da tastiera su desktop, insieme ai controlli a schermo con tocchi e scorrimenti sui dispositivi mobili.",
@@ -390,7 +451,8 @@
       "playback": "Riproduzione",
       "metadata": "Fornitori di metadati",
       "lists": "Liste e richieste",
-      "watchParties": "Watch party"
+      "watchParties": "Watch party",
+      "liveTv": "TV in diretta"
     }
   },
   "troubleshooting": {

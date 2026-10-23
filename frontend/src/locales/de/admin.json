@@ -49,6 +49,10 @@
         "label": "Wiedergabe",
         "desc": "Hardwarebeschleunigung, Intro-Clip"
       },
+      "liveTv": {
+        "label": "Live-TV",
+        "desc": "Sender, TV-Programm, Kinder"
+      },
       "network": {
         "label": "Netzwerk",
         "desc": "Unterwegs, Tailscale, Zwei-Faktor"
@@ -308,6 +312,139 @@
     "deleteMessage": "„{name}“ löschen? Deine Dateien bleiben unberührt, und Fortschritt und Lesezeichen kommen zurück, wenn du denselben Ordner wieder hinzufügst. Titel, Cover und Details verschwinden, bis erneut gescannt wird.",
     "couldNotDelete": "Die Bibliothek konnte nicht gelöscht werden",
     "couldNotAdd": "Die Bibliothek konnte nicht hinzugefügt werden"
+  },
+  "liveTv": {
+    "title": "Live-TV",
+    "description": "Live-Sender mit TV-Programm, aus öffentlichen Listen oder deinen eigenen Playlists. Änderungen werden sofort gespeichert.",
+    "channelCount": {
+      "one": "{number} Sender",
+      "other": "{number} Sender"
+    },
+    "switch": {
+      "label": "Live-TV",
+      "desc": "Fügt eine Live-TV-Seite mit Sendern und TV-Programm für alle auf diesem Server hinzu. Standardmäßig aus; Ausschalten blendet Live-TV überall aus, behält hier aber deine Listen und Einstellungen."
+    },
+    "publicNote": "Die Sender stammen aus öffentlichen Quellen im Internet. Manche sind vielleicht offline, fallen ab und zu aus oder laufen nur in bestimmten Ländern. Sender für Erwachsene werden nie hinzugefügt.",
+    "sources": {
+      "title": "Senderlisten",
+      "desc": "Jede Liste wird samt TV-Programm alle 12 Stunden neu geladen, solange Live-TV an ist.",
+      "add": "Sender hinzufügen",
+      "empty": "Noch keine Sender. Füge eine fertige Liste oder deine eigene Playlist hinzu, um loszulegen.",
+      "off": "Aus",
+      "kinds": {
+        "public": "Öffentliche Liste",
+        "own": "Deine Playlist"
+      },
+      "refreshing": "Sender und Programm werden geladen…",
+      "failed": "Laden fehlgeschlagen: {error}",
+      "updated": "Aktualisiert: {date}",
+      "notLoaded": "Noch nicht geladen",
+      "enabledAria": "{name} verwenden",
+      "turnOn": "Einschalten",
+      "turnOff": "Ausschalten",
+      "editAria": "{name} bearbeiten",
+      "removeAria": "{name} entfernen",
+      "removeTitle": "Senderliste entfernen",
+      "removeMessage": {
+        "one": "{name} entfernen? Damit wird auch {number} Sender entfernt, samt der Angabe, ob er ausgeblendet oder für Kinder freigegeben war.",
+        "other": "{name} entfernen? Damit werden auch die {number} Sender darin entfernt, samt der Angaben, welche ausgeblendet oder für Kinder freigegeben waren."
+      },
+      "offHint": "Live-TV ist ausgeschaltet, deshalb sieht noch niemand diese Sender. Du kannst sie schon vorbereiten.",
+      "couldNotLoad": "Senderlisten konnten nicht geladen werden",
+      "couldNotRefresh": "Liste konnte nicht neu geladen werden",
+      "couldNotSave": "Liste konnte nicht gespeichert werden",
+      "couldNotRemove": "Liste konnte nicht entfernt werden"
+    },
+    "editDialog": {
+      "title": "Senderliste bearbeiten",
+      "guideHint": "Leer lassen, um das in der Playlist angegebene Programm zu verwenden, falls es eins gibt."
+    },
+    "addDialog": {
+      "title": "Sender hinzufügen",
+      "tabs": {
+        "public": "Öffentliche Sender",
+        "own": "Eigene Playlist"
+      },
+      "adding": "Wird hinzugefügt…",
+      "couldNotAdd": "Sender konnten nicht hinzugefügt werden",
+      "public": {
+        "intro": "Kostenlose Sender aus den öffentlichen iptv-org-Listen, täglich aktualisiert. Wähle eine oder mehrere; jede wird als eigene Liste hinzugefügt.",
+        "listBy": "Sender auflisten nach",
+        "kinds": {
+          "countries": "Land",
+          "languages": "Sprache",
+          "categories": "Kategorie"
+        },
+        "search": {
+          "countries": "Länder suchen",
+          "languages": "Sprachen suchen",
+          "categories": "Kategorien suchen"
+        },
+        "noMatches": "Keine Treffer.",
+        "added": "Hinzugefügt",
+        "selected": {
+          "one": "{number} gewählt",
+          "other": "{number} gewählt"
+        },
+        "addLists": {
+          "one": "Liste hinzufügen",
+          "other": "{number} Listen hinzufügen"
+        },
+        "note": "Diese Sender stammen aus öffentlichen Quellen, daher sind manche vielleicht offline oder laufen nur in bestimmten Ländern. Sender für Erwachsene werden nie hinzugefügt.",
+        "couldNotLoad": "Öffentliche Listen konnten nicht geladen werden"
+      },
+      "own": {
+        "name": "Name",
+        "namePlaceholder": "z. B. Antenne zu Hause",
+        "playlistUrl": "Playlist-Adresse (M3U)",
+        "playlistHint": "Eine Adresse, die der Server erreichen kann. Sender, die per HLS (.m3u8) streamen, laufen; andere werden als nicht abspielbar aufgeführt.",
+        "guideUrl": "Adresse des TV-Programms (XMLTV, optional)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "Leer lassen, um das in der Playlist angegebene Programm zu verwenden, falls es eins gibt. Komprimierte .xml.gz-Dateien gehen auch.",
+        "add": "Playlist hinzufügen"
+      }
+    },
+    "channels": {
+      "title": "Sender",
+      "desc": "Blende die aus, die du nicht willst. Kinderkonten sehen nur die hier für Kinder freigegebenen Sender, und keiner ist freigegeben, bis du welche auswählst.",
+      "searchPlaceholder": "Sender suchen",
+      "sourceFilter": "Senderliste",
+      "allSources": "Alle Listen",
+      "statusFilter": "Anzeigen",
+      "status": {
+        "all": "Alle",
+        "visible": "Sichtbar",
+        "hidden": "Ausgeblendet",
+        "kids": "Für Kinder freigegeben",
+        "unsupported": "Nicht abspielbar"
+      },
+      "selectPage": "Diese Seite auswählen",
+      "selected": {
+        "one": "{number} ausgewählt",
+        "other": "{number} ausgewählt"
+      },
+      "selectAria": "{name} auswählen",
+      "hide": "Ausblenden",
+      "show": "Einblenden",
+      "hideAria": "{name} ausblenden",
+      "showAria": "{name} einblenden",
+      "allowKids": "Für Kinder freigeben",
+      "disallowKids": "Nicht für Kinder",
+      "allowKidsAria": "{name} für Kinder freigeben",
+      "disallowKidsAria": "Freigabe von {name} für Kinder aufheben",
+      "badges": {
+        "hidden": "Ausgeblendet",
+        "kids": "Kinder",
+        "geoBlocked": "Geo-gesperrt",
+        "geoBlockedHint": "Als nur in bestimmten Ländern abspielbar markiert",
+        "unsupported": "Nicht abspielbar",
+        "unsupportedHint": "Kein HLS-Stream, wird daher niemandem angeboten"
+      },
+      "range": "{from}–{to} von {total}",
+      "empty": "Noch keine Sender. Sie erscheinen hier, sobald eine Liste geladen ist.",
+      "noMatches": "Keine passenden Sender.",
+      "couldNotLoad": "Sender konnten nicht geladen werden"
+    }
   },
   "logs": {
     "title": "Protokolle",

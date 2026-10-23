@@ -1,0 +1,88 @@
+{
+  "title": "电视直播",
+  "badge": "直播",
+  "intro": "正在直播的频道，以及接下来的节目。",
+  "openAdmin": "打开电视直播设置",
+  "tabs": {
+    "channels": "频道",
+    "guide": "节目单"
+  },
+  "searchPlaceholder": "搜索频道…",
+  "groupsLabel": "频道分组",
+  "channelCount": {
+    "other": "{count}个频道"
+  },
+  "minutesLeft": {
+    "other": "还剩{count}分钟"
+  },
+  "nextAt": "下一档 {time}：{title}",
+  "noGuideInfo": "暂无节目信息",
+  "geoBlocked": "地区限制",
+  "geoBlockedHint": "此频道可能只能在其所属国家/地区播放。",
+  "watchChannel": "观看 {channel}",
+  "off": {
+    "title": "电视直播已关闭",
+    "intro": "此服务器目前未提供电视直播。",
+    "admin": "请在“管理 → 电视直播”中开启，然后添加一些频道。",
+    "viewer": "管理员可以为此服务器开启电视直播。"
+  },
+  "empty": {
+    "noChannelsTitle": "还没有频道",
+    "noChannels": "目前还没有可供你观看的频道。请让管理员添加一些。",
+    "noChannelsAdmin": "在“管理 → 电视直播”中，从现成的列表或你自己的播放列表添加频道。",
+    "noMatchesTitle": "未找到频道",
+    "noMatches": "没有与你的搜索或所选分组匹配的频道。",
+    "clearFilters": "显示所有频道"
+  },
+  "errors": {
+    "loadTitle": "无法加载频道",
+    "guideTitle": "无法加载节目单",
+    "unreachable": "无法连接到服务器。请检查网络连接后重试。"
+  },
+  "guide": {
+    "channel": "频道",
+    "now": "现在",
+    "earlier": "更早",
+    "later": "稍后",
+    "notLoadedTitle": "节目单尚未加载",
+    "notLoaded": "频道仍可正常播放。频道来源刷新后（每天两次），节目单就会显示出来。",
+    "onNow": {
+      "other": "正在播出 · 还剩{count}分钟"
+    },
+    "startsIn": {
+      "other": "{count}分钟后开始"
+    },
+    "startsAt": "{time} 开始",
+    "ended": "已结束",
+    "watchNow": "立即观看",
+    "watchChannel": "观看频道"
+  },
+  "player": {
+    "back": "返回频道",
+    "tuning": "正在调台…",
+    "now": "正在播出",
+    "goLive": "回到直播",
+    "mute": "静音",
+    "unmute": "取消静音",
+    "volume": "音量",
+    "channelUp": "下一个频道",
+    "channelDown": "上一个频道",
+    "channelUpHint": "下一个频道（↑）",
+    "channelDownHint": "上一个频道（↓）",
+    "nextChannel": "下一个频道",
+    "info": "节目信息",
+    "pip": "画中画",
+    "fullscreen": "全屏",
+    "cantPlay": "此频道无法播放",
+    "errorHelp": "错误 {code}：这是什么意思",
+    "geoBlockedHint": "此频道被标记为有地区限制，可能只能在其所属国家/地区播放。",
+    "errors": {
+      "unavailable": "无法连接到此频道的直播流。它可能暂时离线——请稍后重试，或换一个频道。",
+      "notFound": "此频道已不再提供。",
+      "offline": "与服务器的连接已断开。请检查网络后重试。",
+      "tokenExpired": "你的媒体访问权限已过期且无法续期。请刷新页面，或退出后重新登录。",
+      "decode": "此浏览器无法播放该频道的视频。",
+      "unsupportedBrowser": "此浏览器无法播放直播流。"
+    }
+  }
+}

@@ -49,6 +49,10 @@
         "label": "再生",
         "desc": "ハードウェアアクセラレーション、オープニング"
       },
+      "liveTv": {
+        "label": "ライブTV",
+        "desc": "チャンネル、番組表、キッズ"
+      },
       "network": {
         "label": "ネットワーク",
         "desc": "外出先、Tailscale、2 段階認証"
@@ -306,6 +310,134 @@
     "deleteMessage": "「{name}」を削除しますか？ファイルには影響しません。同じフォルダを再び追加すれば、進捗とブックマークは戻ります。タイトル、カバー、詳細情報は、再スキャンするまで削除されます。",
     "couldNotDelete": "そのライブラリを削除できませんでした",
     "couldNotAdd": "そのライブラリを追加できませんでした"
+  },
+  "liveTv": {
+    "title": "ライブTV",
+    "description": "公開リストや自分のプレイリストから取り込む、番組表付きのライブチャンネルです。変更はその場で保存されます。",
+    "channelCount": {
+      "other": "{number}チャンネル"
+    },
+    "switch": {
+      "label": "ライブTV",
+      "desc": "このサーバーの全員に、チャンネルと番組表のあるライブTVページを追加します。初期設定はオフです。オフにするとライブTVはどこにも表示されなくなりますが、ここのリストと設定は残ります。"
+    },
+    "publicNote": "チャンネルはインターネット上の公開ソースから取得されます。オフラインのもの、ときどき止まるもの、特定の国でしか再生できないものもあります。成人向けチャンネルは追加されません。",
+    "sources": {
+      "title": "チャンネルリスト",
+      "desc": "ライブTVがオンの間、各リストは番組表とあわせて 12 時間ごとに再読み込みされます。",
+      "add": "チャンネルを追加",
+      "empty": "チャンネルはまだありません。既製のリストか自分のプレイリストを追加して始めましょう。",
+      "off": "オフ",
+      "kinds": {
+        "public": "公開リスト",
+        "own": "自分のプレイリスト"
+      },
+      "refreshing": "チャンネルと番組表を読み込み中…",
+      "failed": "読み込めませんでした：{error}",
+      "updated": "{date}に更新",
+      "notLoaded": "未読み込み",
+      "enabledAria": "{name}を使用",
+      "turnOn": "オンにする",
+      "turnOff": "オフにする",
+      "editAria": "{name}を編集",
+      "removeAria": "{name}を削除",
+      "removeTitle": "チャンネルリストを削除",
+      "removeMessage": {
+        "other": "{name}を削除しますか？{number}件のチャンネルも、非表示やキッズ向け許可の設定とあわせて削除されます。"
+      },
+      "offHint": "ライブTVはオフなので、これらのチャンネルはまだ誰にも表示されません。先に準備しておくことができます。",
+      "couldNotLoad": "チャンネルリストを読み込めませんでした",
+      "couldNotRefresh": "リストを再読み込みできませんでした",
+      "couldNotSave": "リストを保存できませんでした",
+      "couldNotRemove": "リストを削除できませんでした"
+    },
+    "editDialog": {
+      "title": "チャンネルリストを編集",
+      "guideHint": "空欄にすると、プレイリストで指定された番組表があればそれを使います。"
+    },
+    "addDialog": {
+      "title": "チャンネルを追加",
+      "tabs": {
+        "public": "公開チャンネル",
+        "own": "自分のプレイリスト"
+      },
+      "adding": "追加中…",
+      "couldNotAdd": "チャンネルを追加できませんでした",
+      "public": {
+        "intro": "公開されている iptv-org のリストから取得する無料チャンネルで、毎日更新されます。1 つ以上選んでください。それぞれが個別のリストとして追加されます。",
+        "listBy": "チャンネルの分類",
+        "kinds": {
+          "countries": "国",
+          "languages": "言語",
+          "categories": "カテゴリー"
+        },
+        "search": {
+          "countries": "国を検索",
+          "languages": "言語を検索",
+          "categories": "カテゴリーを検索"
+        },
+        "noMatches": "一致するものはありません。",
+        "added": "追加済み",
+        "selected": {
+          "other": "{number} 件選択中"
+        },
+        "addLists": {
+          "other": "{number}件のリストを追加"
+        },
+        "note": "これらのチャンネルは公開ソースから取得されるため、オフラインのものや特定の国でしか再生できないものもあります。成人向けチャンネルは追加されません。",
+        "couldNotLoad": "公開リストを読み込めませんでした"
+      },
+      "own": {
+        "name": "名前",
+        "namePlaceholder": "例：自宅のアンテナ",
+        "playlistUrl": "プレイリストのアドレス（M3U）",
+        "playlistHint": "サーバーからアクセスできるアドレスです。HLS（.m3u8）で配信されるチャンネルは再生でき、それ以外は再生不可として表示されます。",
+        "guideUrl": "番組表のアドレス（XMLTV、任意）",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "空欄にすると、プレイリストで指定された番組表があればそれを使います。圧縮された .xml.gz ファイルも使えます。",
+        "add": "プレイリストを追加"
+      }
+    },
+    "channels": {
+      "title": "チャンネル",
+      "desc": "不要なチャンネルは非表示にできます。キッズアカウントには、ここでキッズに許可したチャンネルだけが表示されます。選ぶまでは 1 つも許可されていません。",
+      "searchPlaceholder": "チャンネルを検索",
+      "sourceFilter": "チャンネルリスト",
+      "allSources": "すべてのリスト",
+      "statusFilter": "表示",
+      "status": {
+        "all": "すべて",
+        "visible": "表示中",
+        "hidden": "非表示",
+        "kids": "キッズに許可",
+        "unsupported": "再生不可"
+      },
+      "selectPage": "このページを選択",
+      "selected": {
+        "other": "{number} 件選択中"
+      },
+      "selectAria": "{name}を選択",
+      "hide": "非表示",
+      "show": "表示",
+      "hideAria": "{name}を非表示",
+      "showAria": "{name}を表示",
+      "allowKids": "キッズに許可",
+      "disallowKids": "キッズ不可",
+      "allowKidsAria": "{name}をキッズに許可",
+      "disallowKidsAria": "{name}のキッズへの許可を取り消す",
+      "badges": {
+        "hidden": "非表示",
+        "kids": "キッズ",
+        "geoBlocked": "地域制限",
+        "geoBlockedHint": "特定の国でのみ再生できるとされています",
+        "unsupported": "再生不可",
+        "unsupportedHint": "HLS ストリームではないため、誰にも表示されません"
+      },
+      "range": "{total}件中 {from}–{to}",
+      "empty": "チャンネルはまだありません。リストが読み込まれると、ここに表示されます。",
+      "noMatches": "一致するチャンネルはありません。",
+      "couldNotLoad": "チャンネルを読み込めませんでした"
+    }
   },
   "logs": {
     "title": "ログ",

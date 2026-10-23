@@ -335,6 +335,24 @@
       "message": "Ten wspólny seans jest pełny",
       "meaning": "Seans mieści do 20 osób, a serwer prowadzi jednocześnie do 20 seansów.",
       "fix": "Spróbuj ponownie, gdy ktoś wyjdzie albo seans się zakończy."
+    },
+    "P700": {
+      "title": "TV na żywo jest wyłączona",
+      "message": "TV na żywo jest wyłączona na tym serwerze",
+      "meaning": "Administrator nie włączył TV na żywo albo ją wyłączył.",
+      "fix": "Administrator może ją włączyć w Administracja → TV na żywo."
+    },
+    "P701": {
+      "title": "Kanał niedostępny",
+      "message": "Nie można teraz odtworzyć tego kanału",
+      "meaning": "Strumień kanału nie odpowiedział, odpowiedział błędem albo prowadzi w miejsce, z którym Plinthio się nie łączy. Kanały z publicznych źródeł przestają działać lub zmieniają adres, a niektóre działają tylko w wybranych krajach.",
+      "fix": "Wybierz inny kanał albo spróbuj później. Administrator może odświeżyć źródło w Administracja → TV na żywo albo ukryć kanały, które stale nie działają."
+    },
+    "P702": {
+      "title": "Nie udało się wczytać źródła",
+      "message": "Nie udało się wczytać listy kanałów",
+      "meaning": "Nie udało się pobrać ani odczytać playlisty, programu TV albo listy publicznych zestawów kanałów.",
+      "fix": "Sprawdź, czy serwer ma dostęp do internetu (lub do adresu playlisty), i spróbuj ponownie. Administracja → TV na żywo pokazuje ostatni błąd każdego źródła."
     }
   },
   "messages": {
@@ -477,7 +495,19 @@
     "useAFullPathStartingWith": "Użyj pełnej ścieżki zaczynającej się od /.",
     "thatSInsideTheServerS": "To jest wewnątrz folderu danych serwera; wybierz folder w innym miejscu.",
     "thatFolderContainsTheServerS": "Ten folder zawiera folder danych serwera; wybierz folder obok niego lub w innym miejscu.",
-    "thatSAFileNotA": "To jest plik, a nie folder."
+    "thatSAFileNotA": "To jest plik, a nie folder.",
+    "channelNotFound": "Nie znaleziono kanału",
+    "sourceNotFound": "Nie znaleziono źródła",
+    "thisStreamLinkIsNot": "Ten link do strumienia jest nieprawidłowy",
+    "chooseACountryLanguageOr": "Wybierz kraj, język lub kategorię",
+    "thoseChannelsAreAlreadyAdded": "Te kanały są już dodane",
+    "enterANameForThese": "Podaj nazwę dla tych kanałów",
+    "enterThePlaylistAddressStarting": "Podaj adres playlisty zaczynający się od http:// lub https://",
+    "theGuideAddressMustStart": "Adres programu TV musi zaczynać się od http:// lub https://",
+    "thatPlaylistIsAlreadyAdded": "Ta playlista jest już dodana",
+    "chooseWhatKindOfChannels": "Wybierz, jakie kanały dodać",
+    "chooseUpTo1000Channels": "Wybierz maksymalnie 1000 kanałów",
+    "nothingToChange": "Nie ma nic do zmiany"
   },
   "patterns": {
     "noMetadataSource": "Brak jeszcze źródła metadanych dla typu {type}",
