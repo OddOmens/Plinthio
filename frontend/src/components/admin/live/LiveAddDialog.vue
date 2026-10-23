@@ -16,8 +16,11 @@
       </button>
     </div>
 
+    <!-- Before the first public list: a note to confirm, once per server -->
+    <LiveAcknowledge v-if="mode === 'public' && !acknowledged" @done="$emit('acknowledged')" />
+
     <!-- Ready-made public lists -->
-    <div v-if="mode === 'public'" class="flex flex-col gap-3 min-h-0">
+    <div v-else-if="mode === 'public'" class="flex flex-col gap-3 min-h-0">
       <p class="text-[12px] text-muted-foreground leading-relaxed">{{ $t('admin.liveTv.addDialog.public.intro') }}</p>
 
       <div class="flex items-center gap-1 overflow-x-auto no-scrollbar" role="tablist" :aria-label="$t('admin.liveTv.addDialog.public.listBy')">
@@ -102,16 +105,16 @@
     </form>
 
     <template #footer>
-      <span v-if="mode === 'public' && picked.size" class="text-xs text-muted-foreground">{{ $t('admin.liveTv.addDialog.public.selected', { count: picked.size, number: $n(picked.size) }) }}</span>
+      <span v-if="mode === 'public' && acknowledged && picked.size" class="text-xs text-muted-foreground">{{ $t('admin.liveTv.addDialog.public.selected', { count: picked.size, number: $n(picked.size) }) }}</span>
       <button type="button" @click="$emit('close')" class="btn btn-secondary ml-auto">{{ $t('common.cancel') }}</button>
       <button
-        v-if="mode === 'public'"
+        v-if="mode === 'public' && acknowledged"
         type="button"
         @click="submit"
         :disabled="adding || !picked.size"
         class="btn btn-primary"
       >{{ adding ? $t('admin.liveTv.addDialog.adding') : $t('admin.liveTv.addDialog.public.addLists', { count: picked.size || 1, number: $n(picked.size || 1) }) }}</button>
-      <button v-else type="submit" form="add-live-playlist-form" :disabled="adding" class="btn btn-primary">
+      <button v-else-if="mode === 'own'" type="submit" form="add-live-playlist-form" :disabled="adding" class="btn btn-primary">
         {{ adding ? $t('admin.liveTv.addDialog.adding') : $t('admin.liveTv.addDialog.own.add') }}
       </button>
     </template>
@@ -124,14 +127,17 @@ import { Search, Loader2, Info, Globe, Link } from '@lucide/vue';
 import api from '../../../api/client';
 import { useDialogStore } from '../../../stores/dialog';
 import SettingsDialog from '../../settings/SettingsDialog.vue';
+import LiveAcknowledge from './LiveAcknowledge.vue';
 import { t } from '../../../i18n';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
   // The sources already added, so their lists show as added.
-  sources: { type: Array, default: () => [] }
+  sources: { type: Array, default: () => [] },
+  // Whether an admin has confirmed the note about public channels (asked once per server).
+  acknowledged: { type: Boolean, default: false }
 });
-const emit = defineEmits(['close', 'added']);
+const emit = defineEmits(['close', 'added', 'acknowledged']);
 const dialog = useDialogStore();
 
 const tabs = computed(() => [

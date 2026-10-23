@@ -8,7 +8,9 @@ import { logoPath } from '../services/liveProxy.js';
 import {
   isLiveTvEnabled, visibleChannels, nowAndNext, splitGroups, channelsChanged, pruneProgrammes,
   getPresets, presetName, presetPlaylistUrl, PRESET_RE,
-  sourceJson, newSourceId, refreshSource
+  sourceJson, newSourceId, refreshSource,
+  getLiveFilters, saveLiveFilters, cleanFilterList, filterOverview, filterReasons, streamHost,
+  isFilteredOut, FILTER_LISTS, publicListsAcknowledged, acknowledgePublicLists
 } from '../services/liveTv.js';
 
 // Live TV (services/liveTv.js). Viewers get the channel list and guide; playback itself is
@@ -85,7 +87,19 @@ admin.get('/sources', async (req, res) => {
   try {
     const db = await getDb();
     const rows = await db.all('SELECT * FROM live_sources ORDER BY created_at, rowid');
-    res.json({ sources: rows.map(sourceJson) });
+    res.json({ sources: rows.map(sourceJson), publicListsAcknowledged: await publicListsAcknowledged(db) });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// The note an admin confirms before adding the first public list.
+admin.post('/acknowledge', async (req, res) => {
+  try {
+    const db = await getDb();
+    await acknowledgePublicLists(db, req.user.id);
+    logger.info('media', `Live TV: admin ${req.user.username} confirmed the note about public channels`);
+    res.json({ publicListsAcknowledged: true });
   } catch (err) {
     serverError(req, res, err);
   }
@@ -98,6 +112,9 @@ admin.post('/sources', async (req, res) => {
     const id = newSourceId();
 
     if (body.kind === 'iptv-org') {
+      if (!await publicListsAcknowledged(db)) {
+        return sendError(req, res, 'P001', { message: 'Confirm the note about public channels first' });
+      }
       const preset = String(body.preset || '').toLowerCase();
       if (!PRESET_RE.test(preset)) return sendError(req, res, 'P001', { message: 'Choose a country, language or category' });
       let presets;
@@ -217,12 +234,64 @@ admin.post('/sources/:id/refresh', async (req, res) => {
   }
 });
 
+// ─── Filters ────────────────────────────────────────────────────────────────
+
+admin.get('/filters', async (req, res) => {
+  try {
+    res.json(await filterOverview(await getDb()));
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+const FILTER_LIST_INVALID = {
+  hiddenGroups: 'Hidden categories must be a list of up to 5000 names',
+  hiddenLanguages: 'Hidden languages must be a list of up to 5000 names',
+  hiddenCountries: 'Hidden countries must be two-letter country codes',
+  hiddenHosts: 'Hidden stream hosts must be host names, like example.com'
+};
+
+// Each field given replaces what's saved; the ones left out stay as they are.
+admin.patch('/filters', async (req, res) => {
+  const body = req.body || {};
+  try {
+    const db = await getDb();
+    const next = { ...(await getLiveFilters(db)).filters };
+    if (body.hideGeoBlocked !== undefined) {
+      if (typeof body.hideGeoBlocked !== 'boolean') {
+        return sendError(req, res, 'P001', { message: 'hideGeoBlocked must be true or false' });
+      }
+      next.hideGeoBlocked = body.hideGeoBlocked;
+    }
+    for (const key of FILTER_LISTS) {
+      if (body[key] === undefined) continue;
+      const cleaned = cleanFilterList(key, body[key]);
+      if (!cleaned) return sendError(req, res, 'P001', { message: FILTER_LIST_INVALID[key] });
+      next[key] = cleaned;
+    }
+    await saveLiveFilters(db, next);
+    res.json(await filterOverview(db));
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// ─── Channel manager ────────────────────────────────────────────────────────
+
+// Statuses SQL can pick out alone. 'visible' and 'filtered' also depend on the filters, so
+// those are narrowed down after reading (still a single pass, even over 10k+ channels).
 const ADMIN_STATUS_SQL = {
   all: '',
   visible: ' AND c.hidden = 0 AND c.unsupported = 0',
   hidden: ' AND c.hidden = 1',
   kids: ' AND c.kids_allowed = 1',
-  unsupported: ' AND c.unsupported = 1'
+  unsupported: ' AND c.unsupported = 1',
+  pinned: ' AND c.pinned = 1',
+  filtered: ''
+};
+const ADMIN_STATUS_AFTER = {
+  visible: (row, compiled) => !isFilteredOut(row, compiled),
+  filtered: (row, compiled) => isFilteredOut(row, compiled)
 };
 
 admin.get('/channels', async (req, res) => {
@@ -244,36 +313,43 @@ admin.get('/channels', async (req, res) => {
     const offset = intParam(req.query.offset, 0, 0, Number.MAX_SAFE_INTEGER);
     const limit = intParam(req.query.limit, 100, 1, 500);
 
-    const from = 'FROM live_channels c JOIN live_sources s ON s.id = c.source_id WHERE 1 = 1';
-    const { total } = await db.get(`SELECT COUNT(*) AS total ${from}${filter}`, params);
-    const rows = await db.all(
-      `SELECT c.id, c.source_id, c.name, c.logo, c.groups, c.geo_blocked, c.unsupported, c.hidden, c.kids_allowed
-       ${from}${filter}
-       ORDER BY s.created_at, s.rowid, c.position
-       LIMIT ? OFFSET ?`,
-      [...params, limit, offset]
-    );
-    res.json({
-      total,
-      channels: rows.map((r) => ({
-        id: r.id,
-        sourceId: r.source_id,
-        name: r.name,
-        logo: logoPath(r.id, r.logo),
-        groups: splitGroups(r.groups),
-        geoBlocked: !!r.geo_blocked,
-        unsupported: !!r.unsupported,
-        hidden: !!r.hidden,
-        kidsAllowed: !!r.kids_allowed
-      }))
+    const { compiled } = await getLiveFilters(db);
+    const toJson = (r) => ({
+      id: r.id,
+      sourceId: r.source_id,
+      name: r.name,
+      logo: logoPath(r.id, r.logo),
+      groups: splitGroups(r.groups),
+      country: r.country || null,
+      languages: splitGroups(r.languages),
+      host: streamHost(r.stream_url),
+      geoBlocked: !!r.geo_blocked,
+      unsupported: !!r.unsupported,
+      hidden: !!r.hidden,
+      kidsAllowed: !!r.kids_allowed,
+      pinned: !!r.pinned,
+      filteredBy: filterReasons(r, compiled)
     });
+
+    const from = 'FROM live_channels c JOIN live_sources s ON s.id = c.source_id WHERE 1 = 1';
+    const columns = `c.id, c.source_id, c.name, c.logo, c.groups, c.stream_url, c.country, c.languages,
+       c.geo_blocked, c.unsupported, c.hidden, c.kids_allowed, c.pinned`;
+    const order = 'ORDER BY s.created_at, s.rowid, c.position';
+    const after = ADMIN_STATUS_AFTER[status];
+    if (after) {
+      const matching = (await db.all(`SELECT ${columns} ${from}${filter} ${order}`, params)).filter((r) => after(r, compiled));
+      return res.json({ total: matching.length, channels: matching.slice(offset, offset + limit).map(toJson) });
+    }
+    const { total } = await db.get(`SELECT COUNT(*) AS total ${from}${filter}`, params);
+    const rows = await db.all(`SELECT ${columns} ${from}${filter} ${order} LIMIT ? OFFSET ?`, [...params, limit, offset]);
+    res.json({ total, channels: rows.map(toJson) });
   } catch (err) {
     serverError(req, res, err);
   }
 });
 
 admin.patch('/channels', async (req, res) => {
-  const { ids, hidden, kidsAllowed } = req.body || {};
+  const { ids, hidden, kidsAllowed, pinned } = req.body || {};
   if (!Array.isArray(ids) || !ids.length || ids.length > 1000 || !ids.every((id) => typeof id === 'string' && CHANNEL_ID_RE.test(id))) {
     return sendError(req, res, 'P001', { message: 'Choose up to 1000 channels' });
   }
@@ -286,6 +362,10 @@ admin.patch('/channels', async (req, res) => {
   if (typeof kidsAllowed === 'boolean') {
     sets.push('kids_allowed = ?');
     params.push(kidsAllowed ? 1 : 0);
+  }
+  if (typeof pinned === 'boolean') {
+    sets.push('pinned = ?');
+    params.push(pinned ? 1 : 0);
   }
   if (!sets.length) return sendError(req, res, 'P001', { message: 'Nothing to change' });
   try {

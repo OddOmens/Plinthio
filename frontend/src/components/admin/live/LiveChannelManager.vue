@@ -64,6 +64,12 @@
         <button type="button" @click="bulk({ kidsAllowed: false })" :disabled="!selected.size || busy" class="btn btn-secondary h-8">
           {{ $t('admin.liveTv.channels.disallowKids') }}
         </button>
+        <button type="button" @click="bulk({ pinned: true })" :disabled="!selected.size || busy" class="btn btn-secondary h-8" :title="$t('admin.liveTv.channels.alwaysShowHint')">
+          <Pin class="w-3.5 h-3.5" /> {{ $t('admin.liveTv.channels.alwaysShow') }}
+        </button>
+        <button type="button" @click="bulk({ pinned: false })" :disabled="!selected.size || busy" class="btn btn-secondary h-8" :title="$t('admin.liveTv.channels.followFiltersHint')">
+          {{ $t('admin.liveTv.channels.followFilters') }}
+        </button>
       </div>
     </div>
 
@@ -94,9 +100,10 @@
         <div class="min-w-0 flex-1">
           <p class="text-xs font-semibold truncate" :class="ch.hidden ? 'text-muted-foreground' : 'text-foreground'">{{ ch.name }}</p>
           <p class="text-[12px] text-muted-foreground truncate">
-            <template v-if="!sourceId && sources.length > 1">{{ sourceName(ch.sourceId) }}<template v-if="ch.groups?.length"> · </template></template>{{ (ch.groups || []).join(', ') }}
+            <span v-if="ch.country" :title="countryName(ch.country)">{{ flagEmoji(ch.country) || ch.country }} </span>
+            {{ details(ch) }}
           </p>
-          <p v-if="ch.hidden || ch.kidsAllowed || ch.geoBlocked || ch.unsupported" class="flex flex-wrap items-center gap-1 mt-1">
+          <p v-if="ch.hidden || ch.kidsAllowed || ch.geoBlocked || ch.unsupported || (ch.filteredBy?.length && !ch.pinned)" class="flex flex-wrap items-center gap-1 mt-1">
             <span v-if="ch.unsupported" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400" :title="$t('admin.liveTv.channels.badges.unsupportedHint')">
               <Ban class="w-2.5 h-2.5" /> {{ $t('admin.liveTv.channels.badges.unsupported') }}
             </span>
@@ -109,7 +116,29 @@
             <span v-if="ch.geoBlocked" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground" :title="$t('admin.liveTv.channels.badges.geoBlockedHint')">
               <MapPinOff class="w-2.5 h-2.5" /> {{ $t('admin.liveTv.channels.badges.geoBlocked') }}
             </span>
+            <!-- Hidden by a filter (and which), unless it's always shown -->
+            <span
+              v-if="ch.filteredBy?.length && !ch.pinned"
+              class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 max-w-full"
+              :title="$t('admin.liveTv.channels.badges.filteredHint', { reasons: filterReasons(ch) })"
+            >
+              <Filter class="w-2.5 h-2.5 flex-shrink-0" />
+              <span class="truncate">{{ $t('admin.liveTv.channels.badges.filtered', { reasons: filterReasons(ch) }) }}</span>
+            </span>
           </p>
+          <!-- The way back for one channel a filter hides: on (pressed) keeps it shown -->
+          <button
+            v-if="ch.filteredBy?.length || ch.pinned"
+            type="button"
+            @click="setOne(ch, { pinned: !ch.pinned })"
+            :aria-pressed="String(!!ch.pinned)"
+            :aria-label="$t('admin.liveTv.channels.pinAria', { name: ch.name })"
+            :title="pinTitle(ch)"
+            :class="['mt-1.5 inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border text-[12px] font-medium transition', ch.pinned ? 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15' : 'border-border bg-background text-foreground hover:bg-muted']"
+          >
+            <component :is="ch.pinned ? Check : Pin" class="w-3.5 h-3.5" />
+            {{ $t('admin.liveTv.channels.alwaysShow') }}
+          </button>
         </div>
         <div class="flex items-center gap-0.5 flex-shrink-0">
           <button
@@ -157,24 +186,27 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
-import { Search, Eye, EyeOff, Baby, Tv, Ban, MapPinOff, ChevronLeft, ChevronRight } from '@lucide/vue';
+import { Search, Eye, EyeOff, Baby, Tv, Ban, MapPinOff, ChevronLeft, ChevronRight, Filter, Pin, Check } from '@lucide/vue';
 import api from '../../../api/client';
 import { useSaveStatus } from '../../../composables/useSaveStatus';
 import SettingsCard from '../../settings/SettingsCard.vue';
 import SaveStatus from '../../settings/SaveStatus.vue';
-import { t } from '../../../i18n';
+import { t, list, locale } from '../../../i18n';
 import { logoUrl } from '../../live/liveFormat';
+import { countryName, flagEmoji, languageName } from './liveNames';
 
 const props = defineProps({
   sources: { type: Array, default: () => [] },
   // Changes when the channels may have changed elsewhere (a list loaded or removed).
   version: { type: Number, default: 0 }
 });
+// After a change has saved, so the "Showing … of …" count can look again.
+const emit = defineEmits(['changed']);
 
 const PAGE_SIZE = 100;
 const save = useSaveStatus();
 
-const statusFilters = computed(() => ['all', 'visible', 'hidden', 'kids', 'unsupported'].map((id) => ({
+const statusFilters = computed(() => ['all', 'visible', 'hidden', 'filtered', 'pinned', 'kids', 'unsupported'].map((id) => ({
   id,
   label: t(`admin.liveTv.channels.status.${id}`)
 })));
@@ -191,6 +223,36 @@ const loadError = ref('');
 const brokenLogos = reactive(new Set());
 
 const sourceName = (id) => props.sources.find((s) => s.id === id)?.name || '';
+
+// The line under a channel's name: its list (when showing several), languages and groups.
+function details(ch) {
+  locale.value; // names follow the UI language
+  const parts = [];
+  if (!sourceId.value && props.sources.length > 1) parts.push(sourceName(ch.sourceId));
+  const languages = (ch.languages || []).map((code) => languageName(code));
+  if (languages.length) parts.push(languages.join(', '));
+  if (ch.groups?.length) parts.push(ch.groups.join(', '));
+  return parts.filter(Boolean).join(' · ');
+}
+
+// What a filter hides a channel for, by name: "Spanish", "Shopping", "jmp2.uk", "Region-locked".
+function filterLabel({ type, value }) {
+  if (type === 'geoBlocked') return t('admin.liveTv.channels.badges.regionLocked');
+  if (type === 'language') return languageName(value);
+  if (type === 'country') return countryName(value);
+  return String(value ?? '');
+}
+function pinTitle(ch) {
+  if (!ch.pinned) return t('admin.liveTv.channels.alwaysShowHint');
+  return ch.filteredBy?.length
+    ? t('admin.liveTv.channels.badges.pinnedOverHint', { reasons: filterReasons(ch) })
+    : t('admin.liveTv.channels.badges.pinnedHint');
+}
+function filterReasons(ch) {
+  locale.value;
+  const labels = [...new Set((ch.filteredBy || []).map(filterLabel).filter(Boolean))];
+  return labels.length ? list(labels, { type: 'unit', style: 'short' }) : '';
+}
 
 // Only the newest request's answer is shown, so typing fast can't leave an older page up.
 let requestId = 0;
@@ -279,10 +341,11 @@ const busy = ref(false);
 // Shown changed at once on this page; put back if the save fails.
 async function apply(ids, patch) {
   const idSet = new Set(ids);
-  const before = channels.value.filter((c) => idSet.has(c.id)).map((c) => ({ c, hidden: c.hidden, kidsAllowed: c.kidsAllowed }));
+  const before = channels.value.filter((c) => idSet.has(c.id)).map((c) => ({ c, hidden: c.hidden, kidsAllowed: c.kidsAllowed, pinned: c.pinned }));
   for (const { c } of before) Object.assign(c, patch);
   const { ok } = await save.run(() => api.patch('/live/admin/channels', { ids, ...patch }));
-  if (!ok) for (const { c, hidden, kidsAllowed } of before) Object.assign(c, { hidden, kidsAllowed });
+  if (!ok) for (const { c, hidden, kidsAllowed, pinned } of before) Object.assign(c, { hidden, kidsAllowed, pinned });
+  else if ('hidden' in patch || 'pinned' in patch) emit('changed');
   return ok;
 }
 

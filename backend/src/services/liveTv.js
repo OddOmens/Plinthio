@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import net from 'net';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { getDb } from '../config/database.js';
@@ -20,6 +21,11 @@ import { logoPath } from './liveProxy.js';
 // A refresh re-reads the playlist, upserts its channels, drops the ones that are gone, then
 // streams the guide in. Each source is refreshed when added and every 12 hours while Live TV
 // is on; refreshes run one at a time. Playback goes through routes/liveMedia.js.
+//
+// What viewers see is narrowed further by the admin's filters (whole categories, languages,
+// countries or stream hosts, and region-locked channels): rules kept in settings rather than
+// per-channel flags, so they hold across refreshes and catch channels a list adds later. A
+// channel marked "always show" (pinned) passes them by; a channel the admin hid stays hidden.
 
 const SETTING_KEY = 'live_tv_enabled';
 
@@ -31,6 +37,9 @@ const PLAYLIST_MAX_BYTES = 20 * 1024 * 1024;
 const GUIDE_MAX_BYTES = 300 * 1024 * 1024; // unzipped; a large country's guide is ~50 MB
 const PRESETS_MAX_BYTES = 5 * 1024 * 1024;
 const PRESETS_TTL_MS = 24 * 60 * 60 * 1000;
+const CHANNEL_DATA_MAX_BYTES = 64 * 1024 * 1024; // channels.json and feeds.json are ~8 MB each
+const CHANNEL_DATA_TTL_MS = 24 * 60 * 60 * 1000;
+const CHANNEL_DATA_RETRY_MS = 60 * 60 * 1000;
 
 const REFRESH_EVERY_MS = 12 * 60 * 60 * 1000;
 const RETRY_FAILED_AFTER_MS = 60 * 60 * 1000;
@@ -64,17 +73,17 @@ const ADULT_CATEGORY = 'xxx';
 let presetsCache = null; // { at, value }
 let presetsLoading = null;
 
-async function fetchJson(url) {
+async function fetchJson(url, maxBytes = PRESETS_MAX_BYTES, timeoutMs = 20000) {
   const { res } = await openUpstream(url, {
     allowPrivateHosts: iptvOrgTestHosts(),
     headers: { 'user-agent': USER_AGENT, accept: 'application/json' },
-    timeoutMs: 20000
+    timeoutMs
   });
   if (res.statusCode !== 200) {
     res.resume();
     throw new Error(`${url} answered HTTP ${res.statusCode}`);
   }
-  return JSON.parse((await readBody(res, PRESETS_MAX_BYTES)).toString('utf8'));
+  return JSON.parse((await readBody(res, maxBytes)).toString('utf8'));
 }
 
 const byName = (a, b) => a.name.localeCompare(b.name);
@@ -133,6 +142,334 @@ export function presetPlaylistUrl(preset) {
   return `${IPTV_ORG_URL}/iptv/${preset}.m3u`;
 }
 
+/** English language names by code ('spa' → 'Spanish'), from the presets; empty if they can't be had soon. */
+export async function languageNames() {
+  try {
+    const presets = await Promise.race([
+      getPresets(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000).unref())
+    ]);
+    return new Map(presets.languages.map((l) => [l.code, l.name]));
+  } catch {
+    return new Map();
+  }
+}
+
+// ─── iptv-org channel data ──────────────────────────────────────────────────
+
+// Public playlists say little about a channel beyond its tvg-id ("News.us@SD": channel
+// "News.us", feed "SD"). iptv-org's database knows each channel's country and each feed's
+// languages, which is what the admin's language / country filters go by. Both files are
+// large, so they're fetched at most once a day and boiled down to a few Maps; when they can't
+// be had, a refresh carries on and the channels keep what they had.
+
+let channelData = null; // { at, countries: Map(channel → 'US'), feeds: Map('channel@feed' → 'eng;spa'), mainFeeds: Map(channel → 'eng') }
+let channelDataFailedAt = 0;
+let channelDataLoading = null;
+
+const languageList = (value) => list(value)
+  .map((l) => String(l).toLowerCase())
+  .filter((l) => /^[a-z]{2,8}$/.test(l))
+  .join(';');
+
+async function loadChannelData() {
+  const [channels, feeds] = await Promise.all([
+    fetchJson(`${IPTV_ORG_URL}/api/channels.json`, CHANNEL_DATA_MAX_BYTES, 60000),
+    fetchJson(`${IPTV_ORG_URL}/api/feeds.json`, CHANNEL_DATA_MAX_BYTES, 60000)
+  ]);
+  const countries = new Map();
+  for (const c of list(channels)) {
+    if (c?.id && /^[a-z]{2}$/i.test(String(c.country || ''))) countries.set(String(c.id), String(c.country).toUpperCase());
+  }
+  const feedLanguages = new Map();
+  const mainFeeds = new Map();
+  for (const f of list(feeds)) {
+    if (!f?.channel || !f?.id) continue;
+    const languages = languageList(f.languages);
+    feedLanguages.set(`${f.channel}@${f.id}`, languages);
+    if (f.is_main) mainFeeds.set(String(f.channel), languages);
+  }
+  return { countries, feeds: feedLanguages, mainFeeds };
+}
+
+/**
+ * iptv-org's channel data, fetched at most once a day (and retried no sooner than an hour
+ * after a failure). Resolves with the last good copy, however old, or null; never rejects.
+ */
+export function getChannelData() {
+  const now = Date.now();
+  if (channelData && now - channelData.at < CHANNEL_DATA_TTL_MS) return Promise.resolve(channelData);
+  if (now - channelDataFailedAt < CHANNEL_DATA_RETRY_MS) return Promise.resolve(channelData);
+  if (!channelDataLoading) {
+    channelDataLoading = loadChannelData()
+      .then((value) => {
+        channelData = { at: Date.now(), ...value };
+        return channelData;
+      })
+      .catch((err) => {
+        channelDataFailedAt = Date.now();
+        logger.warn('media', `Live TV: iptv-org channel data could not be loaded: ${err.message}`);
+        return channelData;
+      })
+      .finally(() => { channelDataLoading = null; });
+  }
+  return channelDataLoading;
+}
+
+/**
+ * Country and languages for an iptv-org channel from its tvg-id. Without the channel data
+ * (`data` null), or for a channel it doesn't know, the country is read from the id itself
+ * ("News.us@SD" → 'US') and the languages are unknown (null).
+ */
+export function iptvOrgDetails(tvgId, data) {
+  const [channel, feed] = String(tvgId || '').split('@');
+  const dot = channel.lastIndexOf('.');
+  const suffix = dot === -1 ? '' : channel.slice(dot + 1);
+  const fromId = /^[a-z]{2}$/i.test(suffix) ? suffix.toUpperCase() : null;
+  if (!data || !channel) return { country: fromId, languages: null };
+  const languages = (feed !== undefined && data.feeds.get(`${channel}@${feed}`)) || data.mainFeeds.get(channel) || '';
+  return { country: data.countries.get(channel) || fromId, languages: languages ? languages.split(';') : null };
+}
+
+// ─── Filters ────────────────────────────────────────────────────────────────
+
+const FILTERS_KEY = 'live_tv_filters';
+const ACK_KEY = 'live_tv_public_ack';
+
+// Until an admin saves filters of their own. jmp2.uk relays many public channels through a
+// third-party redirect service, so its channels start out hidden.
+export const DEFAULT_FILTERS = Object.freeze({
+  hideGeoBlocked: true,
+  hiddenGroups: [],
+  hiddenLanguages: [],
+  hiddenCountries: [],
+  hiddenHosts: ['jmp2.uk']
+});
+export const FILTER_LISTS = ['hiddenGroups', 'hiddenLanguages', 'hiddenCountries', 'hiddenHosts'];
+export const FILTER_LIST_MAX = 5000;
+
+const COUNTRY_RE = /^[A-Z]{2}$/;
+const HOST_RE = /^(\[[0-9a-f:.]+\]|[a-z0-9_-]+(\.[a-z0-9_-]+)*)$/;
+
+// How each list's entries are written down, so 'ES', 'es' and ' es ' are one country.
+// Returns null for an entry that can't be one of that list's names.
+const FILTER_ENTRY = {
+  hiddenGroups: (v) => v.trim().slice(0, 200) || null,
+  hiddenLanguages: (v) => v.trim().toLowerCase().slice(0, 64) || null,
+  hiddenCountries: (v) => {
+    const code = v.trim().toUpperCase();
+    return COUNTRY_RE.test(code) ? code : null;
+  },
+  hiddenHosts: (v) => {
+    const host = v.trim().toLowerCase().replace(/^\*?\./, '').replace(/\.$/, '');
+    return host.length <= 253 && HOST_RE.test(host) ? host : null;
+  }
+};
+
+/** One filter list, cleaned and de-duplicated; null if any entry isn't valid for it. */
+export function cleanFilterList(key, values) {
+  if (!Array.isArray(values) || values.length > FILTER_LIST_MAX) return null;
+  const out = new Set();
+  for (const value of values) {
+    if (typeof value !== 'string') return null;
+    const entry = FILTER_ENTRY[key](value);
+    if (!entry) return null;
+    out.add(entry);
+  }
+  return [...out];
+}
+
+function storedFilters(raw) {
+  const filters = { ...DEFAULT_FILTERS };
+  if (raw && typeof raw === 'object') {
+    if (typeof raw.hideGeoBlocked === 'boolean') filters.hideGeoBlocked = raw.hideGeoBlocked;
+    for (const key of FILTER_LISTS) {
+      const cleaned = raw[key] === undefined ? null : cleanFilterList(key, raw[key]);
+      if (cleaned) filters[key] = cleaned;
+    }
+  }
+  return filters;
+}
+
+function compileFilters(filters) {
+  return {
+    hideGeoBlocked: filters.hideGeoBlocked,
+    groups: new Set(filters.hiddenGroups),
+    languages: new Set(filters.hiddenLanguages),
+    countries: new Set(filters.hiddenCountries),
+    hosts: new Set(filters.hiddenHosts)
+  };
+}
+
+let filtersState = null; // { filters, compiled }
+
+/** The admin's filters ({ filters, compiled }), read once and kept until they're saved again. */
+export async function getLiveFilters(db) {
+  if (!filtersState) {
+    const row = await db.get('SELECT value FROM settings WHERE key = ?', [FILTERS_KEY]);
+    let raw = null;
+    try {
+      raw = row ? JSON.parse(row.value) : null;
+    } catch {
+      raw = null;
+    }
+    const filters = storedFilters(raw);
+    filtersState = { filters, compiled: compileFilters(filters) };
+  }
+  return filtersState;
+}
+
+export async function saveLiveFilters(db, filters) {
+  const clean = storedFilters(filters);
+  await db.run(
+    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+    [FILTERS_KEY, JSON.stringify(clean)]
+  );
+  filtersState = { filters: clean, compiled: compileFilters(clean) };
+  channelsChanged();
+  return clean;
+}
+
+/** The host a channel streams from ('x.jmp2.uk'), or null. */
+export const streamHost = (url) => hostOf(url);
+
+/**
+ * What the host list shows for a stream host: roughly the domain someone registered —
+ * the last two labels, or three under a short second-level label ('a.b.co.uk' → 'b.co.uk').
+ * IP addresses and single-label LAN names stay as they are.
+ */
+export function hostGroup(host) {
+  if (!host) return null;
+  if (host.startsWith('[') || net.isIP(host)) return host;
+  const labels = host.split('.');
+  const keep = labels.length > 2 && labels[labels.length - 2].length <= 3 ? 3 : 2;
+  return labels.length <= keep ? host : labels.slice(-keep).join('.');
+}
+
+// The hidden host entry `host` falls under: itself, or a parent domain of it.
+function hiddenHostOf(host, hosts) {
+  if (!host || !hosts.size) return null;
+  for (let h = host; ;) {
+    if (hosts.has(h)) return h;
+    const dot = h.indexOf('.');
+    if (dot === -1) return null;
+    h = h.slice(dot + 1);
+  }
+}
+
+/**
+ * Which of the admin's filters catch a channel row (geo_blocked, groups, languages, country,
+ * stream_url), as [{ type, value }]: geoBlocked, a group, each language (only when every one
+ * of its languages is hidden), its country, its stream host. `first` stops at the first.
+ * Pinned or not doesn't come into it — see isFilteredOut.
+ */
+export function filterReasons(row, compiled, { first = false } = {}) {
+  const reasons = [];
+  if (compiled.hideGeoBlocked && row.geo_blocked) {
+    reasons.push({ type: 'geoBlocked', value: true });
+    if (first) return reasons;
+  }
+  if (compiled.groups.size && row.groups) {
+    for (const group of splitGroups(row.groups)) {
+      if (!compiled.groups.has(group)) continue;
+      reasons.push({ type: 'group', value: group });
+      if (first) return reasons;
+    }
+  }
+  if (compiled.languages.size && row.languages) {
+    const languages = splitGroups(row.languages);
+    if (languages.length && languages.every((l) => compiled.languages.has(l))) {
+      for (const language of languages) reasons.push({ type: 'language', value: language });
+      if (first) return reasons;
+    }
+  }
+  if (row.country && compiled.countries.has(row.country)) {
+    reasons.push({ type: 'country', value: row.country });
+    if (first) return reasons;
+  }
+  const host = compiled.hosts.size ? hiddenHostOf(streamHost(row.stream_url), compiled.hosts) : null;
+  if (host) reasons.push({ type: 'host', value: host });
+  return reasons;
+}
+
+/** Whether the admin's filters keep a channel from viewers: caught by one, and not pinned. */
+export function isFilteredOut(row, compiled) {
+  return !row.pinned && filterReasons(row, compiled, { first: true }).length > 0;
+}
+
+/**
+ * The filters with everything the admin page needs to choose them: how many channels there
+ * are and how many viewers see, and every category, language, country and stream host with
+ * its channel count. Counted over the playable channels of enabled sources, each stream once
+ * (as viewers get them). Hidden entries no channel has any more are still listed, so they
+ * can be shown again.
+ */
+export async function filterOverview(db) {
+  const { filters } = await getLiveFilters(db);
+  const rows = await db.all(
+    `SELECT c.groups, c.languages, c.country, c.stream_url, c.geo_blocked
+     FROM live_channels c JOIN live_sources s ON s.id = c.source_id
+     WHERE s.enabled = 1 AND c.unsupported = 0
+     ORDER BY s.created_at, s.rowid, c.position`
+  );
+  const groups = new Map();
+  const languages = new Map();
+  const countries = new Map();
+  const hosts = new Map();
+  const bump = (map, key) => map.set(key, (map.get(key) || 0) + 1);
+  const seen = new Set();
+  let geoBlocked = 0;
+  for (const row of rows) {
+    if (seen.has(row.stream_url)) continue;
+    seen.add(row.stream_url);
+    if (row.geo_blocked) geoBlocked++;
+    for (const group of new Set(splitGroups(row.groups))) bump(groups, group);
+    for (const language of new Set(splitGroups(row.languages))) bump(languages, language);
+    if (row.country) bump(countries, row.country);
+    const host = hostGroup(streamHost(row.stream_url));
+    if (host) bump(hosts, host);
+  }
+
+  const facet = (counts, hidden, key) => {
+    const hiddenSet = new Set(hidden);
+    for (const value of hidden) if (!counts.has(value)) counts.set(value, 0);
+    return [...counts]
+      .sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0])))
+      .map(([value, count]) => ({ [key]: value, count, hidden: hiddenSet.has(value) }));
+  };
+  const names = languages.size || filters.hiddenLanguages.length ? await languageNames() : new Map();
+
+  return {
+    filters,
+    totals: { channels: seen.size, visible: (await visibleChannels(db, null)).length },
+    geoBlocked,
+    facets: {
+      groups: facet(groups, filters.hiddenGroups, 'id'),
+      languages: facet(languages, filters.hiddenLanguages, 'code')
+        .map((l) => ({ code: l.code, name: names.get(l.code) || l.code, count: l.count, hidden: l.hidden })),
+      countries: facet(countries, filters.hiddenCountries, 'code'),
+      hosts: facet(hosts, filters.hiddenHosts, 'host')
+    }
+  };
+}
+
+// ─── Public lists acknowledgement ───────────────────────────────────────────
+
+// Before the first public list, an admin confirms they've read what public channels are
+// (links Plinthio doesn't host or check, some not licensed where they are). Asked once.
+export async function publicListsAcknowledged(db) {
+  return !!await db.get('SELECT 1 FROM settings WHERE key = ?', [ACK_KEY]);
+}
+
+export async function acknowledgePublicLists(db, userId) {
+  await db.run(
+    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
+     ON CONFLICT(key) DO NOTHING`,
+    [ACK_KEY, JSON.stringify({ at: new Date().toISOString(), by: userId })]
+  );
+}
+
 // ─── Channel lists ──────────────────────────────────────────────────────────
 
 export function isKidsUser(user) {
@@ -153,9 +490,9 @@ export const splitGroups = (value) => (value ? String(value).split(';').filter(B
 
 /**
  * The channels `user` may watch, in order, each numbered 1…n: enabled sources (oldest first,
- * then playlist order), without hidden or unplayable channels, and for a kids account only
- * those allowed for kids. A channel two sources both carry (a country preset and a language
- * preset overlap a lot) is listed once.
+ * then playlist order), without hidden or unplayable channels or those the admin's filters
+ * catch (unless pinned), and for a kids account only those allowed for kids. A channel two
+ * sources both carry (a country preset and a language preset overlap a lot) is listed once.
  */
 export async function visibleChannels(db, user) {
   const audience = isKidsUser(user) ? 'kids' : 'all';
@@ -163,8 +500,9 @@ export async function visibleChannels(db, user) {
   if (cached) return cached;
 
   const version = channelsVersion;
+  const { compiled } = await getLiveFilters(db);
   const rows = await db.all(
-    `SELECT c.id, c.tvg_id, c.name, c.logo, c.groups, c.stream_url, c.geo_blocked
+    `SELECT c.id, c.tvg_id, c.name, c.logo, c.groups, c.stream_url, c.geo_blocked, c.country, c.languages, c.pinned
      FROM live_channels c JOIN live_sources s ON s.id = c.source_id
      WHERE s.enabled = 1 AND c.hidden = 0 AND c.unsupported = 0${audience === 'kids' ? ' AND c.kids_allowed = 1' : ''}
      ORDER BY s.created_at, s.rowid, c.position`
@@ -172,7 +510,7 @@ export async function visibleChannels(db, user) {
   const seen = new Set();
   const channels = [];
   for (const row of rows) {
-    if (seen.has(row.stream_url)) continue;
+    if (seen.has(row.stream_url) || isFilteredOut(row, compiled)) continue;
     seen.add(row.stream_url);
     channels.push({
       id: row.id,
@@ -311,7 +649,18 @@ async function runRefresh(sourceId) {
 
   try {
     const playlist = await loadPlaylist(source);
-    const count = await saveChannels(w, source, playlist.channels, stamp);
+    // Public lists get their countries and languages from iptv-org's channel data; without
+    // it, the channels keep what an earlier refresh found.
+    const data = source.kind === 'iptv-org' ? await getChannelData() : null;
+    const keepDetails = source.kind === 'iptv-org' && !data;
+    if (source.kind === 'iptv-org') {
+      for (const ch of playlist.channels) {
+        const details = iptvOrgDetails(ch.tvgId, data);
+        ch.country = details.country || ch.country;
+        ch.languages = details.languages || ch.languages;
+      }
+    }
+    const count = await saveChannels(w, source, playlist.channels, stamp, { keepDetails });
     channelsChanged();
 
     let guideError = null;
@@ -374,17 +723,22 @@ async function loadPlaylist(source) {
   return { channels, guideUrls };
 }
 
-// Upserts on (source_id, stable_key), which keeps hidden / kids_allowed; whatever this
-// refresh didn't touch has left the playlist and goes.
-async function saveChannels(w, source, channels, stamp) {
+// Upserts on (source_id, stable_key), which keeps hidden / kids_allowed / pinned; whatever
+// this refresh didn't touch has left the playlist and goes. With `keepDetails`, a channel's
+// country and languages from an earlier refresh win over what this one could find.
+async function saveChannels(w, source, channels, stamp, { keepDetails = false } = {}) {
+  const detail = (column) => (keepDetails
+    ? `${column} = COALESCE(live_channels.${column}, excluded.${column})`
+    : `${column} = excluded.${column}`);
   const insert = await w.prepare(
     `INSERT INTO live_channels (id, source_id, stable_key, tvg_id, name, logo, groups, stream_url, http_headers,
-       geo_blocked, unsupported, position, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       geo_blocked, unsupported, country, languages, position, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(source_id, stable_key) DO UPDATE SET
        tvg_id = excluded.tvg_id, name = excluded.name, logo = excluded.logo, groups = excluded.groups,
        stream_url = excluded.stream_url, http_headers = excluded.http_headers, geo_blocked = excluded.geo_blocked,
-       unsupported = excluded.unsupported, position = excluded.position, updated_at = excluded.updated_at`
+       unsupported = excluded.unsupported, ${detail('country')}, ${detail('languages')},
+       position = excluded.position, updated_at = excluded.updated_at`
   );
   try {
     for (let i = 0; i < channels.length; i += WRITE_BATCH) {
@@ -394,7 +748,8 @@ async function saveChannels(w, source, channels, stamp) {
           const headers = ch.headers.userAgent || ch.headers.referrer ? JSON.stringify(ch.headers) : null;
           await insert.run([
             id, source.id, ch.stableKey, ch.tvgId, ch.name, ch.logo, ch.groups.join(';'), ch.url, headers,
-            ch.geoBlocked ? 1 : 0, isHlsUrl(ch.url) ? 0 : 1, i + offset + 1, stamp
+            ch.geoBlocked ? 1 : 0, isHlsUrl(ch.url) ? 0 : 1, ch.country || null,
+            ch.languages?.length ? ch.languages.join(';') : null, i + offset + 1, stamp
           ]);
         }
       });

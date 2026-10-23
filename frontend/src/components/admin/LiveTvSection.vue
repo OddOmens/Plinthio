@@ -14,6 +14,11 @@
       <Info class="w-3.5 h-3.5 mt-px flex-shrink-0" />
       {{ $t('admin.liveTv.publicNote') }}
     </p>
+    <!-- Whose call the channels are -->
+    <p class="mt-2 text-[12px] text-muted-foreground leading-relaxed flex items-start gap-1.5">
+      <ShieldAlert class="w-3.5 h-3.5 mt-px flex-shrink-0" />
+      {{ $t('admin.liveTv.responsibility') }}
+    </p>
   </SettingsCard>
 
   <!-- Where the channels come from -->
@@ -89,9 +94,19 @@
     </template>
   </SettingsCard>
 
-  <LiveChannelManager v-if="sources.length" :sources="sources" :version="channelsVersion" />
+  <!-- Whole sets to hide: categories, languages, countries, stream hosts -->
+  <LiveFilters v-if="sources.length" :version="channelsVersion + channelEditsVersion" @changed="filtersVersion++" />
 
-  <LiveAddDialog :open="showAdd" :sources="sources" @close="showAdd = false" @added="onAdded" />
+  <LiveChannelManager v-if="sources.length" :sources="sources" :version="channelsVersion + filtersVersion" @changed="channelEditsVersion++" />
+
+  <LiveAddDialog
+    :open="showAdd"
+    :sources="sources"
+    :acknowledged="publicListsAcknowledged"
+    @close="showAdd = false"
+    @added="onAdded"
+    @acknowledged="publicListsAcknowledged = true"
+  />
 
   <!-- Rename a source, or give it a guide address -->
   <SettingsDialog :open="!!edit" :title="$t('admin.liveTv.editDialog.title')" :subtitle="edit?.original.name || ''" @close="edit = null">
@@ -115,7 +130,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
-import { Plus, RefreshCw, Trash2, Pencil, Loader2, AlertTriangle, Info, RadioTower, ListVideo } from '@lucide/vue';
+import { Plus, RefreshCw, Trash2, Pencil, Loader2, AlertTriangle, Info, RadioTower, ListVideo, ShieldAlert } from '@lucide/vue';
 import api from '../../api/client';
 import { useCustomizationStore } from '../../stores/customization';
 import { useAuthStore } from '../../stores/auth';
@@ -129,6 +144,7 @@ import ToggleRow from '../settings/ToggleRow.vue';
 import SaveStatus from '../settings/SaveStatus.vue';
 import LiveAddDialog from './live/LiveAddDialog.vue';
 import LiveChannelManager from './live/LiveChannelManager.vue';
+import LiveFilters from './live/LiveFilters.vue';
 import { t, n } from '../../i18n';
 
 const store = useCustomizationStore();
@@ -143,16 +159,24 @@ const sourcesError = ref('');
 // Bumped whenever the channels may have changed (a list loaded, removed or switched),
 // so the channel manager reloads its page.
 const channelsVersion = ref(0);
+// Bumped when a filter change has saved: which channels are shown may have changed.
+const filtersVersion = ref(0);
+// Bumped when a channel was hidden, shown or set to always show in the channel manager.
+const channelEditsVersion = ref(0);
 const showAdd = ref(false);
+// Asked once per server, before the first public list is added.
+const publicListsAcknowledged = ref(false);
 
-// Channels arriving or going can bring Live TV into the menu or take it out; ask again.
-watch(channelsVersion, () => store.loadLiveStatus?.(authStore.user?.id, { force: true }));
+// Channels arriving or going (or a filter hiding them) can bring Live TV into the menu or
+// take it out; ask again.
+watch([channelsVersion, filtersVersion, channelEditsVersion], () => store.loadLiveStatus?.(authStore.user?.id, { force: true }));
 
 async function loadSources() {
   try {
     const res = await api.get('/live/admin/sources');
     const wasRefreshing = sources.value.some((s) => s.refreshing);
     sources.value = res.data.sources || [];
+    publicListsAcknowledged.value = !!res.data.publicListsAcknowledged;
     sourcesError.value = '';
     if (wasRefreshing && !sources.value.some((s) => s.refreshing)) channelsVersion.value++;
   } catch (err) {

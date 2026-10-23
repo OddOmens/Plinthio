@@ -725,7 +725,7 @@ async function initSchema(db) {
 
   // Live TV (services/liveTv.js). A source is one M3U playlist — a public preset or the
   // admin's own — and its channels are re-read from it on every refresh, upserted on
-  // (source_id, stable_key) so the admin's hidden / kids choices survive. Programmes are
+  // (source_id, stable_key) so the admin's hidden / kids / always-show choices survive. Programmes are
   // keyed by the guide's channel id (tvg_id) and only kept for a day and a half ahead.
   await db.exec(`
     CREATE TABLE IF NOT EXISTS live_sources (
@@ -755,6 +755,9 @@ async function initSchema(db) {
       unsupported INTEGER DEFAULT 0,
       hidden INTEGER DEFAULT 0,
       kids_allowed INTEGER DEFAULT 0,
+      pinned INTEGER DEFAULT 0, -- "always show": the admin's filters pass it by
+      country TEXT,             -- ISO 3166-1 alpha-2, upper case
+      languages TEXT,           -- ';'-joined ISO 639-3 codes, lower case
       position INTEGER,
       updated_at DATETIME,
       UNIQUE (source_id, stable_key)
@@ -772,6 +775,14 @@ async function initSchema(db) {
     );
     CREATE INDEX IF NOT EXISTS idx_live_programmes_start ON live_programmes(start);
   `);
+  // Added with the admin's filters (where a channel is from, what it speaks, "always show").
+  for (const col of ['pinned INTEGER DEFAULT 0', 'country TEXT', 'languages TEXT']) {
+    try {
+      await db.exec(`ALTER TABLE live_channels ADD COLUMN ${col}`);
+    } catch (e) {
+      // Column already exists
+    }
+  }
 
   console.log('Database initialized successfully at:', config.dbPath);
 }

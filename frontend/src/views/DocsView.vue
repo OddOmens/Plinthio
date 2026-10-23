@@ -566,6 +566,19 @@
                 <template #gz><Mono>.xml.gz</Mono></template>
               </DocText>
               <DocText keypath="docs.liveTv.adding.refresh" tag="li" />
+              <DocText keypath="docs.liveTv.adding.acknowledge" tag="li" />
+            </ul>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.filters.title') }}</h2>
+            <DocText keypath="docs.liveTv.filters.intro" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <DocText v-for="key in ['region', 'sets', 'languages']" :key="key" :keypath="`docs.liveTv.filters.${key}`" tag="li" />
+              <DocText keypath="docs.liveTv.filters.hosts" tag="li">
+                <template #host><Mono>jmp2.uk</Mono></template>
+              </DocText>
+              <DocText keypath="docs.liveTv.filters.exceptions" tag="li" />
             </ul>
           </div>
 
@@ -596,6 +609,11 @@
               <span>{{ $t('docs.liveTv.publicSources.title') }}</span>
             </div>
             <p class="text-xs text-muted-foreground leading-relaxed">{{ $t('docs.liveTv.publicSources.text') }}</p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.responsibility.title') }}</h2>
+            <p class="text-xs text-muted-foreground leading-relaxed">{{ $t('docs.liveTv.responsibility.text') }}</p>
           </div>
 
           <div class="space-y-3">
@@ -997,6 +1015,7 @@ const liveTvProblems = [
   { id: 'wontPlay', code: 'P701' },
   { id: 'listFailed', code: 'P702' },
   { id: 'notPlayable' },
+  { id: 'missingChannel' },
   { id: 'noGuide' },
   { id: 'notInMenu' }
 ];

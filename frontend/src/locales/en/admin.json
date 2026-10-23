@@ -325,6 +325,7 @@
       "desc": "Adds a Live TV page with channels and a programme guide for everyone on this server. Off by default; turning it off hides Live TV everywhere, but keeps your lists and choices here."
     },
     "publicNote": "Channels come from public sources on the internet. Some may be offline, break now and then, or only play in certain countries. Adult channels are never added.",
+    "responsibility": "You choose which channels to add, and you're responsible for having the right to watch them where you are. Plinthio doesn't host, check or endorse any channel.",
     "sources": {
       "title": "Channel lists",
       "desc": "Each list is reloaded every 12 hours while Live TV is on, along with its programme guide.",
@@ -404,6 +405,87 @@
         "add": "Add playlist"
       }
     },
+    "acknowledge": {
+      "title": "Before you add public channels",
+      "points": {
+        "links": "Public lists are links to third-party streams. Plinthio doesn't host, check or vouch for any of them.",
+        "licensing": "Some channels only play in certain countries (region-locked), and some may not be licensed where you are.",
+        "yourCall": "Only add channels you're allowed to watch. Which channels you add is up to you, and so is the responsibility for them.",
+        "adult": "Adult channels are never added."
+      },
+      "understand": "I understand",
+      "continue": "Continue",
+      "couldNotSave": "Could not save that, try again"
+    },
+    "filters": {
+      "title": "Choose what to show",
+      "desc": "Hide whole sets of channels at once. These choices stay when the lists reload, and new channels that match are hidden too. To keep one channel from a hidden set, use Always show under Channels.",
+      "summary": {
+        "one": "Showing {visible} of {number} channel",
+        "other": "Showing {visible} of {number} channels"
+      },
+      "noChannels": "No playable channels yet. Counts appear here once a list has loaded.",
+      "geoBlocked": {
+        "label": "Hide region-locked channels",
+        "desc": {
+          "one": "{number} channel is marked Geo-blocked: it only plays in certain countries and usually fails everywhere else.",
+          "other": "{number} channels are marked Geo-blocked: they only play in certain countries and usually fail everywhere else."
+        }
+      },
+      "hideBy": "Hide channels by",
+      "tabs": {
+        "groups": "Categories",
+        "languages": "Languages",
+        "countries": "Countries",
+        "hosts": "Stream hosts"
+      },
+      "hiddenCount": {
+        "one": "{number} hidden",
+        "other": "{number} hidden"
+      },
+      "hints": {
+        "groups": "Categories come from the lists themselves. A channel in several categories is hidden when any of them is hidden.",
+        "languages": "A channel in several languages is hidden only when all of them are hidden. Channels with no language listed aren't affected.",
+        "countries": "The country a channel comes from. Channels with no country listed aren't affected.",
+        "hosts": "Some public channels aren't streamed by the broadcaster but re-routed through a third-party service. Hiding a host drops all of its channels. Plinthio hides one such service, jmp2.uk, until you show it; only do that if you're sure you may watch those channels."
+      },
+      "search": {
+        "groups": "Search categories",
+        "languages": "Search languages",
+        "countries": "Search countries",
+        "hosts": "Search stream hosts"
+      },
+      "showing": {
+        "label": "List",
+        "all": "All",
+        "shown": "Shown",
+        "hidden": "Hidden"
+      },
+      "showAll": "Show all",
+      "hideAll": "Hide all",
+      "showMatching": {
+        "one": "Show {number} found",
+        "other": "Show {number} found"
+      },
+      "hideMatching": {
+        "one": "Hide {number} found",
+        "other": "Hide {number} found"
+      },
+      "tip": "Tip: to keep only a few, press Hide all, then switch on the ones you want.",
+      "hiddenLabel": "Hidden",
+      "more": {
+        "one": "Show {number} more",
+        "other": "Show {number} more"
+      },
+      "noMatches": "Nothing matches that.",
+      "empty": {
+        "groups": "None of the channels has a category.",
+        "languages": "None of the channels has a language listed.",
+        "countries": "None of the channels has a country listed.",
+        "hosts": "No stream hosts yet."
+      },
+      "couldNotLoad": "Could not load the filters"
+    },
     "channels": {
       "title": "Channels",
       "desc": "Hide the ones you don't want. Kids accounts see only the channels allowed for kids here, and none are allowed until you pick them.",
@@ -415,6 +497,8 @@
         "all": "All",
         "visible": "Showing",
         "hidden": "Hidden",
+        "filtered": "Hidden by filter",
+        "pinned": "Always shown",
         "kids": "Allowed for kids",
         "unsupported": "Not playable"
       },
@@ -432,13 +516,23 @@
       "disallowKids": "Not for kids",
       "allowKidsAria": "Allow {name} for kids",
       "disallowKidsAria": "Stop allowing {name} for kids",
+      "alwaysShow": "Always show",
+      "alwaysShowHint": "Show even when a filter under Choose what to show hides it",
+      "followFilters": "Follow filters",
+      "followFiltersHint": "Stop always showing, so the filters apply again",
+      "pinAria": "Always show {name}",
       "badges": {
         "hidden": "Hidden",
         "kids": "Kids",
         "geoBlocked": "Geo-blocked",
         "geoBlockedHint": "Marked as only playing in certain countries",
         "unsupported": "Not playable",
-        "unsupportedHint": "Not an HLS stream, so it isn't offered to anyone"
+        "unsupportedHint": "Not an HLS stream, so it isn't offered to anyone",
+        "filtered": "Hidden by filter: {reasons}",
+        "filteredHint": "Hidden by Choose what to show ({reasons}). Use Always show to keep this channel anyway.",
+        "pinnedHint": "Always shown, whatever the filters say. Press again to let the filters decide.",
+        "pinnedOverHint": "Always shown, even though a filter hides {reasons}. Press again to let the filters decide.",
+        "regionLocked": "Region-locked"
       },
       "range": "{from}–{to} of {total}",
       "empty": "No channels yet. They appear here once a list has loaded.",

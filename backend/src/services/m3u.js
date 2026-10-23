@@ -73,9 +73,25 @@ export function isAdultGroup(groups) {
   return groups.some((g) => /xxx|adult/i.test(g));
 }
 
+// tvg-country / tvg-language, as some playlists carry them: the first country (if it's a
+// two-letter code), and every language as given, lower-cased.
+function playlistCountry(value) {
+  const first = String(value || '').split(/[;,\s]+/).find(Boolean) || '';
+  return /^[a-z]{2}$/i.test(first) ? first.toUpperCase() : null;
+}
+
+function playlistLanguages(value) {
+  const codes = String(value || '')
+    .split(/[;,]/)
+    .map((l) => l.trim().toLowerCase().slice(0, 64))
+    .filter(Boolean);
+  return [...new Set(codes)].slice(0, 20);
+}
+
 /**
  * Parses an M3U playlist. Returns null when `text` isn't one, else
- *   { guideUrls: [string], channels: [{ stableKey, tvgId, name, logo, groups, url, geoBlocked, headers }] }
+ *   { guideUrls: [string], channels: [{ stableKey, tvgId, name, logo, groups, url, geoBlocked, headers,
+ *     country, languages }] }
  * `stableKey` (the tvg-id, else the name) is unique within the playlist, so a channel keeps
  * its identity — and the admin's hide / kids choices — across refreshes.
  */
@@ -137,7 +153,9 @@ export function parseM3u(text) {
         groups,
         url: line,
         geoBlocked,
-        headers: pending.headers
+        headers: pending.headers,
+        country: playlistCountry(attrs['tvg-country']),
+        languages: playlistLanguages(attrs['tvg-language'])
       });
       pending = null;
     }

@@ -21,6 +21,7 @@ function xmltvTime(ms) {
 
 function startUpstream() {
   const hits = [];
+  const state = { failChannelData: false };
   const server = http.createServer((req, res) => {
     hits.push({ url: req.url, headers: req.headers });
     const base = `http://127.0.0.1:${server.address().port}`;
@@ -38,6 +39,41 @@ function startUpstream() {
         return send('application/json', JSON.stringify([{ name: 'Zeddish', code: 'zed' }]));
       case '/api/categories.json':
         return send('application/json', JSON.stringify([{ id: 'news', name: 'News' }, { id: 'xxx', name: 'XXX' }]));
+      case '/api/channels.json':
+        if (state.failChannelData) return send('text/plain', 'down', 500);
+        return send('application/json', JSON.stringify([
+          { id: 'Zed.zz', name: 'Zed', country: 'ZZ' },
+          { id: 'Moved.zz', name: 'Moved', country: 'AT' }
+        ]));
+      case '/api/feeds.json':
+        if (state.failChannelData) return send('text/plain', 'down', 500);
+        return send('application/json', JSON.stringify([
+          { channel: 'Zed.zz', id: 'SD', is_main: true, languages: ['zed'] },
+          { channel: 'Zed.zz', id: 'HD', is_main: false, languages: ['zed', 'eng'] },
+          { channel: 'Moved.zz', id: 'SD', is_main: true, languages: ['spa'] }
+        ]));
+      case '/iptv/languages/zed.m3u':
+        return send('audio/x-mpegurl', [
+          '#EXTM3U',
+          '#EXTINF:-1 tvg-id="Zed.zz@HD" group-title="News",Zed HD',
+          `${base}/zed/hd.m3u8`,
+          '#EXTINF:-1 tvg-id="Zed.zz" group-title="Kids;News",Zed SD',
+          `${base}/zed/sd.m3u8`,
+          '#EXTINF:-1 tvg-id="Moved.zz@SD" group-title="Shopping",Moved',
+          `${base}/moved/index.m3u8`,
+          '#EXTINF:-1 tvg-id="Other.qq@SD" group-title="News",Other',
+          `${base}/other/index.m3u8`,
+          '#EXTINF:-1 tvg-id="Relay.zz@SD" group-title="General",Relay',
+          'https://abc.jmp2.uk/relay/index.m3u8',
+          '#EXTINF:-1 tvg-id="Locked.zz@SD" group-title="Movies",Locked [Geo-blocked]',
+          `${base}/locked/index.m3u8`
+        ].join('\n'));
+      case '/own.m3u':
+        return send('audio/x-mpegurl', [
+          '#EXTM3U',
+          '#EXTINF:-1 tvg-id="Mine.es" tvg-country="es;ad" tvg-language="Spanish;Catalan" group-title="Local",Mi Canal',
+          `${base}/kids/index.m3u8`
+        ].join('\n'));
       case '/iptv/countries/zz.m3u':
         return send('audio/x-mpegurl', [
           '#EXTM3U',
@@ -121,7 +157,7 @@ function startUpstream() {
         return send('text/plain', 'not found', 404);
     }
   });
-  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve({ server, hits, base: `http://127.0.0.1:${server.address().port}` })));
+  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve({ server, hits, state, base: `http://127.0.0.1:${server.address().port}` })));
 }
 
 async function send(baseUrl, method, url, token, body) {
@@ -217,6 +253,10 @@ describe('/api/live', () => {
     const ok = await getJson(server.baseUrl, '/live/admin/sources', admin);
     assert.equal(ok.status, 200);
     assert.deepEqual(ok.body.sources, []);
+    assert.equal(ok.body.publicListsAcknowledged, false);
+    for (const [method, url] of [['GET', '/live/admin/filters'], ['PATCH', '/live/admin/filters'], ['POST', '/live/admin/acknowledge']]) {
+      assert.equal((await send(server.baseUrl, method, url, viewer, method === 'GET' ? undefined : {})).status, 403, url);
+    }
 
     const switchDenied = await send(server.baseUrl, 'PATCH', '/customization', viewer, { liveTvEnabled: true });
     assert.equal(switchDenied.status, 403);
@@ -275,6 +315,12 @@ describe('/api/live', () => {
     assert.equal(on.status, 200);
     assert.equal(on.body.liveTvEnabled, true);
     assert.equal((await getJson(server.baseUrl, '/customization', viewer)).body.liveTvEnabled, true);
+
+    // Region-locked channels are hidden until the admin says otherwise.
+    assert.deepEqual((await getJson(server.baseUrl, '/live/status', viewer)).body, { enabled: true, channelCount: 3 });
+    const geoOff = await send(server.baseUrl, 'PATCH', '/live/admin/filters', admin, { hideGeoBlocked: false });
+    assert.equal(geoOff.status, 200, JSON.stringify(geoOff.body));
+    assert.equal(geoOff.body.filters.hideGeoBlocked, false);
 
     const status = await getJson(server.baseUrl, '/live/status', viewer);
     assert.deepEqual(status.body, { enabled: true, channelCount: 4 });
@@ -504,11 +550,22 @@ describe('/api/live', () => {
     assert.deepEqual(presets.body.languages, [{ code: 'zed', name: 'Zeddish' }]);
     assert.deepEqual(presets.body.categories, [{ id: 'news', name: 'News' }]);
 
+    // Public lists wait for the admin to confirm the note about them, once.
+    const unconfirmed = await send(server.baseUrl, 'POST', '/live/admin/sources', admin, { kind: 'iptv-org', preset: 'countries/zz' });
+    assert.equal(unconfirmed.status, 400);
+    assert.equal(unconfirmed.body.code, 'P001');
+    assert.equal(unconfirmed.body.error, 'Confirm the note about public channels first');
+    const ack = await send(server.baseUrl, 'POST', '/live/admin/acknowledge', admin);
+    assert.deepEqual(ack.body, { publicListsAcknowledged: true });
+    assert.equal((await getJson(server.baseUrl, '/live/admin/sources', admin)).body.publicListsAcknowledged, true);
+
     const adult = await send(server.baseUrl, 'POST', '/live/admin/sources', admin, { kind: 'iptv-org', preset: 'categories/xxx' });
     assert.equal(adult.status, 400);
     const unknown = await send(server.baseUrl, 'POST', '/live/admin/sources', admin, { kind: 'iptv-org', preset: 'countries/qq' });
     assert.equal(unknown.status, 400);
 
+    // iptv-org's channel data is down: the list still loads, countries read from the ids.
+    upstream.state.failChannelData = true;
     const added = await send(server.baseUrl, 'POST', '/live/admin/sources', admin, { kind: 'iptv-org', preset: 'countries/zz' });
     assert.equal(added.status, 201, JSON.stringify(added.body));
     assert.equal(added.body.source.name, 'Zedland');
@@ -520,6 +577,9 @@ describe('/api/live', () => {
     assert.equal(source.channelCount, 1, 'the XXX group is left out');
     const zed = (await getJson(server.baseUrl, `/live/admin/channels?source=${source.id}`, admin)).body.channels;
     assert.deepEqual(zed.map((c) => c.name), ['Zed One']);
+    assert.equal(zed[0].country, 'ZZ');
+    assert.deepEqual(zed[0].languages, []);
+    upstream.state.failChannelData = false;
 
     // The same stream as News One, listed once for viewers.
     const viewerList = await getJson(server.baseUrl, '/live/channels', viewer);
@@ -576,5 +636,204 @@ describe('/api/live', () => {
     assert.equal((await stream.json()).code, 'P700');
     assert.deepEqual((await getJson(server.baseUrl, '/live/status', viewer)).body, { enabled: false, channelCount: 0 });
     assert.equal((await getJson(server.baseUrl, '/live/admin/sources', admin)).status, 200);
+  });
+});
+
+describe('/api/live filters', () => {
+  let server;
+  let upstream;
+  let admin;
+  let viewer;
+  let adminMedia;
+  let viewerMedia;
+  let ids; // name → id
+
+  const names = async (token = viewer) => (await getJson(server.baseUrl, '/live/channels', token)).body.channels.map((c) => c.name);
+  const filters = (body) => send(server.baseUrl, 'PATCH', '/live/admin/filters', admin, body);
+  const adminChannels = async (query = '') =>
+    Object.fromEntries((await getJson(server.baseUrl, `/live/admin/channels${query}`, admin)).body.channels.map((c) => [c.name, c]));
+
+  before(async () => {
+    upstream = await startUpstream();
+    server = await startTestServer({ env: { TMDB_API_KEY: '', LIVE_TV_IPTV_ORG_URL: upstream.base } });
+    ({ token: admin } = await setupAdmin(server.baseUrl));
+    await send(server.baseUrl, 'POST', '/users', admin, { username: 'viewer', password: 'viewer-password-1' });
+    viewer = await login(server.baseUrl, 'viewer', 'viewer-password-1');
+    adminMedia = await mediaToken(server.baseUrl, admin);
+    viewerMedia = await mediaToken(server.baseUrl, viewer);
+
+    await send(server.baseUrl, 'POST', '/live/admin/acknowledge', admin);
+    const pub = await send(server.baseUrl, 'POST', '/live/admin/sources', admin, { kind: 'iptv-org', preset: 'languages/zed' });
+    assert.equal(pub.status, 201, JSON.stringify(pub.body));
+    await waitForRefresh(server.baseUrl, admin, pub.body.source.id);
+    const own = await send(server.baseUrl, 'POST', '/live/admin/sources', admin, { kind: 'm3u', name: 'Own', playlistUrl: `${upstream.base}/own.m3u` });
+    await waitForRefresh(server.baseUrl, admin, own.body.source.id);
+    await send(server.baseUrl, 'PATCH', '/customization', admin, { liveTvEnabled: true });
+    ids = Object.fromEntries(Object.values(await adminChannels()).map((c) => [c.name, c.id]));
+  });
+
+  after(async () => {
+    await server.stop();
+    await new Promise((r) => upstream.server.close(r));
+  });
+
+  test('channels get their country and languages: iptv-org data, the tvg-id, or the playlist', async () => {
+    const all = await adminChannels();
+    assert.deepEqual([all['Zed HD'].country, all['Zed HD'].languages], ['ZZ', ['zed', 'eng']], 'the @HD feed\'s languages');
+    assert.deepEqual([all['Zed SD'].country, all['Zed SD'].languages], ['ZZ', ['zed']], 'no feed: the main feed');
+    assert.deepEqual([all.Moved.country, all.Moved.languages], ['AT', ['spa']], 'the data wins over the id');
+    assert.deepEqual([all.Other.country, all.Other.languages], ['QQ', []], 'unknown to the data: country from the id');
+    assert.deepEqual([all['Mi Canal'].country, all['Mi Canal'].languages], ['ES', ['spanish', 'catalan']], 'tvg-country / tvg-language');
+    assert.equal(all.Relay.host, 'abc.jmp2.uk');
+    assert.equal(all['Zed HD'].host, '127.0.0.1');
+    assert.equal(all['Zed HD'].pinned, false);
+    assert.deepEqual(all['Zed HD'].filteredBy, []);
+  });
+
+  test('a fresh server hides region-locked channels and jmp2.uk', async () => {
+    assert.deepEqual(await names(), ['Zed HD', 'Zed SD', 'Moved', 'Other', 'Mi Canal']);
+    const all = await adminChannels();
+    assert.deepEqual(all.Relay.filteredBy, [{ type: 'host', value: 'jmp2.uk' }], 'a parent domain hides its hosts');
+    assert.deepEqual(all.Locked.filteredBy, [{ type: 'geoBlocked', value: true }]);
+
+    const { status, body } = await getJson(server.baseUrl, '/live/admin/filters', admin);
+    assert.equal(status, 200);
+    assert.deepEqual(body.filters, {
+      hideGeoBlocked: true, hiddenGroups: [], hiddenLanguages: [], hiddenCountries: [], hiddenHosts: ['jmp2.uk']
+    });
+    assert.deepEqual(body.totals, { channels: 7, visible: 5 });
+    assert.equal(body.geoBlocked, 1);
+    assert.deepEqual(body.facets.groups.slice(0, 2), [{ id: 'News', count: 3, hidden: false }, { id: 'General', count: 1, hidden: false }]);
+    assert.deepEqual(body.facets.languages, [
+      { code: 'zed', name: 'Zeddish', count: 2, hidden: false },
+      { code: 'catalan', name: 'catalan', count: 1, hidden: false },
+      { code: 'eng', name: 'eng', count: 1, hidden: false },
+      { code: 'spa', name: 'spa', count: 1, hidden: false },
+      { code: 'spanish', name: 'spanish', count: 1, hidden: false }
+    ]);
+    assert.deepEqual(body.facets.countries, [
+      { code: 'ZZ', count: 4, hidden: false }, { code: 'AT', count: 1, hidden: false },
+      { code: 'ES', count: 1, hidden: false }, { code: 'QQ', count: 1, hidden: false }
+    ]);
+    assert.deepEqual(body.facets.hosts, [{ host: '127.0.0.1', count: 6, hidden: false }, { host: 'jmp2.uk', count: 1, hidden: true }]);
+  });
+
+  test('showing jmp2.uk again sticks: the saved list wins over the default', async () => {
+    const shown = await filters({ hiddenHosts: [] });
+    assert.equal(shown.status, 200);
+    assert.deepEqual(shown.body.filters.hiddenHosts, []);
+    assert.deepEqual(shown.body.facets.hosts.find((h) => h.host === 'jmp2.uk'), { host: 'jmp2.uk', count: 1, hidden: false });
+    assert.deepEqual(shown.body.totals, { channels: 7, visible: 6 });
+    assert.ok((await names()).includes('Relay'));
+    assert.deepEqual((await getJson(server.baseUrl, '/live/admin/filters', admin)).body.filters.hiddenHosts, []);
+
+    // Exact host or a parent domain; a lookalike doesn't count.
+    await filters({ hiddenHosts: ['mp2.uk'] });
+    assert.ok((await names()).includes('Relay'));
+    await filters({ hiddenHosts: ['ABC.jmp2.uk'] });
+    assert.ok(!(await names()).includes('Relay'));
+    await filters({ hiddenHosts: [] });
+  });
+
+  test('region-locked channels can be shown', async () => {
+    const res = await filters({ hideGeoBlocked: false });
+    assert.equal(res.body.filters.hideGeoBlocked, false);
+    assert.ok((await names()).includes('Locked'));
+    await filters({ hideGeoBlocked: true });
+    assert.ok(!(await names()).includes('Locked'));
+  });
+
+  test('a language hides a channel only when it speaks nothing else', async () => {
+    let res = await filters({ hiddenLanguages: ['ZED'] });
+    assert.deepEqual(res.body.filters.hiddenLanguages, ['zed']);
+    assert.deepEqual(await names(), ['Zed HD', 'Moved', 'Other', 'Relay', 'Mi Canal'], 'Zed HD also speaks eng');
+    assert.deepEqual((await adminChannels())['Zed SD'].filteredBy, [{ type: 'language', value: 'zed' }]);
+
+    res = await filters({ hiddenLanguages: ['zed', 'eng'] });
+    assert.deepEqual(await names(), ['Moved', 'Other', 'Relay', 'Mi Canal']);
+    assert.deepEqual((await adminChannels())['Zed HD'].filteredBy, [{ type: 'language', value: 'zed' }, { type: 'language', value: 'eng' }]);
+    assert.ok((await names()).includes('Other'), 'no languages: never hidden by language');
+    await filters({ hiddenLanguages: [] });
+  });
+
+  test('categories and countries; group chips only list what viewers see', async () => {
+    await filters({ hiddenGroups: ['News'] });
+    let list = (await getJson(server.baseUrl, '/live/channels', viewer)).body;
+    assert.deepEqual(list.channels.map((c) => c.name), ['Moved', 'Relay', 'Mi Canal'], 'any of its groups hides it');
+    assert.deepEqual(list.groups, ['General', 'Local', 'Shopping']);
+
+    await filters({ hiddenGroups: [], hiddenCountries: ['zz', 'es'] });
+    list = (await getJson(server.baseUrl, '/live/channels', viewer)).body;
+    assert.deepEqual(list.channels.map((c) => [c.number, c.name]), [[1, 'Moved'], [2, 'Other']]);
+    assert.deepEqual((await getJson(server.baseUrl, '/live/status', viewer)).body, { enabled: true, channelCount: 2 });
+    const guide = await getJson(server.baseUrl, '/live/guide', viewer);
+    assert.deepEqual(guide.body.channels.map((c) => c.name), ['Moved', 'Other']);
+    assert.equal((await getJson(server.baseUrl, `/live/channels/${ids['Zed HD']}`, viewer)).status, 404);
+    await filters({ hiddenCountries: [] });
+  });
+
+  test('a filtered channel can\'t be played; "always show" lets it through, and survives a refresh', async () => {
+    await filters({ hiddenCountries: ['ES'] });
+    const id = ids['Mi Canal'];
+    const stream = (token = viewerMedia) => fetch(`${server.baseUrl}/api/media/live/${id}/index.m3u8?token=${token}`);
+    const refused = await stream();
+    assert.equal(refused.status, 404);
+    assert.equal((await refused.json()).code, 'P002');
+    assert.equal((await stream(adminMedia)).status, 404, 'admins too: it isn\'t on');
+
+    const filtered = await getJson(server.baseUrl, '/live/admin/channels?status=filtered', admin);
+    assert.deepEqual(filtered.body.channels.map((c) => c.name), ['Locked', 'Mi Canal']);
+    assert.equal(filtered.body.total, 2);
+
+    const pin = await send(server.baseUrl, 'PATCH', '/live/admin/channels', admin, { ids: [id], pinned: true });
+    assert.deepEqual(pin.body, { updated: 1 });
+    const ok = await stream();
+    assert.equal(ok.status, 200);
+    await ok.text();
+    assert.ok((await names()).includes('Mi Canal'));
+    const pinned = await getJson(server.baseUrl, '/live/admin/channels?status=pinned', admin);
+    assert.deepEqual(pinned.body.channels.map((c) => [c.name, c.pinned, c.filteredBy]), [['Mi Canal', true, [{ type: 'country', value: 'ES' }]]]);
+    assert.deepEqual((await getJson(server.baseUrl, '/live/admin/channels?status=filtered', admin)).body.channels.map((c) => c.name), ['Locked']);
+    const visible = await getJson(server.baseUrl, '/live/admin/channels?status=visible', admin);
+    assert.equal(visible.body.total, 6, 'visible: everything but Locked (Mi Canal is pinned)');
+
+    const source = (await getJson(server.baseUrl, '/live/admin/sources', admin)).body.sources.find((s) => s.kind === 'm3u');
+    await send(server.baseUrl, 'POST', `/live/admin/sources/${source.id}/refresh`, admin);
+    await waitForRefresh(server.baseUrl, admin, source.id);
+    assert.equal((await adminChannels())['Mi Canal'].pinned, true, 'kept across a refresh');
+
+    // Pinned isn't a way round the admin's own hide.
+    await send(server.baseUrl, 'PATCH', '/live/admin/channels', admin, { ids: [id], hidden: true });
+    assert.equal((await stream()).status, 404);
+    assert.ok(!(await names()).includes('Mi Canal'));
+    await send(server.baseUrl, 'PATCH', '/live/admin/channels', admin, { ids: [id], hidden: false, pinned: false });
+    await filters({ hiddenCountries: [] });
+  });
+
+  test('hidden entries no channel has any more are still listed, so they can be shown', async () => {
+    const res = await filters({ hiddenGroups: ['Gone'], hiddenCountries: ['FR'] });
+    assert.deepEqual(res.body.facets.groups.at(-1), { id: 'Gone', count: 0, hidden: true });
+    assert.deepEqual(res.body.facets.countries.at(-1), { code: 'FR', count: 0, hidden: true });
+    await filters({ hiddenGroups: [], hiddenCountries: [] });
+  });
+
+  test('filter changes are checked', async () => {
+    for (const [body, message] of [
+      [{ hideGeoBlocked: 'yes' }, 'hideGeoBlocked must be true or false'],
+      [{ hiddenGroups: 'News' }, 'Hidden categories must be a list of up to 5000 names'],
+      [{ hiddenLanguages: [1] }, 'Hidden languages must be a list of up to 5000 names'],
+      [{ hiddenCountries: ['Spain'] }, 'Hidden countries must be two-letter country codes'],
+      [{ hiddenHosts: ['http://x.example/'] }, 'Hidden stream hosts must be host names, like example.com'],
+      [{ hiddenGroups: new Array(5001).fill('x') }, 'Hidden categories must be a list of up to 5000 names']
+    ]) {
+      const res = await filters(body);
+      assert.equal(res.status, 400, JSON.stringify(body).slice(0, 80));
+      assert.equal(res.body.code, 'P001');
+      assert.equal(res.body.error, message);
+    }
+    const tidy = await filters({ hiddenHosts: ['*.Example.COM', 'example.com'], hiddenGroups: [' News ', 'News'] });
+    assert.deepEqual(tidy.body.filters.hiddenHosts, ['example.com']);
+    assert.deepEqual(tidy.body.filters.hiddenGroups, ['News']);
+    await filters({ hiddenHosts: [], hiddenGroups: [] });
   });
 });
