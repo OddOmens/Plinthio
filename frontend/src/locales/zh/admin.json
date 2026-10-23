@@ -322,6 +322,7 @@
       "desc": "为此服务器上的所有人添加一个包含频道和节目单的电视直播页面。默认关闭；关闭后会在所有地方隐藏电视直播，但会保留你在这里设置的列表和选择。"
     },
     "publicNote": "频道来自互联网上的公共来源。部分频道可能离线、时常中断，或只能在特定国家/地区播放。成人频道永远不会被添加。",
+    "responsibility": "添加哪些频道由你决定，你也需要负责确保自己在所在地有权观看这些频道。Plinthio 不托管、不审核，也不认可任何频道。",
     "sources": {
       "title": "频道列表",
       "desc": "电视直播开启期间，每个列表及其节目单每12小时重新加载一次。",
@@ -398,6 +399,81 @@
         "add": "添加播放列表"
       }
     },
+    "acknowledge": {
+      "title": "添加公共频道之前",
+      "points": {
+        "links": "公共列表是指向第三方直播流的链接。Plinthio 不托管、不审核，也不为其中任何一个提供担保。",
+        "licensing": "部分频道只能在特定国家/地区播放（地区限制），还有一些可能在你所在的地方未获授权。",
+        "yourCall": "只添加你有权观看的频道。添加哪些频道由你决定，相应的责任也由你承担。",
+        "adult": "成人频道永远不会被添加。"
+      },
+      "understand": "我已了解",
+      "continue": "继续",
+      "couldNotSave": "无法保存，请重试"
+    },
+    "filters": {
+      "title": "选择显示内容",
+      "desc": "一次隐藏整组频道。列表重新加载后，这些选择仍会保留，新出现的匹配频道也会被隐藏。要保留隐藏组中的某个频道，请在“频道”中使用“始终显示”。",
+      "summary": {
+        "other": "正在显示{visible}个频道，共{number}个"
+      },
+      "noChannels": "还没有可播放的频道。列表加载后，这里会显示数量。",
+      "geoBlocked": {
+        "label": "隐藏有地区限制的频道",
+        "desc": {
+          "other": "{number}个频道标记为“地区限制”：它们只能在特定国家/地区播放，在其他地方通常无法播放。"
+        }
+      },
+      "hideBy": "按以下条件隐藏频道",
+      "tabs": {
+        "groups": "类别",
+        "languages": "语言",
+        "countries": "国家/地区",
+        "hosts": "直播流服务器"
+      },
+      "hiddenCount": {
+        "other": "已隐藏{number}个"
+      },
+      "hints": {
+        "groups": "类别来自列表本身。属于多个类别的频道，只要其中任一类别被隐藏，就会被隐藏。",
+        "languages": "使用多种语言的频道，只有在其所有语言都被隐藏时才会被隐藏。未列出语言的频道不受影响。",
+        "countries": "频道所属的国家/地区。未列出国家/地区的频道不受影响。",
+        "hosts": "部分公共频道并非由电视台直接推流，而是经由第三方服务转发。隐藏某个服务器会隐藏它的所有频道。Plinthio 会隐藏其中一个此类服务 jmp2.uk，直到你将其显示；只有在你确定自己有权观看这些频道时才这样做。"
+      },
+      "search": {
+        "groups": "搜索类别",
+        "languages": "搜索语言",
+        "countries": "搜索国家/地区",
+        "hosts": "搜索直播流服务器"
+      },
+      "showing": {
+        "label": "列表",
+        "all": "全部",
+        "shown": "已显示",
+        "hidden": "已隐藏"
+      },
+      "showAll": "全部显示",
+      "hideAll": "全部隐藏",
+      "showMatching": {
+        "other": "显示找到的{number}个"
+      },
+      "hideMatching": {
+        "other": "隐藏找到的{number}个"
+      },
+      "tip": "提示：如果只想保留少数几个，先点击“全部隐藏”，再打开你想要的。",
+      "hiddenLabel": "已隐藏",
+      "more": {
+        "other": "再显示{number}个"
+      },
+      "noMatches": "没有匹配项。",
+      "empty": {
+        "groups": "所有频道都没有类别。",
+        "languages": "所有频道都没有列出语言。",
+        "countries": "所有频道都没有列出国家/地区。",
+        "hosts": "还没有直播流服务器。"
+      },
+      "couldNotLoad": "无法加载筛选条件"
+    },
     "channels": {
       "title": "频道",
       "desc": "隐藏你不想要的频道。儿童帐户只能看到这里允许儿童观看的频道；在你选择之前，没有任何频道被允许。",
@@ -409,6 +485,8 @@
         "all": "全部",
         "visible": "显示中",
         "hidden": "已隐藏",
+        "filtered": "被筛选隐藏",
+        "pinned": "始终显示",
         "kids": "允许儿童观看",
         "unsupported": "无法播放"
       },
@@ -425,13 +503,23 @@
       "disallowKids": "不允许儿童观看",
       "allowKidsAria": "允许儿童观看 {name}",
       "disallowKidsAria": "不再允许儿童观看 {name}",
+      "alwaysShow": "始终显示",
+      "alwaysShowHint": "即使“选择显示内容”中的筛选条件隐藏了它，也照样显示",
+      "followFilters": "遵循筛选",
+      "followFiltersHint": "取消始终显示，让筛选条件重新生效",
+      "pinAria": "始终显示 {name}",
       "badges": {
         "hidden": "已隐藏",
         "kids": "儿童",
         "geoBlocked": "地区限制",
         "geoBlockedHint": "标记为只能在特定国家/地区播放",
         "unsupported": "无法播放",
-        "unsupportedHint": "不是 HLS 流，因此不会提供给任何人"
+        "unsupportedHint": "不是 HLS 流，因此不会提供给任何人",
+        "filtered": "被筛选隐藏：{reasons}",
+        "filteredHint": "已被“选择显示内容”隐藏（{reasons}）。使用“始终显示”可仍然保留此频道。",
+        "pinnedHint": "始终显示，不受筛选条件影响。再次点击即可交由筛选条件决定。",
+        "pinnedOverHint": "始终显示，即使筛选条件隐藏了{reasons}。再次点击即可交由筛选条件决定。",
+        "regionLocked": "地区限制"
       },
       "range": "{from}–{to}，共{total}个",
       "empty": "还没有频道。列表加载后，频道会显示在这里。",

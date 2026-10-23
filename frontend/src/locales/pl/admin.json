@@ -331,6 +331,7 @@
       "desc": "Dodaje stronę TV na żywo z kanałami i programem TV dla wszystkich na tym serwerze. Domyślnie wyłączone; wyłączenie ukrywa TV na żywo wszędzie, ale zachowuje tutaj twoje listy i wybory."
     },
     "publicNote": "Kanały pochodzą z publicznych źródeł w internecie. Niektóre mogą nie działać, czasem się psuć albo działać tylko w wybranych krajach. Kanały dla dorosłych nigdy nie są dodawane.",
+    "responsibility": "To ty wybierasz, które kanały dodać, i to ty odpowiadasz za to, czy masz prawo oglądać je tam, gdzie jesteś. Plinthio nie hostuje, nie sprawdza ani nie popiera żadnego kanału.",
     "sources": {
       "title": "Listy kanałów",
       "desc": "Gdy TV na żywo jest włączona, każda lista wraz z programem TV wczytuje się ponownie co 12 godzin.",
@@ -416,6 +417,99 @@
         "add": "Dodaj playlistę"
       }
     },
+    "acknowledge": {
+      "title": "Zanim dodasz kanały publiczne",
+      "points": {
+        "links": "Listy publiczne to linki do strumieni udostępnianych przez inne podmioty. Plinthio nie hostuje, nie sprawdza ani nie ręczy za żaden z nich.",
+        "licensing": "Niektóre kanały działają tylko w wybranych krajach (blokada regionalna), a niektóre mogą nie mieć licencji tam, gdzie jesteś.",
+        "yourCall": "Dodawaj tylko kanały, które wolno ci oglądać. To, jakie kanały dodasz, zależy od ciebie, podobnie jak odpowiedzialność za nie.",
+        "adult": "Kanały dla dorosłych nigdy nie są dodawane."
+      },
+      "understand": "Rozumiem",
+      "continue": "Dalej",
+      "couldNotSave": "Nie udało się tego zapisać, spróbuj ponownie"
+    },
+    "filters": {
+      "title": "Wybierz, co pokazywać",
+      "desc": "Ukrywaj całe grupy kanałów naraz. Te wybory zostają po ponownym wczytaniu list, a nowe pasujące kanały też są ukrywane. Aby zachować jeden kanał z ukrytej grupy, użyj opcji Zawsze pokazuj w sekcji Kanały.",
+      "summary": {
+        "one": "Widoczne kanały: {visible} z {number}",
+        "few": "Widoczne kanały: {visible} z {number}",
+        "many": "Widoczne kanały: {visible} z {number}",
+        "other": "Widoczne kanały: {visible} z {number}"
+      },
+      "noChannels": "Nie ma jeszcze odtwarzalnych kanałów. Liczby pojawią się tutaj po wczytaniu listy.",
+      "geoBlocked": {
+        "label": "Ukryj kanały z blokadą regionalną",
+        "desc": {
+          "one": "{number} kanał ma oznaczenie Geoblokada: działa tylko w wybranych krajach i zwykle nie działa nigdzie indziej.",
+          "few": "{number} kanały mają oznaczenie Geoblokada: działają tylko w wybranych krajach i zwykle nie działają nigdzie indziej.",
+          "many": "{number} kanałów ma oznaczenie Geoblokada: działają tylko w wybranych krajach i zwykle nie działają nigdzie indziej.",
+          "other": "Kanały z oznaczeniem Geoblokada ({number}) działają tylko w wybranych krajach i zwykle nie działają nigdzie indziej."
+        }
+      },
+      "hideBy": "Ukryj kanały według",
+      "tabs": {
+        "groups": "Kategorie",
+        "languages": "Języki",
+        "countries": "Kraje",
+        "hosts": "Serwery strumieni"
+      },
+      "hiddenCount": {
+        "one": "Ukryte: {number}",
+        "few": "Ukryte: {number}",
+        "many": "Ukryte: {number}",
+        "other": "Ukryte: {number}"
+      },
+      "hints": {
+        "groups": "Kategorie pochodzą z samych list. Kanał w kilku kategoriach jest ukryty, gdy ukryta jest którakolwiek z nich.",
+        "languages": "Kanał w kilku językach jest ukryty tylko wtedy, gdy ukryte są wszystkie jego języki. Nie dotyczy to kanałów bez podanego języka.",
+        "countries": "Kraj, z którego pochodzi kanał. Nie dotyczy to kanałów bez podanego kraju.",
+        "hosts": "Niektóre kanały publiczne nie są nadawane bezpośrednio przez nadawcę, tylko przekierowywane przez zewnętrzną usługę. Ukrycie serwera ukrywa wszystkie jego kanały. Plinthio ukrywa jedną taką usługę, jmp2.uk, dopóki jej nie pokażesz; zrób to tylko wtedy, gdy masz pewność, że możesz oglądać te kanały."
+      },
+      "search": {
+        "groups": "Szukaj kategorii",
+        "languages": "Szukaj języków",
+        "countries": "Szukaj krajów",
+        "hosts": "Szukaj serwerów strumieni"
+      },
+      "showing": {
+        "label": "Lista",
+        "all": "Wszystkie",
+        "shown": "Widoczne",
+        "hidden": "Ukryte"
+      },
+      "showAll": "Pokaż wszystkie",
+      "hideAll": "Ukryj wszystkie",
+      "showMatching": {
+        "one": "Pokaż znalezione ({number})",
+        "few": "Pokaż znalezione ({number})",
+        "many": "Pokaż znalezione ({number})",
+        "other": "Pokaż znalezione ({number})"
+      },
+      "hideMatching": {
+        "one": "Ukryj znalezione ({number})",
+        "few": "Ukryj znalezione ({number})",
+        "many": "Ukryj znalezione ({number})",
+        "other": "Ukryj znalezione ({number})"
+      },
+      "tip": "Wskazówka: aby zostawić tylko kilka, naciśnij Ukryj wszystkie, a potem włącz te, które chcesz.",
+      "hiddenLabel": "Ukryte",
+      "more": {
+        "one": "Pokaż jeszcze {number}",
+        "few": "Pokaż jeszcze {number}",
+        "many": "Pokaż jeszcze {number}",
+        "other": "Pokaż jeszcze {number}"
+      },
+      "noMatches": "Nic nie pasuje.",
+      "empty": {
+        "groups": "Żaden kanał nie ma kategorii.",
+        "languages": "Żaden kanał nie ma podanego języka.",
+        "countries": "Żaden kanał nie ma podanego kraju.",
+        "hosts": "Nie ma jeszcze serwerów strumieni."
+      },
+      "couldNotLoad": "Nie udało się wczytać filtrów"
+    },
     "channels": {
       "title": "Kanały",
       "desc": "Ukryj te, których nie chcesz. Konta dziecięce widzą tylko kanały dozwolone tutaj dla dzieci, a dopóki ich nie wybierzesz, żaden nie jest dozwolony.",
@@ -427,6 +521,8 @@
         "all": "Wszystkie",
         "visible": "Widoczne",
         "hidden": "Ukryte",
+        "filtered": "Ukryte przez filtr",
+        "pinned": "Zawsze widoczne",
         "kids": "Dla dzieci",
         "unsupported": "Nieodtwarzalne"
       },
@@ -446,13 +542,23 @@
       "disallowKids": "Nie dla dzieci",
       "allowKidsAria": "Zezwól dzieciom oglądać {name}",
       "disallowKidsAria": "Przestań zezwalać dzieciom oglądać {name}",
+      "alwaysShow": "Zawsze pokazuj",
+      "alwaysShowHint": "Pokazuj nawet wtedy, gdy ukrywa go filtr w sekcji Wybierz, co pokazywać",
+      "followFilters": "Stosuj filtry",
+      "followFiltersHint": "Przestań zawsze pokazywać, aby filtry znów działały",
+      "pinAria": "Zawsze pokazuj {name}",
       "badges": {
         "hidden": "Ukryty",
         "kids": "Dzieci",
         "geoBlocked": "Geoblokada",
         "geoBlockedHint": "Oznaczony jako działający tylko w wybranych krajach",
         "unsupported": "Nieodtwarzalny",
-        "unsupportedHint": "To nie jest strumień HLS, więc nikt go nie zobaczy"
+        "unsupportedHint": "To nie jest strumień HLS, więc nikt go nie zobaczy",
+        "filtered": "Ukryty przez filtr: {reasons}",
+        "filteredHint": "Ukryty w sekcji Wybierz, co pokazywać ({reasons}). Użyj opcji Zawsze pokazuj, aby mimo to zachować ten kanał.",
+        "pinnedHint": "Zawsze widoczny, niezależnie od filtrów. Naciśnij ponownie, aby decydowały filtry.",
+        "pinnedOverHint": "Zawsze widoczny, mimo że filtr ukrywa: {reasons}. Naciśnij ponownie, aby decydowały filtry.",
+        "regionLocked": "Blokada regionalna"
       },
       "range": "{from}–{to} z {total}",
       "empty": "Nie ma jeszcze kanałów. Pojawią się tutaj po wczytaniu listy.",

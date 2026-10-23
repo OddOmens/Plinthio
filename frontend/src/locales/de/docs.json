@@ -281,7 +281,17 @@
       "public": "**Öffentliche Sender**: kostenlose, fertige Listen aus dem öffentlichen iptv-org-Projekt, nach Land, Sprache oder Kategorie. Hake so viele an, wie du willst; jede wird als eigene Liste hinzugefügt.",
       "own": "**Eigene Playlist**: die Adresse einer beliebigen M3U-Playlist, die der Server erreichen kann, etwa von einem TV-Tuner in deinem Netzwerk. Sender, die per HLS ({m3u8}) streamen, laufen; andere bleiben erhalten, werden aber als **Nicht abspielbar** aufgeführt.",
       "guide": "**TV-Programm**: eine XMLTV-Adresse, die du angibst, oder sonst das Programm, das die Playlist selbst nennt (die öffentlichen Listen haben alle eins). Komprimierte {gz}-Dateien gehen auch. Das Programm reicht anderthalb Tage im Voraus.",
-      "refresh": "Jede Liste und ihr Programm werden alle 12 Stunden neu geladen, solange Live-TV an ist. **Aktualisieren** bei einer Liste lädt sie sofort neu; die Liste zeigt, wann sie zuletzt geladen wurde oder warum es nicht geklappt hat."
+      "refresh": "Jede Liste und ihr Programm werden alle 12 Stunden neu geladen, solange Live-TV an ist. **Aktualisieren** bei einer Liste lädt sie sofort neu; die Liste zeigt, wann sie zuletzt geladen wurde oder warum es nicht geklappt hat.",
+      "acknowledge": "Wenn zum ersten Mal eine öffentliche Liste hinzugefügt wird, zeigt Plinthio einen kurzen Hinweis zu öffentlichen Sendern, den du bestätigen musst. Das wird nur einmal pro Server abgefragt."
+    },
+    "filters": {
+      "title": "Anzeige auswählen",
+      "intro": "Unter **Anzeige auswählen** blendest du ganze Gruppen von Sendern auf einmal aus. Das sind Regeln, keine Löschungen: Sie gelten nach jedem Neuladen weiter, und neue passende Sender werden ebenfalls ausgeblendet. Die Karte zeigt, wie viele Sender übrig bleiben.",
+      "region": "**Geo-gesperrte Sender** sind anfangs ausgeblendet, da sie meist nur in ihrem Heimatland laufen. Schalte **Geo-gesperrte Sender ausblenden** aus, um sie aufzulisten.",
+      "sets": "**Kategorien, Sprachen, Länder und Stream-Server**: Jeder Tab listet sie mit der Anzahl ihrer Sender auf. Tippe auf einen Eintrag, um ihn ein- oder auszublenden, suche nach einem oder nutze **Alle einblenden** und **Alle ausblenden**. Um nur ein paar zu behalten, drücke **Alle ausblenden** und schalte dann genau diese wieder ein.",
+      "languages": "Ein Sender in mehreren Sprachen wird nur ausgeblendet, wenn alle seine Sprachen ausgeblendet sind. Sender ohne angegebene Sprache oder ohne angegebenes Land sind von diesen Tabs nicht betroffen.",
+      "hosts": "**Stream-Server**: Manche öffentlichen Sender werden nicht von der Sendeanstalt selbst gestreamt, sondern über einen Dienst von Dritten umgeleitet. Plinthio blendet einen solchen Dienst, {host}, aus, bis du ihn einblendest. Blende ihn nur ein, wenn du sicher bist, dass du diese Sender schauen darfst.",
+      "exceptions": "**Ausnahmen**: Um einen Sender zu behalten, den ein Filter ausblendet, suche ihn unter **Sender** (wähle **Per Filter ausgeblendet**, um alle zu sehen) und drücke **Immer anzeigen**. Ein Sender, den du von Hand ausblendest, bleibt in jedem Fall ausgeblendet."
     },
     "choosing": {
       "title": "Sender auswählen",
@@ -303,6 +313,10 @@
       "title": "Über öffentliche Sender",
       "text": "Öffentliche Sender werden aus den eigenen kostenlosen Streams der Sendeanstalten gesammelt. Sie kommen und gehen: Manche sind vielleicht offline, unterbrochen oder laufen nur in bestimmten Ländern (markiert als Geo-gesperrt). Sender für Erwachsene werden nie hinzugefügt."
     },
+    "responsibility": {
+      "title": "Deine Verantwortung",
+      "text": "Plinthio spielt die Sender ab, die du ihm gibst. Es hostet, prüft oder befürwortet keinen Sender und bringt keine Sender mit. Du wählst, welche Listen und Sender du hinzufügst, und bist dafür verantwortlich, dass du sie dort, wo du bist, schauen darfst: Öffentliche Listen verlinken auf Streams, die andere betreiben, und manche sind in deinem Land vielleicht nicht lizenziert."
+    },
     "troubleshooting": {
       "title": "Wenn etwas schiefgeht",
       "wontPlay": {
@@ -316,6 +330,10 @@
       "notPlayable": {
         "title": "Sender als „Nicht abspielbar“ markiert",
         "text": "Live-TV spielt HLS-Streams ab. Sender in anderen Formaten bleiben in der Liste, damit du sie siehst, werden aber niemand anderem angezeigt."
+      },
+      "missingChannel": {
+        "title": "Ein Sender, den ich will, fehlt",
+        "text": "Vielleicht blendet ihn ein Filter unter **Anzeige auswählen** aus. Wähle unter **Sender** die Ansicht **Per Filter ausgeblendet**: Bei jedem Sender steht, welcher Filter ihn ausblendet, und **Immer anzeigen** holt ihn zurück."
       },
       "noGuide": {
         "title": "Das TV-Programm ist bei manchen Sendern leer",

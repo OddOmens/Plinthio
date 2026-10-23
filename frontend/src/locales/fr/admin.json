@@ -325,6 +325,7 @@
       "desc": "Ajoute une page TV en direct, avec chaînes et guide des programmes, pour tous les utilisateurs de ce serveur. Désactivée par défaut ; la désactiver masque la TV en direct partout, mais conserve ici vos listes et vos choix."
     },
     "publicNote": "Les chaînes proviennent de sources publiques sur Internet. Certaines peuvent être hors ligne, tomber en panne de temps en temps ou ne fonctionner que dans certains pays. Les chaînes pour adultes ne sont jamais ajoutées.",
+    "responsibility": "Vous choisissez les chaînes à ajouter, et vous êtes responsable de disposer du droit de les regarder là où vous êtes. Plinthio n'héberge, ne vérifie ni ne cautionne aucune chaîne.",
     "sources": {
       "title": "Listes de chaînes",
       "desc": "Chaque liste est rechargée toutes les 12 heures tant que la TV en direct est activée, avec son guide des programmes.",
@@ -404,6 +405,87 @@
         "add": "Ajouter la playlist"
       }
     },
+    "acknowledge": {
+      "title": "Avant d'ajouter des chaînes publiques",
+      "points": {
+        "links": "Les listes publiques sont des liens vers des flux de tiers. Plinthio n'en héberge, n'en vérifie et n'en garantit aucun.",
+        "licensing": "Certaines chaînes ne fonctionnent que dans certains pays (géobloquées), et certaines peuvent ne pas disposer de licence là où vous êtes.",
+        "yourCall": "N'ajoutez que des chaînes que vous avez le droit de regarder. Le choix des chaînes ajoutées vous appartient, tout comme la responsabilité qui en découle.",
+        "adult": "Les chaînes pour adultes ne sont jamais ajoutées."
+      },
+      "understand": "J'ai compris",
+      "continue": "Continuer",
+      "couldNotSave": "Impossible d'enregistrer, réessayez"
+    },
+    "filters": {
+      "title": "Choisir ce qui s'affiche",
+      "desc": "Masquez des ensembles entiers de chaînes d'un coup. Ces choix sont conservés quand les listes sont rechargées, et les nouvelles chaînes correspondantes sont masquées aussi. Pour garder une chaîne d'un ensemble masqué, utilisez Toujours afficher sous Chaînes.",
+      "summary": {
+        "one": "Chaînes affichées : {visible} sur {number}",
+        "other": "Chaînes affichées : {visible} sur {number}"
+      },
+      "noChannels": "Aucune chaîne lisible pour l'instant. Les nombres apparaissent ici une fois qu'une liste est chargée.",
+      "geoBlocked": {
+        "label": "Masquer les chaînes géobloquées",
+        "desc": {
+          "one": "{number} chaîne est indiquée Géobloquée : elle ne fonctionne que dans certains pays et échoue généralement ailleurs.",
+          "other": "{number} chaînes sont indiquées Géobloquées : elles ne fonctionnent que dans certains pays et échouent généralement ailleurs."
+        }
+      },
+      "hideBy": "Masquer les chaînes par",
+      "tabs": {
+        "groups": "Catégories",
+        "languages": "Langues",
+        "countries": "Pays",
+        "hosts": "Serveurs de flux"
+      },
+      "hiddenCount": {
+        "one": "{number} masqué",
+        "other": "{number} masqués"
+      },
+      "hints": {
+        "groups": "Les catégories proviennent des listes elles-mêmes. Une chaîne présente dans plusieurs catégories est masquée dès que l'une d'elles est masquée.",
+        "languages": "Une chaîne en plusieurs langues n'est masquée que si toutes ses langues sont masquées. Les chaînes sans langue indiquée ne sont pas concernées.",
+        "countries": "Le pays d'origine d'une chaîne. Les chaînes sans pays indiqué ne sont pas concernées.",
+        "hosts": "Certaines chaînes publiques ne sont pas diffusées par la chaîne d'origine, mais relayées via un service tiers. Masquer un serveur masque toutes ses chaînes. Plinthio masque un de ces services, jmp2.uk, jusqu'à ce que vous l'affichiez ; ne le faites que si vous êtes sûr de pouvoir regarder ces chaînes."
+      },
+      "search": {
+        "groups": "Rechercher une catégorie",
+        "languages": "Rechercher une langue",
+        "countries": "Rechercher un pays",
+        "hosts": "Rechercher un serveur de flux"
+      },
+      "showing": {
+        "label": "Liste",
+        "all": "Tous",
+        "shown": "Affichés",
+        "hidden": "Masqués"
+      },
+      "showAll": "Tout afficher",
+      "hideAll": "Tout masquer",
+      "showMatching": {
+        "one": "Afficher {number} résultat",
+        "other": "Afficher {number} résultats"
+      },
+      "hideMatching": {
+        "one": "Masquer {number} résultat",
+        "other": "Masquer {number} résultats"
+      },
+      "tip": "Astuce : pour n'en garder que quelques-uns, appuyez sur Tout masquer, puis réactivez ceux que vous voulez.",
+      "hiddenLabel": "Masqué",
+      "more": {
+        "one": "Afficher {number} de plus",
+        "other": "Afficher {number} de plus"
+      },
+      "noMatches": "Aucun résultat.",
+      "empty": {
+        "groups": "Aucune chaîne n'a de catégorie.",
+        "languages": "Aucune chaîne n'a de langue indiquée.",
+        "countries": "Aucune chaîne n'a de pays indiqué.",
+        "hosts": "Aucun serveur de flux pour l'instant."
+      },
+      "couldNotLoad": "Impossible de charger les filtres"
+    },
     "channels": {
       "title": "Chaînes",
       "desc": "Masquez celles dont vous ne voulez pas. Les comptes enfants ne voient que les chaînes autorisées aux enfants ici, et aucune ne l'est tant que vous ne les avez pas choisies.",
@@ -415,6 +497,8 @@
         "all": "Toutes",
         "visible": "Affichées",
         "hidden": "Masquées",
+        "filtered": "Masquées par un filtre",
+        "pinned": "Toujours affichées",
         "kids": "Autorisées aux enfants",
         "unsupported": "Non lisibles"
       },
@@ -432,13 +516,23 @@
       "disallowKids": "Pas pour les enfants",
       "allowKidsAria": "Autoriser {name} aux enfants",
       "disallowKidsAria": "Ne plus autoriser {name} aux enfants",
+      "alwaysShow": "Toujours afficher",
+      "alwaysShowHint": "Afficher même si un filtre de Choisir ce qui s'affiche la masque",
+      "followFilters": "Suivre les filtres",
+      "followFiltersHint": "Ne plus toujours afficher, pour que les filtres s'appliquent à nouveau",
+      "pinAria": "Toujours afficher {name}",
       "badges": {
         "hidden": "Masquée",
         "kids": "Enfants",
         "geoBlocked": "Géobloquée",
         "geoBlockedHint": "Indiquée comme ne fonctionnant que dans certains pays",
         "unsupported": "Non lisible",
-        "unsupportedHint": "Ce n'est pas un flux HLS, elle n'est donc proposée à personne"
+        "unsupportedHint": "Ce n'est pas un flux HLS, elle n'est donc proposée à personne",
+        "filtered": "Masquée par un filtre : {reasons}",
+        "filteredHint": "Masquée par Choisir ce qui s'affiche ({reasons}). Utilisez Toujours afficher pour garder cette chaîne malgré tout.",
+        "pinnedHint": "Toujours affichée, quels que soient les filtres. Appuyez à nouveau pour laisser les filtres décider.",
+        "pinnedOverHint": "Toujours affichée, même si un filtre masque {reasons}. Appuyez à nouveau pour laisser les filtres décider.",
+        "regionLocked": "Géobloquée"
       },
       "range": "{from}–{to} sur {total}",
       "empty": "Aucune chaîne pour l'instant. Elles apparaissent ici une fois qu'une liste est chargée.",

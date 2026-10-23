@@ -507,7 +507,13 @@
     "thatPlaylistIsAlreadyAdded": "该播放列表已添加",
     "chooseWhatKindOfChannels": "请选择要添加的频道类型",
     "chooseUpTo1000Channels": "最多选择1000个频道",
-    "nothingToChange": "没有需要更改的内容"
+    "nothingToChange": "没有需要更改的内容",
+    "confirmTheNoteAboutPublic": "请先确认关于公共频道的说明",
+    "hideGeoBlockedMustBeTrue": "hideGeoBlocked 必须为 true 或 false",
+    "hiddenCategoriesMustBeA": "隐藏的类别必须是最多包含5000个名称的列表",
+    "hiddenLanguagesMustBeA": "隐藏的语言必须是最多包含5000个名称的列表",
+    "hiddenCountriesMustBeTwo": "隐藏的国家/地区必须是两个字母的国家/地区代码",
+    "hiddenStreamHostsMustBe": "隐藏的直播流服务器必须是主机名，例如 example.com"
   },
   "patterns": {
     "noMetadataSource": "暂无{type}的元数据来源",

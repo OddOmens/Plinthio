@@ -281,7 +281,17 @@
       "public": "**Chaînes publiques** : des listes gratuites et toutes prêtes du projet public iptv-org, par pays, langue ou catégorie. Cochez-en autant que vous voulez ; chacune est ajoutée comme une liste à part.",
       "own": "**Votre propre playlist** : l'adresse de n'importe quelle playlist M3U que le serveur peut joindre, par exemple celle d'un tuner TV sur votre réseau. Les chaînes diffusées en HLS ({m3u8}) sont lisibles ; les autres sont conservées mais indiquées **Non lisible**.",
       "guide": "**Guide des programmes** : une adresse XMLTV que vous indiquez, ou à défaut le guide désigné par la playlist elle-même (les listes publiques en ont toutes un). Les fichiers compressés {gz} fonctionnent. Le guide couvre la journée et demie à venir.",
-      "refresh": "Chaque liste et son guide sont rechargés toutes les 12 heures tant que la TV en direct est activée. **Actualiser** sur une liste la recharge immédiatement ; la liste indique quand elle a été chargée pour la dernière fois, ou pourquoi elle n'a pas pu l'être."
+      "refresh": "Chaque liste et son guide sont rechargés toutes les 12 heures tant que la TV en direct est activée. **Actualiser** sur une liste la recharge immédiatement ; la liste indique quand elle a été chargée pour la dernière fois, ou pourquoi elle n'a pas pu l'être.",
+      "acknowledge": "La première fois qu'une liste publique est ajoutée, Plinthio affiche une courte note sur les chaînes publiques, à confirmer. Elle n'est demandée qu'une fois par serveur."
+    },
+    "filters": {
+      "title": "Choisir ce qui s'affiche",
+      "intro": "Sous **Choisir ce qui s'affiche**, masquez des ensembles entiers de chaînes d'un coup. Ce sont des règles, pas des suppressions : elles s'appliquent encore après chaque rechargement, et les nouvelles chaînes correspondantes sont masquées aussi. La carte indique combien de chaînes passent les filtres.",
+      "region": "Les **chaînes géobloquées** sont masquées au départ, car elles ne fonctionnent généralement que dans leur pays d'origine. Désactivez **Masquer les chaînes géobloquées** pour les faire apparaître dans la liste.",
+      "sets": "**Catégories, langues, pays et serveurs de flux** : chaque onglet les liste avec leur nombre de chaînes. Touchez-en un pour l'afficher ou le masquer, recherchez-en un, ou utilisez **Tout afficher** et **Tout masquer**. Pour n'en garder que quelques-uns, appuyez sur **Tout masquer**, puis réactivez ceux-là.",
+      "languages": "Une chaîne en plusieurs langues n'est masquée que si toutes ses langues sont masquées. Les chaînes sans langue ou sans pays indiqué ne sont pas concernées par ces onglets.",
+      "hosts": "**Serveurs de flux** : certaines chaînes publiques ne sont pas diffusées par la chaîne d'origine, mais relayées via un service tiers. Plinthio masque un de ces services, {host}, jusqu'à ce que vous l'affichiez. Ne l'affichez que si vous êtes sûr de pouvoir regarder ces chaînes.",
+      "exceptions": "**Exceptions** : pour garder une chaîne masquée par un filtre, trouvez-la sous **Chaînes** (choisissez **Masquées par un filtre** pour toutes les voir) et appuyez sur **Toujours afficher**. Une chaîne que vous masquez vous-même reste masquée dans tous les cas."
     },
     "choosing": {
       "title": "Choisir les chaînes",
@@ -303,6 +313,10 @@
       "title": "À propos des chaînes publiques",
       "text": "Les chaînes publiques sont collectées à partir des flux gratuits des diffuseurs eux-mêmes. Elles vont et viennent : certaines peuvent être hors ligne, interrompues ou ne fonctionner que dans certains pays (indiquées Géobloquée). Les chaînes pour adultes ne sont jamais ajoutées."
     },
+    "responsibility": {
+      "title": "Votre responsabilité",
+      "text": "Plinthio lit les chaînes que vous lui donnez. Il n'héberge, ne vérifie ni ne cautionne aucune chaîne, et n'en fournit aucune. Vous choisissez les listes et les chaînes à ajouter, et vous êtes responsable de disposer du droit de les regarder là où vous êtes : les listes publiques renvoient vers des flux gérés par d'autres, et certains peuvent ne pas disposer de licence dans votre pays."
+    },
     "troubleshooting": {
       "title": "En cas de problème",
       "wontPlay": {
@@ -316,6 +330,10 @@
       "notPlayable": {
         "title": "Des chaînes indiquées « Non lisible »",
         "text": "La TV en direct lit les flux HLS. Les chaînes dans d'autres formats restent dans la liste pour que vous les voyiez, mais elles ne sont montrées à personne d'autre."
+      },
+      "missingChannel": {
+        "title": "Une chaîne que je veux est absente",
+        "text": "Un filtre de **Choisir ce qui s'affiche** la masque peut-être. Sous **Chaînes**, choisissez **Masquées par un filtre** : chaque chaîne indique quel filtre la masque, et **Toujours afficher** la fait revenir."
       },
       "noGuide": {
         "title": "Le guide est vide pour certaines chaînes",

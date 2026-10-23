@@ -507,7 +507,13 @@
     "thatPlaylistIsAlreadyAdded": "그 재생 목록은 이미 추가되어 있어요",
     "chooseWhatKindOfChannels": "추가할 채널 종류를 고르세요",
     "chooseUpTo1000Channels": "채널은 최대 1000개까지 고를 수 있어요",
-    "nothingToChange": "바꿀 내용이 없어요"
+    "nothingToChange": "바꿀 내용이 없어요",
+    "confirmTheNoteAboutPublic": "먼저 공개 채널 안내를 확인하세요",
+    "hideGeoBlockedMustBeTrue": "hideGeoBlocked는 true 또는 false여야 해요",
+    "hiddenCategoriesMustBeA": "숨길 카테고리는 최대 5000개의 이름 목록이어야 해요",
+    "hiddenLanguagesMustBeA": "숨길 언어는 최대 5000개의 이름 목록이어야 해요",
+    "hiddenCountriesMustBeTwo": "숨길 국가는 두 글자 국가 코드여야 해요",
+    "hiddenStreamHostsMustBe": "숨길 스트림 서버는 example.com 같은 호스트 이름이어야 해요"
   },
   "patterns": {
     "noMetadataSource": "{type} 메타데이터 소스가 아직 없어요",
