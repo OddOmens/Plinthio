@@ -325,6 +325,7 @@
       "desc": "Fügt eine Live-TV-Seite mit Sendern und TV-Programm für alle auf diesem Server hinzu. Standardmäßig aus; Ausschalten blendet Live-TV überall aus, behält hier aber deine Listen und Einstellungen."
     },
     "publicNote": "Die Sender stammen aus öffentlichen Quellen im Internet. Manche sind vielleicht offline, fallen ab und zu aus oder laufen nur in bestimmten Ländern. Sender für Erwachsene werden nie hinzugefügt.",
+    "responsibility": "Du wählst, welche Sender du hinzufügst, und bist dafür verantwortlich, dass du sie dort, wo du bist, schauen darfst. Plinthio hostet, prüft oder befürwortet keinen Sender.",
     "sources": {
       "title": "Senderlisten",
       "desc": "Jede Liste wird samt TV-Programm alle 12 Stunden neu geladen, solange Live-TV an ist.",
@@ -404,6 +405,87 @@
         "add": "Playlist hinzufügen"
       }
     },
+    "acknowledge": {
+      "title": "Bevor du öffentliche Sender hinzufügst",
+      "points": {
+        "links": "Öffentliche Listen sind Links zu Streams von Dritten. Plinthio hostet und prüft keinen davon und steht für keinen davon ein.",
+        "licensing": "Manche Sender laufen nur in bestimmten Ländern (geo-gesperrt), und manche sind dort, wo du bist, vielleicht nicht lizenziert.",
+        "yourCall": "Füge nur Sender hinzu, die du schauen darfst. Welche Sender du hinzufügst, liegt bei dir – und ebenso die Verantwortung dafür.",
+        "adult": "Sender für Erwachsene werden nie hinzugefügt."
+      },
+      "understand": "Ich habe verstanden",
+      "continue": "Weiter",
+      "couldNotSave": "Konnte nicht gespeichert werden, versuch es erneut"
+    },
+    "filters": {
+      "title": "Anzeige auswählen",
+      "desc": "Blende ganze Gruppen von Sendern auf einmal aus. Diese Auswahl bleibt erhalten, wenn die Listen neu geladen werden, und neue passende Sender werden ebenfalls ausgeblendet. Um einen einzelnen Sender aus einer ausgeblendeten Gruppe zu behalten, nutze Immer anzeigen unter Sender.",
+      "summary": {
+        "one": "{visible} von {number} Sender angezeigt",
+        "other": "{visible} von {number} Sendern angezeigt"
+      },
+      "noChannels": "Noch keine abspielbaren Sender. Die Zahlen erscheinen hier, sobald eine Liste geladen ist.",
+      "geoBlocked": {
+        "label": "Geo-gesperrte Sender ausblenden",
+        "desc": {
+          "one": "{number} Sender ist als Geo-gesperrt markiert: Er läuft nur in bestimmten Ländern und schlägt anderswo meist fehl.",
+          "other": "{number} Sender sind als Geo-gesperrt markiert: Sie laufen nur in bestimmten Ländern und schlagen anderswo meist fehl."
+        }
+      },
+      "hideBy": "Sender ausblenden nach",
+      "tabs": {
+        "groups": "Kategorien",
+        "languages": "Sprachen",
+        "countries": "Länder",
+        "hosts": "Stream-Server"
+      },
+      "hiddenCount": {
+        "one": "{number} ausgeblendet",
+        "other": "{number} ausgeblendet"
+      },
+      "hints": {
+        "groups": "Die Kategorien stammen aus den Listen selbst. Ein Sender in mehreren Kategorien wird ausgeblendet, sobald eine davon ausgeblendet ist.",
+        "languages": "Ein Sender in mehreren Sprachen wird nur ausgeblendet, wenn alle davon ausgeblendet sind. Sender ohne angegebene Sprache sind nicht betroffen.",
+        "countries": "Das Land, aus dem ein Sender kommt. Sender ohne angegebenes Land sind nicht betroffen.",
+        "hosts": "Manche öffentlichen Sender werden nicht von der Sendeanstalt selbst gestreamt, sondern über einen Dienst von Dritten umgeleitet. Blendest du einen Server aus, fallen alle seine Sender weg. Plinthio blendet einen solchen Dienst, jmp2.uk, aus, bis du ihn einblendest; tu das nur, wenn du sicher bist, dass du diese Sender schauen darfst."
+      },
+      "search": {
+        "groups": "Kategorien suchen",
+        "languages": "Sprachen suchen",
+        "countries": "Länder suchen",
+        "hosts": "Stream-Server suchen"
+      },
+      "showing": {
+        "label": "Liste",
+        "all": "Alle",
+        "shown": "Sichtbar",
+        "hidden": "Ausgeblendet"
+      },
+      "showAll": "Alle einblenden",
+      "hideAll": "Alle ausblenden",
+      "showMatching": {
+        "one": "{number} Treffer einblenden",
+        "other": "{number} Treffer einblenden"
+      },
+      "hideMatching": {
+        "one": "{number} Treffer ausblenden",
+        "other": "{number} Treffer ausblenden"
+      },
+      "tip": "Tipp: Um nur ein paar zu behalten, drücke Alle ausblenden und schalte dann die gewünschten wieder ein.",
+      "hiddenLabel": "Ausgeblendet",
+      "more": {
+        "one": "{number} weiteren anzeigen",
+        "other": "{number} weitere anzeigen"
+      },
+      "noMatches": "Keine Treffer.",
+      "empty": {
+        "groups": "Keiner der Sender hat eine Kategorie.",
+        "languages": "Bei keinem Sender ist eine Sprache angegeben.",
+        "countries": "Bei keinem Sender ist ein Land angegeben.",
+        "hosts": "Noch keine Stream-Server."
+      },
+      "couldNotLoad": "Filter konnten nicht geladen werden"
+    },
     "channels": {
       "title": "Sender",
       "desc": "Blende die aus, die du nicht willst. Kinderkonten sehen nur die hier für Kinder freigegebenen Sender, und keiner ist freigegeben, bis du welche auswählst.",
@@ -415,6 +497,8 @@
         "all": "Alle",
         "visible": "Sichtbar",
         "hidden": "Ausgeblendet",
+        "filtered": "Per Filter ausgeblendet",
+        "pinned": "Immer angezeigt",
         "kids": "Für Kinder freigegeben",
         "unsupported": "Nicht abspielbar"
       },
@@ -432,13 +516,23 @@
       "disallowKids": "Nicht für Kinder",
       "allowKidsAria": "{name} für Kinder freigeben",
       "disallowKidsAria": "Freigabe von {name} für Kinder aufheben",
+      "alwaysShow": "Immer anzeigen",
+      "alwaysShowHint": "Auch anzeigen, wenn ein Filter unter Anzeige auswählen ihn ausblendet",
+      "followFilters": "Filtern folgen",
+      "followFiltersHint": "Nicht mehr immer anzeigen, damit die Filter wieder gelten",
+      "pinAria": "{name} immer anzeigen",
       "badges": {
         "hidden": "Ausgeblendet",
         "kids": "Kinder",
         "geoBlocked": "Geo-gesperrt",
         "geoBlockedHint": "Als nur in bestimmten Ländern abspielbar markiert",
         "unsupported": "Nicht abspielbar",
-        "unsupportedHint": "Kein HLS-Stream, wird daher niemandem angeboten"
+        "unsupportedHint": "Kein HLS-Stream, wird daher niemandem angeboten",
+        "filtered": "Per Filter ausgeblendet: {reasons}",
+        "filteredHint": "Ausgeblendet durch Anzeige auswählen ({reasons}). Mit Immer anzeigen behältst du diesen Sender trotzdem.",
+        "pinnedHint": "Immer angezeigt, egal was die Filter sagen. Drücke erneut, um die Filter entscheiden zu lassen.",
+        "pinnedOverHint": "Immer angezeigt, obwohl ein Filter {reasons} ausblendet. Drücke erneut, um die Filter entscheiden zu lassen.",
+        "regionLocked": "Geo-gesperrt"
       },
       "range": "{from}–{to} von {total}",
       "empty": "Noch keine Sender. Sie erscheinen hier, sobald eine Liste geladen ist.",

@@ -281,7 +281,17 @@
       "public": "**Canales públicos**: listas gratuitas y ya preparadas del proyecto público iptv-org, por país, idioma o categoría. Marca todas las que quieras; cada una se añade como una lista aparte.",
       "own": "**Lista propia**: la dirección de cualquier lista de reproducción M3U a la que pueda llegar el servidor, como la de un sintonizador de TV de tu red. Los canales que emiten en HLS ({m3u8}) se pueden ver; los demás se conservan, pero aparecen como **No reproducible**.",
       "guide": "**Guía de programación**: una dirección XMLTV que indiques tú o, si no, la guía que indique la propia lista (todas las listas públicas tienen una). Funcionan los archivos comprimidos {gz}. La guía cubre el día y medio siguiente.",
-      "refresh": "Cada lista y su guía se recargan cada 12 horas mientras la TV en vivo está activada. **Actualizar** en una lista la recarga al momento; la lista muestra cuándo se cargó por última vez o por qué no se pudo cargar."
+      "refresh": "Cada lista y su guía se recargan cada 12 horas mientras la TV en vivo está activada. **Actualizar** en una lista la recarga al momento; la lista muestra cuándo se cargó por última vez o por qué no se pudo cargar.",
+      "acknowledge": "La primera vez que se añade una lista pública, Plinthio muestra una breve nota sobre los canales públicos que hay que confirmar. Se pide una sola vez por servidor."
+    },
+    "filters": {
+      "title": "Elegir qué mostrar",
+      "intro": "En **Elige qué mostrar**, oculta grupos enteros de canales de una vez. Son reglas, no eliminaciones: se siguen aplicando después de cada recarga, y los canales nuevos que coincidan también se ocultan. La tarjeta muestra cuántos canales quedan visibles.",
+      "region": "Los **canales restringidos por región** están ocultos de entrada, ya que normalmente solo se ven en su país de origen. Desactiva **Ocultar canales restringidos por región** para que aparezcan.",
+      "sets": "**Categorías, idiomas, países y servidores de emisión**: cada pestaña los muestra con cuántos canales tiene cada uno. Toca uno para mostrarlo u ocultarlo, búscalo o usa **Mostrar todo** y **Ocultar todo**. Para quedarte solo con unos pocos, pulsa **Ocultar todo** y vuelve a activar esos.",
+      "languages": "Un canal en varios idiomas solo se oculta cuando todos sus idiomas están ocultos. Los canales sin idioma o país indicado no se ven afectados por esas pestañas.",
+      "hosts": "**Servidores de emisión**: algunos canales públicos no los emite la propia cadena, sino que se redirigen a través de un servicio de terceros. Plinthio oculta uno de esos servicios, {host}, hasta que lo muestres. Muéstralo solo si estás seguro de que puedes ver esos canales.",
+      "exceptions": "**Excepciones**: para conservar un canal que oculta un filtro, búscalo en **Canales** (elige **Ocultos por filtro** para verlos todos) y pulsa **Mostrar siempre**. Un canal que ocultes a mano sigue oculto en cualquier caso."
     },
     "choosing": {
       "title": "Elegir canales",
@@ -303,6 +313,10 @@
       "title": "Sobre los canales públicos",
       "text": "Los canales públicos se recopilan de las emisiones gratuitas de las propias cadenas. Van y vienen: algunos pueden estar sin conexión, cortarse o verse solo en ciertos países (marcados como Geobloqueado). Nunca se añaden canales para adultos."
     },
+    "responsibility": {
+      "title": "Tu responsabilidad",
+      "text": "Plinthio reproduce los canales que le das. No aloja, revisa ni respalda ningún canal, y no incluye ninguno. Tú eliges qué listas y canales añadir, y eres responsable de tener derecho a verlos donde estás: las listas públicas enlazan a emisiones gestionadas por otros, y puede que algunas no tengan licencia en tu país."
+    },
     "troubleshooting": {
       "title": "Cuando algo falla",
       "wontPlay": {
@@ -316,6 +330,10 @@
       "notPlayable": {
         "title": "Canales marcados como «No reproducible»",
         "text": "La TV en vivo reproduce emisiones HLS. Los canales en otros formatos se quedan en la lista para que los veas, pero no se muestran a nadie más."
+      },
+      "missingChannel": {
+        "title": "Falta un canal que quiero",
+        "text": "Puede que lo oculte un filtro de **Elige qué mostrar**. En **Canales**, elige **Ocultos por filtro**: cada canal indica qué filtro lo oculta, y **Mostrar siempre** lo recupera."
       },
       "noGuide": {
         "title": "La guía está vacía en algunos canales",

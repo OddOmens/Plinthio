@@ -507,7 +507,13 @@
     "thatPlaylistIsAlreadyAdded": "Diese Playlist ist schon hinzugefügt",
     "chooseWhatKindOfChannels": "Wähle, welche Art von Sendern du hinzufügen willst",
     "chooseUpTo1000Channels": "Wähle bis zu 1000 Sender",
-    "nothingToChange": "Nichts zu ändern"
+    "nothingToChange": "Nichts zu ändern",
+    "confirmTheNoteAboutPublic": "Bestätige zuerst den Hinweis zu öffentlichen Sendern",
+    "hideGeoBlockedMustBeTrue": "hideGeoBlocked muss true oder false sein",
+    "hiddenCategoriesMustBeA": "Ausgeblendete Kategorien müssen eine Liste mit höchstens 5000 Namen sein",
+    "hiddenLanguagesMustBeA": "Ausgeblendete Sprachen müssen eine Liste mit höchstens 5000 Namen sein",
+    "hiddenCountriesMustBeTwo": "Ausgeblendete Länder müssen zweistellige Ländercodes sein",
+    "hiddenStreamHostsMustBe": "Ausgeblendete Stream-Server müssen Hostnamen sein, etwa example.com"
   },
   "patterns": {
     "noMetadataSource": "Noch keine Metadatenquelle für {type}",

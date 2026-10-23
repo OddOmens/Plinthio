@@ -281,7 +281,17 @@
       "public": "**Openbare zenders**: gratis, kant-en-klare lijsten van het openbare iptv-org-project, per land, taal of categorie. Vink er zoveel aan als je wilt; elke lijst wordt apart toegevoegd.",
       "own": "**Eigen playlist**: het adres van elke M3U-playlist die de server kan bereiken, zoals die van een tv-tuner in je netwerk. Zenders die via HLS ({m3u8}) streamen, spelen af; andere blijven staan maar worden vermeld als **Niet afspeelbaar**.",
       "guide": "**Tv-gids**: een XMLTV-adres dat je zelf opgeeft, of anders de gids die de playlist zelf noemt (de openbare lijsten hebben er allemaal een). Gecomprimeerde {gz}-bestanden werken ook. De gids beslaat de komende anderhalve dag.",
-      "refresh": "Zolang Live tv aanstaat, worden elke lijst en de gids ervan elke 12 uur opnieuw geladen. **Vernieuwen** bij een lijst laadt die meteen opnieuw; de lijst laat zien wanneer hij voor het laatst is geladen, of waarom dat niet lukte."
+      "refresh": "Zolang Live tv aanstaat, worden elke lijst en de gids ervan elke 12 uur opnieuw geladen. **Vernieuwen** bij een lijst laadt die meteen opnieuw; de lijst laat zien wanneer hij voor het laatst is geladen, of waarom dat niet lukte.",
+      "acknowledge": "De eerste keer dat er een openbare lijst wordt toegevoegd, toont Plinthio een korte notitie over openbare zenders om te bevestigen. Dat wordt één keer per server gevraagd."
+    },
+    "filters": {
+      "title": "Kiezen wat je toont",
+      "intro": "Verberg onder **Kies wat je toont** hele groepen zenders in één keer. Dit zijn regels, geen verwijderingen: ze blijven gelden na elke keer opnieuw laden, en nieuwe zenders die erbij passen worden ook verborgen. De kaart laat zien hoeveel zenders er zichtbaar blijven.",
+      "region": "**Regiogebonden zenders** zijn vanaf het begin verborgen, omdat ze meestal alleen in hun eigen land spelen. Zet **Regiogebonden zenders verbergen** uit om ze te tonen.",
+      "sets": "**Categorieën, talen, landen en streamservers**: elk tabblad toont ze met het aantal zenders per stuk. Tik erop om er een te tonen of te verbergen, zoek ernaar, of gebruik **Alles tonen** en **Alles verbergen**. Wil je er maar een paar houden, druk dan op **Alles verbergen** en zet die weer aan.",
+      "languages": "Een zender in meerdere talen wordt alleen verborgen als al zijn talen verborgen zijn. Zenders zonder vermelde taal of land worden door die tabbladen niet beïnvloed.",
+      "hosts": "**Streamservers**: sommige openbare zenders worden niet door de omroep zelf gestreamd, maar omgeleid via een dienst van derden. Plinthio verbergt één zo'n dienst, {host}, tot jij hem toont. Toon hem alleen als je zeker weet dat je die zenders mag kijken.",
+      "exceptions": "**Uitzonderingen**: wil je één zender houden die een filter verbergt, zoek hem dan onder **Zenders** (kies **Verborgen door filter** om ze allemaal te zien) en druk op **Altijd tonen**. Een zender die je zelf verbergt, blijft hoe dan ook verborgen."
     },
     "choosing": {
       "title": "Zenders kiezen",
@@ -303,6 +313,10 @@
       "title": "Over openbare zenders",
       "text": "Openbare zenders worden verzameld uit de eigen gratis streams van omroepen. Ze komen en gaan: sommige zijn misschien offline, onderbroken of spelen alleen in bepaalde landen (gemarkeerd als ‘Regiogebonden’). Zenders voor volwassenen worden nooit toegevoegd."
     },
+    "responsibility": {
+      "title": "Jouw verantwoordelijkheid",
+      "text": "Plinthio speelt de zenders af die jij het geeft. Het host, controleert of onderschrijft geen enkele zender, en er worden geen zenders meegeleverd. Jij kiest welke lijsten en zenders je toevoegt, en jij bent ervoor verantwoordelijk dat je het recht hebt om ze te kijken waar je bent: openbare lijsten linken naar streams die door anderen worden beheerd, en voor sommige is er in jouw land misschien geen licentie."
+    },
     "troubleshooting": {
       "title": "Als er iets misgaat",
       "wontPlay": {
@@ -316,6 +330,10 @@
       "notPlayable": {
         "title": "Zenders gemarkeerd als ‘Niet afspeelbaar’",
         "text": "Live tv speelt HLS-streams af. Zenders in andere formaten blijven in de lijst staan zodat jij ze ziet, maar niemand anders krijgt ze te zien."
+      },
+      "missingChannel": {
+        "title": "Een zender die ik wil, ontbreekt",
+        "text": "Misschien verbergt een filter onder **Kies wat je toont** hem. Kies onder **Zenders** voor **Verborgen door filter**: bij elke zender staat welk filter hem verbergt, en met **Altijd tonen** komt hij terug."
       },
       "noGuide": {
         "title": "De gids is leeg voor sommige zenders",

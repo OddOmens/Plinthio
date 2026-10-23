@@ -507,7 +507,13 @@
     "thatPlaylistIsAlreadyAdded": "Die playlist is al toegevoegd",
     "chooseWhatKindOfChannels": "Kies wat voor zenders je wilt toevoegen",
     "chooseUpTo1000Channels": "Kies maximaal 1000 zenders",
-    "nothingToChange": "Niets te wijzigen"
+    "nothingToChange": "Niets te wijzigen",
+    "confirmTheNoteAboutPublic": "Bevestig eerst de notitie over openbare zenders",
+    "hideGeoBlockedMustBeTrue": "hideGeoBlocked moet true of false zijn",
+    "hiddenCategoriesMustBeA": "Verborgen categorieën moeten een lijst van maximaal 5000 namen zijn",
+    "hiddenLanguagesMustBeA": "Verborgen talen moeten een lijst van maximaal 5000 namen zijn",
+    "hiddenCountriesMustBeTwo": "Verborgen landen moeten landcodes van twee letters zijn",
+    "hiddenStreamHostsMustBe": "Verborgen streamservers moeten hostnamen zijn, zoals example.com"
   },
   "patterns": {
     "noMetadataSource": "Nog geen metadatabron voor {type}",
