@@ -81,5 +81,9 @@
       "label": "Buonanotte",
       "desc": "Un orologio soffuso con l'ora di fine e, per le serie, quando finirebbe il resto della stagione. Riposante per gli occhi in una stanza buia."
     }
+  },
+  "defaultLanguage": {
+    "title": "Lingua predefinita",
+    "desc": "Per chi non ne ha scelta una. Automatica segue il browser di ciascuno; chiunque può sceglierne un'altra nelle Impostazioni."
   }
 }

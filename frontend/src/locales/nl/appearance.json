@@ -81,5 +81,9 @@
       "label": "Bedtijd",
       "desc": "Een gedimde klok met de eindtijd en, bij series, wanneer de rest van het seizoen zou eindigen. Rustig voor de ogen in een donkere kamer."
     }
+  },
+  "defaultLanguage": {
+    "title": "Standaardtaal",
+    "desc": "Voor iedereen die zelf geen taal heeft gekozen. Automatisch volgt de browser van elke persoon; iedereen kan in Instellingen een andere kiezen."
   }
 }

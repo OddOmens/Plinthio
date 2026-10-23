@@ -20,6 +20,11 @@ const DEFAULT_PAUSE_SCREEN = 'details';
 const PAGE_WIDTHS = ['full', 'contained'];
 const DEFAULT_PAGE_WIDTH = 'full';
 
+// The language for anyone who hasn't picked one (frontend/src/i18n LANGUAGES). 'auto' follows
+// each browser; a language here wins over the browser, but never over a person's own choice.
+const LANGUAGES = ['auto', 'en', 'de', 'es', 'fr', 'it', 'nl', 'pl', 'pt', 'ja', 'ko', 'zh'];
+const DEFAULT_LANGUAGE = 'auto';
+
 const DEFAULT_USER_CUSTOMIZATION = {
   enabled: true,
   accentColor: true,
@@ -53,7 +58,7 @@ router.get('/', async (req, res) => {
     const db = await getDb();
     const rows = await db.all(`
       SELECT key, value FROM settings
-      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen', 'page_width', 'user_customization')
+      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen', 'page_width', 'default_language', 'user_customization')
     `);
 
     const config = {
@@ -64,6 +69,7 @@ router.get('/', async (req, res) => {
       layoutMode: 'topnav',
       pauseScreen: DEFAULT_PAUSE_SCREEN,
       pageWidth: DEFAULT_PAGE_WIDTH,
+      defaultLanguage: DEFAULT_LANGUAGE,
       userCustomization: { ...DEFAULT_USER_CUSTOMIZATION }
     };
 
@@ -75,6 +81,7 @@ router.get('/', async (req, res) => {
       if (row.key === 'layout_mode') config.layoutMode = row.value;
       if (row.key === 'pause_screen' && PAUSE_SCREENS.includes(row.value)) config.pauseScreen = row.value;
       if (row.key === 'page_width' && PAGE_WIDTHS.includes(row.value)) config.pageWidth = row.value;
+      if (row.key === 'default_language' && LANGUAGES.includes(row.value)) config.defaultLanguage = row.value;
       if (row.key === 'user_customization') config.userCustomization = parseUserCustomization(row.value);
     }
 
@@ -110,6 +117,7 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
     showMissingFilms,
     partyModeEnabled,
     pauseScreen,
+    defaultLanguage,
     introEnabled,
     introMovies,
     introShows
@@ -189,6 +197,17 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       );
     }
 
+    if (defaultLanguage !== undefined) {
+      if (!LANGUAGES.includes(defaultLanguage)) {
+        return res.status(400).json({ error: `defaultLanguage must be one of ${LANGUAGES.join(', ')}` });
+      }
+      await db.run(
+        `INSERT INTO settings (key, value, updated_at) VALUES ('default_language', ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+        [defaultLanguage]
+      );
+    }
+
     if (userCustomization !== undefined) {
       if (!userCustomization || typeof userCustomization !== 'object' || Array.isArray(userCustomization)) {
         return res.status(400).json({ error: 'userCustomization must be an object' });
@@ -228,7 +247,7 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
 
     const rows = await db.all(`
       SELECT key, value FROM settings
-      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen', 'page_width', 'user_customization')
+      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen', 'page_width', 'default_language', 'user_customization')
     `);
 
     const result = {
@@ -239,6 +258,7 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       layoutMode: 'topnav',
       pauseScreen: DEFAULT_PAUSE_SCREEN,
       pageWidth: DEFAULT_PAGE_WIDTH,
+      defaultLanguage: DEFAULT_LANGUAGE,
       userCustomization: { ...DEFAULT_USER_CUSTOMIZATION }
     };
 
@@ -250,6 +270,7 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
       if (row.key === 'layout_mode') result.layoutMode = row.value;
       if (row.key === 'pause_screen' && PAUSE_SCREENS.includes(row.value)) result.pauseScreen = row.value;
       if (row.key === 'page_width' && PAGE_WIDTHS.includes(row.value)) result.pageWidth = row.value;
+      if (row.key === 'default_language' && LANGUAGES.includes(row.value)) result.defaultLanguage = row.value;
       if (row.key === 'user_customization') result.userCustomization = parseUserCustomization(row.value);
     }
     result.ratings = await getRatingSettings(db);

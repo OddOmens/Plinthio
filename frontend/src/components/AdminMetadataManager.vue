@@ -659,7 +659,7 @@ async function performMatch(item) {
     }
     if (err.response?.status === 404) {
       // The server's "No metadata source…" explains itself; anything else reads as no match.
-      matchResults.value[item.id] = /No metadata source/.test(data.error || '')
+      matchResults.value[item.id] = /No metadata source/.test(data.errorEnglish || '')
         ? { status: 'none', message: data.error }
         : { status: 'none', key: 'metadata.manager.match.noMatch' };
       return 'none';

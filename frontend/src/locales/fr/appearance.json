@@ -81,5 +81,9 @@
       "label": "Coucher",
       "desc": "Une horloge tamisée avec l'heure de fin et, pour les séries, celle du reste de la saison. Reposant pour les yeux dans une pièce sombre."
     }
+  },
+  "defaultLanguage": {
+    "title": "Langue par défaut",
+    "desc": "Pour toutes les personnes qui n'en ont pas choisi. Automatique suit le navigateur de chacun ; chacun peut en choisir une autre dans les Paramètres."
   }
 }

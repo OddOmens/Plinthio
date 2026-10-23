@@ -14,6 +14,18 @@
         />
       </SettingsCard>
 
+      <!-- For anyone who hasn't picked their own; people can always choose, whatever the
+           switches above say. -->
+      <SettingsCard :title="$t('appearance.defaultLanguage.title')" :description="$t('appearance.defaultLanguage.desc')">
+        <OptionTiles
+          :label="$t('appearance.defaultLanguage.title')"
+          :options="languageOptions"
+          :model-value="store.defaultLanguage"
+          @update:model-value="setting.set({ defaultLanguage: $event })"
+          grid-class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-2.5"
+        />
+      </SettingsCard>
+
       <SettingsCard
         v-for="card in personalCards"
         :key="card.key"
@@ -106,11 +118,16 @@ import SectionHeader from '../settings/SectionHeader.vue';
 import SettingsCard from '../settings/SettingsCard.vue';
 import ToggleRow from '../settings/ToggleRow.vue';
 import SaveStatus from '../settings/SaveStatus.vue';
-import { t } from '../../i18n';
+import { t, LANGUAGES } from '../../i18n';
 
 const store = useCustomizationStore();
 const dialog = useDialogStore();
 const setting = useServerSetting();
+
+const languageOptions = computed(() => [
+  { id: 'auto', label: t('appearance.language.auto') },
+  ...LANGUAGES.map((lang) => ({ id: lang.code, label: lang.name }))
+]);
 
 // The server's default for each thing people can also choose for themselves, and whether
 // they may (userCustomization[key]).

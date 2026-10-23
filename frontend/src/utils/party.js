@@ -1,4 +1,5 @@
 import api from '../api/client';
+import { translateServerMessage } from '../i18n/serverErrors';
 
 // The live side of a watch party (backend: routes/party.js). Reads the party's event
 // stream — Server-Sent Events, read with fetch so the session token goes in a header
@@ -45,7 +46,7 @@ export class PartyConnection {
         if (!res.ok) {
           // Not a dropped connection — the party's gone, full, or off-limits. Stop.
           const body = await res.json().catch(() => ({}));
-          this.onEvent({ type: 'error', status: res.status, code: body.code, message: body.error });
+          this.onEvent({ type: 'error', status: res.status, code: body.code, message: translateServerMessage(body.error, body.code) });
           return;
         }
         this.retryDelay = 1000;

@@ -81,5 +81,9 @@
       "label": "Bedtime",
       "desc": "A dim clock with the time it ends and, for shows, when the rest of the season would. Easy on the eyes in a dark room."
     }
+  },
+  "defaultLanguage": {
+    "title": "Default language",
+    "desc": "For everyone who hasn't picked their own. Automatic follows each person's browser; people can always choose another in Settings."
   }
 }

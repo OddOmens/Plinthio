@@ -66,7 +66,7 @@ import CustomizationPreview from '../../CustomizationPreview.vue';
 import SectionHeader from '../SectionHeader.vue';
 import SettingsCard from '../SettingsCard.vue';
 import SaveStatus from '../SaveStatus.vue';
-import { t, LANGUAGES, setLanguage, storedLanguageChoice } from '../../../i18n';
+import { t, LANGUAGES, setLanguage, languageChoice as currentLanguageChoice } from '../../../i18n';
 
 const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
@@ -119,7 +119,7 @@ const languageOptions = computed(() => [
   { id: 'auto', label: t('appearance.language.auto') },
   ...LANGUAGES.map((lang) => ({ id: lang.code, label: lang.name }))
 ]);
-const languageChoice = computed(() => authStore.user?.preferences?.language || storedLanguageChoice());
+const languageChoice = computed(() => currentLanguageChoice(authStore.user, customizationStore.defaultLanguage));
 
 async function setPersonalLanguage(value) {
   await setLanguage(value);

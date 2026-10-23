@@ -866,6 +866,7 @@ import {
 import { reportProblemUrl, serverVersion } from '../utils/reportProblem';
 import { useAuthStore } from '../stores/auth';
 import { t } from '../i18n';
+import { localizeErrorEntry } from '../i18n/serverErrors';
 
 // A translated docs sentence with markup in it. Works like <I18nT>: each {name} in the
 // message is filled by the slot of that name, so commands, paths and code stay here in the
@@ -1004,8 +1005,9 @@ async function loadTlsStatus() {
 // ── Error codes ──────────────────────────────────────────────────────────────────────────
 // Served by the backend from its catalog (backend/src/errors.js), so this page can never
 // list a code the server doesn't use. /docs#P301 opens this section on that code, which is
-// where the video player's "what this means" link points. The entries themselves come from
-// the server in English; the group headings are docs.errors.groups.<id>.
+// where the video player's "what this means" link points. The entries come from the server
+// in English and are shown from serverErrors.codes where translated; the group headings are
+// docs.errors.groups.<id>.
 const ERROR_SECTIONS = [
   { prefix: 'P0', id: 'general' },
   { prefix: 'P1', id: 'signIn' },
@@ -1022,7 +1024,7 @@ const highlightedCode = ref('');
 
 const errorGroups = computed(() => {
   const q = errorFilter.value.trim().toLowerCase();
-  const matches = errorCodes.value.filter((e) => !q ||
+  const matches = errorCodes.value.map(localizeErrorEntry).filter((e) => !q ||
     [e.code, e.title, e.meaning, e.fix].some((field) => field?.toLowerCase().includes(q)));
   return ERROR_SECTIONS
     .map((section) => ({ id: section.id, codes: matches.filter((e) => e.code.startsWith(section.prefix)) }))

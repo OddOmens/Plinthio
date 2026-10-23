@@ -94,4 +94,22 @@ describe('/api/customization user customization rules & server defaults', () => 
     assert.equal(publicBody.userCustomization.accentColor, false);
     assert.equal(publicBody.userCustomization.enabled, true);
   });
+
+  test('defaultLanguage: auto by default, admins can set a supported language, others are refused', async () => {
+    const before = await (await fetch(`${server.baseUrl}/api/customization`)).json();
+    assert.equal(before.defaultLanguage, 'auto');
+
+    const set = await sendJson(server.baseUrl, 'PATCH', '/customization', adminToken, { defaultLanguage: 'es' });
+    assert.equal(set.status, 200);
+    assert.equal(set.body.defaultLanguage, 'es');
+    const after = await (await fetch(`${server.baseUrl}/api/customization`)).json();
+    assert.equal(after.defaultLanguage, 'es');
+
+    const bad = await sendJson(server.baseUrl, 'PATCH', '/customization', adminToken, { defaultLanguage: 'xx' });
+    assert.equal(bad.status, 400);
+    const viewer = await sendJson(server.baseUrl, 'PATCH', '/customization', viewerToken, { defaultLanguage: 'fr' });
+    assert.equal(viewer.status, 403);
+
+    await sendJson(server.baseUrl, 'PATCH', '/customization', adminToken, { defaultLanguage: 'auto' });
+  });
 });

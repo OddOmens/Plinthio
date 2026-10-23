@@ -542,12 +542,14 @@ const reviewRows = computed(() => [
   { label: t('setup.review.rows.access'), value: accessSummary() }
 ]);
 
-// The language picked during the wizard becomes the new admin's own. Best effort: it's
-// already remembered on this device, and can be set again in Settings → Appearance.
+// The language picked during the wizard becomes the new admin's own and the server's default,
+// like the accent: whoever sets the server up usually speaks the household's language. Best
+// effort: it's already remembered on this device, and both can be changed later.
 async function saveLanguage() {
   const language = storedLanguageChoice();
-  if (language === 'auto') return;
+  if (!language || language === 'auto') return;
   try {
+    await customizationStore.updateCustomization({ defaultLanguage: language });
     const res = await api.patch('/users/preferences', { language });
     authStore.user = { ...authStore.user, preferences: res.data.preferences || { ...authStore.user?.preferences, language } };
     localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));

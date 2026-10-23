@@ -362,6 +362,7 @@
 </template>
 
 <script setup>
+import { translateServerMessage } from '../i18n/serverErrors';
 import { loadCastSdk } from '../utils/cast';
 import { getMediaToken, setMediaToken } from '../utils/mediaToken';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
@@ -975,7 +976,7 @@ async function diagnose(url) {
     if (res.ok) return { status: res.status };
     let body = {};
     try { body = await res.json(); } catch (e) { /* not JSON */ }
-    return { status: res.status, code: body.code, message: body.error };
+    return { status: res.status, code: body.code, message: translateServerMessage(body.error, body.code) };
   } catch (e) {
     return null;
   }

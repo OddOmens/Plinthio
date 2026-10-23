@@ -21,8 +21,10 @@
 import { ref } from 'vue';
 import { Languages } from '@lucide/vue';
 import { LANGUAGES, setLanguage, storedLanguageChoice } from '../i18n';
+import { useCustomizationStore } from '../stores/customization';
 
-const choice = ref(storedLanguageChoice());
+const customizationStore = useCustomizationStore();
+const choice = ref(storedLanguageChoice() || customizationStore.defaultLanguage || 'auto');
 
 function choose(value) {
   choice.value = value;
