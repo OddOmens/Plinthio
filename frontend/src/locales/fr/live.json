@@ -1,0 +1,92 @@
+{
+  "title": "TV en direct",
+  "badge": "En direct",
+  "intro": "Les chaînes diffusées en ce moment, et ce qui arrive ensuite.",
+  "openAdmin": "Ouvrir les paramètres TV en direct",
+  "tabs": {
+    "channels": "Chaînes",
+    "guide": "Guide"
+  },
+  "searchPlaceholder": "Rechercher une chaîne…",
+  "groupsLabel": "Groupes de chaînes",
+  "channelCount": {
+    "one": "{count} chaîne",
+    "other": "{count} chaînes"
+  },
+  "minutesLeft": {
+    "one": "{count} min restante",
+    "other": "{count} min restantes"
+  },
+  "nextAt": "Ensuite à {time} : {title}",
+  "noGuideInfo": "Aucune information sur le programme",
+  "geoBlocked": "Géobloquée",
+  "geoBlockedHint": "Cette chaîne ne fonctionne peut-être que dans son pays d'origine.",
+  "watchChannel": "Regarder {channel}",
+  "off": {
+    "title": "La TV en direct est désactivée",
+    "intro": "La TV en direct n'est pas disponible sur ce serveur pour le moment.",
+    "admin": "Activez-la dans Administration → TV en direct, puis ajoutez des chaînes.",
+    "viewer": "Un administrateur peut activer la TV en direct sur ce serveur."
+  },
+  "empty": {
+    "noChannelsTitle": "Aucune chaîne pour l'instant",
+    "noChannels": "Il n'y a encore aucune chaîne à regarder. Demandez à un administrateur d'en ajouter.",
+    "noChannelsAdmin": "Ajoutez des chaînes depuis une liste toute prête ou votre propre playlist dans Administration → TV en direct.",
+    "noMatchesTitle": "Aucune chaîne trouvée",
+    "noMatches": "Aucune chaîne ne correspond à votre recherche ou au groupe choisi.",
+    "clearFilters": "Afficher toutes les chaînes"
+  },
+  "errors": {
+    "loadTitle": "Impossible de charger les chaînes",
+    "guideTitle": "Impossible de charger le guide",
+    "unreachable": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez."
+  },
+  "guide": {
+    "channel": "Chaîne",
+    "now": "Maintenant",
+    "earlier": "Plus tôt",
+    "later": "Plus tard",
+    "notLoadedTitle": "Le guide des programmes n'est pas encore chargé",
+    "notLoaded": "Les chaînes fonctionnent quand même. Le guide se remplit une fois leurs sources actualisées, ce qui arrive deux fois par jour.",
+    "onNow": {
+      "one": "En cours · {count} min restante",
+      "other": "En cours · {count} min restantes"
+    },
+    "startsIn": {
+      "one": "Commence dans {count} min",
+      "other": "Commence dans {count} min"
+    },
+    "startsAt": "Commence à {time}",
+    "ended": "Terminé",
+    "watchNow": "Regarder maintenant",
+    "watchChannel": "Regarder la chaîne"
+  },
+  "player": {
+    "back": "Retour aux chaînes",
+    "tuning": "Connexion à la chaîne…",
+    "now": "Maintenant",
+    "goLive": "Revenir au direct",
+    "mute": "Couper le son",
+    "unmute": "Rétablir le son",
+    "volume": "Volume",
+    "channelUp": "Chaîne +",
+    "channelDown": "Chaîne −",
+    "channelUpHint": "Chaîne + (↑)",
+    "channelDownHint": "Chaîne − (↓)",
+    "nextChannel": "Chaîne suivante",
+    "info": "Au programme",
+    "pip": "Image dans l'image",
+    "fullscreen": "Plein écran",
+    "cantPlay": "Impossible de lire cette chaîne",
+    "errorHelp": "Erreur {code} : ce que cela signifie",
+    "geoBlockedHint": "Cette chaîne est indiquée comme géobloquée : elle ne fonctionne peut-être que dans son pays d'origine.",
+    "errors": {
+      "unavailable": "Impossible de joindre le flux de la chaîne. Elle est peut-être hors ligne pour le moment — réessayez plus tard, ou choisissez une autre chaîne.",
+      "notFound": "Cette chaîne n'est plus disponible.",
+      "offline": "Connexion au serveur perdue. Vérifiez votre réseau et réessayez.",
+      "tokenExpired": "Votre accès aux médias a expiré et n'a pas pu être renouvelé. Rechargez la page, ou déconnectez-vous puis reconnectez-vous.",
+      "decode": "Ce navigateur ne peut pas lire la vidéo de cette chaîne.",
+      "unsupportedBrowser": "Ce navigateur ne peut pas lire les flux en direct."
+    }
+  }
+}

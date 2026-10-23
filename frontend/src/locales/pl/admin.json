@@ -49,6 +49,10 @@
         "label": "Odtwarzanie",
         "desc": "Akceleracja sprzętowa, czołówka"
       },
+      "liveTv": {
+        "label": "TV na żywo",
+        "desc": "Kanały, program TV, dzieci"
+      },
       "network": {
         "label": "Sieć",
         "desc": "Poza domem, Tailscale, weryfikacja dwuetapowa"
@@ -312,6 +316,149 @@
     "deleteMessage": "Usunąć „{name}”? Twoje pliki pozostaną nietknięte, a postępy i zakładki wrócą, jeśli ponownie dodasz ten sam folder. Tytuły, okładki i szczegóły zostaną usunięte do czasu ponownego skanowania.",
     "couldNotDelete": "Nie udało się usunąć tej biblioteki",
     "couldNotAdd": "Nie udało się dodać tej biblioteki"
+  },
+  "liveTv": {
+    "title": "TV na żywo",
+    "description": "Kanały na żywo z programem TV, z list publicznych lub twoich własnych playlist. Zmiany zapisują się na bieżąco.",
+    "channelCount": {
+      "one": "{number} kanał",
+      "few": "{number} kanały",
+      "many": "{number} kanałów",
+      "other": "{number} kanału"
+    },
+    "switch": {
+      "label": "TV na żywo",
+      "desc": "Dodaje stronę TV na żywo z kanałami i programem TV dla wszystkich na tym serwerze. Domyślnie wyłączone; wyłączenie ukrywa TV na żywo wszędzie, ale zachowuje tutaj twoje listy i wybory."
+    },
+    "publicNote": "Kanały pochodzą z publicznych źródeł w internecie. Niektóre mogą nie działać, czasem się psuć albo działać tylko w wybranych krajach. Kanały dla dorosłych nigdy nie są dodawane.",
+    "sources": {
+      "title": "Listy kanałów",
+      "desc": "Gdy TV na żywo jest włączona, każda lista wraz z programem TV wczytuje się ponownie co 12 godzin.",
+      "add": "Dodaj kanały",
+      "empty": "Nie ma jeszcze kanałów. Na początek dodaj gotową listę lub własną playlistę.",
+      "off": "Wyłączona",
+      "kinds": {
+        "public": "Lista publiczna",
+        "own": "Twoja playlista"
+      },
+      "refreshing": "Wczytywanie kanałów i programu…",
+      "failed": "Nie udało się wczytać: {error}",
+      "updated": "Zaktualizowano {date}",
+      "notLoaded": "Jeszcze nie wczytano",
+      "enabledAria": "Używaj {name}",
+      "turnOn": "Włącz",
+      "turnOff": "Wyłącz",
+      "editAria": "Edytuj {name}",
+      "removeAria": "Usuń {name}",
+      "removeTitle": "Usuń listę kanałów",
+      "removeMessage": {
+        "one": "Usunąć {name}? Usunięty zostanie też {number} kanał z tej listy oraz informacja, czy był ukryty lub dozwolony dla dzieci.",
+        "few": "Usunąć {name}? Usunięte zostaną też {number} kanały z tej listy oraz informacje, które z nich były ukryte lub dozwolone dla dzieci.",
+        "many": "Usunąć {name}? Usuniętych zostanie też {number} kanałów z tej listy oraz informacje, które z nich były ukryte lub dozwolone dla dzieci.",
+        "other": "Usunąć {name}? Kanały z tej listy ({number}) też zostaną usunięte, razem z informacją, które były ukryte lub dozwolone dla dzieci."
+      },
+      "offHint": "TV na żywo jest wyłączona, więc nikt jeszcze nie widzi tych kanałów. Możesz je najpierw przygotować.",
+      "couldNotLoad": "Nie udało się wczytać list kanałów",
+      "couldNotRefresh": "Nie udało się ponownie wczytać listy",
+      "couldNotSave": "Nie udało się zapisać listy",
+      "couldNotRemove": "Nie udało się usunąć listy"
+    },
+    "editDialog": {
+      "title": "Edytuj listę kanałów",
+      "guideHint": "Zostaw puste, aby użyć programu TV wskazanego w playliście, jeśli taki jest."
+    },
+    "addDialog": {
+      "title": "Dodaj kanały",
+      "tabs": {
+        "public": "Kanały publiczne",
+        "own": "Własna playlista"
+      },
+      "adding": "Dodawanie…",
+      "couldNotAdd": "Nie udało się dodać kanałów",
+      "public": {
+        "intro": "Darmowe kanały z publicznych list iptv-org, aktualizowanych codziennie. Wybierz jedną lub więcej; każda zostanie dodana jako osobna lista.",
+        "listBy": "Pokaż listy według",
+        "kinds": {
+          "countries": "Kraj",
+          "languages": "Język",
+          "categories": "Kategoria"
+        },
+        "search": {
+          "countries": "Szukaj krajów",
+          "languages": "Szukaj języków",
+          "categories": "Szukaj kategorii"
+        },
+        "noMatches": "Nic nie pasuje.",
+        "added": "Dodano",
+        "selected": {
+          "one": "Wybrano: {number}",
+          "few": "Wybrano: {number}",
+          "many": "Wybrano: {number}",
+          "other": "Wybrano: {number}"
+        },
+        "addLists": {
+          "one": "Dodaj listę",
+          "few": "Dodaj {number} listy",
+          "many": "Dodaj {number} list",
+          "other": "Dodaj {number} listy"
+        },
+        "note": "Te kanały pochodzą z publicznych źródeł, więc niektóre mogą nie działać albo działać tylko w wybranych krajach. Kanały dla dorosłych nigdy nie są dodawane.",
+        "couldNotLoad": "Nie udało się wczytać list publicznych"
+      },
+      "own": {
+        "name": "Nazwa",
+        "namePlaceholder": "np. Antena domowa",
+        "playlistUrl": "Adres playlisty (M3U)",
+        "playlistHint": "Adres, do którego serwer ma dostęp. Kanały nadające w HLS (.m3u8) działają; pozostałe są oznaczone jako nieodtwarzalne.",
+        "guideUrl": "Adres programu TV (XMLTV, opcjonalnie)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "Zostaw puste, aby użyć programu TV wskazanego w playliście, jeśli taki jest. Pliki skompresowane .xml.gz też działają.",
+        "add": "Dodaj playlistę"
+      }
+    },
+    "channels": {
+      "title": "Kanały",
+      "desc": "Ukryj te, których nie chcesz. Konta dziecięce widzą tylko kanały dozwolone tutaj dla dzieci, a dopóki ich nie wybierzesz, żaden nie jest dozwolony.",
+      "searchPlaceholder": "Szukaj kanałów",
+      "sourceFilter": "Lista kanałów",
+      "allSources": "Wszystkie listy",
+      "statusFilter": "Pokaż",
+      "status": {
+        "all": "Wszystkie",
+        "visible": "Widoczne",
+        "hidden": "Ukryte",
+        "kids": "Dla dzieci",
+        "unsupported": "Nieodtwarzalne"
+      },
+      "selectPage": "Zaznacz tę stronę",
+      "selected": {
+        "one": "Zaznaczono: {number}",
+        "few": "Zaznaczono: {number}",
+        "many": "Zaznaczono: {number}",
+        "other": "Zaznaczono: {number}"
+      },
+      "selectAria": "Zaznacz {name}",
+      "hide": "Ukryj",
+      "show": "Pokaż",
+      "hideAria": "Ukryj {name}",
+      "showAria": "Pokaż {name}",
+      "allowKids": "Zezwól dzieciom",
+      "disallowKids": "Nie dla dzieci",
+      "allowKidsAria": "Zezwól dzieciom oglądać {name}",
+      "disallowKidsAria": "Przestań zezwalać dzieciom oglądać {name}",
+      "badges": {
+        "hidden": "Ukryty",
+        "kids": "Dzieci",
+        "geoBlocked": "Geoblokada",
+        "geoBlockedHint": "Oznaczony jako działający tylko w wybranych krajach",
+        "unsupported": "Nieodtwarzalny",
+        "unsupportedHint": "To nie jest strumień HLS, więc nikt go nie zobaczy"
+      },
+      "range": "{from}–{to} z {total}",
+      "empty": "Nie ma jeszcze kanałów. Pojawią się tutaj po wczytaniu listy.",
+      "noMatches": "Żaden kanał nie pasuje.",
+      "couldNotLoad": "Nie udało się wczytać kanałów"
+    }
   },
   "logs": {
     "title": "Logi",

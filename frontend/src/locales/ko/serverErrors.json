@@ -335,6 +335,24 @@
       "message": "그 워치 파티는 꽉 찼어요",
       "meaning": "파티 하나에는 최대 20명이 참여할 수 있고, 서버 하나에서 동시에 최대 20개의 파티를 열 수 있어요.",
       "fix": "누군가 나가거나 파티가 끝나면 다시 시도하세요."
+    },
+    "P700": {
+      "title": "실시간 TV 꺼짐",
+      "message": "이 서버에서 실시간 TV가 꺼져 있어요",
+      "meaning": "관리자가 실시간 TV를 켜지 않았거나 껐어요.",
+      "fix": "관리자가 관리 → 실시간 TV에서 켤 수 있어요."
+    },
+    "P701": {
+      "title": "채널을 볼 수 없음",
+      "message": "지금은 이 채널을 재생할 수 없어요",
+      "meaning": "채널 스트림이 응답하지 않았거나, 오류로 응답했거나, Plinthio가 연결하지 않는 곳을 가리키고 있어요. 공개 소스의 채널은 오프라인이 되거나 주소가 바뀌기도 하고, 일부는 특정 국가에서만 재생돼요.",
+      "fix": "다른 채널을 시도하거나 나중에 다시 시도하세요. 관리자는 관리 → 실시간 TV에서 소스를 새로 고치거나, 계속 오프라인인 채널을 숨길 수 있어요."
+    },
+    "P702": {
+      "title": "소스를 불러올 수 없음",
+      "message": "채널 목록을 불러올 수 없어요",
+      "meaning": "Plinthio가 재생 목록, 편성표 또는 공개 채널 프리셋 목록을 내려받거나 읽지 못했어요.",
+      "fix": "서버가 인터넷(또는 재생 목록 주소)에 접근할 수 있는지 확인한 다음 다시 시도하세요. 관리 → 실시간 TV에서 각 소스의 마지막 오류를 볼 수 있어요."
     }
   },
   "messages": {
@@ -477,7 +495,19 @@
     "useAFullPathStartingWith": "/로 시작하는 전체 경로를 쓰세요.",
     "thatSInsideTheServerS": "서버 자체 데이터 폴더 안이에요. 다른 곳의 폴더를 고르세요.",
     "thatFolderContainsTheServerS": "그 폴더에는 서버의 데이터 폴더가 들어 있어요. 그 옆이나 다른 곳의 폴더를 고르세요.",
-    "thatSAFileNotA": "폴더가 아니라 파일이에요."
+    "thatSAFileNotA": "폴더가 아니라 파일이에요.",
+    "channelNotFound": "채널을 찾을 수 없어요",
+    "sourceNotFound": "소스를 찾을 수 없어요",
+    "thisStreamLinkIsNot": "올바른 스트림 링크가 아니에요",
+    "chooseACountryLanguageOr": "국가, 언어 또는 카테고리를 고르세요",
+    "thoseChannelsAreAlreadyAdded": "그 채널들은 이미 추가되어 있어요",
+    "enterANameForThese": "이 채널들의 이름을 입력하세요",
+    "enterThePlaylistAddressStarting": "http:// 또는 https://로 시작하는 재생 목록 주소를 입력하세요",
+    "theGuideAddressMustStart": "편성표 주소는 http:// 또는 https://로 시작해야 해요",
+    "thatPlaylistIsAlreadyAdded": "그 재생 목록은 이미 추가되어 있어요",
+    "chooseWhatKindOfChannels": "추가할 채널 종류를 고르세요",
+    "chooseUpTo1000Channels": "채널은 최대 1000개까지 고를 수 있어요",
+    "nothingToChange": "바꿀 내용이 없어요"
   },
   "patterns": {
     "noMetadataSource": "{type} 메타데이터 소스가 아직 없어요",

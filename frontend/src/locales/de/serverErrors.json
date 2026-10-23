@@ -335,6 +335,24 @@
       "message": "Diese Watch-Party ist voll",
       "meaning": "Eine Party fasst bis zu 20 Personen, und ein Server betreibt bis zu 20 Partys gleichzeitig.",
       "fix": "Versuch es erneut, wenn jemand geht oder eine Party endet."
+    },
+    "P700": {
+      "title": "Live-TV ist ausgeschaltet",
+      "message": "Live-TV ist auf diesem Server ausgeschaltet",
+      "meaning": "Ein Admin hat Live-TV nicht eingeschaltet oder wieder ausgeschaltet.",
+      "fix": "Ein Admin kann es unter Verwaltung → Live-TV einschalten."
+    },
+    "P701": {
+      "title": "Sender nicht verfügbar",
+      "message": "Dieser Sender kann gerade nicht abgespielt werden",
+      "meaning": "Der Stream des Senders hat nicht geantwortet, mit einem Fehler geantwortet oder zeigt auf ein Ziel, mit dem sich Plinthio nicht verbindet. Sender aus öffentlichen Quellen gehen offline oder ändern ihre Adresse, und manche laufen nur in bestimmten Ländern.",
+      "fix": "Probiere einen anderen Sender oder versuche es später erneut. Ein Admin kann die Quelle unter Verwaltung → Live-TV aktualisieren oder Sender ausblenden, die dauerhaft offline sind."
+    },
+    "P702": {
+      "title": "Quelle konnte nicht geladen werden",
+      "message": "Die Senderliste konnte nicht geladen werden",
+      "meaning": "Plinthio konnte eine Playlist, ein TV-Programm oder die Liste der öffentlichen Sendervorlagen nicht herunterladen oder lesen.",
+      "fix": "Prüfe, ob der Server das Internet (oder die Adresse der Playlist) erreicht, und versuche es dann erneut. Verwaltung → Live-TV zeigt den letzten Fehler jeder Quelle."
     }
   },
   "messages": {
@@ -477,7 +495,19 @@
     "useAFullPathStartingWith": "Gib einen vollständigen Pfad an, der mit / beginnt.",
     "thatSInsideTheServerS": "Das liegt im Datenordner des Servers selbst; wähle einen Ordner an anderer Stelle.",
     "thatFolderContainsTheServerS": "Dieser Ordner enthält den Datenordner des Servers; wähle einen daneben oder an anderer Stelle.",
-    "thatSAFileNotA": "Das ist eine Datei, kein Ordner."
+    "thatSAFileNotA": "Das ist eine Datei, kein Ordner.",
+    "channelNotFound": "Sender nicht gefunden",
+    "sourceNotFound": "Quelle nicht gefunden",
+    "thisStreamLinkIsNot": "Dieser Stream-Link ist ungültig",
+    "chooseACountryLanguageOr": "Wähle ein Land, eine Sprache oder eine Kategorie",
+    "thoseChannelsAreAlreadyAdded": "Diese Sender sind schon hinzugefügt",
+    "enterANameForThese": "Gib einen Namen für diese Sender ein",
+    "enterThePlaylistAddressStarting": "Gib die Playlist-Adresse ein, beginnend mit http:// oder https://",
+    "theGuideAddressMustStart": "Die Programm-Adresse muss mit http:// oder https:// beginnen",
+    "thatPlaylistIsAlreadyAdded": "Diese Playlist ist schon hinzugefügt",
+    "chooseWhatKindOfChannels": "Wähle, welche Art von Sendern du hinzufügen willst",
+    "chooseUpTo1000Channels": "Wähle bis zu 1000 Sender",
+    "nothingToChange": "Nichts zu ändern"
   },
   "patterns": {
     "noMetadataSource": "Noch keine Metadatenquelle für {type}",

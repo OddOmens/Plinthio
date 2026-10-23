@@ -1,0 +1,100 @@
+{
+  "title": "TV na żywo",
+  "badge": "Na żywo",
+  "intro": "Kanały, które nadają teraz, i to, co będzie dalej.",
+  "openAdmin": "Otwórz ustawienia TV na żywo",
+  "tabs": {
+    "channels": "Kanały",
+    "guide": "Program TV"
+  },
+  "searchPlaceholder": "Szukaj kanałów…",
+  "groupsLabel": "Grupy kanałów",
+  "channelCount": {
+    "one": "{count} kanał",
+    "few": "{count} kanały",
+    "many": "{count} kanałów",
+    "other": "{count} kanału"
+  },
+  "minutesLeft": {
+    "one": "Jeszcze {count} min",
+    "few": "Jeszcze {count} min",
+    "many": "Jeszcze {count} min",
+    "other": "Jeszcze {count} min"
+  },
+  "nextAt": "Następnie o {time}: {title}",
+  "noGuideInfo": "Brak informacji o programie",
+  "geoBlocked": "Blokada regionalna",
+  "geoBlockedHint": "Ten kanał może działać tylko w swoim kraju.",
+  "watchChannel": "Oglądaj {channel}",
+  "off": {
+    "title": "TV na żywo jest wyłączona",
+    "intro": "TV na żywo nie jest teraz dostępna na tym serwerze.",
+    "admin": "Włącz ją w Administracja → TV na żywo, a potem dodaj kanały.",
+    "viewer": "Administrator może włączyć TV na żywo na tym serwerze."
+  },
+  "empty": {
+    "noChannelsTitle": "Nie ma jeszcze kanałów",
+    "noChannels": "Nie ma jeszcze kanałów do oglądania. Poproś administratora o ich dodanie.",
+    "noChannelsAdmin": "Dodaj kanały z gotowej listy lub własnej playlisty w Administracja → TV na żywo.",
+    "noMatchesTitle": "Nie znaleziono kanałów",
+    "noMatches": "Żaden kanał nie pasuje do wyszukiwania ani wybranej grupy.",
+    "clearFilters": "Pokaż wszystkie kanały"
+  },
+  "errors": {
+    "loadTitle": "Nie udało się wczytać kanałów",
+    "guideTitle": "Nie udało się wczytać programu TV",
+    "unreachable": "Nie można połączyć się z serwerem. Sprawdź połączenie i spróbuj ponownie."
+  },
+  "guide": {
+    "channel": "Kanał",
+    "now": "Teraz",
+    "earlier": "Wcześniej",
+    "later": "Później",
+    "notLoadedTitle": "Program TV jeszcze się nie wczytał",
+    "notLoaded": "Kanały nadal działają. Program uzupełni się po odświeżeniu ich źródeł, co dzieje się dwa razy dziennie.",
+    "onNow": {
+      "one": "Teraz · jeszcze {count} min",
+      "few": "Teraz · jeszcze {count} min",
+      "many": "Teraz · jeszcze {count} min",
+      "other": "Teraz · jeszcze {count} min"
+    },
+    "startsIn": {
+      "one": "Za {count} min",
+      "few": "Za {count} min",
+      "many": "Za {count} min",
+      "other": "Za {count} min"
+    },
+    "startsAt": "Początek o {time}",
+    "ended": "Zakończono",
+    "watchNow": "Oglądaj teraz",
+    "watchChannel": "Oglądaj kanał"
+  },
+  "player": {
+    "back": "Wróć do kanałów",
+    "tuning": "Dostrajanie…",
+    "now": "Teraz",
+    "goLive": "Wróć na żywo",
+    "mute": "Wycisz",
+    "unmute": "Wyłącz wyciszenie",
+    "volume": "Głośność",
+    "channelUp": "Następny kanał",
+    "channelDown": "Poprzedni kanał",
+    "channelUpHint": "Następny kanał (↑)",
+    "channelDownHint": "Poprzedni kanał (↓)",
+    "nextChannel": "Następny kanał",
+    "info": "Co leci",
+    "pip": "Obraz w obrazie",
+    "fullscreen": "Pełny ekran",
+    "cantPlay": "Ten kanał nie działa",
+    "errorHelp": "Błąd {code}: co to oznacza",
+    "geoBlockedHint": "Ten kanał ma oznaczenie blokady regionalnej, więc może działać tylko w swoim kraju.",
+    "errors": {
+      "unavailable": "Nie udało się połączyć ze strumieniem kanału. Może być chwilowo niedostępny — spróbuj później albo wybierz inny kanał.",
+      "notFound": "Ten kanał nie jest już dostępny.",
+      "offline": "Utracono połączenie z serwerem. Sprawdź sieć i spróbuj ponownie.",
+      "tokenExpired": "Dostęp do multimediów wygasł i nie udało się go odnowić. Odśwież stronę albo wyloguj się i zaloguj ponownie.",
+      "decode": "Ta przeglądarka nie może odtworzyć obrazu z tego kanału.",
+      "unsupportedBrowser": "Ta przeglądarka nie obsługuje transmisji na żywo."
+    }
+  }
+}

@@ -49,6 +49,10 @@
         "label": "Riproduzione",
         "desc": "Accelerazione hardware, clip di apertura"
       },
+      "liveTv": {
+        "label": "TV in diretta",
+        "desc": "Canali, guida TV, bambini"
+      },
       "network": {
         "label": "Rete",
         "desc": "Fuori casa, Tailscale, due passaggi"
@@ -308,6 +312,139 @@
     "deleteMessage": "Eliminare «{name}»? I tuoi file non vengono toccati, e progressi e segnalibri tornano se aggiungi di nuovo la stessa cartella. I suoi titoli, copertine e dettagli vengono rimossi finché non viene scansionata di nuovo.",
     "couldNotDelete": "Impossibile eliminare quella libreria",
     "couldNotAdd": "Impossibile aggiungere quella libreria"
+  },
+  "liveTv": {
+    "title": "TV in diretta",
+    "description": "Canali in diretta con guida TV, da elenchi pubblici o dalle tue playlist. Le modifiche si salvano man mano.",
+    "channelCount": {
+      "one": "{number} canale",
+      "other": "{number} canali"
+    },
+    "switch": {
+      "label": "TV in diretta",
+      "desc": "Aggiunge una pagina TV in diretta con canali e guida TV per tutti su questo server. Disattivata di default; se la disattivi, la TV in diretta sparisce ovunque, ma i tuoi elenchi e le tue scelte qui restano."
+    },
+    "publicNote": "I canali arrivano da fonti pubbliche su internet. Alcuni potrebbero essere offline, interrompersi ogni tanto o funzionare solo in certi paesi. I canali per adulti non vengono mai aggiunti.",
+    "sources": {
+      "title": "Elenchi di canali",
+      "desc": "Ogni elenco viene ricaricato ogni 12 ore, insieme alla sua guida TV, mentre la TV in diretta è attiva.",
+      "add": "Aggiungi canali",
+      "empty": "Ancora nessun canale. Aggiungi un elenco già pronto o una tua playlist per iniziare.",
+      "off": "Disattivato",
+      "kinds": {
+        "public": "Elenco pubblico",
+        "own": "La tua playlist"
+      },
+      "refreshing": "Caricamento di canali e guida…",
+      "failed": "Caricamento non riuscito: {error}",
+      "updated": "Aggiornato {date}",
+      "notLoaded": "Non ancora caricato",
+      "enabledAria": "Usa {name}",
+      "turnOn": "Attiva",
+      "turnOff": "Disattiva",
+      "editAria": "Modifica {name}",
+      "removeAria": "Rimuovi {name}",
+      "removeTitle": "Rimuovi elenco di canali",
+      "removeMessage": {
+        "one": "Rimuovere {name}? Se ne va anche il suo {number} canale, insieme alla scelta se era nascosto o consentito ai bambini.",
+        "other": "Rimuovere {name}? Se ne vanno anche i suoi {number} canali, insieme alle scelte su quali erano nascosti o consentiti ai bambini."
+      },
+      "offHint": "La TV in diretta è disattivata, quindi per ora nessuno vede questi canali. Puoi prepararli in anticipo.",
+      "couldNotLoad": "Impossibile caricare gli elenchi di canali",
+      "couldNotRefresh": "Impossibile ricaricare l'elenco",
+      "couldNotSave": "Impossibile salvare l'elenco",
+      "couldNotRemove": "Impossibile rimuovere l'elenco"
+    },
+    "editDialog": {
+      "title": "Modifica elenco di canali",
+      "guideHint": "Lascia vuoto per usare la guida indicata dalla playlist, se ne ha una."
+    },
+    "addDialog": {
+      "title": "Aggiungi canali",
+      "tabs": {
+        "public": "Canali pubblici",
+        "own": "La tua playlist"
+      },
+      "adding": "Aggiunta in corso…",
+      "couldNotAdd": "Impossibile aggiungere i canali",
+      "public": {
+        "intro": "Canali gratuiti dagli elenchi pubblici di iptv-org, aggiornati ogni giorno. Scegline uno o più: ognuno viene aggiunto come elenco a sé.",
+        "listBy": "Elenca i canali per",
+        "kinds": {
+          "countries": "Paese",
+          "languages": "Lingua",
+          "categories": "Categoria"
+        },
+        "search": {
+          "countries": "Cerca paesi",
+          "languages": "Cerca lingue",
+          "categories": "Cerca categorie"
+        },
+        "noMatches": "Nessun risultato.",
+        "added": "Aggiunto",
+        "selected": {
+          "one": "{number} scelto",
+          "other": "{number} scelti"
+        },
+        "addLists": {
+          "one": "Aggiungi elenco",
+          "other": "Aggiungi {number} elenchi"
+        },
+        "note": "Questi canali arrivano da fonti pubbliche, quindi alcuni potrebbero essere offline o funzionare solo in certi paesi. I canali per adulti non vengono mai aggiunti.",
+        "couldNotLoad": "Impossibile caricare gli elenchi pubblici"
+      },
+      "own": {
+        "name": "Nome",
+        "namePlaceholder": "es. Antenna di casa",
+        "playlistUrl": "Indirizzo della playlist (M3U)",
+        "playlistHint": "Un indirizzo che il server può raggiungere. I canali in streaming HLS (.m3u8) si possono guardare; gli altri vengono indicati come non riproducibili.",
+        "guideUrl": "Indirizzo della guida TV (XMLTV, facoltativo)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "Lascia vuoto per usare la guida indicata dalla playlist, se ne ha una. Funzionano anche i file compressi .xml.gz.",
+        "add": "Aggiungi playlist"
+      }
+    },
+    "channels": {
+      "title": "Canali",
+      "desc": "Nascondi quelli che non vuoi. Gli account bambini vedono solo i canali consentiti ai bambini qui, e nessuno è consentito finché non lo scegli tu.",
+      "searchPlaceholder": "Cerca canali",
+      "sourceFilter": "Elenco di canali",
+      "allSources": "Tutti gli elenchi",
+      "statusFilter": "Mostra",
+      "status": {
+        "all": "Tutti",
+        "visible": "Visibili",
+        "hidden": "Nascosti",
+        "kids": "Per bambini",
+        "unsupported": "Non riproducibili"
+      },
+      "selectPage": "Seleziona questa pagina",
+      "selected": {
+        "one": "{number} selezionato",
+        "other": "{number} selezionati"
+      },
+      "selectAria": "Seleziona {name}",
+      "hide": "Nascondi",
+      "show": "Mostra",
+      "hideAria": "Nascondi {name}",
+      "showAria": "Mostra {name}",
+      "allowKids": "Consenti ai bambini",
+      "disallowKids": "Non per bambini",
+      "allowKidsAria": "Consenti {name} ai bambini",
+      "disallowKidsAria": "Non consentire più {name} ai bambini",
+      "badges": {
+        "hidden": "Nascosto",
+        "kids": "Bambini",
+        "geoBlocked": "Limitato per area",
+        "geoBlockedHint": "Segnato come riproducibile solo in certi paesi",
+        "unsupported": "Non riproducibile",
+        "unsupportedHint": "Non è uno stream HLS, quindi non viene proposto a nessuno"
+      },
+      "range": "{from}–{to} di {total}",
+      "empty": "Ancora nessun canale. Compaiono qui quando un elenco è stato caricato.",
+      "noMatches": "Nessun canale corrisponde.",
+      "couldNotLoad": "Impossibile caricare i canali"
+    }
   },
   "logs": {
     "title": "Log",

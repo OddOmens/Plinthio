@@ -335,6 +335,24 @@
       "message": "Essa sessão conjunta está cheia",
       "meaning": "Uma sessão conjunta comporta até 20 pessoas, e um servidor roda até 20 sessões ao mesmo tempo.",
       "fix": "Tente de novo quando alguém sair ou uma sessão terminar."
+    },
+    "P700": {
+      "title": "A TV ao vivo está desativada",
+      "message": "A TV ao vivo está desativada neste servidor",
+      "meaning": "Um administrador não ativou a TV ao vivo ou a desativou.",
+      "fix": "Um administrador pode ativá-la em Administração → TV ao vivo."
+    },
+    "P701": {
+      "title": "Canal indisponível",
+      "message": "Não foi possível reproduzir este canal agora",
+      "meaning": "A transmissão do canal não respondeu, respondeu com um erro ou aponta para um lugar ao qual o Plinthio não se conecta. Canais de fontes públicas saem do ar ou mudam de endereço, e alguns só funcionam em certos países.",
+      "fix": "Tente outro canal ou tente de novo mais tarde. Um administrador pode atualizar a fonte em Administração → TV ao vivo ou ocultar canais que continuam fora do ar."
+    },
+    "P702": {
+      "title": "Não foi possível carregar a fonte",
+      "message": "Não foi possível carregar a lista de canais",
+      "meaning": "O Plinthio não conseguiu baixar ou ler uma playlist, um guia de programação ou a lista de canais públicos predefinidos.",
+      "fix": "Verifique se o servidor consegue acessar a internet (ou o endereço da playlist) e tente de novo. Administração → TV ao vivo mostra o último erro de cada fonte."
     }
   },
   "messages": {
@@ -477,7 +495,19 @@
     "useAFullPathStartingWith": "Use um caminho completo, começando com /.",
     "thatSInsideTheServerS": "Essa pasta fica dentro da pasta de dados do próprio servidor; escolha uma pasta em outro lugar.",
     "thatFolderContainsTheServerS": "Essa pasta contém a pasta de dados do servidor; escolha uma ao lado dela ou em outro lugar.",
-    "thatSAFileNotA": "Isso é um arquivo, não uma pasta."
+    "thatSAFileNotA": "Isso é um arquivo, não uma pasta.",
+    "channelNotFound": "Canal não encontrado",
+    "sourceNotFound": "Fonte não encontrada",
+    "thisStreamLinkIsNot": "Este link de transmissão não é válido",
+    "chooseACountryLanguageOr": "Escolha um país, idioma ou categoria",
+    "thoseChannelsAreAlreadyAdded": "Esses canais já foram adicionados",
+    "enterANameForThese": "Digite um nome para estes canais",
+    "enterThePlaylistAddressStarting": "Digite o endereço da playlist, começando com http:// ou https://",
+    "theGuideAddressMustStart": "O endereço do guia precisa começar com http:// ou https://",
+    "thatPlaylistIsAlreadyAdded": "Essa playlist já foi adicionada",
+    "chooseWhatKindOfChannels": "Escolha que tipo de canais adicionar",
+    "chooseUpTo1000Channels": "Escolha até 1000 canais",
+    "nothingToChange": "Nada para alterar"
   },
   "patterns": {
     "noMetadataSource": "Ainda não há fonte de metadados para {type}",

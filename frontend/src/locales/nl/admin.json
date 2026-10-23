@@ -49,6 +49,10 @@
         "label": "Afspelen",
         "desc": "Hardwareversnelling, openingsclip"
       },
+      "liveTv": {
+        "label": "Live tv",
+        "desc": "Zenders, tv-gids, kinderen"
+      },
       "network": {
         "label": "Netwerk",
         "desc": "Buitenshuis, Tailscale, tweestapsverificatie"
@@ -308,6 +312,139 @@
     "deleteMessage": "‘{name}’ verwijderen? Je bestanden blijven onaangeroerd, en voortgang en bladwijzers komen terug als je dezelfde map opnieuw toevoegt. De titels, covers en details worden verwijderd tot de map opnieuw wordt gescand.",
     "couldNotDelete": "Kon die bibliotheek niet verwijderen",
     "couldNotAdd": "Kon die bibliotheek niet toevoegen"
+  },
+  "liveTv": {
+    "title": "Live tv",
+    "description": "Livezenders met een tv-gids, uit openbare lijsten of je eigen playlists. Wijzigingen worden meteen opgeslagen.",
+    "channelCount": {
+      "one": "{number} zender",
+      "other": "{number} zenders"
+    },
+    "switch": {
+      "label": "Live tv",
+      "desc": "Voegt voor iedereen op deze server een Live tv-pagina toe met zenders en een tv-gids. Standaard uit; uitzetten verbergt Live tv overal, maar je lijsten en keuzes hier blijven bewaard."
+    },
+    "publicNote": "Zenders komen van openbare bronnen op internet. Sommige zijn misschien offline, vallen af en toe weg of spelen alleen in bepaalde landen. Zenders voor volwassenen worden nooit toegevoegd.",
+    "sources": {
+      "title": "Zenderlijsten",
+      "desc": "Zolang Live tv aanstaat, wordt elke lijst elke 12 uur opnieuw geladen, samen met de tv-gids.",
+      "add": "Zenders toevoegen",
+      "empty": "Nog geen zenders. Voeg een kant-en-klare lijst of je eigen playlist toe om te beginnen.",
+      "off": "Uit",
+      "kinds": {
+        "public": "Openbare lijst",
+        "own": "Je playlist"
+      },
+      "refreshing": "Zenders en gids laden…",
+      "failed": "Kon niet laden: {error}",
+      "updated": "Bijgewerkt {date}",
+      "notLoaded": "Nog niet geladen",
+      "enabledAria": "{name} gebruiken",
+      "turnOn": "Aanzetten",
+      "turnOff": "Uitzetten",
+      "editAria": "{name} bewerken",
+      "removeAria": "{name} weghalen",
+      "removeTitle": "Zenderlijst weghalen",
+      "removeMessage": {
+        "one": "{name} weghalen? De {number} zender verdwijnt ook, net als of hij verborgen of toegestaan voor kinderen was.",
+        "other": "{name} weghalen? De {number} zenders verdwijnen ook, net als welke verborgen of toegestaan voor kinderen waren."
+      },
+      "offHint": "Live tv staat uit, dus nog niemand ziet deze zenders. Je kunt ze alvast klaarzetten.",
+      "couldNotLoad": "Kon de zenderlijsten niet laden",
+      "couldNotRefresh": "Kon de lijst niet opnieuw laden",
+      "couldNotSave": "Kon de lijst niet opslaan",
+      "couldNotRemove": "Kon de lijst niet weghalen"
+    },
+    "editDialog": {
+      "title": "Zenderlijst bewerken",
+      "guideHint": "Laat leeg om de gids te gebruiken die de playlist noemt, als die er een heeft."
+    },
+    "addDialog": {
+      "title": "Zenders toevoegen",
+      "tabs": {
+        "public": "Openbare zenders",
+        "own": "Eigen playlist"
+      },
+      "adding": "Toevoegen…",
+      "couldNotAdd": "Kon de zenders niet toevoegen",
+      "public": {
+        "intro": "Gratis zenders uit de openbare lijsten van iptv-org, dagelijks bijgewerkt. Kies er een of meer; elke lijst wordt apart toegevoegd.",
+        "listBy": "Zenders tonen per",
+        "kinds": {
+          "countries": "Land",
+          "languages": "Taal",
+          "categories": "Categorie"
+        },
+        "search": {
+          "countries": "Landen zoeken",
+          "languages": "Talen zoeken",
+          "categories": "Categorieën zoeken"
+        },
+        "noMatches": "Niets gevonden.",
+        "added": "Toegevoegd",
+        "selected": {
+          "one": "{number} gekozen",
+          "other": "{number} gekozen"
+        },
+        "addLists": {
+          "one": "Lijst toevoegen",
+          "other": "{number} lijsten toevoegen"
+        },
+        "note": "Deze zenders komen van openbare bronnen, dus sommige zijn misschien offline of spelen alleen in bepaalde landen. Zenders voor volwassenen worden nooit toegevoegd.",
+        "couldNotLoad": "Kon de openbare lijsten niet laden"
+      },
+      "own": {
+        "name": "Naam",
+        "namePlaceholder": "bijv. Antenne thuis",
+        "playlistUrl": "Playlistadres (M3U)",
+        "playlistHint": "Een adres dat de server kan bereiken. Zenders die via HLS (.m3u8) streamen, spelen af; andere worden als niet afspeelbaar vermeld.",
+        "guideUrl": "Adres van de tv-gids (XMLTV, optioneel)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "Laat leeg om de gids te gebruiken die de playlist noemt, als die er een heeft. Gecomprimeerde .xml.gz-bestanden werken ook.",
+        "add": "Playlist toevoegen"
+      }
+    },
+    "channels": {
+      "title": "Zenders",
+      "desc": "Verberg de zenders die je niet wilt. Kinderaccounts zien alleen de zenders die hier voor kinderen zijn toegestaan, en tot je ze kiest is er geen enkele toegestaan.",
+      "searchPlaceholder": "Zenders zoeken",
+      "sourceFilter": "Zenderlijst",
+      "allSources": "Alle lijsten",
+      "statusFilter": "Tonen",
+      "status": {
+        "all": "Alle",
+        "visible": "Zichtbaar",
+        "hidden": "Verborgen",
+        "kids": "Voor kinderen",
+        "unsupported": "Niet afspeelbaar"
+      },
+      "selectPage": "Deze pagina selecteren",
+      "selected": {
+        "one": "{number} geselecteerd",
+        "other": "{number} geselecteerd"
+      },
+      "selectAria": "{name} selecteren",
+      "hide": "Verbergen",
+      "show": "Tonen",
+      "hideAria": "{name} verbergen",
+      "showAria": "{name} tonen",
+      "allowKids": "Toestaan voor kinderen",
+      "disallowKids": "Niet voor kinderen",
+      "allowKidsAria": "{name} toestaan voor kinderen",
+      "disallowKidsAria": "{name} niet meer toestaan voor kinderen",
+      "badges": {
+        "hidden": "Verborgen",
+        "kids": "Kinderen",
+        "geoBlocked": "Regiogebonden",
+        "geoBlockedHint": "Gemarkeerd als alleen afspeelbaar in bepaalde landen",
+        "unsupported": "Niet afspeelbaar",
+        "unsupportedHint": "Geen HLS-stream, dus niemand krijgt hem te zien"
+      },
+      "range": "{from}–{to} van {total}",
+      "empty": "Nog geen zenders. Ze verschijnen hier zodra een lijst is geladen.",
+      "noMatches": "Geen zenders gevonden.",
+      "couldNotLoad": "Kon de zenders niet laden"
+    }
   },
   "logs": {
     "title": "Logboek",

@@ -1,0 +1,88 @@
+{
+  "title": "ライブTV",
+  "badge": "ライブ",
+  "intro": "いま放送中のチャンネルと、これからの番組です。",
+  "openAdmin": "ライブTVの設定を開く",
+  "tabs": {
+    "channels": "チャンネル",
+    "guide": "番組表"
+  },
+  "searchPlaceholder": "チャンネルを検索…",
+  "groupsLabel": "チャンネルグループ",
+  "channelCount": {
+    "other": "{count}チャンネル"
+  },
+  "minutesLeft": {
+    "other": "残り{count}分"
+  },
+  "nextAt": "次は{time}から：{title}",
+  "noGuideInfo": "番組情報はありません",
+  "geoBlocked": "地域制限",
+  "geoBlockedHint": "このチャンネルは放送元の国でしか再生できない場合があります。",
+  "watchChannel": "{channel}を視聴",
+  "off": {
+    "title": "ライブTVはオフです",
+    "intro": "このサーバーでは現在ライブTVを利用できません。",
+    "admin": "「管理 → ライブTV」でオンにしてから、チャンネルを追加してください。",
+    "viewer": "管理者がこのサーバーでライブTVをオンにできます。"
+  },
+  "empty": {
+    "noChannelsTitle": "チャンネルはまだありません",
+    "noChannels": "視聴できるチャンネルはまだありません。管理者に追加を依頼してください。",
+    "noChannelsAdmin": "「管理 → ライブTV」で、既製のリストや自分のプレイリストからチャンネルを追加できます。",
+    "noMatchesTitle": "チャンネルが見つかりません",
+    "noMatches": "検索や選んだグループに一致するチャンネルはありません。",
+    "clearFilters": "すべてのチャンネルを表示"
+  },
+  "errors": {
+    "loadTitle": "チャンネルを読み込めませんでした",
+    "guideTitle": "番組表を読み込めませんでした",
+    "unreachable": "サーバーに接続できませんでした。接続を確認して、もう一度お試しください。"
+  },
+  "guide": {
+    "channel": "チャンネル",
+    "now": "現在",
+    "earlier": "前の時間帯",
+    "later": "後の時間帯",
+    "notLoadedTitle": "番組表はまだ読み込まれていません",
+    "notLoaded": "チャンネルは再生できます。番組表は、ソースが更新されると表示されます（1 日 2 回）。",
+    "onNow": {
+      "other": "放送中 · 残り{count}分"
+    },
+    "startsIn": {
+      "other": "{count}分後に開始"
+    },
+    "startsAt": "{time}開始",
+    "ended": "終了",
+    "watchNow": "今すぐ視聴",
+    "watchChannel": "チャンネルを視聴"
+  },
+  "player": {
+    "back": "チャンネル一覧に戻る",
+    "tuning": "選局中…",
+    "now": "現在",
+    "goLive": "ライブに戻る",
+    "mute": "ミュート",
+    "unmute": "ミュート解除",
+    "volume": "音量",
+    "channelUp": "チャンネルアップ",
+    "channelDown": "チャンネルダウン",
+    "channelUpHint": "チャンネルアップ（↑）",
+    "channelDownHint": "チャンネルダウン（↓）",
+    "nextChannel": "次のチャンネル",
+    "info": "番組情報",
+    "pip": "ピクチャーインピクチャー",
+    "fullscreen": "全画面表示",
+    "cantPlay": "このチャンネルは再生できません",
+    "errorHelp": "エラー {code} の意味",
+    "geoBlockedHint": "このチャンネルには地域制限の印が付いているため、放送元の国でしか再生できない場合があります。",
+    "errors": {
+      "unavailable": "チャンネルのストリームに接続できませんでした。一時的にオフラインになっている可能性があります。後でもう一度試すか、別のチャンネルを選んでください。",
+      "notFound": "このチャンネルは利用できなくなりました。",
+      "offline": "サーバーとの接続が切れました。ネットワークを確認して、もう一度お試しください。",
+      "tokenExpired": "メディアへのアクセス期限が切れ、更新できませんでした。ページを再読み込みするか、サインアウトしてもう一度サインインしてください。",
+      "decode": "このブラウザーでは、このチャンネルの映像を再生できません。",
+      "unsupportedBrowser": "このブラウザーではライブ配信を再生できません。"
+    }
+  }
+}

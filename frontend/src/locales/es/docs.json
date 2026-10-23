@@ -19,6 +19,7 @@
       "roles": "Roles y permisos",
       "pwa": "App móvil (PWA)",
       "remote": "Acceso remoto y Tailscale",
+      "liveTv": "TV en vivo",
       "shortcuts": "Atajos de teclado",
       "backups": "Copias de seguridad",
       "api": "API REST y webhooks",
@@ -266,6 +267,66 @@
       "guide": "La guía completa, con solución de problemas: {doc} en GitHub."
     }
   },
+  "liveTv": {
+    "title": "TV en vivo",
+    "intro": "Canales en vivo y una guía de programación, junto a tu propio contenido. Los canales vienen de listas de reproducción M3U: listas públicas ya preparadas o las tuyas.",
+    "turnOn": {
+      "title": "Activarla",
+      "text": "La TV en vivo está desactivada hasta que un administrador la activa en **Administración → TV en vivo**. Cuando está activada y tiene canales, **TV en vivo** aparece en el menú para todos los que puedan ver al menos un canal.",
+      "off": "Al desactivarla, la TV en vivo se oculta en todas partes al instante. Las listas de canales y todas las elecciones hechas sobre ellas se conservan para cuando vuelvas a activarla."
+    },
+    "adding": {
+      "title": "Añadir canales",
+      "intro": "En **Administración → TV en vivo**, pulsa **Añadir canales** y elige uno de estos dos tipos:",
+      "public": "**Canales públicos**: listas gratuitas y ya preparadas del proyecto público iptv-org, por país, idioma o categoría. Marca todas las que quieras; cada una se añade como una lista aparte.",
+      "own": "**Lista propia**: la dirección de cualquier lista de reproducción M3U a la que pueda llegar el servidor, como la de un sintonizador de TV de tu red. Los canales que emiten en HLS ({m3u8}) se pueden ver; los demás se conservan, pero aparecen como **No reproducible**.",
+      "guide": "**Guía de programación**: una dirección XMLTV que indiques tú o, si no, la guía que indique la propia lista (todas las listas públicas tienen una). Funcionan los archivos comprimidos {gz}. La guía cubre el día y medio siguiente.",
+      "refresh": "Cada lista y su guía se recargan cada 12 horas mientras la TV en vivo está activada. **Actualizar** en una lista la recarga al momento; la lista muestra cuándo se cargó por última vez o por qué no se pudo cargar."
+    },
+    "choosing": {
+      "title": "Elegir canales",
+      "text": "En **Canales**, busca o filtra por lista y pulsa **Ocultar** en los canales que no quieras. Marca varios (o una página entera) para cambiarlos a la vez. Los cambios se guardan al instante.",
+      "kept": "Los canales ocultos y las elecciones para niños se conservan al recargar una lista. Un canal que desaparece de su lista de reproducción se elimina."
+    },
+    "kids": {
+      "title": "Cuentas infantiles",
+      "text": "Las cuentas infantiles solo ven los canales marcados con **Permitir para niños**. No hay ninguno permitido hasta que los elijas, así que hasta entonces la TV en vivo no aparece en el menú de una cuenta infantil."
+    },
+    "watching": {
+      "title": "Ver la TV",
+      "channels": "**Canales**: todos los canales con lo que se emite ahora y a continuación. Busca o limita la vista a un grupo.",
+      "guide": "**Guía**: una parrilla con lo que se emite en los distintos canales. Toca un programa para ver sus detalles y un botón **Ver**.",
+      "player": "**El reproductor**: las flechas arriba y abajo (o los botones) cambian de canal. Imagen en imagen y pantalla completa funcionan si el navegador lo permite.",
+      "throughServer": "Las emisiones pasan por este servidor, así que cualquiera que pueda llegar a Plinthio puede verlas, en casa o fuera. Cada espectador usa la conexión a internet del servidor."
+    },
+    "publicSources": {
+      "title": "Sobre los canales públicos",
+      "text": "Los canales públicos se recopilan de las emisiones gratuitas de las propias cadenas. Van y vienen: algunos pueden estar sin conexión, cortarse o verse solo en ciertos países (marcados como Geobloqueado). Nunca se añaden canales para adultos."
+    },
+    "troubleshooting": {
+      "title": "Cuando algo falla",
+      "wontPlay": {
+        "title": "Un canal no se reproduce",
+        "text": "No se pudo acceder a la emisión del canal ({code}). Los canales públicos se caen de vez en cuando, y los geobloqueados solo se ven en algunos países. Inténtalo más tarde u ocúltalo."
+      },
+      "listFailed": {
+        "title": "Una lista muestra «No se pudo cargar»",
+        "text": "El servidor no pudo descargar la lista de reproducción ({code}). Comprueba que la dirección se abre desde la red del servidor y pulsa **Actualizar**. Los canales ya cargados se mantienen hasta la siguiente carga correcta."
+      },
+      "notPlayable": {
+        "title": "Canales marcados como «No reproducible»",
+        "text": "La TV en vivo reproduce emisiones HLS. Los canales en otros formatos se quedan en la lista para que los veas, pero no se muestran a nadie más."
+      },
+      "noGuide": {
+        "title": "La guía está vacía en algunos canales",
+        "text": "No todos los canales tienen datos de guía, y la guía se carga un poco después que los canales. Darle a una lista su propia dirección de guía puede rellenar los huecos."
+      },
+      "notInMenu": {
+        "title": "La TV en vivo no aparece en el menú",
+        "text": "Tiene que estar activada y con al menos un canal que esa persona pueda ver: uno que no esté oculto ni sea no reproducible y, en una cuenta infantil, uno permitido para niños."
+      }
+    }
+  },
   "shortcuts": {
     "title": "Atajos de teclado y controles del reproductor",
     "intro": "Todos los lectores y reproductores se pueden manejar por completo con el teclado en el ordenador, además de los controles táctiles y de deslizamiento en el móvil.",
@@ -390,7 +451,8 @@
       "playback": "Reproducción",
       "metadata": "Proveedores de metadatos",
       "lists": "Listas y solicitudes",
-      "watchParties": "Sesiones para ver juntos"
+      "watchParties": "Sesiones para ver juntos",
+      "liveTv": "TV en vivo"
     }
   },
   "troubleshooting": {

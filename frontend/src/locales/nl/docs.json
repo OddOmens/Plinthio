@@ -19,6 +19,7 @@
       "roles": "Rollen en rechten",
       "pwa": "PWA-app voor mobiel instellen",
       "remote": "Toegang op afstand en Tailscale",
+      "liveTv": "Live tv",
       "shortcuts": "Sneltoetsen",
       "backups": "Back-ups en gegevensveiligheid",
       "api": "REST API en webhooks",
@@ -266,6 +267,66 @@
       "guide": "De volledige handleiding, met probleemoplossing: {doc} op GitHub."
     }
   },
+  "liveTv": {
+    "title": "Live tv",
+    "intro": "Livezenders en een tv-gids, naast je eigen media. Zenders komen uit M3U-playlists: kant-en-klare openbare lijsten, of je eigen.",
+    "turnOn": {
+      "title": "Aanzetten",
+      "text": "Live tv staat uit tot een admin het aanzet via **Admin → Live tv**. Zodra het aanstaat en er zenders zijn, verschijnt **Live tv** in het menu voor iedereen die minstens één zender mag kijken.",
+      "off": "Uitzetten verbergt Live tv meteen overal. De zenderlijsten en alle keuzes die erover zijn gemaakt, blijven bewaard voor als het weer aangaat."
+    },
+    "adding": {
+      "title": "Zenders toevoegen",
+      "intro": "Druk in **Admin → Live tv** op **Zenders toevoegen** en kies een van de twee soorten:",
+      "public": "**Openbare zenders**: gratis, kant-en-klare lijsten van het openbare iptv-org-project, per land, taal of categorie. Vink er zoveel aan als je wilt; elke lijst wordt apart toegevoegd.",
+      "own": "**Eigen playlist**: het adres van elke M3U-playlist die de server kan bereiken, zoals die van een tv-tuner in je netwerk. Zenders die via HLS ({m3u8}) streamen, spelen af; andere blijven staan maar worden vermeld als **Niet afspeelbaar**.",
+      "guide": "**Tv-gids**: een XMLTV-adres dat je zelf opgeeft, of anders de gids die de playlist zelf noemt (de openbare lijsten hebben er allemaal een). Gecomprimeerde {gz}-bestanden werken ook. De gids beslaat de komende anderhalve dag.",
+      "refresh": "Zolang Live tv aanstaat, worden elke lijst en de gids ervan elke 12 uur opnieuw geladen. **Vernieuwen** bij een lijst laadt die meteen opnieuw; de lijst laat zien wanneer hij voor het laatst is geladen, of waarom dat niet lukte."
+    },
+    "choosing": {
+      "title": "Zenders kiezen",
+      "text": "Zoek onder **Zenders** of filter op lijst, en kies dan **Verbergen** bij de zenders die je niet wilt. Vink er meerdere aan (of een hele pagina) om ze in één keer te wijzigen. Wijzigingen worden meteen opgeslagen.",
+      "kept": "Verborgen zenders en keuzes voor kinderen blijven bewaard als een lijst opnieuw laadt. Een zender die uit zijn playlist verdwijnt, wordt weggehaald."
+    },
+    "kids": {
+      "title": "Kinderaccounts",
+      "text": "Kinderaccounts zien alleen de zenders met **Toestaan voor kinderen**. Tot je ze kiest is er geen enkele toegestaan, dus tot die tijd staat Live tv niet in het menu van een kinderaccount."
+    },
+    "watching": {
+      "title": "Kijken",
+      "channels": "**Zenders**: elke zender met wat er nu en straks op is. Zoek, of beperk het tot een groep.",
+      "guide": "**Gids**: een overzicht van wat er op de verschillende zenders te zien is. Tik op een programma voor de details en een knop **Kijken**.",
+      "player": "**De speler**: de pijltjes omhoog en omlaag (of de knoppen) wisselen van zender. Beeld-in-beeld en volledig scherm werken waar de browser ze ondersteunt.",
+      "throughServer": "Streams lopen via deze server, dus iedereen die Plinthio kan bereiken, kan kijken, thuis of onderweg. Elke kijker gebruikt de internetverbinding van de server."
+    },
+    "publicSources": {
+      "title": "Over openbare zenders",
+      "text": "Openbare zenders worden verzameld uit de eigen gratis streams van omroepen. Ze komen en gaan: sommige zijn misschien offline, onderbroken of spelen alleen in bepaalde landen (gemarkeerd als ‘Regiogebonden’). Zenders voor volwassenen worden nooit toegevoegd."
+    },
+    "troubleshooting": {
+      "title": "Als er iets misgaat",
+      "wontPlay": {
+        "title": "Een zender speelt niet af",
+        "text": "De stream van de zender was niet bereikbaar ({code}). Openbare zenders zijn af en toe offline, en regiogebonden zenders spelen alleen in sommige landen. Probeer het later opnieuw, of verberg de zender."
+      },
+      "listFailed": {
+        "title": "Een lijst toont ‘Kon niet laden’",
+        "text": "De server kon de playlist niet ophalen ({code}). Controleer of het adres opent vanaf het netwerk van de server en druk dan op **Vernieuwen**. Zenders die al geladen zijn, blijven staan tot het volgende geslaagde laden."
+      },
+      "notPlayable": {
+        "title": "Zenders gemarkeerd als ‘Niet afspeelbaar’",
+        "text": "Live tv speelt HLS-streams af. Zenders in andere formaten blijven in de lijst staan zodat jij ze ziet, maar niemand anders krijgt ze te zien."
+      },
+      "noGuide": {
+        "title": "De gids is leeg voor sommige zenders",
+        "text": "Niet elke zender heeft gidsgegevens, en de gids laadt iets later dan de zenders. Een lijst een eigen gidsadres geven kan de gaten vullen."
+      },
+      "notInMenu": {
+        "title": "Live tv staat niet in het menu",
+        "text": "Het moet aanstaan, met minstens één zender die die persoon mag kijken: een die niet verborgen is en wel afspeelbaar, en voor een kinderaccount een die is toegestaan voor kinderen."
+      }
+    }
+  },
   "shortcuts": {
     "title": "Sneltoetsen en spelerbediening",
     "intro": "Elke lezer en speler is op de computer volledig met het toetsenbord te bedienen, naast de tik- en veegbediening op het scherm van mobiele apparaten.",
@@ -390,7 +451,8 @@
       "playback": "Afspelen",
       "metadata": "Metadatabronnen",
       "lists": "Lijsten en aanvragen",
-      "watchParties": "Watchparty's"
+      "watchParties": "Watchparty's",
+      "liveTv": "Live tv"
     }
   },
   "troubleshooting": {

@@ -49,6 +49,10 @@
         "label": "播放",
         "desc": "硬件加速、片头短片"
       },
+      "liveTv": {
+        "label": "电视直播",
+        "desc": "频道、节目单、儿童"
+      },
       "network": {
         "label": "网络",
         "desc": "外出访问、Tailscale、两步验证"
@@ -306,6 +310,134 @@
     "deleteMessage": "要删除“{name}”吗？你的文件不会被改动，如果再次添加同一个文件夹，进度和书签都会回来。在重新扫描之前，其中的作品、封面和详情会被移除。",
     "couldNotDelete": "无法删除该媒体库",
     "couldNotAdd": "无法添加该媒体库"
+  },
+  "liveTv": {
+    "title": "电视直播",
+    "description": "带节目单的直播频道，来自公共列表或你自己的播放列表。更改会即时保存。",
+    "channelCount": {
+      "other": "{number}个频道"
+    },
+    "switch": {
+      "label": "电视直播",
+      "desc": "为此服务器上的所有人添加一个包含频道和节目单的电视直播页面。默认关闭；关闭后会在所有地方隐藏电视直播，但会保留你在这里设置的列表和选择。"
+    },
+    "publicNote": "频道来自互联网上的公共来源。部分频道可能离线、时常中断，或只能在特定国家/地区播放。成人频道永远不会被添加。",
+    "sources": {
+      "title": "频道列表",
+      "desc": "电视直播开启期间，每个列表及其节目单每12小时重新加载一次。",
+      "add": "添加频道",
+      "empty": "还没有频道。添加一个现成列表或你自己的播放列表即可开始。",
+      "off": "已关闭",
+      "kinds": {
+        "public": "公共列表",
+        "own": "你的播放列表"
+      },
+      "refreshing": "正在加载频道和节目单…",
+      "failed": "无法加载：{error}",
+      "updated": "更新于 {date}",
+      "notLoaded": "尚未加载",
+      "enabledAria": "使用 {name}",
+      "turnOn": "开启",
+      "turnOff": "关闭",
+      "editAria": "编辑 {name}",
+      "removeAria": "移除 {name}",
+      "removeTitle": "移除频道列表",
+      "removeMessage": {
+        "other": "要移除 {name} 吗？其中的{number}个频道也会一并移除，包括哪些频道被隐藏或允许儿童观看的设置。"
+      },
+      "offHint": "电视直播已关闭，所以目前没有人能看到这些频道。你可以先把它们准备好。",
+      "couldNotLoad": "无法加载频道列表",
+      "couldNotRefresh": "无法重新加载列表",
+      "couldNotSave": "无法保存列表",
+      "couldNotRemove": "无法移除列表"
+    },
+    "editDialog": {
+      "title": "编辑频道列表",
+      "guideHint": "留空则使用播放列表中指定的节目单（如果有）。"
+    },
+    "addDialog": {
+      "title": "添加频道",
+      "tabs": {
+        "public": "公共频道",
+        "own": "自己的播放列表"
+      },
+      "adding": "正在添加…",
+      "couldNotAdd": "无法添加频道",
+      "public": {
+        "intro": "来自 iptv-org 公共列表的免费频道，每天更新。可以选择一个或多个；每个都会作为单独的列表添加。",
+        "listBy": "频道分类方式",
+        "kinds": {
+          "countries": "国家/地区",
+          "languages": "语言",
+          "categories": "类别"
+        },
+        "search": {
+          "countries": "搜索国家/地区",
+          "languages": "搜索语言",
+          "categories": "搜索类别"
+        },
+        "noMatches": "没有匹配项。",
+        "added": "已添加",
+        "selected": {
+          "other": "已选{number}个"
+        },
+        "addLists": {
+          "other": "添加{number}个列表"
+        },
+        "note": "这些频道来自公共来源，部分可能离线或只能在特定国家/地区播放。成人频道永远不会被添加。",
+        "couldNotLoad": "无法加载公共列表"
+      },
+      "own": {
+        "name": "名称",
+        "namePlaceholder": "例如：家用天线",
+        "playlistUrl": "播放列表地址（M3U）",
+        "playlistHint": "服务器可以访问的地址。以 HLS（.m3u8）推流的频道可以播放；其他频道会标记为无法播放。",
+        "guideUrl": "节目单地址（XMLTV，可选）",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "留空则使用播放列表中指定的节目单（如果有）。也支持 .xml.gz 压缩文件。",
+        "add": "添加播放列表"
+      }
+    },
+    "channels": {
+      "title": "频道",
+      "desc": "隐藏你不想要的频道。儿童帐户只能看到这里允许儿童观看的频道；在你选择之前，没有任何频道被允许。",
+      "searchPlaceholder": "搜索频道",
+      "sourceFilter": "频道列表",
+      "allSources": "所有列表",
+      "statusFilter": "显示",
+      "status": {
+        "all": "全部",
+        "visible": "显示中",
+        "hidden": "已隐藏",
+        "kids": "允许儿童观看",
+        "unsupported": "无法播放"
+      },
+      "selectPage": "选择本页",
+      "selected": {
+        "other": "已选{number}个"
+      },
+      "selectAria": "选择 {name}",
+      "hide": "隐藏",
+      "show": "显示",
+      "hideAria": "隐藏 {name}",
+      "showAria": "显示 {name}",
+      "allowKids": "允许儿童观看",
+      "disallowKids": "不允许儿童观看",
+      "allowKidsAria": "允许儿童观看 {name}",
+      "disallowKidsAria": "不再允许儿童观看 {name}",
+      "badges": {
+        "hidden": "已隐藏",
+        "kids": "儿童",
+        "geoBlocked": "地区限制",
+        "geoBlockedHint": "标记为只能在特定国家/地区播放",
+        "unsupported": "无法播放",
+        "unsupportedHint": "不是 HLS 流，因此不会提供给任何人"
+      },
+      "range": "{from}–{to}，共{total}个",
+      "empty": "还没有频道。列表加载后，频道会显示在这里。",
+      "noMatches": "没有匹配的频道。",
+      "couldNotLoad": "无法加载频道"
+    }
   },
   "logs": {
     "title": "日志",

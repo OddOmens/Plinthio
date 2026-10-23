@@ -49,6 +49,10 @@
         "label": "Reprodução",
         "desc": "Aceleração por hardware, vinheta de abertura"
       },
+      "liveTv": {
+        "label": "TV ao vivo",
+        "desc": "Canais, guia de programação, infantil"
+      },
       "network": {
         "label": "Rede",
         "desc": "Fora de casa, Tailscale, verificação em duas etapas"
@@ -308,6 +312,139 @@
     "deleteMessage": "Excluir \"{name}\"? Seus arquivos não são tocados, e o progresso e os marcadores voltam se você adicionar a mesma pasta de novo. Os títulos, capas e detalhes dela são removidos até que ela seja verificada novamente.",
     "couldNotDelete": "Não foi possível excluir essa biblioteca",
     "couldNotAdd": "Não foi possível adicionar essa biblioteca"
+  },
+  "liveTv": {
+    "title": "TV ao vivo",
+    "description": "Canais ao vivo com guia de programação, de listas públicas ou das suas próprias playlists. As alterações são salvas na hora.",
+    "channelCount": {
+      "one": "{number} canal",
+      "other": "{number} canais"
+    },
+    "switch": {
+      "label": "TV ao vivo",
+      "desc": "Adiciona uma página de TV ao vivo com canais e guia de programação para todos neste servidor. Desativada por padrão; desativar oculta a TV ao vivo em todo lugar, mas mantém suas listas e escolhas aqui."
+    },
+    "publicNote": "Os canais vêm de fontes públicas na internet. Alguns podem estar fora do ar, falhar de vez em quando ou só funcionar em certos países. Canais adultos nunca são adicionados.",
+    "sources": {
+      "title": "Listas de canais",
+      "desc": "Cada lista é recarregada a cada 12 horas enquanto a TV ao vivo está ativada, junto com o guia de programação.",
+      "add": "Adicionar canais",
+      "empty": "Nenhum canal ainda. Adicione uma lista pronta ou sua própria playlist para começar.",
+      "off": "Desativada",
+      "kinds": {
+        "public": "Lista pública",
+        "own": "Sua playlist"
+      },
+      "refreshing": "Carregando canais e guia…",
+      "failed": "Não foi possível carregar: {error}",
+      "updated": "Atualizada em {date}",
+      "notLoaded": "Ainda não carregada",
+      "enabledAria": "Usar {name}",
+      "turnOn": "Ativar",
+      "turnOff": "Desativar",
+      "editAria": "Editar {name}",
+      "removeAria": "Remover {name}",
+      "removeTitle": "Remover lista de canais",
+      "removeMessage": {
+        "one": "Remover {name}? O {number} canal dela também sai, junto com a informação de se estava oculto ou liberado para crianças.",
+        "other": "Remover {name}? Os {number} canais dela também saem, junto com quais estavam ocultos ou liberados para crianças."
+      },
+      "offHint": "A TV ao vivo está desativada, então ninguém vê estes canais ainda. Você pode deixá-los prontos antes.",
+      "couldNotLoad": "Não foi possível carregar as listas de canais",
+      "couldNotRefresh": "Não foi possível recarregar a lista",
+      "couldNotSave": "Não foi possível salvar a lista",
+      "couldNotRemove": "Não foi possível remover a lista"
+    },
+    "editDialog": {
+      "title": "Editar lista de canais",
+      "guideHint": "Deixe vazio para usar o guia indicado pela playlist, se ela tiver um."
+    },
+    "addDialog": {
+      "title": "Adicionar canais",
+      "tabs": {
+        "public": "Canais públicos",
+        "own": "Sua própria playlist"
+      },
+      "adding": "Adicionando…",
+      "couldNotAdd": "Não foi possível adicionar os canais",
+      "public": {
+        "intro": "Canais gratuitos das listas públicas do iptv-org, atualizadas diariamente. Escolha uma ou mais; cada uma é adicionada como uma lista separada.",
+        "listBy": "Listar canais por",
+        "kinds": {
+          "countries": "País",
+          "languages": "Idioma",
+          "categories": "Categoria"
+        },
+        "search": {
+          "countries": "Buscar países",
+          "languages": "Buscar idiomas",
+          "categories": "Buscar categorias"
+        },
+        "noMatches": "Nada corresponde a isso.",
+        "added": "Adicionada",
+        "selected": {
+          "one": "{number} escolhida",
+          "other": "{number} escolhidas"
+        },
+        "addLists": {
+          "one": "Adicionar lista",
+          "other": "Adicionar {number} listas"
+        },
+        "note": "Estes canais vêm de fontes públicas, então alguns podem estar fora do ar ou só funcionar em certos países. Canais adultos nunca são adicionados.",
+        "couldNotLoad": "Não foi possível carregar as listas públicas"
+      },
+      "own": {
+        "name": "Nome",
+        "namePlaceholder": "ex.: Antena de casa",
+        "playlistUrl": "Endereço da playlist (M3U)",
+        "playlistHint": "Um endereço que o servidor consiga acessar. Canais que transmitem em HLS (.m3u8) funcionam; os outros aparecem como não reproduzíveis.",
+        "guideUrl": "Endereço do guia de programação (XMLTV, opcional)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "Deixe vazio para usar o guia indicado pela playlist, se ela tiver um. Arquivos compactados .xml.gz também funcionam.",
+        "add": "Adicionar playlist"
+      }
+    },
+    "channels": {
+      "title": "Canais",
+      "desc": "Oculte os que você não quer. Contas infantis veem só os canais liberados para crianças aqui, e nenhum é liberado até você escolher.",
+      "searchPlaceholder": "Buscar canais",
+      "sourceFilter": "Lista de canais",
+      "allSources": "Todas as listas",
+      "statusFilter": "Mostrar",
+      "status": {
+        "all": "Todos",
+        "visible": "Visíveis",
+        "hidden": "Ocultos",
+        "kids": "Liberados para crianças",
+        "unsupported": "Não reproduzíveis"
+      },
+      "selectPage": "Selecionar esta página",
+      "selected": {
+        "one": "{number} selecionado",
+        "other": "{number} selecionados"
+      },
+      "selectAria": "Selecionar {name}",
+      "hide": "Ocultar",
+      "show": "Mostrar",
+      "hideAria": "Ocultar {name}",
+      "showAria": "Mostrar {name}",
+      "allowKids": "Liberar para crianças",
+      "disallowKids": "Não liberar para crianças",
+      "allowKidsAria": "Liberar {name} para crianças",
+      "disallowKidsAria": "Deixar de liberar {name} para crianças",
+      "badges": {
+        "hidden": "Oculto",
+        "kids": "Infantil",
+        "geoBlocked": "Geobloqueado",
+        "geoBlockedHint": "Marcado como disponível só em certos países",
+        "unsupported": "Não reproduzível",
+        "unsupportedHint": "Não é uma transmissão HLS, então não é oferecido a ninguém"
+      },
+      "range": "{from}–{to} de {total}",
+      "empty": "Nenhum canal ainda. Eles aparecem aqui assim que uma lista carrega.",
+      "noMatches": "Nenhum canal corresponde.",
+      "couldNotLoad": "Não foi possível carregar os canais"
+    }
   },
   "logs": {
     "title": "Logs",

@@ -1,0 +1,92 @@
+{
+  "title": "TV in diretta",
+  "badge": "In diretta",
+  "intro": "I canali in onda adesso e cosa c'è dopo.",
+  "openAdmin": "Apri le impostazioni della TV in diretta",
+  "tabs": {
+    "channels": "Canali",
+    "guide": "Guida TV"
+  },
+  "searchPlaceholder": "Cerca canali…",
+  "groupsLabel": "Gruppi di canali",
+  "channelCount": {
+    "one": "{count} canale",
+    "other": "{count} canali"
+  },
+  "minutesLeft": {
+    "one": "Manca {count} min",
+    "other": "Mancano {count} min"
+  },
+  "nextAt": "Alle {time}: {title}",
+  "noGuideInfo": "Nessuna informazione sul programma",
+  "geoBlocked": "Limitato per area",
+  "geoBlockedHint": "Questo canale potrebbe funzionare solo nel suo paese d'origine.",
+  "watchChannel": "Guarda {channel}",
+  "off": {
+    "title": "La TV in diretta è disattivata",
+    "intro": "Al momento la TV in diretta non è disponibile su questo server.",
+    "admin": "Attivala in Amministrazione → TV in diretta, poi aggiungi qualche canale.",
+    "viewer": "Un amministratore può attivare la TV in diretta su questo server."
+  },
+  "empty": {
+    "noChannelsTitle": "Ancora nessun canale",
+    "noChannels": "Non ci sono ancora canali da guardare. Chiedi a un amministratore di aggiungerne qualcuno.",
+    "noChannelsAdmin": "Aggiungi canali da un elenco già pronto o da una tua playlist in Amministrazione → TV in diretta.",
+    "noMatchesTitle": "Nessun canale trovato",
+    "noMatches": "Nessun canale corrisponde alla ricerca o al gruppo scelto.",
+    "clearFilters": "Mostra tutti i canali"
+  },
+  "errors": {
+    "loadTitle": "Impossibile caricare i canali",
+    "guideTitle": "Impossibile caricare la guida TV",
+    "unreachable": "Impossibile raggiungere il server. Controlla la connessione e riprova."
+  },
+  "guide": {
+    "channel": "Canale",
+    "now": "Ora",
+    "earlier": "Prima",
+    "later": "Dopo",
+    "notLoadedTitle": "La guida TV non è ancora stata caricata",
+    "notLoaded": "I canali si possono già guardare. La guida si riempie quando le loro fonti vengono aggiornate, cosa che succede due volte al giorno.",
+    "onNow": {
+      "one": "In onda · manca {count} min",
+      "other": "In onda · mancano {count} min"
+    },
+    "startsIn": {
+      "one": "Inizia tra {count} min",
+      "other": "Inizia tra {count} min"
+    },
+    "startsAt": "Inizia alle {time}",
+    "ended": "Terminato",
+    "watchNow": "Guarda ora",
+    "watchChannel": "Guarda il canale"
+  },
+  "player": {
+    "back": "Torna ai canali",
+    "tuning": "Sintonizzazione…",
+    "now": "Ora",
+    "goLive": "Vai alla diretta",
+    "mute": "Disattiva audio",
+    "unmute": "Riattiva audio",
+    "volume": "Volume",
+    "channelUp": "Canale su",
+    "channelDown": "Canale giù",
+    "channelUpHint": "Canale su (↑)",
+    "channelDownHint": "Canale giù (↓)",
+    "nextChannel": "Canale successivo",
+    "info": "In onda",
+    "pip": "Picture in picture",
+    "fullscreen": "Schermo intero",
+    "cantPlay": "Impossibile riprodurre questo canale",
+    "errorHelp": "Errore {code}: cosa significa",
+    "geoBlockedHint": "Questo canale è segnato come limitato per area, quindi potrebbe funzionare solo nel suo paese d'origine.",
+    "errors": {
+      "unavailable": "Impossibile raggiungere lo stream del canale. Potrebbe essere offline per ora: riprova più tardi o scegli un altro canale.",
+      "notFound": "Questo canale non è più disponibile.",
+      "offline": "Connessione al server persa. Controlla la rete e riprova.",
+      "tokenExpired": "L'accesso ai contenuti è scaduto e non è stato possibile rinnovarlo. Ricarica la pagina, oppure esci e accedi di nuovo.",
+      "decode": "Questo browser non riesce a riprodurre il video di questo canale.",
+      "unsupportedBrowser": "Questo browser non può riprodurre le dirette."
+    }
+  }
+}

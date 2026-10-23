@@ -335,6 +335,24 @@
       "message": "Cette soirée de visionnage est complète",
       "meaning": "Une soirée accueille jusqu'à 20 personnes, et un serveur peut héberger jusqu'à 20 soirées à la fois.",
       "fix": "Réessayez quand quelqu'un part ou qu'une soirée se termine."
+    },
+    "P700": {
+      "title": "La TV en direct est désactivée",
+      "message": "La TV en direct est désactivée sur ce serveur",
+      "meaning": "Un administrateur n'a pas activé la TV en direct, ou l'a désactivée.",
+      "fix": "Un administrateur peut l'activer dans Administration → TV en direct."
+    },
+    "P701": {
+      "title": "Chaîne indisponible",
+      "message": "Impossible de lire cette chaîne pour le moment",
+      "meaning": "Le flux de la chaîne n'a pas répondu, a renvoyé une erreur, ou pointe vers une adresse à laquelle Plinthio refuse de se connecter. Les chaînes issues de sources publiques passent hors ligne ou changent d'adresse, et certaines ne fonctionnent que dans certains pays.",
+      "fix": "Essayez une autre chaîne, ou réessayez plus tard. Un administrateur peut actualiser la source dans Administration → TV en direct, ou masquer les chaînes qui restent hors ligne."
+    },
+    "P702": {
+      "title": "Impossible de charger la source",
+      "message": "Impossible de charger la liste de chaînes",
+      "meaning": "Plinthio n'a pas pu télécharger ou lire une playlist, un guide des programmes ou la liste des chaînes publiques proposées.",
+      "fix": "Vérifiez que le serveur accède à Internet (ou à l'adresse de la playlist), puis réessayez. Administration → TV en direct affiche la dernière erreur de chaque source."
     }
   },
   "messages": {
@@ -477,7 +495,19 @@
     "useAFullPathStartingWith": "Utilisez un chemin complet, commençant par /.",
     "thatSInsideTheServerS": "Ce dossier se trouve dans le dossier de données du serveur ; choisissez un dossier ailleurs.",
     "thatFolderContainsTheServerS": "Ce dossier contient le dossier de données du serveur ; choisissez-en un à côté ou ailleurs.",
-    "thatSAFileNotA": "C'est un fichier, pas un dossier."
+    "thatSAFileNotA": "C'est un fichier, pas un dossier.",
+    "channelNotFound": "Chaîne introuvable",
+    "sourceNotFound": "Source introuvable",
+    "thisStreamLinkIsNot": "Ce lien de flux n'est pas valide",
+    "chooseACountryLanguageOr": "Choisissez un pays, une langue ou une catégorie",
+    "thoseChannelsAreAlreadyAdded": "Ces chaînes sont déjà ajoutées",
+    "enterANameForThese": "Saisissez un nom pour ces chaînes",
+    "enterThePlaylistAddressStarting": "Saisissez l'adresse de la playlist, commençant par http:// ou https://",
+    "theGuideAddressMustStart": "L'adresse du guide doit commencer par http:// ou https://",
+    "thatPlaylistIsAlreadyAdded": "Cette playlist est déjà ajoutée",
+    "chooseWhatKindOfChannels": "Choisissez le type de chaînes à ajouter",
+    "chooseUpTo1000Channels": "Choisissez jusqu'à 1000 chaînes",
+    "nothingToChange": "Rien à modifier"
   },
   "patterns": {
     "noMetadataSource": "Pas encore de source de métadonnées pour {type}",

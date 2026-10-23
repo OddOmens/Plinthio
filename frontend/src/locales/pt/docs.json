@@ -19,6 +19,7 @@
       "roles": "Funções e permissões",
       "pwa": "Instalar o app (PWA)",
       "remote": "Acesso remoto e Tailscale",
+      "liveTv": "TV ao vivo",
       "shortcuts": "Atalhos de teclado",
       "backups": "Backups e segurança dos dados",
       "api": "API REST e webhooks",
@@ -266,6 +267,66 @@
       "guide": "O guia completo, com solução de problemas: {doc} no GitHub."
     }
   },
+  "liveTv": {
+    "title": "TV ao vivo",
+    "intro": "Canais ao vivo e um guia de programação, junto com a sua própria mídia. Os canais vêm de playlists M3U: listas públicas prontas ou as suas.",
+    "turnOn": {
+      "title": "Como ativar",
+      "text": "A TV ao vivo fica desativada até um administrador ativá-la em **Administração → TV ao vivo**. Depois de ativada e com canais, **TV ao vivo** aparece no menu para todos que podem assistir a pelo menos um canal.",
+      "off": "Desativar oculta a TV ao vivo em todo lugar na hora. As listas de canais e todas as escolhas feitas sobre elas são mantidas para quando ela for reativada."
+    },
+    "adding": {
+      "title": "Adicionar canais",
+      "intro": "Em **Administração → TV ao vivo**, clique em **Adicionar canais** e escolha um dos dois tipos:",
+      "public": "**Canais públicos**: listas gratuitas e prontas do projeto público iptv-org, por país, idioma ou categoria. Marque quantas quiser; cada uma é adicionada como uma lista separada.",
+      "own": "**Sua própria playlist**: o endereço de qualquer playlist M3U que o servidor consiga acessar, como a de um sintonizador de TV na sua rede. Canais que transmitem em HLS ({m3u8}) funcionam; os outros são mantidos, mas aparecem como **Não reproduzível**.",
+      "guide": "**Guia de programação**: um endereço XMLTV que você informar ou, se não houver, o guia indicado pela própria playlist (todas as listas públicas têm um). Arquivos compactados {gz} funcionam. O guia cobre o próximo dia e meio.",
+      "refresh": "Cada lista e seu guia são recarregados a cada 12 horas enquanto a TV ao vivo está ativada. **Atualizar** em uma lista recarrega na hora; a lista mostra quando carregou pela última vez ou por que não conseguiu."
+    },
+    "choosing": {
+      "title": "Escolher canais",
+      "text": "Em **Canais**, busque ou filtre por lista e depois use **Ocultar** nos canais que você não quer. Marque vários (ou uma página inteira) para alterá-los de uma vez. As alterações são salvas na hora.",
+      "kept": "Canais ocultos e escolhas para crianças são mantidos quando uma lista recarrega. Um canal que some da playlist é removido."
+    },
+    "kids": {
+      "title": "Contas infantis",
+      "text": "Contas infantis veem só os canais marcados com **Liberar para crianças**. Nenhum é liberado até você escolher, então até lá a TV ao vivo não aparece no menu de uma conta infantil."
+    },
+    "watching": {
+      "title": "Assistir",
+      "channels": "**Canais**: todos os canais com o que está passando agora e a seguir. Busque ou filtre por um grupo.",
+      "guide": "**Guia**: uma grade do que está passando nos canais. Toque em um programa para ver os detalhes e um botão **Assistir**.",
+      "player": "**O player**: as setas para cima e para baixo (ou os botões) trocam de canal. Picture-in-picture e tela cheia funcionam onde o navegador oferece suporte.",
+      "throughServer": "As transmissões passam por este servidor, então qualquer pessoa que acesse o Plinthio pode assistir, em casa ou fora. Cada espectador usa a conexão de internet do servidor."
+    },
+    "publicSources": {
+      "title": "Sobre os canais públicos",
+      "text": "Os canais públicos são reunidos das transmissões gratuitas das próprias emissoras. Eles vêm e vão: alguns podem estar fora do ar, ter interrupções ou só funcionar em certos países (marcados como Geobloqueado). Canais adultos nunca são adicionados."
+    },
+    "troubleshooting": {
+      "title": "Quando algo dá errado",
+      "wontPlay": {
+        "title": "Um canal não reproduz",
+        "text": "Não foi possível acessar a transmissão do canal ({code}). Canais públicos saem do ar de vez em quando, e os geobloqueados só funcionam em alguns países. Tente mais tarde ou oculte o canal."
+      },
+      "listFailed": {
+        "title": "Uma lista mostra \"Não foi possível carregar\"",
+        "text": "O servidor não conseguiu baixar a playlist ({code}). Verifique se o endereço abre na rede do servidor e clique em **Atualizar**. Os canais já carregados continuam até o próximo carregamento bem-sucedido."
+      },
+      "notPlayable": {
+        "title": "Canais marcados como \"Não reproduzível\"",
+        "text": "A TV ao vivo reproduz transmissões HLS. Canais em outros formatos continuam na lista para você ver, mas não são mostrados a mais ninguém."
+      },
+      "noGuide": {
+        "title": "O guia está vazio em alguns canais",
+        "text": "Nem todo canal tem dados de guia, e o guia carrega um pouco depois dos canais. Dar a uma lista seu próprio endereço de guia pode preencher as lacunas."
+      },
+      "notInMenu": {
+        "title": "A TV ao vivo não aparece no menu",
+        "text": "Ela precisa estar ativada, com pelo menos um canal que a pessoa possa assistir: um que não esteja oculto nem seja não reproduzível e, para uma conta infantil, um liberado para crianças."
+      }
+    }
+  },
   "shortcuts": {
     "title": "Atalhos de teclado e controles do player",
     "intro": "Todos os leitores e players aceitam navegação completa pelo teclado no computador, além dos controles de toque e deslize na tela do celular.",
@@ -390,7 +451,8 @@
       "playback": "Reprodução",
       "metadata": "Provedores de metadados",
       "lists": "Listas e pedidos",
-      "watchParties": "Sessões conjuntas"
+      "watchParties": "Sessões conjuntas",
+      "liveTv": "TV ao vivo"
     }
   },
   "troubleshooting": {

@@ -49,6 +49,10 @@
         "label": "재생",
         "desc": "하드웨어 가속, 오프닝 클립"
       },
+      "liveTv": {
+        "label": "실시간 TV",
+        "desc": "채널, 편성표, 키즈"
+      },
       "network": {
         "label": "네트워크",
         "desc": "외부 접속, Tailscale, 2단계 인증"
@@ -306,6 +310,134 @@
     "deleteMessage": "'{name}'을(를) 삭제할까요? 파일은 건드리지 않으며, 같은 폴더를 다시 추가하면 진행 상황과 북마크가 돌아와요. 타이틀, 표지, 상세 정보는 다시 스캔할 때까지 제거돼요.",
     "couldNotDelete": "그 라이브러리를 삭제할 수 없어요",
     "couldNotAdd": "그 라이브러리를 추가할 수 없어요"
+  },
+  "liveTv": {
+    "title": "실시간 TV",
+    "description": "공개 목록이나 내 재생 목록에서 가져온 실시간 채널과 편성표예요. 변경 사항은 바로 저장돼요.",
+    "channelCount": {
+      "other": "채널 {number}개"
+    },
+    "switch": {
+      "label": "실시간 TV",
+      "desc": "이 서버의 모든 사용자에게 채널과 편성표가 있는 실시간 TV 페이지를 추가해요. 기본값은 꺼짐이에요. 끄면 실시간 TV가 모든 곳에서 숨겨지지만, 여기의 목록과 설정은 그대로 남아요."
+    },
+    "publicNote": "채널은 인터넷의 공개 소스에서 가져와요. 일부는 오프라인이거나, 가끔 끊기거나, 특정 국가에서만 재생될 수 있어요. 성인 채널은 절대 추가되지 않아요.",
+    "sources": {
+      "title": "채널 목록",
+      "desc": "실시간 TV가 켜져 있는 동안 각 목록은 편성표와 함께 12시간마다 다시 불러와요.",
+      "add": "채널 추가",
+      "empty": "아직 채널이 없어요. 기본 제공 목록이나 내 재생 목록을 추가해서 시작하세요.",
+      "off": "꺼짐",
+      "kinds": {
+        "public": "공개 목록",
+        "own": "내 재생 목록"
+      },
+      "refreshing": "채널과 편성표를 불러오는 중…",
+      "failed": "불러올 수 없음: {error}",
+      "updated": "{date} 업데이트됨",
+      "notLoaded": "아직 불러오지 않음",
+      "enabledAria": "{name} 사용",
+      "turnOn": "켜기",
+      "turnOff": "끄기",
+      "editAria": "{name} 편집",
+      "removeAria": "{name} 삭제",
+      "removeTitle": "채널 목록 삭제",
+      "removeMessage": {
+        "other": "{name}을(를) 삭제할까요? 채널 {number}개와 각 채널의 숨김 및 키즈 허용 설정도 함께 삭제돼요."
+      },
+      "offHint": "실시간 TV가 꺼져 있어서 아직 아무도 이 채널을 볼 수 없어요. 미리 준비해 둘 수 있어요.",
+      "couldNotLoad": "채널 목록을 불러올 수 없어요",
+      "couldNotRefresh": "목록을 다시 불러올 수 없어요",
+      "couldNotSave": "목록을 저장할 수 없어요",
+      "couldNotRemove": "목록을 삭제할 수 없어요"
+    },
+    "editDialog": {
+      "title": "채널 목록 편집",
+      "guideHint": "비워 두면 재생 목록에 지정된 편성표가 있을 경우 그것을 써요."
+    },
+    "addDialog": {
+      "title": "채널 추가",
+      "tabs": {
+        "public": "공개 채널",
+        "own": "내 재생 목록"
+      },
+      "adding": "추가하는 중…",
+      "couldNotAdd": "채널을 추가할 수 없어요",
+      "public": {
+        "intro": "공개 iptv-org 목록에서 가져오는 무료 채널로, 매일 업데이트돼요. 하나 이상 고르세요. 각각 별도의 목록으로 추가돼요.",
+        "listBy": "채널 분류 기준",
+        "kinds": {
+          "countries": "국가",
+          "languages": "언어",
+          "categories": "카테고리"
+        },
+        "search": {
+          "countries": "국가 검색",
+          "languages": "언어 검색",
+          "categories": "카테고리 검색"
+        },
+        "noMatches": "일치하는 항목이 없어요.",
+        "added": "추가됨",
+        "selected": {
+          "other": "{number}개 선택됨"
+        },
+        "addLists": {
+          "other": "목록 {number}개 추가"
+        },
+        "note": "이 채널들은 공개 소스에서 가져오므로 일부는 오프라인이거나 특정 국가에서만 재생될 수 있어요. 성인 채널은 절대 추가되지 않아요.",
+        "couldNotLoad": "공개 목록을 불러올 수 없어요"
+      },
+      "own": {
+        "name": "이름",
+        "namePlaceholder": "예: 집 안테나",
+        "playlistUrl": "재생 목록 주소 (M3U)",
+        "playlistHint": "서버가 접근할 수 있는 주소예요. HLS(.m3u8)로 스트리밍하는 채널은 재생되고, 나머지는 재생 불가로 표시돼요.",
+        "guideUrl": "편성표 주소 (XMLTV, 선택 사항)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "비워 두면 재생 목록에 지정된 편성표가 있을 경우 그것을 써요. 압축된 .xml.gz 파일도 돼요.",
+        "add": "재생 목록 추가"
+      }
+    },
+    "channels": {
+      "title": "채널",
+      "desc": "원하지 않는 채널은 숨기세요. 키즈 계정에는 여기서 키즈 허용한 채널만 보이며, 직접 고르기 전에는 허용된 채널이 없어요.",
+      "searchPlaceholder": "채널 검색",
+      "sourceFilter": "채널 목록",
+      "allSources": "모든 목록",
+      "statusFilter": "표시",
+      "status": {
+        "all": "전체",
+        "visible": "표시 중",
+        "hidden": "숨김",
+        "kids": "키즈 허용",
+        "unsupported": "재생 불가"
+      },
+      "selectPage": "이 페이지 선택",
+      "selected": {
+        "other": "{number}개 선택됨"
+      },
+      "selectAria": "{name} 선택",
+      "hide": "숨기기",
+      "show": "표시",
+      "hideAria": "{name} 숨기기",
+      "showAria": "{name} 표시",
+      "allowKids": "키즈 허용",
+      "disallowKids": "키즈 제외",
+      "allowKidsAria": "{name} 키즈 허용",
+      "disallowKidsAria": "{name} 키즈 허용 해제",
+      "badges": {
+        "hidden": "숨김",
+        "kids": "키즈",
+        "geoBlocked": "지역 제한",
+        "geoBlockedHint": "특정 국가에서만 재생되는 것으로 표시됨",
+        "unsupported": "재생 불가",
+        "unsupportedHint": "HLS 스트림이 아니어서 누구에게도 제공되지 않아요"
+      },
+      "range": "{total}개 중 {from}–{to}",
+      "empty": "아직 채널이 없어요. 목록을 불러오면 여기에 나타나요.",
+      "noMatches": "일치하는 채널이 없어요.",
+      "couldNotLoad": "채널을 불러올 수 없어요"
+    }
   },
   "logs": {
     "title": "로그",

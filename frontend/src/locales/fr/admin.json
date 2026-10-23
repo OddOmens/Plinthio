@@ -49,6 +49,10 @@
         "label": "Lecture",
         "desc": "Accélération matérielle, générique d'ouverture"
       },
+      "liveTv": {
+        "label": "TV en direct",
+        "desc": "Chaînes, guide des programmes, enfants"
+      },
       "network": {
         "label": "Réseau",
         "desc": "Hors de chez vous, Tailscale, double authentification"
@@ -308,6 +312,139 @@
     "deleteMessage": "Supprimer « {name} » ? Vos fichiers ne sont pas touchés, et la progression et les signets reviennent si vous ajoutez à nouveau le même dossier. Ses titres, couvertures et détails sont retirés jusqu'à la prochaine analyse.",
     "couldNotDelete": "Impossible de supprimer cette bibliothèque",
     "couldNotAdd": "Impossible d'ajouter cette bibliothèque"
+  },
+  "liveTv": {
+    "title": "TV en direct",
+    "description": "Des chaînes en direct avec un guide des programmes, depuis des listes publiques ou vos propres playlists. Les modifications sont enregistrées au fur et à mesure.",
+    "channelCount": {
+      "one": "{number} chaîne",
+      "other": "{number} chaînes"
+    },
+    "switch": {
+      "label": "TV en direct",
+      "desc": "Ajoute une page TV en direct, avec chaînes et guide des programmes, pour tous les utilisateurs de ce serveur. Désactivée par défaut ; la désactiver masque la TV en direct partout, mais conserve ici vos listes et vos choix."
+    },
+    "publicNote": "Les chaînes proviennent de sources publiques sur Internet. Certaines peuvent être hors ligne, tomber en panne de temps en temps ou ne fonctionner que dans certains pays. Les chaînes pour adultes ne sont jamais ajoutées.",
+    "sources": {
+      "title": "Listes de chaînes",
+      "desc": "Chaque liste est rechargée toutes les 12 heures tant que la TV en direct est activée, avec son guide des programmes.",
+      "add": "Ajouter des chaînes",
+      "empty": "Aucune chaîne pour l'instant. Ajoutez une liste toute prête ou votre propre playlist pour commencer.",
+      "off": "Désactivée",
+      "kinds": {
+        "public": "Liste publique",
+        "own": "Votre playlist"
+      },
+      "refreshing": "Chargement des chaînes et du guide…",
+      "failed": "Échec du chargement : {error}",
+      "updated": "Mise à jour le {date}",
+      "notLoaded": "Pas encore chargée",
+      "enabledAria": "Utiliser {name}",
+      "turnOn": "Activer",
+      "turnOff": "Désactiver",
+      "editAria": "Modifier {name}",
+      "removeAria": "Retirer {name}",
+      "removeTitle": "Retirer la liste de chaînes",
+      "removeMessage": {
+        "one": "Retirer {name} ? {number} chaîne est retirée aussi, avec ses réglages (masquée, autorisée aux enfants).",
+        "other": "Retirer {name} ? Ses {number} chaînes sont retirées aussi, avec leurs réglages (masquées, autorisées aux enfants)."
+      },
+      "offHint": "La TV en direct est désactivée, donc personne ne voit encore ces chaînes. Vous pouvez les préparer d'abord.",
+      "couldNotLoad": "Impossible de charger les listes de chaînes",
+      "couldNotRefresh": "Impossible de recharger la liste",
+      "couldNotSave": "Impossible d'enregistrer la liste",
+      "couldNotRemove": "Impossible de retirer la liste"
+    },
+    "editDialog": {
+      "title": "Modifier la liste de chaînes",
+      "guideHint": "Laissez vide pour utiliser le guide indiqué par la playlist, s'il y en a un."
+    },
+    "addDialog": {
+      "title": "Ajouter des chaînes",
+      "tabs": {
+        "public": "Chaînes publiques",
+        "own": "Votre propre playlist"
+      },
+      "adding": "Ajout…",
+      "couldNotAdd": "Impossible d'ajouter les chaînes",
+      "public": {
+        "intro": "Des chaînes gratuites issues des listes publiques iptv-org, mises à jour chaque jour. Choisissez-en une ou plusieurs ; chacune est ajoutée comme une liste à part.",
+        "listBy": "Lister les chaînes par",
+        "kinds": {
+          "countries": "Pays",
+          "languages": "Langue",
+          "categories": "Catégorie"
+        },
+        "search": {
+          "countries": "Rechercher un pays",
+          "languages": "Rechercher une langue",
+          "categories": "Rechercher une catégorie"
+        },
+        "noMatches": "Aucun résultat.",
+        "added": "Ajoutée",
+        "selected": {
+          "one": "{number} choisie",
+          "other": "{number} choisies"
+        },
+        "addLists": {
+          "one": "Ajouter la liste",
+          "other": "Ajouter {number} listes"
+        },
+        "note": "Ces chaînes proviennent de sources publiques : certaines peuvent être hors ligne ou ne fonctionner que dans certains pays. Les chaînes pour adultes ne sont jamais ajoutées.",
+        "couldNotLoad": "Impossible de charger les listes publiques"
+      },
+      "own": {
+        "name": "Nom",
+        "namePlaceholder": "ex. Antenne de la maison",
+        "playlistUrl": "Adresse de la playlist (M3U)",
+        "playlistHint": "Une adresse que le serveur peut joindre. Les chaînes diffusées en HLS (.m3u8) sont lisibles ; les autres sont indiquées comme non lisibles.",
+        "guideUrl": "Adresse du guide des programmes (XMLTV, facultatif)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "Laissez vide pour utiliser le guide indiqué par la playlist, s'il y en a un. Les fichiers compressés .xml.gz fonctionnent aussi.",
+        "add": "Ajouter la playlist"
+      }
+    },
+    "channels": {
+      "title": "Chaînes",
+      "desc": "Masquez celles dont vous ne voulez pas. Les comptes enfants ne voient que les chaînes autorisées aux enfants ici, et aucune ne l'est tant que vous ne les avez pas choisies.",
+      "searchPlaceholder": "Rechercher une chaîne",
+      "sourceFilter": "Liste de chaînes",
+      "allSources": "Toutes les listes",
+      "statusFilter": "Afficher",
+      "status": {
+        "all": "Toutes",
+        "visible": "Affichées",
+        "hidden": "Masquées",
+        "kids": "Autorisées aux enfants",
+        "unsupported": "Non lisibles"
+      },
+      "selectPage": "Sélectionner cette page",
+      "selected": {
+        "one": "{number} sélectionnée",
+        "other": "{number} sélectionnées"
+      },
+      "selectAria": "Sélectionner {name}",
+      "hide": "Masquer",
+      "show": "Afficher",
+      "hideAria": "Masquer {name}",
+      "showAria": "Afficher {name}",
+      "allowKids": "Autoriser aux enfants",
+      "disallowKids": "Pas pour les enfants",
+      "allowKidsAria": "Autoriser {name} aux enfants",
+      "disallowKidsAria": "Ne plus autoriser {name} aux enfants",
+      "badges": {
+        "hidden": "Masquée",
+        "kids": "Enfants",
+        "geoBlocked": "Géobloquée",
+        "geoBlockedHint": "Indiquée comme ne fonctionnant que dans certains pays",
+        "unsupported": "Non lisible",
+        "unsupportedHint": "Ce n'est pas un flux HLS, elle n'est donc proposée à personne"
+      },
+      "range": "{from}–{to} sur {total}",
+      "empty": "Aucune chaîne pour l'instant. Elles apparaissent ici une fois qu'une liste est chargée.",
+      "noMatches": "Aucune chaîne ne correspond.",
+      "couldNotLoad": "Impossible de charger les chaînes"
+    }
   },
   "logs": {
     "title": "Journaux",

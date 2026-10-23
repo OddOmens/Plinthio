@@ -111,6 +111,7 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `GET /media/video/:id/subtitles/:track.vtt` | Subtitles as WebVTT |
 | `GET /media/video/:id/trickplay/index.json` · `sheet_N.jpg` | Scrub previews (index is 204 when the file has none) |
 | `GET /media/video/:id/markers` · `PUT` (E) | Intro and credits ranges |
+| `GET /media/live/:id/index.m3u8` (+ the signed `p?u=…&s=…` links inside it) · `GET /media/live/:id/logo` | Live TV channel stream and logo, through the server |
 
 ### Lists, requests, parties
 
@@ -119,6 +120,8 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `/collections…` | V | Custom folders and Lists: create, add library or outside titles, reorder, remove |
 | `GET /requests` · `POST /requests` · `DELETE /requests/:id` | V | Your requests |
 | `GET /requests/pending-count` · `PATCH /requests/:id` | E | Review queue |
+| `GET /live/status` · `GET /live/channels?group=&q=` · `GET /live/channels/:id` · `GET /live/guide?from=&hours=&offset=&limit=` | V | Live TV (when enabled): channels with now/next, one channel's programmes, the guide grid |
+| `GET /live/admin/presets` · `GET/POST /live/admin/sources` · `PATCH/DELETE /live/admin/sources/:id` · `POST /live/admin/sources/:id/refresh` · `GET/PATCH /live/admin/channels` | A | Live TV lists and channels (hide, allow for kids) |
 | `POST /party` · `GET /party/:code` · `GET /party/:code/events` (server-sent events) · `POST /party/:code/{action,buffering,item,settings,chat}` · `DELETE /party/:code` | V | Watch parties (when enabled) |
 
 ### Metadata
