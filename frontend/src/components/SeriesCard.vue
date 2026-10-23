@@ -4,7 +4,7 @@
     class="group relative flex flex-col bg-card border border-border hover:border-muted-foreground/30 rounded-xl p-2.5 transition-colors cursor-pointer"
     role="link"
     tabindex="0"
-    :aria-label="`${series.name} — ${countLabel}`"
+    :aria-label="$t('shelf.series.ariaLabel', { name: series.name, units: countLabel })"
     @keydown.enter="$emit('select', series)"
   >
     <!-- Cover Stack Effect -->
@@ -56,8 +56,8 @@
           type="button"
           @click.stop="$emit('remove', series)"
           class="absolute top-2 right-2 z-20 w-7 h-7 rounded-full bg-background/85 backdrop-blur-md border border-border/80 text-muted-foreground hover:text-destructive flex items-center justify-center shadow-sm transition"
-          :aria-label="`Remove ${series.name} from this folder`"
-          title="Remove from folder"
+          :aria-label="$t('shelf.series.removeFromThisFolder', { name: series.name })"
+          :title="$t('shelf.series.removeFromFolder')"
         >
           <FolderMinus class="w-3.5 h-3.5" />
         </button>
@@ -103,10 +103,10 @@
       <div class="mt-auto pt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground whitespace-nowrap">
         <span class="font-mono truncate min-w-0" :class="finishedCount + skippedCount > 0 ? 'hidden sm:block' : ''">{{ countLabel }}</span>
         <span v-if="finishedCount + skippedCount === series.volumes.length" class="text-emerald-500 font-semibold flex items-center gap-1 flex-shrink-0">
-          <BookCheck class="w-3 h-3" /> {{ skippedCount ? 'Caught up' : `All ${vocab.done.toLowerCase()}` }}
+          <BookCheck class="w-3 h-3" /> {{ skippedCount ? $t('shelf.series.caughtUp') : $t(`vocab.${vocab.mediaType}.allDone`) }}
         </span>
-        <span v-else-if="finishedCount + skippedCount > 0" class="font-mono flex-shrink-0" :title="skippedCount ? `${skippedCount} skipped` : undefined">
-          {{ finishedCount + skippedCount }}/{{ series.volumes.length }} {{ skippedCount ? 'done' : vocab.done.toLowerCase() }}
+        <span v-else-if="finishedCount + skippedCount > 0" class="font-mono flex-shrink-0" :title="skippedCount ? $t('shelf.series.skipped', { count: skippedCount }) : undefined">
+          {{ $t(skippedCount ? 'shelf.series.doneCount' : `vocab.${vocab.mediaType}.progress`, { count: finishedCount + skippedCount, total: series.volumes.length }) }}
         </span>
       </div>
     </div>
@@ -134,10 +134,7 @@ const TYPE_ICONS = { manga: BookImage, book: Book, audiobook: Headphones, show: 
 const mediaType = computed(() => props.series.mediaType || props.series.volumes[0]?.media_type || 'manga');
 const vocab = computed(() => vocabFor(mediaType.value));
 const typeIcon = computed(() => TYPE_ICONS[mediaType.value] || Layers);
-const countLabel = computed(() => {
-  const n = props.series.volumes.length;
-  return `${n} ${(n === 1 ? vocab.value.unit : vocab.value.units).toLowerCase()}`;
-});
+const countLabel = computed(() => vocab.value.count(props.series.volumes.length));
 
 defineEmits(['select', 'remove']);
 

@@ -1,0 +1,43 @@
+{
+  "lists": "清单",
+  "searchLibrary": "搜索媒体库...",
+  "searchEverything": "搜索作品、作者、系列...",
+  "clearSearch": "清除搜索",
+  "openMenu": "打开菜单",
+  "closeMenu": "关闭菜单",
+  "backToShelves": "返回书架",
+  "account": {
+    "menuTitle": "帐户菜单（{name}）",
+    "menuLabel": "{name} 的帐户菜单",
+    "someone": "用户",
+    "avatar": "头像",
+    "expires": "帐户到期时间：{date}",
+    "expired": "已过期",
+    "hoursLeft": "剩余{count}小时",
+    "daysLeft": "剩余{count}天"
+  },
+  "roles": {
+    "admin": "管理员",
+    "editor": "编辑者",
+    "viewer": "观众"
+  },
+  "menu": {
+    "downloads": "下载",
+    "requests": "请求",
+    "docs": "文档",
+    "reportProblem": "报告问题",
+    "lightMode": "浅色模式",
+    "darkMode": "深色模式",
+    "logOut": "退出登录"
+  },
+  "update": {
+    "available": "{release} 已发布",
+    "current": "— 你当前使用的是 {version}。",
+    "whatsNew": "新功能",
+    "howToUpdate": "如何更新",
+    "dismissLabel": "关闭 {version} 更新提示",
+    "dismissTitle": "在下个版本之前不再提示",
+    "where": "在运行 Plinthio 的机器上，于 {file} 所在的文件夹中执行：",
+    "backup": "新版本启动前，你的数据库会自动备份到 {folder}。"
+  }
+}

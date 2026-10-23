@@ -1,0 +1,49 @@
+{
+  "lists": "Listes",
+  "searchLibrary": "Rechercher dans la bibliothèque...",
+  "searchEverything": "Rechercher titres, auteurs, séries...",
+  "clearSearch": "Effacer la recherche",
+  "openMenu": "Ouvrir le menu",
+  "closeMenu": "Fermer le menu",
+  "backToShelves": "Retour aux étagères",
+  "account": {
+    "menuTitle": "Menu du compte ({name})",
+    "menuLabel": "Menu du compte de {name}",
+    "someone": "utilisateur",
+    "avatar": "Avatar",
+    "expires": "Le compte expire le {date}",
+    "expired": "Expiré",
+    "hoursLeft": {
+      "one": "{count} h restante",
+      "other": "{count} h restantes"
+    },
+    "daysLeft": {
+      "one": "{count} j restant",
+      "other": "{count} j restants"
+    }
+  },
+  "roles": {
+    "admin": "admin",
+    "editor": "éditeur",
+    "viewer": "lecteur"
+  },
+  "menu": {
+    "downloads": "Téléchargements",
+    "requests": "Demandes",
+    "docs": "Documents",
+    "reportProblem": "Signaler un problème",
+    "lightMode": "Mode clair",
+    "darkMode": "Mode sombre",
+    "logOut": "Se déconnecter"
+  },
+  "update": {
+    "available": "{release} est disponible",
+    "current": "— vous utilisez la {version}.",
+    "whatsNew": "Nouveautés",
+    "howToUpdate": "Comment mettre à jour",
+    "dismissLabel": "Masquer l'avis de mise à jour {version}",
+    "dismissTitle": "Masquer jusqu'à la prochaine version",
+    "where": "Sur la machine qui exécute Plinthio, dans le dossier contenant votre {file} :",
+    "backup": "Votre base de données est sauvegardée automatiquement dans {folder} avant le démarrage de la nouvelle version."
+  }
+}

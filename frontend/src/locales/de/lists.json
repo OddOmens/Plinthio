@@ -1,0 +1,82 @@
+{
+  "title": "Listen",
+  "intro": "Was du schauen, lesen und hören willst, in deiner Reihenfolge. Listen können auch Titel enthalten, die der Server noch nicht hat.",
+  "requests": "Anfragen",
+  "categories": {
+    "movies": "Filme",
+    "shows": "Serien",
+    "anime": "Anime",
+    "read": "Lesen",
+    "listen": "Hören"
+  },
+  "titleCount": {
+    "one": "{count} Titel",
+    "other": "{count} Titel"
+  },
+  "newList": "Neue Liste",
+  "newListName": {
+    "movies": "Name der Filmliste",
+    "shows": "Name der Serienliste",
+    "anime": "Name der Anime-Liste",
+    "read": "Name der Leseliste",
+    "listen": "Name der Hörliste"
+  },
+  "noLists": {
+    "movies": "Noch keine Filmlisten.",
+    "shows": "Noch keine Serienlisten.",
+    "anime": "Noch keine Anime-Listen.",
+    "read": "Noch keine Leselisten.",
+    "listen": "Noch keine Hörlisten."
+  },
+  "allLists": "Alle Listen",
+  "listFallback": "Liste",
+  "notInLibrary": "{count} nicht in der Bibliothek",
+  "addTitles": "Titel hinzufügen",
+  "deleteList": "Liste löschen",
+  "inList": "In Liste",
+  "seriesTitle": "{series}: {title}",
+  "empty": {
+    "title": "Diese Liste ist noch leer",
+    "hint": "Mit {addTitles} suchst du nach allem – ob auf dem Server oder nicht."
+  },
+  "moveEarlier": "Nach vorne",
+  "moveLater": "Nach hinten",
+  "removeFromList": "Aus Liste entfernen",
+  "request": "Anfragen",
+  "requestHint": "Einen Admin bitten, das zur Bibliothek hinzuzufügen",
+  "requestStatus": {
+    "pending": "Offen",
+    "accepted_pending": "Angenommen · Wird hinzugefügt",
+    "accepted_added": "Angenommen · Hinzugefügt",
+    "rejected": "Abgelehnt"
+  },
+  "deleteDialog": {
+    "title": "Liste löschen?",
+    "message": "„{name}“ wird gelöscht. Aus deiner Bibliothek wird nichts entfernt.",
+    "thisList": "Diese Liste"
+  },
+  "addButton": {
+    "inNamed": "In {list}",
+    "title": "Zu einer deiner Listen hinzufügen",
+    "list": "Liste",
+    "dialogLabel": "{title} zu einer Liste hinzufügen",
+    "heading": "Zu einer Liste hinzufügen",
+    "loading": "Deine Listen werden geladen…",
+    "newPlaceholder": "Neue Liste…",
+    "firstPlaceholder": "Benenne deine erste Liste, z. B. Merkliste"
+  },
+  "errors": {
+    "loadLists": "Listen konnten nicht geladen werden.",
+    "loadYourLists": "Deine Listen konnten nicht geladen werden.",
+    "createList": "Liste konnte nicht erstellt werden.",
+    "createThatList": "Diese Liste konnte nicht erstellt werden.",
+    "gone": "Diese Liste gibt es nicht mehr.",
+    "loadList": "Diese Liste konnte nicht geladen werden.",
+    "deleteList": "Diese Liste konnte nicht gelöscht werden.",
+    "addTitle": "Dieser Titel konnte nicht hinzugefügt werden.",
+    "addToList": "Konnte nicht zu dieser Liste hinzugefügt werden.",
+    "request": "Diese Anfrage konnte nicht gesendet werden.",
+    "reorder": "Die neue Reihenfolge konnte nicht gespeichert werden.",
+    "remove": "Dieser Eintrag konnte nicht entfernt werden."
+  }
+}

@@ -19,7 +19,7 @@
   >
     <Loader2 v-if="sending" class="w-3.5 h-3.5 animate-spin" />
     <Plus v-else class="w-3.5 h-3.5" />
-    {{ status === 'rejected' ? 'Request again' : 'Request' }}
+    {{ status === 'rejected' ? $t('title.request.again') : $t('title.request.request') }}
   </button>
 </template>
 
@@ -28,6 +28,7 @@ import { ref, computed, watch } from 'vue';
 import { CalendarClock, CheckCircle2, Loader2, Plus } from '@lucide/vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
+import { t } from '../i18n';
 
 // `part`: one film of a TMDB collection, as GET /items/:id/collection returns it.
 const props = defineProps({
@@ -42,14 +43,14 @@ watch(() => props.part.requestStatus, (s) => { status.value = s || null; });
 
 const comingLabel = computed(() => {
   const year = props.part.releaseDate?.slice(0, 4);
-  return year ? `Coming ${year}` : 'Announced';
+  return year ? t('title.request.coming', { year }) : t('title.request.announced');
 });
 
 const statusLabel = computed(() => ({
-  pending: 'Requested',
-  accepted_pending: 'Request approved',
-  accepted_added: 'Added soon'
-}[status.value] || 'Requested'));
+  pending: t('title.request.requested'),
+  accepted_pending: t('title.request.approved'),
+  accepted_added: t('title.request.addedSoon')
+}[status.value] || t('title.request.requested')));
 
 const statusClass = computed(() => (status.value === 'pending' ? 'text-sky-500' : 'text-emerald-500'));
 
@@ -71,7 +72,7 @@ async function request() {
     if (err.response?.status === 409 && err.response.data?.status) {
       status.value = err.response.data.status;
     } else {
-      dialog.alert(err.response?.data?.error || 'Could not send that request.');
+      dialog.alert(err.response?.data?.error || t('title.request.failed'));
     }
   } finally {
     sending.value = false;

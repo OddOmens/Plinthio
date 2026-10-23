@@ -1,0 +1,43 @@
+{
+  "lists": "Lijsten",
+  "searchLibrary": "Bibliotheek doorzoeken...",
+  "searchEverything": "Zoek titels, auteurs, series...",
+  "clearSearch": "Zoekopdracht wissen",
+  "openMenu": "Menu openen",
+  "closeMenu": "Menu sluiten",
+  "backToShelves": "Terug naar planken",
+  "account": {
+    "menuTitle": "Accountmenu ({name})",
+    "menuLabel": "Accountmenu van {name}",
+    "someone": "gebruiker",
+    "avatar": "Avatar",
+    "expires": "Account verloopt: {date}",
+    "expired": "Verlopen",
+    "hoursLeft": "nog {count} u",
+    "daysLeft": "nog {count} d"
+  },
+  "roles": {
+    "admin": "admin",
+    "editor": "redacteur",
+    "viewer": "kijker"
+  },
+  "menu": {
+    "downloads": "Downloads",
+    "requests": "Verzoeken",
+    "docs": "Documentatie",
+    "reportProblem": "Probleem melden",
+    "lightMode": "Lichte modus",
+    "darkMode": "Donkere modus",
+    "logOut": "Uitloggen"
+  },
+  "update": {
+    "available": "{release} is beschikbaar",
+    "current": "— je gebruikt {version}.",
+    "whatsNew": "Wat is er nieuw",
+    "howToUpdate": "Zo werk je bij",
+    "dismissLabel": "Melding over update {version} sluiten",
+    "dismissTitle": "Verbergen tot de volgende versie",
+    "where": "Op de machine waarop Plinthio draait, in de map met je {file}:",
+    "backup": "Er wordt automatisch een back-up van je database gemaakt in {folder} voordat de nieuwe versie start."
+  }
+}

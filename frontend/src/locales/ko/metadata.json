@@ -1,0 +1,176 @@
+{
+  "fields": {
+    "title": "제목",
+    "author": "작가",
+    "authors": "작가",
+    "director": "감독",
+    "directors": "감독",
+    "artists": "그림",
+    "artistsShort": "그림",
+    "cast": "출연",
+    "castActors": "출연진",
+    "series": "시리즈",
+    "releaseDate": "출시일",
+    "date": "날짜",
+    "ageRating": "연령 등급",
+    "status": "상태",
+    "publisher": "출판사",
+    "genres": "장르",
+    "themes": "테마",
+    "description": "설명",
+    "cover": "표지"
+  },
+  "ageRatings": {
+    "everyone": "전체 이용가",
+    "teen": "청소년",
+    "mature": "성인",
+    "explicit": "선정적"
+  },
+  "edit": {
+    "title": "메타데이터 편집",
+    "appliesToAll": {
+      "other": "전체 {count}권에 적용"
+    },
+    "coverPreview": "표지 미리보기",
+    "replaceCover": "표지 이미지 교체",
+    "coverSaving": "저장 중",
+    "setForSeries": "시리즈에 적용",
+    "replace": "교체",
+    "unknownAuthor": "작가 미상",
+    "commaSeparated": "쉼표로 구분",
+    "commaSeparatedActors": "배우를 쉼표로 구분",
+    "seriesName": "시리즈 이름",
+    "releaseDateExample": "예: 2019 또는 2019-06-26",
+    "sameAsSeries": "시리즈와 같음",
+    "unrated": "등급 없음",
+    "statusExample": "예: 연재 중, 완결",
+    "descriptionPlaceholder": "줄거리 / 설명",
+    "saving": "저장 중…",
+    "searchToFill": "{provider}에서 검색해 빠진 정보 채우기",
+    "externalSources": "외부 소스",
+    "searchPlaceholder": "제목 검색…",
+    "year": "연도",
+    "yearHint": "출시 연도로 필터(예: 2002)",
+    "searching": "검색 중…",
+    "searchingProvider": "{provider} 검색 중…",
+    "noResults": "결과가 없어요. 다른 검색어로 해 보세요.",
+    "searchedAs": "검색어: {query}",
+    "resultDirector": "감독: {name}",
+    "resultCast": "출연: {names}",
+    "resultArt": "그림: {names}",
+    "useAll": "모두 사용",
+    "uploadFailed": "이미지를 업로드하지 못했어요.",
+    "searchFailed": "메타데이터 제공처를 검색하지 못했어요. 자세한 내용은 브라우저 콘솔을 확인하세요.",
+    "savedTitle": "메타데이터 저장됨",
+    "savedSeries": {
+      "other": "시리즈의 항목 {count}개를 모두 업데이트했어요."
+    },
+    "savedOne": "'{title}'을(를) 업데이트했어요.",
+    "saveFailed": "메타데이터를 저장하지 못했어요. 자세한 내용은 브라우저 콘솔을 확인하세요."
+  },
+  "manager": {
+    "title": "제목 정리 및 매칭",
+    "description": "파일 이름에서 릴리스 태그를 정리하고, TMDB에서 포스터, 줄거리, 출연진, 출시일을 가져와요.",
+    "stats": {
+      "total": "전체 미디어 항목",
+      "totalHint": "색인된 모든 콘텐츠",
+      "dirty": "제목 정리 필요",
+      "dirtyHint": "제목에 릴리스 태그나 연도가 있어요",
+      "missingCover": "이미지 없음",
+      "missingCoverHint": "포스터나 표지 파일이 없어요",
+      "missingMeta": "줄거리 / 날짜 없음",
+      "missingMetaHint": "TMDB 줄거리 매칭 필요"
+    },
+    "filters": {
+      "allLibraries": "모든 라이브러리",
+      "allMediaTypes": "모든 미디어 유형",
+      "tvShows": "TV 프로그램",
+      "needsCleanup": "정리 필요",
+      "searchPlaceholder": "제목이나 경로로 필터…"
+    },
+    "batch": {
+      "selectAll": "모두 선택({count})",
+      "selected": "{count}개 선택됨",
+      "overwritePosters": "포스터 덮어쓰기",
+      "useCanonicalTitle": "공식 제목 사용",
+      "cleanHint": "데이터베이스 제목에서 릴리스 태그와 끝에 붙은 연도를 없애요",
+      "cleanCount": "제목 정리({count})",
+      "findHint": "선택한 각 작품을 메타데이터 제공처(TMDB, MangaDex, Google Books, Open Library)와 매칭해요: 이미지, 줄거리, 출시일",
+      "findCount": "메타데이터 찾기({count})",
+      "stop": "중지",
+      "stopping": "중지 중…"
+    },
+    "summary": {
+      "matched": "{total}개 중 {matched}개를 매칭했어요.",
+      "matchedStopped": "중지하기 전까지 {total}개 중 {matched}개를 매칭했어요.",
+      "notFound": {
+        "other": "{count}개는 일치하는 항목이 없어요. 아래에 표시해 두었으니 {action}을(를) 사용해 보세요."
+      },
+      "needsKey": {
+        "other": "{count}개는 동영상이라 TMDB 키가 필요해요. {where}에서 추가한 뒤 다시 실행하세요."
+      },
+      "adminMetadata": "관리 → 메타데이터",
+      "failed": {
+        "other": "{count}개는 실패했어요(이유는 각 행에 있어요)."
+      }
+    },
+    "dismiss": "닫기",
+    "list": {
+      "analyzing": "미디어 제목과 메타데이터를 분석하는 중…",
+      "empty": "선택한 필터와 일치하는 미디어 항목이 없어요."
+    },
+    "badges": {
+      "frameTag": "프레임",
+      "tvEpisode": "TV 에피소드",
+      "poster": "포스터",
+      "frame": "프레임",
+      "frameHint": "영상에서 가져온 임시 프레임이에요. 자동 매칭을 실행하면 공식 포스터를 가져와요",
+      "noPoster": "포스터 없음",
+      "synopsis": "줄거리",
+      "noSynopsis": "줄거리 없음",
+      "noDate": "날짜 없음"
+    },
+    "cleanLabel": "정리 후:",
+    "actions": {
+      "autoMatch": "자동 매칭",
+      "autoMatchHint": "메타데이터 제공처와 매칭해 이 작품을 업데이트해요",
+      "editSearch": "편집 / 검색",
+      "editSearchHint": "TMDB를 직접 검색하거나, 이미지를 고르거나, 메타데이터 항목을 수정해요"
+    },
+    "match": {
+      "matchedAs": "'{title}'(으)로 매칭됨",
+      "needsKey": "TMDB 키가 필요해요. 위에서 추가하세요",
+      "noMatch": "일치하는 항목이 없어요. 편집 / 검색을 사용해 보세요",
+      "failed": "매칭 실패. 다시 시도하세요"
+    },
+    "errors": {
+      "loadFailed": "항목을 불러오지 못했어요"
+    },
+    "clean": {
+      "confirmTitle": {
+        "other": "제목 {count}개를 정리할까요?"
+      },
+      "confirmMessage": {
+        "other": "데이터베이스에서 선택한 제목 {count}개의 신 태그, 코덱, 해상도, 끝에 붙은 출시 연도를 없애요."
+      },
+      "confirm": "제목 정리",
+      "progress": {
+        "other": "제목 {count}개 정리 중…"
+      },
+      "doneTitle": "제목 정리 완료",
+      "doneMessage": {
+        "other": "제목 {count}개를 정리했어요."
+      },
+      "failedTitle": "일괄 정리 실패"
+    },
+    "find": {
+      "confirmTitle": {
+        "other": "항목 {count}개의 메타데이터를 찾을까요?"
+      },
+      "confirmMessage": "선택한 각 작품을 메타데이터 제공처(TMDB, MangaDex, Google Books, Open Library)와 매칭하고 이미지, 줄거리, 출시일을 업데이트해요. 결과는 각 행에 표시되며 언제든 중지할 수 있어요.",
+      "confirm": "매칭 시작",
+      "itemFallback": "항목",
+      "progress": "{total}개 중 {current}번째 매칭 중: {title}"
+    }
+  }
+}

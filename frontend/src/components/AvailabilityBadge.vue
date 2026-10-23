@@ -7,17 +7,18 @@
   <span
     class="inline-flex items-center gap-1 rounded-full font-semibold whitespace-nowrap leading-none"
     :class="[kind === 'offloaded' ? 'bg-black/75 text-white' : 'bg-background/90 text-muted-foreground border border-dashed border-muted-foreground/60', small ? 'text-[10px] px-1.5 py-1' : 'text-[11px] px-2 py-1']"
-    :title="kind === 'offloaded' ? offloadedTitle : 'Not on this server'"
+    :title="kind === 'offloaded' ? offloadedTitle : $t('title.availability.notOnServer')"
   >
     <Archive v-if="kind === 'offloaded'" :class="small ? 'w-2.5 h-2.5' : 'w-3 h-3'" />
     <CircleDashed v-else :class="small ? 'w-2.5 h-2.5' : 'w-3 h-3'" />
-    {{ kind === 'offloaded' ? 'Offloaded' : 'Not in library' }}
+    {{ kind === 'offloaded' ? $t('title.status.offloaded') : $t('title.availability.notInLibrary') }}
   </span>
 </template>
 
 <script setup>
 import { computed } from 'vue';
 import { Archive, CircleDashed } from '@lucide/vue';
+import { t, d } from '../i18n';
 
 const props = defineProps({
   kind: { type: String, required: true }, // 'offloaded' | 'not-owned'
@@ -27,7 +28,8 @@ const props = defineProps({
 
 const offloadedTitle = computed(() => {
   const date = props.since ? new Date(props.since.replace(' ', 'T') + (props.since.endsWith('Z') ? '' : 'Z')) : null;
-  const when = date && !Number.isNaN(date.getTime()) ? ` on ${date.toLocaleDateString()}` : '';
-  return `Removed from the server${when} to free space. Your history is kept; it comes back if the file does.`;
+  return date && !Number.isNaN(date.getTime())
+    ? t('title.availability.offloadedOn', { date: d(date, { year: 'numeric', month: 'numeric', day: 'numeric' }) })
+    : t('title.availability.offloaded');
 });
 </script>

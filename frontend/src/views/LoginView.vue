@@ -15,12 +15,10 @@
         <AppLogo class="w-20 h-20 sm:w-24 sm:h-24" />
         <div class="flex flex-col gap-2">
           <h1 class="text-3xl sm:text-4xl font-bold tracking-tight leading-tight">
-            {{ isSetup ? `Welcome to ${customizationStore.serverName || 'Plinthio'}` : 'Set up Plinthio' }}
+            {{ isSetup ? $t('auth.welcome', { name: customizationStore.serverName || 'Plinthio' }) : $t('auth.setUpTitle') }}
           </h1>
           <p class="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            {{ isSetup
-              ? 'Books, comics, audiobooks, movies and shows. All in one place, and right where you left off.'
-              : 'Create the administrator account for this server. You can add libraries and invite people next.' }}
+            {{ isSetup ? $t('auth.tagline') : $t('auth.setUpIntro') }}
           </p>
         </div>
       </div>
@@ -32,17 +30,17 @@
           <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-500 flex items-center justify-center mb-3.5 shadow-sm">
             <Lock class="w-6 h-6" />
           </div>
-          <h2 class="text-base font-bold text-foreground">Account Access Expired</h2>
-          <p class="text-xs text-muted-foreground mt-2 leading-relaxed">
-            Your access pass for <strong class="text-foreground font-semibold">@{{ username }}</strong> has concluded. Please reach out to your server administrator to renew or extend your access.
-          </p>
+          <h2 class="text-base font-bold text-foreground">{{ $t('auth.expired.title') }}</h2>
+          <I18nT keypath="auth.expired.text" tag="p" class="text-xs text-muted-foreground mt-2 leading-relaxed">
+            <template #user><strong class="text-foreground font-semibold">@{{ username }}</strong></template>
+          </I18nT>
 
           <button
             type="button"
             @click="resetExpired"
             class="mt-6 w-full h-10 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 text-sm font-medium transition active:scale-95"
           >
-            Back to Sign In
+            {{ $t('auth.expired.back') }}
           </button>
         </div>
 
@@ -51,10 +49,9 @@
           <div class="w-12 h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mb-3.5">
             <House class="w-6 h-6" />
           </div>
-          <h2 class="text-base font-bold text-foreground">Available at home only</h2>
+          <h2 class="text-base font-bold text-foreground">{{ $t('auth.homeOnly.title') }}</h2>
           <p class="text-sm text-muted-foreground mt-2 leading-relaxed">
-            This server can only be used from its home network, and this device is connecting from outside it.
-            Connect to your home Wi-Fi (or Tailscale, if you use it) and try again.
+            {{ $t('auth.homeOnly.text') }}
           </p>
         </div>
 
@@ -64,11 +61,9 @@
             <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
               <ShieldCheck class="w-6 h-6" />
             </div>
-            <h2 class="text-base font-bold text-foreground">{{ useBackup ? 'Enter a backup code' : 'Enter your code' }}</h2>
+            <h2 class="text-base font-bold text-foreground">{{ useBackup ? $t('auth.code.backupTitle') : $t('auth.code.title') }}</h2>
             <p class="text-sm text-muted-foreground leading-relaxed">
-              {{ useBackup
-                ? 'One of the backup codes you saved when you turned on two-factor. Each works once.'
-                : 'Open your authenticator app and enter the 6-digit code for this server.' }}
+              {{ useBackup ? $t('auth.code.backupText') : $t('auth.code.text') }}
             </p>
           </div>
 
@@ -86,7 +81,7 @@
             autocomplete="one-time-code"
             pattern="[0-9 ]*"
             maxlength="7"
-            aria-label="Six-digit code"
+            :aria-label="$t('auth.code.label')"
             class="w-full h-14 bg-background/70 border border-border rounded-xl text-center text-2xl font-mono tracking-[0.4em] text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition"
             placeholder="000000"
             @input="autoSubmit"
@@ -99,7 +94,7 @@
             autocomplete="off"
             autocapitalize="none"
             spellcheck="false"
-            aria-label="Backup code"
+            :aria-label="$t('auth.code.backupLabel')"
             class="w-full h-12 bg-background/70 border border-border rounded-xl text-center text-lg font-mono tracking-widest text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition"
             placeholder="xxxx-xxxx"
           />
@@ -110,12 +105,12 @@
             class="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg text-sm shadow-lg shadow-primary/20 transition flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <Loader2 v-if="loading" class="w-4 h-4 animate-spin" />
-            <span>Verify</span>
+            <span>{{ $t('auth.code.verify') }}</span>
           </button>
           <div class="flex items-center justify-between text-xs">
-            <button type="button" @click="cancelChallenge" class="text-muted-foreground hover:text-foreground">Back</button>
+            <button type="button" @click="cancelChallenge" class="text-muted-foreground hover:text-foreground">{{ $t('common.back') }}</button>
             <button type="button" @click="toggleBackup" class="text-primary font-medium hover:underline">
-              {{ useBackup ? 'Use the app instead' : 'Lost your phone? Use a backup code' }}
+              {{ useBackup ? $t('auth.code.useApp') : $t('auth.code.useBackup') }}
             </button>
           </div>
         </form>
@@ -130,7 +125,7 @@
             <Megaphone class="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
             <p class="whitespace-pre-line">{{ customizationStore.loginMessage }}</p>
           </div>
-          <p v-if="!isSetup" class="mb-4 text-xs text-muted-foreground">Password needs at least 8 characters.</p>
+          <p v-if="!isSetup" class="mb-4 text-xs text-muted-foreground">{{ $t('auth.passwordHint') }}</p>
 
           <!-- Error Alert -->
           <div v-if="error" class="mb-4 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
@@ -141,7 +136,7 @@
           <!-- Form -->
           <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
             <div>
-              <label for="login-username" class="block text-xs font-medium text-foreground mb-1.5">Username</label>
+              <label for="login-username" class="block text-xs font-medium text-foreground mb-1.5">{{ $t('common.username') }}</label>
               <div class="relative">
                 <User class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
@@ -153,13 +148,13 @@
                   autocapitalize="none"
                   spellcheck="false"
                   class="w-full h-10 bg-background/70 border border-border rounded-lg pl-9 pr-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition"
-                  placeholder="Your username"
+                  :placeholder="$t('auth.usernamePlaceholder')"
                 />
               </div>
             </div>
 
             <div>
-              <label for="login-password" class="block text-xs font-medium text-foreground mb-1.5">Password</label>
+              <label for="login-password" class="block text-xs font-medium text-foreground mb-1.5">{{ $t('common.password') }}</label>
               <div class="relative">
                 <KeyRound class="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
@@ -175,7 +170,7 @@
                   type="button"
                   @click="showPassword = !showPassword"
                   class="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center transition"
-                  :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                  :aria-label="showPassword ? $t('auth.hidePassword') : $t('auth.showPassword')"
                   :aria-pressed="String(showPassword)"
                 >
                   <EyeOff v-if="showPassword" class="w-4 h-4" />
@@ -190,18 +185,23 @@
               class="mt-1 w-full h-10 bg-primary hover:bg-primary/90 active:scale-[0.99] text-primary-foreground font-semibold rounded-lg text-sm shadow-lg shadow-primary/20 transition flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <Loader2 v-if="loading" class="w-4 h-4 animate-spin" />
-              <span>{{ isSetup ? 'Sign In' : 'Create Account' }}</span>
+              <span>{{ isSetup ? $t('auth.signIn') : $t('auth.createAccount') }}</span>
               <ArrowRight v-if="!loading" class="w-4 h-4" />
             </button>
           </form>
         </template>
       </div>
+
+      <!-- Language, before there's an account to save it to -->
+      <LanguagePicker class="login-in login-in-late" />
     </div>
   </div>
 </template>
 
 <script setup>
 import AppLogo from '../components/AppLogo.vue';
+import LanguagePicker from '../components/LanguagePicker.vue';
+import { t } from '../i18n';
 import { ref, onMounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import api from '../api/client';
@@ -278,7 +278,7 @@ async function handleSubmit() {
     if (err.response?.data?.code === 'P103') {
       isExpired.value = true;
     } else {
-      error.value = err.response?.data?.error || 'Authentication failed';
+      error.value = err.response?.data?.error || t('auth.errors.failed');
     }
   } finally {
     loading.value = false;
@@ -299,9 +299,9 @@ async function submitCode() {
     // The challenge ran out (time, or tries): back to the password.
     if (data.code === 'P113') {
       cancelChallenge();
-      error.value = data.error || 'That took too long. Sign in again.';
+      error.value = data.error || t('auth.errors.tooLong');
     } else {
-      error.value = data.error || 'That code did not work';
+      error.value = data.error || t('auth.errors.codeDidNotWork');
       code.value = '';
       await nextTick();
       codeInput.value?.focus();

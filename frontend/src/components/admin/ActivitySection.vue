@@ -1,11 +1,11 @@
 <template>
-  <SectionHeader title="Activity" description="Sign-ins, and what's being read, watched and listened to, on every account.">
-    <label for="activity-user" class="sr-only">Show</label>
+  <SectionHeader :title="$t('admin.activity.title')" :description="$t('admin.activity.description')">
+    <label for="activity-user" class="sr-only">{{ $t('admin.activity.show') }}</label>
     <select id="activity-user" v-model="userFilter" class="field w-auto">
-      <option value="">Everyone</option>
+      <option value="">{{ $t('admin.activity.everyone') }}</option>
       <option v-for="u in users" :key="u.id" :value="u.id">{{ u.username }}</option>
     </select>
-    <button @click="load" class="btn btn-secondary btn-icon" aria-label="Refresh" title="Refresh">
+    <button @click="load" class="btn btn-secondary btn-icon" :aria-label="$t('common.refresh')" :title="$t('common.refresh')">
       <RefreshCw class="w-3.5 h-3.5" :class="loading ? 'animate-spin' : ''" />
     </button>
   </SectionHeader>

@@ -1,0 +1,488 @@
+{
+  "codes": {
+    "P000": {
+      "title": "Erro inesperado no servidor",
+      "message": "Algo deu errado no servidor",
+      "meaning": "O servidor encontrou um erro que não tem um código específico.",
+      "fix": "Veja Administração → Logs (ou `docker logs plinthio`) para o erro completo. Administradores também veem a causa na própria mensagem de erro."
+    },
+    "P001": {
+      "title": "Requisição inválida",
+      "message": "A requisição não era válida",
+      "meaning": "Faltou um campo obrigatório ou um valor estava fora do intervalo permitido.",
+      "fix": "A mensagem diz qual campo. Se foi o app web que enviou, recarregue a página. Uma versão antiga em cache pode enviar requisições desatualizadas."
+    },
+    "P002": {
+      "title": "Não encontrado",
+      "message": "Não encontrado",
+      "meaning": "O que foi pedido não existe ou está oculto para esta conta.",
+      "fix": "Pode ter sido excluído ou movido por uma nova verificação. Atualize a página."
+    },
+    "P003": {
+      "title": "Não permitido",
+      "message": "Você não tem permissão para fazer isso",
+      "meaning": "A conta está conectada, mas não tem permissão para realizar esta ação.",
+      "fix": "Se você precisar disso, peça a um administrador para mudar sua função ou seu acesso."
+    },
+    "P004": {
+      "title": "Conflito",
+      "message": "Isso entra em conflito com algo que já existe",
+      "meaning": "A ação conflita com dados existentes, como um nome duplicado.",
+      "fix": "A mensagem diz o que conflitou. Renomeie ou remova o item existente primeiro."
+    },
+    "P005": {
+      "title": "Requisições demais",
+      "message": "Requisições demais; aguarde um pouco e tente de novo",
+      "meaning": "Um limite de requisições foi atingido.",
+      "fix": "Espere um minuto e tente de novo. Se muitas pessoas compartilham um IP atrás de um proxy reverso, defina TRUST_PROXY=1 para que elas sejam limitadas separadamente."
+    },
+    "P006": {
+      "title": "Indisponível no momento",
+      "message": "O servidor está ocupado; tente de novo em instantes",
+      "meaning": "O servidor não conseguiu atender a requisição agora.",
+      "fix": "Tente de novo em alguns segundos."
+    },
+    "P007": {
+      "title": "Envio recusado",
+      "message": "Não foi possível enviar esse arquivo",
+      "meaning": "Um arquivo enviado era grande demais ou de um tipo errado.",
+      "fix": "As imagens precisam ter menos de 15 MB. Backups precisam ser arquivos de backup do Plinthio."
+    },
+    "P100": {
+      "title": "Login necessário",
+      "message": "Autenticação necessária",
+      "meaning": "A requisição não tinha sessão, token de mídia nem chave de API.",
+      "fix": "Entre de novo. Em scripts, envie um cabeçalho X-API-Key."
+    },
+    "P101": {
+      "title": "Sessão expirada",
+      "message": "A sessão expirou; entre de novo",
+      "meaning": "O token de sessão expirou, está malformado ou foi revogado por uma troca de senha ou por \"Sair de todos os lugares\".",
+      "fix": "Entre de novo."
+    },
+    "P102": {
+      "title": "Token usado no lugar errado",
+      "message": "Este token não é válido aqui",
+      "meaning": "Um token de mídia foi enviado como cabeçalho Authorization ou usado fora de /api/media. Ou um token de sessão foi colocado em uma URL. Tokens de mídia só funcionam como ?token= em URLs de mídia, e tokens de sessão só funcionam no cabeçalho Authorization.",
+      "fix": "Isso é um bug no cliente que fez a requisição. No app web, recarregue a página. Se continuar, relate o problema com este código."
+    },
+    "P103": {
+      "title": "Conta expirada",
+      "message": "O acesso da sua conta expirou. Fale com o seu administrador.",
+      "meaning": "A conta tem uma data de expiração que já passou.",
+      "fix": "Um administrador pode estender ou remover a expiração em Administração → Usuários."
+    },
+    "P104": {
+      "title": "Chave de API inválida",
+      "message": "Chave de API inválida",
+      "meaning": "A X-API-Key (ou a senha do HTTP Basic) não corresponde a nenhuma chave.",
+      "fix": "Crie uma nova chave em Configurações → Apps e chaves de API. As chaves só aparecem uma vez, quando são criadas."
+    },
+    "P105": {
+      "title": "Só administradores",
+      "message": "É preciso ter privilégios de administrador",
+      "meaning": "Esta ação exige a função de administrador.",
+      "fix": "Peça a um administrador para fazer isso ou para promover sua conta."
+    },
+    "P106": {
+      "title": "Só editores ou administradores",
+      "message": "É preciso ter privilégios de editor",
+      "meaning": "Esta ação exige a função de editor ou de administrador.",
+      "fix": "Peça a um administrador para tornar sua conta editora."
+    },
+    "P107": {
+      "title": "Usuário ou senha incorretos",
+      "message": "Usuário ou senha inválidos",
+      "meaning": "Os dados de login não correspondem a nenhuma conta.",
+      "fix": "Confira o usuário e a senha. Um administrador pode redefinir uma senha em Administração → Usuários."
+    },
+    "P108": {
+      "title": "Tentativas de login demais",
+      "message": "Tentativas de login demais; tente de novo mais tarde",
+      "meaning": "O login tem um limite de tentativas para dificultar a adivinhação de senhas.",
+      "fix": "Espere 15 minutos e tente de novo."
+    },
+    "P109": {
+      "title": "Indisponível fora de casa",
+      "message": "Este servidor só pode ser usado na rede de casa",
+      "meaning": "A requisição veio de fora da rede de casa (não de um endereço de casa nem do Tailscale), e o servidor só permite acesso em casa.",
+      "fix": "Use o Plinthio em casa ou pelo Tailscale. Um administrador pode permitir o acesso de fora em Administração → Rede."
+    },
+    "P110": {
+      "title": "Esta conta é só para uso em casa",
+      "message": "Esta conta só pode ser usada na rede de casa",
+      "meaning": "O servidor permite acesso de fora, mas não para esta conta.",
+      "fix": "Use o Plinthio em casa ou peça a um administrador para liberar esta conta fora de casa (Administração → Usuários)."
+    },
+    "P111": {
+      "title": "Código de verificação em duas etapas incorreto",
+      "message": "Esse código não está certo ou já foi usado",
+      "meaning": "O código de seis dígitos (ou o código de backup) não confere. Os códigos mudam a cada 30 segundos e cada um funciona uma vez só.",
+      "fix": "Digite o código atual do seu app autenticador. Confira se o relógio do celular está no automático. Perdeu o celular? Use um código de backup ou peça a um administrador para redefinir a verificação em duas etapas."
+    },
+    "P112": {
+      "title": "Verificação em duas etapas exigida fora de casa",
+      "message": "Para entrar de fora da rede de casa é preciso ter verificação em duas etapas, e esta conta não configurou",
+      "meaning": "O servidor exige verificação em duas etapas para logins de fora da rede de casa.",
+      "fix": "Entre uma vez em casa e ative a verificação em duas etapas em Configurações → Segurança."
+    },
+    "P113": {
+      "title": "Etapa de login expirada",
+      "message": "Esse login demorou demais; comece de novo",
+      "meaning": "A etapa de verificação em duas etapas do login tem alguns minutos para ser concluída, ou foram digitados códigos errados demais.",
+      "fix": "Digite seu usuário e sua senha de novo."
+    },
+    "P200": {
+      "title": "Pasta da biblioteca não encontrada",
+      "message": "Pasta da biblioteca não encontrada",
+      "meaning": "A pasta para onde uma biblioteca aponta não existe dentro do servidor (ou do contêiner).",
+      "fix": "No Docker, sua mídia é montada em /media, então os caminhos das bibliotecas ficam como /media/Movies. Confira se MEDIA_DIR em docker/.env aponta para a pasta certa do host."
+    },
+    "P201": {
+      "title": "Pasta da biblioteca ilegível (erro de E/S)",
+      "message": "Não foi possível ler a pasta de mídia (erro de E/S)",
+      "meaning": "A leitura da pasta falhou com EIO. Quase sempre o disco por trás dela foi desconectado ou remontado, deixando uma montagem obsoleta. Um disco USB remontado pode voltar em um caminho novo, como /media/you/Drive1.",
+      "fix": "Confira se o disco está conectado e montado (`mount | grep media`). Aponte MEDIA_DIR para o caminho de montagem atual e recrie o contêiner. Montar o disco por UUID no /etc/fstab mantém o caminho estável."
+    },
+    "P202": {
+      "title": "Permissão negada na pasta da biblioteca",
+      "message": "O servidor não tem permissão para ler essa pasta",
+      "meaning": "A pasta existe, mas o processo do Plinthio não consegue lê-la (EACCES).",
+      "fix": "Dê ao usuário do contêiner acesso de leitura à pasta de mídia, por exemplo com `chmod -R o+rX` na pasta do host ou ajustando PUID/PGID."
+    },
+    "P203": {
+      "title": "Não é uma pasta",
+      "message": "Esse caminho não é uma pasta",
+      "meaning": "O caminho da biblioteca aponta para um arquivo, não para um diretório.",
+      "fix": "Escolha a pasta que contém sua mídia."
+    },
+    "P300": {
+      "title": "Mídia não encontrada",
+      "message": "Mídia não encontrada",
+      "meaning": "Não existe nenhum item com esse id, ou ele está oculto para esta conta por um administrador ou pelo controle parental.",
+      "fix": "Atualize a biblioteca. Uma nova verificação pode ter substituído o item."
+    },
+    "P301": {
+      "title": "Arquivo de mídia ausente",
+      "message": "O arquivo de mídia não está no disco",
+      "meaning": "O item está na biblioteca, mas o arquivo sumiu. Ele foi movido, renomeado ou excluído, ou o disco não está montado.",
+      "fix": "Confira se o disco está montado e depois verifique a biblioteca de novo."
+    },
+    "P302": {
+      "title": "Arquivo de mídia ilegível",
+      "message": "Não foi possível ler o arquivo de mídia",
+      "meaning": "A leitura do arquivo falhou. Geralmente é um disco desconectado (EIO), um problema de permissão ou um arquivo corrompido.",
+      "fix": "Veja P201/P202 para problemas de disco e de permissão. Confira Administração → Logs para ver o erro de origem."
+    },
+    "P303": {
+      "title": "ffmpeg indisponível",
+      "message": "A conversão de vídeo está indisponível: não foi possível iniciar o ffmpeg",
+      "meaning": "O ffmpeg ou o ffprobe não está instalado ou não conseguiu iniciar, então vídeos que precisam de conversão não podem ser reproduzidos.",
+      "fix": "A imagem Docker já inclui o ffmpeg. Em uma instalação direta, instale o ffmpeg e verifique se ele está no PATH. Confira Administração → Logs."
+    },
+    "P304": {
+      "title": "Falha na conversão",
+      "message": "A conversão deste vídeo falhou no servidor",
+      "meaning": "O ffmpeg iniciou, mas terminou com erro ao converter o vídeo. Geralmente é um arquivo corrompido, um codec sem suporte ou um problema na transcodificação por hardware.",
+      "fix": "Administração → Logs mostra o erro do ffmpeg. Se ele mencionar VAAPI/QSV/NVENC, desative a transcodificação por hardware em Administração → Reprodução e tente de novo."
+    },
+    "P305": {
+      "title": "Ainda preparando",
+      "message": "Ainda preparando este vídeo; tente de novo em instantes",
+      "meaning": "A conversão está rodando, mas ainda não gerou a parte pedida.",
+      "fix": "O player tenta de novo sozinho. Se nunca terminar, o servidor pode ser lento demais para transcodificar em tempo real nesta qualidade. Escolha uma qualidade menor."
+    },
+    "P306": {
+      "title": "Requisição de stream inválida",
+      "message": "Requisição de stream inválida",
+      "meaning": "A URL do stream indicava uma qualidade, faixa de áudio, segmento ou folha de prévia desconhecidos.",
+      "fix": "Recarregue o player. Isso geralmente significa uma URL desatualizada depois que o vídeo foi verificado de novo."
+    },
+    "P307": {
+      "title": "Faixa de legenda não encontrada",
+      "message": "Faixa de legenda não encontrada",
+      "meaning": "A faixa de legenda pedida não existe ou não pôde ser extraída.",
+      "fix": "Escolha outra faixa. Legendas em imagem (PGS/VobSub) não podem ser exibidas como texto."
+    },
+    "P308": {
+      "title": "Leitor de PDF indisponível",
+      "message": "Não é possível mostrar as páginas do PDF: o poppler não está instalado no servidor",
+      "meaning": "O Plinthio transforma páginas de PDF em imagens com o poppler (pdftoppm e pdfinfo), e não conseguiu iniciá-los.",
+      "fix": "A imagem Docker já inclui o poppler. Em uma instalação direta, instale o poppler-utils (apt install poppler-utils, brew install poppler) e reinicie."
+    },
+    "P309": {
+      "title": "Não foi possível renderizar a página do PDF",
+      "message": "Não foi possível renderizar esta página do PDF",
+      "meaning": "O poppler iniciou, mas falhou neste arquivo. Geralmente é um PDF danificado ou protegido por senha.",
+      "fix": "Abra o arquivo em outro leitor de PDF para conferir. Um PDF protegido por senha precisa ser desbloqueado primeiro. O erro está em Administração → Logs."
+    },
+    "P350": {
+      "title": "O navegador não reproduz este formato",
+      "message": "Este navegador não consegue reproduzir este vídeo",
+      "meaning": "O navegador recusou o stream mesmo depois de o servidor convertê-lo.",
+      "fix": "Tente outro navegador (Chrome, Edge ou Safari). Se acontecer em todos os navegadores, o próprio arquivo pode estar danificado."
+    },
+    "P351": {
+      "title": "Conexão perdida durante a reprodução",
+      "message": "A conexão com o servidor caiu",
+      "meaning": "O player não conseguiu falar com o servidor para carregar a próxima parte do vídeo.",
+      "fix": "Confira sua conexão de rede e clique em Tentar de novo."
+    },
+    "P352": {
+      "title": "Não foi possível renovar o link da mídia",
+      "message": "Seu acesso à mídia expirou e não pôde ser renovado",
+      "meaning": "As URLs de mídia levam um token de curta duração. Ele expirou e o app não conseguiu obter um novo.",
+      "fix": "Recarregue a página. Se não resolver, saia e entre de novo."
+    },
+    "P400": {
+      "title": "Chave do TMDB não configurada",
+      "message": "A chave da API do TMDB não está configurada. Um administrador precisa adicioná-la em Administração → Metadados.",
+      "meaning": "Os metadados de filmes, séries e anime vêm do TMDB, que precisa de uma chave de API. As imagens de release já trazem uma embutida; esta mensagem aparece em um build a partir do código-fonte, ou se o TMDB parou de aceitar a chave embutida.",
+      "fix": "Crie uma chave em themoviedb.org → Settings → API e cole em Administração → Metadados."
+    },
+    "P401": {
+      "title": "O provedor recusou a chave de API",
+      "message": "O provedor de metadados recusou a chave de API configurada",
+      "meaning": "O servidor alcançou o provedor, mas o provedor recusou a chave.",
+      "fix": "Para o TMDB, cole em Administração → Metadados a \"API Key\" ou o \"API Read Access Token\" da sua conta do TMDB."
+    },
+    "P402": {
+      "title": "Limite de requisições do provedor",
+      "message": "O provedor de metadados está limitando as requisições deste servidor. Aguarde um pouco e tente de novo.",
+      "meaning": "O provedor está recusando requisições porque foram enviadas demais.",
+      "fix": "Espere um minuto. Associar bibliotecas grandes em lote pode causar isso."
+    },
+    "P403": {
+      "title": "Provedor inacessível",
+      "message": "Não foi possível alcançar o provedor de metadados a partir do servidor",
+      "meaning": "A requisição ao provedor expirou ou falhou no nível da rede.",
+      "fix": "Confira se o servidor (contêiner) tem acesso de saída à internet e DNS."
+    },
+    "P500": {
+      "title": "Lista não encontrada",
+      "message": "Lista não encontrada",
+      "meaning": "A lista ou pasta não existe ou pertence a outra pessoa.",
+      "fix": "Atualize a página Listas."
+    },
+    "P501": {
+      "title": "Tipo de título errado para esta lista",
+      "message": "Esse tipo de título não pode entrar nesta lista",
+      "meaning": "Cada lista guarda uma categoria: Filmes, Séries, Anime, Ler ou Ouvir.",
+      "fix": "Adicione a uma lista da categoria correspondente."
+    },
+    "P502": {
+      "title": "Já está na lista",
+      "message": "Esse título já está nesta lista",
+      "meaning": "O título já tinha sido adicionado a esta lista.",
+      "fix": "Não é preciso fazer nada."
+    },
+    "P503": {
+      "title": "Já pedido",
+      "message": "Esse título já foi pedido",
+      "meaning": "Alguém tem um pedido em aberto para este título.",
+      "fix": "O status aparece na página Pedidos."
+    },
+    "P504": {
+      "title": "Já está na biblioteca",
+      "message": "Esse título já foi adicionado à biblioteca",
+      "meaning": "Um pedido deste título foi aceito e marcado como adicionado.",
+      "fix": "Pesquise o título na biblioteca."
+    },
+    "P505": {
+      "title": "O pedido não pode mais ser retirado",
+      "message": "Só pedidos pendentes podem ser retirados",
+      "meaning": "Um administrador ou editor já tratou este pedido.",
+      "fix": "Se quiser removê-lo, fale com um administrador ou editor."
+    },
+    "P506": {
+      "title": "Pedido não encontrado",
+      "message": "Pedido não encontrado",
+      "meaning": "O pedido foi excluído ou nunca existiu.",
+      "fix": "Atualize a página Pedidos."
+    },
+    "P600": {
+      "title": "As sessões conjuntas estão desativadas",
+      "message": "As sessões conjuntas estão desativadas neste servidor",
+      "meaning": "Um administrador não ativou as sessões conjuntas.",
+      "fix": "Um administrador pode ativá-las em Administração → Recursos → Sessões conjuntas."
+    },
+    "P601": {
+      "title": "Sessão conjunta não encontrada",
+      "message": "Essa sessão conjunta terminou ou nunca existiu",
+      "meaning": "O anfitrião encerrou a sessão, todos saíram ou o servidor reiniciou.",
+      "fix": "Peça ao anfitrião um novo link de convite."
+    },
+    "P602": {
+      "title": "Só o anfitrião pode fazer isso",
+      "message": "Só o anfitrião da sessão conjunta pode fazer isso",
+      "meaning": "O anfitrião deixou os controles de reprodução só com ele.",
+      "fix": "Peça ao anfitrião, ou peça para ele deixar todos controlarem a reprodução."
+    },
+    "P603": {
+      "title": "Indisponível para sua conta",
+      "message": "Esta sessão conjunta está assistindo algo que sua conta não pode abrir",
+      "meaning": "O título está oculto para você ou acima do limite de conteúdo da sua conta.",
+      "fix": "Pergunte a um administrador sobre as configurações de conteúdo da sua conta."
+    },
+    "P604": {
+      "title": "Nem todos podem assistir a isso",
+      "message": "Alguém na sessão conjunta não pode abrir esse título",
+      "meaning": "O título está oculto para alguém que está assistindo, ou acima do limite de conteúdo dessa pessoa.",
+      "fix": "Escolha algo que todos na sessão conjunta possam assistir."
+    },
+    "P605": {
+      "title": "A sessão conjunta está cheia",
+      "message": "Essa sessão conjunta está cheia",
+      "meaning": "Uma sessão conjunta comporta até 20 pessoas, e um servidor roda até 20 sessões ao mesmo tempo.",
+      "fix": "Tente de novo quando alguém sair ou uma sessão terminar."
+    }
+  },
+  "messages": {
+    "tooManyAuthenticationAttemptsPleaseTry": "Tentativas de autenticação demais. Tente de novo mais tarde.",
+    "tooManyLoginAttemptsPleaseWait": "Tentativas de login demais. Aguarde antes de tentar de novo.",
+    "tooManyBackupRequestsPleaseWait": "Pedidos de backup demais. Aguarde antes de tentar de novo.",
+    "plinthioIsNotUsingItsOwn": "O Plinthio não está usando a própria autoridade certificadora",
+    "couldNotReadFile": "Não foi possível ler o arquivo",
+    "thisAccountNoLongerExists": "Esta conta não existe mais",
+    "sessionWasSignedOutPleaseLog": "A sessão foi encerrada; entre de novo",
+    "noOpeningSequence": "Nenhuma vinheta de abertura",
+    "invalidItemId": "Id de item inválido",
+    "noStillForThisVideo": "Nenhum quadro para este vídeo",
+    "pageNotFound": "Página não encontrada",
+    "thatWouldLockOutTheDevice": "Isso bloquearia o dispositivo que você está usando agora. Altere pela sua rede de casa.",
+    "itemNotFound": "Item não encontrado",
+    "ratingMustBeAWholeNumber": "A avaliação precisa ser um número inteiro de 1 a 5",
+    "personalRatingsAreTurnedOffOn": "As avaliações pessoais estão desativadas neste servidor",
+    "ratingRemoved": "Avaliação removida",
+    "seriesNotFound": "Série não encontrada",
+    "nothingToRemove": "Nada para remover",
+    "notInKidsMode": "Não está no modo infantil",
+    "addedToKidsMode": "Adicionado ao modo infantil",
+    "removedFromKidsMode": "Removido do modo infantil",
+    "invalidUserId": "Id de usuário inválido",
+    "avatarNotFound": "Avatar não encontrado",
+    "failedToReadAvatar": "Não foi possível ler o avatar",
+    "avatarImageMustBeSmallerThan": "A imagem do avatar precisa ter menos de 5 MB",
+    "noAvatarImageFileProvided": "Nenhuma imagem de avatar foi enviada",
+    "failedToProcessAndSaveAvatar": "Não foi possível processar e salvar a imagem do avatar",
+    "currentPasswordIsRequired": "A senha atual é obrigatória",
+    "newPasswordMustBeAtLeast": "A nova senha precisa ter pelo menos 8 caracteres",
+    "currentPasswordIncorrect": "A senha atual está incorreta",
+    "usernameAndPasswordMin8Characters": "Usuário e senha (mínimo de 8 caracteres) são obrigatórios",
+    "usernameAlreadyTaken": "Esse nome de usuário já está em uso",
+    "userNotFound": "Usuário não encontrado",
+    "cannotChangeYourOwnRole": "Você não pode mudar sua própria função",
+    "cannotSetAnExpirationDateOn": "Você não pode definir uma data de expiração para sua própria conta",
+    "cannotRestrictYourOwnAccount": "Você não pode restringir sua própria conta",
+    "cannotPutYourOwnAccountIn": "Você não pode colocar sua própria conta no modo infantil",
+    "anAdminAccountCanTBe": "Uma conta de administrador não pode ser uma conta infantil",
+    "nothingToUpdate": "Nada para atualizar",
+    "cannotDeleteYourOwnAccount": "Você não pode excluir sua própria conta",
+    "youReAwayFromHomeRight": "Você está fora de casa agora, então isso desconectaria você. Altere pela sua rede de casa.",
+    "twoFactorIsnTOnFor": "A verificação em duas etapas não está ativada nessa conta",
+    "avatarUploadedSuccessfully": "Avatar enviado",
+    "avatarRemovedSuccessfully": "Avatar removido",
+    "preferencesUpdated": "Preferências atualizadas",
+    "passwordUpdatedSuccessfullyYouWillNeed": "Senha atualizada. Você vai precisar entrar de novo.",
+    "userCreatedSuccessfully": "Usuário criado",
+    "userUpdatedSuccessfully": "Usuário atualizado",
+    "twoFactorTurnedOffTheyCan": "Verificação em duas etapas desativada. A pessoa pode entrar com a senha e configurá-la de novo.",
+    "passwordResetSuccessfully": "Senha redefinida",
+    "roleUpdatedSuccessfully": "Função atualizada",
+    "userDeletedSuccessfully": "Usuário excluído",
+    "bookmarkNotFound": "Marcador não encontrado",
+    "bookmarkCreated": "Marcador criado",
+    "bookmarkUpdated": "Marcador atualizado",
+    "bookmarkDeleted": "Marcador excluído",
+    "logsClearedSuccessfully": "Logs limpos",
+    "sessionAlreadyClosed": "A sessão já estava encerrada",
+    "sessionClosed": "Sessão encerrada",
+    "segmentNotAvailable": "Segmento indisponível",
+    "couldNotLoadScrubPreviews": "Não foi possível carregar as prévias da linha do tempo",
+    "sheetNotFound": "Folha não encontrada",
+    "couldNotLoadScrubPreview": "Não foi possível carregar a prévia da linha do tempo",
+    "markerMustEndAfterItStarts": "O marcador precisa terminar depois de começar",
+    "markersSaved": "Marcadores salvos",
+    "unknownMediaType": "Tipo de mídia desconhecido",
+    "requestSent": "Pedido enviado",
+    "requestUpdated": "Pedido atualizado",
+    "requestRemoved": "Pedido removido",
+    "serverIsAlreadySetUp": "O servidor já está configurado",
+    "adminUsernameAndPasswordMin8": "Usuário e senha de administrador (mínimo de 8 caracteres) são obrigatórios",
+    "setupIsAlreadyInProgress": "A configuração já está em andamento",
+    "serverIsAlreadySetUpPlease": "O servidor já está configurado. Faça login.",
+    "serverSetupFailedCheckTheServer": "A configuração do servidor falhou. Veja os logs do servidor para mais detalhes.",
+    "usernameAndPasswordAreRequired": "Usuário e senha são obrigatórios",
+    "loginFailedCheckTheServerLogs": "O login falhou. Veja os logs do servidor para mais detalhes.",
+    "signInFailedCheckTheServer": "Não foi possível entrar. Veja os logs do servidor para mais detalhes.",
+    "signInWithYourPasswordTo": "Entre com sua senha para alterar a verificação em duas etapas",
+    "twoFactorIsAlreadyOnTurn": "A verificação em duas etapas já está ativada. Desative primeiro para configurá-la de novo.",
+    "twoFactorIsAlreadyOn": "A verificação em duas etapas já está ativada",
+    "startSettingUpTwoFactorFirst": "Comece a configurar a verificação em duas etapas primeiro",
+    "twoFactorIsOff": "A verificação em duas etapas está desativada",
+    "setPlinthioUpFromYourHome": "Configure o Plinthio pela sua rede de casa",
+    "serverInitializedSuccessfully": "Servidor inicializado",
+    "allSessionsSignedOutPleaseSign": "Todas as sessões foram encerradas. Entre de novo.",
+    "highlightNotFound": "Destaque não encontrado",
+    "highlightDeleted": "Destaque excluído",
+    "pickAMovieOrEpisodeTo": "Escolha um filme ou episódio para assistir juntos",
+    "joinThePartyFirst": "Entre na sessão conjunta primeiro",
+    "saySomething": "Escreva alguma coisa",
+    "noImageUploaded": "Nenhuma imagem foi enviada",
+    "couldNotProcessThatImage": "Não foi possível processar essa imagem",
+    "seriesNameIsRequired": "O nome da série é obrigatório",
+    "coverArtUpdated": "Capa atualizada",
+    "theMetadataProviderRejectedTheConfigured": "O provedor de metadados recusou a chave de API configurada. Para o TMDB, copie a \"API Key\" ou o \"API Read Access Token\" das configurações da sua conta do TMDB para Administração → Metadados. O servidor alcançou o provedor sem problemas, então o problema é a credencial, não a rede.",
+    "itemMatchedAndUpdated": "Item associado e atualizado",
+    "metadataUpdated": "Metadados atualizados",
+    "keyNameIsRequired": "O nome da chave é obrigatório",
+    "apiKeyGeneratedSuccessfully": "Chave de API gerada",
+    "apiKeyRevoked": "Chave de API revogada",
+    "libraryNotFound": "Biblioteca não encontrada",
+    "libraryCreatedAndScanningStarted": "Biblioteca criada e verificação iniciada",
+    "libraryDeletedSuccessfully": "Biblioteca excluída",
+    "markedAllVolumesAsRead": "Todos os volumes marcados como lidos",
+    "markedAllVolumesAsUnread": "Todos os volumes marcados como não lidos",
+    "itemHiddenFromShelf": "Item ocultado da estante",
+    "itemRestoredToShelf": "Item devolvido à estante",
+    "seriesSettingsSaved": "Configurações da série salvas",
+    "folderNameIsRequired": "O nome da pasta é obrigatório",
+    "folderCreated": "Pasta criada",
+    "folderOrListNotFound": "Pasta ou lista não encontrada",
+    "folderDeleted": "Pasta excluída",
+    "itemAddedToFolder": "Item adicionado à pasta",
+    "readingOrderSaved": "Ordem de leitura salva",
+    "itemRemovedFromFolder": "Item removido da pasta",
+    "addedToList": "Adicionado à lista",
+    "removedFromList": "Removido da lista",
+    "noValidItemIds": "Nenhum id de item válido",
+    "progressSaved": "Progresso salvo",
+    "unknownHardwareAccelerationPreference": "Preferência de aceleração por hardware desconhecida",
+    "unknownHardwareAccelerationMethod": "Método de aceleração por hardware desconhecido",
+    "intervalMustBeBetween1And": "O intervalo precisa ficar entre 1 e 168 horas",
+    "retentionMustBeBetween1And": "A retenção precisa ficar entre 1 e 30 backups",
+    "copiesKeptMustBeBetween1": "As cópias mantidas precisam ficar entre 1 e 365",
+    "scanIntervalMustBeBetween5": "O intervalo de verificação precisa ficar entre 5 minutos e 7 dias",
+    "noBackupDestinationIsSet": "Nenhum destino de backup foi definido",
+    "shelfViewsUpdated": "Visualizações da estante atualizadas",
+    "transcodingSettingsSaved": "Configurações de transcodificação salvas",
+    "backupScheduleUpdated": "Agendamento de backup atualizado",
+    "automaticScanningUpdated": "Verificação automática atualizada",
+    "backupCreated": "Backup criado",
+    "backupDeleted": "Backup excluído",
+    "couldNotLoadServerCustomization": "Não foi possível carregar a personalização do servidor",
+    "chooseAnMp4FileToUpload": "Escolha um arquivo MP4 para enviar",
+    "customizationUpdatedSuccessfully": "Personalização atualizada",
+    "chooseAFolder": "Escolha uma pasta.",
+    "useAFullPathStartingWith": "Use um caminho completo, começando com /.",
+    "thatSInsideTheServerS": "Essa pasta fica dentro da pasta de dados do próprio servidor; escolha uma pasta em outro lugar.",
+    "thatFolderContainsTheServerS": "Essa pasta contém a pasta de dados do servidor; escolha uma ao lado dela ou em outro lugar.",
+    "thatSAFileNotA": "Isso é um arquivo, não uma pasta."
+  },
+  "patterns": {
+    "noMetadataSource": "Ainda não há fonte de metadados para {type}",
+    "folderMissing": "Nem essa pasta nem {parent} existem. No Docker, a pasta precisa ser montada no contêiner primeiro.",
+    "cantWriteFolder": "Não é possível gravar nessa pasta: {reason}.",
+    "backupFailed": "O backup falhou: {reason}"
+  }
+}

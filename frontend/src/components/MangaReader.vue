@@ -17,10 +17,10 @@
       <!-- min-w-0 is load-bearing: without it a long title grows this block and shoves the
            reading-mode controls off the edge of a phone/tablet screen entirely. -->
       <div class="flex items-center gap-3 min-w-0 flex-1">
-        <button aria-label="Back to shelf"
+        <button :aria-label="$t('reader.manga.backToShelf')"
           @click="closeReader"
           class="p-2.5 sm:p-2 rounded-lg bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-200 active:scale-95 transition flex-shrink-0"
-          title="Back to shelf"
+          :title="$t('reader.manga.backToShelf')"
         >
           <ArrowLeft class="w-4 h-4" />
         </button>
@@ -43,10 +43,10 @@
               ? 'bg-zinc-100 text-zinc-900 border-zinc-100 font-semibold'
               : 'bg-zinc-900/80 text-zinc-300 border-zinc-800 hover:text-white'
           ]"
-          title="Bookmarks"
+          :title="$t('reader.bookmark.bookmarks')"
         >
           <Bookmark class="w-3.5 h-3.5" />
-          <span class="hidden sm:inline">Bookmark</span>
+          <span class="hidden sm:inline">{{ $t('reader.bookmark.label') }}</span>
           <span v-if="bookmarks.length > 0" class="text-[11px] bg-zinc-700 text-zinc-200 px-1 py-0.5 rounded-full font-mono">
             {{ bookmarks.length }}
           </span>
@@ -57,18 +57,18 @@
           <button
             @click="setSpread('single')"
             :class="['px-2 py-1.5 sm:py-1 rounded-md text-xs font-medium transition flex items-center gap-1', spread === 'single' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
-            title="Single Page view"
+            :title="$t('reader.manga.singlePageView')"
           >
             <Square class="w-3.5 h-3.5" />
-            <span class="hidden sm:inline">1-Page</span>
+            <span class="hidden sm:inline">{{ $t('reader.manga.onePage') }}</span>
           </button>
           <button
             @click="setSpread('double')"
             :class="['px-2 py-1.5 sm:py-1 rounded-md text-xs font-medium transition flex items-center gap-1', spread === 'double' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
-            title="2-Page Spread view"
+            :title="$t('reader.manga.spreadView')"
           >
             <Columns2 class="w-3.5 h-3.5" />
-            <span class="hidden sm:inline">2-Page</span>
+            <span class="hidden sm:inline">{{ $t('reader.manga.twoPage') }}</span>
           </button>
         </div>
 
@@ -77,18 +77,18 @@
           <button
             @click="setPageTurnStyle('fade')"
             :class="['px-2 py-1.5 sm:py-1 rounded-md text-xs font-medium transition flex items-center gap-1', pageTurnStyle === 'fade' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
-            title="Fade page transition"
+            :title="$t('reader.manga.fadeTransition')"
           >
             <Layers class="w-3.5 h-3.5" />
-            <span class="hidden sm:inline">Fade</span>
+            <span class="hidden sm:inline">{{ $t('reader.manga.fade') }}</span>
           </button>
           <button
             @click="setPageTurnStyle('flip')"
             :class="['px-2 py-1.5 sm:py-1 rounded-md text-xs font-medium transition flex items-center gap-1', pageTurnStyle === 'flip' ? 'bg-zinc-100 text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-white']"
-            title="Realistic page-flip transition"
+            :title="$t('reader.manga.flipTransition')"
           >
             <BookOpen class="w-3.5 h-3.5" />
-            <span class="hidden sm:inline">Flip</span>
+            <span class="hidden sm:inline">{{ $t('reader.manga.flip') }}</span>
           </button>
         </div>
 
@@ -110,7 +110,7 @@
       <!-- Loading -->
       <div v-if="loading" class="flex flex-col items-center gap-3 text-zinc-400">
         <Loader2 class="w-7 h-7 animate-spin" />
-        <span class="text-xs font-mono">Loading pages...</span>
+        <span class="text-xs font-mono">{{ $t('reader.manga.loadingPages') }}</span>
       </div>
 
       <!-- Paged mode (RTL / LTR) -->
@@ -126,13 +126,13 @@
               <!-- Left / right cells are mode-resolved (RTL: N+1 left, N right — LTR: N left, N+1 right).
                    Each cell is its own 3D-perspective context so a flipping leaf pivots correctly on its own edge. -->
               <div class="relative max-h-full max-w-[49.5%] flex-1 h-full flex items-center justify-center flip-cell">
-                <img :src="displayLeftUrl" :alt="`Page ${displayLeftIndex + 1}`" class="max-h-full max-w-full object-contain pointer-events-none" @load="onPageLoad" />
+                <img :src="displayLeftUrl" :alt="$t('reader.pageN', { page: displayLeftIndex + 1 })" class="max-h-full max-w-full object-contain pointer-events-none" @load="onPageLoad" />
                 <div v-if="isFlipping" class="flip-leaf" :style="flipLeafStyle" @transitionend="onFlipTransitionEnd">
                   <img :src="flipOldLeftUrl" alt="" aria-hidden="true" class="w-full h-full object-contain pointer-events-none" />
                 </div>
               </div>
               <div class="relative max-h-full max-w-[49.5%] flex-1 h-full flex items-center justify-center flip-cell">
-                <img :src="displayRightUrl" :alt="`Page ${displayRightIndex + 1}`" class="max-h-full max-w-full object-contain pointer-events-none" @load="onPageLoad" />
+                <img :src="displayRightUrl" :alt="$t('reader.pageN', { page: displayRightIndex + 1 })" class="max-h-full max-w-full object-contain pointer-events-none" @load="onPageLoad" />
                 <div v-if="isFlipping" class="flip-leaf" :style="flipLeafStyle" @transitionend="onFlipTransitionEnd">
                   <img :src="flipOldRightUrl" alt="" aria-hidden="true" class="w-full h-full object-contain pointer-events-none" />
                 </div>
@@ -144,7 +144,7 @@
               :key="`single-${displayIndex}`"
               class="relative h-full w-full flex items-center justify-center flip-cell"
             >
-              <img :src="displayCurrentUrl" :alt="`Page ${displayIndex + 1}`" class="max-h-full max-w-full object-contain pointer-events-none" @load="onPageLoad" />
+              <img :src="displayCurrentUrl" :alt="$t('reader.pageN', { page: displayIndex + 1 })" class="max-h-full max-w-full object-contain pointer-events-none" @load="onPageLoad" />
               <div v-if="isFlipping" class="flip-leaf" :style="flipLeafStyle" @transitionend="onFlipTransitionEnd">
                 <img :src="flipOldFullUrl" alt="" aria-hidden="true" class="w-full h-full object-contain pointer-events-none" />
               </div>
@@ -175,7 +175,7 @@
           v-if="zoomScale > 1.01"
           class="absolute top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none bg-black/70 text-white text-[12px] font-mono px-2 py-1 rounded-full backdrop-blur-sm"
         >
-          {{ Math.round(zoomScale * 100) }}%
+          {{ $t('reader.percent', { percent: Math.round(zoomScale * 100) }) }}
         </div>
 
         <!-- Desktop left/right tap hint arrows (show when controls visible) -->
@@ -215,7 +215,7 @@
             v-if="isInWebtoonWindow(index - 1)"
             :src="getPageUrl(index - 1)"
             decoding="async"
-            :alt="`Page ${index}`"
+            :alt="$t('reader.pageN', { page: index })"
             class="w-full h-full object-contain"
             @load="onWebtoonPageLoad(index - 1, $event)"
           />
@@ -233,7 +233,7 @@
       ]"
     >
       <div class="max-w-md mx-auto w-full flex items-center gap-3">
-        <button aria-label="Previous page" @click="prevPage" class="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 transition active:scale-95">
+        <button :aria-label="$t('reader.manga.previousPage')" @click="prevPage" class="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 transition active:scale-95">
           <ChevronLeft class="w-4 h-4" />
         </button>
         <span class="text-xs font-mono tabular-nums text-zinc-400 w-8 text-right flex-shrink-0">
@@ -250,7 +250,7 @@
         <span class="text-xs font-mono tabular-nums text-zinc-400 w-8 flex-shrink-0">
           {{ totalPages }}
         </span>
-        <button aria-label="Next page" @click="nextPage" class="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 transition active:scale-95">
+        <button :aria-label="$t('reader.manga.nextPage')" @click="nextPage" class="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 transition active:scale-95">
           <ChevronRight class="w-4 h-4" />
         </button>
       </div>
@@ -263,14 +263,14 @@
         class="absolute bottom-20 z-40 left-1/2 -translate-x-1/2 bg-zinc-900/95 border border-primary/50 text-white rounded-2xl px-5 py-3 shadow-2xl backdrop-blur-md flex items-center gap-4 max-w-sm w-[90%] sm:w-auto"
       >
         <div class="flex-1 min-w-0">
-          <p class="text-[12px] uppercase font-bold tracking-wider text-primary">Volume Complete!</p>
-          <p class="text-xs font-semibold text-zinc-100 truncate mt-0.5">Next: {{ nextVolume.title }}</p>
+          <p class="text-[12px] uppercase font-bold tracking-wider text-primary">{{ $t('reader.manga.volumeComplete') }}</p>
+          <p class="text-xs font-semibold text-zinc-100 truncate mt-0.5">{{ $t('reader.manga.nextTitle', { title: nextVolume.title }) }}</p>
         </div>
         <button
           @click="goToNextVolume"
           class="h-8 px-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:bg-primary/90 transition active:scale-95 flex items-center gap-1.5 flex-shrink-0 shadow-md"
         >
-          <span>Next Vol</span>
+          <span>{{ $t('reader.manga.nextVolume') }}</span>
           <ChevronRight class="w-3.5 h-3.5" />
         </button>
       </div>
@@ -286,29 +286,29 @@
         <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
           <div class="flex items-center gap-1.5 font-semibold text-zinc-100">
             <Bookmark class="w-3.5 h-3.5 text-zinc-300" />
-            <span>Page Bookmarks</span>
+            <span>{{ $t('reader.manga.pageBookmarks') }}</span>
           </div>
-          <button aria-label="Close bookmarks" @click="showBookmarksModal = false" class="text-zinc-400 hover:text-white p-1 rounded transition">
+          <button :aria-label="$t('reader.bookmark.close')" @click="showBookmarksModal = false" class="text-zinc-400 hover:text-white p-1 rounded transition">
             <X class="w-3.5 h-3.5" />
           </button>
         </div>
 
         <div class="flex flex-col gap-2 bg-zinc-950 p-2.5 rounded-lg border border-zinc-800">
           <div class="flex items-center justify-between text-zinc-300">
-            <span>Bookmark page</span>
+            <span>{{ $t('reader.manga.bookmarkPage') }}</span>
             <span class="font-mono font-bold text-white">#{{ currentPageIndex + 1 }}</span>
           </div>
           <input
             v-model="newBookmarkNote"
             @keyup.enter="createBookmark"
-            placeholder="Optional note..."
+            :placeholder="$t('reader.manga.optionalNote')"
             class="bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600"
           />
           <button
             @click="createBookmark"
             class="self-end px-2.5 py-1 rounded bg-zinc-100 text-zinc-900 hover:bg-white font-medium text-[12px] transition"
           >
-            Save
+            {{ $t('common.save') }}
           </button>
         </div>
 
@@ -322,15 +322,15 @@
               @click="goToPage(Math.max(0, Math.floor(bm.position) - 1)); showBookmarksModal = false"
               class="flex-1 text-left hover:text-white transition"
             >
-              <span class="font-mono font-bold text-zinc-200">Page {{ Math.floor(bm.position) }}</span>
+              <span class="font-mono font-bold text-zinc-200">{{ $t('reader.pageN', { page: Math.floor(bm.position) }) }}</span>
               <p v-if="bm.notes" class="text-zinc-400 text-[12px] truncate">{{ bm.notes }}</p>
             </button>
-            <button aria-label="Delete bookmark" @click="deleteBookmark(bm.id)" class="p-1 text-zinc-500 hover:text-destructive transition">
+            <button :aria-label="$t('reader.bookmark.delete')" @click="deleteBookmark(bm.id)" class="p-1 text-zinc-500 hover:text-destructive transition">
               <Trash2 class="w-3 h-3" />
             </button>
           </div>
           <div v-if="bookmarks.length === 0" class="py-4 text-center text-zinc-500 text-[12px]">
-            No bookmarks yet.
+            {{ $t('reader.bookmark.noneYet') }}
           </div>
         </div>
       </div>
@@ -346,6 +346,7 @@ import { useDialogStore } from '../stores/dialog';
 import { useAuthStore } from '../stores/auth';
 import { useViewSession } from '../composables/useViewSession';
 import RatingBar from './RatingBar.vue';
+import { t } from '../i18n';
 import { ArrowLeft, Loader2, Bookmark, Trash2, X, ChevronLeft, ChevronRight, Square, Columns2, Layers, BookOpen } from '@lucide/vue';
 
 const dialog = useDialogStore();
@@ -398,11 +399,11 @@ const currentPageIndex = ref(startPageIndex(props.item));
 // Manga opens right-to-left; comics and PDFs shelved as books read left-to-right. A series'
 // saved direction (loadSeriesSettings) wins over both.
 const mode = ref(props.item.media_type === 'manga' ? 'rtl' : 'ltr');
-const modes = [
-  { id: 'rtl', short: 'RTL', label: 'Right to Left (Japanese Manga)' },
-  { id: 'ltr', short: 'LTR', label: 'Left to Right (Comics)' },
-  { id: 'webtoon', short: 'Scroll', label: 'Continuous Vertical Scroll (Webtoon)' },
-];
+const modes = computed(() => ['rtl', 'ltr', 'webtoon'].map((id) => ({
+  id,
+  short: t(`reader.manga.modes.${id}.short`),
+  label: t(`reader.manga.modes.${id}.label`)
+})));
 
 // ─── Remembered reader settings ──────────────────────────────────────────────
 // Everything picked here belongs to the person and follows them to every device, like the
@@ -527,13 +528,13 @@ const displayLeftUrl = computed(() => (mode.value === 'rtl' ? displaySecondUrl.v
 const displayRightUrl = computed(() => (mode.value === 'rtl' ? displayCurrentUrl.value : displaySecondUrl.value));
 
 const pageDisplayLabel = computed(() => {
-  if (totalPages.value === 0) return 'Page 0 of 0';
+  if (totalPages.value === 0) return t('reader.manga.pageOf', { page: 0, total: 0 });
   if (spread.value === 'double' && mode.value !== 'webtoon' && secondPageIndex.value !== null) {
     const p1 = Math.min(currentPageIndex.value, secondPageIndex.value) + 1;
     const p2 = Math.max(currentPageIndex.value, secondPageIndex.value) + 1;
-    return `Pages ${p1}–${p2} of ${totalPages.value}`;
+    return t('reader.manga.pagesOf', { from: p1, to: p2, total: totalPages.value });
   }
-  return `Page ${currentPageIndex.value + 1} of ${totalPages.value}`;
+  return t('reader.manga.pageOf', { page: currentPageIndex.value + 1, total: totalPages.value });
 });
 
 const webtoonContainer = ref(null);
@@ -1083,13 +1084,13 @@ async function createBookmark() {
     await api.post('/bookmarks', {
       itemId: props.item.id, type: 'manga',
       position: currentPageIndex.value + 1,
-      title: `Page ${currentPageIndex.value + 1}`,
+      title: t('reader.pageN', { page: currentPageIndex.value + 1 }),
       notes: newBookmarkNote.value.trim() || null
     });
     newBookmarkNote.value = '';
     await loadBookmarks();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || 'Failed to save bookmark');
+    dialog.alert(err.response?.data?.error || t('reader.manga.couldNotSaveBookmark'));
   }
 }
 async function deleteBookmark(id) {
@@ -1136,7 +1137,7 @@ function applyTabletLandscapeDefault() {
 async function loadSeriesSettings() {
   // A mode you picked for this series beats the series' default direction.
   const mine = savedSeriesMode();
-  if (mine && modes.some((m) => m.id === mine)) {
+  if (mine && modes.value.some((m) => m.id === mine)) {
     mode.value = mine;
     return;
   }
@@ -1146,7 +1147,7 @@ async function loadSeriesSettings() {
   try {
     const res = await api.get(`/series/${libraryId}/${encodeURIComponent(series)}/settings`);
     const direction = res.data?.settings?.readingDirection;
-    if (direction && modes.some((m) => m.id === direction)) {
+    if (direction && modes.value.some((m) => m.id === direction)) {
       mode.value = direction;
     }
   } catch (err) {

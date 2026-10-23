@@ -1,0 +1,69 @@
+{
+  "backTo": "返回 {server}",
+  "joining": "正在加入一起看…",
+  "watchParty": "一起看",
+  "showPanel": "显示一起看",
+  "hidePanel": "隐藏一起看",
+  "reconnecting": "正在重新连接…",
+  "waitingFor": "正在等待 {names}…",
+  "closePanel": "关闭面板",
+  "invite": "邀请",
+  "inviteHint": "此服务器上有帐户的任何人都可以通过链接或邀请码 {code} 加入。",
+  "watching": "正在观看（{count}）",
+  "you": "（你）",
+  "loading": "正在加载",
+  "host": "房主",
+  "whoControls": "谁可以播放、暂停和跳转",
+  "onlyMe": "只有我",
+  "everyone": "所有人",
+  "chatEmpty": "打个招呼吧，消息会发送给所有正在观看的人。",
+  "messagePlaceholder": "消息",
+  "send": "发送",
+  "leave": "离开",
+  "endForEveryone": "为所有人结束",
+  "tapToJoin": "点按播放即可加入",
+  "hostInControl": "播放由房主控制",
+  "unreachable": "无法连接到一起看",
+  "messageNotSent": "消息未发送",
+  "moveOnFailed": "无法切换到下一个",
+  "copyPrompt": "复制此邀请链接：",
+  "endConfirm": {
+    "title": "结束一起看？",
+    "message": "这会为所有正在观看的人结束一起看。",
+    "confirm": "结束"
+  },
+  "problems": {
+    "P600": {
+      "title": "一起看已关闭",
+      "message": "需要管理员先为此服务器开启一起看。"
+    },
+    "P601": {
+      "title": "此一起看已结束",
+      "message": "房主已结束，或所有人都已离开。请索取新的邀请链接。"
+    },
+    "P603": {
+      "title": "你无法观看",
+      "message": "这场一起看正在播放你的帐户无法打开的内容。"
+    },
+    "P605": {
+      "title": "人数已满",
+      "message": "一场一起看最多容纳20人。等有人离开后再试。"
+    },
+    "disabled": {
+      "title": "一起看已被关闭",
+      "message": "管理员关闭了一起看功能，因此这场已结束。"
+    },
+    "over": {
+      "title": "一起看已结束",
+      "message": "房主结束了一起看。感谢观看！"
+    },
+    "couldntJoin": {
+      "title": "无法加入",
+      "message": "加入一起看时出了点问题。"
+    },
+    "couldntLoad": {
+      "title": "无法加载视频",
+      "message": "请尝试重新打开邀请链接。"
+    }
+  }
+}

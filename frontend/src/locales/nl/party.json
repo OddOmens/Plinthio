@@ -1,0 +1,69 @@
+{
+  "backTo": "Terug naar {server}",
+  "joining": "Deelnemen aan de watchparty…",
+  "watchParty": "Watchparty",
+  "showPanel": "Watchparty tonen",
+  "hidePanel": "Watchparty verbergen",
+  "reconnecting": "Opnieuw verbinden…",
+  "waitingFor": "Wachten op {names}…",
+  "closePanel": "Paneel sluiten",
+  "invite": "Uitnodigen",
+  "inviteHint": "Iedereen met een account op deze server kan meedoen via de link of de code {code}.",
+  "watching": "Kijkers ({count})",
+  "you": "(jij)",
+  "loading": "Laden",
+  "host": "Host",
+  "whoControls": "Wie kan afspelen, pauzeren en overslaan",
+  "onlyMe": "Alleen ik",
+  "everyone": "Iedereen",
+  "chatEmpty": "Zeg hallo — berichten gaan naar iedereen die kijkt.",
+  "messagePlaceholder": "Bericht",
+  "send": "Versturen",
+  "leave": "Verlaten",
+  "endForEveryone": "Voor iedereen beëindigen",
+  "tapToJoin": "Tik op afspelen om mee te doen",
+  "hostInControl": "De host bedient het afspelen",
+  "unreachable": "Kon de watchparty niet bereiken",
+  "messageNotSent": "Bericht niet verstuurd",
+  "moveOnFailed": "Kon de watchparty niet verder laten gaan",
+  "copyPrompt": "Kopieer deze uitnodigingslink:",
+  "endConfirm": {
+    "title": "Watchparty beëindigen?",
+    "message": "Hiermee stopt de watchparty voor iedereen die kijkt.",
+    "confirm": "Party beëindigen"
+  },
+  "problems": {
+    "P600": {
+      "title": "Watchparty's staan uit",
+      "message": "Een admin moet eerst watchparty's aanzetten voor deze server."
+    },
+    "P601": {
+      "title": "Deze watchparty is afgelopen",
+      "message": "De host heeft hem beëindigd, of iedereen is vertrokken. Vraag om een nieuwe uitnodigingslink."
+    },
+    "P603": {
+      "title": "Niet beschikbaar voor jou",
+      "message": "Deze watchparty kijkt naar iets wat je account niet kan openen."
+    },
+    "P605": {
+      "title": "Deze watchparty is vol",
+      "message": "Er passen maximaal 20 mensen in een watchparty. Probeer het opnieuw als er iemand vertrekt."
+    },
+    "disabled": {
+      "title": "Watchparty's zijn uitgezet",
+      "message": "Een admin heeft watchparty's uitgezet, waardoor deze is beëindigd."
+    },
+    "over": {
+      "title": "De watchparty is voorbij",
+      "message": "De host heeft de watchparty beëindigd. Bedankt voor het kijken!"
+    },
+    "couldntJoin": {
+      "title": "Kon niet deelnemen",
+      "message": "Er ging iets mis bij het deelnemen aan deze watchparty."
+    },
+    "couldntLoad": {
+      "title": "Kon de video niet laden",
+      "message": "Probeer de uitnodigingslink opnieuw te openen."
+    }
+  }
+}

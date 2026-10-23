@@ -1,0 +1,44 @@
+{
+  "live": "Live-Vorschau",
+  "views": {
+    "shelf": "Regal",
+    "title": "Titel",
+    "login": "Anmeldung",
+    "pause": "Pause"
+  },
+  "titles": {
+    "one": "{count}+ Titel",
+    "other": "{count}+ Titel"
+  },
+  "yourLibrary": "Deine Bibliothek",
+  "continueWatching": "Weiterschauen",
+  "runtime": "{hours} Std. {minutes} Min.",
+  "yourRating": "Deine Bewertung",
+  "ratingsHidden": "Bewertungen sind ausgeblendet",
+  "watchTogether": "Gemeinsam ansehen",
+  "collection": "Teil der Sammlung",
+  "request": "Anfragen",
+  "sample": {
+    "tagline": "Manche Nachrichten brauchen ein ganzes Leben, um anzukommen.",
+    "description": "Eine Leuchtturmwärterin auf einer abgelegenen Insel findet eine Flaschenpost, die sie zurück in das Leben zieht, das sie hinter sich gelassen hat."
+  },
+  "captions": {
+    "shelf": "Das Startregal auf einem großen Bildschirm – Navigation: {layout}, Breite: {width}, Akzentfarbe: {accent}.",
+    "title": "Eine Filmseite mit den Einstellungen für Bewertungen, Watch-Partys und Sammlungen von oben.",
+    "login": "Der Anmeldebildschirm mit deinem Servernamen und Hinweis.",
+    "pause": {
+      "simple": "Einfach: Nichts verdeckt das Bild. Wähle einen anderen Stil, um ihn hier zu sehen.",
+      "details": "Details: erscheint nach ein paar Sekunden Pause. Fahre über einen Stil, um zu vergleichen.",
+      "cinematic": "Kino: Fotos der Besetzung und Fakten kommen von TMDB, wenn ein Schlüssel hinterlegt ist.",
+      "bedtime": "Schlafenszeit: eine gedimmte Uhr und wann es endet."
+    }
+  },
+  "layouts": {
+    "sidebar": "Seitenleiste",
+    "topnav": "oben"
+  },
+  "widths": {
+    "contained": "begrenzt",
+    "full": "volle Breite"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "lists": "Listas",
+  "searchLibrary": "Buscar en la biblioteca...",
+  "searchEverything": "Buscar títulos, autores, series...",
+  "clearSearch": "Borrar búsqueda",
+  "openMenu": "Abrir menú",
+  "closeMenu": "Cerrar menú",
+  "backToShelves": "Volver a los estantes",
+  "account": {
+    "menuTitle": "Menú de la cuenta ({name})",
+    "menuLabel": "Menú de la cuenta de {name}",
+    "someone": "usuario",
+    "avatar": "Avatar",
+    "expires": "La cuenta caduca: {date}",
+    "expired": "Caducada",
+    "hoursLeft": {
+      "one": "Queda {count} h",
+      "other": "Quedan {count} h"
+    },
+    "daysLeft": {
+      "one": "Queda {count} día",
+      "other": "Quedan {count} días"
+    }
+  },
+  "roles": {
+    "admin": "admin",
+    "editor": "editor",
+    "viewer": "espectador"
+  },
+  "menu": {
+    "downloads": "Descargas",
+    "requests": "Solicitudes",
+    "docs": "Documentos",
+    "reportProblem": "Informar de un problema",
+    "lightMode": "Modo claro",
+    "darkMode": "Modo oscuro",
+    "logOut": "Cerrar sesión"
+  },
+  "update": {
+    "available": "{release} está disponible",
+    "current": "— tienes la {version}.",
+    "whatsNew": "Novedades",
+    "howToUpdate": "Cómo actualizar",
+    "dismissLabel": "Descartar el aviso de la actualización {version}",
+    "dismissTitle": "Descartar hasta la próxima versión",
+    "where": "En el equipo donde se ejecuta Plinthio, en la carpeta con tu {file}:",
+    "backup": "Tu base de datos se copia automáticamente en {folder} antes de que arranque la nueva versión."
+  }
+}

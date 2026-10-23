@@ -1,0 +1,125 @@
+{
+  "anyCreator": "Criador",
+  "manga": {
+    "unit": "Volume",
+    "units": "Volumes",
+    "short": "Vol.",
+    "verb": "Ler",
+    "verbing": "Lendo",
+    "done": "Lido",
+    "creator": "Autor",
+    "series": "Série de mangá",
+    "count": {
+      "one": "{count} volume",
+      "other": "{count} volumes"
+    },
+    "entry": "Vol. {number}",
+    "allDone": "Tudo lido",
+    "progress": {
+      "one": "{count}/{total} lido",
+      "other": "{count}/{total} lidos"
+    }
+  },
+  "book": {
+    "unit": "Livro",
+    "units": "Livros",
+    "short": "Livro",
+    "verb": "Ler",
+    "verbing": "Lendo",
+    "done": "Lido",
+    "creator": "Autor",
+    "series": "Série de livros",
+    "count": {
+      "one": "{count} livro",
+      "other": "{count} livros"
+    },
+    "entry": "Livro {number}",
+    "allDone": "Tudo lido",
+    "progress": {
+      "one": "{count}/{total} lido",
+      "other": "{count}/{total} lidos"
+    }
+  },
+  "audiobook": {
+    "unit": "Livro",
+    "units": "Livros",
+    "short": "Livro",
+    "verb": "Ouvir",
+    "verbing": "Ouvindo",
+    "done": "Ouvido",
+    "creator": "Autor",
+    "series": "Série de audiolivros",
+    "count": {
+      "one": "{count} livro",
+      "other": "{count} livros"
+    },
+    "entry": "Livro {number}",
+    "allDone": "Tudo ouvido",
+    "progress": {
+      "one": "{count}/{total} ouvido",
+      "other": "{count}/{total} ouvidos"
+    }
+  },
+  "show": {
+    "unit": "Episódio",
+    "units": "Episódios",
+    "short": "Ep.",
+    "verb": "Assistir",
+    "verbing": "Assistindo",
+    "done": "Assistido",
+    "creator": "Criador",
+    "series": "Série de TV",
+    "count": {
+      "one": "{count} episódio",
+      "other": "{count} episódios"
+    },
+    "entry": "T{season} · E{episode}",
+    "season": "T{season}",
+    "allDone": "Tudo assistido",
+    "progress": {
+      "one": "{count}/{total} assistido",
+      "other": "{count}/{total} assistidos"
+    }
+  },
+  "anime": {
+    "unit": "Episódio",
+    "units": "Episódios",
+    "short": "Ep.",
+    "verb": "Assistir",
+    "verbing": "Assistindo",
+    "done": "Assistido",
+    "creator": "Estúdio",
+    "series": "Série de anime",
+    "count": {
+      "one": "{count} episódio",
+      "other": "{count} episódios"
+    },
+    "entry": "T{season} · E{episode}",
+    "season": "T{season}",
+    "allDone": "Tudo assistido",
+    "progress": {
+      "one": "{count}/{total} assistido",
+      "other": "{count}/{total} assistidos"
+    }
+  },
+  "movie": {
+    "unit": "Filme",
+    "units": "Filmes",
+    "short": "Parte",
+    "verb": "Assistir",
+    "verbing": "Assistindo",
+    "done": "Assistido",
+    "creator": "Diretor",
+    "series": "Coleção de filmes",
+    "count": {
+      "one": "{count} filme",
+      "other": "{count} filmes"
+    },
+    "entry": "Parte {number}",
+    "allDone": "Tudo assistido",
+    "progress": {
+      "one": "{count}/{total} assistido",
+      "other": "{count}/{total} assistidos"
+    }
+  }
+}

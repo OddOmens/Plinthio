@@ -1,0 +1,69 @@
+{
+  "backTo": "Voltar para {server}",
+  "joining": "Entrando na sessão conjunta…",
+  "watchParty": "Sessão conjunta",
+  "showPanel": "Mostrar sessão conjunta",
+  "hidePanel": "Ocultar sessão conjunta",
+  "reconnecting": "Reconectando…",
+  "waitingFor": "Esperando {names}…",
+  "closePanel": "Fechar painel",
+  "invite": "Convidar",
+  "inviteHint": "Qualquer pessoa com conta neste servidor pode entrar pelo link ou com o código {code}.",
+  "watching": "Assistindo ({count})",
+  "you": "(você)",
+  "loading": "Carregando",
+  "host": "Anfitrião",
+  "whoControls": "Quem pode reproduzir, pausar e pular",
+  "onlyMe": "Só eu",
+  "everyone": "Todos",
+  "chatEmpty": "Diga oi — as mensagens vão para todos que estão assistindo.",
+  "messagePlaceholder": "Mensagem",
+  "send": "Enviar",
+  "leave": "Sair",
+  "endForEveryone": "Encerrar para todos",
+  "tapToJoin": "Toque em reproduzir para entrar",
+  "hostInControl": "O anfitrião controla a reprodução",
+  "unreachable": "Não foi possível conectar à sessão",
+  "messageNotSent": "Mensagem não enviada",
+  "moveOnFailed": "Não foi possível avançar a sessão",
+  "copyPrompt": "Copie este link de convite:",
+  "endConfirm": {
+    "title": "Encerrar a sessão conjunta?",
+    "message": "Isto encerra a sessão para todos que estão assistindo.",
+    "confirm": "Encerrar sessão"
+  },
+  "problems": {
+    "P600": {
+      "title": "As sessões conjuntas estão desativadas",
+      "message": "Um administrador precisa ativar as sessões conjuntas neste servidor primeiro."
+    },
+    "P601": {
+      "title": "Esta sessão terminou",
+      "message": "O anfitrião encerrou a sessão, ou todos saíram. Peça um novo link de convite."
+    },
+    "P603": {
+      "title": "Indisponível para você",
+      "message": "Esta sessão está assistindo algo que a sua conta não pode abrir."
+    },
+    "P605": {
+      "title": "Esta sessão está cheia",
+      "message": "Uma sessão conjunta comporta até 20 pessoas. Tente de novo quando alguém sair."
+    },
+    "disabled": {
+      "title": "As sessões conjuntas foram desativadas",
+      "message": "Um administrador desativou as sessões conjuntas, o que encerrou esta."
+    },
+    "over": {
+      "title": "A sessão acabou",
+      "message": "O anfitrião encerrou a sessão conjunta. Obrigado por assistir!"
+    },
+    "couldntJoin": {
+      "title": "Não foi possível entrar",
+      "message": "Algo deu errado ao entrar nesta sessão."
+    },
+    "couldntLoad": {
+      "title": "Não foi possível carregar o vídeo",
+      "message": "Tente abrir o link de convite de novo."
+    }
+  }
+}

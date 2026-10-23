@@ -1,0 +1,488 @@
+{
+  "codes": {
+    "P000": {
+      "title": "Unexpected server error",
+      "message": "Something went wrong on the server",
+      "meaning": "The server hit an error it has no specific code for.",
+      "fix": "Check Admin → Logs (or `docker logs plinthio`) for the full error. Admins also see the cause in the error message itself."
+    },
+    "P001": {
+      "title": "Invalid request",
+      "message": "The request was not valid",
+      "meaning": "A required field was missing or a value was out of range.",
+      "fix": "The message says which field. If the web app sent it, reload the page. An old cached version can send outdated requests."
+    },
+    "P002": {
+      "title": "Not found",
+      "message": "Not found",
+      "meaning": "The thing asked for does not exist, or is hidden from this account.",
+      "fix": "It may have been deleted or moved by a rescan. Refresh the page."
+    },
+    "P003": {
+      "title": "Not allowed",
+      "message": "You do not have permission to do that",
+      "meaning": "The account is signed in but not permitted to perform this action.",
+      "fix": "Ask an admin to change your role or access if you need this."
+    },
+    "P004": {
+      "title": "Conflict",
+      "message": "That conflicts with something that already exists",
+      "meaning": "The action clashes with existing data, such as a duplicate name.",
+      "fix": "The message says what clashed. Rename or remove the existing item first."
+    },
+    "P005": {
+      "title": "Too many requests",
+      "message": "Too many requests, slow down and try again shortly",
+      "meaning": "A rate limit was hit.",
+      "fix": "Wait a minute and try again. If many people share one IP behind a reverse proxy, set TRUST_PROXY=1 so they are limited separately."
+    },
+    "P006": {
+      "title": "Temporarily unavailable",
+      "message": "The server is busy, try again shortly",
+      "meaning": "The server could not handle the request right now.",
+      "fix": "Try again in a few seconds."
+    },
+    "P007": {
+      "title": "Upload rejected",
+      "message": "That file could not be uploaded",
+      "meaning": "An uploaded file was too large or of the wrong type.",
+      "fix": "Images must be under 15 MB. Backups must be Plinthio backup files."
+    },
+    "P100": {
+      "title": "Sign-in required",
+      "message": "Authentication required",
+      "meaning": "The request carried no session, media token or API key.",
+      "fix": "Sign in again. For scripts, send an X-API-Key header."
+    },
+    "P101": {
+      "title": "Session expired",
+      "message": "Session expired, please log in again",
+      "meaning": "The session token is expired, malformed, or was revoked by a password change or \"sign out everywhere\".",
+      "fix": "Sign in again."
+    },
+    "P102": {
+      "title": "Token used in the wrong place",
+      "message": "This token is not valid here",
+      "meaning": "A media token was sent as an Authorization header, or used outside /api/media. Or a session token was put in a URL. Media tokens only work as ?token= on media URLs, and session tokens only work in the Authorization header.",
+      "fix": "This is a bug in the client that made the request. In the web app, reload the page. If it persists, report it with this code."
+    },
+    "P103": {
+      "title": "Account expired",
+      "message": "Your account access has expired. Please contact your administrator.",
+      "meaning": "The account has an expiry date that has passed.",
+      "fix": "An admin can extend or clear the expiry in Admin → Users."
+    },
+    "P104": {
+      "title": "Invalid API key",
+      "message": "Invalid API key",
+      "meaning": "The X-API-Key (or HTTP Basic password) does not match any key.",
+      "fix": "Create a new key in Settings → Apps & API keys. Keys are shown only once, when created."
+    },
+    "P105": {
+      "title": "Admin only",
+      "message": "Admin privileges required",
+      "meaning": "This action needs the admin role.",
+      "fix": "Ask an admin to do it, or to promote your account."
+    },
+    "P106": {
+      "title": "Editor or admin only",
+      "message": "Editor privileges required",
+      "meaning": "This action needs the editor or admin role.",
+      "fix": "Ask an admin to make your account an editor."
+    },
+    "P107": {
+      "title": "Wrong username or password",
+      "message": "Invalid username or password",
+      "meaning": "The sign-in details did not match an account.",
+      "fix": "Check the username and password. An admin can reset a password in Admin → Users."
+    },
+    "P108": {
+      "title": "Too many sign-in attempts",
+      "message": "Too many sign-in attempts, try again later",
+      "meaning": "Sign-in is rate limited to slow down password guessing.",
+      "fix": "Wait 15 minutes and try again."
+    },
+    "P109": {
+      "title": "Not available away from home",
+      "message": "This server can only be used from its home network",
+      "meaning": "The request came from outside the home network (not a home or Tailscale address), and the server only allows home access.",
+      "fix": "Use Plinthio at home, or through Tailscale. An admin can allow outside access in Admin → Network."
+    },
+    "P110": {
+      "title": "This account is for home use only",
+      "message": "This account can only be used from the home network",
+      "meaning": "The server allows outside access, but not for this account.",
+      "fix": "Use Plinthio at home, or ask an admin to allow this account away from home (Admin → Users)."
+    },
+    "P111": {
+      "title": "Wrong two-factor code",
+      "message": "That code is not right, or has already been used",
+      "meaning": "The six-digit code (or backup code) did not match. Codes change every 30 seconds and each works once.",
+      "fix": "Enter the current code from your authenticator app. Check the phone's clock is set automatically. Lost the phone? Use a backup code, or ask an admin to reset two-factor."
+    },
+    "P112": {
+      "title": "Two-factor needed away from home",
+      "message": "Signing in from outside the home network needs two-factor, which this account has not set up",
+      "meaning": "The server requires two-factor for sign-ins from outside the home network.",
+      "fix": "Sign in at home once and turn on two-factor in Settings → Security."
+    },
+    "P113": {
+      "title": "Sign-in step expired",
+      "message": "That sign-in took too long, start again",
+      "meaning": "The two-factor step of a sign-in has a few minutes to complete, or too many wrong codes were entered.",
+      "fix": "Enter your username and password again."
+    },
+    "P200": {
+      "title": "Library folder not found",
+      "message": "Library folder not found",
+      "meaning": "The folder a library points at does not exist inside the server (or container).",
+      "fix": "In Docker, your media is mounted at /media, so library paths look like /media/Movies. Check MEDIA_DIR in docker/.env points at the right host folder."
+    },
+    "P201": {
+      "title": "Library folder unreadable (I/O error)",
+      "message": "The media folder could not be read (I/O error)",
+      "meaning": "Reading the folder failed with EIO. Almost always the drive behind it disconnected or was remounted, leaving a stale mount. A remounted USB drive can come back under a new path such as /media/you/Drive1.",
+      "fix": "Check the drive is connected and mounted (`mount | grep media`). Point MEDIA_DIR at its current mount path and recreate the container. Mounting the drive by UUID in /etc/fstab keeps the path stable."
+    },
+    "P202": {
+      "title": "Library folder permission denied",
+      "message": "The server does not have permission to read that folder",
+      "meaning": "The folder exists but the Plinthio process cannot read it (EACCES).",
+      "fix": "Give the container user read access to the media folder, e.g. with `chmod -R o+rX` on the host folder or matching PUID/PGID."
+    },
+    "P203": {
+      "title": "Not a folder",
+      "message": "That path is not a folder",
+      "meaning": "The library path points at a file rather than a directory.",
+      "fix": "Choose the folder that contains your media."
+    },
+    "P300": {
+      "title": "Media not found",
+      "message": "Media not found",
+      "meaning": "No item with that id exists, or it is hidden from this account by an admin or parental controls.",
+      "fix": "Refresh the library. A rescan may have replaced the item."
+    },
+    "P301": {
+      "title": "Media file missing",
+      "message": "The media file is missing from disk",
+      "meaning": "The item is in the library but its file is gone. It was moved, renamed or deleted, or the drive is not mounted.",
+      "fix": "Check the drive is mounted, then rescan the library."
+    },
+    "P302": {
+      "title": "Media file unreadable",
+      "message": "The media file could not be read",
+      "meaning": "Reading the file failed. Usually a disconnected drive (EIO), a permissions problem, or a corrupt file.",
+      "fix": "See P201/P202 for drive and permission problems. Check Admin → Logs for the underlying error."
+    },
+    "P303": {
+      "title": "ffmpeg not available",
+      "message": "Video conversion is unavailable: ffmpeg could not be started",
+      "meaning": "ffmpeg or ffprobe is missing or failed to launch, so videos that need converting cannot play.",
+      "fix": "The Docker image includes ffmpeg. On a bare-metal install, install ffmpeg and make sure it is on PATH. Check Admin → Logs."
+    },
+    "P304": {
+      "title": "Conversion failed",
+      "message": "Converting this video failed on the server",
+      "meaning": "ffmpeg started but exited with an error while converting the video. Usually a corrupt file, an unsupported codec, or a hardware transcoding problem.",
+      "fix": "Admin → Logs shows the ffmpeg error. If it mentions VAAPI/QSV/NVENC, turn hardware transcoding off in Admin → Playback and try again."
+    },
+    "P305": {
+      "title": "Still preparing",
+      "message": "Still preparing this video, try again shortly",
+      "meaning": "The conversion is running but has not produced the requested part yet.",
+      "fix": "The player retries this on its own. If it never finishes, the server may be too slow for real-time transcoding at this quality. Pick a lower quality."
+    },
+    "P306": {
+      "title": "Invalid stream request",
+      "message": "Invalid stream request",
+      "meaning": "The stream URL named an unknown quality, audio track, segment or preview sheet.",
+      "fix": "Reload the player. This usually means a stale URL after the video was rescanned."
+    },
+    "P307": {
+      "title": "Subtitle track not found",
+      "message": "Subtitle track not found",
+      "meaning": "The requested subtitle track does not exist or could not be extracted.",
+      "fix": "Pick another track. Image-based subtitles (PGS/VobSub) cannot be shown as text."
+    },
+    "P308": {
+      "title": "PDF reader not available",
+      "message": "PDF pages cannot be shown: poppler is not installed on the server",
+      "meaning": "Plinthio turns PDF pages into images with poppler (pdftoppm and pdfinfo), and it could not start them.",
+      "fix": "The Docker image includes poppler. On a bare-metal install, install poppler-utils (apt install poppler-utils, brew install poppler) and restart."
+    },
+    "P309": {
+      "title": "PDF page could not be rendered",
+      "message": "This PDF page could not be rendered",
+      "meaning": "poppler started but failed on this file. Usually a damaged or password-protected PDF.",
+      "fix": "Open the file in another PDF reader to check it. A password-protected PDF has to be unlocked first. Admin → Logs has the error."
+    },
+    "P350": {
+      "title": "Browser cannot play this format",
+      "message": "This browser cannot play this video",
+      "meaning": "The browser rejected the stream even after the server converted it.",
+      "fix": "Try another browser (Chrome, Edge or Safari). If this happens on every browser, the file itself may be damaged."
+    },
+    "P351": {
+      "title": "Connection lost during playback",
+      "message": "Lost connection to the server",
+      "meaning": "The player could not reach the server to load the next part of the video.",
+      "fix": "Check your network connection, then press Retry."
+    },
+    "P352": {
+      "title": "Media link could not be renewed",
+      "message": "Your media access expired and could not be renewed",
+      "meaning": "Media URLs carry a short-lived token. It expired and the app could not get a new one.",
+      "fix": "Reload the page. If that does not help, sign out and back in."
+    },
+    "P400": {
+      "title": "TMDB key not configured",
+      "message": "TMDB API key is not configured. An admin must add one in Admin → Metadata.",
+      "meaning": "Movie, show and anime metadata comes from TMDB, which needs an API key. Release images have one built in; you see this on a build from source, or if TMDB stopped accepting the built-in key.",
+      "fix": "Create a key at themoviedb.org → Settings → API and paste it into Admin → Metadata."
+    },
+    "P401": {
+      "title": "Provider rejected the API key",
+      "message": "The metadata provider rejected the configured API key",
+      "meaning": "The server reached the provider, but the provider refused the key.",
+      "fix": "For TMDB, paste either the \"API Key\" or the \"API Read Access Token\" from your TMDB account into Admin → Metadata."
+    },
+    "P402": {
+      "title": "Provider rate limit",
+      "message": "The metadata provider is rate limiting this server. Wait a moment and try again.",
+      "meaning": "The provider is refusing requests because too many were sent.",
+      "fix": "Wait a minute. Batch matching large libraries can trigger this."
+    },
+    "P403": {
+      "title": "Provider unreachable",
+      "message": "Could not reach the metadata provider from the server",
+      "meaning": "The request to the provider timed out or failed at the network level.",
+      "fix": "Check the server (container) has outbound internet access and DNS."
+    },
+    "P500": {
+      "title": "List not found",
+      "message": "List not found",
+      "meaning": "The list or folder does not exist or belongs to someone else.",
+      "fix": "Refresh the Lists page."
+    },
+    "P501": {
+      "title": "Wrong kind of title for this list",
+      "message": "That kind of title cannot go in this list",
+      "meaning": "Each list holds one category: Movies, Shows, Anime, Read or Listen.",
+      "fix": "Add it to a list in the matching category."
+    },
+    "P502": {
+      "title": "Already in list",
+      "message": "That title is already in this list",
+      "meaning": "The title was added to this list before.",
+      "fix": "Nothing to do."
+    },
+    "P503": {
+      "title": "Already requested",
+      "message": "That title has already been requested",
+      "meaning": "Someone has an open request for this title.",
+      "fix": "Its status is shown on the Requests page."
+    },
+    "P504": {
+      "title": "Already in the library",
+      "message": "That title has already been added to the library",
+      "meaning": "A request for this title was accepted and marked as added.",
+      "fix": "Search the library for it."
+    },
+    "P505": {
+      "title": "Request can no longer be withdrawn",
+      "message": "Only pending requests can be withdrawn",
+      "meaning": "An admin or editor has already acted on this request.",
+      "fix": "Ask an admin or editor if you want it removed."
+    },
+    "P506": {
+      "title": "Request not found",
+      "message": "Request not found",
+      "meaning": "The request was deleted or never existed.",
+      "fix": "Refresh the Requests page."
+    },
+    "P600": {
+      "title": "Watch parties are turned off",
+      "message": "Watch parties are turned off on this server",
+      "meaning": "An admin has not enabled watch parties.",
+      "fix": "An admin can turn them on in Admin → Features → Watch parties."
+    },
+    "P601": {
+      "title": "Party not found",
+      "message": "That watch party has ended or never existed",
+      "meaning": "The host ended the party, everyone left, or the server restarted.",
+      "fix": "Ask the host for a new invite link."
+    },
+    "P602": {
+      "title": "Only the host can do that",
+      "message": "Only the party host can do that",
+      "meaning": "The host has kept playback controls to themselves.",
+      "fix": "Ask the host, or ask them to let everyone control playback."
+    },
+    "P603": {
+      "title": "Not available to your account",
+      "message": "This party is watching something your account can't open",
+      "meaning": "The title is hidden from you, or above your account's content limit.",
+      "fix": "Ask an admin about your account's content settings."
+    },
+    "P604": {
+      "title": "Not everyone can watch that",
+      "message": "Someone in the party can't open that title",
+      "meaning": "The title is hidden from, or above the content limit of, someone watching.",
+      "fix": "Pick something everyone in the party can watch."
+    },
+    "P605": {
+      "title": "Party is full",
+      "message": "That watch party is full",
+      "meaning": "A party holds up to 20 people, and a server runs up to 20 parties at once.",
+      "fix": "Try again when someone leaves or a party ends."
+    }
+  },
+  "messages": {
+    "tooManyAuthenticationAttemptsPleaseTry": "Too many authentication attempts. Please try again later.",
+    "tooManyLoginAttemptsPleaseWait": "Too many login attempts. Please wait before trying again.",
+    "tooManyBackupRequestsPleaseWait": "Too many backup requests. Please wait before trying again.",
+    "plinthioIsNotUsingItsOwn": "Plinthio is not using its own certificate authority",
+    "couldNotReadFile": "Could not read file",
+    "thisAccountNoLongerExists": "This account no longer exists",
+    "sessionWasSignedOutPleaseLog": "Session was signed out, please log in again",
+    "noOpeningSequence": "No opening sequence",
+    "invalidItemId": "Invalid item id",
+    "noStillForThisVideo": "No still for this video",
+    "pageNotFound": "Page not found",
+    "thatWouldLockOutTheDevice": "That would lock out the device you're using right now. Change it from your home network.",
+    "itemNotFound": "Item not found",
+    "ratingMustBeAWholeNumber": "Rating must be a whole number from 1 to 5",
+    "personalRatingsAreTurnedOffOn": "Personal ratings are turned off on this server",
+    "ratingRemoved": "Rating removed",
+    "seriesNotFound": "Series not found",
+    "nothingToRemove": "Nothing to remove",
+    "notInKidsMode": "Not in Kids Mode",
+    "addedToKidsMode": "Added to Kids Mode",
+    "removedFromKidsMode": "Removed from Kids Mode",
+    "invalidUserId": "Invalid user id",
+    "avatarNotFound": "Avatar not found",
+    "failedToReadAvatar": "Failed to read avatar",
+    "avatarImageMustBeSmallerThan": "Avatar image must be smaller than 5MB",
+    "noAvatarImageFileProvided": "No avatar image file provided",
+    "failedToProcessAndSaveAvatar": "Failed to process and save avatar image",
+    "currentPasswordIsRequired": "Current password is required",
+    "newPasswordMustBeAtLeast": "New password must be at least 8 characters",
+    "currentPasswordIncorrect": "Current password incorrect",
+    "usernameAndPasswordMin8Characters": "Username and password (min 8 characters) are required",
+    "usernameAlreadyTaken": "Username already taken",
+    "userNotFound": "User not found",
+    "cannotChangeYourOwnRole": "Cannot change your own role",
+    "cannotSetAnExpirationDateOn": "Cannot set an expiration date on your own account",
+    "cannotRestrictYourOwnAccount": "Cannot restrict your own account",
+    "cannotPutYourOwnAccountIn": "Cannot put your own account in Kids Mode",
+    "anAdminAccountCanTBe": "An admin account can't be a kids account",
+    "nothingToUpdate": "Nothing to update",
+    "cannotDeleteYourOwnAccount": "Cannot delete your own account",
+    "youReAwayFromHomeRight": "You're away from home right now, so that would sign you out. Change it from your home network.",
+    "twoFactorIsnTOnFor": "Two-factor isn't on for that account",
+    "avatarUploadedSuccessfully": "Avatar uploaded successfully",
+    "avatarRemovedSuccessfully": "Avatar removed successfully",
+    "preferencesUpdated": "Preferences updated",
+    "passwordUpdatedSuccessfullyYouWillNeed": "Password updated successfully. You will need to log in again.",
+    "userCreatedSuccessfully": "User created successfully",
+    "userUpdatedSuccessfully": "User updated successfully",
+    "twoFactorTurnedOffTheyCan": "Two-factor turned off. They can sign in with their password and set it up again.",
+    "passwordResetSuccessfully": "Password reset successfully",
+    "roleUpdatedSuccessfully": "Role updated successfully",
+    "userDeletedSuccessfully": "User deleted successfully",
+    "bookmarkNotFound": "Bookmark not found",
+    "bookmarkCreated": "Bookmark created",
+    "bookmarkUpdated": "Bookmark updated",
+    "bookmarkDeleted": "Bookmark deleted",
+    "logsClearedSuccessfully": "Logs cleared successfully",
+    "sessionAlreadyClosed": "Session already closed",
+    "sessionClosed": "Session closed",
+    "segmentNotAvailable": "Segment not available",
+    "couldNotLoadScrubPreviews": "Could not load scrub previews",
+    "sheetNotFound": "Sheet not found",
+    "couldNotLoadScrubPreview": "Could not load scrub preview",
+    "markerMustEndAfterItStarts": "Marker must end after it starts",
+    "markersSaved": "Markers saved",
+    "unknownMediaType": "Unknown media type",
+    "requestSent": "Request sent",
+    "requestUpdated": "Request updated",
+    "requestRemoved": "Request removed",
+    "serverIsAlreadySetUp": "Server is already set up",
+    "adminUsernameAndPasswordMin8": "Admin username and password (min 8 chars) are required",
+    "setupIsAlreadyInProgress": "Setup is already in progress",
+    "serverIsAlreadySetUpPlease": "Server is already set up. Please log in.",
+    "serverSetupFailedCheckTheServer": "Server setup failed. Check the server logs for details.",
+    "usernameAndPasswordAreRequired": "Username and password are required",
+    "loginFailedCheckTheServerLogs": "Login failed. Check the server logs for details.",
+    "signInFailedCheckTheServer": "Sign-in failed. Check the server logs for details.",
+    "signInWithYourPasswordTo": "Sign in with your password to change two-factor",
+    "twoFactorIsAlreadyOnTurn": "Two-factor is already on. Turn it off first to set it up again.",
+    "twoFactorIsAlreadyOn": "Two-factor is already on",
+    "startSettingUpTwoFactorFirst": "Start setting up two-factor first",
+    "twoFactorIsOff": "Two-factor is off",
+    "setPlinthioUpFromYourHome": "Set Plinthio up from your home network",
+    "serverInitializedSuccessfully": "Server initialized successfully",
+    "allSessionsSignedOutPleaseSign": "All sessions signed out. Please sign in again.",
+    "highlightNotFound": "Highlight not found",
+    "highlightDeleted": "Highlight deleted",
+    "pickAMovieOrEpisodeTo": "Pick a movie or episode to watch together",
+    "joinThePartyFirst": "Join the party first",
+    "saySomething": "Say something",
+    "noImageUploaded": "No image uploaded",
+    "couldNotProcessThatImage": "Could not process that image",
+    "seriesNameIsRequired": "Series name is required",
+    "coverArtUpdated": "Cover art updated",
+    "theMetadataProviderRejectedTheConfigured": "The metadata provider rejected the configured API key. For TMDB, copy either the \"API Key\" or the \"API Read Access Token\" from your TMDB account settings into Admin → Metadata. The server reached the provider fine, so this is the credential, not the network.",
+    "itemMatchedAndUpdated": "Item matched and updated",
+    "metadataUpdated": "Metadata updated",
+    "keyNameIsRequired": "Key name is required",
+    "apiKeyGeneratedSuccessfully": "API Key generated successfully",
+    "apiKeyRevoked": "API key revoked",
+    "libraryNotFound": "Library not found",
+    "libraryCreatedAndScanningStarted": "Library created and scanning started",
+    "libraryDeletedSuccessfully": "Library deleted successfully",
+    "markedAllVolumesAsRead": "Marked all volumes as read",
+    "markedAllVolumesAsUnread": "Marked all volumes as unread",
+    "itemHiddenFromShelf": "Item hidden from shelf",
+    "itemRestoredToShelf": "Item restored to shelf",
+    "seriesSettingsSaved": "Series settings saved",
+    "folderNameIsRequired": "Folder name is required",
+    "folderCreated": "Folder created",
+    "folderOrListNotFound": "Folder or list not found",
+    "folderDeleted": "Folder deleted",
+    "itemAddedToFolder": "Item added to folder",
+    "readingOrderSaved": "Reading order saved",
+    "itemRemovedFromFolder": "Item removed from folder",
+    "addedToList": "Added to list",
+    "removedFromList": "Removed from list",
+    "noValidItemIds": "No valid item ids",
+    "progressSaved": "Progress saved",
+    "unknownHardwareAccelerationPreference": "Unknown hardware acceleration preference",
+    "unknownHardwareAccelerationMethod": "Unknown hardware acceleration method",
+    "intervalMustBeBetween1And": "Interval must be between 1 and 168 hours",
+    "retentionMustBeBetween1And": "Retention must be between 1 and 30 backups",
+    "copiesKeptMustBeBetween1": "Copies kept must be between 1 and 365",
+    "scanIntervalMustBeBetween5": "Scan interval must be between 5 minutes and 7 days",
+    "noBackupDestinationIsSet": "No backup destination is set",
+    "shelfViewsUpdated": "Shelf views updated",
+    "transcodingSettingsSaved": "Transcoding settings saved",
+    "backupScheduleUpdated": "Backup schedule updated",
+    "automaticScanningUpdated": "Automatic scanning updated",
+    "backupCreated": "Backup created",
+    "backupDeleted": "Backup deleted",
+    "couldNotLoadServerCustomization": "Could not load server customization",
+    "chooseAnMp4FileToUpload": "Choose an MP4 file to upload",
+    "customizationUpdatedSuccessfully": "Customization updated successfully",
+    "chooseAFolder": "Choose a folder.",
+    "useAFullPathStartingWith": "Use a full path, starting with /.",
+    "thatSInsideTheServerS": "That's inside the server's own data folder; pick a folder somewhere else.",
+    "thatFolderContainsTheServerS": "That folder contains the server's data folder; pick one beside it or elsewhere.",
+    "thatSAFileNotA": "That's a file, not a folder."
+  },
+  "patterns": {
+    "noMetadataSource": "No metadata source for {type} yet",
+    "folderMissing": "Neither that folder nor {parent} exists. In Docker, the folder has to be mounted into the container first.",
+    "cantWriteFolder": "Can't write to that folder: {reason}.",
+    "backupFailed": "Backup failed: {reason}"
+  }
+}

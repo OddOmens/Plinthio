@@ -1,0 +1,82 @@
+{
+  "title": "Listas",
+  "intro": "Lo que quieres ver, leer y escuchar, en tu orden. Pueden incluir títulos que el servidor aún no tiene.",
+  "requests": "Solicitudes",
+  "categories": {
+    "movies": "Películas",
+    "shows": "Series",
+    "anime": "Anime",
+    "read": "Leer",
+    "listen": "Escuchar"
+  },
+  "titleCount": {
+    "one": "{count} título",
+    "other": "{count} títulos"
+  },
+  "newList": "Nueva lista",
+  "newListName": {
+    "movies": "Nombre de la lista de películas",
+    "shows": "Nombre de la lista de series",
+    "anime": "Nombre de la lista de anime",
+    "read": "Nombre de la lista de lectura",
+    "listen": "Nombre de la lista para escuchar"
+  },
+  "noLists": {
+    "movies": "Aún no hay listas de películas.",
+    "shows": "Aún no hay listas de series.",
+    "anime": "Aún no hay listas de anime.",
+    "read": "Aún no hay listas de lectura.",
+    "listen": "Aún no hay listas para escuchar."
+  },
+  "allLists": "Todas las listas",
+  "listFallback": "Lista",
+  "notInLibrary": "{count} fuera de la biblioteca",
+  "addTitles": "Añadir títulos",
+  "deleteList": "Eliminar lista",
+  "inList": "En la lista",
+  "seriesTitle": "{series}: {title}",
+  "empty": {
+    "title": "Esta lista aún está vacía",
+    "hint": "Usa {addTitles} para buscar lo que sea, esté en el servidor o no."
+  },
+  "moveEarlier": "Mover antes",
+  "moveLater": "Mover después",
+  "removeFromList": "Quitar de la lista",
+  "request": "Solicitar",
+  "requestHint": "Pide a un admin que lo añada a la biblioteca",
+  "requestStatus": {
+    "pending": "Pendiente",
+    "accepted_pending": "Aceptada · Pendiente de añadir",
+    "accepted_added": "Aceptada · Añadida",
+    "rejected": "Rechazada"
+  },
+  "deleteDialog": {
+    "title": "¿Eliminar lista?",
+    "message": "Se eliminará «{name}». No se quita nada de tu biblioteca.",
+    "thisList": "Esta lista"
+  },
+  "addButton": {
+    "inNamed": "En {list}",
+    "title": "Añadir a una de tus listas",
+    "list": "Lista",
+    "dialogLabel": "Añadir {title} a una lista",
+    "heading": "Añadir a una lista",
+    "loading": "Cargando tus listas…",
+    "newPlaceholder": "Nueva lista…",
+    "firstPlaceholder": "Ponle nombre a tu primera lista, p. ej. Pendientes"
+  },
+  "errors": {
+    "loadLists": "No se pudieron cargar las listas.",
+    "loadYourLists": "No se pudieron cargar tus listas.",
+    "createList": "No se pudo crear la lista.",
+    "createThatList": "No se pudo crear esa lista.",
+    "gone": "Esa lista ya no existe.",
+    "loadList": "No se pudo cargar esta lista.",
+    "deleteList": "No se pudo eliminar esa lista.",
+    "addTitle": "No se pudo añadir ese título.",
+    "addToList": "No se pudo añadir a esa lista.",
+    "request": "No se pudo enviar esa solicitud.",
+    "reorder": "No se pudo guardar el nuevo orden.",
+    "remove": "No se pudo quitar esa entrada."
+  }
+}

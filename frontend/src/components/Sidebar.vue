@@ -17,10 +17,10 @@
           type="text"
           :value="searchQuery"
           @input="$emit('update:searchQuery', $event.target.value)"
-          placeholder="Search library..."
+          :placeholder="$t('nav.searchLibrary')"
           class="w-full h-11 bg-muted/50 border border-border rounded-xl pl-10 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:bg-background transition"
         />
-        <button aria-label="Clear search"
+        <button :aria-label="$t('nav.clearSearch')"
           v-if="searchQuery"
           @click="$emit('update:searchQuery', '')"
           class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition"
@@ -55,7 +55,7 @@
         ]"
       >
         <ListOrdered class="w-5 h-5 flex-shrink-0" />
-        <span class="truncate">Lists</span>
+        <span class="truncate">{{ $t('nav.lists') }}</span>
       </router-link>
     </nav>
 
@@ -68,10 +68,10 @@
   <!-- Mobile Top Bar + Drawer -->
   <header class="md:hidden sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border safe-top transition-colors">
     <div class="px-4 h-[56px] sm:h-[60px] flex items-center justify-between gap-3">
-      <button aria-label="Open menu"
+      <button :aria-label="$t('nav.openMenu')"
         @click="mobileOpen = true"
         class="w-10 h-10 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition flex-shrink-0"
-        title="Open menu"
+        :title="$t('nav.openMenu')"
       >
         <Menu class="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
@@ -94,15 +94,15 @@
           type="text"
           :value="searchQuery"
           @input="$emit('update:searchQuery', $event.target.value)"
-          placeholder="Search titles, authors, series..."
+          :placeholder="$t('nav.searchEverything')"
           class="w-full h-9.5 bg-muted/60 dark:bg-muted/30 border border-border/80 rounded-xl pl-10 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:bg-background transition shadow-xs"
         />
-        <button aria-label="Clear search"
+        <button :aria-label="$t('nav.clearSearch')"
           v-if="searchQuery"
           @click="$emit('update:searchQuery', '')"
           type="button"
           class="absolute right-2.5 w-6 h-6 rounded-full bg-muted-foreground/20 hover:bg-muted-foreground/30 flex items-center justify-center text-muted-foreground hover:text-foreground transition"
-          title="Clear search"
+          :title="$t('nav.clearSearch')"
         >
           <X class="w-3.5 h-3.5" />
         </button>
@@ -134,7 +134,7 @@
         ]"
       >
         <ListOrdered class="w-3.5 h-3.5" />
-        <span>Lists</span>
+        <span>{{ $t('nav.lists') }}</span>
       </router-link>
     </div>
   </header>
@@ -174,7 +174,7 @@
             {{ customizationStore.serverName || 'Plinthio' }}
           </span>
         </router-link>
-        <button aria-label="Close menu"
+        <button :aria-label="$t('nav.closeMenu')"
           @click="mobileOpen = false"
           class="w-10 h-10 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition"
         >
@@ -207,7 +207,7 @@
           ]"
         >
           <ListOrdered class="w-5 h-5 flex-shrink-0" />
-          <span class="truncate">Lists</span>
+          <span class="truncate">{{ $t('nav.lists') }}</span>
         </router-link>
       </nav>
 
@@ -226,6 +226,7 @@ import { useAuthStore } from '../stores/auth';
 import { ALL_MEDIA_TYPES } from '../constants/media';
 import { useCustomizationStore } from '../stores/customization';
 import UserMenu from './UserMenu.vue';
+import { t } from '../i18n';
 import {
   
   Headphones,
@@ -255,14 +256,20 @@ const onLists = computed(() => route.path.startsWith('/lists'));
 
 const mobileOpen = ref(false);
 
+// Labels are getters so they follow the current language.
+const tab = (value, icon) => ({
+  value,
+  icon,
+  get label() { return value === 'all' ? t('common.all') : t(`common.mediaTypes.${value}`); }
+});
 const allTabs = [
-  { label: 'All', value: 'all', icon: Layers },
-  { label: 'Audiobooks', value: 'audiobook', icon: Headphones },
-  { label: 'Manga', value: 'manga', icon: FileImage },
-  { label: 'Books', value: 'book', icon: Book },
-  { label: 'Shows', value: 'show', icon: Tv },
-  { label: 'Movies', value: 'movie', icon: Film },
-  { label: 'Anime', value: 'anime', icon: Sparkles }
+  tab('all', Layers),
+  tab('audiobook', Headphones),
+  tab('manga', FileImage),
+  tab('book', Book),
+  tab('show', Tv),
+  tab('movie', Film),
+  tab('anime', Sparkles)
 ];
 
 const visibleMediaTabs = computed(() => {

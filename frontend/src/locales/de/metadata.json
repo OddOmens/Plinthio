@@ -1,0 +1,186 @@
+{
+  "fields": {
+    "title": "Titel",
+    "author": "Autor",
+    "authors": "Autor(en)",
+    "director": "Regie",
+    "directors": "Regie",
+    "artists": "Zeichner",
+    "artistsShort": "Zeichner",
+    "cast": "Besetzung",
+    "castActors": "Besetzung",
+    "series": "Reihe",
+    "releaseDate": "Erscheinungsdatum",
+    "date": "Datum",
+    "ageRating": "Altersfreigabe",
+    "status": "Status",
+    "publisher": "Verlag",
+    "genres": "Genres",
+    "themes": "Themen",
+    "description": "Beschreibung",
+    "cover": "Cover"
+  },
+  "ageRatings": {
+    "everyone": "Alle",
+    "teen": "Jugendliche",
+    "mature": "Erwachsene",
+    "explicit": "Explizit"
+  },
+  "edit": {
+    "title": "Metadaten bearbeiten",
+    "appliesToAll": {
+      "one": "Gilt für {count} Band",
+      "other": "Gilt für alle {count} Bände"
+    },
+    "coverPreview": "Cover-Vorschau",
+    "replaceCover": "Cover ersetzen",
+    "coverSaving": "Speichern",
+    "setForSeries": "Für Reihe",
+    "replace": "Ersetzen",
+    "unknownAuthor": "Unbekannter Autor",
+    "commaSeparated": "Durch Kommas getrennt",
+    "commaSeparatedActors": "Darsteller, durch Kommas getrennt",
+    "seriesName": "Name der Reihe",
+    "releaseDateExample": "z. B. 2019 oder 2019-06-26",
+    "sameAsSeries": "Wie die Reihe",
+    "unrated": "Ohne Freigabe",
+    "statusExample": "z. B. Laufend, Abgeschlossen",
+    "descriptionPlaceholder": "Inhaltsangabe / Beschreibung",
+    "saving": "Wird gespeichert…",
+    "searchToFill": "{provider} durchsuchen, um fehlende Infos zu ergänzen",
+    "externalSources": "Externe Quellen",
+    "searchPlaceholder": "Titel suchen…",
+    "year": "Jahr",
+    "yearHint": "Nach Erscheinungsjahr filtern (z. B. 2002)",
+    "searching": "Suche läuft…",
+    "searchingProvider": "{provider} wird durchsucht…",
+    "noResults": "Keine Ergebnisse. Versuch einen anderen Suchbegriff.",
+    "searchedAs": "Gesucht als: {query}",
+    "resultDirector": "Regie: {name}",
+    "resultCast": "Mit: {names}",
+    "resultArt": "Zeichnungen: {names}",
+    "useAll": "Alles übernehmen",
+    "uploadFailed": "Das Bild konnte nicht hochgeladen werden.",
+    "searchFailed": "Die Suche bei den Metadatenanbietern ist fehlgeschlagen – Details findest du in der Browserkonsole.",
+    "savedTitle": "Metadaten gespeichert",
+    "savedSeries": {
+      "one": "{count} Eintrag der Reihe aktualisiert.",
+      "other": "Alle {count} Einträge der Reihe aktualisiert."
+    },
+    "savedOne": "„{title}“ aktualisiert.",
+    "saveFailed": "Die Metadaten konnten nicht gespeichert werden – Details findest du in der Browserkonsole."
+  },
+  "manager": {
+    "title": "Titelbereinigung und Abgleich",
+    "description": "Entferne Release-Tags aus Dateinamen und hole Poster, Inhaltsangaben, Besetzung und Erscheinungsdaten von TMDB.",
+    "stats": {
+      "total": "Medien gesamt",
+      "totalHint": "Alle indexierten Inhalte",
+      "dirty": "Titel bereinigen",
+      "dirtyHint": "Release-Tags oder Jahr im Titel",
+      "missingCover": "Fehlende Bilder",
+      "missingCoverHint": "Kein Poster und kein Cover",
+      "missingMeta": "Fehlende Inhaltsangabe / Datum",
+      "missingMetaHint": "Inhaltsangabe von TMDB fehlt"
+    },
+    "filters": {
+      "allLibraries": "Alle Bibliotheken",
+      "allMediaTypes": "Alle Medientypen",
+      "tvShows": "Serien",
+      "needsCleanup": "Zu bereinigen",
+      "searchPlaceholder": "Nach Titel oder Pfad filtern…"
+    },
+    "batch": {
+      "selectAll": "Alle auswählen ({count})",
+      "selected": "{count} ausgewählt",
+      "overwritePosters": "Poster überschreiben",
+      "useCanonicalTitle": "Offiziellen Titel verwenden",
+      "cleanHint": "Release-Tags und angehängte Jahreszahlen aus den Titeln in der Datenbank entfernen",
+      "cleanCount": "Titel bereinigen ({count})",
+      "findHint": "Jeden ausgewählten Titel mit den Metadatenanbietern abgleichen (TMDB, MangaDex, Google Books, Open Library): Bild, Inhaltsangabe, Erscheinungsdatum",
+      "findCount": "Metadaten suchen ({count})",
+      "stop": "Stopp",
+      "stopping": "Wird gestoppt…"
+    },
+    "summary": {
+      "matched": "{matched} von {total} gefunden.",
+      "matchedStopped": "{matched} von {total} gefunden, bevor du gestoppt hast.",
+      "notFound": {
+        "one": "Für {count} Titel gab es keinen Treffer – er ist unten markiert; versuch es dort mit {action}.",
+        "other": "Für {count} Titel gab es keinen Treffer – sie sind unten markiert; versuch es dort mit {action}."
+      },
+      "needsKey": {
+        "one": "{count} davon ist ein Video und braucht einen TMDB-Schlüssel – füge einen unter {where} hinzu und starte erneut.",
+        "other": "{count} davon sind Videos und brauchen einen TMDB-Schlüssel – füge einen unter {where} hinzu und starte erneut."
+      },
+      "adminMetadata": "Verwaltung → Metadaten",
+      "failed": {
+        "one": "{count} ist fehlgeschlagen (den Grund siehst du in der Zeile).",
+        "other": "{count} sind fehlgeschlagen (den Grund siehst du in der jeweiligen Zeile)."
+      }
+    },
+    "dismiss": "Schließen",
+    "list": {
+      "analyzing": "Titel und Metadaten werden analysiert…",
+      "empty": "Keine Medien passen zu den gewählten Filtern."
+    },
+    "badges": {
+      "frameTag": "STANDBILD",
+      "tvEpisode": "Serienfolge",
+      "poster": "Poster",
+      "frame": "Standbild",
+      "frameHint": "Vorläufiges Standbild aus dem Video – starte den automatischen Abgleich, um das offizielle Poster zu holen",
+      "noPoster": "Kein Poster",
+      "synopsis": "Inhaltsangabe",
+      "noSynopsis": "Keine Inhaltsangabe",
+      "noDate": "Kein Datum"
+    },
+    "cleanLabel": "Bereinigt:",
+    "actions": {
+      "autoMatch": "Auto-Abgleich",
+      "autoMatchHint": "Mit den Metadatenanbietern abgleichen und diesen Titel aktualisieren",
+      "editSearch": "Bearbeiten / Suchen",
+      "editSearchHint": "TMDB manuell durchsuchen, ein Bild auswählen oder Metadatenfelder anpassen"
+    },
+    "match": {
+      "matchedAs": "Gefunden als „{title}“",
+      "needsKey": "Braucht einen TMDB-Schlüssel – füge oben einen hinzu",
+      "noMatch": "Kein Treffer – versuch es mit Bearbeiten / Suchen",
+      "failed": "Abgleich fehlgeschlagen – versuch es noch einmal"
+    },
+    "errors": {
+      "loadFailed": "Einträge konnten nicht geladen werden"
+    },
+    "clean": {
+      "confirmTitle": {
+        "one": "{count} Titel bereinigen?",
+        "other": "{count} Titel bereinigen?"
+      },
+      "confirmMessage": {
+        "one": "Dadurch werden Scene-Tags, Codecs, Auflösungen und angehängte Erscheinungsjahre aus {count} ausgewählten Titel in der Datenbank entfernt.",
+        "other": "Dadurch werden Scene-Tags, Codecs, Auflösungen und angehängte Erscheinungsjahre aus {count} ausgewählten Titeln in der Datenbank entfernt."
+      },
+      "confirm": "Titel bereinigen",
+      "progress": {
+        "one": "{count} Titel wird bereinigt…",
+        "other": "{count} Titel werden bereinigt…"
+      },
+      "doneTitle": "Titel bereinigt",
+      "doneMessage": {
+        "one": "{count} Titel bereinigt.",
+        "other": "{count} Titel bereinigt."
+      },
+      "failedTitle": "Bereinigung fehlgeschlagen"
+    },
+    "find": {
+      "confirmTitle": {
+        "one": "Metadaten für {count} Eintrag suchen?",
+        "other": "Metadaten für {count} Einträge suchen?"
+      },
+      "confirmMessage": "Jeder ausgewählte Titel wird mit den Metadatenanbietern (TMDB, MangaDex, Google Books, Open Library) abgeglichen, und Bild, Inhaltsangabe und Erscheinungsdatum werden aktualisiert. Die Ergebnisse erscheinen in jeder Zeile; du kannst jederzeit stoppen.",
+      "confirm": "Abgleich starten",
+      "itemFallback": "Eintrag",
+      "progress": "Abgleich {current} von {total}: {title}"
+    }
+  }
+}

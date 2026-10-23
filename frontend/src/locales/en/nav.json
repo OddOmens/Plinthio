@@ -1,0 +1,43 @@
+{
+  "lists": "Lists",
+  "searchLibrary": "Search library...",
+  "searchEverything": "Search titles, authors, series...",
+  "clearSearch": "Clear search",
+  "openMenu": "Open menu",
+  "closeMenu": "Close menu",
+  "backToShelves": "Back to Shelves",
+  "account": {
+    "menuTitle": "Account menu ({name})",
+    "menuLabel": "Account menu for {name}",
+    "someone": "user",
+    "avatar": "Avatar",
+    "expires": "Account expires: {date}",
+    "expired": "Expired",
+    "hoursLeft": "{count}h left",
+    "daysLeft": "{count}d left"
+  },
+  "roles": {
+    "admin": "admin",
+    "editor": "editor",
+    "viewer": "viewer"
+  },
+  "menu": {
+    "downloads": "Downloads",
+    "requests": "Requests",
+    "docs": "Documents",
+    "reportProblem": "Report a problem",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "logOut": "Log out"
+  },
+  "update": {
+    "available": "{release} is available",
+    "current": "— you're on {version}.",
+    "whatsNew": "What's new",
+    "howToUpdate": "How to update",
+    "dismissLabel": "Dismiss the {version} update notice",
+    "dismissTitle": "Dismiss until the next version",
+    "where": "On the machine running Plinthio, in the folder with your {file}:",
+    "backup": "Your database is backed up to {folder} automatically before the new version starts."
+  }
+}

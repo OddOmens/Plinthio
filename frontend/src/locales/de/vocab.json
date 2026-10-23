@@ -1,0 +1,107 @@
+{
+  "anyCreator": "Urheber",
+  "manga": {
+    "unit": "Band",
+    "units": "Bände",
+    "short": "Bd.",
+    "verb": "Lesen",
+    "verbing": "Lesen",
+    "done": "Gelesen",
+    "creator": "Autor",
+    "series": "Manga-Reihe",
+    "count": {
+      "one": "{count} Band",
+      "other": "{count} Bände"
+    },
+    "entry": "Bd. {number}",
+    "allDone": "Alles gelesen",
+    "progress": "{count}/{total} gelesen"
+  },
+  "book": {
+    "unit": "Buch",
+    "units": "Bücher",
+    "short": "Buch",
+    "verb": "Lesen",
+    "verbing": "Lesen",
+    "done": "Gelesen",
+    "creator": "Autor",
+    "series": "Buchreihe",
+    "count": {
+      "one": "{count} Buch",
+      "other": "{count} Bücher"
+    },
+    "entry": "Buch {number}",
+    "allDone": "Alles gelesen",
+    "progress": "{count}/{total} gelesen"
+  },
+  "audiobook": {
+    "unit": "Buch",
+    "units": "Bücher",
+    "short": "Buch",
+    "verb": "Hören",
+    "verbing": "Hören",
+    "done": "Gehört",
+    "creator": "Autor",
+    "series": "Hörbuchreihe",
+    "count": {
+      "one": "{count} Buch",
+      "other": "{count} Bücher"
+    },
+    "entry": "Buch {number}",
+    "allDone": "Alles gehört",
+    "progress": "{count}/{total} gehört"
+  },
+  "show": {
+    "unit": "Folge",
+    "units": "Folgen",
+    "short": "Folge",
+    "verb": "Ansehen",
+    "verbing": "Ansehen",
+    "done": "Gesehen",
+    "creator": "Schöpfer",
+    "series": "TV-Serie",
+    "count": {
+      "one": "{count} Folge",
+      "other": "{count} Folgen"
+    },
+    "entry": "S{season} · F{episode}",
+    "season": "S{season}",
+    "allDone": "Alles gesehen",
+    "progress": "{count}/{total} gesehen"
+  },
+  "anime": {
+    "unit": "Folge",
+    "units": "Folgen",
+    "short": "Folge",
+    "verb": "Ansehen",
+    "verbing": "Ansehen",
+    "done": "Gesehen",
+    "creator": "Studio",
+    "series": "Anime-Serie",
+    "count": {
+      "one": "{count} Folge",
+      "other": "{count} Folgen"
+    },
+    "entry": "S{season} · F{episode}",
+    "season": "S{season}",
+    "allDone": "Alles gesehen",
+    "progress": "{count}/{total} gesehen"
+  },
+  "movie": {
+    "unit": "Film",
+    "units": "Filme",
+    "short": "Teil",
+    "verb": "Ansehen",
+    "verbing": "Ansehen",
+    "done": "Gesehen",
+    "creator": "Regie",
+    "series": "Filmreihe",
+    "count": {
+      "one": "{count} Film",
+      "other": "{count} Filme"
+    },
+    "entry": "Teil {number}",
+    "allDone": "Alles gesehen",
+    "progress": "{count}/{total} gesehen"
+  }
+}

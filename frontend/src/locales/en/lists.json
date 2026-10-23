@@ -1,0 +1,82 @@
+{
+  "title": "Lists",
+  "intro": "Things to watch, read and listen to, in your order. They can hold titles the server doesn't have yet.",
+  "requests": "Requests",
+  "categories": {
+    "movies": "Movies",
+    "shows": "Shows",
+    "anime": "Anime",
+    "read": "Read",
+    "listen": "Listen"
+  },
+  "titleCount": {
+    "one": "{count} title",
+    "other": "{count} titles"
+  },
+  "newList": "New list",
+  "newListName": {
+    "movies": "Movies list name",
+    "shows": "Shows list name",
+    "anime": "Anime list name",
+    "read": "Read list name",
+    "listen": "Listen list name"
+  },
+  "noLists": {
+    "movies": "No movies lists yet.",
+    "shows": "No shows lists yet.",
+    "anime": "No anime lists yet.",
+    "read": "No read lists yet.",
+    "listen": "No listen lists yet."
+  },
+  "allLists": "All lists",
+  "listFallback": "List",
+  "notInLibrary": "{count} not in the library",
+  "addTitles": "Add titles",
+  "deleteList": "Delete list",
+  "inList": "In list",
+  "seriesTitle": "{series}: {title}",
+  "empty": {
+    "title": "Nothing in this list yet",
+    "hint": "Use {addTitles} to search for anything, on the server or not."
+  },
+  "moveEarlier": "Move earlier",
+  "moveLater": "Move later",
+  "removeFromList": "Remove from list",
+  "request": "Request",
+  "requestHint": "Ask an admin to add this to the library",
+  "requestStatus": {
+    "pending": "Pending",
+    "accepted_pending": "Accepted · Pending add",
+    "accepted_added": "Accepted · Added",
+    "rejected": "Rejected"
+  },
+  "deleteDialog": {
+    "title": "Delete list?",
+    "message": "\"{name}\" will be deleted. Nothing in your library is removed.",
+    "thisList": "This list"
+  },
+  "addButton": {
+    "inNamed": "In {list}",
+    "title": "Add to one of your lists",
+    "list": "List",
+    "dialogLabel": "Add {title} to a list",
+    "heading": "Add to a list",
+    "loading": "Loading your lists…",
+    "newPlaceholder": "New list…",
+    "firstPlaceholder": "Name your first list, e.g. Watchlist"
+  },
+  "errors": {
+    "loadLists": "Could not load lists.",
+    "loadYourLists": "Could not load your lists.",
+    "createList": "Could not create list.",
+    "createThatList": "Could not create that list.",
+    "gone": "That list no longer exists.",
+    "loadList": "Could not load this list.",
+    "deleteList": "Could not delete that list.",
+    "addTitle": "Could not add that title.",
+    "addToList": "Could not add it to that list.",
+    "request": "Could not send that request.",
+    "reorder": "Could not save the new order.",
+    "remove": "Could not remove that entry."
+  }
+}

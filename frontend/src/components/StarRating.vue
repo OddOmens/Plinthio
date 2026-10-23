@@ -5,7 +5,7 @@
     class="inline-flex items-center"
     :class="gapClass"
     :role="readonly ? 'img' : 'radiogroup'"
-    :aria-label="readonly ? `${displayValue} out of 5 stars` : 'Your rating'"
+    :aria-label="readonly ? $t('title.rating.outOfFive', { value: $n(displayValue) }) : $t('title.rating.yourRating')"
     @mouseleave="hover = 0"
   >
     <component
@@ -15,8 +15,8 @@
       :type="readonly ? undefined : 'button'"
       :role="readonly ? undefined : 'radio'"
       :aria-checked="readonly ? undefined : modelValue === n"
-      :aria-label="readonly ? undefined : `${n} star${n === 1 ? '' : 's'}`"
-      :title="readonly ? undefined : (modelValue === n ? 'Clear rating' : `${n} star${n === 1 ? '' : 's'}`)"
+      :aria-label="readonly ? undefined : $t('title.rating.stars', { count: n })"
+      :title="readonly ? undefined : (modelValue === n ? $t('title.rating.clear') : $t('title.rating.stars', { count: n }))"
       class="inline-flex"
       :class="readonly ? '' : 'p-1 rounded transition active:scale-90 hover:scale-110 disabled:opacity-50 disabled:pointer-events-none'"
       :disabled="readonly ? undefined : disabled"

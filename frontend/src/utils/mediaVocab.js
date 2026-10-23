@@ -1,13 +1,29 @@
 // How the UI talks about each media type: what one entry in a series is called, what you
 // do with it, and who made it. One place, so the shelf, series pages and cards agree.
-const VOCAB = {
-  manga: { unit: 'Volume', units: 'Volumes', short: 'Vol', verb: 'Read', verbing: 'Reading', done: 'Read', creator: 'Author', series: 'Manga Series', type: 'Manga' },
-  book: { unit: 'Book', units: 'Books', short: 'Book', verb: 'Read', verbing: 'Reading', done: 'Read', creator: 'Author', series: 'Book Series', type: 'Books' },
-  audiobook: { unit: 'Book', units: 'Books', short: 'Book', verb: 'Listen', verbing: 'Listening', done: 'Listened', creator: 'Author', series: 'Audiobook Series', type: 'Audiobooks' },
-  show: { unit: 'Episode', units: 'Episodes', short: 'Ep', verb: 'Watch', verbing: 'Watching', done: 'Watched', creator: 'Creator', series: 'TV Series', type: 'Shows' },
-  anime: { unit: 'Episode', units: 'Episodes', short: 'Ep', verb: 'Watch', verbing: 'Watching', done: 'Watched', creator: 'Studio', series: 'Anime Series', type: 'Anime' },
-  movie: { unit: 'Movie', units: 'Movies', short: 'Part', verb: 'Watch', verbing: 'Watching', done: 'Watched', creator: 'Director', series: 'Movie Collection', type: 'Movies' }
-};
+// The words live in locales/<language>/vocab.json; every field is a getter, so it reads
+// the current language each time it's used (spreading a vocab object freezes today's
+// wording). `type` / `typeSingular` are the shared media type names from common.json.
+import { t } from '../i18n';
+
+const FIELDS = ['unit', 'units', 'short', 'verb', 'verbing', 'done', 'creator', 'series'];
+
+function makeVocab(mediaType) {
+  const vocab = {
+    mediaType,
+    get type() { return t(`common.mediaTypes.${mediaType}`); },
+    get typeSingular() { return t(`common.mediaType.${mediaType}`); },
+    // "3 volumes", "1 episode" — a count of this type's entries.
+    count(count) { return t(`vocab.${mediaType}.count`, { count }); }
+  };
+  for (const field of FIELDS) {
+    Object.defineProperty(vocab, field, { enumerable: true, get: () => t(`vocab.${mediaType}.${field}`) });
+  }
+  return vocab;
+}
+
+const VOCAB = Object.fromEntries(
+  ['manga', 'book', 'audiobook', 'show', 'anime', 'movie'].map((type) => [type, makeVocab(type)])
+);
 
 export function vocabFor(mediaType) {
   return VOCAB[mediaType] || VOCAB.book;
@@ -19,7 +35,7 @@ export const isTimeBased = (mediaType) => mediaType === 'audiobook' || isVideo(m
 
 // The "Creator" shelf view's label for the type being browsed ("All" mixes them).
 export function creatorLabel(mediaType) {
-  return !mediaType || mediaType === 'all' ? 'Creator' : vocabFor(mediaType).creator;
+  return !mediaType || mediaType === 'all' ? t('vocab.anyCreator') : vocabFor(mediaType).creator;
 }
 
 // "Vol 3", "S2 · E5" (episodes store season + episode/1000 in `volume`), "Book 2".
@@ -29,10 +45,12 @@ export function entryLabel(item) {
   if (item.media_type === 'show' || item.media_type === 'anime') {
     const season = Math.floor(v);
     const episode = Math.round((v - season) * 1000);
-    return episode > 0 ? `S${season} · E${episode}` : `S${season}`;
+    return episode > 0
+      ? t(`vocab.${item.media_type}.entry`, { season, episode })
+      : t(`vocab.${item.media_type}.season`, { season });
   }
-  const n = v % 1 === 0 ? Math.trunc(v) : v;
-  return `${vocabFor(item.media_type).short} ${n}`;
+  const number = v % 1 === 0 ? Math.trunc(v) : v;
+  return t(`vocab.${vocabFor(item.media_type).mediaType}.entry`, { number });
 }
 
 // Where clicking a title goes: its series page, or its own page when it has no series.

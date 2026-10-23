@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { queueProgress, flushProgressQueue } from '../utils/offlineQueue';
+import { translateServerMessage } from '../i18n/serverErrors';
 
 const api = axios.create({
   baseURL: '/api',
@@ -20,7 +21,14 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Confirmations some screens show as they are ("Password reset successfully").
+    const data = response.data;
+    if (data && typeof data === 'object' && typeof data.message === 'string') {
+      data.message = translateServerMessage(data.message);
+    }
+    return response;
+  },
   (error) => {
     // Server errors carry a message for everyone, a Plinthio error code (P###, listed on the
     // Docs page) and, for admins only, the underlying cause in `detail` (see backend
@@ -29,6 +37,10 @@ api.interceptors.response.use(
     // `data.code` stays available for anything that needs to branch on it.
     const data = error.response?.data;
     if (data && typeof data === 'object' && !data._formatted) {
+      // In the reader's language where the message is a known one; `errorEnglish` keeps what
+      // the server said, for anything that has to match on it.
+      data.errorEnglish = data.error;
+      data.error = translateServerMessage(data.error, data.code);
       if (data.detail && data.detail !== data.error) {
         data.error = data.error ? `${data.error}: ${data.detail}` : data.detail;
       }

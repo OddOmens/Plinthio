@@ -1,0 +1,242 @@
+{
+  "nav": {
+    "serverAdmin": "服务器管理",
+    "groups": {
+      "account": "帐户",
+      "yours": "你的 Plinthio",
+      "connect": "连接"
+    },
+    "profile": {
+      "label": "个人资料",
+      "desc": "你的头像和角色"
+    },
+    "security": {
+      "label": "安全",
+      "desc": "密码、两步验证、设备"
+    },
+    "appearance": {
+      "label": "外观",
+      "desc": "颜色、导航、宽度、暂停画面"
+    },
+    "shelves": {
+      "label": "书架",
+      "desc": "媒体类型、起始页、视图"
+    },
+    "hidden": {
+      "label": "已隐藏的作品",
+      "desc": "你隐藏的作品"
+    },
+    "activity": {
+      "label": "动态",
+      "desc": "你的统计和登录记录"
+    },
+    "apps": {
+      "label": "应用和 API 密钥",
+      "desc": "Mihon、KOReader、OPDS、脚本"
+    }
+  },
+  "layout": {
+    "backTo": "返回{title}",
+    "backToShelves": "返回书架",
+    "sections": "{title}分区"
+  },
+  "saveStatus": {
+    "error": "无法保存"
+  },
+  "activityList": {
+    "empty": "还没有任何动态记录。",
+    "deletedItem": "已删除的项目",
+    "you": {
+      "signedIn": "已登录",
+      "signInFailed": "登录尝试失败",
+      "viewed": "看过“{title}”",
+      "viewing": "正在看“{title}”"
+    },
+    "someone": {
+      "signedIn": "{user} 已登录",
+      "signInFailed": "{user} 登录失败",
+      "viewed": "{user} 看过“{title}”",
+      "viewing": "{user} 正在看“{title}”"
+    }
+  },
+  "mediaTypes": {
+    "movie": {
+      "label": "电影",
+      "desc": "故事片"
+    },
+    "show": {
+      "label": "电视剧",
+      "desc": "剧集和分集"
+    },
+    "anime": {
+      "label": "动画",
+      "desc": "动画剧集和动画电影"
+    },
+    "book": {
+      "label": "书籍",
+      "desc": "EPUB、PDF 和文本"
+    },
+    "manga": {
+      "label": "漫画",
+      "desc": "CBZ、CBR 和图像小说"
+    },
+    "audiobook": {
+      "label": "有声书",
+      "desc": "有声读物和广播剧"
+    }
+  },
+  "format": {
+    "size": "{value} {unit}",
+    "units": {
+      "B": "B",
+      "KB": "KB",
+      "MB": "MB",
+      "GB": "GB",
+      "TB": "TB"
+    },
+    "seconds": "{value}秒",
+    "minutes": "{value}分钟",
+    "hours": "{value}小时",
+    "hoursMinutes": "{hours}{minutes}"
+  },
+  "profile": {
+    "title": "个人资料",
+    "description": "你的头像，以及你的帐户在此服务器上的设置。",
+    "avatar": "头像",
+    "changePicture": "更换头像",
+    "uploadPicture": "上传头像",
+    "pictureHint": "JPG、PNG、WebP 或 GIF，最大5 MB，会裁剪为正方形。",
+    "notAnImage": "请选择图片文件（PNG、JPG、WebP 或 GIF）。",
+    "tooBig": "该图片超过5 MB。",
+    "uploadFailed": "无法上传该头像",
+    "removeTitle": "移除头像",
+    "removeMessage": "要移除你的头像吗？移除后会显示你的姓名首字母。",
+    "removeFailed": "无法移除头像",
+    "roles": {
+      "admin": {
+        "label": "管理员",
+        "desc": "管理此服务器"
+      },
+      "editor": {
+        "label": "编辑者",
+        "desc": "还可以修正作品、封面和详情"
+      },
+      "viewer": {
+        "label": "观众",
+        "desc": "浏览、阅读、观看和收听"
+      }
+    }
+  },
+  "security": {
+    "title": "安全",
+    "description": "你的密码、两步验证登录，以及以你身份登录的设备。",
+    "password": {
+      "desc": "更改密码会让你在所有地方退出登录，包括此浏览器。",
+      "current": "当前密码",
+      "new": "新密码",
+      "hint": "至少8个字符。",
+      "change": "更改密码",
+      "changing": "正在更改…",
+      "changed": "密码已更改。请使用新密码重新登录。",
+      "changeFailed": "无法更改你的密码"
+    },
+    "twoFactor": {
+      "title": "两步验证登录",
+      "desc": "除密码外还需要手机上的验证码。如果你在外使用 Plinthio，非常值得开启。"
+    },
+    "devices": {
+      "title": "已登录的设备",
+      "desc": "你登录过的每部手机、每个浏览器和每台电视都会保持登录。如果你在某个已不受你控制的地方登录过，请在所有设备上退出登录。",
+      "signOutAll": "退出所有设备",
+      "signingOut": "正在退出…",
+      "confirmTitle": "在所有设备上退出登录",
+      "confirmMessage": "登录了此帐户的所有设备都会立即退出登录，包括这台设备。",
+      "signOutFailed": "无法退出所有设备"
+    }
+  },
+  "shelves": {
+    "title": "书架",
+    "description": "书架上显示什么，以及 Plinthio 打开时显示哪里。更改会自动保存。",
+    "mediaTypes": {
+      "title": "媒体类型",
+      "desc": "哪些类型的媒体会出现在你的书架上。至少保留一项。"
+    },
+    "startOn": {
+      "title": "起始页",
+      "desc": "Plinthio 打开时显示的书架。",
+      "all": "所有媒体"
+    },
+    "views": {
+      "title": "书架视图",
+      "desc": "书架上方的视图。每个系列显示为一张卡片；“按字母”视图始终存在。",
+      "offByAdmin": "已被管理员关闭",
+      "modes": {
+        "alphabetical": {
+          "label": "按字母",
+          "desc": "始终开启。所有系列和作品按 A–Z 排列。"
+        },
+        "creator": {
+          "label": "创作者",
+          "desc": "按作者、导演或制作公司分组。"
+        },
+        "diskFolders": {
+          "label": "磁盘文件夹",
+          "desc": "服务器上的文件夹。"
+        },
+        "customFolders": {
+          "label": "自定义文件夹",
+          "desc": "你在应用内创建的文件夹，另有一个“未整理”文件夹收纳其余内容。"
+        }
+      }
+    }
+  },
+  "hidden": {
+    "title": "已隐藏的作品",
+    "description": "你从书架上隐藏的作品。只有你看不到它们；随时可以恢复显示。",
+    "empty": "没有隐藏任何内容。在作品页面隐藏某部作品后，它会出现在这里。",
+    "unhide": "取消隐藏",
+    "unhideFailed": "无法取消隐藏该作品"
+  },
+  "activity": {
+    "title": "动态",
+    "description": "你读过、看过和听过的内容，以及你最近的登录记录。",
+    "recent": "最近动态",
+    "tiles": {
+      "listened": "收听时长",
+      "pagesRead": "已读页数",
+      "finished": "已完成",
+      "inProgress": "进行中"
+    }
+  },
+  "apps": {
+    "title": "应用和 API 密钥",
+    "description": "在阅读应用、脚本和仪表盘中使用 Plinthio。每个应用都使用你在这里生成的 API 密钥登录。",
+    "reading": {
+      "title": "阅读应用",
+      "desc": "在其他应用中阅读你的漫画、PDF 和书籍。使用你的用户名（{username}）登录，并以 API 密钥作为密码。为每个应用单独生成一个密钥，这样删除某个密钥就能让对应的应用退出登录。",
+      "address": "{app} 地址",
+      "mihon": "安装 Komga 扩展，打开其设置，输入此地址、你的用户名，并以 API 密钥作为密码。然后在 Mihon 的“设置 → 追踪”中开启 Komga，这样你在 Mihon 中读过的内容也会在这里标记为已读。",
+      "koreader": "打开一本书，然后依次选择“工具 → 进度同步 → 自定义同步服务器”，输入此地址。选择“登录”（不是“注册”），使用你的用户名，并以 API 密钥作为密码。PDF 和漫画的阅读位置会双向同步；EPUB 的位置会在 KOReader 设备之间同步，Plinthio 会显示你的阅读进度。Plinthio 1.0之前生成的密钥在这里无效，请生成一个新密钥。",
+      "opdsName": "OPDS 阅读器（Chunky、Panels、KyBook、Moon+ Reader）",
+      "opds": "将此地址添加为 OPDS 书库，使用你的用户名，并以 API 密钥作为密码。"
+    },
+    "keys": {
+      "title": "API 密钥",
+      "desc": "密钥代表你本人。在 {header} 请求头中发送它，或在应用中把它用作密码。",
+      "name": "密钥名称",
+      "namePlaceholder": "用途，例如“我手机上的 Mihon”",
+      "make": "生成密钥",
+      "makeFailed": "无法生成密钥",
+      "copyNow": "请立即复制你的新密钥，它不会再次显示。",
+      "copyKey": "复制密钥",
+      "empty": "还没有密钥。",
+      "made": "生成于 {date}",
+      "revokeNamed": "吊销 {name}",
+      "revokeKey": "吊销密钥",
+      "revokeTitle": "吊销 API 密钥",
+      "revokeMessage": "要吊销“{name}”吗？所有使用它的应用都会立即退出登录。",
+      "revoke": "吊销",
+      "revokeFailed": "无法吊销该密钥"
+    }
+  }
+}

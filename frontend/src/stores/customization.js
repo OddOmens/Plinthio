@@ -26,6 +26,8 @@ export const useCustomizationStore = defineStore('customization', {
     partyModeEnabled: false,
     // What the video player shows while paused: simple | details | cinematic | bedtime.
     pauseScreen: 'details',
+    // The language for anyone who hasn't picked one: 'auto' (their browser's) or a code.
+    defaultLanguage: 'auto',
     // The opening sequence played before movies/episodes: the built-in clip unless an admin
     // uploads one (introCustom). introVersion changes with each upload so the new clip isn't
     // cached over.
@@ -88,6 +90,7 @@ export const useCustomizationStore = defineStore('customization', {
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
           if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
+          if (res.data.defaultLanguage) this.defaultLanguage = res.data.defaultLanguage;
           this.applyIntro(res.data);
           this.applyToDom();
         }
@@ -115,6 +118,7 @@ export const useCustomizationStore = defineStore('customization', {
           if (typeof res.data.showMissingFilms === 'boolean') this.showMissingFilms = res.data.showMissingFilms;
           if (typeof res.data.partyModeEnabled === 'boolean') this.partyModeEnabled = res.data.partyModeEnabled;
           if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
+          if (res.data.defaultLanguage) this.defaultLanguage = res.data.defaultLanguage;
           this.applyIntro(res.data);
           this.applyToDom();
         }

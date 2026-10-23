@@ -1,0 +1,242 @@
+{
+  "nav": {
+    "serverAdmin": "Administracja serwera",
+    "groups": {
+      "account": "Konto",
+      "yours": "Twoje Plinthio",
+      "connect": "Połączenia"
+    },
+    "profile": {
+      "label": "Profil",
+      "desc": "Twoje zdjęcie i rola"
+    },
+    "security": {
+      "label": "Bezpieczeństwo",
+      "desc": "Hasło, weryfikacja dwuetapowa, urządzenia"
+    },
+    "appearance": {
+      "label": "Wygląd",
+      "desc": "Kolor, nawigacja, szerokość, ekran pauzy"
+    },
+    "shelves": {
+      "label": "Półki",
+      "desc": "Typy mediów, strona startowa, widoki"
+    },
+    "hidden": {
+      "label": "Ukryte tytuły",
+      "desc": "Tytuły ukryte przez ciebie"
+    },
+    "activity": {
+      "label": "Aktywność",
+      "desc": "Twoje statystyki i logowania"
+    },
+    "apps": {
+      "label": "Aplikacje i klucze API",
+      "desc": "Mihon, KOReader, OPDS, skrypty"
+    }
+  },
+  "layout": {
+    "backTo": "Wróć do: {title}",
+    "backToShelves": "Wróć do półek",
+    "sections": "Sekcje: {title}"
+  },
+  "saveStatus": {
+    "error": "Nie udało się zapisać"
+  },
+  "activityList": {
+    "empty": "Brak zarejestrowanej aktywności.",
+    "deletedItem": "usunięta pozycja",
+    "you": {
+      "signedIn": "Zalogowano",
+      "signInFailed": "Nieudana próba logowania",
+      "viewed": "Wyświetlono: {title}",
+      "viewing": "Teraz: {title}"
+    },
+    "someone": {
+      "signedIn": "{user}: zalogowano",
+      "signInFailed": "{user}: nieudane logowanie",
+      "viewed": "{user} — wyświetlono: {title}",
+      "viewing": "{user} — teraz: {title}"
+    }
+  },
+  "mediaTypes": {
+    "movie": {
+      "label": "Filmy",
+      "desc": "Filmy fabularne"
+    },
+    "show": {
+      "label": "Seriale",
+      "desc": "Seriale i odcinki"
+    },
+    "anime": {
+      "label": "Anime",
+      "desc": "Seriale i filmy anime"
+    },
+    "book": {
+      "label": "Książki",
+      "desc": "EPUB, PDF i tekst"
+    },
+    "manga": {
+      "label": "Manga i komiksy",
+      "desc": "CBZ, CBR i powieści graficzne"
+    },
+    "audiobook": {
+      "label": "Audiobooki",
+      "desc": "Słowo mówione i słuchowiska"
+    }
+  },
+  "format": {
+    "size": "{value} {unit}",
+    "units": {
+      "B": "B",
+      "KB": "KB",
+      "MB": "MB",
+      "GB": "GB",
+      "TB": "TB"
+    },
+    "seconds": "{value} s",
+    "minutes": "{value} min",
+    "hours": "{value} godz.",
+    "hoursMinutes": "{hours} {minutes}"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Twoje zdjęcie i ustawienia twojego konta na tym serwerze.",
+    "avatar": "Awatar",
+    "changePicture": "Zmień zdjęcie",
+    "uploadPicture": "Prześlij zdjęcie",
+    "pictureHint": "JPG, PNG, WebP lub GIF do 5 MB, przycięty do kwadratu.",
+    "notAnImage": "Wybierz plik obrazu (PNG, JPG, WebP lub GIF).",
+    "tooBig": "Ten obraz ma ponad 5 MB.",
+    "uploadFailed": "Nie udało się przesłać tego zdjęcia",
+    "removeTitle": "Usuń zdjęcie",
+    "removeMessage": "Usunąć zdjęcie profilowe? Zamiast niego pojawią się twoje inicjały.",
+    "removeFailed": "Nie udało się usunąć zdjęcia",
+    "roles": {
+      "admin": {
+        "label": "Administrator",
+        "desc": "zarządza tym serwerem"
+      },
+      "editor": {
+        "label": "Edytor",
+        "desc": "może też poprawiać tytuły, okładki i szczegóły"
+      },
+      "viewer": {
+        "label": "Widz",
+        "desc": "przegląda, czyta, ogląda i słucha"
+      }
+    }
+  },
+  "security": {
+    "title": "Bezpieczeństwo",
+    "description": "Twoje hasło, weryfikacja dwuetapowa i urządzenia zalogowane na twoje konto.",
+    "password": {
+      "desc": "Zmiana hasła wyloguje cię wszędzie, także w tej przeglądarce.",
+      "current": "Obecne hasło",
+      "new": "Nowe hasło",
+      "hint": "Co najmniej 8 znaków.",
+      "change": "Zmień hasło",
+      "changing": "Zmienianie…",
+      "changed": "Hasło zmienione. Zaloguj się ponownie nowym hasłem.",
+      "changeFailed": "Nie udało się zmienić hasła"
+    },
+    "twoFactor": {
+      "title": "Weryfikacja dwuetapowa",
+      "desc": "Kod z telefonu oprócz hasła. Warto ją włączyć, jeśli korzystasz z Plinthio poza domem."
+    },
+    "devices": {
+      "title": "Zalogowane urządzenia",
+      "desc": "Każdy telefon, przeglądarka i telewizor, na którym się logujesz, pozostaje zalogowany. Jeśli zalogowano cię gdzieś, nad czym nie masz już kontroli, wyloguj się wszędzie.",
+      "signOutAll": "Wyloguj ze wszystkich urządzeń",
+      "signingOut": "Wylogowywanie…",
+      "confirmTitle": "Wyloguj wszędzie",
+      "confirmMessage": "Każde urządzenie zalogowane na to konto zostanie od razu wylogowane, także to.",
+      "signOutFailed": "Nie udało się wylogować ze wszystkich urządzeń"
+    }
+  },
+  "shelves": {
+    "title": "Półki",
+    "description": "Co jest na twoich półkach i gdzie otwiera się Plinthio. Zapisuje się na bieżąco.",
+    "mediaTypes": {
+      "title": "Typy mediów",
+      "desc": "Jakie rodzaje mediów pojawiają się na twoich półkach. Zostaw co najmniej jeden."
+    },
+    "startOn": {
+      "title": "Strona startowa",
+      "desc": "Półka, na której otwiera się Plinthio.",
+      "all": "Wszystkie media"
+    },
+    "views": {
+      "title": "Widoki półki",
+      "desc": "Widoki nad twoją półką. Każdy pokazuje jedną kartę na serię; Alfabetycznie jest zawsze dostępne.",
+      "offByAdmin": "Wyłączone przez administratora",
+      "modes": {
+        "alphabetical": {
+          "label": "Alfabetycznie",
+          "desc": "Zawsze włączone. Wszystkie serie i tytuły od A do Z."
+        },
+        "creator": {
+          "label": "Twórca",
+          "desc": "Pogrupowane według autora, reżysera lub studia."
+        },
+        "diskFolders": {
+          "label": "Foldery na dysku",
+          "desc": "Foldery na serwerze."
+        },
+        "customFolders": {
+          "label": "Własne foldery",
+          "desc": "Twoje foldery w aplikacji, z folderem Nieuporządkowane na resztę."
+        }
+      }
+    }
+  },
+  "hidden": {
+    "title": "Ukryte tytuły",
+    "description": "Tytuły ukryte na twoich półkach. Tylko ty przestajesz je widzieć; każdy możesz w każdej chwili przywrócić.",
+    "empty": "Nic nie jest ukryte. Ukryj tytuł na jego stronie, a pojawi się tutaj.",
+    "unhide": "Przywróć",
+    "unhideFailed": "Nie udało się przywrócić tego tytułu"
+  },
+  "activity": {
+    "title": "Aktywność",
+    "description": "Co czytasz, oglądasz i czego słuchasz oraz twoje ostatnie logowania.",
+    "recent": "Ostatnia aktywność",
+    "tiles": {
+      "listened": "Czas słuchania",
+      "pagesRead": "Przeczytane strony",
+      "finished": "Ukończone",
+      "inProgress": "W toku"
+    }
+  },
+  "apps": {
+    "title": "Aplikacje i klucze API",
+    "description": "Korzystaj z Plinthio w aplikacjach do czytania, skryptach i pulpitach. Każda z nich loguje się kluczem API, który tu utworzysz.",
+    "reading": {
+      "title": "Aplikacje do czytania",
+      "desc": "Czytaj komiksy, mangę, pliki PDF i książki w innych aplikacjach. Zaloguj się nazwą użytkownika ({username}) i kluczem API jako hasłem. Utwórz osobny klucz dla każdej aplikacji, aby móc ją wylogować, usuwając jej klucz.",
+      "address": "Adres dla {app}",
+      "mihon": "Zainstaluj rozszerzenie Komga, otwórz jego ustawienia i wpisz ten adres, swoją nazwę użytkownika oraz klucz API jako hasło. Potem w Mihon w Ustawienia → Śledzenie włącz Komga, aby to, co przeczytasz w Mihon, było oznaczane jako przeczytane także tutaj.",
+      "koreader": "Otwórz książkę, potem Narzędzia → Synchronizacja postępu → Własny serwer synchronizacji: wpisz ten adres. Wybierz Zaloguj (nie Zarejestruj) ze swoją nazwą użytkownika i kluczem API jako hasłem. Miejsce w plikach PDF i komiksach synchronizuje się w obie strony; pozycje w EPUB synchronizują się między urządzeniami z KOReader, a Plinthio pokazuje, ile już przeczytano. Klucze utworzone przed Plinthio 1.0 tu nie działają — utwórz nowy.",
+      "opdsName": "Czytniki OPDS (Chunky, Panels, KyBook, Moon+ Reader)",
+      "opds": "Dodaj to jako katalog OPDS, z nazwą użytkownika i kluczem API jako hasłem."
+    },
+    "keys": {
+      "title": "Klucze API",
+      "desc": "Klucz działa w twoim imieniu. Wysyłaj go w nagłówku {header} albo użyj jako hasła w aplikacji.",
+      "name": "Nazwa klucza",
+      "namePlaceholder": "Do czego służy, np. Mihon na telefonie",
+      "make": "Utwórz klucz",
+      "makeFailed": "Nie udało się utworzyć klucza",
+      "copyNow": "Skopiuj teraz nowy klucz. Nie zostanie pokazany ponownie.",
+      "copyKey": "Kopiuj klucz",
+      "empty": "Brak kluczy.",
+      "made": "utworzono {date}",
+      "revokeNamed": "Unieważnij {name}",
+      "revokeKey": "Unieważnij klucz",
+      "revokeTitle": "Unieważnij klucz API",
+      "revokeMessage": "Unieważnić „{name}”? Wszystko, co go używa, zostanie od razu wylogowane.",
+      "revoke": "Unieważnij",
+      "revokeFailed": "Nie udało się unieważnić tego klucza"
+    }
+  }
+}

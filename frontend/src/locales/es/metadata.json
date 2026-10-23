@@ -1,0 +1,189 @@
+{
+  "fields": {
+    "title": "Título",
+    "author": "Autor",
+    "authors": "Autor(es)",
+    "director": "Director",
+    "directors": "Director(es)",
+    "artists": "Artista(s)",
+    "artistsShort": "Artistas",
+    "cast": "Reparto",
+    "castActors": "Reparto / actores",
+    "series": "Serie",
+    "releaseDate": "Fecha de estreno",
+    "date": "Fecha",
+    "ageRating": "Clasificación por edad",
+    "status": "Estado",
+    "publisher": "Editorial",
+    "genres": "Géneros",
+    "themes": "Temas",
+    "description": "Descripción",
+    "cover": "Portada"
+  },
+  "ageRatings": {
+    "everyone": "Todos los públicos",
+    "teen": "Adolescentes",
+    "mature": "Adultos",
+    "explicit": "Explícito"
+  },
+  "edit": {
+    "title": "Editar metadatos",
+    "appliesToAll": {
+      "one": "Se aplica a {count} volumen",
+      "other": "Se aplica a los {count} volúmenes"
+    },
+    "coverPreview": "Vista previa de la portada",
+    "replaceCover": "Reemplazar portada",
+    "coverSaving": "Guardando",
+    "setForSeries": "Para la serie",
+    "replace": "Reemplazar",
+    "unknownAuthor": "Autor desconocido",
+    "commaSeparated": "Separados por comas",
+    "commaSeparatedActors": "Actores separados por comas",
+    "seriesName": "Nombre de la serie",
+    "releaseDateExample": "p. ej. 2019 o 2019-06-26",
+    "sameAsSeries": "Igual que la serie",
+    "unrated": "Sin clasificar",
+    "statusExample": "p. ej. En curso, Finalizada",
+    "descriptionPlaceholder": "Sinopsis / descripción",
+    "saving": "Guardando…",
+    "searchToFill": "Buscar en {provider} para completar la información que falta",
+    "externalSources": "fuentes externas",
+    "searchPlaceholder": "Buscar título…",
+    "year": "Año",
+    "yearHint": "Filtrar por año de estreno (p. ej. 2002)",
+    "searching": "Buscando…",
+    "searchingProvider": "Buscando en {provider}…",
+    "noResults": "No hay resultados. Prueba con otra búsqueda.",
+    "searchedAs": "Se buscó como: {query}",
+    "resultDirector": "Dir.: {name}",
+    "resultCast": "Reparto: {names}",
+    "resultArt": "Dibujo: {names}",
+    "useAll": "Usar todo",
+    "uploadFailed": "No se pudo subir esa imagen.",
+    "searchFailed": "No se pudo buscar en los proveedores de metadatos; consulta la consola del navegador para ver los detalles.",
+    "savedTitle": "Metadatos guardados",
+    "savedSeries": {
+      "one": "Se actualizó {count} elemento de la serie.",
+      "other": "Se actualizaron los {count} elementos de la serie."
+    },
+    "savedOne": "Se actualizó «{title}».",
+    "saveFailed": "No se pudieron guardar los metadatos; consulta la consola del navegador para ver los detalles."
+  },
+  "manager": {
+    "title": "Limpieza de títulos y coincidencias",
+    "description": "Quita las etiquetas de release de los nombres de archivo y obtén pósteres, sinopsis, reparto y fechas de estreno de TMDB.",
+    "stats": {
+      "total": "Total de elementos",
+      "totalHint": "Todo el contenido indexado",
+      "dirty": "Títulos por limpiar",
+      "dirtyHint": "Con etiquetas de release o año en el título",
+      "missingCover": "Sin imagen",
+      "missingCoverHint": "Sin póster ni portada",
+      "missingMeta": "Sin sinopsis / fecha",
+      "missingMetaHint": "Falta la sinopsis de TMDB"
+    },
+    "filters": {
+      "allLibraries": "Todas las bibliotecas",
+      "allMediaTypes": "Todos los tipos de medios",
+      "tvShows": "Series de TV",
+      "needsCleanup": "Por limpiar",
+      "searchPlaceholder": "Filtrar por título o ruta…"
+    },
+    "batch": {
+      "selectAll": "Seleccionar todo ({count})",
+      "selected": {
+        "one": "{count} seleccionado",
+        "other": "{count} seleccionados"
+      },
+      "overwritePosters": "Sobrescribir pósteres",
+      "useCanonicalTitle": "Usar título oficial",
+      "cleanHint": "Quitar las etiquetas de release y los años finales de los títulos de la base de datos",
+      "cleanCount": "Limpiar títulos ({count})",
+      "findHint": "Buscar cada título seleccionado en los proveedores de metadatos (TMDB, MangaDex, Google Books, Open Library): imagen, sinopsis, fecha de estreno",
+      "findCount": "Buscar metadatos ({count})",
+      "stop": "Detener",
+      "stopping": "Deteniendo…"
+    },
+    "summary": {
+      "matched": "{matched} de {total} encontrados.",
+      "matchedStopped": "{matched} de {total} encontrados antes de que lo detuvieras.",
+      "notFound": {
+        "one": "{count} sin coincidencia: está marcado abajo; prueba {action} con él.",
+        "other": "{count} sin coincidencia: están marcados abajo; prueba {action} con ellos."
+      },
+      "needsKey": {
+        "one": "{count} es un vídeo y necesita una clave de TMDB: añade una en {where} y vuelve a ejecutarlo.",
+        "other": "{count} son vídeos y necesitan una clave de TMDB: añade una en {where} y vuelve a ejecutarlo."
+      },
+      "adminMetadata": "Administración → Metadatos",
+      "failed": {
+        "one": "{count} falló (mira la fila para ver por qué).",
+        "other": "{count} fallaron (mira cada fila para ver por qué)."
+      }
+    },
+    "dismiss": "Cerrar",
+    "list": {
+      "analyzing": "Analizando títulos y metadatos…",
+      "empty": "No hay elementos que coincidan con los filtros seleccionados."
+    },
+    "badges": {
+      "frameTag": "FOTOGRAMA",
+      "tvEpisode": "Episodio de TV",
+      "poster": "Póster",
+      "frame": "Fotograma",
+      "frameHint": "Fotograma provisional del vídeo: usa Coincidencia automática para obtener el póster oficial",
+      "noPoster": "Sin póster",
+      "synopsis": "Sinopsis",
+      "noSynopsis": "Sin sinopsis",
+      "noDate": "Sin fecha"
+    },
+    "cleanLabel": "Limpio:",
+    "actions": {
+      "autoMatch": "Coincidencia automática",
+      "autoMatchHint": "Buscar en los proveedores de metadatos y actualizar este título",
+      "editSearch": "Editar / Buscar",
+      "editSearchHint": "Buscar en TMDB manualmente, elegir una imagen o personalizar los campos de metadatos"
+    },
+    "match": {
+      "matchedAs": "Encontrado como «{title}»",
+      "needsKey": "Necesita una clave de TMDB: añade una arriba",
+      "noMatch": "Sin coincidencias: prueba Editar / Buscar",
+      "failed": "La búsqueda falló: inténtalo de nuevo"
+    },
+    "errors": {
+      "loadFailed": "No se pudieron cargar los elementos"
+    },
+    "clean": {
+      "confirmTitle": {
+        "one": "¿Limpiar {count} título?",
+        "other": "¿Limpiar {count} títulos?"
+      },
+      "confirmMessage": {
+        "one": "Se quitarán las etiquetas de scene, códecs, resoluciones y años de estreno finales de {count} título seleccionado en la base de datos.",
+        "other": "Se quitarán las etiquetas de scene, códecs, resoluciones y años de estreno finales de {count} títulos seleccionados en la base de datos."
+      },
+      "confirm": "Limpiar títulos",
+      "progress": {
+        "one": "Limpiando {count} título…",
+        "other": "Limpiando {count} títulos…"
+      },
+      "doneTitle": "Títulos limpiados",
+      "doneMessage": {
+        "one": "Se limpió {count} título.",
+        "other": "Se limpiaron {count} títulos."
+      },
+      "failedTitle": "No se pudo limpiar"
+    },
+    "find": {
+      "confirmTitle": {
+        "one": "¿Buscar metadatos de {count} elemento?",
+        "other": "¿Buscar metadatos de {count} elementos?"
+      },
+      "confirmMessage": "Cada título seleccionado se busca en los proveedores de metadatos (TMDB, MangaDex, Google Books, Open Library) y se actualizan su imagen, sinopsis y fecha de estreno. Los resultados aparecen en cada fila; puedes detenerlo en cualquier momento.",
+      "confirm": "Empezar",
+      "itemFallback": "elemento",
+      "progress": "Buscando {current} de {total}: {title}"
+    }
+  }
+}

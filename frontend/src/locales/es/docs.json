@@ -1,0 +1,433 @@
+{
+  "page": {
+    "title": "Documentación",
+    "backToLibrary": "Volver a la biblioteca",
+    "serverStatus": "Estado del servidor",
+    "version": "Versión {version}"
+  },
+  "recommended": "Recomendado",
+  "nav": {
+    "groups": {
+      "basics": "Lo básico",
+      "using": "Usar Plinthio",
+      "admin": "Administración",
+      "help": "Ayuda"
+    },
+    "items": {
+      "overview": "Introducción y almacenamiento",
+      "media": "Contenido compatible",
+      "roles": "Roles y permisos",
+      "pwa": "App móvil (PWA)",
+      "remote": "Acceso remoto y Tailscale",
+      "shortcuts": "Atajos de teclado",
+      "backups": "Copias de seguridad",
+      "api": "API REST y webhooks",
+      "css": "Estilos CSS personalizados",
+      "troubleshooting": "Solución de problemas y preguntas frecuentes",
+      "errors": "Códigos de error"
+    }
+  },
+  "overview": {
+    "title": "Primeros pasos con Plinthio",
+    "intro": "Plinthio es un servidor multimedia autoalojado, rápido y ligero, y una PWA moderna pensada para audiolibros, manga, cómics, libros y vídeo (películas, series y anime). Analiza directamente tus carpetas existentes —no copia, convierte ni recodifica nada al importarlo— y crea un catálogo con búsqueda, portadas, progreso de lectura y reproducción por usuario, marcadores y, si quieres, metadatos enriquecidos.",
+    "cards": {
+      "audiobooks": {
+        "title": "Audiolibros",
+        "text": "M4B con marcadores de capítulo, MP3, FLAC, reproducción en segundo plano y un reproductor a pantalla completa al estilo de Apple Music."
+      },
+      "manga": {
+        "title": "Manga y cómics",
+        "text": "Descompresión directa de CBZ y ZIP en memoria, modo de doble página, lectura de derecha a izquierda y caché de páginas instantánea."
+      },
+      "books": {
+        "title": "Libros y documentos",
+        "text": "Lector de EPUB con colores de página, fuentes y diseños que te acompañan en cada libro, subrayados en cinco colores con notas, marcadores y tu posición sincronizada entre dispositivos."
+      },
+      "movies": {
+        "title": "Películas",
+        "text": "MP4, MKV y WebM con streaming por rangos de bytes, avance y retroceso, y reanudación desde donde lo dejaste."
+      },
+      "shows": {
+        "title": "Series",
+        "text": "Agrupación por temporadas y episodios con progreso por episodio, para que «Seguir viendo» siempre te lleve al episodio correcto."
+      },
+      "anime": {
+        "title": "Anime",
+        "text": "Tiene su propio tipo de biblioteca, así que puedes filtrarlo, explorarlo y buscarle metadatos por separado de la imagen real."
+      }
+    },
+    "libraries": {
+      "title": "Cómo funcionan las bibliotecas",
+      "what": "Una **biblioteca** es una carpeta del disco asociada a un tipo de contenido (audiolibros, manga y cómics, libros electrónicos, series, películas o anime). Añade bibliotecas desde **Administración → Bibliotecas**: indica a Plinthio una carpeta, elige el tipo y empezará a analizarla de inmediato. Volver a analizar siempre es seguro: compara con lo que ya está indexado, detecta por su contenido los archivos renombrados o movidos, añade lo nuevo y quita del catálogo los archivos que ya no existen en el disco (sin tocar los archivos en sí).",
+      "deleting": "Eliminar una biblioteca de Plinthio solo quita sus entradas del catálogo (títulos, portadas, metadatos): nunca toca los archivos de tu sistema. El progreso de lectura y los marcadores se conservan según la identidad de cada archivo, así que si vuelves a añadir la misma carpeta y la analizas, se recuperan automáticamente."
+    },
+    "storage": {
+      "title": "Almacenamiento en Docker",
+      "text": "Plinthio organiza los datos en configuración, base de datos de metadatos y carpetas de contenido montadas en solo lectura. Solo necesitas hacer copia de seguridad de las rutas dentro de {path} para conservar el estado de tu servidor (usuarios, progreso, marcadores, carpetas personalizadas, ajustes); tus archivos multimedia se quedan donde los montes y nunca se modifican.",
+      "paths": {
+        "database": "Base de datos SQLite en modo WAL",
+        "backups": "Copias de la base de datos programadas, manuales y previas a cada actualización",
+        "covers": "Portadas de libros, series y películas",
+        "avatars": "Fotos de perfil subidas",
+        "cache": "Páginas renderizadas y segmentos de vídeo (se pueden borrar)",
+        "ssl": "Los certificados HTTPS integrados",
+        "jwt": "Clave aleatoria de alta entropía para el inicio de sesión",
+        "media": "Carpetas de contenido montadas desde tu equipo (en solo lectura está bien)"
+      }
+    },
+    "setup": {
+      "title": "Requisitos y primera configuración",
+      "docker": "La forma recomendada de ejecutar Plinthio es Docker (o Docker Compose): consulta {file} en el repositorio.",
+      "firstLaunch": "La primera vez, si aún no hay ninguna cuenta de administrador, al abrir el servidor se te lleva a una pantalla de **configuración** única para crear el primer administrador.",
+      "afterSetup": "Después, inicia sesión y añade tu primera biblioteca desde **Administración → Bibliotecas** para empezar a analizar.",
+      "noDatabase": "No hace falta ninguna base de datos externa: todo se guarda en un único archivo SQLite con registro previo de escritura (WAL) activado para un acceso simultáneo seguro."
+    }
+  },
+  "media": {
+    "title": "Contenido y metadatos compatibles",
+    "intro": "Todos los tipos de contenido que indexa Plinthio, los formatos de archivo que reconoce y de dónde salen sus portadas y metadatos.",
+    "audiobooks": "Formatos: {m4b}, {mp3}, {flac}. Los marcadores de capítulo incluidos en los archivos M4B se leen directamente y aparecen en el reproductor. La portada se extrae de la carátula incrustada cuando la hay.",
+    "manga": "Formatos: {cbz}, {zip}. Las páginas se descomprimen en memoria cuando se necesitan, sin extraer nada al disco. Funciona sin configurar nada con **MangaDex** como fuente gratuita de metadatos, sin clave de API.",
+    "booksTitle": "Libros y libros electrónicos",
+    "books": "Formatos: {epub}, {pdf}. Funciona sin configurar nada con **Google Books** y **Open Library** para buscar metadatos y portadas, sin clave de API.",
+    "videoTitle": "{movieIcon} Películas, {tvIcon} series y {animeIcon} anime",
+    "video": "Formatos: {mp4}, {mkv}, {webm}. El streaming usa peticiones HTTP por rangos para poder avanzar y retroceder; lo que el navegador no puede reproducir de forma nativa se convierte sobre la marcha. Los metadatos y las imágenes vienen de **TMDB (The Movie Database)**, que necesita una clave de API personal y gratuita que un administrador configura una vez en **Administración → Metadatos**. Sin clave, estas tres bibliotecas se analizan y se reproducen igual de bien; simplemente no tendrán pósteres, sinopsis ni datos de reparto o temporadas automáticos.",
+    "applying": {
+      "title": "Aplicar y modificar metadatos",
+      "text": "Los administradores y editores pueden buscar en proveedores externos y aplicar una coincidencia a cualquier elemento, o subir una portada propia, desde la página de detalle del elemento. Un nuevo análisis nunca sobrescribe los cambios manuales: solo rellena los campos que siguen vacíos."
+    },
+    "cleanup": {
+      "title": "Limpieza de títulos y búsqueda de metadatos por lotes (Administración → Metadatos)",
+      "text": "Al analizar archivos de vídeo con etiquetas de release (p. ej., {example}), el limpiador de títulos extrae el título limpio de la película o serie y aísla el año de estreno de 4 cifras.",
+      "titleCleanup": "**Limpieza de títulos:** con un clic, convierte los títulos de la base de datos en nombres legibles y conserva los años detectados.",
+      "batchMatch": "**Búsqueda en TMDB por lotes:** busca en TMDB con el título limpio y el año exacto para obtener el póster oficial, director, reparto, sinopsis y fechas de estreno de todos los elementos seleccionados.",
+      "manual": "**Cambio manual e identificación:** busca en TMDB a mano por título y, si quieres, año, para elegir otro póster o corregir títulos ambiguos."
+    }
+  },
+  "roles": {
+    "title": "Roles y permisos",
+    "intro": "Cada cuenta del servidor tiene exactamente un rol, que determina lo que puede ver y cambiar.",
+    "admin": {
+      "name": "Administrador",
+      "text": "Control total: gestionar bibliotecas y lanzar análisis, crear, editar y eliminar otros usuarios y restablecer sus contraseñas, ver los registros del sistema en directo y las estadísticas de todo el servidor, configurar los ajustes globales (tema, diseño de navegación, CSS personalizado, clave de TMDB, copias de seguridad de la base de datos), además de todo lo que pueden hacer un editor y un espectador."
+    },
+    "editor": {
+      "name": "Editor",
+      "text": "Todo lo que puede hacer un espectador, y además editar los metadatos compartidos que ven todos los usuarios: título, autor, serie, portadas y aplicar coincidencias de metadatos externas. Los editores no pueden gestionar bibliotecas, usuarios ni ajustes del servidor."
+    },
+    "viewer": {
+      "name": "Espectador",
+      "text": "Puede explorar, leer, escuchar y ver. El progreso de lectura, escucha y visionado, los marcadores, los elementos ocultos y las carpetas personalizadas son privados de cada cuenta: el progreso de un espectador nunca afecta ni aparece a nadie más."
+    },
+    "manage": {
+      "title": "Gestionar cuentas (solo administradores)",
+      "intro": "Desde **Administración → Usuarios** puedes:",
+      "add": "**Añadir usuario**: crea una cuenta nueva con nombre de usuario, contraseña inicial y rol.",
+      "role": "**Cambiar rol**: usa el desplegable de rol junto a cualquier usuario (no puedes cambiar tu propio rol, así el servidor siempre conserva al menos un administrador capaz de gestionar roles).",
+      "edit": "**Editar** (icono del lápiz): cambia el nombre de la cuenta de un usuario o restablece su contraseña por él, sin necesitar su contraseña actual. Al restablecer una contraseña, se cierra su sesión en todas partes y tendrá que volver a entrar con la nueva.",
+      "delete": "**Eliminar**: borra la cuenta de forma permanente (no puedes eliminar tu propia cuenta).",
+      "away": "**Fuera de casa** (en Editar): si la cuenta se puede usar fuera de la red de casa, cuando el servidor lo permite (Administración → Red).",
+      "resetTwoFactor": "**Restablecer verificación en dos pasos** (en Editar): para quien ha perdido el móvil y los códigos de respaldo. Cierra su sesión; después puede entrar solo con su contraseña y volver a configurarla.",
+      "ownPassword": "Cualquier usuario puede cambiar su propia contraseña desde **Ajustes → Seguridad**, para lo cual sí necesita su contraseña actual."
+    },
+    "twoFactor": {
+      "title": "Verificación en dos pasos (opcional)",
+      "intro": "Con la verificación en dos pasos activada, al iniciar sesión se te pide, además de la contraseña, un código de 6 dígitos de una app de autenticación (Google Authenticator, Microsoft Authenticator, 1Password, Bitwarden, Aegis…).",
+      "turnOn": "**Actívala** en Ajustes → Seguridad: escanea el código QR (o copia la clave en la app) y escribe el código que te muestre.",
+      "backupCodes": "**Guarda tus códigos de respaldo.** Diez códigos de un solo uso por si pierdes el móvil; solo se muestran una vez. Cada uno te permite entrar una vez en lugar de un código.",
+      "signingIn": "**Al iniciar sesión:** la contraseña y luego el código. En la pantalla del código, «¿Has perdido el móvil?» cambia a un código de respaldo.",
+      "turnOff": "**Para desactivarla** necesitas tu contraseña y un código actual. Si te quedas sin acceso, un administrador puede restablecerla.",
+      "required": "Los administradores pueden exigirla para los inicios de sesión desde **fuera de la red de casa** (Administración → Red). En casa nunca es obligatoria."
+    },
+    "guests": {
+      "title": "Pases temporales para invitados y caducidad de cuentas",
+      "intro": "Los administradores pueden poner un límite de tiempo a cualquier cuenta (muy útil para invitados en casa, amigos que toman prestado un audiolibro o una serie de cómics, o accesos de prueba).",
+      "presetsTitle": "Duraciones predefinidas y fechas personalizadas",
+      "presets": "Elige entre opciones rápidas (**1 día**, **3 días**, **7 días**, **14 días**, **1 mes**, **3 meses**, **6 meses**, **1 año**), una fecha y hora personalizadas o **Para siempre / Sin límite**.",
+      "lockoutTitle": "Bloqueo sin sobresaltos",
+      "lockout": "Cuando una cuenta llega a su fecha de caducidad, todas sus sesiones activas se cierran de inmediato. Al intentar entrar aparece una pantalla de bloqueo que avisa de que el pase ha terminado y sugiere contactar con el administrador.",
+      "renewTitle": "Renovaciones y ampliaciones con un clic:",
+      "renew": "Los administradores pueden ver el estado de caducidad de cada cuenta ({active}, {expiring} o {expired}) directamente en la tabla de **Administración → Usuarios** y pulsar el icono del **reloj de arena** de cualquier usuario para añadir días o dejar la cuenta sin límite con un clic.",
+      "status": {
+        "active": "Activa",
+        "expiring": "Caduca pronto",
+        "expired": "Caducada"
+      }
+    }
+  },
+  "pwa": {
+    "title": "App móvil e instalación de la PWA",
+    "intro": "Instala Plinthio directamente en la pantalla de inicio de iOS o Android para tener una experiencia de app nativa, con interfaz disponible sin conexión, diseño de borde a borde y controles multimedia completos en la pantalla de bloqueo.",
+    "https": {
+      "title": "Paso 1: conexión segura (HTTPS)",
+      "why": "Con {http} a secas, el navegador avisa de que la conexión no es segura y los móviles no activan las funciones sin conexión de la app.",
+      "secure": "Estás conectado por HTTPS. Aquí no tienes que hacer nada.",
+      "tailscaleTitle": "La forma fácil: Tailscale",
+      "tailscale": "Tailscale le da a Plinthio una dirección de confianza como {address} que funciona en casa y fuera. No hay que instalar ningún certificado: cada dispositivo solo necesita la app gratuita de Tailscale con la sesión iniciada. Tu administrador lo configura una vez en el servidor; consulta {link}."
+    },
+    "cert": {
+      "title": "O, solo en la red de casa: el certificado propio de Plinthio",
+      "intro": "Plinthio también sirve HTTPS por sí mismo, con su propio certificado. Instala ese certificado una vez en cada dispositivo y el aviso desaparecerá para esa dirección.",
+      "download": "Descargar certificado",
+      "open": "Abrir {url}",
+      "ios": {
+        "title": "iPhone y iPad",
+        "download": "Toca **Descargar certificado** en Safari y permite la descarga del perfil.",
+        "install": "Ajustes → **Perfil descargado** → Instalar.",
+        "trust": "Ajustes → General → Información → **Ajustes de confianza de certificados** → activa «Plinthio Local CA».",
+        "open": "Abre la dirección HTTPS de arriba y añádela a tu pantalla de inicio (sustituyendo un icono http:// anterior)."
+      },
+      "android": {
+        "title": "Android",
+        "download": "Toca **Descargar certificado**.",
+        "install": "Ajustes → Seguridad → Más ajustes de seguridad → Cifrado y credenciales → **Instalar un certificado → Certificado de CA**, y elige el archivo descargado.",
+        "open": "Abre la dirección HTTPS de arriba en Chrome e instala la app desde ahí."
+      },
+      "desktop": {
+        "title": "Mac, Windows y Linux",
+        "text": "Mac: abre el archivo y, en Acceso a Llaveros, márcalo como **Confiar siempre**. Windows: ábrelo → Instalar certificado → Equipo local → «Entidades de certificación raíz de confianza». Firefox tiene su propia lista: Ajustes → Privacidad y seguridad → Certificados → Ver certificados → Autoridades → Importar."
+      },
+      "note": "El certificado incluye cada dirección en cuanto un dispositivo abre Plinthio en ella por http:// por primera vez, así que si el navegador dice que el certificado no coincide con la dirección, abre una vez la versión http://, espera unos segundos y vuelve a probar con HTTPS. El certificado solo sirve para direcciones de red privadas y nombres locales, así que instalarlo no permite interceptar ningún otro sitio web.",
+      "off": "El HTTPS propio de Plinthio no está activado en este servidor. Para administradores que prefieren no usar Tailscale: define {setting} (ya es el valor predeterminado en la imagen de Docker; asegúrate de que el puerto 8443 esté publicado)."
+    },
+    "ios": {
+      "title": "Apple iOS (iPhone y iPad)",
+      "open": "Abre **Safari** y ve a la dirección de tu Plinthio (p. ej., {example}).",
+      "share": "Toca el botón **Compartir** (el cuadrado con una flecha hacia arriba) en la barra inferior.",
+      "addToHome": "Desplázate hacia abajo y toca **Añadir a pantalla de inicio**.",
+      "add": "Toca **Añadir** en la esquina superior derecha.",
+      "launch": "Abre la app desde tu pantalla de inicio. Se abrirá a pantalla completa, sin la barra de direcciones del navegador, como una app nativa.",
+      "note": "Tiene que añadirse desde Safari: Chrome y Firefox en iOS usan el motor de Safari, pero no ofrecen la opción «Añadir a pantalla de inicio»."
+    },
+    "android": {
+      "title": "Android (Chrome y Firefox)",
+      "open": "Abre **Google Chrome** y ve a la URL de tu Plinthio.",
+      "menu": "Toca el menú de **tres puntos** en la esquina superior derecha.",
+      "install": "Elige **Instalar aplicación** o **Añadir a pantalla de inicio**.",
+      "confirm": "Confirma el aviso. Plinthio se instalará en tu cajón de aplicaciones con caché sin conexión y audio en segundo plano.",
+      "note": "Chrome también puede mostrar automáticamente un banner «Instalar Plinthio» o un icono en la barra de direcciones la primera vez que entres, cuando se hayan cargado el manifiesto y el service worker."
+    },
+    "safeArea": {
+      "title": "Área segura de iOS y avisos de obsolescencia",
+      "text": "Plinthio sigue las últimas directrices de Apple para apps web y usa la etiqueta moderna {meta} y los márgenes de área segura del viewport en CSS ({inset}) para no quedar tapado por el notch ni por la barra de inicio."
+    },
+    "gives": {
+      "title": "Qué te aporta la app instalada",
+      "lockscreen": "**Controles en la pantalla de bloqueo y en segundo plano** para los audiolibros (reproducir/pausar, saltar, título del capítulo) mediante la Media Session API.",
+      "offline": "**Interfaz disponible sin conexión**: la interfaz carga al instante incluso con una conexión inestable; tu contenido se sigue transmitiendo en directo desde tu servidor.",
+      "edgeToEdge": "**Diseño de borde a borde** que respeta el indicador de inicio y el notch de iOS, con botones de categoría y zonas táctiles pensados para usar con una sola mano."
+    }
+  },
+  "remote": {
+    "title": "Usar Plinthio fuera de casa",
+    "intro": "Tailscale para ti y las personas de confianza, en privado; una dirección web para invitados que no deberían necesitar una app. Las dos son opcionales.",
+    "tailscale": {
+      "title": "Opción 1: Tailscale (recomendada y la más fácil)",
+      "subtitle": "Una red privada entre tus dispositivos, con una dirección HTTPS de confianza. Sin tocar el router ni instalar certificados.",
+      "text": "Plinthio obtiene una dirección como {address} en la que confían todos los dispositivos conectados a tu tailnet, en casa o con datos móviles. Gratis para uso personal.",
+      "serverTitle": "En el servidor (administrador, una sola vez)",
+      "console": "En la **consola de administración de Tailscale**: DNS → activa **MagicDNS** y **HTTPS Certificates**.",
+      "docker": "**Docker:** descarga {file} junto a tu archivo compose, pon {authKey} (Settings → Keys en la consola de administración) y {composeFile} en {env}, y ejecuta {up}.",
+      "noDocker": "**Si Tailscale ya está en el servidor, o no usas Docker:** ejecuta {command}.",
+      "deviceTitle": "En cada móvil u ordenador",
+      "installApp": "Instala la app gratuita de **Tailscale** e inicia sesión en la misma tailnet.",
+      "openAddress": "Abre la dirección {address} (la consola de administración la muestra en Machines).",
+      "addToHome": "Añádela a tu pantalla de inicio desde ahí, sustituyendo cualquier icono {http} anterior.",
+      "more": "Tienes los pasos detallados, y cómo compartir Plinthio con el Tailscale de otra persona, en {doc} en GitHub."
+    },
+    "funnel": {
+      "title": "Opción 2: Tailscale Funnel, un enlace para cualquiera (sin dominio)",
+      "text": "Abre la misma dirección {address} a cualquiera, en un navegador normal: tus amigos no necesitan Tailscale, no hace falta dominio ni tocar el router, y funciona incluso si tu proveedor de internet bloquea las conexiones entrantes. Pasa por los servidores de Tailscale, que limitan el ancho de banda: leer y escuchar va bien, el vídeo puede ir a tirones.",
+      "option1": "Configura la opción 1 con el complemento de Docker.",
+      "allow": "**Administración → Red** → permite el acceso desde fuera (y plantéate exigir la verificación en dos pasos fuera de casa).",
+      "enable": "Añade {setting} a {env} y ejecuta {up}.",
+      "check": "Compruébalo en un móvil con el wifi y Tailscale desactivados; luego envía el enlace a tus amigos y créales cuentas."
+    },
+    "domain": {
+      "title": "Opción 3: tu propia dirección web (a toda velocidad)",
+      "text": "Tus amigos y familiares abren algo como {url} e inician sesión, sin instalar apps ni certificados. El complemento de dirección pública ejecuta Caddy, que obtiene y renueva por sí solo un certificado real. Tu página de inicio de sesión quedará en internet, así que usa contraseñas seguras y plantéate la verificación en dos pasos.",
+      "needsTitle": "Qué necesitas (administrador, una sola vez)",
+      "connection": "**Comprueba que tu conexión a internet lo permite.** El internet de casa por 5G/4G, Starlink y algunos proveedores («CGNAT») no lo permiten; la guía explica cómo comprobarlo en un minuto.",
+      "dns": "Un dominio, con un **registro A** de DNS que apunte a la dirección pública de tu casa.",
+      "ports": "Los puertos **80** y **443** redirigidos en tu router hacia el servidor.",
+      "allow": "**Administración → Red** → permite el acceso desde fuera (y, si quieres, exige la verificación en dos pasos fuera de casa).",
+      "compose": "Descarga {file} junto a tu archivo compose, añade {domain} y {composeFile} a {env}, y ejecuta {up}.",
+      "check": "Compruébalo desde un móvil con el wifi desactivado y abre ahí Administración → Red: debería decir «fuera»."
+    },
+    "who": {
+      "title": "Quién puede usar Plinthio y desde dónde",
+      "network": "**Administración → Red:** permite el acceso desde fuera de la red de casa (desactivado en servidores nuevos), trata Tailscale como si fuera casa y, si quieres, exige la verificación en dos pasos fuera de casa.",
+      "users": "**Administración → Usuarios → Editar:** si cada persona puede usar Plinthio fuera de casa; por ejemplo, los niños solo en casa.",
+      "security": "**Ajustes → Seguridad:** cualquiera puede activar la verificación en dos pasos en su propia cuenta."
+    },
+    "avoid": {
+      "title": "Evita: redirigir el puerto 8088 y los túneles para vídeo",
+      "text": "Redirigir el 8088 directamente a Plinthio deja en internet una página de inicio de sesión sin cifrar: usa el complemento en el 443. Los túneles como Cloudflare Tunnel evitan tocar el router, pero hacen pasar todo el tráfico por los servidores de otros y no están pensados para transmitir vídeo; para libros y audiolibros van bien.",
+      "guide": "La guía completa, con solución de problemas: {doc} en GitHub."
+    }
+  },
+  "shortcuts": {
+    "title": "Atajos de teclado y controles del reproductor",
+    "intro": "Todos los lectores y reproductores se pueden manejar por completo con el teclado en el ordenador, además de los controles táctiles y de deslizamiento en el móvil.",
+    "keys": {
+      "space": "Espacio",
+      "esc": "Esc",
+      "ctrlF": "Ctrl F"
+    },
+    "actions": {
+      "previousPage": "Página anterior",
+      "nextPage": "Página siguiente",
+      "closeReader": "Cerrar lector",
+      "playPause": "Reproducir / pausar",
+      "seekBack": "Retroceder 10 s",
+      "seekForward": "Avanzar 10 s",
+      "closePlayer": "Cerrar reproductor",
+      "closeSettingsOrReader": "Cerrar ajustes / lector",
+      "searchBook": "Buscar en el libro"
+    },
+    "manga": {
+      "title": "Lector de manga y cómics",
+      "note": "Izquierda y derecha se intercambian automáticamente en el modo de lectura de derecha a izquierda, para que las flechas siempre coincidan con el sentido en que pasan las páginas. Deslizar a izquierda o derecha funciona igual en pantallas táctiles."
+    },
+    "video": {
+      "title": "Reproductor de vídeo (películas, series, anime)"
+    },
+    "epub": {
+      "title": "Lector de libros EPUB"
+    },
+    "audiobook": {
+      "title": "Reproductor de audiolibros",
+      "text": "Se controla con los botones del reproductor a pantalla completa (reproducir/pausar, avanzar/retroceder, lista de capítulos, velocidad de reproducción) y con los controles multimedia de la pantalla de bloqueo o las notificaciones de tu sistema una vez instalado como PWA. No tiene atajos de teclado propios, porque está pensado para escuchar en segundo plano."
+    }
+  },
+  "backups": {
+    "title": "Copias de seguridad y seguridad de los datos",
+    "intro": "Todo lo que sabe Plinthio está en una sola base de datos SQLite: cuentas, el progreso de todos, marcadores, subrayados y notas, valoraciones, listas, ajustes del lector, bibliotecas y ajustes. Plinthio hace copias de seguridad por sí solo y puede copiarlas a un segundo lugar que elijas.",
+    "automatic": {
+      "title": "Copias automáticas (activadas por defecto)",
+      "where": "En **Administración → Copias de seguridad**:",
+      "frequency": "**Frecuencia**: cada 6 o 12 horas, a diario (la opción predeterminada), cada 3 días o cada semana.",
+      "keepLast": "**Conservar las últimas**: cuántas se guardan en {path} (7 por defecto).",
+      "upgrade": "También se hace una copia **antes de cada actualización**; siempre se conservan las cinco más recientes, para que puedas volver atrás."
+    },
+    "second": {
+      "title": "Un segundo lugar para las copias",
+      "text": "{path} está en el mismo disco que el servidor: te protege de errores y de actualizaciones fallidas, no de que el disco se estropee. En **Copiar también las copias en**, elige una carpeta en otra unidad, una carpeta compartida de un NAS o una carpeta sincronizada en la nube (**Examinar** y luego **Probar** para comprobar que el servidor puede escribir ahí y si está en otro disco). A partir de entonces, cada copia se copia ahí en cuanto se crea, y lo que no se pudo copiar mientras no estaba disponible se copia cuando vuelve a estarlo.",
+      "keepThere": "**Conservar allí**: cuántas se guardan en el segundo lugar (30 por defecto), independientemente del número que guarda el servidor.",
+      "alsoCopied": "También se copian, salvo que lo desactives: las fotos de perfil, las portadas, la clave de inicio de sesión (para que nadie tenga que volver a entrar tras una restauración) y los certificados HTTPS (para que los dispositivos sigan confiando en el servidor).",
+      "layout": "La copia se organiza en {database} y {files}. Si una copia falla, la tarjeta explica el motivo y se vuelve a intentar cada 15 minutos.",
+      "docker": "**En Docker**, la carpeta tiene que estar montada en el contenedor. Cualquier carpeta dentro de {media} sirve si tu contenido no está montado en solo lectura. Para usar otra unidad, quita el comentario de la línea {backups} en {compose}, define {variable} en {env}, vuelve a crear el contenedor y elige {backups}."
+    },
+    "manual": {
+      "title": "Copias manuales",
+      "now": "**Hacer copia ahora**: crea una copia al momento (y la copia al segundo lugar).",
+      "download": "**Descargar una copia**: una copia recién hecha directamente a tu navegador, útil antes de un cambio arriesgado.",
+      "stored": "Cualquier copia guardada se puede descargar o eliminar desde la lista."
+    },
+    "notIncluded": {
+      "title": "Lo que no entra en ninguna copia",
+      "text": "Tus propios archivos multimedia. Al eliminar una biblioteca, sus datos de catálogo se borran al momento; una copia reciente es la forma de deshacerlo. Para restaurar, consulta los pasos en {doc}."
+    }
+  },
+  "api": {
+    "title": "API REST para desarrolladores",
+    "intro": "Integra scripts externos, widgets, Home Assistant o reproductores de terceros con Plinthio.",
+    "auth": {
+      "title": "Autenticación",
+      "text": "Envía tu clave de API en la cabecera HTTP {header}. Crea y gestiona claves en **Ajustes → Claves de API**. Las peticiones del navegador usan en su lugar un token JWT Bearer emitido al iniciar sesión, en la cabecera {authHeader}. Las URL multimedia dentro de {mediaPath} usan en cambio un token de corta duración solo para contenido ({tokenEndpoint}) como parámetro de consulta {tokenParam}; el token de sesión en sí se rechaza en las URL (necesario para etiquetas {img}/{video} simples, que no pueden enviar cabeceras).",
+      "scope": "Todos los endpoints de la API tienen límite de peticiones, y cada petición se limita al usuario propietario de la clave: una clave de API hereda el rol de ese usuario y solo ve lo que él puede ver."
+    },
+    "groups": {
+      "catalog": "Biblioteca y catálogo",
+      "streaming": "Streaming y lectura",
+      "progress": "Progreso y marcadores",
+      "admin": "Administración"
+    },
+    "endpoints": {
+      "items": "Lista los elementos. Parámetros de consulta: {params}.",
+      "item": "Todos los detalles de un elemento, incluidos los metadatos, los enlaces a serie y autor, y el progreso del usuario que hace la petición.",
+      "series": "Todas las entradas de una serie, en orden de lectura o visionado.",
+      "hide": "Oculta un elemento de tu propia biblioteca (no afecta a otros usuarios). {unhide} lo deshace.",
+      "audioStream": "Endpoint de streaming de audio compatible con peticiones por rangos HTTP 206 Partial Content y con un token multimedia ({token}).",
+      "videoStream": "Endpoint de streaming de vídeo con avance por rangos para MP4, MKV y WebM.",
+      "playbackInfo": "Indica si un archivo necesita conversión sobre la marcha antes de que el cliente pida el stream.",
+      "mangaPages": "Devuelve el número total de páginas y la lista de imágenes de los archivos CBZ/ZIP.",
+      "bookFile": "Sirve el archivo EPUB/PDF original para el lector del navegador.",
+      "progress": "Actualiza el progreso de reproducción o lectura. Cuerpo JSON: {body}.",
+      "continue": "La estantería «Continuar»: todos los elementos en curso del usuario actual, los más recientes primero.",
+      "bookmarks": "Crea un marcador por tiempo o por página, con una nota opcional.",
+      "stats": "Totales de todo el servidor y un desglose completo por tipo de contenido (almacenamiento, cantidades, autores, series). Requiere el rol de administrador.",
+      "updateUser": "Cambia el nombre de usuario o el rol de un usuario. Requiere el rol de administrador.",
+      "resetPassword": "Restablece la contraseña de otro usuario. Requiere el rol de administrador; no hace falta la contraseña actual.",
+      "scan": "Lanza un nuevo análisis inmediato de una biblioteca. Requiere el rol de administrador.",
+      "backup": "Descarga al momento un archivo de copia de seguridad de la base de datos. Requiere el rol de administrador."
+    }
+  },
+  "css": {
+    "title": "CSS personalizado",
+    "intro": "Personaliza el aspecto de Plinthio con CSS propio que se aplica en directo en todo tu servidor.",
+    "propertiesTitle": "Propiedades personalizadas de CSS",
+    "examplesTitle": "Ejemplos de CSS personalizado",
+    "examples": {
+      "rounded": "Portadas de libros más redondeadas y con brillo",
+      "compact": "Modo de densidad compacta",
+      "hideSearch": "Ocultar la barra de búsqueda",
+      "accent": "Cambiar el color de acento"
+    },
+    "apply": "Para aplicar CSS personalizado, ve a **Administración → Apariencia → CSS personalizado** (solo administradores), pega tus reglas en el editor, usa **{tryIt}** para comprobarlo en directo en tu pestaña actual antes de guardar y, después, **{save}** para enviarlo a todos los clientes conectados."
+  },
+  "errors": {
+    "title": "Códigos de error",
+    "intro": "Todos los errores que muestra Plinthio terminan con un código como {example}. Búscalo aquí para ver qué ha fallado y cómo solucionarlo. Las respuestas de la API llevan el mismo código en un campo {code}, y los administradores también reciben la causa de fondo en {detail}.",
+    "searchPlaceholder": "Busca códigos, p. ej. P301 o ffmpeg",
+    "loadFailed": "No se ha podido cargar la lista de códigos de error desde el servidor. La misma lista está en {file} en el repositorio.",
+    "raisedByApp": "Generado por la app",
+    "whatToDo": "Qué hacer:",
+    "groups": {
+      "general": "General",
+      "signIn": "Inicio de sesión y permisos",
+      "libraries": "Bibliotecas y análisis",
+      "playback": "Reproducción",
+      "metadata": "Proveedores de metadatos",
+      "lists": "Listas y solicitudes",
+      "watchParties": "Sesiones para ver juntos"
+    }
+  },
+  "troubleshooting": {
+    "title": "Solución de problemas y preguntas frecuentes",
+    "intro": "Problemas habituales y dónde mirar primero.",
+    "report": {
+      "title": "¿Sigues atascado? Informa de un problema",
+      "text": "Abre un informe de error en GitHub con tu versión de Plinthio y tu navegador ya rellenados. No se envía nada hasta que lo publiques."
+    },
+    "missingItems": {
+      "title": "Un análisis de biblioteca terminó, pero faltan elementos",
+      "text": "Revisa **Administración → Registros** en busca de avisos durante ese análisis: las extensiones de archivo no compatibles y los archivos comprimidos ilegibles se omiten y se registran en lugar de hacer fallar todo el análisis. Comprueba que la extensión del archivo coincide con los formatos que espera la biblioteca (consulta **Contenido y metadatos compatibles**)."
+    },
+    "noPosters": {
+      "title": "Las películas, series o anime no tienen pósteres ni descripciones",
+      "text": "Estos tres tipos usan TMDB para los metadatos, que necesita una clave de API gratuita que un administrador configura en **Administración → Metadatos**. Sin clave, el contenido se sigue analizando y reproduciendo; solo que no se buscan coincidencias automáticamente."
+    },
+    "forgotPassword": {
+      "title": "Un usuario ha olvidado su contraseña",
+      "text": "Cualquier administrador puede restablecerla desde **Administración → Usuarios** con el botón de editar (lápiz), sin necesidad de saber la contraseña anterior. Esto cierra su sesión en todas partes de inmediato."
+    },
+    "video": {
+      "title": "Reproducción de vídeo: tirones, carga constante o «Convirtiendo para el navegador»",
+      "intro": "Plinthio usa un motor de reproducción de 3 niveles pensado para dar el máximo rendimiento con la mínima carga en el servidor:",
+      "directPlay": "**Reproducción directa (0 % de carga en el servidor):** cuando los archivos usan formatos nativos del navegador (p. ej., H.264 o HEVC con AAC en MP4), el archivo se transmite directamente desde el disco sin ninguna conversión.",
+      "directStream": "**Streaming directo (remux):** cuando el vídeo es compatible (p. ej., H.264 o HEVC en Chromium/Safari) pero el contenedor es MKV o el audio es EAC3 / Dolby Atmos / DTS, Plinthio copia la pista de vídeo sin tocarla ({copy}) y solo convierte la pista de audio a AAC. Esto usa ~0,5 % de CPU, arranca en <100 ms y mantiene la calidad 4K/1080p original.",
+      "browserAcceleration": "**Aceleración por hardware del navegador:** para una reproducción fluida y saltos instantáneos, asegúrate de que tu navegador tiene activada la decodificación de vídeo por hardware. En Chrome, Edge o Vivaldi, ve a {vivaldi} o {chrome} y comprueba que {status} está activo.",
+      "serverTranscoding": "**Conversión por hardware en el servidor:** cuando hay que convertir la propia pista de vídeo (p. ej., H.264 de 10 bits), Plinthio delega la codificación en tu GPU (Intel QuickSync, VAAPI o NVIDIA NVENC). En Docker, pasa {device} y el GID del grupo {group} del equipo en {compose}.",
+      "thermal": "**Protección térmica:** la generación de miniaturas en segundo plano va separada de la reproducción de vídeo, y la conversión por software de reserva se limita a 2 hilos para evitar el sobrecalentamiento en Intel NUC y mini PC de bajo consumo."
+    },
+    "deletedLibrary": {
+      "title": "He eliminado una biblioteca por error",
+      "text": "Tus archivos multimedia siguen intactos: vuelve a añadir una biblioteca que apunte a la misma carpeta y analízala. El progreso de lectura y los marcadores se recuperan automáticamente según la identidad de cada archivo. Si además necesitas exactamente los cambios de metadatos que tenías, restaura una **copia de seguridad de la base de datos**."
+    },
+    "awayFromHome": {
+      "title": "No puedo conectarme al servidor desde el móvil fuera de casa",
+      "text": "Consulta **Acceso remoto y Tailscale**: una IP local como {ip} solo funciona en la misma red wifi."
+    }
+  }
+}

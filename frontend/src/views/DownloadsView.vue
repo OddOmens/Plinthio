@@ -4,50 +4,48 @@
       <router-link
         to="/"
         class="w-9 h-9 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center justify-center transition active:scale-95 flex-shrink-0"
-        title="Back to Shelves"
-        aria-label="Back to Shelves"
+        :title="$t('nav.backToShelves')"
+        :aria-label="$t('nav.backToShelves')"
       >
         <ArrowLeft class="w-4 h-4" />
       </router-link>
       <div class="min-w-0">
-        <h1 class="text-xl font-bold text-foreground">Downloads</h1>
+        <h1 class="text-xl font-bold text-foreground">{{ $t('downloads.title') }}</h1>
         <p class="text-sm text-muted-foreground mt-0.5">
-          Books, comics and audiobooks saved on this device for reading without a connection.
+          {{ $t('downloads.intro') }}
         </p>
       </div>
     </div>
 
     <p v-if="!online" class="text-xs rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-3 py-2 flex items-center gap-2">
       <WifiOff class="w-4 h-4 flex-shrink-0" />
-      You're offline. Downloads still open; reading progress syncs when you're back online.
+      {{ $t('downloads.offline') }}
     </p>
 
-    <p v-if="!downloads.supported && downloads.needsHttps" class="text-sm text-muted-foreground">
-      Downloads need a secure connection, and this page was opened over plain http://.
-      <router-link to="/docs#pwa" class="text-primary font-medium hover:underline">Switch to HTTPS</router-link>
-      to download things for offline reading and listening.
-    </p>
+    <I18nT v-if="!downloads.supported && downloads.needsHttps" keypath="downloads.needsHttps" tag="p" class="text-sm text-muted-foreground">
+      <template #link><router-link to="/docs#pwa" class="text-primary font-medium hover:underline">{{ $t('downloads.switchToHttps') }}</router-link></template>
+    </I18nT>
     <p v-else-if="!downloads.supported" class="text-sm text-muted-foreground">
-      This browser can't store downloads (it needs Service Worker and Cache Storage support).
+      {{ $t('downloads.unsupported') }}
     </p>
 
     <!-- Storage -->
     <div v-if="downloads.supported" class="rounded-xl border border-border bg-card p-4 flex flex-col gap-2">
       <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
-        <span class="font-medium text-foreground">{{ formatBytes(downloads.totalBytes) }} in {{ downloads.list.length }} download{{ downloads.list.length === 1 ? '' : 's' }}</span>
-        <span v-if="downloads.quota" class="text-muted-foreground">{{ formatBytes(downloads.usage) }} of {{ formatBytes(downloads.quota) }} used on this device</span>
+        <span class="font-medium text-foreground">{{ $t('downloads.summary', { size: formatBytes(downloads.totalBytes), count: downloads.list.length }) }}</span>
+        <span v-if="downloads.quota" class="text-muted-foreground">{{ $t('downloads.usage', { used: formatBytes(downloads.usage), quota: formatBytes(downloads.quota) }) }}</span>
       </div>
       <div v-if="downloads.quota" class="h-1.5 rounded-full bg-muted overflow-hidden">
         <div class="h-full bg-primary" :style="{ width: `${Math.min(100, (downloads.usage / downloads.quota) * 100)}%` }" />
       </div>
       <p class="text-[12px] text-muted-foreground">
-        Downloads are tied to this browser and your account — signing out removes them.
+        {{ $t('downloads.tiedToAccount') }}
       </p>
     </div>
 
     <!-- In progress -->
     <section v-if="activeList.length" class="flex flex-col gap-2">
-      <h2 class="text-sm font-semibold text-foreground">Downloading</h2>
+      <h2 class="text-sm font-semibold text-foreground">{{ $t('downloads.downloading') }}</h2>
       <div v-for="entry in activeList" :key="entry.id" class="rounded-xl border border-border bg-card p-3 flex items-center gap-3">
         <div class="min-w-0 flex-1">
           <p class="text-sm font-medium text-foreground truncate">{{ entry.title }}</p>
@@ -64,7 +62,7 @@
           @click="entry.error ? downloads.dismissError(entry.id) : downloads.cancel(entry.id)"
           class="h-8 px-3 rounded-lg border border-border text-xs font-medium hover:bg-muted transition"
         >
-          {{ entry.error ? 'Dismiss' : 'Cancel' }}
+          {{ entry.error ? $t('downloads.dismiss') : $t('common.cancel') }}
         </button>
       </div>
     </section>
@@ -72,7 +70,7 @@
     <!-- Downloaded -->
     <section v-if="downloads.list.length" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div v-for="entry in downloads.list" :key="entry.id" class="rounded-xl border border-border bg-card p-3 flex gap-3">
-        <button type="button" @click="openEntry(entry)" class="w-16 aspect-[2/3] rounded-lg overflow-hidden bg-muted flex-shrink-0" :aria-label="`Open ${entry.item.title}`">
+        <button type="button" @click="openEntry(entry)" class="w-16 aspect-[2/3] rounded-lg overflow-hidden bg-muted flex-shrink-0" :aria-label="$t('downloads.openItem', { title: entry.item.title })">
           <img :src="coverUrl(entry.item, { width: 180 })" :alt="''" class="w-full h-full object-cover" loading="lazy" />
         </button>
         <div class="min-w-0 flex-1 flex flex-col">
@@ -90,14 +88,14 @@
             >
               <Play v-if="entry.kind === 'audio'" class="w-3.5 h-3.5 fill-current" />
               <BookOpen v-else class="w-3.5 h-3.5" />
-              {{ entry.kind === 'audio' ? 'Play' : 'Read' }}
+              {{ entry.kind === 'audio' ? $t('common.play') : $t('downloads.read') }}
             </button>
             <button
               type="button"
               @click="removeEntry(entry)"
               class="h-8 w-8 rounded-lg border border-border text-muted-foreground hover:text-destructive hover:border-destructive/40 transition flex items-center justify-center"
-              :aria-label="`Remove download of ${entry.item.title}`"
-              title="Remove download"
+              :aria-label="$t('downloads.removeItemLabel', { title: entry.item.title })"
+              :title="$t('downloads.remove')"
             >
               <Trash2 class="w-3.5 h-3.5" />
             </button>
@@ -108,10 +106,10 @@
 
     <div v-else-if="downloads.supported && !activeList.length" class="flex flex-col items-center text-center py-16 border border-dashed border-border rounded-2xl">
       <Download class="w-6 h-6 text-muted-foreground mb-2" />
-      <p class="text-sm font-medium text-foreground">Nothing downloaded yet</p>
-      <p class="text-xs text-muted-foreground mt-1 max-w-xs">
-        Use <strong>Download for offline</strong> in a title's ⋮ menu, or the download button on a manga volume.
-      </p>
+      <p class="text-sm font-medium text-foreground">{{ $t('downloads.empty.title') }}</p>
+      <I18nT keypath="downloads.empty.hint" tag="p" class="text-xs text-muted-foreground mt-1 max-w-xs">
+        <template #action><strong>{{ $t('downloads.empty.action') }}</strong></template>
+      </I18nT>
     </div>
 
     <MangaReader v-if="activeManga" :item="activeManga" @close="activeManga = null" />
@@ -128,6 +126,7 @@ import { useDialogStore } from '../stores/dialog';
 import { coverUrl } from '../utils/cover';
 import { getMediaToken } from '../utils/mediaToken';
 import { ArrowLeft, WifiOff, Download, Trash2, Play, BookOpen, Headphones, FileImage, Book } from '@lucide/vue';
+import { t, n } from '../i18n';
 
 const MangaReader = defineAsyncComponent(() => import('../components/MangaReader.vue'));
 const EpubReader = defineAsyncComponent(() => import('../components/EpubReader.vue'));
@@ -148,10 +147,12 @@ const activeList = computed(() => Object.entries(downloads.active).map(([id, a])
     : a.total ? Math.min(100, Math.round((a.received / a.total) * 100)) : 0;
   return {
     id,
-    title: a.title || 'Download',
+    title: a.title || t('downloads.untitled'),
     error: a.error,
     percent,
-    label: pages?.total ? `${pages.done} / ${pages.total} pages` : `${formatBytes(a.received)}${a.total ? ` of ${formatBytes(a.total)}` : ''}`
+    label: pages?.total
+      ? t('downloads.pagesProgress', { done: pages.done, total: pages.total })
+      : a.total ? t('downloads.bytesProgress', { received: formatBytes(a.received), total: formatBytes(a.total) }) : formatBytes(a.received)
   };
 }));
 
@@ -159,11 +160,13 @@ function kindIcon(kind) {
   return kind === 'audio' ? Headphones : kind === 'pages' ? FileImage : Book;
 }
 
+// The number in the reader's format; the unit from the locale ("Mo" in French).
 function formatBytes(bytes) {
-  if (!bytes) return '0 B';
+  if (!bytes) return t('downloads.size.B', { value: n(0) });
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
-  return `${(bytes / 1024 ** i).toFixed(i >= 2 ? 1 : 0)} ${units[i]}`;
+  const digits = i >= 2 ? 1 : 0;
+  return t(`downloads.size.${units[i]}`, { value: n(bytes / 1024 ** i, { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false }) });
 }
 
 // Online, reopen with the server's current progress (it may have moved on another device);
@@ -214,9 +217,9 @@ async function openEntry(entry) {
 
 async function removeEntry(entry) {
   const confirmed = await dialog.confirm({
-    title: 'Remove download',
-    message: `Remove "${entry.item.title}" from this device? It stays in your library.`,
-    confirmText: 'Remove',
+    title: t('downloads.remove'),
+    message: t('downloads.removeConfirm', { title: entry.item.title }),
+    confirmText: t('common.remove'),
     danger: true
   });
   if (confirmed) downloads.remove(entry.id);

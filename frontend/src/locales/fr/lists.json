@@ -1,0 +1,85 @@
+{
+  "title": "Listes",
+  "intro": "Ce que vous voulez regarder, lire et écouter, dans votre ordre. Elles peuvent contenir des titres que le serveur n'a pas encore.",
+  "requests": "Demandes",
+  "categories": {
+    "movies": "Films",
+    "shows": "Séries",
+    "anime": "Anime",
+    "read": "Lecture",
+    "listen": "Écoute"
+  },
+  "titleCount": {
+    "one": "{count} titre",
+    "other": "{count} titres"
+  },
+  "newList": "Nouvelle liste",
+  "newListName": {
+    "movies": "Nom de la liste de films",
+    "shows": "Nom de la liste de séries",
+    "anime": "Nom de la liste d'anime",
+    "read": "Nom de la liste de lecture",
+    "listen": "Nom de la liste d'écoute"
+  },
+  "noLists": {
+    "movies": "Aucune liste de films pour l'instant.",
+    "shows": "Aucune liste de séries pour l'instant.",
+    "anime": "Aucune liste d'anime pour l'instant.",
+    "read": "Aucune liste de lecture pour l'instant.",
+    "listen": "Aucune liste d'écoute pour l'instant."
+  },
+  "allLists": "Toutes les listes",
+  "listFallback": "Liste",
+  "notInLibrary": {
+    "one": "{count} absent de la bibliothèque",
+    "other": "{count} absents de la bibliothèque"
+  },
+  "addTitles": "Ajouter des titres",
+  "deleteList": "Supprimer la liste",
+  "inList": "Dans la liste",
+  "seriesTitle": "{series} : {title}",
+  "empty": {
+    "title": "Cette liste est encore vide",
+    "hint": "Utilisez {addTitles} pour chercher n'importe quoi, sur le serveur ou non."
+  },
+  "moveEarlier": "Avancer",
+  "moveLater": "Reculer",
+  "removeFromList": "Retirer de la liste",
+  "request": "Demander",
+  "requestHint": "Demander à un admin d'ajouter ce titre à la bibliothèque",
+  "requestStatus": {
+    "pending": "En attente",
+    "accepted_pending": "Acceptée · Ajout en attente",
+    "accepted_added": "Acceptée · Ajoutée",
+    "rejected": "Refusée"
+  },
+  "deleteDialog": {
+    "title": "Supprimer la liste ?",
+    "message": "« {name} » sera supprimée. Rien n'est retiré de votre bibliothèque.",
+    "thisList": "Cette liste"
+  },
+  "addButton": {
+    "inNamed": "Dans {list}",
+    "title": "Ajouter à l'une de vos listes",
+    "list": "Liste",
+    "dialogLabel": "Ajouter {title} à une liste",
+    "heading": "Ajouter à une liste",
+    "loading": "Chargement de vos listes…",
+    "newPlaceholder": "Nouvelle liste…",
+    "firstPlaceholder": "Nommez votre première liste, ex. À voir"
+  },
+  "errors": {
+    "loadLists": "Impossible de charger les listes.",
+    "loadYourLists": "Impossible de charger vos listes.",
+    "createList": "Impossible de créer la liste.",
+    "createThatList": "Impossible de créer cette liste.",
+    "gone": "Cette liste n'existe plus.",
+    "loadList": "Impossible de charger cette liste.",
+    "deleteList": "Impossible de supprimer cette liste.",
+    "addTitle": "Impossible d'ajouter ce titre.",
+    "addToList": "Impossible de l'ajouter à cette liste.",
+    "request": "Impossible d'envoyer cette demande.",
+    "reorder": "Impossible d'enregistrer le nouvel ordre.",
+    "remove": "Impossible de retirer cette entrée."
+  }
+}

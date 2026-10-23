@@ -9,7 +9,7 @@
     <Loader2 v-if="status === 'saving'" class="w-3 h-3 animate-spin" />
     <CheckCircle v-else-if="status === 'saved'" class="w-3 h-3 text-emerald-500" />
     <AlertCircle v-else class="w-3 h-3" />
-    {{ message || { saving: 'Saving…', saved: 'Saved', error: 'Couldn\'t save' }[status] }}
+    {{ message || { saving: $t('common.saving'), saved: $t('common.saved'), error: $t('settings.saveStatus.error') }[status] }}
   </span>
 </template>
 

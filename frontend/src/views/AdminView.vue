@@ -1,12 +1,12 @@
 <template>
-  <SettingsLayout ref="layout" title="Admin" :groups="groups" :aliases="aliases">
+  <SettingsLayout ref="layout" :title="$t('common.admin')" :groups="groups" :aliases="aliases">
     <template #nav-footer>
       <router-link
         to="/settings"
         class="flex items-center gap-3 px-3.5 md:px-2.5 h-12 md:h-9 rounded-xl md:rounded-lg border border-border md:border-0 bg-card md:bg-transparent text-sm md:text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition"
       >
         <UserRound class="w-4 h-4" />
-        <span class="flex-1">Your settings</span>
+        <span class="flex-1">{{ $t('admin.nav.yourSettings') }}</span>
         <ArrowRight class="w-3.5 h-3.5" />
       </router-link>
     </template>
@@ -30,12 +30,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, defineAsyncComponent } from 'vue';
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue';
 import {
   LayoutDashboard, Folder, HeartPulse, Sparkles, Baby, Users, History, Palette, ToggleRight,
   MonitorPlay, Globe, DatabaseBackup, ScrollText, UserRound, ArrowRight
 } from '@lucide/vue';
 import api from '../api/client';
+import { t } from '../i18n';
 import SettingsLayout from '../components/settings/SettingsLayout.vue';
 import OverviewSection from '../components/admin/OverviewSection.vue';
 import LibrariesSection from '../components/admin/LibrariesSection.vue';
@@ -53,46 +54,29 @@ const MetadataSection = defineAsyncComponent(() => import('../components/admin/M
 
 const layout = ref(null);
 
-const groups = [
+// Built per render so the names follow the current language.
+const item = (id, icon) => ({
+  id,
+  icon,
+  label: t(`admin.nav.items.${id}.label`),
+  desc: t(`admin.nav.items.${id}.desc`)
+});
+const groups = computed(() => [
+  { label: t('admin.nav.groups.server'), items: [item('overview', LayoutDashboard)] },
   {
-    label: 'Server',
+    label: t('admin.nav.groups.library'),
+    items: [item('libraries', Folder), item('health', HeartPulse), item('metadata', Sparkles), item('kids', Baby)]
+  },
+  { label: t('admin.nav.groups.people'), items: [item('users', Users), item('activity', History)] },
+  {
+    label: t('admin.nav.groups.settings'),
     items: [
-      { id: 'overview', label: 'Overview', icon: LayoutDashboard, desc: 'Version, updates and what\'s in it' }
+      item('appearance', Palette), item('features', ToggleRight), item('playback', MonitorPlay),
+      item('network', Globe), item('backups', DatabaseBackup)
     ]
   },
-  {
-    label: 'Library',
-    items: [
-      { id: 'libraries', label: 'Libraries', icon: Folder, desc: 'Folders and automatic scanning' },
-      { id: 'health', label: 'Health', icon: HeartPulse, desc: 'Missing files and what needs fixing' },
-      { id: 'metadata', label: 'Metadata', icon: Sparkles, desc: 'TMDB key and matching titles' },
-      { id: 'kids', label: 'Kids Mode', icon: Baby, desc: 'What kids accounts can see' }
-    ]
-  },
-  {
-    label: 'People',
-    items: [
-      { id: 'users', label: 'Users', icon: Users, desc: 'Accounts, roles, limits' },
-      { id: 'activity', label: 'Activity', icon: History, desc: 'Sign-ins and what\'s being played' }
-    ]
-  },
-  {
-    label: 'Settings',
-    items: [
-      { id: 'appearance', label: 'Appearance', icon: Palette, desc: 'Defaults, name, custom CSS' },
-      { id: 'features', label: 'Features', icon: ToggleRight, desc: 'Shelf views, ratings, watch parties' },
-      { id: 'playback', label: 'Playback', icon: MonitorPlay, desc: 'Hardware acceleration, opening clip' },
-      { id: 'network', label: 'Network', icon: Globe, desc: 'Away from home, Tailscale, two-factor' },
-      { id: 'backups', label: 'Backups', icon: DatabaseBackup, desc: 'Schedule, second copy, restore points' }
-    ]
-  },
-  {
-    label: 'System',
-    items: [
-      { id: 'logs', label: 'Logs', icon: ScrollText, desc: 'What the server has been doing' }
-    ]
-  }
-];
+  { label: t('admin.nav.groups.system'), items: [item('logs', ScrollText)] }
+]);
 
 // Tab names from before the redesign, still in links and docs. Server Config was split
 // into Appearance, Features, Playback and Backups; it opens on the first.

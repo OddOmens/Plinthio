@@ -1,0 +1,42 @@
+{
+  "welcome": {
+    "title": "Bienvenue sur {name}",
+    "text": "Réglons tout comme vous l'aimez. Cela prend environ trente secondes, et vous pourrez tout modifier plus tard dans les Paramètres."
+  },
+  "theme": {
+    "title": "Choisissez votre style",
+    "text": "Ce choix ne concerne que vous : il ne change rien pour les autres."
+  },
+  "accent": {
+    "title": "Choisissez une couleur d'accent",
+    "text": "Elle sert aux boutons, aux éléments mis en avant et aux barres de progression.",
+    "admin": "En tant qu'administrateur, vous la définissez pour tout le serveur. Chacun peut choisir la sienne dans les Paramètres si vous l'autorisez (Administration → Lecture).",
+    "personal": "Elle ne concerne que vous ; modifiez-la quand vous voulez dans les Paramètres."
+  },
+  "interests": {
+    "title": "Qu'est-ce qui vous amène ?",
+    "text": "Nous les afficherons sur votre étagère et masquerons le reste. Choisissez-en autant que vous voulez.",
+    "pickOne": "Choisissez-en au moins un pour que votre étagère ne soit pas vide.",
+    "types": {
+      "manga": { "label": "Mangas", "hint": "BD et romans graphiques" },
+      "book": { "label": "Livres", "hint": "Lecture EPUB et PDF" },
+      "audiobook": { "label": "Livres audio", "hint": "Écoute avec reprise" },
+      "movie": { "label": "Films", "hint": "À regarder dans le navigateur" },
+      "show": { "label": "Séries TV", "hint": "Saisons et épisodes" },
+      "anime": { "label": "Anime", "hint": "Séries en VOSTFR et VF" }
+    }
+  },
+  "security": {
+    "title": "Protégez votre compte",
+    "text": "Facultatif. La double authentification demande un code depuis votre téléphone à la connexion : un mot de passe seul ne suffit plus. Vous pouvez l'activer maintenant ou plus tard dans Paramètres → Sécurité."
+  },
+  "done": {
+    "title": "Tout est prêt",
+    "everything": "Votre étagère affiche tout. À vous de jouer.",
+    "tuned": "Votre étagère est consacrée à : {list}. Vous pourrez en ajouter à tout moment dans les Paramètres."
+  },
+  "nav": {
+    "startBrowsing": "Commencer",
+    "notNow": "Plus tard"
+  }
+}

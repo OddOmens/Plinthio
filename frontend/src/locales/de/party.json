@@ -1,0 +1,69 @@
+{
+  "backTo": "Zurück zu {server}",
+  "joining": "Beitritt zur Watch-Party…",
+  "watchParty": "Watch-Party",
+  "showPanel": "Watch-Party einblenden",
+  "hidePanel": "Watch-Party ausblenden",
+  "reconnecting": "Verbindung wird wiederhergestellt…",
+  "waitingFor": "Warten auf {names}…",
+  "closePanel": "Seitenleiste schließen",
+  "invite": "Einladen",
+  "inviteHint": "Alle mit einem Konto auf diesem Server können über den Link oder den Code {code} beitreten.",
+  "watching": "Dabei ({count})",
+  "you": "(du)",
+  "loading": "Lädt",
+  "host": "Host",
+  "whoControls": "Wer abspielen, pausieren und springen darf",
+  "onlyMe": "Nur ich",
+  "everyone": "Alle",
+  "chatEmpty": "Sag Hallo — Nachrichten gehen an alle, die zuschauen.",
+  "messagePlaceholder": "Nachricht",
+  "send": "Senden",
+  "leave": "Verlassen",
+  "endForEveryone": "Für alle beenden",
+  "tapToJoin": "Tippe auf Abspielen, um einzusteigen",
+  "hostInControl": "Der Host steuert die Wiedergabe",
+  "unreachable": "Party nicht erreichbar",
+  "messageNotSent": "Nachricht nicht gesendet",
+  "moveOnFailed": "Die Party konnte nicht weitergehen",
+  "copyPrompt": "Kopiere diesen Einladungslink:",
+  "endConfirm": {
+    "title": "Watch-Party beenden?",
+    "message": "Damit endet die Party für alle, die zuschauen.",
+    "confirm": "Party beenden"
+  },
+  "problems": {
+    "P600": {
+      "title": "Watch-Partys sind aus",
+      "message": "Ein Admin muss Watch-Partys für diesen Server erst einschalten."
+    },
+    "P601": {
+      "title": "Diese Party ist vorbei",
+      "message": "Der Host hat sie beendet, oder alle sind gegangen. Frag nach einem neuen Einladungslink."
+    },
+    "P603": {
+      "title": "Für dich nicht verfügbar",
+      "message": "Diese Party schaut etwas, das dein Konto nicht öffnen kann."
+    },
+    "P605": {
+      "title": "Diese Party ist voll",
+      "message": "Eine Watch-Party fasst bis zu 20 Personen. Versuch es erneut, wenn jemand geht."
+    },
+    "disabled": {
+      "title": "Watch-Partys wurden ausgeschaltet",
+      "message": "Ein Admin hat Watch-Partys ausgeschaltet und damit diese beendet."
+    },
+    "over": {
+      "title": "Die Party ist vorbei",
+      "message": "Der Host hat die Watch-Party beendet. Danke fürs Zuschauen!"
+    },
+    "couldntJoin": {
+      "title": "Beitreten fehlgeschlagen",
+      "message": "Beim Beitreten zu dieser Party ist etwas schiefgelaufen."
+    },
+    "couldntLoad": {
+      "title": "Video konnte nicht geladen werden",
+      "message": "Öffne den Einladungslink noch einmal."
+    }
+  }
+}

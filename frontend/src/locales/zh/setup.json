@@ -1,0 +1,195 @@
+{
+  "header": {
+    "title": "设置 {name}",
+    "progress": "第{step}/{total}步：{title}",
+    "almostDone": "就快完成了"
+  },
+  "steps": {
+    "appearance": "外观",
+    "admin": "管理员帐户",
+    "media": "媒体类型",
+    "libraries": "媒体库",
+    "household": "家庭成员",
+    "access": "访问",
+    "review": "检查并完成"
+  },
+  "appearance": {
+    "title": "打造属于你的风格",
+    "text": "为你的服务器设置名称和外观。之后都可以在“管理”中更改。",
+    "serverName": "服务器名称",
+    "theme": "主题",
+    "accent": "强调色"
+  },
+  "themes": {
+    "dark": {
+      "label": "深色",
+      "hint": "护眼舒适"
+    },
+    "light": {
+      "label": "浅色",
+      "hint": "清爽明亮"
+    }
+  },
+  "admin": {
+    "title": "你的管理员帐户",
+    "text": "此帐户负责管理媒体库、设置以及谁可以使用服务器。",
+    "passwordHint": "至少8个字符。越长越好，尤其是当你要将 Plinthio 开放到互联网时。",
+    "confirmPassword": "确认密码"
+  },
+  "media": {
+    "title": "你会在这里存放什么？",
+    "text": "这些会显示在你的书架上。之后每个人也可以自行选择。",
+    "types": {
+      "audiobook": {
+        "title": "有声书",
+        "desc": "章节、书签和断点续听。"
+      },
+      "manga": {
+        "title": "漫画",
+        "desc": "逐页阅读器，支持单页或双页。"
+      },
+      "book": {
+        "title": "书籍",
+        "desc": "带进度记录的 EPUB 和 PDF 阅读器。"
+      },
+      "movie": {
+        "title": "电影",
+        "desc": "断点续播、电影合集和花絮。"
+      },
+      "show": {
+        "title": "电视剧",
+        "desc": "分季分集，自动播放下一集。"
+      },
+      "anime": {
+        "title": "动画",
+        "desc": "按季和集整理的剧集。"
+      }
+    }
+  },
+  "libraries": {
+    "title": "添加你的媒体文件夹",
+    "text": "可选。让 Plinthio 指向存放文件的文件夹，它会立即扫描。之后可以在“管理”中添加更多。",
+    "addFolder": "添加文件夹",
+    "empty": "还没有文件夹。",
+    "dockerHint": "在 Docker 中，你的媒体位于 {path}。",
+    "addNow": "+立即添加媒体库文件夹",
+    "name": "媒体库名称",
+    "namePlaceholder": "例如：我的有声书",
+    "type": "类型",
+    "path": "文件夹路径（宿主机或容器内）",
+    "types": {
+      "audiobooks": "有声书",
+      "manga": "漫画",
+      "books": "书籍和 PDF",
+      "shows": "电视剧",
+      "movies": "电影",
+      "anime": "动画"
+    }
+  },
+  "household": {
+    "title": "还有谁会使用？",
+    "text": "可选。每个人都有自己的进度、书签和外观。随时可以在“管理”中添加成员。",
+    "usernamePlaceholder": "例如：alex",
+    "role": "角色",
+    "roles": {
+      "viewer": "观众：浏览、阅读和记录进度",
+      "editor": "编辑者：还可以修正元数据和封面",
+      "admin": "管理员：完全控制服务器"
+    },
+    "password": "密码（至少8个字符）",
+    "passwordPlaceholder": "为他们设置密码",
+    "tooShort": "太短：密码少于8个字符的帐户会被跳过。",
+    "add": "添加成员",
+    "parties": "开启一起看",
+    "partiesText": "身处不同地方也能同步观看电影或剧集，还能聊天。不在家的朋友需要一种访问方式（见下一步）。随时可以在“管理”中更改。"
+  },
+  "access": {
+    "title": "你会在哪里使用 Plinthio？",
+    "text": "先从你现在需要的开始。随时可以在“管理 → 网络”中更改。",
+    "groupLabel": "你会在哪里使用 Plinthio",
+    "options": {
+      "home": {
+        "title": "仅在家中",
+        "badge": "从这里开始",
+        "text": "家庭网络中的手机、平板和电脑。互联网上无法访问任何内容。"
+      },
+      "tailscale": {
+        "title": "在家中，以及通过 Tailscale 在外使用",
+        "text": "适用于你和你邀请加入 Tailscale 的人：私密，无需在路由器上开放任何端口。每台设备都需要安装免费的 Tailscale 应用。"
+      },
+      "internet": {
+        "title": "同时向互联网上的访客开放",
+        "text": "亲友打开链接即可登录，无需安装应用：通过 Tailscale Funnel（无需域名，无需更改路由器）或你自己的网址。"
+      }
+    },
+    "via": {
+      "question": "访客如何访问？",
+      "groupLabel": "访客的访问方式",
+      "funnel": {
+        "title": "无域名：Tailscale Funnel",
+        "text": "永久链接，无需更改路由器。最适合阅读和收听；视频可能较慢。"
+      },
+      "domain": {
+        "title": "我自己的域名",
+        "text": "全速访问，例如 media.yourdomain.com。需要在路由器上开放端口。"
+      }
+    },
+    "tailscale": {
+      "title": "设置 Tailscale",
+      "text": "现在设置，或在完成设置后的任何时候：“管理 → 网络”中有同样的指南，并会显示它是否正常工作。"
+    },
+    "domain": {
+      "title": "完成设置后：为它分配一个网址",
+      "text": "Caddy 插件会提供带有正式证书的 {url}。它需要一个域名，并在路由器上转发80和443端口。分步说明（包括如何检查你的网络连接是否支持）：{docs}。在此之前，一切保持不变。",
+      "docs": "文档 → 远程访问与 Tailscale"
+    },
+    "require2fa": "离家时要求两步验证",
+    "require2faText": "可选，推荐开启。从家庭网络之外登录时需要输入手机应用中的验证码；在家时只需密码。没有两步验证的人仍可在家登录并在那里进行设置。"
+  },
+  "review": {
+    "title": "检查并启动 Plinthio",
+    "text": "确认一切无误。之后都可以更改。",
+    "rows": {
+      "serverName": "服务器名称",
+      "adminUsername": "管理员用户名",
+      "themeAccent": "主题和强调色",
+      "media": "媒体",
+      "libraries": "媒体库",
+      "otherAccounts": "其他帐户",
+      "parties": "一起看",
+      "access": "访问"
+    },
+    "folders": {
+      "other": "{count}个文件夹"
+    },
+    "access": {
+      "home": "仅限家中",
+      "tailscale": "家中和 Tailscale",
+      "funnel": "家中和互联网（Tailscale Funnel）",
+      "domain": "家中和互联网（你自己的域名）",
+      "withTwoFactor": "{access}，离家时需两步验证"
+    },
+    "https": {
+      "title": "家中的安全连接",
+      "text": "安装版应用和离线下载需要 HTTPS。Plinthio 也可通过 {url} 访问，它使用自己的证书，每台设备需要安装一次（文档 → PWA 移动应用设置）。也可以使用 Tailscale，获得一个无需安装任何东西的受信任地址。"
+    }
+  },
+  "finished": {
+    "title": "Plinthio 已就绪",
+    "text": "最后一件可选的事：用两步验证保护你的管理员帐户，仅凭密码无法登录。",
+    "internet": "建议开启，因为服务器将可以从互联网访问。",
+    "later": "你也可以稍后在“设置 → 安全”中开启。"
+  },
+  "nav": {
+    "complete": "完成设置并启动",
+    "goToPlinthio": "前往 Plinthio",
+    "notNow": "以后再说"
+  },
+  "errors": {
+    "usernameRequired": "请填写用户名",
+    "passwordLength": "密码至少需要8个字符",
+    "passwordMismatch": "两次输入的密码不一致",
+    "mediaRequired": "请至少选择一种媒体类型",
+    "failed": "设置失败。请检查与服务器的连接。"
+  }
+}

@@ -1,0 +1,611 @@
+{
+  "nav": {
+    "backToShelf": "返回书架",
+    "shelf": "书架",
+    "details": "详情",
+    "returnToShelf": "返回书架"
+  },
+  "errors": {
+    "loadHint": "无法加载此系列，它可能已被移除。",
+    "notFound": "找不到该项目",
+    "noSeries": "未指定系列",
+    "loadFailed": "加载系列详情失败",
+    "changeFailed": "无法更改",
+    "seasonFailed": "更新季状态失败",
+    "partyFailed": "无法发起一起看",
+    "markAllFailed": "全部标记为已读失败",
+    "resetFailed": "重置阅读记录失败",
+    "skipFailed": "无法更新跳过的内容",
+    "markEarlierFailed": "无法将它们标记为已完成",
+    "kidsFailed": "无法更改儿童模式"
+  },
+  "meta": {
+    "pages": {
+      "other": "{pages}页"
+    },
+    "seasons": {
+      "other": "{count}季"
+    },
+    "episodes": {
+      "other": "{count}集"
+    }
+  },
+  "duration": {
+    "minutes": "{m}分钟",
+    "hoursMinutes": "{h}小时{m}分钟"
+  },
+  "date": {
+    "today": "今天",
+    "yesterday": "昨天"
+  },
+  "position": {
+    "pageShort": "第{page}页",
+    "page": "第{page}页",
+    "pageOf": "第{page}页，共{total}页",
+    "timeOf": "{at} / {total}",
+    "withPercent": "{position}（{percent}）"
+  },
+  "status": {
+    "upNext": "接下来",
+    "offloaded": "已归档",
+    "watched": "已看",
+    "skipped": "已跳过",
+    "new": "新",
+    "done": "完成",
+    "finished": "已完成",
+    "notStarted": "未开始"
+  },
+  "progress": {
+    "label": "进度"
+  },
+  "offloaded": {
+    "single": "为释放空间已从服务器移除。你的记录和评分都会保留，文件放回后会自动恢复。",
+    "dialogMessage": "“{title}”为释放空间已从服务器移除。你的记录会保留，文件放回后会自动恢复。"
+  },
+  "overview": {
+    "readMore": "展开"
+  },
+  "facts": {
+    "genres": "类型",
+    "createdBy": "创作者",
+    "director": "导演",
+    "writers": "编剧",
+    "studios": "制作公司",
+    "network": "播出平台",
+    "artists": "画师",
+    "publisher": "出版社",
+    "released": "发行日期",
+    "runtime": "片长",
+    "length": "时长",
+    "pages": "页数",
+    "cast": "演员",
+    "status": "状态",
+    "format": "格式",
+    "fileSize": "文件大小",
+    "library": "媒体库",
+    "lastOpened": "上次打开",
+    "totalLength": "总时长",
+    "totalPages": "总页数"
+  },
+  "sections": {
+    "seasons": "季",
+    "episodes": "剧集",
+    "castCrew": "演职人员",
+    "extras": "花絮",
+    "mediaInfo": "媒体信息"
+  },
+  "season": {
+    "label": "第{number}季",
+    "specials": "特别篇",
+    "other": "其他",
+    "markUnwatched": "标记为未看",
+    "markWatched": "将{season}标记为已看",
+    "episodes": {
+      "other": "{count}集"
+    },
+    "episodesWatched": {
+      "other": "已看{watched}/{count}集"
+    },
+    "offloaded": "{count}项已归档"
+  },
+  "sort": {
+    "firstToLast": "顺序：从前到后",
+    "lastToFirst": "顺序：从后到前",
+    "oldestFirst": "最早的在前",
+    "newestFirst": "最新的在前"
+  },
+  "episode": {
+    "play": "播放{title}",
+    "markUnwatched": "标记为未看"
+  },
+  "rating": {
+    "yourRating": "你的评分",
+    "youRated": "你给了{rating}/5分——可在页首修改",
+    "yourRatingChange": "你的评分：{rating}/5——修改",
+    "rateEntry": "为{label}评分",
+    "community": {
+      "other": "{server}上{users}位用户的平均分：{average}"
+    },
+    "communityNone": "{server}上还没有评分",
+    "tmdb": {
+      "other": "TMDB评分{rating}/{scale}（{votes}票）"
+    },
+    "saveFailed": "无法保存",
+    "outOfFive": "{value}星（满分5星）",
+    "stars": {
+      "other": "{count}星"
+    },
+    "clear": "清除评分"
+  },
+  "collection": {
+    "countOf": "{owned}/{total}",
+    "comingSoon": "即将推出",
+    "moreIn": "更多{name}",
+    "viewAll": "查看全部{count}项",
+    "watchAgain": "再看一次：{title}",
+    "resume": "继续：{title}",
+    "play": "播放：{title}"
+  },
+  "filter": {
+    "label": "筛选：{label}",
+    "notStarted": "未开始",
+    "inProgress": "进行中",
+    "completed": "已完成",
+    "emptyTitle": "此筛选下没有内容"
+  },
+  "layout": {
+    "label": "布局",
+    "grid": "网格视图",
+    "list": "列表视图"
+  },
+  "volume": {
+    "again": "再来一次",
+    "moreFor": "{label}的更多操作",
+    "actions": "{label}的操作",
+    "markNotStarted": "标记为未开始",
+    "markNotStartedShort": "标记为未开始"
+  },
+  "skip": {
+    "skippedHint": "已跳过——点按取消跳过",
+    "skip": "跳过",
+    "unskip": "取消跳过",
+    "hintStory": "已经知道前面的剧情了？比如看过动画？",
+    "hintOther": "有些已经在别处看过或听过了？",
+    "through": "以下及之前的内容我都已了解：",
+    "unskipAll": "全部取消跳过（{count}）",
+    "confirm": "跳过{count}项"
+  },
+  "bookmarks": {
+    "title": "书签与笔记",
+    "label": "书签与笔记",
+    "short": "书签"
+  },
+  "download": {
+    "downloaded": "已下载——点按移除",
+    "downloading": "下载中——点按取消",
+    "forOffline": "下载以离线使用",
+    "doneShort": "已下载",
+    "busyShort": "下载中…",
+    "remaining": "下载剩余内容（{count}）",
+    "httpsTitle": "下载需要HTTPS",
+    "httpsMessage": "浏览器只允许在安全连接上保存离线内容，而此页面是通过普通的http://打开的。请改用HTTPS地址打开Plinthio（Tailscale是最简单的方法），下载和可安装的应用就都能用了。",
+    "httpsConfirm": "教我怎么做",
+    "httpsCancel": "以后再说"
+  },
+  "markEarlier": {
+    "markAll": "全部标记",
+    "noThanks": "不用了"
+  },
+  "actions": {
+    "more": "更多操作",
+    "watchTogether": "一起看",
+    "watchTogetherTitle": "和身在别处的人一起看",
+    "resetHistory": "重置记录",
+    "resetHistoryTitle": "重置你在此作品上的记录",
+    "editMetadata": "编辑元数据",
+    "metadataOne": "搜索元数据提供方并应用到此作品",
+    "undoOffload": "撤销归档",
+    "undoOffloadTitle": "将{target}重新显示为在服务器上",
+    "keepAsHistory": "保留为记录",
+    "keepAsHistoryTitle": "归档{target}：删除文件后仍保留其记录",
+    "inKidsMode": "已在儿童模式中",
+    "kids": "儿童"
+  },
+  "offload": {
+    "targetTitle": "“{title}”",
+    "targetSeason": "{name}第{number}季",
+    "targetSpecials": "{name}特别篇",
+    "targetOther": "{name}其他",
+    "targetAll": "{name}的全部内容",
+    "confirmTitle": "保留为记录？",
+    "confirmMessage": "{target}将从书架和搜索中隐藏且无法播放，但会以灰色继续显示在这里，所有人的进度都会保留。之后删除文件即可释放空间。如果文件回来了，它会自动恢复。",
+    "confirmButton": "保留为记录"
+  },
+  "kids": {
+    "viaLibrary": "它所在的整个媒体库都在儿童模式中（可在管理 → 儿童模式中更改）",
+    "viaSeries": "它所属的系列在儿童模式中——请在系列页面更改",
+    "allowed": "儿童帐户可以看到此内容——点击将其移出儿童模式",
+    "allow": "允许儿童模式帐户查看此内容"
+  },
+  "reset": {
+    "title": "重置进度",
+    "message": "要重置你在“{name}”上的所有进度吗？",
+    "confirm": "重置进度"
+  },
+  "extraTypes": {
+    "trailer": "预告片",
+    "featurette": "特辑",
+    "behindthescenes": "幕后花絮",
+    "deletedscene": "删减片段",
+    "interview": "访谈",
+    "scene": "片段",
+    "short": "短片",
+    "extra": "花絮"
+  },
+  "availability": {
+    "notOnServer": "不在此服务器上",
+    "notInLibrary": "不在媒体库中",
+    "offloadedOn": "已于{date}从服务器移除以释放空间。你的记录会保留，文件回来后它也会回来。",
+    "offloaded": "为释放空间已从服务器移除。你的记录会保留，文件回来后它也会回来。"
+  },
+  "request": {
+    "request": "请求",
+    "again": "再次请求",
+    "coming": "{year}年上映",
+    "announced": "已公布",
+    "requested": "已请求",
+    "approved": "请求已批准",
+    "addedSoon": "即将添加",
+    "failed": "无法发送该请求。"
+  },
+  "typed": {
+    "units": {
+      "manga": {
+        "other": "{count}卷"
+      },
+      "book": {
+        "other": "{count}本书"
+      },
+      "audiobook": {
+        "other": "{count}本书"
+      },
+      "show": {
+        "other": "{count}集"
+      },
+      "anime": {
+        "other": "{count}集"
+      },
+      "movie": {
+        "other": "{count}部电影"
+      }
+    },
+    "progressOf": {
+      "manga": {
+        "other": "{read}/{count}卷"
+      },
+      "book": {
+        "other": "{read}/{count}本书"
+      },
+      "audiobook": {
+        "other": "{read}/{count}本书"
+      },
+      "show": {
+        "other": "{read}/{count}集"
+      },
+      "anime": {
+        "other": "{read}/{count}集"
+      },
+      "movie": {
+        "other": "{read}/{count}部电影"
+      }
+    },
+    "progressOfSkipped": {
+      "manga": {
+        "other": "{read}+已跳过{count}/{total}卷"
+      },
+      "book": {
+        "other": "{read}+已跳过{count}/{total}本书"
+      },
+      "audiobook": {
+        "other": "{read}+已跳过{count}/{total}本书"
+      },
+      "show": {
+        "other": "{read}+已跳过{count}/{total}集"
+      },
+      "anime": {
+        "other": "{read}+已跳过{count}/{total}集"
+      },
+      "movie": {
+        "other": "{read}+已跳过{count}/{total}部电影"
+      }
+    },
+    "offloadedSome": {
+      "manga": {
+        "other": "这{total}卷中有{count}卷已为释放空间而归档，仍保留为记录。"
+      },
+      "book": {
+        "other": "这{total}本书中有{count}本已为释放空间而归档，仍保留为记录。"
+      },
+      "audiobook": {
+        "other": "这{total}本书中有{count}本已为释放空间而归档，仍保留为记录。"
+      },
+      "show": {
+        "other": "这{total}集中有{count}集已为释放空间而归档，仍保留为记录。"
+      },
+      "anime": {
+        "other": "这{total}集中有{count}集已为释放空间而归档，仍保留为记录。"
+      },
+      "movie": {
+        "other": "这{total}部电影中有{count}部已为释放空间而归档，仍保留为记录。"
+      }
+    },
+    "offloadedAll": {
+      "manga": "这些卷已全部为释放空间而归档，仍保留为记录。",
+      "book": "这些书已全部为释放空间而归档，仍保留为记录。",
+      "audiobook": "这些书已全部为释放空间而归档，仍保留为记录。",
+      "show": "这些剧集已全部为释放空间而归档，仍保留为记录。",
+      "anime": "这些剧集已全部为释放空间而归档，仍保留为记录。",
+      "movie": "这些电影已全部为释放空间而归档，仍保留为记录。"
+    },
+    "emptyHint": {
+      "manga": "切换到“全部”标签页即可查看每一卷。",
+      "book": "切换到“全部”标签页即可查看每一本书。",
+      "audiobook": "切换到“全部”标签页即可查看每一本书。",
+      "show": "切换到“全部”标签页即可查看每一集。",
+      "anime": "切换到“全部”标签页即可查看每一集。",
+      "movie": "切换到“全部”标签页即可查看每一部电影。"
+    },
+    "markAs": {
+      "manga": "标记为已读",
+      "book": "标记为已读",
+      "audiobook": "标记为已听",
+      "show": "标记为已看",
+      "anime": "标记为已看",
+      "movie": "标记为已看"
+    },
+    "skipUnit": {
+      "manga": "跳过本卷",
+      "book": "跳过本书",
+      "audiobook": "跳过本书",
+      "show": "跳过本集",
+      "anime": "跳过本集",
+      "movie": "跳过电影"
+    },
+    "unskipUnit": {
+      "manga": "取消跳过本卷",
+      "book": "取消跳过本书",
+      "audiobook": "取消跳过本书",
+      "show": "取消跳过本集",
+      "anime": "取消跳过本集",
+      "movie": "取消跳过电影"
+    },
+    "skipThis": {
+      "manga": "跳过这一卷",
+      "book": "跳过这本书",
+      "audiobook": "跳过这本书",
+      "show": "跳过这一集",
+      "anime": "跳过这一集",
+      "movie": "跳过这部电影"
+    },
+    "rateThis": {
+      "manga": "为这一卷评分",
+      "book": "为这本书评分",
+      "audiobook": "为这本书评分",
+      "show": "为这一集评分",
+      "anime": "为这一集评分",
+      "movie": "为这部电影评分"
+    },
+    "rateInHeader": {
+      "manga": "在页首为这一卷评分",
+      "book": "在页首为这本书评分",
+      "audiobook": "在页首为这本书评分",
+      "show": "在页首为这一集评分",
+      "anime": "在页首为这一集评分",
+      "movie": "在页首为这部电影评分"
+    },
+    "again": {
+      "manga": "再读一次",
+      "book": "再读一次",
+      "audiobook": "再听一次",
+      "show": "再看一次",
+      "anime": "再看一次",
+      "movie": "再看一次"
+    },
+    "againLower": {
+      "manga": "再读一次",
+      "book": "再读一次",
+      "audiobook": "再听一次",
+      "show": "再看一次",
+      "anime": "再看一次",
+      "movie": "再看一次"
+    },
+    "markDone": {
+      "manga": "标记为已读",
+      "book": "标记为已读",
+      "audiobook": "标记为已听",
+      "show": "标记为已看",
+      "anime": "标记为已看",
+      "movie": "标记为已看"
+    },
+    "markAllDone": {
+      "manga": "全部标记为已读",
+      "book": "全部标记为已读",
+      "audiobook": "全部标记为已听",
+      "show": "全部标记为已看",
+      "anime": "全部标记为已看",
+      "movie": "全部标记为已看"
+    },
+    "markAllTitle": {
+      "manga": "全部标记为已读",
+      "book": "全部标记为已读",
+      "audiobook": "全部标记为已听",
+      "show": "全部标记为已看",
+      "anime": "全部标记为已看",
+      "movie": "全部标记为已看"
+    },
+    "markEverything": {
+      "manga": "将全部内容标记为已读",
+      "book": "将全部内容标记为已读",
+      "audiobook": "将全部内容标记为已听",
+      "show": "将全部内容标记为已看",
+      "anime": "将全部内容标记为已看",
+      "movie": "将全部内容标记为已看"
+    },
+    "markEveryConfirm": {
+      "manga": "要将“{name}”的每一卷都标记为已读吗？",
+      "book": "要将“{name}”的每一本书都标记为已读吗？",
+      "audiobook": "要将“{name}”的每一本书都标记为已听吗？",
+      "show": "要将“{name}”的每一集都标记为已看吗？",
+      "anime": "要将“{name}”的每一集都标记为已看吗？",
+      "movie": "要将“{name}”的每一部电影都标记为已看吗？"
+    },
+    "showUnits": {
+      "manga": "显示各卷",
+      "book": "显示书籍",
+      "audiobook": "显示书籍",
+      "show": "显示剧集",
+      "anime": "显示剧集",
+      "movie": "显示电影"
+    },
+    "markEarlier": {
+      "manga": {
+        "other": "也将之前的{count}卷标记为已读吗？"
+      },
+      "book": {
+        "other": "也将之前的{count}本书标记为已读吗？"
+      },
+      "audiobook": {
+        "other": "也将之前的{count}本书标记为已听吗？"
+      },
+      "show": {
+        "other": "也将之前的{count}集标记为已看吗？"
+      },
+      "anime": {
+        "other": "也将之前的{count}集标记为已看吗？"
+      },
+      "movie": {
+        "other": "也将之前的{count}部电影标记为已看吗？"
+      }
+    },
+    "skipUnits": {
+      "manga": "跳过卷",
+      "book": "跳过书籍",
+      "audiobook": "跳过书籍",
+      "show": "跳过剧集",
+      "anime": "跳过剧集",
+      "movie": "跳过电影"
+    },
+    "skipUnitsMenu": {
+      "manga": "跳过卷…",
+      "book": "跳过书籍…",
+      "audiobook": "跳过书籍…",
+      "show": "跳过剧集…",
+      "anime": "跳过剧集…",
+      "movie": "跳过电影…"
+    },
+    "skipCovered": {
+      "manga": "跳过你已经读过的卷",
+      "book": "跳过你已经读过的书籍",
+      "audiobook": "跳过你已经听过的书籍",
+      "show": "跳过你已经看过的剧集",
+      "anime": "跳过你已经看过的剧集",
+      "movie": "跳过你已经看过的电影"
+    },
+    "skipBody": {
+      "manga": "{hint}跳过的卷会计入你的进度，“继续”会从它们之后开始。你的记录不会改变，打开已跳过的卷会取消对它的跳过。",
+      "book": "{hint}跳过的书会计入你的进度，“继续”会从它们之后开始。你的记录不会改变，打开已跳过的书会取消对它的跳过。",
+      "audiobook": "{hint}跳过的书会计入你的进度，“继续”会从它们之后开始。你的记录不会改变，打开已跳过的书会取消对它的跳过。",
+      "show": "{hint}跳过的剧集会计入你的进度，“继续”会从它们之后开始。你的记录不会改变，打开已跳过的剧集会取消对它的跳过。",
+      "anime": "{hint}跳过的剧集会计入你的进度，“继续”会从它们之后开始。你的记录不会改变，打开已跳过的剧集会取消对它的跳过。",
+      "movie": "{hint}跳过的电影会计入你的进度，“继续”会从它们之后开始。你的记录不会改变，打开已跳过的电影会取消对它的跳过。"
+    },
+    "skips": {
+      "manga": {
+        "other": "将跳过你未完成的{n}卷（{range}）。"
+      },
+      "book": {
+        "other": "将跳过你未完成的{n}本书（{range}）。"
+      },
+      "audiobook": {
+        "other": "将跳过你未完成的{n}本书（{range}）。"
+      },
+      "show": {
+        "other": "将跳过你未完成的{n}集（{range}）。"
+      },
+      "anime": {
+        "other": "将跳过你未完成的{n}集（{range}）。"
+      },
+      "movie": {
+        "other": "将跳过你未完成的{n}部电影（{range}）。"
+      }
+    },
+    "nothingToSkip": {
+      "manga": "没有可跳过的内容——它们都已读或已跳过。",
+      "book": "没有可跳过的内容——它们都已读或已跳过。",
+      "audiobook": "没有可跳过的内容——它们都已听完或已跳过。",
+      "show": "没有可跳过的内容——它们都已看或已跳过。",
+      "anime": "没有可跳过的内容——它们都已看或已跳过。",
+      "movie": "没有可跳过的内容——它们都已看或已跳过。"
+    },
+    "allUnits": {
+      "manga": "全部卷",
+      "book": "全部书籍",
+      "audiobook": "全部书籍",
+      "show": "全部剧集",
+      "anime": "全部剧集",
+      "movie": "全部电影"
+    },
+    "start": {
+      "manga": "开始阅读",
+      "book": "开始阅读",
+      "audiobook": "开始收听",
+      "show": "开始观看",
+      "anime": "开始观看",
+      "movie": "开始观看"
+    },
+    "continue": {
+      "manga": "继续阅读",
+      "book": "继续阅读",
+      "audiobook": "继续收听",
+      "show": "继续观看",
+      "anime": "继续观看",
+      "movie": "继续观看"
+    },
+    "downloadRemaining": {
+      "manga": {
+        "other": "下载你未完成的{count}卷，以便离线使用"
+      },
+      "book": {
+        "other": "下载你未完成的{count}本书，以便离线使用"
+      },
+      "audiobook": {
+        "other": "下载你未完成的{count}本书，以便离线使用"
+      },
+      "show": {
+        "other": "下载你未完成的{count}集，以便离线使用"
+      },
+      "anime": {
+        "other": "下载你未完成的{count}集，以便离线使用"
+      },
+      "movie": {
+        "other": "下载你未完成的{count}部电影，以便离线使用"
+      }
+    },
+    "metadataAll": {
+      "manga": "搜索元数据提供方并应用到全部卷",
+      "book": "搜索元数据提供方并应用到全部书籍",
+      "audiobook": "搜索元数据提供方并应用到全部书籍",
+      "show": "搜索元数据提供方并应用到全部剧集",
+      "anime": "搜索元数据提供方并应用到全部剧集",
+      "movie": "搜索元数据提供方并应用到全部电影"
+    },
+    "totalUnits": {
+      "manga": "总卷数",
+      "book": "书籍总数",
+      "audiobook": "书籍总数",
+      "show": "总集数",
+      "anime": "总集数",
+      "movie": "电影总数"
+    }
+  }
+}

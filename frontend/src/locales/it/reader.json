@@ -1,0 +1,198 @@
+{
+  "percent": "{percent}%",
+  "pageN": "Pagina {page}",
+  "closeBook": "Chiudi libro",
+  "opening": "Apertura del libro…",
+  "couldNotOpen": "Impossibile aprire questo libro.",
+  "notebookButton": "Indice, segnalibri ed evidenziazioni",
+  "notebookTooltip": "Indice e taccuino",
+  "searchButton": "Cerca nel libro",
+  "searchTooltip": "Cerca (Ctrl+F)",
+  "displaySettings": "Impostazioni di visualizzazione",
+  "position": "Posizione nel libro",
+  "positionMeasuring": "Posizione nel libro (sto ancora misurando il libro)",
+  "progressShowing": "Mostra: {option}. Tocca per cambiare.",
+  "progress": {
+    "lastPageInChapter": "Ultima pagina del capitolo",
+    "pagesLeftInChapter": {
+      "one": "{count} pagina alla fine del capitolo",
+      "other": "{count} pagine alla fine del capitolo"
+    },
+    "location": "Pos. {current} di {total}"
+  },
+  "copyFailed": "Impossibile copiare qui",
+  "bookmark": {
+    "label": "Segnalibro",
+    "bookmarks": "Segnalibri",
+    "thisPage": "Aggiungi un segnalibro a questa pagina",
+    "removeFromPage": "Togli il segnalibro da questa pagina",
+    "remove": "Togli segnalibro",
+    "delete": "Elimina segnalibro",
+    "deleteNamed": "Elimina il segnalibro {title}",
+    "close": "Chiudi segnalibri",
+    "added": "Segnalibro aggiunto",
+    "percentThrough": "al {percent}%",
+    "noneYet": "Ancora nessun segnalibro.",
+    "noneYetRibbon": "Ancora nessun segnalibro. Tocca il nastro in alto a destra per segnare una pagina.",
+    "couldNotSave": "Impossibile salvare il segnalibro",
+    "couldNotRemove": "Impossibile togliere il segnalibro"
+  },
+  "highlight": {
+    "toolbar": "Evidenzia",
+    "edit": "Modifica evidenziazione",
+    "inColor": "Evidenzia in {color}",
+    "recolor": "Cambia in {color}",
+    "onlyColor": "Solo evidenziazioni in {color}",
+    "withNote": "Evidenzia e aggiungi una nota",
+    "remove": "Rimuovi evidenziazione",
+    "noneYet": "Ancora nessuna evidenziazione. Seleziona del testo per evidenziarlo con un colore o aggiungere una nota.",
+    "noneInColor": "Nessuna evidenziazione in questo colore.",
+    "couldNotSave": "Impossibile salvare l'evidenziazione",
+    "couldNotRecolor": "Impossibile cambiare il colore",
+    "couldNotRemove": "Impossibile rimuovere l'evidenziazione"
+  },
+  "note": {
+    "title": "Nota",
+    "close": "Chiudi nota",
+    "add": "Aggiungi una nota",
+    "edit": "Modifica nota",
+    "placeholder": "La tua nota…",
+    "save": "Salva nota",
+    "couldNotSave": "Impossibile salvare la nota"
+  },
+  "display": {
+    "title": "Visualizzazione",
+    "close": "Chiudi visualizzazione",
+    "pageColour": "Colore pagina",
+    "themePage": "Pagina {theme}",
+    "font": "Carattere",
+    "textSize": "Dimensione testo",
+    "smaller": "Testo più piccolo",
+    "larger": "Testo più grande",
+    "lineSpacing": "Interlinea",
+    "margins": "Margini",
+    "alignment": "Allineamento",
+    "layout": "Layout",
+    "pages": "Pagine",
+    "scroll": "Scorrimento",
+    "twoOnWide": "Due su schermi larghi",
+    "alwaysOne": "Sempre una",
+    "cornerShows": "In basso nell'angolo",
+    "appliesEverywhere": "Vale per ogni libro che leggi, su tutti i tuoi dispositivi."
+  },
+  "notebook": {
+    "title": "Taccuino",
+    "close": "Chiudi taccuino",
+    "contents": "Indice",
+    "highlights": "Evidenziazioni",
+    "noContents": "Questo libro non ha un indice."
+  },
+  "search": {
+    "close": "Chiudi ricerca",
+    "placeholder": "Cerca in questo libro…",
+    "find": "Trova",
+    "matches": {
+      "one": "{count} risultato",
+      "other": "{count} risultati"
+    },
+    "matchesCapped": "{count}+ risultati",
+    "noMatches": "Nessun risultato"
+  },
+  "themes": {
+    "auto": "Auto",
+    "white": "Bianca",
+    "sepia": "Seppia",
+    "green": "Verde",
+    "gray": "Grigia",
+    "black": "Nera"
+  },
+  "fonts": {
+    "publisher": "Originale",
+    "serif": "Serif",
+    "sans": "Sans",
+    "readable": "Leggibile",
+    "mono": "Mono"
+  },
+  "lineHeights": {
+    "compact": "Compatta",
+    "normal": "Normale",
+    "loose": "Ampia"
+  },
+  "margins": {
+    "narrow": "Stretti",
+    "normal": "Normali",
+    "wide": "Larghi"
+  },
+  "align": {
+    "publisher": "Originale",
+    "left": "A sinistra",
+    "justify": "Giustificato"
+  },
+  "progressOptions": {
+    "percent": "Percentuale del libro",
+    "chapter": "Pagine alla fine del capitolo",
+    "location": "Posizione",
+    "none": "Niente"
+  },
+  "highlightColors": {
+    "yellow": "giallo",
+    "green": "verde",
+    "blue": "blu",
+    "pink": "rosa",
+    "orange": "arancione"
+  },
+  "manga": {
+    "backToShelf": "Torna allo scaffale",
+    "loadingPages": "Caricamento pagine...",
+    "pageOf": "Pagina {page} di {total}",
+    "pagesOf": "Pagine {from}–{to} di {total}",
+    "singlePageView": "Vista a pagina singola",
+    "onePage": "1 pagina",
+    "spreadView": "Vista a doppia pagina",
+    "twoPage": "2 pagine",
+    "fadeTransition": "Transizione di pagina in dissolvenza",
+    "fade": "Dissolvenza",
+    "flipTransition": "Transizione realistica con sfogliata",
+    "flip": "Sfoglia",
+    "modes": {
+      "rtl": {
+        "short": "D→S",
+        "label": "Da destra a sinistra (manga giapponesi)"
+      },
+      "ltr": {
+        "short": "S→D",
+        "label": "Da sinistra a destra (fumetti)"
+      },
+      "webtoon": {
+        "short": "Scorri",
+        "label": "Scorrimento verticale continuo (webtoon)"
+      }
+    },
+    "previousPage": "Pagina precedente",
+    "nextPage": "Pagina successiva",
+    "volumeComplete": "Volume completato!",
+    "nextTitle": "Prossimo: {title}",
+    "nextVolume": "Vol. succ.",
+    "pageBookmarks": "Segnalibri delle pagine",
+    "bookmarkPage": "Segna la pagina",
+    "optionalNote": "Nota facoltativa...",
+    "couldNotSaveBookmark": "Impossibile salvare il segnalibro"
+  },
+  "bookmarksModal": {
+    "title": "Segnalibri: {title}",
+    "newBookmark": "Nuovo segnalibro",
+    "timestampHint": "Minutaggio (hh:mm:ss o secondi)",
+    "pageNumber": "Numero di pagina",
+    "timestampPlaceholder": "es. 01:15:30 o 4500",
+    "pagePlaceholder": "es. 42",
+    "titlePlaceholder": "Titolo / etichetta (facoltativo)",
+    "notesPlaceholder": "Aggiungi note, citazioni o pensieri (facoltativo)...",
+    "add": "Aggiungi segnalibro",
+    "loading": "Caricamento segnalibri...",
+    "empty": "Ancora nessun segnalibro salvato. Usa il modulo qui sopra per segnare una posizione o una pagina.",
+    "jumpTooltip": "Vai alla posizione",
+    "jump": "Vai",
+    "couldNotCreate": "Impossibile creare il segnalibro",
+    "couldNotDelete": "Impossibile eliminare il segnalibro"
+  }
+}

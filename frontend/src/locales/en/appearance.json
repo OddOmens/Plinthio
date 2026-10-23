@@ -1,0 +1,89 @@
+{
+  "section": {
+    "title": "Appearance",
+    "description": "How Plinthio looks for you. Changes show in the preview and save straight away, for your account only.",
+    "locked": "Your admin sets how Plinthio looks on this server, so these can't be changed here. The preview shows what everyone sees."
+  },
+  "language": {
+    "auto": "Automatic",
+    "desc": "The language Plinthio speaks to you. Automatic follows your browser."
+  },
+  "cards": {
+    "accent": {
+      "title": "Accent colour",
+      "desc": "Your highlight colour on buttons, badges and the current tab."
+    },
+    "layout": {
+      "title": "Navigation",
+      "desc": "Where the main navigation sits."
+    },
+    "pageWidth": {
+      "title": "Page width",
+      "desc": "How wide pages get on a big screen. Full width fits more posters in a row."
+    },
+    "pauseScreen": {
+      "title": "Pause screen",
+      "desc": "What appears after a couple of seconds paused on a movie or episode."
+    }
+  },
+  "accents": {
+    "zinc": "Zinc",
+    "slate": "Slate",
+    "red": "Red",
+    "orange": "Orange",
+    "amber": "Amber",
+    "lime": "Lime",
+    "emerald": "Emerald",
+    "teal": "Teal",
+    "sky": "Sky",
+    "blue": "Blue",
+    "indigo": "Indigo",
+    "violet": "Violet",
+    "purple": "Purple",
+    "fuchsia": "Fuchsia",
+    "pink": "Pink",
+    "rose": "Rose"
+  },
+  "layouts": {
+    "topnav": {
+      "label": "Top Navigation",
+      "desc": "Classic horizontal header bar"
+    },
+    "sidebar": {
+      "label": "Sidebar",
+      "desc": "Vertical navigation on the left"
+    }
+  },
+  "pageWidths": {
+    "full": {
+      "label": "Full Width",
+      "desc": "Use the whole screen, fitting more posters"
+    },
+    "contained": {
+      "label": "Contained",
+      "desc": "Centred, capped at 1440px wide"
+    }
+  },
+  "pauseScreens": {
+    "simple": {
+      "label": "Simple",
+      "desc": "Just the player controls — nothing covers the picture."
+    },
+    "details": {
+      "label": "Details",
+      "desc": "Poster, title, tagline, synopsis, director and cast, and when it will end."
+    },
+    "cinematic": {
+      "label": "Cinematic",
+      "desc": "The picture dims behind a full-screen title card with cast photos and facts from TMDB — box office, original title, keywords."
+    },
+    "bedtime": {
+      "label": "Bedtime",
+      "desc": "A dim clock with the time it ends and, for shows, when the rest of the season would. Easy on the eyes in a dark room."
+    }
+  },
+  "defaultLanguage": {
+    "title": "Default language",
+    "desc": "For everyone who hasn't picked their own. Automatic follows each person's browser; people can always choose another in Settings."
+  }
+}

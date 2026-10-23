@@ -1,0 +1,144 @@
+{
+  "offline": {
+    "message": "Você está offline. Seus livros, quadrinhos e audiolivros baixados continuam disponíveis.",
+    "openDownloads": "Abrir Downloads →"
+  },
+  "continue": {
+    "watching": "Continuar assistindo",
+    "all": "Continuar",
+    "audiobook": "Continuar audiolivros",
+    "manga": "Continuar mangás",
+    "book": "Continuar livros",
+    "movie": "Continuar filmes",
+    "show": "Continuar séries",
+    "anime": "Continuar animes"
+  },
+  "sectionTitle": {
+    "results": "Resultados para \"{query}\"",
+    "audiobook": "Audiolivros",
+    "manga": "Mangá e quadrinhos",
+    "book": "eBooks e documentos",
+    "movie": "Filmes",
+    "show": "Séries",
+    "anime": "Anime",
+    "all": "Todas as mídias"
+  },
+  "counts": {
+    "folders": {
+      "one": "{count} pasta",
+      "other": "{count} pastas"
+    },
+    "series": "{count} séries",
+    "titles": {
+      "one": "{count} título",
+      "other": "{count} títulos"
+    },
+    "seriesAndTitles": "{series}, {titles}",
+    "items": {
+      "one": "{count} item",
+      "other": "{count} itens"
+    }
+  },
+  "modes": {
+    "alphabetical": "Alfabética",
+    "alphabeticalShort": "A–Z",
+    "diskFolders": "Pastas do disco",
+    "diskFoldersShort": "Disco",
+    "customFolders": "Pastas personalizadas",
+    "customFoldersShort": "Minhas"
+  },
+  "filters": {
+    "progress": "Progresso",
+    "status": "Status",
+    "notStarted": "Não iniciado",
+    "inProgress": "Em andamento",
+    "finished": "Concluído",
+    "skipped": "Pulado",
+    "genre": "Gênero",
+    "added": "Adicionado",
+    "thisWeek": "Esta semana",
+    "thisMonth": "Este mês",
+    "last3Months": "Últimos 3 meses",
+    "clear": "Limpar filtros"
+  },
+  "sort": {
+    "label": "Ordem",
+    "title": "A–Z",
+    "added": "Mais recentes",
+    "recent": "Abertos recentemente",
+    "release": "Data de lançamento"
+  },
+  "collections": {
+    "label": "Coleções de filmes",
+    "grouped": "Coleções",
+    "all": "Todos os filmes"
+  },
+  "empty": {
+    "title": "Nenhuma mídia encontrada",
+    "noMatches": "Nada corresponde — tente outra pesquisa ou limpe os filtros",
+    "noLibrary": "Adicione uma biblioteca em Administração → Bibliotecas e examine suas pastas para preencher a sua estante",
+    "goToSettings": "Ir para Configurações"
+  },
+  "loadedMore": {
+    "one": "{count} título carregado · mais carregam conforme você rola",
+    "other": "{count} títulos carregados · mais carregam conforme você rola"
+  },
+  "customFolders": {
+    "heading": "Pastas personalizadas no app",
+    "newPlaceholder": "Nome da nova pasta...",
+    "catchAll": "Sem organização",
+    "delete": "Excluir pasta",
+    "empty": "Esta pasta está vazia. Clique nos três pontos ({dots}) de qualquer título para adicioná-lo aqui."
+  },
+  "deleteFolder": {
+    "title": "Excluir pasta personalizada",
+    "message": "Tem certeza de que quer excluir a pasta \"{name}\"? Os itens dentro dela não serão excluídos da sua estante.",
+    "confirm": "Excluir pasta"
+  },
+  "errors": {
+    "createFolder": "Falha ao criar a pasta",
+    "deleteFolder": "Falha ao excluir a pasta",
+    "removeItem": "Falha ao remover o item",
+    "updateFolder": "Falha ao atualizar a pasta"
+  },
+  "rootFolder": "Raiz",
+  "series": {
+    "ariaLabel": "{name} — {units}",
+    "removeFromThisFolder": "Remover {name} desta pasta",
+    "removeFromFolder": "Remover da pasta",
+    "caughtUp": "Em dia",
+    "skipped": "{count} pulados",
+    "doneCount": "{count}/{total} concluídos"
+  },
+  "card": {
+    "availableOffline": "Disponível offline",
+    "downloading": "Baixando…",
+    "options": "Opções",
+    "optionsFor": "Opções de {title}",
+    "markInProgress": "Marcar como em andamento",
+    "markFinished": "Marcar como concluído",
+    "addToFolder": "Adicionar à pasta...",
+    "removeFromFolder": "Remover da pasta",
+    "bookmarks": "Marcadores e notas...",
+    "removeDownload": "Remover download",
+    "cancelDownload": "Cancelar download",
+    "downloadOffline": "Baixar para ver offline",
+    "editMetadata": "Editar metadados...",
+    "hide": "Ocultar da estante",
+    "pages": {
+      "one": "{count} página",
+      "other": "{count} páginas"
+    },
+    "finished": "Concluído",
+    "durationHours": "{hours}h {minutes}min",
+    "durationMinutes": "{minutes}min"
+  },
+  "folderModal": {
+    "title": "Adicionar a pasta ou lista",
+    "loading": "Carregando pastas...",
+    "empty": "Nenhuma pasta personalizada criada ainda. Crie uma abaixo para organizar sua mídia!",
+    "newFolder": "Nova pasta personalizada",
+    "placeholder": "ex.: Favoritos, Hora de dormir...",
+    "adding": "Adicionando..."
+  }
+}

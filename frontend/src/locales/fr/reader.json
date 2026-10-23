@@ -1,0 +1,198 @@
+{
+  "percent": "{percent} %",
+  "pageN": "Page {page}",
+  "closeBook": "Fermer le livre",
+  "opening": "Ouverture du livre…",
+  "couldNotOpen": "Impossible d'ouvrir ce livre.",
+  "notebookButton": "Sommaire, signets et surlignages",
+  "notebookTooltip": "Sommaire et carnet",
+  "searchButton": "Rechercher dans le livre",
+  "searchTooltip": "Rechercher (Ctrl+F)",
+  "displaySettings": "Réglages d'affichage",
+  "position": "Position dans le livre",
+  "positionMeasuring": "Position dans le livre (mesure du livre en cours)",
+  "progressShowing": "Affichage : {option}. Touchez pour changer.",
+  "progress": {
+    "lastPageInChapter": "Dernière page du chapitre",
+    "pagesLeftInChapter": {
+      "one": "{count} page restante dans le chapitre",
+      "other": "{count} pages restantes dans le chapitre"
+    },
+    "location": "Empl. {current} sur {total}"
+  },
+  "copyFailed": "Copie impossible ici",
+  "bookmark": {
+    "label": "Signet",
+    "bookmarks": "Signets",
+    "thisPage": "Marquer cette page",
+    "removeFromPage": "Retirer le signet de cette page",
+    "remove": "Retirer le signet",
+    "delete": "Supprimer le signet",
+    "deleteNamed": "Supprimer le signet {title}",
+    "close": "Fermer les signets",
+    "added": "Page marquée",
+    "percentThrough": "À {percent} %",
+    "noneYet": "Aucun signet pour l'instant.",
+    "noneYetRibbon": "Aucun signet pour l'instant. Touchez le ruban en haut à droite pour marquer une page.",
+    "couldNotSave": "Impossible d'enregistrer le signet",
+    "couldNotRemove": "Impossible de retirer le signet"
+  },
+  "highlight": {
+    "toolbar": "Surligner",
+    "edit": "Modifier le surlignage",
+    "inColor": "Surligner en {color}",
+    "recolor": "Passer en {color}",
+    "onlyColor": "Surlignages en {color} uniquement",
+    "withNote": "Surligner et ajouter une note",
+    "remove": "Retirer le surlignage",
+    "noneYet": "Aucun surlignage pour l'instant. Sélectionnez du texte pour le surligner en couleur, ou ajoutez une note.",
+    "noneInColor": "Aucun surlignage de cette couleur.",
+    "couldNotSave": "Impossible d'enregistrer le surlignage",
+    "couldNotRecolor": "Impossible de changer la couleur",
+    "couldNotRemove": "Impossible de retirer le surlignage"
+  },
+  "note": {
+    "title": "Note",
+    "close": "Fermer la note",
+    "add": "Ajouter une note",
+    "edit": "Modifier la note",
+    "placeholder": "Votre note…",
+    "save": "Enregistrer la note",
+    "couldNotSave": "Impossible d'enregistrer la note"
+  },
+  "display": {
+    "title": "Affichage",
+    "close": "Fermer l'affichage",
+    "pageColour": "Couleur de page",
+    "themePage": "Couleur de page : {theme}",
+    "font": "Police",
+    "textSize": "Taille du texte",
+    "smaller": "Texte plus petit",
+    "larger": "Texte plus grand",
+    "lineSpacing": "Interligne",
+    "margins": "Marges",
+    "alignment": "Alignement",
+    "layout": "Mise en page",
+    "pages": "Pages",
+    "scroll": "Défilement",
+    "twoOnWide": "Deux sur grand écran",
+    "alwaysOne": "Toujours une",
+    "cornerShows": "Le coin inférieur affiche",
+    "appliesEverywhere": "S'applique à tous les livres que vous lisez, sur tous vos appareils."
+  },
+  "notebook": {
+    "title": "Carnet",
+    "close": "Fermer le carnet",
+    "contents": "Sommaire",
+    "highlights": "Surlignages",
+    "noContents": "Ce livre n'a pas de table des matières."
+  },
+  "search": {
+    "close": "Fermer la recherche",
+    "placeholder": "Rechercher dans ce livre…",
+    "find": "Chercher",
+    "matches": {
+      "one": "{count} résultat",
+      "other": "{count} résultats"
+    },
+    "matchesCapped": "{count}+ résultats",
+    "noMatches": "Aucun résultat"
+  },
+  "themes": {
+    "auto": "Auto",
+    "white": "Blanc",
+    "sepia": "Sépia",
+    "green": "Vert",
+    "gray": "Gris",
+    "black": "Noir"
+  },
+  "fonts": {
+    "publisher": "D'origine",
+    "serif": "Serif",
+    "sans": "Sans serif",
+    "readable": "Lisible",
+    "mono": "Mono"
+  },
+  "lineHeights": {
+    "compact": "Serré",
+    "normal": "Normal",
+    "loose": "Aéré"
+  },
+  "margins": {
+    "narrow": "Étroites",
+    "normal": "Normales",
+    "wide": "Larges"
+  },
+  "align": {
+    "publisher": "D'origine",
+    "left": "Gauche",
+    "justify": "Justifié"
+  },
+  "progressOptions": {
+    "percent": "Pourcentage du livre",
+    "chapter": "Pages restantes du chapitre",
+    "location": "Emplacement",
+    "none": "Rien"
+  },
+  "highlightColors": {
+    "yellow": "jaune",
+    "green": "vert",
+    "blue": "bleu",
+    "pink": "rose",
+    "orange": "orange"
+  },
+  "manga": {
+    "backToShelf": "Retour à l'étagère",
+    "loadingPages": "Chargement des pages…",
+    "pageOf": "Page {page} sur {total}",
+    "pagesOf": "Pages {from}–{to} sur {total}",
+    "singlePageView": "Vue page simple",
+    "onePage": "1 page",
+    "spreadView": "Vue double page",
+    "twoPage": "2 pages",
+    "fadeTransition": "Transition en fondu",
+    "fade": "Fondu",
+    "flipTransition": "Tourner les pages de façon réaliste",
+    "flip": "Feuilleter",
+    "modes": {
+      "rtl": {
+        "short": "D→G",
+        "label": "De droite à gauche (manga japonais)"
+      },
+      "ltr": {
+        "short": "G→D",
+        "label": "De gauche à droite (BD et comics)"
+      },
+      "webtoon": {
+        "short": "Défiler",
+        "label": "Défilement vertical continu (webtoon)"
+      }
+    },
+    "previousPage": "Page précédente",
+    "nextPage": "Page suivante",
+    "volumeComplete": "Volume terminé !",
+    "nextTitle": "Suivant : {title}",
+    "nextVolume": "Vol. suivant",
+    "pageBookmarks": "Signets de pages",
+    "bookmarkPage": "Marquer la page",
+    "optionalNote": "Note facultative…",
+    "couldNotSaveBookmark": "Impossible d'enregistrer le signet"
+  },
+  "bookmarksModal": {
+    "title": "Signets : {title}",
+    "newBookmark": "Nouveau signet",
+    "timestampHint": "Horodatage (hh:mm:ss ou secondes)",
+    "pageNumber": "Numéro de page",
+    "timestampPlaceholder": "ex. 01:15:30 ou 4500",
+    "pagePlaceholder": "ex. 42",
+    "titlePlaceholder": "Titre / libellé (facultatif)",
+    "notesPlaceholder": "Notes, citations ou réflexions (facultatif)…",
+    "add": "Ajouter un signet",
+    "loading": "Chargement des signets…",
+    "empty": "Aucun signet enregistré pour l'instant. Utilisez le formulaire ci-dessus pour marquer une position ou une page.",
+    "jumpTooltip": "Aller à cette position",
+    "jump": "Aller",
+    "couldNotCreate": "Impossible de créer le signet",
+    "couldNotDelete": "Impossible de supprimer le signet"
+  }
+}

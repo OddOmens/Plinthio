@@ -1,0 +1,176 @@
+{
+  "nav": {
+    "serverAdmin": "サーバー管理",
+    "groups": {
+      "account": "アカウント",
+      "yours": "あなたの Plinthio",
+      "connect": "連携"
+    },
+    "profile": { "label": "プロフィール", "desc": "写真と役割" },
+    "security": { "label": "セキュリティ", "desc": "パスワード、2 段階認証、デバイス" },
+    "appearance": { "label": "外観", "desc": "カラー、ナビゲーション、幅、一時停止画面" },
+    "shelves": { "label": "本棚", "desc": "メディアの種類、開始ページ、表示" },
+    "hidden": { "label": "非表示のタイトル", "desc": "非表示にしたタイトル" },
+    "activity": { "label": "アクティビティ", "desc": "統計とサインイン履歴" },
+    "apps": { "label": "アプリと API キー", "desc": "Mihon、KOReader、OPDS、スクリプト" }
+  },
+  "layout": {
+    "backTo": "{title}に戻る",
+    "backToShelves": "本棚に戻る",
+    "sections": "{title}のセクション"
+  },
+  "saveStatus": {
+    "error": "保存できませんでした"
+  },
+  "activityList": {
+    "empty": "まだアクティビティはありません。",
+    "deletedItem": "削除された項目",
+    "you": {
+      "signedIn": "サインインしました",
+      "signInFailed": "サインインに失敗しました",
+      "viewed": "{title}を閲覧しました",
+      "viewing": "{title}を閲覧中"
+    },
+    "someone": {
+      "signedIn": "{user}がサインインしました",
+      "signInFailed": "{user}のサインインに失敗しました",
+      "viewed": "{user}が{title}を閲覧しました",
+      "viewing": "{user}が{title}を閲覧中"
+    }
+  },
+  "mediaTypes": {
+    "movie": { "label": "映画", "desc": "長編映画" },
+    "show": { "label": "テレビ番組", "desc": "シリーズとエピソード" },
+    "anime": { "label": "アニメ", "desc": "アニメシリーズと映画" },
+    "book": { "label": "本", "desc": "EPUB、PDF、テキスト" },
+    "manga": { "label": "マンガ・コミック", "desc": "CBZ、CBR、グラフィックノベル" },
+    "audiobook": { "label": "オーディオブック", "desc": "朗読とオーディオドラマ" }
+  },
+  "format": {
+    "size": "{value} {unit}",
+    "units": { "B": "B", "KB": "KB", "MB": "MB", "GB": "GB", "TB": "TB" },
+    "seconds": "{value}秒",
+    "minutes": "{value}分",
+    "hours": "{value}時間",
+    "hoursMinutes": "{hours}{minutes}"
+  },
+  "profile": {
+    "title": "プロフィール",
+    "description": "あなたの写真と、このサーバーでのアカウント設定です。",
+    "avatar": "アバター",
+    "changePicture": "写真を変更",
+    "uploadPicture": "写真をアップロード",
+    "pictureHint": "JPG、PNG、WebP、GIF（5 MB まで）。正方形に切り抜かれます。",
+    "notAnImage": "画像ファイル（PNG、JPG、WebP、GIF）を選んでください。",
+    "tooBig": "画像が 5 MB を超えています。",
+    "uploadFailed": "写真をアップロードできませんでした",
+    "removeTitle": "写真を削除",
+    "removeMessage": "プロフィール写真を削除しますか？代わりにイニシャルが表示されます。",
+    "removeFailed": "写真を削除できませんでした",
+    "roles": {
+      "admin": { "label": "管理者", "desc": "このサーバーを管理します" },
+      "editor": { "label": "編集者", "desc": "タイトル、カバー、詳細の修正もできます" },
+      "viewer": { "label": "閲覧者", "desc": "閲覧、読書、視聴、再生ができます" }
+    }
+  },
+  "security": {
+    "title": "セキュリティ",
+    "description": "パスワード、2 段階認証、サインイン中のデバイスです。",
+    "password": {
+      "desc": "変更すると、このブラウザを含むすべての場所からサインアウトされます。",
+      "current": "現在のパスワード",
+      "new": "新しいパスワード",
+      "hint": "8 文字以上。",
+      "change": "パスワードを変更",
+      "changing": "変更中…",
+      "changed": "パスワードを変更しました。新しいパスワードでもう一度サインインしてください。",
+      "changeFailed": "パスワードを変更できませんでした"
+    },
+    "twoFactor": {
+      "title": "2 段階認証",
+      "desc": "パスワードに加えて、スマートフォンのコードでサインインします。自宅の外で Plinthio を使うならおすすめです。"
+    },
+    "devices": {
+      "title": "サインイン中のデバイス",
+      "desc": "サインインしたスマートフォン、ブラウザ、テレビは、そのままサインインした状態になります。管理できなくなった場所でサインインしたことがある場合は、すべてのデバイスからサインアウトしてください。",
+      "signOutAll": "すべてのデバイスからサインアウト",
+      "signingOut": "サインアウト中…",
+      "confirmTitle": "すべてサインアウト",
+      "confirmMessage": "このアカウントでサインインしているすべてのデバイスが、このデバイスも含めてすぐにサインアウトされます。",
+      "signOutFailed": "すべてのデバイスからサインアウトできませんでした"
+    }
+  },
+  "shelves": {
+    "title": "本棚",
+    "description": "本棚に表示するものと、Plinthio を開いたときの表示です。変更はすぐに保存されます。",
+    "mediaTypes": {
+      "title": "メディアの種類",
+      "desc": "本棚に表示するメディアの種類です。少なくとも 1 つは選んでください。"
+    },
+    "startOn": {
+      "title": "開始ページ",
+      "desc": "Plinthio を開いたときに表示する本棚です。",
+      "all": "すべてのメディア"
+    },
+    "views": {
+      "title": "本棚の表示",
+      "desc": "本棚の上に並ぶ表示方法です。どれもシリーズごとに 1 枚のカードを表示します。名前順は常に表示されます。",
+      "offByAdmin": "管理者によりオフになっています",
+      "modes": {
+        "alphabetical": { "label": "名前順", "desc": "常にオン。すべてのシリーズとタイトルを名前順に並べます。" },
+        "creator": { "label": "作者", "desc": "著者、監督、スタジオごとにまとめます。" },
+        "diskFolders": { "label": "ディスクのフォルダ", "desc": "サーバー上のフォルダです。" },
+        "customFolders": { "label": "カスタムフォルダ", "desc": "アプリ内で作ったフォルダです。どこにも入っていないものは「未整理」にまとまります。" }
+      }
+    }
+  },
+  "hidden": {
+    "title": "非表示のタイトル",
+    "description": "本棚から非表示にしたタイトルです。見えなくなるのはあなただけで、いつでも元に戻せます。",
+    "empty": "非表示のタイトルはありません。タイトルのページで非表示にすると、ここに表示されます。",
+    "unhide": "再表示",
+    "unhideFailed": "タイトルを再表示できませんでした"
+  },
+  "activity": {
+    "title": "アクティビティ",
+    "description": "読んだもの、観たもの、聴いたもの、そして最近のサインインです。",
+    "recent": "最近のアクティビティ",
+    "tiles": {
+      "listened": "再生時間",
+      "pagesRead": "読んだページ",
+      "finished": "完了",
+      "inProgress": "進行中"
+    }
+  },
+  "apps": {
+    "title": "アプリと API キー",
+    "description": "読書アプリ、スクリプト、ダッシュボードから Plinthio を使えます。それぞれここで作った API キーでサインインします。",
+    "reading": {
+      "title": "読書アプリ",
+      "desc": "コミック、マンガ、PDF、本をほかのアプリで読めます。ユーザー名（{username}）と、パスワードとして API キーを使ってサインインします。アプリごとにキーを作っておけば、キーを削除するだけでそのアプリをサインアウトできます。",
+      "address": "{app} のアドレス",
+      "mihon": "Komga 拡張機能をインストールし、その設定を開いて、このアドレス、ユーザー名、パスワードとして API キーを入力します。次に Mihon の 設定 → トラッキング で Komga をオンにすると、Mihon で読んだものがここでも既読になります。",
+      "koreader": "本を開き、ツール → 進捗の同期 → カスタム同期サーバー でこのアドレスを入力します。ユーザー名と、パスワードとして API キーを使って「ログイン」（「登録」ではありません）を選びます。PDF とコミックの読書位置は双方向に同期されます。EPUB の位置は KOReader のデバイス間で同期され、Plinthio には進み具合が表示されます。Plinthio 1.0 より前に作ったキーはここでは使えません。新しいキーを作ってください。",
+      "opdsName": "OPDS リーダー（Chunky、Panels、KyBook、Moon+ Reader）",
+      "opds": "これを OPDS カタログとして追加し、ユーザー名と、パスワードとして API キーを入力します。"
+    },
+    "keys": {
+      "title": "API キー",
+      "desc": "キーはあなたとして動作します。{header} ヘッダーで送るか、アプリのパスワードとして使います。",
+      "name": "キーの名前",
+      "namePlaceholder": "用途（例: スマホの Mihon）",
+      "make": "キーを作成",
+      "makeFailed": "キーを作成できませんでした",
+      "copyNow": "新しいキーを今すぐコピーしてください。二度と表示されません。",
+      "copyKey": "キーをコピー",
+      "empty": "キーはまだありません。",
+      "made": "{date} に作成",
+      "revokeNamed": "{name} を取り消す",
+      "revokeKey": "キーを取り消す",
+      "revokeTitle": "API キーを取り消す",
+      "revokeMessage": "「{name}」を取り消しますか？このキーを使っているものはすぐにサインアウトされます。",
+      "revoke": "取り消す",
+      "revokeFailed": "キーを取り消せませんでした"
+    }
+  }
+}

@@ -1,0 +1,198 @@
+{
+  "percent": "{percent}%",
+  "pageN": "Página {page}",
+  "closeBook": "Fechar livro",
+  "opening": "Abrindo o livro…",
+  "couldNotOpen": "Não foi possível abrir este livro.",
+  "notebookButton": "Sumário, marcadores e destaques",
+  "notebookTooltip": "Sumário e caderno",
+  "searchButton": "Pesquisar no livro",
+  "searchTooltip": "Pesquisar (Ctrl+F)",
+  "displaySettings": "Configurações de exibição",
+  "position": "Posição no livro",
+  "positionMeasuring": "Posição no livro (ainda medindo o livro)",
+  "progressShowing": "Mostrando: {option}. Toque para mudar.",
+  "progress": {
+    "lastPageInChapter": "Última página do capítulo",
+    "pagesLeftInChapter": {
+      "one": "Falta {count} página no capítulo",
+      "other": "Faltam {count} páginas no capítulo"
+    },
+    "location": "Pos. {current} de {total}"
+  },
+  "copyFailed": "Não foi possível copiar aqui",
+  "bookmark": {
+    "label": "Marcador",
+    "bookmarks": "Marcadores",
+    "thisPage": "Marcar esta página",
+    "removeFromPage": "Remover o marcador desta página",
+    "remove": "Remover marcador",
+    "delete": "Excluir marcador",
+    "deleteNamed": "Excluir marcador {title}",
+    "close": "Fechar marcadores",
+    "added": "Página marcada",
+    "percentThrough": "{percent}% lido",
+    "noneYet": "Nenhum marcador ainda.",
+    "noneYetRibbon": "Nenhum marcador ainda. Toque na fita no canto superior direito para marcar uma página.",
+    "couldNotSave": "Não foi possível salvar o marcador",
+    "couldNotRemove": "Não foi possível remover o marcador"
+  },
+  "highlight": {
+    "toolbar": "Destacar",
+    "edit": "Editar destaque",
+    "inColor": "Destacar em {color}",
+    "recolor": "Mudar para {color}",
+    "onlyColor": "Só destaques em {color}",
+    "withNote": "Destacar e adicionar uma nota",
+    "remove": "Remover destaque",
+    "noneYet": "Nenhum destaque ainda. Selecione um texto para destacá-lo com uma cor, ou adicione uma nota.",
+    "noneInColor": "Nenhum destaque nesta cor.",
+    "couldNotSave": "Não foi possível salvar o destaque",
+    "couldNotRecolor": "Não foi possível mudar a cor",
+    "couldNotRemove": "Não foi possível remover o destaque"
+  },
+  "note": {
+    "title": "Nota",
+    "close": "Fechar nota",
+    "add": "Adicionar uma nota",
+    "edit": "Editar nota",
+    "placeholder": "Sua nota…",
+    "save": "Salvar nota",
+    "couldNotSave": "Não foi possível salvar a nota"
+  },
+  "display": {
+    "title": "Exibição",
+    "close": "Fechar exibição",
+    "pageColour": "Cor da página",
+    "themePage": "Cor da página: {theme}",
+    "font": "Fonte",
+    "textSize": "Tamanho do texto",
+    "smaller": "Texto menor",
+    "larger": "Texto maior",
+    "lineSpacing": "Espaçamento entre linhas",
+    "margins": "Margens",
+    "alignment": "Alinhamento",
+    "layout": "Layout",
+    "pages": "Páginas",
+    "scroll": "Rolagem",
+    "twoOnWide": "Duas em telas largas",
+    "alwaysOne": "Sempre uma",
+    "cornerShows": "O canto inferior mostra",
+    "appliesEverywhere": "Vale para todos os livros que você lê, em todos os seus dispositivos."
+  },
+  "notebook": {
+    "title": "Caderno",
+    "close": "Fechar caderno",
+    "contents": "Sumário",
+    "highlights": "Destaques",
+    "noContents": "Este livro não tem sumário."
+  },
+  "search": {
+    "close": "Fechar pesquisa",
+    "placeholder": "Pesquisar neste livro…",
+    "find": "Buscar",
+    "matches": {
+      "one": "{count} resultado",
+      "other": "{count} resultados"
+    },
+    "matchesCapped": "{count}+ resultados",
+    "noMatches": "Nenhum resultado"
+  },
+  "themes": {
+    "auto": "Automático",
+    "white": "Branco",
+    "sepia": "Sépia",
+    "green": "Verde",
+    "gray": "Cinza",
+    "black": "Preto"
+  },
+  "fonts": {
+    "publisher": "Original",
+    "serif": "Serifada",
+    "sans": "Sem serifa",
+    "readable": "Legível",
+    "mono": "Mono"
+  },
+  "lineHeights": {
+    "compact": "Compacto",
+    "normal": "Normal",
+    "loose": "Amplo"
+  },
+  "margins": {
+    "narrow": "Estreitas",
+    "normal": "Normais",
+    "wide": "Largas"
+  },
+  "align": {
+    "publisher": "Original",
+    "left": "À esquerda",
+    "justify": "Justificado"
+  },
+  "progressOptions": {
+    "percent": "Porcentagem do livro",
+    "chapter": "Páginas restantes no capítulo",
+    "location": "Posição",
+    "none": "Nada"
+  },
+  "highlightColors": {
+    "yellow": "amarelo",
+    "green": "verde",
+    "blue": "azul",
+    "pink": "rosa",
+    "orange": "laranja"
+  },
+  "manga": {
+    "backToShelf": "Voltar à estante",
+    "loadingPages": "Carregando páginas...",
+    "pageOf": "Página {page} de {total}",
+    "pagesOf": "Páginas {from}–{to} de {total}",
+    "singlePageView": "Visualização de página única",
+    "onePage": "1 página",
+    "spreadView": "Visualização de página dupla",
+    "twoPage": "2 páginas",
+    "fadeTransition": "Transição de página com esmaecimento",
+    "fade": "Esmaecer",
+    "flipTransition": "Transição realista de virar a página",
+    "flip": "Virar",
+    "modes": {
+      "rtl": {
+        "short": "D→E",
+        "label": "Da direita para a esquerda (mangá japonês)"
+      },
+      "ltr": {
+        "short": "E→D",
+        "label": "Da esquerda para a direita (quadrinhos)"
+      },
+      "webtoon": {
+        "short": "Rolagem",
+        "label": "Rolagem vertical contínua (webtoon)"
+      }
+    },
+    "previousPage": "Página anterior",
+    "nextPage": "Próxima página",
+    "volumeComplete": "Volume concluído!",
+    "nextTitle": "A seguir: {title}",
+    "nextVolume": "Próx. vol.",
+    "pageBookmarks": "Marcadores de página",
+    "bookmarkPage": "Marcar página",
+    "optionalNote": "Nota opcional...",
+    "couldNotSaveBookmark": "Falha ao salvar o marcador"
+  },
+  "bookmarksModal": {
+    "title": "Marcadores: {title}",
+    "newBookmark": "Novo marcador",
+    "timestampHint": "Tempo (hh:mm:ss ou segundos)",
+    "pageNumber": "Número da página",
+    "timestampPlaceholder": "ex.: 01:15:30 ou 4500",
+    "pagePlaceholder": "ex.: 42",
+    "titlePlaceholder": "Título / rótulo (opcional)",
+    "notesPlaceholder": "Adicione notas, citações ou ideias (opcional)...",
+    "add": "Adicionar marcador",
+    "loading": "Carregando marcadores...",
+    "empty": "Nenhum marcador salvo ainda. Use o formulário acima para marcar uma posição ou página.",
+    "jumpTooltip": "Ir para a posição",
+    "jump": "Ir",
+    "couldNotCreate": "Falha ao criar o marcador",
+    "couldNotDelete": "Falha ao excluir o marcador"
+  }
+}

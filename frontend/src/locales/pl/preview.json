@@ -1,0 +1,46 @@
+{
+  "live": "Podgląd na żywo",
+  "views": {
+    "shelf": "Półka",
+    "title": "Tytuł",
+    "login": "Logowanie",
+    "pause": "Pauza"
+  },
+  "titles": {
+    "one": "{count}+ tytuł",
+    "few": "{count}+ tytuły",
+    "many": "{count}+ tytułów",
+    "other": "{count}+ tytułu"
+  },
+  "yourLibrary": "Twoja biblioteka",
+  "continueWatching": "Oglądaj dalej",
+  "runtime": "{hours} godz. {minutes} min",
+  "yourRating": "Twoja ocena",
+  "ratingsHidden": "Oceny są ukryte",
+  "watchTogether": "Oglądaj razem",
+  "collection": "Część kolekcji",
+  "request": "Poproś",
+  "sample": {
+    "tagline": "Niektóre wiadomości docierają po całym życiu.",
+    "description": "Latarniczka z odległej wyspy znajduje list w butelce, który przyciąga ją z powrotem do życia, które zostawiła za sobą."
+  },
+  "captions": {
+    "shelf": "Półka główna na dużym ekranie: układ {layout}, szerokość {width}, kolor akcentu {accent}.",
+    "title": "Strona filmu z ustawieniami oceny, wspólnego seansu i kolekcji podanymi wyżej.",
+    "login": "Ekran logowania z nazwą serwera i komunikatem.",
+    "pause": {
+      "simple": "Prosty: nic nie zasłania obrazu. Wybierz inny styl, aby go tu zobaczyć.",
+      "details": "Szczegóły: pojawia się po kilku sekundach pauzy. Najedź na styl, aby porównać.",
+      "cinematic": "Kinowy: zdjęcia obsady i fakty pochodzą z TMDB, jeśli ustawiono klucz.",
+      "bedtime": "Na dobranoc: przygaszony zegar i godzina zakończenia."
+    }
+  },
+  "layouts": {
+    "sidebar": "z paskiem bocznym",
+    "topnav": "z górną nawigacją"
+  },
+  "widths": {
+    "contained": "ograniczona",
+    "full": "pełna"
+  }
+}

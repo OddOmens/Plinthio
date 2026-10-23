@@ -1,0 +1,56 @@
+{
+  "title": "Verzoeken",
+  "intro": "Vraag om films, series, anime, boeken en luisterboeken die nog niet in de bibliotheek staan.",
+  "newRequest": "Nieuw verzoek",
+  "request": "Aanvragen",
+  "mine": "Mijn verzoeken",
+  "reviewQueue": "Te beoordelen",
+  "filterByStatus": "Filteren op status",
+  "allStatuses": "Alle statussen",
+  "emptyReview": "Geen verzoeken om te beoordelen",
+  "emptyMine": "Je hebt nog niets aangevraagd",
+  "emptyMineHint": "Zoek hierboven, of gebruik de knop Aanvragen bij een titel in een van je lijsten.",
+  "requestedBy": "Aangevraagd door {name}",
+  "deletedUser": "verwijderde gebruiker",
+  "quotedNote": "‘{note}’",
+  "notePlaceholder": "Notitie voor de aanvrager (optioneel)",
+  "deleteRequest": "Verzoek verwijderen",
+  "withdraw": "Intrekken",
+  "status": {
+    "pending": "In afwachting",
+    "accepted_pending": "Geaccepteerd · Wordt toegevoegd",
+    "accepted_added": "Geaccepteerd · Toegevoegd",
+    "rejected": "Afgewezen"
+  },
+  "actions": {
+    "acceptPending": "Accepteren · Wordt toegevoegd",
+    "acceptAdded": "Accepteren · Toegevoegd",
+    "reject": "Afwijzen",
+    "backToPending": "Terug naar in afwachting"
+  },
+  "confirm": {
+    "withdrawTitle": "Verzoek intrekken?",
+    "deleteTitle": "Verzoek verwijderen?",
+    "withdrawMessage": "Je verzoek voor ‘{title}’ wordt ingetrokken.",
+    "deleteMessage": "Het verzoek voor ‘{title}’ wordt voor iedereen verwijderd."
+  },
+  "errors": {
+    "load": "Kon de verzoeken niet laden.",
+    "send": "Kon dat verzoek niet versturen.",
+    "update": "Kon dat verzoek niet bijwerken.",
+    "remove": "Kon dat verzoek niet verwijderen."
+  },
+  "search": {
+    "placeholder": {
+      "movie": "Films zoeken…",
+      "show": "Series zoeken…",
+      "anime": "Anime zoeken…",
+      "book": "Boeken zoeken…",
+      "manga": "Manga zoeken…",
+      "audiobook": "Luisterboeken zoeken…",
+      "titles": "Titels zoeken…"
+    },
+    "noResults": "Geen resultaten voor ‘{query}’.",
+    "failed": "Zoeken mislukt. Probeer het zo opnieuw."
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "title": "Downloads",
+  "intro": "Bücher, Comics und Hörbücher, die auf diesem Gerät gespeichert sind – zum Lesen ohne Verbindung.",
+  "offline": "Du bist offline. Downloads lassen sich weiter öffnen; der Lesefortschritt wird synchronisiert, sobald du wieder online bist.",
+  "needsHttps": "Downloads brauchen eine sichere Verbindung, und diese Seite wurde über einfaches http:// geöffnet. {link}, um Inhalte zum Offline-Lesen und -Hören herunterzuladen.",
+  "switchToHttps": "Wechsle zu HTTPS",
+  "unsupported": "Dieser Browser kann keine Downloads speichern (er braucht Unterstützung für Service Worker und Cache Storage).",
+  "summary": {
+    "one": "{size} in {count} Download",
+    "other": "{size} in {count} Downloads"
+  },
+  "usage": "{used} von {quota} auf diesem Gerät belegt",
+  "tiedToAccount": "Downloads sind an diesen Browser und dein Konto gebunden – beim Abmelden werden sie entfernt.",
+  "downloading": "Wird heruntergeladen",
+  "untitled": "Download",
+  "pagesProgress": "{done} / {total} Seiten",
+  "bytesProgress": "{received} von {total}",
+  "dismiss": "Verwerfen",
+  "read": "Lesen",
+  "openItem": "{title} öffnen",
+  "removeItemLabel": "Download von {title} entfernen",
+  "remove": "Download entfernen",
+  "removeConfirm": "„{title}“ von diesem Gerät entfernen? Es bleibt in deiner Bibliothek.",
+  "empty": {
+    "title": "Noch nichts heruntergeladen",
+    "hint": "Nutze {action} im ⋮-Menü eines Titels oder den Download-Button bei einem Manga-Band.",
+    "action": "Für offline herunterladen"
+  },
+  "size": {
+    "B": "{value} B",
+    "KB": "{value} KB",
+    "MB": "{value} MB",
+    "GB": "{value} GB",
+    "TB": "{value} TB"
+  },
+  "errors": {
+    "failed": "Download fehlgeschlagen",
+    "failedStatus": "Download fehlgeschlagen ({status})",
+    "pageList": "Seitenliste konnte nicht gelesen werden ({status})"
+  }
+}
