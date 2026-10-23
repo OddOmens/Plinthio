@@ -10,7 +10,9 @@ admin turns it on in **Admin → Live TV**.
   of them, updated daily), each list with its programme guide. Plinthio stores only the list's
   address and downloads it again every 12 hours, so channels that move or close drop out on
   their own. Adult channels are never added. Some public channels go offline now and then, and
-  some only play in their home country (marked *Region-locked*).
+  some only play in their home country (marked *Geo-blocked*; hidden unless you choose to show
+  them). The first time a public list is added, Plinthio asks you to confirm a short note about
+  public channels, once per server.
 - **Your own playlist.** Any M3U playlist address, with an optional XMLTV programme guide
   (`.xml` or `.xml.gz`). If the playlist names its own guide (`x-tvg-url`), that's used when
   you leave the guide address empty. A playlist on your home network works: use its IP
@@ -19,15 +21,48 @@ admin turns it on in **Admin → Live TV**.
 Channels that stream in **HLS** (`.m3u8`) play. Others are listed in Admin as *Not playable*
 and hidden from viewers.
 
-## Choosing what people see
+## Choosing what to show
+
+Public lists can hold thousands of channels. **Admin → Live TV → Choose what to show** hides
+whole sets of them at once. These are rules rather than deletions: they still apply after every
+reload, and new channels that match are hidden too. The card shows how many channels get
+through (*Showing 1,240 of 3,512 channels*).
+
+- **Region-locked channels** are hidden to start with, since they usually only play in their
+  home country. Switch off **Hide region-locked channels** to list them.
+- **Categories, Languages, Countries, Stream hosts.** Each tab lists what your channels have,
+  biggest first, with a count. Tap a row to show or hide it, search for one, or use
+  **Show all** / **Hide all** (on what the search leaves in view). To keep just a few, press
+  **Hide all**, then switch those back on.
+- A channel in several **languages** is hidden only when all of them are hidden. Channels with
+  no language or country listed aren't affected by those tabs. A channel in several
+  **categories** is hidden when any of them is.
+- **Stream hosts.** Some public channels aren't streamed by the broadcaster but re-routed
+  through a third-party service. Hiding a host drops every channel streamed from it (and its
+  subdomains). Plinthio hides one such service, `jmp2.uk`, until you show it; only show it if
+  you're sure you may watch those channels.
+
+Country and language names come from the public iptv-org data for public lists, and from a
+playlist's own `tvg-country` / `tvg-language` for yours.
+
+### One channel at a time
 
 In **Admin → Live TV → Channels**, search and filter the channels and:
 
 - **Hide** the ones you don't want. Hidden channels stay hidden when the list reloads.
+- **Always show** a channel that a filter hides. Choose **Hidden by filter** to see them; each
+  says which filter hides it. A channel you hide by hand stays hidden either way.
 - **Allow for kids.** Kids accounts see only the channels allowed here, and none are allowed
   until you pick them, since live channels have no age ratings.
 
 The same stream offered by two lists appears once.
+
+## Your responsibility
+
+Plinthio plays the channels you give it. It doesn't host, check or endorse any channel, and it
+comes with none. You choose which lists and channels to add, and you're responsible for having
+the right to watch them where you are: public lists link to streams run by others, and some
+may not be licensed in your country.
 
 ## Watching
 

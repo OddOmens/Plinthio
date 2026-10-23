@@ -507,7 +507,13 @@
     "thatPlaylistIsAlreadyAdded": "That playlist is already added",
     "chooseWhatKindOfChannels": "Choose what kind of channels to add",
     "chooseUpTo1000Channels": "Choose up to 1000 channels",
-    "nothingToChange": "Nothing to change"
+    "nothingToChange": "Nothing to change",
+    "confirmTheNoteAboutPublic": "Confirm the note about public channels first",
+    "hideGeoBlockedMustBeTrue": "hideGeoBlocked must be true or false",
+    "hiddenCategoriesMustBeA": "Hidden categories must be a list of up to 5000 names",
+    "hiddenLanguagesMustBeA": "Hidden languages must be a list of up to 5000 names",
+    "hiddenCountriesMustBeTwo": "Hidden countries must be two-letter country codes",
+    "hiddenStreamHostsMustBe": "Hidden stream hosts must be host names, like example.com"
   },
   "patterns": {
     "noMetadataSource": "No metadata source for {type} yet",

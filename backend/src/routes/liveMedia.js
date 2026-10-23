@@ -3,7 +3,9 @@ import { pipeline } from 'stream';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { sendError } from '../errors.js';
-import { isLiveTvEnabled, isKidsUser, channelPrivateHost, USER_AGENT } from '../services/liveTv.js';
+import {
+  isLiveTvEnabled, isKidsUser, channelPrivateHost, getLiveFilters, isFilteredOut, USER_AGENT
+} from '../services/liveTv.js';
 import { openUpstream, readBody, peek, byteLimit } from '../services/safeFetch.js';
 import {
   verify, decodeUrlParam, looksLikePlaylist, rewritePlaylist, tokenQueryFor
@@ -39,9 +41,15 @@ const SANDBOX_CSP = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
 const STREAM_LINK_INVALID = 'This stream link is not valid';
 const CHANNEL_NOT_FOUND = 'Channel not found';
 
-function mayWatch(channel, user) {
-  return !!channel.source_enabled && !channel.hidden && !channel.unsupported &&
-    (!isKidsUser(user) || !!channel.kids_allowed);
+// The same rules as the channel list (visibleChannels in services/liveTv.js), for one row
+// read with CHANNEL_COLUMNS. The filters are held in memory, so this costs no extra query.
+const CHANNEL_COLUMNS = `c.hidden, c.unsupported, c.kids_allowed, c.pinned, c.geo_blocked, c.groups, c.languages,
+       c.country, c.stream_url, s.enabled AS source_enabled`;
+
+async function mayWatch(db, channel, user) {
+  if (!channel.source_enabled || channel.hidden || channel.unsupported) return false;
+  if (isKidsUser(user) && !channel.kids_allowed) return false;
+  return !isFilteredOut(channel, (await getLiveFilters(db)).compiled);
 }
 
 function contentType(upstream) {
@@ -94,13 +102,13 @@ router.get('/:logoChannel/logo', async (req, res) => {
     if (!CHANNEL_ID_RE.test(req.params.logoChannel)) return notFound();
     const db = await getDb();
     const channel = await db.get(
-      `SELECT c.logo, c.hidden, c.unsupported, c.kids_allowed, s.enabled AS source_enabled
+      `SELECT c.logo, ${CHANNEL_COLUMNS}
        FROM live_channels c JOIN live_sources s ON s.id = c.source_id WHERE c.id = ?`,
       [req.params.logoChannel]
     );
     if (!channel?.logo) return notFound();
     if (req.user.role !== 'admin') {
-      if (!await isLiveTvEnabled(db) || !mayWatch(channel, req.user)) return notFound();
+      if (!await isLiveTvEnabled(db) || !await mayWatch(db, channel, req.user)) return notFound();
     }
     // Public addresses only: the URL came from a playlist, and a logo is never worth a hole.
     const { res: upstream } = await openUpstream(channel.logo, {
@@ -134,20 +142,20 @@ router.use(async (req, res, next) => {
   }
 });
 
-// The channel in :id, if this viewer may watch it: its source is on, it isn't hidden or
-// unplayable, and a kids account only gets channels allowed for kids.
+// The channel in :id, if this viewer may watch it: its source is on, it isn't hidden,
+// unplayable or caught by the admin's filters (unless pinned), and a kids account only gets
+// channels allowed for kids.
 router.param('id', async (req, res, next, id) => {
   try {
     if (!CHANNEL_ID_RE.test(id)) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
     const db = await getDb();
     const channel = await db.get(
-      `SELECT c.id, c.stream_url, c.http_headers, c.hidden, c.unsupported, c.kids_allowed,
-              s.kind AS source_kind, s.enabled AS source_enabled
+      `SELECT c.id, c.http_headers, ${CHANNEL_COLUMNS}, s.kind AS source_kind
        FROM live_channels c JOIN live_sources s ON s.id = c.source_id
        WHERE c.id = ?`,
       [id]
     );
-    if (!channel || !mayWatch(channel, req.user)) {
+    if (!channel || !await mayWatch(db, channel, req.user)) {
       return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
     }
     req.channel = channel;

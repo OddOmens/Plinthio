@@ -17,7 +17,9 @@ const { parseM3u, cleanChannelName, isHlsUrl, isAdultGroup } = await import('../
 const { parseXmltv, parseXmltvTime } = await import('../src/services/xmltv.js');
 const { rewritePlaylist, sign, verify, decodeUrlParam, looksLikePlaylist, logoPath } = await import('../src/services/liveProxy.js');
 const { addressBlock, openUpstream, readBody, decodedBody } = await import('../src/services/safeFetch.js');
-const { guideTargets, isRefreshDue } = await import('../src/services/liveTv.js');
+const {
+  guideTargets, isRefreshDue, iptvOrgDetails, hostGroup, filterReasons, isFilteredOut, cleanFilterList
+} = await import('../src/services/liveTv.js');
 
 after(() => fs.rmSync(dataDir, { recursive: true, force: true }));
 
@@ -61,6 +63,20 @@ describe('M3U playlists', () => {
     assert.equal(newsHd.stableKey, 'News.us@SD #2', 'a repeated tvg-id still gets its own key');
     assert.equal(comma.name, 'Comma, In "Name"');
     assert.deepEqual(late.groups, ['XXX']);
+  });
+
+  test('country and languages from tvg-country / tvg-language', () => {
+    const [a, b] = parseM3u([
+      '#EXTM3U',
+      '#EXTINF:-1 tvg-country="us;ca" tvg-language="English; Spanish;english",A',
+      'https://cdn.example/a.m3u8',
+      '#EXTINF:-1 tvg-country="INT",B',
+      'https://cdn.example/b.m3u8'
+    ].join('\n')).channels;
+    assert.equal(a.country, 'US', 'the first code, upper case');
+    assert.deepEqual(a.languages, ['english', 'spanish']);
+    assert.equal(b.country, null, 'not a two-letter code');
+    assert.deepEqual(b.languages, []);
   });
 
   test('is not fooled by things that are not playlists', () => {
@@ -338,5 +354,69 @@ describe('lanHostOf: which hosts may reach private addresses', () => {
     // Link-local / metadata addresses are never "LAN" either.
     assert.equal(lanHostOf('http://169.254.169.254/latest'), null);
     assert.equal(lanHostOf('not a url'), null);
+  });
+});
+
+describe('Live TV filters', () => {
+  const data = {
+    countries: new Map([['News.us', 'US']]),
+    feeds: new Map([['News.us@SD', 'eng;spa'], ['News.us@HD', '']]),
+    mainFeeds: new Map([['News.us', 'eng']])
+  };
+
+  test('iptv-org details: the feed, else the main feed; the country from the id as a fallback', () => {
+    assert.deepEqual(iptvOrgDetails('News.us@SD', data), { country: 'US', languages: ['eng', 'spa'] });
+    assert.deepEqual(iptvOrgDetails('News.us@HD', data), { country: 'US', languages: ['eng'] }, 'a feed with no languages');
+    assert.deepEqual(iptvOrgDetails('News.us', data), { country: 'US', languages: ['eng'] });
+    assert.deepEqual(iptvOrgDetails('Other.fr@SD', data), { country: 'FR', languages: null });
+    assert.deepEqual(iptvOrgDetails('News.us@SD', null), { country: 'US', languages: null }, 'no data at all');
+    assert.deepEqual(iptvOrgDetails('NoCountry@SD', data), { country: null, languages: null });
+    assert.deepEqual(iptvOrgDetails(null, data), { country: null, languages: null });
+  });
+
+  test('stream hosts are grouped by their registered domain', () => {
+    assert.equal(hostGroup('abc.jmp2.uk'), 'jmp2.uk');
+    assert.equal(hostGroup('a.b.bbc.co.uk'), 'bbc.co.uk');
+    assert.equal(hostGroup('example.com'), 'example.com');
+    assert.equal(hostGroup('10.0.0.5'), '10.0.0.5');
+    assert.equal(hostGroup('[::1]'), '[::1]');
+    assert.equal(hostGroup('tvbox'), 'tvbox');
+    assert.equal(hostGroup(null), null);
+  });
+
+  test('which filters catch a channel', () => {
+    const compiled = {
+      hideGeoBlocked: true,
+      groups: new Set(['Shopping']),
+      languages: new Set(['spa', 'cat']),
+      countries: new Set(['FR']),
+      hosts: new Set(['jmp2.uk'])
+    };
+    const row = (fields) => ({ geo_blocked: 0, groups: 'News', languages: 'eng', country: 'US', stream_url: 'https://cdn.example/x.m3u8', pinned: 0, ...fields });
+    assert.deepEqual(filterReasons(row({}), compiled), []);
+    assert.deepEqual(filterReasons(row({ geo_blocked: 1 }), compiled), [{ type: 'geoBlocked', value: true }]);
+    assert.deepEqual(filterReasons(row({ groups: 'News;Shopping' }), compiled), [{ type: 'group', value: 'Shopping' }]);
+    assert.deepEqual(filterReasons(row({ languages: 'spa;eng' }), compiled), [], 'one of its languages is still shown');
+    assert.deepEqual(filterReasons(row({ languages: 'spa;cat' }), compiled), [{ type: 'language', value: 'spa' }, { type: 'language', value: 'cat' }]);
+    assert.deepEqual(filterReasons(row({ languages: null }), compiled), []);
+    assert.deepEqual(filterReasons(row({ country: 'FR' }), compiled), [{ type: 'country', value: 'FR' }]);
+    assert.deepEqual(filterReasons(row({ stream_url: 'https://jmp2.uk/x.m3u8' }), compiled), [{ type: 'host', value: 'jmp2.uk' }]);
+    assert.deepEqual(filterReasons(row({ stream_url: 'https://a.b.jmp2.uk/x.m3u8' }), compiled), [{ type: 'host', value: 'jmp2.uk' }]);
+    assert.deepEqual(filterReasons(row({ stream_url: 'https://notjmp2.uk/x.m3u8' }), compiled), []);
+    const everything = row({ geo_blocked: 1, groups: 'Shopping', country: 'FR' });
+    assert.equal(filterReasons(everything, compiled).length, 3);
+    assert.equal(filterReasons(everything, compiled, { first: true }).length, 1);
+    assert.equal(isFilteredOut(everything, compiled), true);
+    assert.equal(isFilteredOut({ ...everything, pinned: 1 }, compiled), false, 'pinned passes the filters by');
+  });
+
+  test('filter lists are cleaned, or refused', () => {
+    assert.deepEqual(cleanFilterList('hiddenCountries', ['fr', 'FR', ' es ']), ['FR', 'ES']);
+    assert.equal(cleanFilterList('hiddenCountries', ['France']), null);
+    assert.deepEqual(cleanFilterList('hiddenHosts', ['*.Jmp2.UK', '.cdn.example.', '[::1]']), ['jmp2.uk', 'cdn.example', '[::1]']);
+    assert.equal(cleanFilterList('hiddenHosts', ['https://jmp2.uk']), null);
+    assert.deepEqual(cleanFilterList('hiddenLanguages', ['SPA', 'spa']), ['spa']);
+    assert.equal(cleanFilterList('hiddenGroups', [' ']), null);
+    assert.equal(cleanFilterList('hiddenGroups', 'News'), null);
   });
 });
