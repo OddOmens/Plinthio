@@ -723,6 +723,107 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_user_ratings_item ON user_ratings(item_id);
   `);
 
+  // Live TV (services/liveTv.js). A source is one M3U playlist — a public preset or the
+  // admin's own — and its channels are re-read from it on every refresh, upserted on
+  // (source_id, stable_key) so the admin's hidden / kids / always-show choices survive. Programmes are
+  // keyed by the guide's channel id (tvg_id) and only kept for a day and a half ahead.
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS live_sources (
+      id TEXT PRIMARY KEY,
+      kind TEXT NOT NULL CHECK (kind IN ('iptv-org', 'm3u')),
+      name TEXT NOT NULL,
+      preset TEXT,            -- iptv-org only, e.g. 'countries/us'
+      playlist_url TEXT NOT NULL,
+      guide_url TEXT,         -- set by the admin; else the playlist's own x-tvg-url
+      enabled INTEGER DEFAULT 1,
+      last_refreshed_at DATETIME,
+      last_error TEXT,
+      channel_count INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS live_channels (
+      id TEXT PRIMARY KEY,
+      source_id TEXT NOT NULL REFERENCES live_sources(id) ON DELETE CASCADE,
+      stable_key TEXT NOT NULL, -- tvg-id, else the name
+      tvg_id TEXT,
+      name TEXT NOT NULL,
+      logo TEXT,
+      groups TEXT,              -- ';'-joined
+      stream_url TEXT NOT NULL,
+      http_headers TEXT,        -- JSON { userAgent, referrer } from #EXTVLCOPT, if any
+      geo_blocked INTEGER DEFAULT 0,
+      unsupported INTEGER DEFAULT 0,
+      hidden INTEGER DEFAULT 0,
+      kids_allowed INTEGER DEFAULT 0,
+      pinned INTEGER DEFAULT 0, -- "always show": the admin's filters pass it by
+      country TEXT,             -- ISO 3166-1 alpha-2, upper case
+      languages TEXT,           -- ';'-joined ISO 639-3 codes, lower case
+      position INTEGER,
+      updated_at DATETIME,
+      UNIQUE (source_id, stable_key)
+    );
+    CREATE INDEX IF NOT EXISTS idx_live_channels_tvg ON live_channels(tvg_id);
+    CREATE TABLE IF NOT EXISTS live_programmes (
+      tvg_id TEXT NOT NULL,
+      start INTEGER NOT NULL,   -- epoch ms
+      stop INTEGER NOT NULL,
+      title TEXT,
+      subtitle TEXT,
+      description TEXT,
+      category TEXT,
+      PRIMARY KEY (tvg_id, start)
+    );
+    CREATE INDEX IF NOT EXISTS idx_live_programmes_start ON live_programmes(start);
+  `);
+  // Added with the admin's filters (where a channel is from, what it speaks, "always show").
+  // Then with line-ups: the admin's own number, name and logo for a channel, and the result of
+  // the background check that spots dead streams. Like hidden / pinned, refreshes keep them.
+  for (const col of [
+    'pinned INTEGER DEFAULT 0', 'country TEXT', 'languages TEXT',
+    'custom_number INTEGER', 'custom_name TEXT', 'custom_logo TEXT',
+    'health TEXT', 'health_checked_at DATETIME', 'health_fails INTEGER DEFAULT 0'
+  ]) {
+    try {
+      await db.exec(`ALTER TABLE live_channels ADD COLUMN ${col}`);
+    } catch (e) {
+      // Column already exists
+    }
+  }
+  // Line-ups are the admin's own channel lists (with their own order); favourites and the
+  // recently watched list (newest 10) are each viewer's. All go with the channel they name.
+  await db.exec(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_live_channels_number ON live_channels(custom_number)
+      WHERE custom_number IS NOT NULL;
+    CREATE TABLE IF NOT EXISTS live_lineups (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      position INTEGER,
+      kids_allowed INTEGER DEFAULT 0, -- every channel in it is watchable on kids accounts
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS live_lineup_channels (
+      lineup_id TEXT NOT NULL REFERENCES live_lineups(id) ON DELETE CASCADE,
+      channel_id TEXT NOT NULL REFERENCES live_channels(id) ON DELETE CASCADE,
+      position INTEGER,
+      PRIMARY KEY (lineup_id, channel_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_live_lineup_channels_channel ON live_lineup_channels(channel_id);
+    CREATE TABLE IF NOT EXISTS live_favourites (
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      channel_id TEXT NOT NULL REFERENCES live_channels(id) ON DELETE CASCADE,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (user_id, channel_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_live_favourites_channel ON live_favourites(channel_id);
+    CREATE TABLE IF NOT EXISTS live_recent (
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      channel_id TEXT NOT NULL REFERENCES live_channels(id) ON DELETE CASCADE,
+      watched_at INTEGER NOT NULL, -- epoch ms
+      PRIMARY KEY (user_id, channel_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_live_recent_channel ON live_recent(channel_id);
+  `);
+
   console.log('Database initialized successfully at:', config.dbPath);
 }
 

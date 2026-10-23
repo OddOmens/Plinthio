@@ -19,6 +19,7 @@
       "roles": "User Roles & Permissions",
       "pwa": "PWA Mobile App Setup",
       "remote": "Remote Access & Tailscale",
+      "liveTv": "Live TV",
       "shortcuts": "Keyboard Shortcuts",
       "backups": "Backups & Data Safety",
       "api": "REST API & Webhooks",
@@ -266,6 +267,116 @@
       "guide": "The full guide, with troubleshooting: {doc} on GitHub."
     }
   },
+  "liveTv": {
+    "title": "Live TV",
+    "intro": "Live channels and a programme guide, alongside your own media. Channels come from M3U playlists: ready-made public lists, or your own.",
+    "turnOn": {
+      "title": "Turning it on",
+      "text": "Live TV is off until an admin turns it on in **Admin → Live TV**. Once it's on and has channels, **Live TV** appears in the menu for everyone who may watch at least one channel.",
+      "off": "Turning it off hides Live TV everywhere straight away. The channel lists and every choice made about them are kept for when it's turned back on."
+    },
+    "adding": {
+      "title": "Adding channels",
+      "intro": "In **Admin → Live TV**, press **Add channels** and pick one of two kinds:",
+      "public": "**Public channels**: free, ready-made lists from the public iptv-org project, by country, language or category. Tick as many as you like; each is added as its own list.",
+      "own": "**Your own playlist**: the address of any M3U playlist the server can reach, such as one from a TV tuner on your network. Channels that stream in HLS ({m3u8}) play; others are kept but listed as **Not playable**.",
+      "guide": "**Programme guide**: an XMLTV address you give, or else the guide the playlist names itself (the public lists all have one). Compressed {gz} files work. The guide covers the next day and a half.",
+      "refresh": "Every list and its guide reload every 12 hours while Live TV is on. **Refresh** on a list reloads it now; the list shows when it last loaded, or why it couldn't.",
+      "acknowledge": "The first time a public list is added, Plinthio shows a short note about public channels to confirm. It's asked once per server."
+    },
+    "filters": {
+      "title": "Choosing what to show",
+      "intro": "Under **Choose what to show**, hide whole sets of channels at once. These are rules rather than deletions: they still apply after every reload, and new channels that match are hidden too. The card shows how many channels get through.",
+      "region": "**Region-locked channels** are hidden to start with, since they usually only play in their home country. Switch off **Hide region-locked channels** to list them.",
+      "sets": "**Categories, languages, countries and stream hosts**: each tab lists them with how many channels each has. Tap one to show or hide it, search for one, or use **Show all** and **Hide all**. To keep just a few, press **Hide all**, then switch those back on.",
+      "languages": "A channel in several languages is hidden only when all of its languages are hidden. Channels with no language or country listed aren't affected by those tabs.",
+      "hosts": "**Stream hosts**: some public channels aren't streamed by the broadcaster but re-routed through a third-party service. Plinthio hides one such service, {host}, until you show it. Only show it if you're sure you may watch those channels.",
+      "exceptions": "**Exceptions**: to keep one channel that a filter hides, find it under **Channels** (choose **Hidden by filter** to see them all) and press **Always show**. A channel you hide by hand stays hidden either way."
+    },
+    "choosing": {
+      "title": "Choosing channels",
+      "text": "Under **Channels**, search or filter by list, then **Hide** the channels you don't want. Tick several (or a whole page) to change them at once. Changes save straight away.",
+      "kept": "Hidden channels and kids choices are kept when a list reloads. A channel that disappears from its playlist is removed."
+    },
+    "lineups": {
+      "title": "Line-ups and channel numbers",
+      "intro": "Under **Line-ups**, make your own sets of channels, such as News, Sport or For the kids. Each line-up becomes a tab on the Live TV page, in the order you put them.",
+      "create": "**New line-up** asks for a name, then opens it. Add channels by **Search** (one at a time, or every match at once) or by **Whole category**, which adds all of a category's channels in one go. You can also tick channels under **Channels** and press **Add to line-up**.",
+      "order": "Use the up and down arrows to put line-ups, and the channels inside one, in order. **A–Z** and **By number** sort a whole line-up at once. Removing a channel from a line-up doesn't hide it anywhere else.",
+      "kids": "**Allow for kids** on a line-up lets kids accounts watch every channel in it, as well as the ones allowed one by one.",
+      "rules": "A line-up doesn't bring back channels you've hidden or that are offline, and the filters still apply unless a channel is set to **Always show**.",
+      "numbers": "**Numbers, names and logos**: press the pencil next to a channel under **Channels** to give it its own number (1 to 9999, each used once), a name or a logo address. Viewers can type a number in the player to jump to that channel. Channels without a number follow on after your highest one. Leave a field empty to go back to what the list gives."
+    },
+    "health": {
+      "title": "Channel health",
+      "intro": "Public channels stop working now and then. With **Check channels in the background** on (it is to start with), Plinthio looks at about 20 channels every 10 minutes while Live TV is on, so each one is checked roughly once a day.",
+      "light": "A check is deliberately light: the server fetches the channel's playlist and the first couple of kilobytes of video, nothing more. Nothing is played, decoded or converted, so it costs next to nothing.",
+      "offline": "A channel that fails two checks in a row is marked **Offline**. With **Hide offline channels** on, viewers don't see it until it plays again; one good check brings it back.",
+      "counts": "The card shows how many channels are working, offline and not checked yet, and when the last check ran. Press the offline count to list those channels, and **Check now** on one to look straight away."
+    },
+    "kids": {
+      "title": "Kids accounts",
+      "text": "Kids accounts see only the channels marked **Allow for kids**, and the channels in a line-up marked **Allow for kids**. None are allowed until you pick them, so Live TV stays out of a kids account's menu until then."
+    },
+    "watching": {
+      "title": "Watching",
+      "channels": "**Channels**: tabs for Favourites, Recent, each line-up and All channels (with categories to pick from), each channel with what's on now and next.",
+      "guide": "**Guide**: a timetable of what's on across channels. Tap a programme for its details and a **Watch** button.",
+      "player": "**The player**: up and down arrows (or the buttons) change channel. Picture-in-picture and full screen work where the browser supports them.",
+      "throughServer": "Streams come through this server, so anyone who can reach Plinthio can watch, at home or away. Each viewer uses the server's internet connection."
+    },
+    "yours": {
+      "title": "Each viewer's own choices",
+      "intro": "Everyone who watches can make Live TV their own. These choices belong to their account and don't change anything for anyone else.",
+      "favourites": "**Favourites**: the star on a channel adds it to a **Favourites** tab, shown first. Favourites also appear in a **Live now** row on the Home page with what's on, which can be hidden from that row.",
+      "recent": "**Recent**: the last channels watched get their own tab, and the player's **Last channel** button (or the {key} key) jumps back to the one before.",
+      "hiding": "**Hide for me**: a channel's menu hides that channel, or its whole group, just for you. **Hidden for me** on the Live TV page lists what you've hidden, with a way to bring each back, and turns the Home row on or off.",
+      "search": "**Search** finds channels by name and programmes by title, over the next day and a half. In the guide, **Now**, **Tonight** and **Tomorrow** jump straight to that time."
+    },
+    "publicSources": {
+      "title": "About public channels",
+      "text": "Public channels are collected from broadcasters' own free streams. They come and go: some may be offline, interrupted, or only play in certain countries (marked Geo-blocked). Adult channels are never added."
+    },
+    "responsibility": {
+      "title": "Your responsibility",
+      "text": "Plinthio plays the channels you give it. It doesn't host, check or endorse any channel, and comes with none. You choose which lists and channels to add, and you're responsible for having the right to watch them where you are: public lists link to streams run by others, and some may not be licensed in your country."
+    },
+    "troubleshooting": {
+      "title": "When something goes wrong",
+      "wontPlay": {
+        "title": "A channel won't play",
+        "text": "The channel's stream couldn't be reached ({code}). Public channels go offline now and then, and geo-blocked ones only play in some countries. Try again later, or hide it."
+      },
+      "listFailed": {
+        "title": "A list shows \"Couldn't load\"",
+        "text": "The server couldn't fetch the playlist ({code}). Check the address opens from the server's network, then press **Refresh**. Channels already loaded stay until the next successful load."
+      },
+      "notPlayable": {
+        "title": "Channels marked \"Not playable\"",
+        "text": "Live TV plays HLS streams. Channels in other formats stay in the list for you to see, but nobody else is shown them."
+      },
+      "missingChannel": {
+        "title": "A channel I want is missing",
+        "text": "A filter under **Choose what to show** may hide it, or it may be offline. Under **Channels**, choose **Hidden by filter** or **Offline**: each channel says why, and **Always show** or **Check now** helps. A viewer may also have hidden it for themselves; it's listed under **Hidden for me** on their Live TV page."
+      },
+      "offline": {
+        "title": "A channel is marked \"Offline\"",
+        "text": "It failed its last two checks. It's checked again about once a day and comes back by itself when it plays; **Check now** looks straight away. If it keeps failing, hide it, or switch off **Hide offline channels** to list it anyway."
+      },
+      "numberTaken": {
+        "title": "A channel number won't save",
+        "text": "Each number can belong to only one channel. Give the other channel a different number (or clear it) first."
+      },
+      "noGuide": {
+        "title": "The guide is empty for some channels",
+        "text": "Not every channel has guide data, and the guide loads a little after the channels. Giving a list its own guide address can fill the gaps."
+      },
+      "notInMenu": {
+        "title": "Live TV isn't in the menu",
+        "text": "It needs to be switched on, with at least one channel that person may watch: one that isn't hidden or not playable, and for a kids account, one allowed for kids."
+      }
+    }
+  },
   "shortcuts": {
     "title": "Keyboard Shortcuts & Player Controls",
     "intro": "Every reader and player supports full-keyboard navigation on desktop, alongside the on-screen tap/swipe controls on mobile.",
@@ -390,7 +501,8 @@
       "playback": "Playback",
       "metadata": "Metadata providers",
       "lists": "Lists & requests",
-      "watchParties": "Watch parties"
+      "watchParties": "Watch parties",
+      "liveTv": "Live TV"
     }
   },
   "troubleshooting": {

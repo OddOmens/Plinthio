@@ -335,6 +335,24 @@
       "message": "そのウォッチパーティーは満員です",
       "meaning": "パーティーの定員は 20 人で、1 つのサーバーで同時に開けるパーティーは 20 個までです。",
       "fix": "誰かが退出するか、パーティーが終了してから、もう一度お試しください。"
+    },
+    "P700": {
+      "title": "ライブTVはオフです",
+      "message": "このサーバーではライブTVがオフになっています",
+      "meaning": "管理者がライブTVをオンにしていないか、オフにしました。",
+      "fix": "管理者が「管理 → ライブTV」でオンにできます。"
+    },
+    "P701": {
+      "title": "チャンネルを利用できません",
+      "message": "このチャンネルは現在再生できません",
+      "meaning": "チャンネルのストリームが応答しないか、エラーを返したか、Plinthio が接続しない宛先を指しています。公開ソースのチャンネルはオフラインになったりアドレスが変わったりすることがあり、特定の国でしか再生できないものもあります。",
+      "fix": "別のチャンネルを試すか、後でもう一度お試しください。管理者は「管理 → ライブTV」でソースを更新したり、オフラインのままのチャンネルを非表示にしたりできます。"
+    },
+    "P702": {
+      "title": "ソースを読み込めませんでした",
+      "message": "チャンネルリストを読み込めませんでした",
+      "meaning": "Plinthio がプレイリスト、番組表、または公開チャンネルのプリセット一覧をダウンロードできなかったか、読み取れませんでした。",
+      "fix": "サーバーがインターネット（またはプレイリストのアドレス）にアクセスできるか確認してから、もう一度お試しください。「管理 → ライブTV」に各ソースの最後のエラーが表示されます。"
     }
   },
   "messages": {
@@ -477,7 +495,37 @@
     "useAFullPathStartingWith": "/ から始まるフルパスを使ってください。",
     "thatSInsideTheServerS": "そこはサーバー自身のデータフォルダの中です。別の場所にあるフォルダを選んでください。",
     "thatFolderContainsTheServerS": "そのフォルダにはサーバーのデータフォルダが含まれています。その隣か、別の場所にあるフォルダを選んでください。",
-    "thatSAFileNotA": "それはフォルダではなくファイルです。"
+    "thatSAFileNotA": "それはフォルダではなくファイルです。",
+    "channelNotFound": "チャンネルが見つかりません",
+    "sourceNotFound": "ソースが見つかりません",
+    "thisStreamLinkIsNot": "このストリームのリンクは無効です",
+    "chooseACountryLanguageOr": "国、言語、またはカテゴリーを選んでください",
+    "thoseChannelsAreAlreadyAdded": "それらのチャンネルはすでに追加されています",
+    "enterANameForThese": "これらのチャンネルの名前を入力してください",
+    "enterThePlaylistAddressStarting": "http:// または https:// で始まるプレイリストのアドレスを入力してください",
+    "theGuideAddressMustStart": "番組表のアドレスは http:// または https:// で始まる必要があります",
+    "thatPlaylistIsAlreadyAdded": "そのプレイリストはすでに追加されています",
+    "chooseWhatKindOfChannels": "追加するチャンネルの種類を選んでください",
+    "chooseUpTo1000Channels": "選べるチャンネルは 1000 件までです",
+    "nothingToChange": "変更するものはありません",
+    "confirmTheNoteAboutPublic": "先に公開チャンネルについての注意書きを確認してください",
+    "hideGeoBlockedMustBeTrue": "hideGeoBlocked は true か false である必要があります",
+    "hiddenCategoriesMustBeA": "非表示にするカテゴリーは、5000 件までの名前のリストである必要があります",
+    "hiddenLanguagesMustBeA": "非表示にする言語は、5000 件までの名前のリストである必要があります",
+    "hiddenCountriesMustBeTwo": "非表示にする国は、2 文字の国コードである必要があります",
+    "hiddenStreamHostsMustBe": "非表示にする配信サーバーは、example.com のようなホスト名である必要があります",
+    "lineUpNotFound": "ラインナップが見つかりません",
+    "channelNumbersGoFrom1": "チャンネル番号は 1〜9999 です",
+    "enterANameForTheChannel": "チャンネルの名前を入力するか、空欄にしてください",
+    "theLogoAddressMustStart": "ロゴのアドレスは http:// または https:// で始まる必要があります",
+    "anotherChannelAlreadyHasThat": "その番号はすでに別のチャンネルで使われています",
+    "enterANameForTheLineUp": "ラインナップの名前を入力してください",
+    "sendTheLineUpsIn": "ラインナップを新しい順番で送信してください",
+    "kidsAllowedMustBeTrue": "kidsAllowed は true か false である必要があります",
+    "hideOfflineMustBeTrue": "hideOffline は true か false である必要があります",
+    "enabledMustBeTrueOr": "enabled は true か false である必要があります",
+    "chooseUpTo5000Channels": "選べるチャンネルは 5000 件までです",
+    "youCanHaveUpTo": "お気に入りのチャンネルは 500 件までです"
   },
   "patterns": {
     "noMetadataSource": "{type} のメタデータの提供元はまだありません",

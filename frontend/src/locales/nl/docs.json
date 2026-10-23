@@ -19,6 +19,7 @@
       "roles": "Rollen en rechten",
       "pwa": "PWA-app voor mobiel instellen",
       "remote": "Toegang op afstand en Tailscale",
+      "liveTv": "Live tv",
       "shortcuts": "Sneltoetsen",
       "backups": "Back-ups en gegevensveiligheid",
       "api": "REST API en webhooks",
@@ -266,6 +267,116 @@
       "guide": "De volledige handleiding, met probleemoplossing: {doc} op GitHub."
     }
   },
+  "liveTv": {
+    "title": "Live tv",
+    "intro": "Livezenders en een tv-gids, naast je eigen media. Zenders komen uit M3U-playlists: kant-en-klare openbare lijsten, of je eigen.",
+    "turnOn": {
+      "title": "Aanzetten",
+      "text": "Live tv staat uit tot een admin het aanzet via **Admin → Live tv**. Zodra het aanstaat en er zenders zijn, verschijnt **Live tv** in het menu voor iedereen die minstens één zender mag kijken.",
+      "off": "Uitzetten verbergt Live tv meteen overal. De zenderlijsten en alle keuzes die erover zijn gemaakt, blijven bewaard voor als het weer aangaat."
+    },
+    "adding": {
+      "title": "Zenders toevoegen",
+      "intro": "Druk in **Admin → Live tv** op **Zenders toevoegen** en kies een van de twee soorten:",
+      "public": "**Openbare zenders**: gratis, kant-en-klare lijsten van het openbare iptv-org-project, per land, taal of categorie. Vink er zoveel aan als je wilt; elke lijst wordt apart toegevoegd.",
+      "own": "**Eigen playlist**: het adres van elke M3U-playlist die de server kan bereiken, zoals die van een tv-tuner in je netwerk. Zenders die via HLS ({m3u8}) streamen, spelen af; andere blijven staan maar worden vermeld als **Niet afspeelbaar**.",
+      "guide": "**Tv-gids**: een XMLTV-adres dat je zelf opgeeft, of anders de gids die de playlist zelf noemt (de openbare lijsten hebben er allemaal een). Gecomprimeerde {gz}-bestanden werken ook. De gids beslaat de komende anderhalve dag.",
+      "refresh": "Zolang Live tv aanstaat, worden elke lijst en de gids ervan elke 12 uur opnieuw geladen. **Vernieuwen** bij een lijst laadt die meteen opnieuw; de lijst laat zien wanneer hij voor het laatst is geladen, of waarom dat niet lukte.",
+      "acknowledge": "De eerste keer dat er een openbare lijst wordt toegevoegd, toont Plinthio een korte notitie over openbare zenders om te bevestigen. Dat wordt één keer per server gevraagd."
+    },
+    "filters": {
+      "title": "Kiezen wat je toont",
+      "intro": "Verberg onder **Kies wat je toont** hele groepen zenders in één keer. Dit zijn regels, geen verwijderingen: ze blijven gelden na elke keer opnieuw laden, en nieuwe zenders die erbij passen worden ook verborgen. De kaart laat zien hoeveel zenders er zichtbaar blijven.",
+      "region": "**Regiogebonden zenders** zijn vanaf het begin verborgen, omdat ze meestal alleen in hun eigen land spelen. Zet **Regiogebonden zenders verbergen** uit om ze te tonen.",
+      "sets": "**Categorieën, talen, landen en streamservers**: elk tabblad toont ze met het aantal zenders per stuk. Tik erop om er een te tonen of te verbergen, zoek ernaar, of gebruik **Alles tonen** en **Alles verbergen**. Wil je er maar een paar houden, druk dan op **Alles verbergen** en zet die weer aan.",
+      "languages": "Een zender in meerdere talen wordt alleen verborgen als al zijn talen verborgen zijn. Zenders zonder vermelde taal of land worden door die tabbladen niet beïnvloed.",
+      "hosts": "**Streamservers**: sommige openbare zenders worden niet door de omroep zelf gestreamd, maar omgeleid via een dienst van derden. Plinthio verbergt één zo'n dienst, {host}, tot jij hem toont. Toon hem alleen als je zeker weet dat je die zenders mag kijken.",
+      "exceptions": "**Uitzonderingen**: wil je één zender houden die een filter verbergt, zoek hem dan onder **Zenders** (kies **Verborgen door filter** om ze allemaal te zien) en druk op **Altijd tonen**. Een zender die je zelf verbergt, blijft hoe dan ook verborgen."
+    },
+    "choosing": {
+      "title": "Zenders kiezen",
+      "text": "Zoek onder **Zenders** of filter op lijst, en kies dan **Verbergen** bij de zenders die je niet wilt. Vink er meerdere aan (of een hele pagina) om ze in één keer te wijzigen. Wijzigingen worden meteen opgeslagen.",
+      "kept": "Verborgen zenders en keuzes voor kinderen blijven bewaard als een lijst opnieuw laadt. Een zender die uit zijn playlist verdwijnt, wordt weggehaald."
+    },
+    "lineups": {
+      "title": "Zenderselecties en zendernummers",
+      "intro": "Stel onder **Zenderselecties** je eigen sets zenders samen, zoals Nieuws, Sport of Voor de kinderen. Elke selectie wordt een tabblad op de Live tv-pagina, in de volgorde waarin je ze zet.",
+      "create": "**Nieuwe selectie** vraagt om een naam en opent die daarna. Voeg zenders toe via **Zoeken** (één voor één, of alle resultaten tegelijk) of via **Hele categorie**, dat alle zenders van een categorie in één keer toevoegt. Je kunt ook zenders aanvinken onder **Zenders** en op **Aan selectie toevoegen** drukken.",
+      "order": "Zet selecties, en de zenders erin, op volgorde met de pijltjes omhoog en omlaag. **A–Z** en **Op nummer** sorteren een hele selectie in één keer. Een zender uit een selectie halen verbergt hem nergens anders.",
+      "kids": "**Toestaan voor kinderen** bij een selectie laat kinderaccounts elke zender erin kijken, naast de zenders die los zijn toegestaan.",
+      "rules": "Een selectie haalt geen zenders terug die je hebt verborgen of die offline zijn, en de filters blijven gelden, tenzij een zender op **Altijd tonen** staat.",
+      "numbers": "**Nummers, namen en logo's**: druk onder **Zenders** op het potlood naast een zender om hem een eigen nummer (1 tot 9999, elk nummer één keer), een naam of een logo-adres te geven. Kijkers kunnen in de speler een nummer intypen om naar die zender te springen. Zenders zonder nummer komen na je hoogste nummer. Laat een veld leeg om terug te gaan naar wat de lijst aangeeft."
+    },
+    "health": {
+      "title": "Zenderstatus",
+      "intro": "Openbare zenders houden af en toe op met werken. Met **Zenders op de achtergrond controleren** aan (dat staat het standaard), bekijkt Plinthio ongeveer 20 zenders per 10 minuten zolang Live tv aanstaat, zodat elke zender ongeveer één keer per dag wordt gecontroleerd.",
+      "light": "Een controle is bewust licht: de server haalt de playlist van de zender op en de eerste paar kilobytes video, meer niet. Er wordt niets afgespeeld, gedecodeerd of omgezet, dus het kost vrijwel niets.",
+      "offline": "Een zender die twee controles achter elkaar niet haalt, wordt gemarkeerd als **Offline**. Met **Offline zenders verbergen** aan zien kijkers hem niet tot hij weer afspeelt; één geslaagde controle brengt hem terug.",
+      "counts": "De kaart laat zien hoeveel zenders werken, offline zijn en nog niet gecontroleerd zijn, en wanneer de laatste controle was. Druk op het aantal offline zenders om die zenders te tonen, en op **Nu controleren** bij een zender om meteen te kijken."
+    },
+    "kids": {
+      "title": "Kinderaccounts",
+      "text": "Kinderaccounts zien alleen de zenders met **Toestaan voor kinderen**, en de zenders in een selectie met **Toestaan voor kinderen**. Tot je ze kiest is er geen enkele toegestaan, dus tot die tijd staat Live tv niet in het menu van een kinderaccount."
+    },
+    "watching": {
+      "title": "Kijken",
+      "channels": "**Zenders**: tabbladen voor Favorieten, Recent, elke selectie en Alle zenders (met categorieën om uit te kiezen), en bij elke zender wat er nu en straks op is.",
+      "guide": "**Gids**: een overzicht van wat er op de verschillende zenders te zien is. Tik op een programma voor de details en een knop **Kijken**.",
+      "player": "**De speler**: de pijltjes omhoog en omlaag (of de knoppen) wisselen van zender. Beeld-in-beeld en volledig scherm werken waar de browser ze ondersteunt.",
+      "throughServer": "Streams lopen via deze server, dus iedereen die Plinthio kan bereiken, kan kijken, thuis of onderweg. Elke kijker gebruikt de internetverbinding van de server."
+    },
+    "yours": {
+      "title": "De eigen keuzes van elke kijker",
+      "intro": "Iedereen die kijkt, kan Live tv naar eigen smaak inrichten. Deze keuzes horen bij het eigen account en veranderen niets voor anderen.",
+      "favourites": "**Favorieten**: met de ster bij een zender zet je hem op het tabblad **Favorieten**, dat vooraan staat. Favorieten verschijnen ook in een rij **Nu live** op de Home-pagina, met wat er op is; die rij kun je daar verbergen.",
+      "recent": "**Recent**: de laatst bekeken zenders krijgen een eigen tabblad, en de knop **Vorige zender** in de speler (of de toets {key}) springt terug naar de zender ervoor.",
+      "hiding": "**Voor mij verbergen**: via het menu van een zender verberg je die zender, of zijn hele groep, alleen voor jezelf. **Voor mij verborgen** op de Live tv-pagina toont wat je hebt verborgen, met een manier om alles weer terug te halen, en zet de rij op Home aan of uit.",
+      "search": "**Zoeken** vindt zenders op naam en programma's op titel, over de komende anderhalve dag. In de gids springen **Nu**, **Vanavond** en **Morgen** direct naar dat tijdstip."
+    },
+    "publicSources": {
+      "title": "Over openbare zenders",
+      "text": "Openbare zenders worden verzameld uit de eigen gratis streams van omroepen. Ze komen en gaan: sommige zijn misschien offline, onderbroken of spelen alleen in bepaalde landen (gemarkeerd als ‘Regiogebonden’). Zenders voor volwassenen worden nooit toegevoegd."
+    },
+    "responsibility": {
+      "title": "Jouw verantwoordelijkheid",
+      "text": "Plinthio speelt de zenders af die jij het geeft. Het host, controleert of onderschrijft geen enkele zender, en er worden geen zenders meegeleverd. Jij kiest welke lijsten en zenders je toevoegt, en jij bent ervoor verantwoordelijk dat je het recht hebt om ze te kijken waar je bent: openbare lijsten linken naar streams die door anderen worden beheerd, en voor sommige is er in jouw land misschien geen licentie."
+    },
+    "troubleshooting": {
+      "title": "Als er iets misgaat",
+      "wontPlay": {
+        "title": "Een zender speelt niet af",
+        "text": "De stream van de zender was niet bereikbaar ({code}). Openbare zenders zijn af en toe offline, en regiogebonden zenders spelen alleen in sommige landen. Probeer het later opnieuw, of verberg de zender."
+      },
+      "listFailed": {
+        "title": "Een lijst toont ‘Kon niet laden’",
+        "text": "De server kon de playlist niet ophalen ({code}). Controleer of het adres opent vanaf het netwerk van de server en druk dan op **Vernieuwen**. Zenders die al geladen zijn, blijven staan tot het volgende geslaagde laden."
+      },
+      "notPlayable": {
+        "title": "Zenders gemarkeerd als ‘Niet afspeelbaar’",
+        "text": "Live tv speelt HLS-streams af. Zenders in andere formaten blijven in de lijst staan zodat jij ze ziet, maar niemand anders krijgt ze te zien."
+      },
+      "missingChannel": {
+        "title": "Een zender die ik wil, ontbreekt",
+        "text": "Misschien verbergt een filter onder **Kies wat je toont** hem, of is hij offline. Kies onder **Zenders** voor **Verborgen door filter** of **Offline**: bij elke zender staat waarom, en **Altijd tonen** of **Nu controleren** helpt. Een kijker kan hem ook voor zichzelf hebben verborgen; dan staat hij onder **Voor mij verborgen** op diens Live tv-pagina."
+      },
+      "offline": {
+        "title": "Een zender staat op ‘Offline’",
+        "text": "Hij haalde zijn laatste twee controles niet. Hij wordt ongeveer één keer per dag opnieuw gecontroleerd en komt vanzelf terug zodra hij afspeelt; **Nu controleren** kijkt meteen. Blijft hij falen, verberg hem dan, of zet **Offline zenders verbergen** uit om hem toch te tonen."
+      },
+      "numberTaken": {
+        "title": "Een zendernummer wordt niet opgeslagen",
+        "text": "Elk nummer kan maar bij één zender horen. Geef eerst de andere zender een ander nummer (of wis het)."
+      },
+      "noGuide": {
+        "title": "De gids is leeg voor sommige zenders",
+        "text": "Niet elke zender heeft gidsgegevens, en de gids laadt iets later dan de zenders. Een lijst een eigen gidsadres geven kan de gaten vullen."
+      },
+      "notInMenu": {
+        "title": "Live tv staat niet in het menu",
+        "text": "Het moet aanstaan, met minstens één zender die die persoon mag kijken: een die niet verborgen is en wel afspeelbaar, en voor een kinderaccount een die is toegestaan voor kinderen."
+      }
+    }
+  },
   "shortcuts": {
     "title": "Sneltoetsen en spelerbediening",
     "intro": "Elke lezer en speler is op de computer volledig met het toetsenbord te bedienen, naast de tik- en veegbediening op het scherm van mobiele apparaten.",
@@ -390,7 +501,8 @@
       "playback": "Afspelen",
       "metadata": "Metadatabronnen",
       "lists": "Lijsten en aanvragen",
-      "watchParties": "Watchparty's"
+      "watchParties": "Watchparty's",
+      "liveTv": "Live tv"
     }
   },
   "troubleshooting": {

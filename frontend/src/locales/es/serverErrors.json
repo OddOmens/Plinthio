@@ -335,6 +335,24 @@
       "message": "Esa watch party está llena",
       "meaning": "Una watch party admite hasta 20 personas, y un servidor puede tener hasta 20 a la vez.",
       "fix": "Vuelve a intentarlo cuando alguien se vaya o termine una watch party."
+    },
+    "P700": {
+      "title": "La TV en vivo está desactivada",
+      "message": "La TV en vivo está desactivada en este servidor",
+      "meaning": "Un administrador no ha activado la TV en vivo o la ha desactivado.",
+      "fix": "Un administrador puede activarla en Administración → TV en vivo."
+    },
+    "P701": {
+      "title": "Canal no disponible",
+      "message": "Este canal no se puede reproducir ahora mismo",
+      "meaning": "La emisión del canal no respondió, respondió con un error o apunta a un sitio al que Plinthio no se conecta. Los canales de fuentes públicas se desconectan o cambian de dirección, y algunos solo se ven en ciertos países.",
+      "fix": "Prueba otro canal o vuelve a intentarlo más tarde. Un administrador puede actualizar la fuente en Administración → TV en vivo u ocultar los canales que sigan sin conexión."
+    },
+    "P702": {
+      "title": "No se pudo cargar la fuente",
+      "message": "No se pudo cargar la lista de canales",
+      "meaning": "Plinthio no pudo descargar ni leer una lista de reproducción, una guía de programación o la lista de canales públicos predefinidos.",
+      "fix": "Comprueba que el servidor tiene acceso a internet (o a la dirección de la lista) y vuelve a intentarlo. Administración → TV en vivo muestra el último error de cada fuente."
     }
   },
   "messages": {
@@ -477,7 +495,37 @@
     "useAFullPathStartingWith": "Usa una ruta completa que empiece por /.",
     "thatSInsideTheServerS": "Esa está dentro de la propia carpeta de datos del servidor; elige una carpeta en otro sitio.",
     "thatFolderContainsTheServerS": "Esa carpeta contiene la carpeta de datos del servidor; elige una al lado o en otro sitio.",
-    "thatSAFileNotA": "Eso es un archivo, no una carpeta."
+    "thatSAFileNotA": "Eso es un archivo, no una carpeta.",
+    "channelNotFound": "Canal no encontrado",
+    "sourceNotFound": "Fuente no encontrada",
+    "thisStreamLinkIsNot": "Este enlace de emisión no es válido",
+    "chooseACountryLanguageOr": "Elige un país, un idioma o una categoría",
+    "thoseChannelsAreAlreadyAdded": "Esos canales ya están añadidos",
+    "enterANameForThese": "Escribe un nombre para estos canales",
+    "enterThePlaylistAddressStarting": "Escribe la dirección de la lista de reproducción, empezando por http:// o https://",
+    "theGuideAddressMustStart": "La dirección de la guía debe empezar por http:// o https://",
+    "thatPlaylistIsAlreadyAdded": "Esa lista de reproducción ya está añadida",
+    "chooseWhatKindOfChannels": "Elige qué tipo de canales añadir",
+    "chooseUpTo1000Channels": "Elige 1000 canales como máximo",
+    "nothingToChange": "No hay nada que cambiar",
+    "confirmTheNoteAboutPublic": "Primero confirma la nota sobre los canales públicos",
+    "hideGeoBlockedMustBeTrue": "hideGeoBlocked debe ser true o false",
+    "hiddenCategoriesMustBeA": "Las categorías ocultas deben ser una lista de hasta 5000 nombres",
+    "hiddenLanguagesMustBeA": "Los idiomas ocultos deben ser una lista de hasta 5000 nombres",
+    "hiddenCountriesMustBeTwo": "Los países ocultos deben ser códigos de país de dos letras",
+    "hiddenStreamHostsMustBe": "Los servidores de emisión ocultos deben ser nombres de host, como example.com",
+    "lineUpNotFound": "No se encontró la selección de canales",
+    "channelNumbersGoFrom1": "Los números de canal van del 1 al 9999",
+    "enterANameForTheChannel": "Escribe un nombre para el canal o déjalo vacío",
+    "theLogoAddressMustStart": "La dirección del logotipo debe empezar por http:// o https://",
+    "anotherChannelAlreadyHasThat": "Otro canal ya tiene ese número",
+    "enterANameForTheLineUp": "Escribe un nombre para la selección de canales",
+    "sendTheLineUpsIn": "Envía las selecciones de canales en su nuevo orden",
+    "kidsAllowedMustBeTrue": "kidsAllowed debe ser true o false",
+    "hideOfflineMustBeTrue": "hideOffline debe ser true o false",
+    "enabledMustBeTrueOr": "enabled debe ser true o false",
+    "chooseUpTo5000Channels": "Elige 5000 canales como máximo",
+    "youCanHaveUpTo": "Puedes tener 500 canales favoritos como máximo"
   },
   "patterns": {
     "noMetadataSource": "Todavía no hay fuente de metadatos para {type}",

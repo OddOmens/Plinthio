@@ -49,6 +49,10 @@
         "label": "재생",
         "desc": "하드웨어 가속, 오프닝 클립"
       },
+      "liveTv": {
+        "label": "실시간 TV",
+        "desc": "채널, 편성표, 키즈"
+      },
       "network": {
         "label": "네트워크",
         "desc": "외부 접속, Tailscale, 2단계 인증"
@@ -306,6 +310,354 @@
     "deleteMessage": "'{name}'을(를) 삭제할까요? 파일은 건드리지 않으며, 같은 폴더를 다시 추가하면 진행 상황과 북마크가 돌아와요. 타이틀, 표지, 상세 정보는 다시 스캔할 때까지 제거돼요.",
     "couldNotDelete": "그 라이브러리를 삭제할 수 없어요",
     "couldNotAdd": "그 라이브러리를 추가할 수 없어요"
+  },
+  "liveTv": {
+    "title": "실시간 TV",
+    "description": "공개 목록이나 내 재생 목록에서 가져온 실시간 채널과 편성표예요. 변경 사항은 바로 저장돼요.",
+    "channelCount": {
+      "other": "채널 {number}개"
+    },
+    "switch": {
+      "label": "실시간 TV",
+      "desc": "이 서버의 모든 사용자에게 채널과 편성표가 있는 실시간 TV 페이지를 추가해요. 기본값은 꺼짐이에요. 끄면 실시간 TV가 모든 곳에서 숨겨지지만, 여기의 목록과 설정은 그대로 남아요."
+    },
+    "publicNote": "채널은 인터넷의 공개 소스에서 가져와요. 일부는 오프라인이거나, 가끔 끊기거나, 특정 국가에서만 재생될 수 있어요. 성인 채널은 절대 추가되지 않아요.",
+    "responsibility": "추가할 채널은 직접 고르며, 현재 있는 곳에서 그 채널을 볼 권리가 있는지에 대한 책임도 본인에게 있어요. Plinthio는 어떤 채널도 호스팅하거나 확인하거나 보증하지 않아요.",
+    "sources": {
+      "title": "채널 목록",
+      "desc": "실시간 TV가 켜져 있는 동안 각 목록은 편성표와 함께 12시간마다 다시 불러와요.",
+      "add": "채널 추가",
+      "empty": "아직 채널이 없어요. 기본 제공 목록이나 내 재생 목록을 추가해서 시작하세요.",
+      "off": "꺼짐",
+      "kinds": {
+        "public": "공개 목록",
+        "own": "내 재생 목록"
+      },
+      "refreshing": "채널과 편성표를 불러오는 중…",
+      "failed": "불러올 수 없음: {error}",
+      "updated": "{date} 업데이트됨",
+      "notLoaded": "아직 불러오지 않음",
+      "enabledAria": "{name} 사용",
+      "turnOn": "켜기",
+      "turnOff": "끄기",
+      "editAria": "{name} 편집",
+      "removeAria": "{name} 삭제",
+      "removeTitle": "채널 목록 삭제",
+      "removeMessage": {
+        "other": "{name}을(를) 삭제할까요? 채널 {number}개와 각 채널의 숨김 및 키즈 허용 설정도 함께 삭제돼요."
+      },
+      "offHint": "실시간 TV가 꺼져 있어서 아직 아무도 이 채널을 볼 수 없어요. 미리 준비해 둘 수 있어요.",
+      "couldNotLoad": "채널 목록을 불러올 수 없어요",
+      "couldNotRefresh": "목록을 다시 불러올 수 없어요",
+      "couldNotSave": "목록을 저장할 수 없어요",
+      "couldNotRemove": "목록을 삭제할 수 없어요"
+    },
+    "editDialog": {
+      "title": "채널 목록 편집",
+      "guideHint": "비워 두면 재생 목록에 지정된 편성표가 있을 경우 그것을 써요."
+    },
+    "addDialog": {
+      "title": "채널 추가",
+      "tabs": {
+        "public": "공개 채널",
+        "own": "내 재생 목록"
+      },
+      "adding": "추가하는 중…",
+      "couldNotAdd": "채널을 추가할 수 없어요",
+      "public": {
+        "intro": "공개 iptv-org 목록에서 가져오는 무료 채널로, 매일 업데이트돼요. 하나 이상 고르세요. 각각 별도의 목록으로 추가돼요.",
+        "listBy": "채널 분류 기준",
+        "kinds": {
+          "countries": "국가",
+          "languages": "언어",
+          "categories": "카테고리"
+        },
+        "search": {
+          "countries": "국가 검색",
+          "languages": "언어 검색",
+          "categories": "카테고리 검색"
+        },
+        "noMatches": "일치하는 항목이 없어요.",
+        "added": "추가됨",
+        "selected": {
+          "other": "{number}개 선택됨"
+        },
+        "addLists": {
+          "other": "목록 {number}개 추가"
+        },
+        "note": "이 채널들은 공개 소스에서 가져오므로 일부는 오프라인이거나 특정 국가에서만 재생될 수 있어요. 성인 채널은 절대 추가되지 않아요.",
+        "couldNotLoad": "공개 목록을 불러올 수 없어요"
+      },
+      "own": {
+        "name": "이름",
+        "namePlaceholder": "예: 집 안테나",
+        "playlistUrl": "재생 목록 주소 (M3U)",
+        "playlistHint": "서버가 접근할 수 있는 주소예요. HLS(.m3u8)로 스트리밍하는 채널은 재생되고, 나머지는 재생 불가로 표시돼요.",
+        "guideUrl": "편성표 주소 (XMLTV, 선택 사항)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "비워 두면 재생 목록에 지정된 편성표가 있을 경우 그것을 써요. 압축된 .xml.gz 파일도 돼요.",
+        "add": "재생 목록 추가"
+      }
+    },
+    "acknowledge": {
+      "title": "공개 채널을 추가하기 전에",
+      "points": {
+        "links": "공개 목록은 제3자 스트림으로 연결되는 링크예요. Plinthio는 그중 어떤 것도 호스팅하거나 확인하거나 보증하지 않아요.",
+        "licensing": "일부 채널은 특정 국가에서만 재생되고(지역 제한), 일부는 현재 있는 곳에서 방송 라이선스가 없을 수도 있어요.",
+        "yourCall": "볼 수 있도록 허락된 채널만 추가하세요. 어떤 채널을 추가할지는 직접 정하며, 그에 대한 책임도 본인에게 있어요.",
+        "adult": "성인 채널은 절대 추가되지 않아요."
+      },
+      "understand": "이해했어요",
+      "continue": "계속",
+      "couldNotSave": "저장할 수 없어요. 다시 시도하세요"
+    },
+    "filters": {
+      "title": "표시할 항목 고르기",
+      "desc": "채널을 묶음으로 한 번에 숨길 수 있어요. 이 설정은 목록을 다시 불러와도 유지되고, 조건에 맞는 새 채널도 숨겨져요. 숨긴 묶음에서 채널 하나만 남기려면 '채널'에서 '항상 표시'를 사용하세요.",
+      "summary": {
+        "other": "채널 {number}개 중 {visible}개 표시 중"
+      },
+      "noChannels": "아직 재생할 수 있는 채널이 없어요. 목록을 불러오면 여기에 개수가 나타나요.",
+      "geoBlocked": {
+        "label": "지역 제한 채널 숨기기",
+        "desc": {
+          "other": "채널 {number}개가 지역 제한으로 표시되어 있어요. 특정 국가에서만 재생되고 다른 곳에서는 대개 재생되지 않아요."
+        }
+      },
+      "hideBy": "채널 숨기기 기준",
+      "tabs": {
+        "groups": "카테고리",
+        "languages": "언어",
+        "countries": "국가",
+        "hosts": "스트림 서버"
+      },
+      "hiddenCount": {
+        "other": "{number}개 숨김"
+      },
+      "hints": {
+        "groups": "카테고리는 목록 자체에서 가져와요. 여러 카테고리에 속한 채널은 그중 하나라도 숨기면 숨겨져요.",
+        "languages": "여러 언어로 된 채널은 그 언어를 모두 숨겨야만 숨겨져요. 언어 정보가 없는 채널은 영향을 받지 않아요.",
+        "countries": "채널의 방송 국가예요. 국가 정보가 없는 채널은 영향을 받지 않아요.",
+        "hosts": "일부 공개 채널은 방송사가 직접 스트리밍하지 않고 제3자 서비스를 거쳐 전달돼요. 스트림 서버를 숨기면 그 서버의 채널이 모두 빠져요. Plinthio는 이런 서비스 중 하나인 jmp2.uk를 직접 표시하기 전까지 숨겨 둬요. 그 채널들을 봐도 된다고 확신할 때만 표시하세요."
+      },
+      "search": {
+        "groups": "카테고리 검색",
+        "languages": "언어 검색",
+        "countries": "국가 검색",
+        "hosts": "스트림 서버 검색"
+      },
+      "showing": {
+        "label": "목록",
+        "all": "전체",
+        "shown": "표시됨",
+        "hidden": "숨김"
+      },
+      "showAll": "모두 표시",
+      "hideAll": "모두 숨기기",
+      "showMatching": {
+        "other": "찾은 {number}개 표시"
+      },
+      "hideMatching": {
+        "other": "찾은 {number}개 숨기기"
+      },
+      "tip": "팁: 몇 개만 남기려면 '모두 숨기기'를 누른 다음 원하는 항목만 다시 켜세요.",
+      "hiddenLabel": "숨김",
+      "more": {
+        "other": "{number}개 더 보기"
+      },
+      "noMatches": "일치하는 항목이 없어요.",
+      "empty": {
+        "groups": "카테고리가 있는 채널이 없어요.",
+        "languages": "언어 정보가 있는 채널이 없어요.",
+        "countries": "국가 정보가 있는 채널이 없어요.",
+        "hosts": "아직 스트림 서버가 없어요."
+      },
+      "couldNotLoad": "필터를 불러올 수 없어요"
+    },
+    "channels": {
+      "title": "채널",
+      "desc": "원하지 않는 채널은 숨기거나, 연필을 눌러 고유한 번호, 이름, 로고를 정하세요. 키즈 계정에는 여기서 키즈 허용한 채널과 키즈 허용한 라인업의 채널만 보이며, 직접 고르기 전에는 허용된 채널이 없어요.",
+      "searchPlaceholder": "채널 검색",
+      "sourceFilter": "채널 목록",
+      "allSources": "모든 목록",
+      "statusFilter": "표시",
+      "status": {
+        "all": "전체",
+        "visible": "표시 중",
+        "hidden": "숨김",
+        "filtered": "필터로 숨김",
+        "pinned": "항상 표시",
+        "offline": "오프라인",
+        "kids": "키즈 허용",
+        "unsupported": "재생 불가"
+      },
+      "selectPage": "이 페이지 선택",
+      "selected": {
+        "other": "{number}개 선택됨"
+      },
+      "selectAria": "{name} 선택",
+      "hide": "숨기기",
+      "show": "표시",
+      "hideAria": "{name} 숨기기",
+      "showAria": "{name} 표시",
+      "allowKids": "키즈 허용",
+      "disallowKids": "키즈 제외",
+      "allowKidsAria": "{name} 키즈 허용",
+      "disallowKidsAria": "{name} 키즈 허용 해제",
+      "alwaysShow": "항상 표시",
+      "alwaysShowHint": "'표시할 항목 고르기'의 필터가 숨겨도 표시해요",
+      "followFilters": "필터 따르기",
+      "followFiltersHint": "항상 표시를 그만두고 필터를 다시 적용해요",
+      "pinAria": "{name} 항상 표시",
+      "badges": {
+        "hidden": "숨김",
+        "kids": "키즈",
+        "geoBlocked": "지역 제한",
+        "geoBlockedHint": "특정 국가에서만 재생되는 것으로 표시됨",
+        "unsupported": "재생 불가",
+        "unsupportedHint": "HLS 스트림이 아니어서 누구에게도 제공되지 않아요",
+        "filtered": "필터로 숨김: {reasons}",
+        "filteredHint": "'표시할 항목 고르기'에서 숨겨졌어요({reasons}). 그래도 이 채널을 남기려면 '항상 표시'를 사용하세요.",
+        "pinnedHint": "필터 설정과 상관없이 항상 표시돼요. 다시 누르면 필터에 맡겨요.",
+        "pinnedOverHint": "필터가 {reasons}을(를) 숨기지만 항상 표시돼요. 다시 누르면 필터에 맡겨요.",
+        "regionLocked": "지역 제한",
+        "offline": "오프라인",
+        "offlineHint": "최근 두 번의 확인에서 재생되지 않았어요(마지막 확인: {date})",
+        "inLineupsHint": "라인업: {names}"
+      },
+      "range": "{total}개 중 {from}–{to}",
+      "empty": "아직 채널이 없어요. 목록을 불러오면 여기에 나타나요.",
+      "noMatches": "일치하는 채널이 없어요.",
+      "couldNotLoad": "채널을 불러올 수 없어요",
+      "edit": "번호, 이름, 로고",
+      "editAria": "{name}의 번호, 이름, 로고 편집",
+      "numberHint": "채널 번호",
+      "checkNow": "지금 확인",
+      "checkNowAria": "{name}이(가) 지금 재생되는지 확인",
+      "checking": "확인 중…",
+      "couldNotCheck": "채널을 확인할 수 없어요",
+      "addToLineup": "라인업에 추가",
+      "addedToLineup": {
+        "other": "{name}에 채널 {number}개를 추가했어요"
+      },
+      "stillOffline": "아직 오프라인 · 다시 확인"
+    },
+    "health": {
+      "title": "채널 상태",
+      "desc": "공개 채널은 생겼다 사라졌다 해요. Plinthio는 백그라운드에서 몇 개씩 확인해서 작동을 멈춘 채널을 찾아요. 확인할 때는 스트림의 처음 몇 킬로바이트만 받아 오므로 아무것도 재생하거나 변환하지 않고, 서버에도 부담이 거의 없어요.",
+      "enabled": {
+        "label": "백그라운드에서 채널 확인",
+        "desc": "실시간 TV가 켜져 있는 동안 10분마다 채널 약 20개를 확인하므로, 각 채널은 대략 하루에 한 번 확인돼요."
+      },
+      "hideOffline": {
+        "label": "오프라인 채널 숨기기",
+        "desc": "두 번 연속으로 확인에 실패한 채널은 시청자에게 숨겨져요. 그 뒤로도 대략 하루에 한 번 다시 확인하고, 재생되면 저절로 다시 나타나요."
+      },
+      "counts": {
+        "ok": "정상",
+        "offline": "오프라인",
+        "unchecked": "확인 전"
+      },
+      "showOffline": "오프라인 채널 보기",
+      "lastChecked": "마지막 확인: {date}.",
+      "neverChecked": "아직 확인하지 않았어요.",
+      "pace": "채널은 몇 개씩 차례로 확인해요. 채널에서 '지금 확인'을 누르면 바로 확인해요.",
+      "paused": "백그라운드 확인이 꺼져 있어서 이 숫자는 그대로 유지돼요.",
+      "couldNotLoad": "채널 상태를 불러올 수 없어요"
+    },
+    "editChannel": {
+      "title": "채널 편집",
+      "number": "채널 번호",
+      "automatic": "자동",
+      "useAutomatic": "자동으로 설정",
+      "numberHint": "1~9999 사이로, 번호 하나는 한 채널에만 쓸 수 있어요. 시청자는 이 번호를 입력해 이 채널로 바로 갈 수 있어요. 번호가 없는 채널은 가장 큰 번호 뒤에 이어져요.",
+      "numberInvalid": "1~9999 사이의 정수를 입력하세요.",
+      "name": "이름",
+      "useOriginal": "원래 이름 사용",
+      "nameHint": "비워 두면 목록의 이름을 써요: {name}",
+      "logo": "로고 주소",
+      "useOriginalLogo": "원래 로고 사용",
+      "logoHint": "이미지 링크(http 또는 https)예요. 비워 두면 목록에 있는 로고를 써요. 새 로고는 저장한 뒤에 나타나요.",
+      "checkHint": "이 채널이 지금 재생되는지 확인해요. 두 번 연속으로 확인에 실패해야만 오프라인으로 표시돼요.",
+      "health": {
+        "ok": "정상({date} 확인)",
+        "offline": "오프라인({date} 확인)",
+        "unchecked": "확인 전"
+      },
+      "couldNotSave": "채널을 저장할 수 없어요",
+      "checkOk": "재생돼요.",
+      "checkFailed": "이번에는 재생되지 않았어요: {error}",
+      "checkFailedNoReason": "이번에는 재생되지 않았어요."
+    },
+    "lineups": {
+      "title": "라인업",
+      "desc": "뉴스, 스포츠, 어린이용처럼 원하는 채널 모음을 원하는 순서로 만들어 보세요. 각 라인업은 실시간 TV 페이지에 탭으로 나타나며, 여기 표시된 순서를 따라요.",
+      "create": "새 라인업",
+      "createTitle": "새 라인업",
+      "empty": "아직 라인업이 없어요. 라인업을 만들기 전까지 시청자에게는 모든 채널이 카테고리별로 보여요.",
+      "footer": "라인업 안에서도 숨긴 채널이나 오프라인 채널은 시청자에게 보이지 않으며, '항상 표시'로 설정한 채널이 아니면 필터도 그대로 적용돼요.",
+      "name": "이름",
+      "namePlaceholder": "예: 뉴스",
+      "nameHint": "시청자에게 탭 이름으로 표시돼요.",
+      "openAria": "라인업 {name} 열기",
+      "moveUp": "위로 이동",
+      "moveDown": "아래로 이동",
+      "moveUpAria": "라인업 {name} 위로 이동",
+      "moveDownAria": "라인업 {name} 아래로 이동",
+      "kids": {
+        "label": "키즈 허용",
+        "desc": "키즈 계정은 하나씩 키즈 허용한 채널과 함께 이 라인업의 모든 채널을 볼 수 있어요."
+      },
+      "delete": "라인업 삭제",
+      "deleteTitle": "라인업 삭제",
+      "deleteMessage": "{name}을(를) 삭제할까요? 채널은 그대로 남고 라인업만 사라져요.",
+      "couldNotLoad": "라인업을 불러올 수 없어요",
+      "couldNotLoadChannels": "이 라인업의 채널을 불러올 수 없어요",
+      "couldNotCreate": "라인업을 만들 수 없어요",
+      "couldNotAdd": "채널을 추가할 수 없어요",
+      "couldNotDelete": "라인업을 삭제할 수 없어요",
+      "editor": {
+        "subtitle": "변경 사항은 바로 저장돼요",
+        "tabs": {
+          "channels": "채널",
+          "add": "채널 추가"
+        },
+        "empty": "이 라인업에는 아직 채널이 없어요.",
+        "addChannels": "채널 추가",
+        "sortName": "이름순",
+        "sortNumber": "번호순",
+        "moveUpAria": "{name} 위로 이동",
+        "moveDownAria": "{name} 아래로 이동",
+        "remove": "라인업에서 빼기",
+        "removeAria": "이 라인업에서 {name} 빼기",
+        "addBy": "채널 추가 방법",
+        "kinds": {
+          "search": "검색",
+          "categories": "카테고리 전체"
+        },
+        "search": {
+          "search": "채널 검색",
+          "categories": "카테고리 검색"
+        },
+        "searchHint": "채널 이름의 일부를 입력하세요.",
+        "inLineup": "추가됨",
+        "addAria": "이 라인업에 {name} 추가",
+        "addFound": {
+          "other": "찾은 {number}개 모두 추가"
+        },
+        "moreResults": {
+          "other": "{number}개가 더 있어요. 더 입력해서 범위를 좁혀 보세요."
+        },
+        "addAll": "모두 추가",
+        "addCategoryAria": "{name}의 채널 모두 추가",
+        "categoryHidden": "필터로 숨김",
+        "hiddenByFilter": "필터로 숨김",
+        "nothingNew": "이 카테고리의 채널은 이미 모두 들어 있어요.",
+        "added": {
+          "other": "채널 {number}개를 추가했어요"
+        }
+      }
+    }
   },
   "logs": {
     "title": "로그",

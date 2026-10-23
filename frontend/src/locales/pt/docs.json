@@ -19,6 +19,7 @@
       "roles": "Funções e permissões",
       "pwa": "Instalar o app (PWA)",
       "remote": "Acesso remoto e Tailscale",
+      "liveTv": "TV ao vivo",
       "shortcuts": "Atalhos de teclado",
       "backups": "Backups e segurança dos dados",
       "api": "API REST e webhooks",
@@ -266,6 +267,116 @@
       "guide": "O guia completo, com solução de problemas: {doc} no GitHub."
     }
   },
+  "liveTv": {
+    "title": "TV ao vivo",
+    "intro": "Canais ao vivo e um guia de programação, junto com a sua própria mídia. Os canais vêm de playlists M3U: listas públicas prontas ou as suas.",
+    "turnOn": {
+      "title": "Como ativar",
+      "text": "A TV ao vivo fica desativada até um administrador ativá-la em **Administração → TV ao vivo**. Depois de ativada e com canais, **TV ao vivo** aparece no menu para todos que podem assistir a pelo menos um canal.",
+      "off": "Desativar oculta a TV ao vivo em todo lugar na hora. As listas de canais e todas as escolhas feitas sobre elas são mantidas para quando ela for reativada."
+    },
+    "adding": {
+      "title": "Adicionar canais",
+      "intro": "Em **Administração → TV ao vivo**, clique em **Adicionar canais** e escolha um dos dois tipos:",
+      "public": "**Canais públicos**: listas gratuitas e prontas do projeto público iptv-org, por país, idioma ou categoria. Marque quantas quiser; cada uma é adicionada como uma lista separada.",
+      "own": "**Sua própria playlist**: o endereço de qualquer playlist M3U que o servidor consiga acessar, como a de um sintonizador de TV na sua rede. Canais que transmitem em HLS ({m3u8}) funcionam; os outros são mantidos, mas aparecem como **Não reproduzível**.",
+      "guide": "**Guia de programação**: um endereço XMLTV que você informar ou, se não houver, o guia indicado pela própria playlist (todas as listas públicas têm um). Arquivos compactados {gz} funcionam. O guia cobre o próximo dia e meio.",
+      "refresh": "Cada lista e seu guia são recarregados a cada 12 horas enquanto a TV ao vivo está ativada. **Atualizar** em uma lista recarrega na hora; a lista mostra quando carregou pela última vez ou por que não conseguiu.",
+      "acknowledge": "Na primeira vez que uma lista pública é adicionada, o Plinthio mostra um aviso curto sobre canais públicos para você confirmar. Isso é pedido uma vez por servidor."
+    },
+    "filters": {
+      "title": "Escolher o que mostrar",
+      "intro": "Em **Escolha o que mostrar**, oculte conjuntos inteiros de canais de uma vez. São regras, não exclusões: continuam valendo depois de cada recarga, e novos canais que correspondem também são ocultados. O cartão mostra quantos canais continuam visíveis.",
+      "region": "**Canais restritos por região** começam ocultos, já que normalmente só funcionam no país de origem. Desative **Ocultar canais restritos por região** para listá-los.",
+      "sets": "**Categorias, idiomas, países e servidores de transmissão**: cada aba lista esses itens com quantos canais cada um tem. Toque em um para mostrar ou ocultar, busque um item ou use **Mostrar tudo** e **Ocultar tudo**. Para manter só alguns, clique em **Ocultar tudo** e depois ative esses de novo.",
+      "languages": "Um canal em vários idiomas só é ocultado quando todos os idiomas dele estão ocultos. Canais sem idioma ou país informado não são afetados por essas abas.",
+      "hosts": "**Servidores de transmissão**: alguns canais públicos não são transmitidos pela emissora, mas redirecionados por um serviço de terceiros. O Plinthio oculta um desses serviços, {host}, até você mostrá-lo. Só mostre se tiver certeza de que pode assistir a esses canais.",
+      "exceptions": "**Exceções**: para manter um canal que um filtro oculta, encontre-o em **Canais** (escolha **Ocultos por filtro** para ver todos) e clique em **Sempre mostrar**. Um canal que você oculta manualmente continua oculto de qualquer forma."
+    },
+    "choosing": {
+      "title": "Escolher canais",
+      "text": "Em **Canais**, busque ou filtre por lista e depois use **Ocultar** nos canais que você não quer. Marque vários (ou uma página inteira) para alterá-los de uma vez. As alterações são salvas na hora.",
+      "kept": "Canais ocultos e escolhas para crianças são mantidos quando uma lista recarrega. Um canal que some da playlist é removido."
+    },
+    "lineups": {
+      "title": "Seleções de canais e números",
+      "intro": "Em **Seleções de canais**, monte seus próprios conjuntos de canais, como Notícias, Esportes ou Para as crianças. Cada seleção vira uma aba na página de TV ao vivo, na ordem em que você as colocar.",
+      "create": "**Nova seleção** pede um nome e depois a abre. Adicione canais por **Busca** (um de cada vez, ou todos os resultados de uma vez) ou por **Categoria inteira**, que adiciona todos os canais de uma categoria de uma só vez. Você também pode marcar canais em **Canais** e clicar em **Adicionar a uma seleção**.",
+      "order": "Use as setas para cima e para baixo para ordenar as seleções e os canais dentro de cada uma. **A–Z** e **Por número** ordenam uma seleção inteira de uma vez. Remover um canal de uma seleção não o oculta em nenhum outro lugar.",
+      "kids": "**Liberar para crianças** em uma seleção permite que contas infantis assistam a todos os canais dela, além dos liberados um a um.",
+      "rules": "Uma seleção não traz de volta canais que você ocultou ou que estão fora do ar, e os filtros continuam valendo, a menos que um canal esteja em **Sempre mostrar**.",
+      "numbers": "**Números, nomes e logotipos**: clique no lápis ao lado de um canal em **Canais** para dar a ele um número próprio (de 1 a 9999, cada um usado uma vez), um nome ou um endereço de logotipo. Os espectadores podem digitar um número no player para ir direto a esse canal. Canais sem número vêm depois do seu número mais alto. Deixe um campo vazio para voltar ao que a lista informa."
+    },
+    "health": {
+      "title": "Saúde dos canais",
+      "intro": "Canais públicos param de funcionar de vez em quando. Com **Verificar canais em segundo plano** ativado (já vem assim), o Plinthio verifica cerca de 20 canais a cada 10 minutos enquanto a TV ao vivo está ativada, então cada um é verificado mais ou menos uma vez por dia.",
+      "light": "A verificação é leve de propósito: o servidor baixa a playlist do canal e os primeiros kilobytes de vídeo, nada mais. Nada é reproduzido, decodificado ou convertido, então o custo é quase zero.",
+      "offline": "Um canal que falha em duas verificações seguidas é marcado como **Fora do ar**. Com **Ocultar canais fora do ar** ativado, os espectadores não o veem até ele voltar a reproduzir; uma verificação bem-sucedida o traz de volta.",
+      "counts": "O cartão mostra quantos canais estão funcionando, fora do ar e ainda não verificados, e quando foi a última verificação. Clique na contagem de fora do ar para listar esses canais, e em **Verificar agora** em um deles para verificar na hora."
+    },
+    "kids": {
+      "title": "Contas infantis",
+      "text": "Contas infantis veem só os canais marcados com **Liberar para crianças** e os canais de uma seleção marcada com **Liberar para crianças**. Nenhum é liberado até você escolher, então até lá a TV ao vivo não aparece no menu de uma conta infantil."
+    },
+    "watching": {
+      "title": "Assistir",
+      "channels": "**Canais**: abas para Favoritos, Recentes, cada seleção e Todos os canais (com categorias para escolher), e cada canal com o que está passando agora e a seguir.",
+      "guide": "**Guia**: uma grade do que está passando nos canais. Toque em um programa para ver os detalhes e um botão **Assistir**.",
+      "player": "**O player**: as setas para cima e para baixo (ou os botões) trocam de canal. Picture-in-picture e tela cheia funcionam onde o navegador oferece suporte.",
+      "throughServer": "As transmissões passam por este servidor, então qualquer pessoa que acesse o Plinthio pode assistir, em casa ou fora. Cada espectador usa a conexão de internet do servidor."
+    },
+    "yours": {
+      "title": "As escolhas de cada espectador",
+      "intro": "Cada pessoa que assiste pode deixar a TV ao vivo do seu jeito. Essas escolhas pertencem à conta dela e não mudam nada para mais ninguém.",
+      "favourites": "**Favoritos**: a estrela de um canal o adiciona a uma aba **Favoritos**, mostrada primeiro. Os favoritos também aparecem em uma fileira **Ao vivo agora** na página Início com o que está passando; essa fileira pode ser ocultada.",
+      "recent": "**Recentes**: os últimos canais assistidos ganham uma aba própria, e o botão **Canal anterior** do player (ou a tecla {key}) volta para o canal de antes.",
+      "hiding": "**Ocultar para mim**: o menu de um canal oculta esse canal, ou o grupo inteiro, só para você. **Ocultos para mim**, na página de TV ao vivo, lista o que você ocultou, com uma forma de trazer cada item de volta, e liga ou desliga a fileira do Início.",
+      "search": "**Buscar** encontra canais pelo nome e programas pelo título, no próximo dia e meio. No guia, **Agora**, **Hoje à noite** e **Amanhã** levam direto a esse horário."
+    },
+    "publicSources": {
+      "title": "Sobre os canais públicos",
+      "text": "Os canais públicos são reunidos das transmissões gratuitas das próprias emissoras. Eles vêm e vão: alguns podem estar fora do ar, ter interrupções ou só funcionar em certos países (marcados como Geobloqueado). Canais adultos nunca são adicionados."
+    },
+    "responsibility": {
+      "title": "Sua responsabilidade",
+      "text": "O Plinthio reproduz os canais que você fornece. Ele não hospeda, verifica nem endossa nenhum canal, e não vem com nenhum. Você escolhe quais listas e canais adicionar, e é responsável por ter o direito de assisti-los onde está: listas públicas apontam para transmissões mantidas por terceiros, e algumas podem não ter licença no seu país."
+    },
+    "troubleshooting": {
+      "title": "Quando algo dá errado",
+      "wontPlay": {
+        "title": "Um canal não reproduz",
+        "text": "Não foi possível acessar a transmissão do canal ({code}). Canais públicos saem do ar de vez em quando, e os geobloqueados só funcionam em alguns países. Tente mais tarde ou oculte o canal."
+      },
+      "listFailed": {
+        "title": "Uma lista mostra \"Não foi possível carregar\"",
+        "text": "O servidor não conseguiu baixar a playlist ({code}). Verifique se o endereço abre na rede do servidor e clique em **Atualizar**. Os canais já carregados continuam até o próximo carregamento bem-sucedido."
+      },
+      "notPlayable": {
+        "title": "Canais marcados como \"Não reproduzível\"",
+        "text": "A TV ao vivo reproduz transmissões HLS. Canais em outros formatos continuam na lista para você ver, mas não são mostrados a mais ninguém."
+      },
+      "missingChannel": {
+        "title": "Um canal que eu quero está faltando",
+        "text": "Um filtro em **Escolha o que mostrar** pode estar ocultando o canal, ou ele pode estar fora do ar. Em **Canais**, escolha **Ocultos por filtro** ou **Fora do ar**: cada canal diz o motivo, e **Sempre mostrar** ou **Verificar agora** ajuda. Um espectador também pode tê-lo ocultado só para si; nesse caso, ele aparece em **Ocultos para mim** na página de TV ao vivo dessa pessoa."
+      },
+      "offline": {
+        "title": "Um canal está marcado como \"Fora do ar\"",
+        "text": "Ele falhou nas duas últimas verificações. É verificado de novo mais ou menos uma vez por dia e volta sozinho quando reproduzir; **Verificar agora** verifica na hora. Se continuar falhando, oculte o canal, ou desative **Ocultar canais fora do ar** para listá-lo mesmo assim."
+      },
+      "numberTaken": {
+        "title": "O número de um canal não é salvo",
+        "text": "Cada número só pode pertencer a um canal. Primeiro dê outro número ao outro canal (ou apague o dele)."
+      },
+      "noGuide": {
+        "title": "O guia está vazio em alguns canais",
+        "text": "Nem todo canal tem dados de guia, e o guia carrega um pouco depois dos canais. Dar a uma lista seu próprio endereço de guia pode preencher as lacunas."
+      },
+      "notInMenu": {
+        "title": "A TV ao vivo não aparece no menu",
+        "text": "Ela precisa estar ativada, com pelo menos um canal que a pessoa possa assistir: um que não esteja oculto nem seja não reproduzível e, para uma conta infantil, um liberado para crianças."
+      }
+    }
+  },
   "shortcuts": {
     "title": "Atalhos de teclado e controles do player",
     "intro": "Todos os leitores e players aceitam navegação completa pelo teclado no computador, além dos controles de toque e deslize na tela do celular.",
@@ -390,7 +501,8 @@
       "playback": "Reprodução",
       "metadata": "Provedores de metadados",
       "lists": "Listas e pedidos",
-      "watchParties": "Sessões conjuntas"
+      "watchParties": "Sessões conjuntas",
+      "liveTv": "TV ao vivo"
     }
   },
   "troubleshooting": {

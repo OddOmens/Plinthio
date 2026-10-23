@@ -19,6 +19,7 @@
       "roles": "Role i uprawnienia",
       "pwa": "Aplikacja mobilna (PWA)",
       "remote": "Dostęp zdalny i Tailscale",
+      "liveTv": "TV na żywo",
       "shortcuts": "Skróty klawiszowe",
       "backups": "Kopie zapasowe i bezpieczeństwo danych",
       "api": "REST API i webhooki",
@@ -266,6 +267,116 @@
       "guide": "Pełny przewodnik z rozwiązywaniem problemów: {doc} na GitHubie."
     }
   },
+  "liveTv": {
+    "title": "TV na żywo",
+    "intro": "Kanały na żywo i program TV obok twoich własnych multimediów. Kanały pochodzą z playlist M3U: gotowych list publicznych albo twoich własnych.",
+    "turnOn": {
+      "title": "Włączanie",
+      "text": "TV na żywo jest wyłączona, dopóki administrator nie włączy jej w **Administracja → TV na żywo**. Gdy jest włączona i ma kanały, **TV na żywo** pojawia się w menu każdego, kto może oglądać przynajmniej jeden kanał.",
+      "off": "Wyłączenie od razu ukrywa TV na żywo wszędzie. Listy kanałów i wszystkie wybory z nimi związane zostają zachowane na wypadek ponownego włączenia."
+    },
+    "adding": {
+      "title": "Dodawanie kanałów",
+      "intro": "W **Administracja → TV na żywo** naciśnij **Dodaj kanały** i wybierz jeden z dwóch rodzajów:",
+      "public": "**Kanały publiczne**: darmowe, gotowe listy z publicznego projektu iptv-org, według kraju, języka lub kategorii. Zaznacz, ile chcesz; każda zostanie dodana jako osobna lista.",
+      "own": "**Własna playlista**: adres dowolnej playlisty M3U, do której serwer ma dostęp, np. z tunera TV w twojej sieci. Kanały nadające w HLS ({m3u8}) działają; pozostałe są zachowywane, ale oznaczone jako **Nieodtwarzalny**.",
+      "guide": "**Program TV**: podany przez ciebie adres XMLTV albo program wskazany w samej playliście (wszystkie listy publiczne go mają). Pliki skompresowane {gz} działają. Program obejmuje najbliższe półtora dnia.",
+      "refresh": "Gdy TV na żywo jest włączona, każda lista i jej program wczytują się ponownie co 12 godzin. **Odśwież** przy liście wczytuje ją od razu; lista pokazuje, kiedy ostatnio się wczytała albo dlaczego się nie udało.",
+      "acknowledge": "Przy pierwszym dodaniu listy publicznej Plinthio pokazuje krótką informację o kanałach publicznych do potwierdzenia. Pytanie pojawia się raz na serwer."
+    },
+    "filters": {
+      "title": "Wybieranie, co pokazywać",
+      "intro": "W sekcji **Wybierz, co pokazywać** ukryjesz całe grupy kanałów naraz. To reguły, a nie usuwanie: działają po każdym ponownym wczytaniu, a nowe pasujące kanały też są ukrywane. Karta pokazuje, ile kanałów przechodzi przez filtry.",
+      "region": "**Kanały z blokadą regionalną** są na początek ukryte, bo zwykle działają tylko w swoim kraju. Wyłącz **Ukryj kanały z blokadą regionalną**, aby je wyświetlić.",
+      "sets": "**Kategorie, języki, kraje i serwery strumieni**: każda zakładka pokazuje je razem z liczbą kanałów. Stuknij pozycję, aby ją pokazać lub ukryć, wyszukaj ją albo użyj **Pokaż wszystkie** i **Ukryj wszystkie**. Aby zostawić tylko kilka, naciśnij **Ukryj wszystkie**, a potem włącz je z powrotem.",
+      "languages": "Kanał w kilku językach jest ukryty tylko wtedy, gdy ukryte są wszystkie jego języki. Zakładki języków i krajów nie dotyczą kanałów bez podanego języka lub kraju.",
+      "hosts": "**Serwery strumieni**: niektóre kanały publiczne nie są nadawane bezpośrednio przez nadawcę, tylko przekierowywane przez zewnętrzną usługę. Plinthio ukrywa jedną taką usługę, {host}, dopóki jej nie pokażesz. Pokaż ją tylko wtedy, gdy masz pewność, że możesz oglądać te kanały.",
+      "exceptions": "**Wyjątki**: aby zachować jeden kanał ukryty przez filtr, znajdź go w sekcji **Kanały** (wybierz **Ukryte przez filtr**, aby zobaczyć wszystkie takie kanały) i naciśnij **Zawsze pokazuj**. Kanał ukryty ręcznie i tak pozostaje ukryty."
+    },
+    "choosing": {
+      "title": "Wybieranie kanałów",
+      "text": "W sekcji **Kanały** wyszukaj kanały lub przefiltruj je według listy, a potem **Ukryj** te, których nie chcesz. Zaznacz kilka (albo całą stronę), aby zmienić je naraz. Zmiany zapisują się od razu.",
+      "kept": "Ukryte kanały i wybory dla dzieci zostają zachowane, gdy lista wczytuje się ponownie. Kanał, który zniknie ze swojej playlisty, zostaje usunięty."
+    },
+    "lineups": {
+      "title": "Zestawy i numery kanałów",
+      "intro": "W sekcji **Zestawy kanałów** możesz tworzyć własne zestawy kanałów, np. Wiadomości, Sport albo Dla dzieci. Każdy zestaw staje się zakładką na stronie TV na żywo, w ustalonej przez ciebie kolejności.",
+      "create": "**Nowy zestaw** pyta o nazwę, a potem otwiera zestaw. Dodawaj kanały przez **Wyszukaj** (pojedynczo albo wszystkie znalezione naraz) lub **Cała kategoria**, co od razu dodaje wszystkie kanały z kategorii. Możesz też zaznaczyć kanały w sekcji **Kanały** i nacisnąć **Dodaj do zestawu**.",
+      "order": "Strzałkami w górę i w dół ustawisz kolejność zestawów oraz kanałów w zestawie. **A–Z** i **Według numeru** sortują cały zestaw naraz. Usunięcie kanału z zestawu nie ukrywa go nigdzie indziej.",
+      "kids": "**Zezwól dzieciom** przy zestawie pozwala kontom dziecięcym oglądać wszystkie jego kanały, a także te dozwolone pojedynczo.",
+      "rules": "Zestaw nie przywraca kanałów ukrytych ani niedostępnych, a filtry nadal działają, chyba że kanał ma ustawione **Zawsze pokazuj**.",
+      "numbers": "**Numery, nazwy i logo**: naciśnij ołówek obok kanału w sekcji **Kanały**, aby nadać mu własny numer (od 1 do 9999, każdy tylko raz), nazwę lub adres logo. Widzowie mogą wpisać numer w odtwarzaczu, aby przejść do tego kanału. Kanały bez numeru są ustawiane za twoim najwyższym numerem. Zostaw pole puste, aby wrócić do tego, co podaje lista."
+    },
+    "health": {
+      "title": "Stan kanałów",
+      "intro": "Kanały publiczne co jakiś czas przestają działać. Gdy opcja **Sprawdzaj kanały w tle** jest włączona (domyślnie jest), Plinthio sprawdza około 20 kanałów co 10 minut, gdy TV na żywo jest włączona, więc każdy jest sprawdzany mniej więcej raz dziennie.",
+      "light": "Sprawdzenie jest celowo lekkie: serwer pobiera playlistę kanału i pierwsze kilka kilobajtów obrazu, nic więcej. Nic nie jest odtwarzane, dekodowane ani konwertowane, więc prawie nic to nie kosztuje.",
+      "offline": "Kanał, który nie przejdzie dwóch sprawdzeń z rzędu, jest oznaczany jako **Niedostępny**. Gdy opcja **Ukryj niedostępne kanały** jest włączona, widzowie go nie widzą, dopóki znów nie zadziała; jedno udane sprawdzenie go przywraca.",
+      "counts": "Karta pokazuje, ile kanałów działa, ile jest niedostępnych, a ilu jeszcze nie sprawdzono, oraz kiedy odbyło się ostatnie sprawdzenie. Naciśnij liczbę niedostępnych, aby wyświetlić te kanały, albo **Sprawdź teraz** przy kanale, aby sprawdzić go od razu."
+    },
+    "kids": {
+      "title": "Konta dziecięce",
+      "text": "Konta dziecięce widzą tylko kanały oznaczone przyciskiem **Zezwól dzieciom** oraz kanały z zestawu kanałów oznaczonego przyciskiem **Zezwól dzieciom**. Dopóki ich nie wybierzesz, żaden nie jest dozwolony, więc do tego czasu TV na żywo nie pojawia się w menu konta dziecięcego."
+    },
+    "watching": {
+      "title": "Oglądanie",
+      "channels": "**Kanały**: zakładki Ulubione, Ostatnie, po jednej dla każdego zestawu kanałów oraz Wszystkie kanały (z kategoriami do wyboru), a przy każdym kanale to, co leci teraz i co będzie dalej.",
+      "guide": "**Program TV**: rozkład tego, co leci na wszystkich kanałach. Stuknij program, aby zobaczyć szczegóły i przycisk **Oglądaj teraz**.",
+      "player": "**Odtwarzacz**: strzałki w górę i w dół (lub przyciski) przełączają kanały. Obraz w obrazie i pełny ekran działają tam, gdzie obsługuje je przeglądarka.",
+      "throughServer": "Strumienie przechodzą przez ten serwer, więc każdy, kto ma dostęp do Plinthio, może oglądać — w domu i poza nim. Każdy widz korzysta z łącza internetowego serwera."
+    },
+    "yours": {
+      "title": "Własne wybory każdego widza",
+      "intro": "Każdy, kto ogląda, może dopasować TV na żywo do siebie. Te wybory należą do jego konta i niczego nie zmieniają innym.",
+      "favourites": "**Ulubione**: gwiazdka przy kanale dodaje go do zakładki **Ulubione**, wyświetlanej jako pierwsza. Ulubione pojawiają się też w wierszu **Teraz na żywo** na stronie głównej razem z tym, co leci; ten wiersz można ukryć.",
+      "recent": "**Ostatnie**: ostatnio oglądane kanały mają własną zakładkę, a przycisk **Poprzednio oglądany** w odtwarzaczu (lub klawisz {key}) wraca do kanału oglądanego wcześniej.",
+      "hiding": "**Ukryj dla mnie**: menu kanału ukrywa ten kanał albo całą jego grupę tylko dla ciebie. **Ukryte dla mnie** na stronie TV na żywo pokazuje wszystko, co jest ukryte, z możliwością przywrócenia każdej pozycji, i włącza lub wyłącza wiersz na stronie głównej.",
+      "search": "**Szukaj** znajduje kanały po nazwie i programy po tytule w ciągu najbliższych półtora dnia. W programie TV przyciski **Teraz**, **Dziś wieczorem** i **Jutro** przenoszą od razu do tej pory."
+    },
+    "publicSources": {
+      "title": "O kanałach publicznych",
+      "text": "Kanały publiczne to zebrane darmowe strumienie samych nadawców. Pojawiają się i znikają: niektóre mogą nie działać, przerywać albo działać tylko w wybranych krajach (oznaczone jako Geoblokada). Kanały dla dorosłych nigdy nie są dodawane."
+    },
+    "responsibility": {
+      "title": "Twoja odpowiedzialność",
+      "text": "Plinthio odtwarza kanały, które mu podasz. Nie hostuje, nie sprawdza ani nie popiera żadnego kanału i nie dostarcza żadnych kanałów. To ty wybierasz, które listy i kanały dodać, i to ty odpowiadasz za to, czy masz prawo oglądać je tam, gdzie jesteś: listy publiczne prowadzą do strumieni udostępnianych przez inne podmioty, a niektóre z nich mogą nie mieć licencji w twoim kraju."
+    },
+    "troubleshooting": {
+      "title": "Gdy coś nie działa",
+      "wontPlay": {
+        "title": "Kanał nie działa",
+        "text": "Nie udało się połączyć ze strumieniem kanału ({code}). Kanały publiczne czasem przestają nadawać, a te z geoblokadą działają tylko w niektórych krajach. Spróbuj później albo ukryj kanał."
+      },
+      "listFailed": {
+        "title": "Lista pokazuje „Nie udało się wczytać”",
+        "text": "Serwer nie mógł pobrać playlisty ({code}). Sprawdź, czy adres otwiera się z sieci serwera, a potem naciśnij **Odśwież**. Wczytane już kanały zostają do następnego udanego wczytania."
+      },
+      "notPlayable": {
+        "title": "Kanały oznaczone jako „Nieodtwarzalny”",
+        "text": "TV na żywo odtwarza strumienie HLS. Kanały w innych formatach widzisz na liście, ale nikt inny ich nie zobaczy."
+      },
+      "missingChannel": {
+        "title": "Brakuje kanału, który chcę oglądać",
+        "text": "Może go ukrywać filtr w sekcji **Wybierz, co pokazywać** albo kanał może być niedostępny. W sekcji **Kanały** wybierz **Ukryte przez filtr** lub **Niedostępne**: przy każdym kanale widać powód, a pomóc może **Zawsze pokazuj** lub **Sprawdź teraz**. Kanał może też być ukryty przez widza tylko dla niego samego; wtedy widać go w sekcji **Ukryte dla mnie** na stronie TV na żywo tego widza."
+      },
+      "offline": {
+        "title": "Kanał jest oznaczony jako „Niedostępny”",
+        "text": "Nie przeszedł dwóch ostatnich sprawdzeń. Jest sprawdzany ponownie mniej więcej raz dziennie i wraca sam, gdy zadziała; **Sprawdź teraz** sprawdza go od razu. Jeśli nadal nie działa, ukryj go albo wyłącz **Ukryj niedostępne kanały**, aby mimo to był na liście."
+      },
+      "numberTaken": {
+        "title": "Nie da się zapisać numeru kanału",
+        "text": "Każdy numer może mieć tylko jeden kanał. Najpierw nadaj drugiemu kanałowi inny numer (albo go wyczyść)."
+      },
+      "noGuide": {
+        "title": "Program TV jest pusty dla niektórych kanałów",
+        "text": "Nie każdy kanał ma dane programu, a program wczytuje się chwilę po kanałach. Podanie liście własnego adresu programu TV może uzupełnić luki."
+      },
+      "notInMenu": {
+        "title": "TV na żywo nie ma w menu",
+        "text": "Musi być włączona i musi istnieć co najmniej jeden kanał, który dana osoba może oglądać: taki, który nie jest ukryty ani nieodtwarzalny, a w przypadku konta dziecięcego — dozwolony dla dzieci."
+      }
+    }
+  },
   "shortcuts": {
     "title": "Skróty klawiszowe i sterowanie odtwarzaczem",
     "intro": "Każdy czytnik i odtwarzacz obsługuje pełną nawigację klawiaturą na komputerze, a na urządzeniach mobilnych sterowanie dotykiem i gestami na ekranie.",
@@ -390,7 +501,8 @@
       "playback": "Odtwarzanie",
       "metadata": "Dostawcy metadanych",
       "lists": "Listy i prośby",
-      "watchParties": "Wspólne seanse"
+      "watchParties": "Wspólne seanse",
+      "liveTv": "TV na żywo"
     }
   },
   "troubleshooting": {

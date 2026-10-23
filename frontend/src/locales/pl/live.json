@@ -1,0 +1,154 @@
+{
+  "title": "TV na żywo",
+  "badge": "Na żywo",
+  "intro": "Kanały, które nadają teraz, i to, co będzie dalej.",
+  "openAdmin": "Otwórz ustawienia TV na żywo",
+  "tabs": {
+    "channels": "Kanały",
+    "guide": "Program TV"
+  },
+  "searchPlaceholder": "Szukaj kanałów i programów…",
+  "groupsLabel": "Grupy kanałów",
+  "channelCount": {
+    "one": "{count} kanał",
+    "few": "{count} kanały",
+    "many": "{count} kanałów",
+    "other": "{count} kanału"
+  },
+  "minutesLeft": {
+    "one": "Jeszcze {count} min",
+    "few": "Jeszcze {count} min",
+    "many": "Jeszcze {count} min",
+    "other": "Jeszcze {count} min"
+  },
+  "nextAt": "Następnie o {time}: {title}",
+  "noGuideInfo": "Brak informacji o programie",
+  "geoBlocked": "Blokada regionalna",
+  "geoBlockedHint": "Ten kanał może działać tylko w swoim kraju.",
+  "watchChannel": "Oglądaj {channel}",
+  "off": {
+    "title": "TV na żywo jest wyłączona",
+    "intro": "TV na żywo nie jest teraz dostępna na tym serwerze.",
+    "admin": "Włącz ją w Administracja → TV na żywo, a potem dodaj kanały.",
+    "viewer": "Administrator może włączyć TV na żywo na tym serwerze."
+  },
+  "empty": {
+    "noChannelsTitle": "Nie ma jeszcze kanałów",
+    "noChannels": "Nie ma jeszcze kanałów do oglądania. Poproś administratora o ich dodanie.",
+    "noChannelsAdmin": "Dodaj kanały z gotowej listy lub własnej playlisty w Administracja → TV na żywo.",
+    "noMatchesTitle": "Nie znaleziono kanałów",
+    "noMatches": "Żaden kanał nie pasuje do wyszukiwania ani wybranej grupy.",
+    "clearFilters": "Pokaż wszystkie kanały"
+  },
+  "errors": {
+    "loadTitle": "Nie udało się wczytać kanałów",
+    "guideTitle": "Nie udało się wczytać programu TV",
+    "unreachable": "Nie można połączyć się z serwerem. Sprawdź połączenie i spróbuj ponownie."
+  },
+  "guide": {
+    "channel": "Kanał",
+    "now": "Teraz",
+    "tonight": "Dziś wieczorem",
+    "tomorrow": "Jutro",
+    "earlier": "Wcześniej",
+    "later": "Później",
+    "notLoadedTitle": "Program TV jeszcze się nie wczytał",
+    "notLoaded": "Kanały nadal działają. Program uzupełni się po odświeżeniu ich źródeł, co dzieje się dwa razy dziennie.",
+    "onNow": {
+      "one": "Teraz · jeszcze {count} min",
+      "few": "Teraz · jeszcze {count} min",
+      "many": "Teraz · jeszcze {count} min",
+      "other": "Teraz · jeszcze {count} min"
+    },
+    "startsIn": {
+      "one": "Za {count} min",
+      "few": "Za {count} min",
+      "many": "Za {count} min",
+      "other": "Za {count} min"
+    },
+    "startsAt": "Początek o {time}",
+    "ended": "Zakończono",
+    "watchNow": "Oglądaj teraz",
+    "watchChannel": "Oglądaj kanał"
+  },
+  "player": {
+    "back": "Wróć do kanałów",
+    "tuning": "Dostrajanie…",
+    "now": "Teraz",
+    "goLive": "Wróć na żywo",
+    "mute": "Wycisz",
+    "unmute": "Wyłącz wyciszenie",
+    "volume": "Głośność",
+    "channelUp": "Następny kanał",
+    "channelDown": "Poprzedni kanał",
+    "channelUpHint": "Następny kanał (↑)",
+    "channelDownHint": "Poprzedni kanał (↓)",
+    "lastChannel": "Poprzednio oglądany",
+    "lastChannelHint": "Poprzednio oglądany (L)",
+    "nextChannel": "Następny kanał",
+    "info": "Co leci",
+    "pip": "Obraz w obrazie",
+    "fullscreen": "Pełny ekran",
+    "cantPlay": "Ten kanał nie działa",
+    "errorHelp": "Błąd {code}: co to oznacza",
+    "geoBlockedHint": "Ten kanał ma oznaczenie blokady regionalnej, więc może działać tylko w swoim kraju.",
+    "errors": {
+      "unavailable": "Nie udało się połączyć ze strumieniem kanału. Może być chwilowo niedostępny — spróbuj później albo wybierz inny kanał.",
+      "notFound": "Ten kanał nie jest już dostępny.",
+      "offline": "Utracono połączenie z serwerem. Sprawdź sieć i spróbuj ponownie.",
+      "tokenExpired": "Dostęp do multimediów wygasł i nie udało się go odnowić. Odśwież stronę albo wyloguj się i zaloguj ponownie.",
+      "decode": "Ta przeglądarka nie może odtworzyć obrazu z tego kanału.",
+      "unsupportedBrowser": "Ta przeglądarka nie obsługuje transmisji na żywo."
+    }
+  },
+  "undo": "Cofnij",
+  "lists": {
+    "label": "Listy kanałów",
+    "favourites": "Ulubione",
+    "recent": "Ostatnie",
+    "all": "Wszystkie kanały"
+  },
+  "favourites": {
+    "add": "Dodaj {channel} do ulubionych",
+    "remove": "Usuń {channel} z ulubionych",
+    "addShort": "Dodaj do ulubionych",
+    "removeShort": "Usuń z ulubionych"
+  },
+  "menu": {
+    "options": "Więcej opcji",
+    "optionsFor": "Opcje kanału {channel}",
+    "hideChannel": "Ukryj dla mnie",
+    "hideGroup": "Ukryj dla mnie całą grupę „{group}”"
+  },
+  "hidden": {
+    "channel": "Kanał {channel} jest teraz dla ciebie ukryty",
+    "group": "Grupa „{group}” jest teraz dla ciebie ukryta"
+  },
+  "search": {
+    "channels": "Kanały",
+    "programmes": "Programy",
+    "noResultsTitle": "Nic nie znaleziono",
+    "noResults": "Żaden kanał ani program nie pasuje do „{query}”.",
+    "clear": "Wyczyść wyszukiwanie",
+    "errorTitle": "Nie udało się wyszukać"
+  },
+  "mine": {
+    "button": "Ukryte dla mnie",
+    "title": "Ukryte dla mnie",
+    "subtitle": "Tylko ty widzisz te wybory, na każdym urządzeniu.",
+    "showOnHome": "Pokazuj „Teraz na żywo” na stronie głównej",
+    "showOnHomeHint": "Wiersz z tym, co leci na twoich ulubionych kanałach.",
+    "hiddenTitle": "Ukryte kanały i grupy",
+    "nothingHidden": "Nic nie jest ukryte. Użyj menu kanału, aby ukryć go albo całą grupę tylko dla siebie.",
+    "wholeGroup": "Cała grupa",
+    "show": "Pokaż",
+    "showAll": "Pokaż wszystko",
+    "saveFailed": "Nie udało się tego zapisać. Sprawdź połączenie i spróbuj ponownie."
+  },
+  "home": {
+    "title": "Teraz na żywo",
+    "allChannels": "Wszystkie kanały",
+    "hideRow": "Ukryj ten wiersz",
+    "hideRowHint": "Ukryj ten wiersz (przywrócisz go w TV na żywo → Ukryte dla mnie)"
+  }
+}

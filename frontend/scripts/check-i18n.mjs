@@ -2,14 +2,18 @@
 // {placeholders}, and every t('…') key the code uses exists in English.
 //   node scripts/check-i18n.mjs            → all namespaces
 //   node scripts/check-i18n.mjs title docs → only those
+//   node scripts/check-i18n.mjs --changed-since=origin/main → also list English rewritten since then
 // Exits 1 on any problem, so CI catches a half-finished translation.
 import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
 const localesDir = join(root, 'locales');
-const only = process.argv.slice(2);
+const args = process.argv.slice(2);
+const changedSince = args.find((a) => a.startsWith('--changed-since='))?.split('=')[1];
+const only = args.filter((a) => !a.startsWith('--'));
 const problems = [];
 
 const languages = readdirSync(localesDir).filter((d) => statSync(join(localesDir, d)).isDirectory());
@@ -125,9 +129,34 @@ if (!only.length || only.includes('serverErrors')) {
   }
 }
 
+// English rewritten since a commit: the other languages still say the old thing, which the
+// key checks above can't see. Listed as a reminder (it doesn't fail the check).
+//   npm run check:i18n -- --changed-since=origin/main
+if (changedSince) {
+  const edited = [];
+  for (const ns of namespaces) {
+    let before;
+    try {
+      before = JSON.parse(execFileSync('git', ['show', `${changedSince}:frontend/src/locales/en/${ns}.json`], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
+    } catch {
+      continue; // a namespace that didn't exist then is all new keys, which the checks above cover
+    }
+    const old = flatten(before);
+    for (const [key, value] of Object.entries(old)) {
+      const now = english[`${ns}.${key}`];
+      if (now !== undefined && JSON.stringify(now) !== JSON.stringify(value)) edited.push(`${ns}.${key}`);
+    }
+  }
+  console.log(edited.length
+    ? `English changed since ${changedSince} (re-translate these in every language):\n  ${edited.join('\n  ')}`
+    : `No English text changed since ${changedSince}.`);
+}
+
 if (problems.length) {
   console.error(problems.join('\n'));
   console.error(`\n${problems.length} problem(s).`);
-  process.exit(1);
+  // exitCode rather than exit(): exit() can cut a long report short when it's piped.
+  process.exitCode = 1;
+} else {
+  console.log(`i18n OK — ${namespaces.length} namespace(s), ${Object.keys(english).length} messages, ${languages.length} languages.`);
 }
-console.log(`i18n OK — ${namespaces.length} namespace(s), ${Object.keys(english).length} messages, ${languages.length} languages.`);

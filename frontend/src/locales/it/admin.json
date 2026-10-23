@@ -49,6 +49,10 @@
         "label": "Riproduzione",
         "desc": "Accelerazione hardware, clip di apertura"
       },
+      "liveTv": {
+        "label": "TV in diretta",
+        "desc": "Canali, guida TV, bambini"
+      },
       "network": {
         "label": "Rete",
         "desc": "Fuori casa, Tailscale, due passaggi"
@@ -308,6 +312,369 @@
     "deleteMessage": "Eliminare «{name}»? I tuoi file non vengono toccati, e progressi e segnalibri tornano se aggiungi di nuovo la stessa cartella. I suoi titoli, copertine e dettagli vengono rimossi finché non viene scansionata di nuovo.",
     "couldNotDelete": "Impossibile eliminare quella libreria",
     "couldNotAdd": "Impossibile aggiungere quella libreria"
+  },
+  "liveTv": {
+    "title": "TV in diretta",
+    "description": "Canali in diretta con guida TV, da elenchi pubblici o dalle tue playlist. Le modifiche si salvano man mano.",
+    "channelCount": {
+      "one": "{number} canale",
+      "other": "{number} canali"
+    },
+    "switch": {
+      "label": "TV in diretta",
+      "desc": "Aggiunge una pagina TV in diretta con canali e guida TV per tutti su questo server. Disattivata di default; se la disattivi, la TV in diretta sparisce ovunque, ma i tuoi elenchi e le tue scelte qui restano."
+    },
+    "publicNote": "I canali arrivano da fonti pubbliche su internet. Alcuni potrebbero essere offline, interrompersi ogni tanto o funzionare solo in certi paesi. I canali per adulti non vengono mai aggiunti.",
+    "responsibility": "Sei tu a scegliere quali canali aggiungere, e sei tu responsabile di avere il diritto di guardarli dove ti trovi. Plinthio non ospita, non verifica e non approva alcun canale.",
+    "sources": {
+      "title": "Elenchi di canali",
+      "desc": "Ogni elenco viene ricaricato ogni 12 ore, insieme alla sua guida TV, mentre la TV in diretta è attiva.",
+      "add": "Aggiungi canali",
+      "empty": "Ancora nessun canale. Aggiungi un elenco già pronto o una tua playlist per iniziare.",
+      "off": "Disattivato",
+      "kinds": {
+        "public": "Elenco pubblico",
+        "own": "La tua playlist"
+      },
+      "refreshing": "Caricamento di canali e guida…",
+      "failed": "Caricamento non riuscito: {error}",
+      "updated": "Aggiornato {date}",
+      "notLoaded": "Non ancora caricato",
+      "enabledAria": "Usa {name}",
+      "turnOn": "Attiva",
+      "turnOff": "Disattiva",
+      "editAria": "Modifica {name}",
+      "removeAria": "Rimuovi {name}",
+      "removeTitle": "Rimuovi elenco di canali",
+      "removeMessage": {
+        "one": "Rimuovere {name}? Se ne va anche il suo {number} canale, insieme alla scelta se era nascosto o consentito ai bambini.",
+        "other": "Rimuovere {name}? Se ne vanno anche i suoi {number} canali, insieme alle scelte su quali erano nascosti o consentiti ai bambini."
+      },
+      "offHint": "La TV in diretta è disattivata, quindi per ora nessuno vede questi canali. Puoi prepararli in anticipo.",
+      "couldNotLoad": "Impossibile caricare gli elenchi di canali",
+      "couldNotRefresh": "Impossibile ricaricare l'elenco",
+      "couldNotSave": "Impossibile salvare l'elenco",
+      "couldNotRemove": "Impossibile rimuovere l'elenco"
+    },
+    "editDialog": {
+      "title": "Modifica elenco di canali",
+      "guideHint": "Lascia vuoto per usare la guida indicata dalla playlist, se ne ha una."
+    },
+    "addDialog": {
+      "title": "Aggiungi canali",
+      "tabs": {
+        "public": "Canali pubblici",
+        "own": "La tua playlist"
+      },
+      "adding": "Aggiunta in corso…",
+      "couldNotAdd": "Impossibile aggiungere i canali",
+      "public": {
+        "intro": "Canali gratuiti dagli elenchi pubblici di iptv-org, aggiornati ogni giorno. Scegline uno o più: ognuno viene aggiunto come elenco a sé.",
+        "listBy": "Elenca i canali per",
+        "kinds": {
+          "countries": "Paese",
+          "languages": "Lingua",
+          "categories": "Categoria"
+        },
+        "search": {
+          "countries": "Cerca paesi",
+          "languages": "Cerca lingue",
+          "categories": "Cerca categorie"
+        },
+        "noMatches": "Nessun risultato.",
+        "added": "Aggiunto",
+        "selected": {
+          "one": "{number} scelto",
+          "other": "{number} scelti"
+        },
+        "addLists": {
+          "one": "Aggiungi elenco",
+          "other": "Aggiungi {number} elenchi"
+        },
+        "note": "Questi canali arrivano da fonti pubbliche, quindi alcuni potrebbero essere offline o funzionare solo in certi paesi. I canali per adulti non vengono mai aggiunti.",
+        "couldNotLoad": "Impossibile caricare gli elenchi pubblici"
+      },
+      "own": {
+        "name": "Nome",
+        "namePlaceholder": "es. Antenna di casa",
+        "playlistUrl": "Indirizzo della playlist (M3U)",
+        "playlistHint": "Un indirizzo che il server può raggiungere. I canali in streaming HLS (.m3u8) si possono guardare; gli altri vengono indicati come non riproducibili.",
+        "guideUrl": "Indirizzo della guida TV (XMLTV, facoltativo)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "Lascia vuoto per usare la guida indicata dalla playlist, se ne ha una. Funzionano anche i file compressi .xml.gz.",
+        "add": "Aggiungi playlist"
+      }
+    },
+    "acknowledge": {
+      "title": "Prima di aggiungere canali pubblici",
+      "points": {
+        "links": "Gli elenchi pubblici sono link a stream di terzi. Plinthio non ospita, non verifica e non garantisce nessuno di essi.",
+        "licensing": "Alcuni canali funzionano solo in certi paesi (limitati per area), e per alcuni potrebbe non esserci la licenza dove ti trovi.",
+        "yourCall": "Aggiungi solo canali che hai il diritto di guardare. Decidi tu quali canali aggiungere, e la responsabilità per essi è tua.",
+        "adult": "I canali per adulti non vengono mai aggiunti."
+      },
+      "understand": "Ho capito",
+      "continue": "Continua",
+      "couldNotSave": "Impossibile salvare, riprova"
+    },
+    "filters": {
+      "title": "Scegli cosa mostrare",
+      "desc": "Nascondi interi gruppi di canali in una volta. Queste scelte restano quando gli elenchi si ricaricano, e anche i nuovi canali che corrispondono vengono nascosti. Per tenere un singolo canale di un gruppo nascosto, usa Mostra sempre in Canali.",
+      "summary": {
+        "one": "Visibili {visible} su {number} canale",
+        "other": "Visibili {visible} su {number} canali"
+      },
+      "noChannels": "Ancora nessun canale riproducibile. I conteggi compaiono qui quando un elenco è stato caricato.",
+      "geoBlocked": {
+        "label": "Nascondi i canali limitati per area",
+        "desc": {
+          "one": "{number} canale è segnato come «Limitato per area»: si vede solo in certi paesi e di solito non funziona altrove.",
+          "other": "{number} canali sono segnati come «Limitato per area»: si vedono solo in certi paesi e di solito non funzionano altrove."
+        }
+      },
+      "hideBy": "Nascondi i canali per",
+      "tabs": {
+        "groups": "Categorie",
+        "languages": "Lingue",
+        "countries": "Paesi",
+        "hosts": "Server di streaming"
+      },
+      "hiddenCount": {
+        "one": "{number} nascosto",
+        "other": "{number} nascosti"
+      },
+      "hints": {
+        "groups": "Le categorie vengono dagli elenchi stessi. Un canale in più categorie viene nascosto quando una qualsiasi di esse è nascosta.",
+        "languages": "Un canale in più lingue viene nascosto solo quando tutte le sue lingue sono nascoste. I canali senza una lingua indicata non sono interessati.",
+        "countries": "Il paese da cui proviene un canale. I canali senza un paese indicato non sono interessati.",
+        "hosts": "Alcuni canali pubblici non sono trasmessi dall'emittente, ma reindirizzati tramite un servizio di terzi. Nascondere un server nasconde tutti i suoi canali. Plinthio nasconde uno di questi servizi, jmp2.uk, finché non lo mostri tu; fallo solo se hai la certezza di poter guardare quei canali."
+      },
+      "search": {
+        "groups": "Cerca categorie",
+        "languages": "Cerca lingue",
+        "countries": "Cerca paesi",
+        "hosts": "Cerca server di streaming"
+      },
+      "showing": {
+        "label": "Elenca",
+        "all": "Tutti",
+        "shown": "Visibili",
+        "hidden": "Nascosti"
+      },
+      "showAll": "Mostra tutti",
+      "hideAll": "Nascondi tutti",
+      "showMatching": {
+        "one": "Mostra {number} trovato",
+        "other": "Mostra {number} trovati"
+      },
+      "hideMatching": {
+        "one": "Nascondi {number} trovato",
+        "other": "Nascondi {number} trovati"
+      },
+      "tip": "Suggerimento: per tenerne solo alcuni, premi Nascondi tutti, poi riattiva quelli che vuoi.",
+      "hiddenLabel": "Nascosto",
+      "more": {
+        "one": "Mostra ancora {number}",
+        "other": "Mostra altri {number}"
+      },
+      "noMatches": "Nessun risultato.",
+      "empty": {
+        "groups": "Nessun canale ha una categoria.",
+        "languages": "Nessun canale ha una lingua indicata.",
+        "countries": "Nessun canale ha un paese indicato.",
+        "hosts": "Ancora nessun server di streaming."
+      },
+      "couldNotLoad": "Impossibile caricare i filtri"
+    },
+    "channels": {
+      "title": "Canali",
+      "desc": "Nascondi quelli che non vuoi, oppure premi la matita per dare a un canale un numero, un nome o un logo suoi. Gli account bambini vedono solo i canali consentiti ai bambini qui o in una selezione consentita ai bambini, e nessuno è consentito finché non lo scegli tu.",
+      "searchPlaceholder": "Cerca canali",
+      "sourceFilter": "Elenco di canali",
+      "allSources": "Tutti gli elenchi",
+      "statusFilter": "Mostra",
+      "status": {
+        "all": "Tutti",
+        "visible": "Visibili",
+        "hidden": "Nascosti",
+        "filtered": "Nascosti da filtro",
+        "pinned": "Sempre visibili",
+        "offline": "Offline",
+        "kids": "Per bambini",
+        "unsupported": "Non riproducibili"
+      },
+      "selectPage": "Seleziona questa pagina",
+      "selected": {
+        "one": "{number} selezionato",
+        "other": "{number} selezionati"
+      },
+      "selectAria": "Seleziona {name}",
+      "hide": "Nascondi",
+      "show": "Mostra",
+      "hideAria": "Nascondi {name}",
+      "showAria": "Mostra {name}",
+      "allowKids": "Consenti ai bambini",
+      "disallowKids": "Non per bambini",
+      "allowKidsAria": "Consenti {name} ai bambini",
+      "disallowKidsAria": "Non consentire più {name} ai bambini",
+      "alwaysShow": "Mostra sempre",
+      "alwaysShowHint": "Mostralo anche quando un filtro in Scegli cosa mostrare lo nasconde",
+      "followFilters": "Segui i filtri",
+      "followFiltersHint": "Smetti di mostrarlo sempre, così i filtri tornano a valere",
+      "pinAria": "Mostra sempre {name}",
+      "badges": {
+        "hidden": "Nascosto",
+        "kids": "Bambini",
+        "geoBlocked": "Limitato per area",
+        "geoBlockedHint": "Segnato come riproducibile solo in certi paesi",
+        "unsupported": "Non riproducibile",
+        "unsupportedHint": "Non è uno stream HLS, quindi non viene proposto a nessuno",
+        "filtered": "Nascosto da filtro: {reasons}",
+        "filteredHint": "Nascosto da Scegli cosa mostrare ({reasons}). Usa Mostra sempre per tenere comunque questo canale.",
+        "pinnedHint": "Sempre visibile, qualunque cosa dicano i filtri. Premi di nuovo per lasciar decidere ai filtri.",
+        "pinnedOverHint": "Sempre visibile, anche se un filtro nasconde {reasons}. Premi di nuovo per lasciar decidere ai filtri.",
+        "regionLocked": "Limitato per area",
+        "offline": "Offline",
+        "offlineHint": "Non è partito negli ultimi due controlli (ultimo controllo {date})",
+        "inLineupsHint": "Nelle selezioni: {names}"
+      },
+      "range": "{from}–{to} di {total}",
+      "empty": "Ancora nessun canale. Compaiono qui quando un elenco è stato caricato.",
+      "noMatches": "Nessun canale corrisponde.",
+      "couldNotLoad": "Impossibile caricare i canali",
+      "edit": "Numero, nome e logo",
+      "editAria": "Modifica numero, nome e logo di {name}",
+      "numberHint": "Numero del canale",
+      "checkNow": "Controlla ora",
+      "checkNowAria": "Controlla se {name} parte adesso",
+      "checking": "Controllo…",
+      "couldNotCheck": "Impossibile controllare il canale",
+      "addToLineup": "Aggiungi alla selezione",
+      "addedToLineup": {
+        "one": "Aggiunto {number} canale a {name}",
+        "other": "Aggiunti {number} canali a {name}"
+      },
+      "stillOffline": "Ancora offline · Ricontrolla"
+    },
+    "health": {
+      "title": "Stato dei canali",
+      "desc": "I canali pubblici vanno e vengono. Plinthio ne controlla alcuni alla volta in background per trovare quelli che hanno smesso di funzionare. Ogni controllo chiede allo stream solo i primi kilobyte, quindi niente viene riprodotto o convertito e il server quasi non se ne accorge.",
+      "enabled": {
+        "label": "Controlla i canali in background",
+        "desc": "Circa 20 canali ogni 10 minuti mentre la TV in diretta è attiva, così ogni canale viene controllato più o meno una volta al giorno."
+      },
+      "hideOffline": {
+        "label": "Nascondi i canali offline",
+        "desc": "Un canale che non supera due controlli di fila viene nascosto agli spettatori. Viene ricontrollato circa una volta al giorno e ricompare da solo appena torna a funzionare."
+      },
+      "counts": {
+        "ok": "Funzionanti",
+        "offline": "Offline",
+        "unchecked": "Non ancora controllati"
+      },
+      "showOffline": "Mostra i canali offline",
+      "lastChecked": "Ultimo controllo {date}.",
+      "neverChecked": "Ancora nessun controllo.",
+      "pace": "I canali vengono controllati pochi alla volta; Controlla ora su un canale lo verifica subito.",
+      "paused": "I controlli in background sono disattivati, quindi questi conteggi restano così.",
+      "couldNotLoad": "Impossibile caricare lo stato dei canali"
+    },
+    "editChannel": {
+      "title": "Modifica canale",
+      "number": "Numero del canale",
+      "automatic": "Automatico",
+      "useAutomatic": "Usa automatico",
+      "numberHint": "Da 1 a 9999, ognuno usato una sola volta. Gli spettatori possono digitarlo per passare a questo canale. I canali senza numero vengono dopo il tuo numero più alto.",
+      "numberInvalid": "Usa un numero intero da 1 a 9999.",
+      "name": "Nome",
+      "useOriginal": "Usa l'originale",
+      "nameHint": "Lascia vuoto per usare il nome dell'elenco: {name}",
+      "logo": "Indirizzo del logo",
+      "useOriginalLogo": "Usa il logo originale",
+      "logoHint": "Un link a un'immagine (http o https). Lascia vuoto per usare il logo dell'elenco. Il nuovo logo compare dopo il salvataggio.",
+      "checkHint": "Verifica se questo canale parte adesso. Un canale viene segnato come offline solo dopo due controlli falliti di fila.",
+      "health": {
+        "ok": "Funziona (controllato {date})",
+        "offline": "Offline (controllato {date})",
+        "unchecked": "Non ancora controllato"
+      },
+      "couldNotSave": "Impossibile salvare il canale",
+      "checkOk": "Funziona.",
+      "checkFailed": "Questa volta non è partito: {error}",
+      "checkFailedNoReason": "Questa volta non è partito."
+    },
+    "lineups": {
+      "title": "Selezioni di canali",
+      "desc": "Crea i tuoi gruppi di canali, come Notizie, Sport o Per i bambini, nell'ordine che preferisci. Ogni selezione è una scheda nella pagina TV in diretta, nell'ordine mostrato qui.",
+      "create": "Nuova selezione",
+      "createTitle": "Nuova selezione",
+      "empty": "Ancora nessuna selezione. Finché non ne crei una, gli spettatori vedono tutti i canali per categoria.",
+      "footer": "In una selezione, gli spettatori continuano a non vedere i canali che hai nascosto o che sono offline, e i filtri valgono comunque, a meno che un canale non sia impostato su Mostra sempre.",
+      "name": "Nome",
+      "namePlaceholder": "es. Notizie",
+      "nameHint": "Gli spettatori lo vedono come nome della scheda.",
+      "openAria": "Apri la selezione {name}",
+      "moveUp": "Sposta su",
+      "moveDown": "Sposta giù",
+      "moveUpAria": "Sposta su la selezione {name}",
+      "moveDownAria": "Sposta giù la selezione {name}",
+      "kids": {
+        "label": "Consenti ai bambini",
+        "desc": "Gli account bambini possono guardare tutti i canali di questa selezione, oltre a quelli consentiti ai bambini uno per uno."
+      },
+      "delete": "Elimina selezione",
+      "deleteTitle": "Elimina selezione",
+      "deleteMessage": "Eliminare {name}? I suoi canali restano dove sono; sparisce solo la selezione.",
+      "couldNotLoad": "Impossibile caricare le selezioni",
+      "couldNotLoadChannels": "Impossibile caricare i canali di questa selezione",
+      "couldNotCreate": "Impossibile creare la selezione",
+      "couldNotAdd": "Impossibile aggiungere i canali",
+      "couldNotDelete": "Impossibile eliminare la selezione",
+      "editor": {
+        "subtitle": "Le modifiche si salvano man mano",
+        "tabs": {
+          "channels": "Canali",
+          "add": "Aggiungi canali"
+        },
+        "empty": "Ancora nessun canale in questa selezione.",
+        "addChannels": "Aggiungi canali",
+        "sortName": "A–Z",
+        "sortNumber": "Per numero",
+        "moveUpAria": "Sposta su {name}",
+        "moveDownAria": "Sposta giù {name}",
+        "remove": "Togli dalla selezione",
+        "removeAria": "Togli {name} da questa selezione",
+        "addBy": "Aggiungi canali per",
+        "kinds": {
+          "search": "Ricerca",
+          "categories": "Categoria intera"
+        },
+        "search": {
+          "search": "Cerca canali",
+          "categories": "Cerca categorie"
+        },
+        "searchHint": "Scrivi parte del nome di un canale.",
+        "inLineup": "Aggiunto",
+        "addAria": "Aggiungi {name} a questa selezione",
+        "addFound": {
+          "one": "Aggiungi {number} trovato",
+          "other": "Aggiungi tutti i {number} trovati"
+        },
+        "moreResults": {
+          "one": "Ancora {number} risultato; scrivi di più per restringere.",
+          "other": "Altri {number} risultati; scrivi di più per restringere."
+        },
+        "addAll": "Aggiungi tutti",
+        "addCategoryAria": "Aggiungi tutti i canali di {name}",
+        "categoryHidden": "nascosta da un filtro",
+        "hiddenByFilter": "Nascosto da filtro",
+        "nothingNew": "Tutti i canali di quella categoria sono già qui.",
+        "added": {
+          "one": "Aggiunto {number} canale",
+          "other": "Aggiunti {number} canali"
+        }
+      }
+    }
   },
   "logs": {
     "title": "Log",

@@ -19,6 +19,7 @@
       "roles": "Rôles et autorisations",
       "pwa": "Installer l'app mobile (PWA)",
       "remote": "Accès à distance et Tailscale",
+      "liveTv": "TV en direct",
       "shortcuts": "Raccourcis clavier",
       "backups": "Sauvegardes et sécurité des données",
       "api": "API REST et webhooks",
@@ -266,6 +267,116 @@
       "guide": "Le guide complet, avec le dépannage : {doc} sur GitHub."
     }
   },
+  "liveTv": {
+    "title": "TV en direct",
+    "intro": "Des chaînes en direct et un guide des programmes, à côté de vos propres médias. Les chaînes proviennent de playlists M3U : des listes publiques toutes prêtes, ou les vôtres.",
+    "turnOn": {
+      "title": "L'activer",
+      "text": "La TV en direct reste désactivée tant qu'un administrateur ne l'active pas dans **Administration → TV en direct**. Une fois activée et dotée de chaînes, **TV en direct** apparaît dans le menu de toute personne autorisée à regarder au moins une chaîne.",
+      "off": "La désactiver masque immédiatement la TV en direct partout. Les listes de chaînes et tous les choix faits à leur sujet sont conservés pour sa réactivation."
+    },
+    "adding": {
+      "title": "Ajouter des chaînes",
+      "intro": "Dans **Administration → TV en direct**, appuyez sur **Ajouter des chaînes** et choisissez l'un des deux types :",
+      "public": "**Chaînes publiques** : des listes gratuites et toutes prêtes du projet public iptv-org, par pays, langue ou catégorie. Cochez-en autant que vous voulez ; chacune est ajoutée comme une liste à part.",
+      "own": "**Votre propre playlist** : l'adresse de n'importe quelle playlist M3U que le serveur peut joindre, par exemple celle d'un tuner TV sur votre réseau. Les chaînes diffusées en HLS ({m3u8}) sont lisibles ; les autres sont conservées mais indiquées **Non lisible**.",
+      "guide": "**Guide des programmes** : une adresse XMLTV que vous indiquez, ou à défaut le guide désigné par la playlist elle-même (les listes publiques en ont toutes un). Les fichiers compressés {gz} fonctionnent. Le guide couvre la journée et demie à venir.",
+      "refresh": "Chaque liste et son guide sont rechargés toutes les 12 heures tant que la TV en direct est activée. **Actualiser** sur une liste la recharge immédiatement ; la liste indique quand elle a été chargée pour la dernière fois, ou pourquoi elle n'a pas pu l'être.",
+      "acknowledge": "La première fois qu'une liste publique est ajoutée, Plinthio affiche une courte note sur les chaînes publiques, à confirmer. Elle n'est demandée qu'une fois par serveur."
+    },
+    "filters": {
+      "title": "Choisir ce qui s'affiche",
+      "intro": "Sous **Choisir ce qui s'affiche**, masquez des ensembles entiers de chaînes d'un coup. Ce sont des règles, pas des suppressions : elles s'appliquent encore après chaque rechargement, et les nouvelles chaînes correspondantes sont masquées aussi. La carte indique combien de chaînes passent les filtres.",
+      "region": "Les **chaînes géobloquées** sont masquées au départ, car elles ne fonctionnent généralement que dans leur pays d'origine. Désactivez **Masquer les chaînes géobloquées** pour les faire apparaître dans la liste.",
+      "sets": "**Catégories, langues, pays et serveurs de flux** : chaque onglet les liste avec leur nombre de chaînes. Touchez-en un pour l'afficher ou le masquer, recherchez-en un, ou utilisez **Tout afficher** et **Tout masquer**. Pour n'en garder que quelques-uns, appuyez sur **Tout masquer**, puis réactivez ceux-là.",
+      "languages": "Une chaîne en plusieurs langues n'est masquée que si toutes ses langues sont masquées. Les chaînes sans langue ou sans pays indiqué ne sont pas concernées par ces onglets.",
+      "hosts": "**Serveurs de flux** : certaines chaînes publiques ne sont pas diffusées par la chaîne d'origine, mais relayées via un service tiers. Plinthio masque un de ces services, {host}, jusqu'à ce que vous l'affichiez. Ne l'affichez que si vous êtes sûr de pouvoir regarder ces chaînes.",
+      "exceptions": "**Exceptions** : pour garder une chaîne masquée par un filtre, trouvez-la sous **Chaînes** (choisissez **Masquées par un filtre** pour toutes les voir) et appuyez sur **Toujours afficher**. Une chaîne que vous masquez vous-même reste masquée dans tous les cas."
+    },
+    "choosing": {
+      "title": "Choisir les chaînes",
+      "text": "Sous **Chaînes**, recherchez ou filtrez par liste, puis utilisez **Masquer** sur les chaînes dont vous ne voulez pas. Cochez-en plusieurs (ou une page entière) pour les modifier d'un coup. Les modifications sont enregistrées immédiatement.",
+      "kept": "Les chaînes masquées et les choix pour les enfants sont conservés quand une liste est rechargée. Une chaîne qui disparaît de sa playlist est retirée."
+    },
+    "lineups": {
+      "title": "Sélections et numéros de chaîne",
+      "intro": "Sous **Sélections de chaînes**, créez vos propres ensembles de chaînes, comme Infos, Sport ou Pour les enfants. Chaque sélection devient un onglet de la page TV en direct, dans l'ordre où vous les placez.",
+      "create": "**Nouvelle sélection** demande un nom, puis l'ouvre. Ajoutez des chaînes par **Recherche** (une à la fois, ou tous les résultats d'un coup) ou par **Catégorie entière**, qui ajoute toutes les chaînes d'une catégorie en une fois. Vous pouvez aussi cocher des chaînes sous **Chaînes** et appuyer sur **Ajouter à la sélection**.",
+      "order": "Utilisez les flèches haut et bas pour ordonner les sélections, et les chaînes à l'intérieur de chacune. **A–Z** et **Par numéro** trient toute une sélection d'un coup. Retirer une chaîne d'une sélection ne la masque nulle part ailleurs.",
+      "kids": "**Autoriser aux enfants** sur une sélection permet aux comptes enfants de regarder toutes ses chaînes, en plus de celles autorisées une par une.",
+      "rules": "Une sélection ne fait pas revenir les chaînes que vous avez masquées ou qui sont hors ligne, et les filtres s'appliquent toujours, sauf pour une chaîne réglée sur **Toujours afficher**.",
+      "numbers": "**Numéros, noms et logos** : appuyez sur le crayon à côté d'une chaîne sous **Chaînes** pour lui donner son propre numéro (de 1 à 9999, chacun utilisé une seule fois), un nom ou une adresse de logo. Les spectateurs peuvent taper un numéro dans le lecteur pour passer directement à cette chaîne. Les chaînes sans numéro viennent après votre numéro le plus élevé. Laissez un champ vide pour revenir à ce que fournit la liste."
+    },
+    "health": {
+      "title": "État des chaînes",
+      "intro": "Les chaînes publiques cessent de fonctionner de temps en temps. Avec **Vérifier les chaînes en arrière-plan** activé (c'est le cas au départ), Plinthio contrôle environ 20 chaînes toutes les 10 minutes tant que la TV en direct est activée, soit chacune environ une fois par jour.",
+      "light": "Une vérification est volontairement légère : le serveur récupère la playlist de la chaîne et les premiers kilo-octets de vidéo, rien de plus. Rien n'est lu, décodé ni converti, donc cela ne coûte presque rien.",
+      "offline": "Une chaîne qui échoue à deux vérifications d'affilée est marquée **Hors ligne**. Avec **Masquer les chaînes hors ligne** activé, les spectateurs ne la voient plus jusqu'à ce qu'elle fonctionne à nouveau ; une seule vérification réussie la fait revenir.",
+      "counts": "La carte indique combien de chaînes fonctionnent, sont hors ligne ou ne sont pas encore vérifiées, et quand la dernière vérification a eu lieu. Appuyez sur le nombre de chaînes hors ligne pour les lister, et sur **Vérifier** sur l'une d'elles pour la contrôler immédiatement."
+    },
+    "kids": {
+      "title": "Comptes enfants",
+      "text": "Les comptes enfants ne voient que les chaînes marquées **Autoriser aux enfants**, ainsi que les chaînes d'une sélection marquée **Autoriser aux enfants**. Aucune ne l'est tant que vous ne les avez pas choisies : d'ici là, la TV en direct n'apparaît pas dans le menu d'un compte enfant."
+    },
+    "watching": {
+      "title": "Regarder",
+      "channels": "**Chaînes** : des onglets Favoris, Récentes, un par sélection et Toutes les chaînes (avec des catégories au choix), et pour chaque chaîne ce qui passe maintenant et ensuite.",
+      "guide": "**Guide** : une grille de ce qui passe sur les chaînes. Touchez un programme pour voir ses détails et un bouton **Regarder maintenant**.",
+      "player": "**Le lecteur** : les flèches haut et bas (ou les boutons) changent de chaîne. L'image dans l'image et le plein écran fonctionnent si le navigateur les prend en charge.",
+      "throughServer": "Les flux passent par ce serveur : toute personne qui peut joindre Plinthio peut regarder, à la maison comme ailleurs. Chaque spectateur utilise la connexion Internet du serveur."
+    },
+    "yours": {
+      "title": "Les choix de chaque spectateur",
+      "intro": "Chaque spectateur peut personnaliser la TV en direct. Ces choix appartiennent à son compte et ne changent rien pour les autres.",
+      "favourites": "**Favoris** : l'étoile d'une chaîne l'ajoute à un onglet **Favoris**, affiché en premier. Les favoris apparaissent aussi dans une rangée **En direct** sur la page d'accueil avec ce qui passe ; cette rangée peut être masquée.",
+      "recent": "**Récentes** : les dernières chaînes regardées ont leur propre onglet, et le bouton **Chaîne précédente** du lecteur (ou la touche {key}) revient à la chaîne d'avant.",
+      "hiding": "**Masquer pour moi** : le menu d'une chaîne masque cette chaîne, ou tout son groupe, rien que pour vous. **Masqué pour moi** sur la page TV en direct liste ce que vous avez masqué, avec un moyen de faire revenir chaque élément, et active ou désactive la rangée de l'accueil.",
+      "search": "**Rechercher** trouve des chaînes par nom et des programmes par titre, sur la journée et demie à venir. Dans le guide, **Maintenant**, **Ce soir** et **Demain** sautent directement à ce moment."
+    },
+    "publicSources": {
+      "title": "À propos des chaînes publiques",
+      "text": "Les chaînes publiques sont collectées à partir des flux gratuits des diffuseurs eux-mêmes. Elles vont et viennent : certaines peuvent être hors ligne, interrompues ou ne fonctionner que dans certains pays (indiquées Géobloquée). Les chaînes pour adultes ne sont jamais ajoutées."
+    },
+    "responsibility": {
+      "title": "Votre responsabilité",
+      "text": "Plinthio lit les chaînes que vous lui donnez. Il n'héberge, ne vérifie ni ne cautionne aucune chaîne, et n'en fournit aucune. Vous choisissez les listes et les chaînes à ajouter, et vous êtes responsable de disposer du droit de les regarder là où vous êtes : les listes publiques renvoient vers des flux gérés par d'autres, et certains peuvent ne pas disposer de licence dans votre pays."
+    },
+    "troubleshooting": {
+      "title": "En cas de problème",
+      "wontPlay": {
+        "title": "Une chaîne ne se lance pas",
+        "text": "Le flux de la chaîne est injoignable ({code}). Les chaînes publiques sont parfois hors ligne, et les chaînes géobloquées ne fonctionnent que dans certains pays. Réessayez plus tard, ou masquez-la."
+      },
+      "listFailed": {
+        "title": "Une liste affiche « Échec du chargement »",
+        "text": "Le serveur n'a pas pu récupérer la playlist ({code}). Vérifiez que l'adresse s'ouvre depuis le réseau du serveur, puis appuyez sur **Actualiser**. Les chaînes déjà chargées restent jusqu'au prochain chargement réussi."
+      },
+      "notPlayable": {
+        "title": "Des chaînes indiquées « Non lisible »",
+        "text": "La TV en direct lit les flux HLS. Les chaînes dans d'autres formats restent dans la liste pour que vous les voyiez, mais elles ne sont montrées à personne d'autre."
+      },
+      "missingChannel": {
+        "title": "Une chaîne que je veux est absente",
+        "text": "Un filtre de **Choisir ce qui s'affiche** la masque peut-être, ou elle est peut-être hors ligne. Sous **Chaînes**, choisissez **Masquées par un filtre** ou **Hors ligne** : chaque chaîne en indique la raison, et **Toujours afficher** ou **Vérifier** peut aider. Un spectateur l'a peut-être aussi masquée pour lui-même ; elle figure alors sous **Masqué pour moi** sur sa page TV en direct."
+      },
+      "offline": {
+        "title": "Une chaîne est marquée « Hors ligne »",
+        "text": "Elle a échoué à ses deux dernières vérifications. Elle est revérifiée environ une fois par jour et revient d'elle-même dès qu'elle fonctionne ; **Vérifier** la contrôle immédiatement. Si elle échoue toujours, masquez-la, ou désactivez **Masquer les chaînes hors ligne** pour la lister quand même."
+      },
+      "numberTaken": {
+        "title": "Un numéro de chaîne ne s'enregistre pas",
+        "text": "Chaque numéro ne peut appartenir qu'à une seule chaîne. Donnez d'abord un autre numéro à l'autre chaîne (ou effacez le sien)."
+      },
+      "noGuide": {
+        "title": "Le guide est vide pour certaines chaînes",
+        "text": "Toutes les chaînes n'ont pas de données de guide, et le guide se charge un peu après les chaînes. Donner à une liste sa propre adresse de guide peut combler les manques."
+      },
+      "notInMenu": {
+        "title": "La TV en direct n'apparaît pas dans le menu",
+        "text": "Elle doit être activée, avec au moins une chaîne que la personne peut regarder : une chaîne ni masquée ni non lisible et, pour un compte enfant, autorisée aux enfants."
+      }
+    }
+  },
   "shortcuts": {
     "title": "Raccourcis clavier et commandes des lecteurs",
     "intro": "Chaque liseuse et chaque lecteur se pilote entièrement au clavier sur ordinateur, en plus des commandes tactiles (toucher, balayer) sur mobile.",
@@ -390,7 +501,8 @@
       "playback": "Lecture",
       "metadata": "Sources de métadonnées",
       "lists": "Listes et demandes",
-      "watchParties": "Visionnages en groupe"
+      "watchParties": "Visionnages en groupe",
+      "liveTv": "TV en direct"
     }
   },
   "troubleshooting": {

@@ -49,6 +49,10 @@
         "label": "Lecture",
         "desc": "Accélération matérielle, générique d'ouverture"
       },
+      "liveTv": {
+        "label": "TV en direct",
+        "desc": "Chaînes, guide des programmes, enfants"
+      },
       "network": {
         "label": "Réseau",
         "desc": "Hors de chez vous, Tailscale, double authentification"
@@ -308,6 +312,369 @@
     "deleteMessage": "Supprimer « {name} » ? Vos fichiers ne sont pas touchés, et la progression et les signets reviennent si vous ajoutez à nouveau le même dossier. Ses titres, couvertures et détails sont retirés jusqu'à la prochaine analyse.",
     "couldNotDelete": "Impossible de supprimer cette bibliothèque",
     "couldNotAdd": "Impossible d'ajouter cette bibliothèque"
+  },
+  "liveTv": {
+    "title": "TV en direct",
+    "description": "Des chaînes en direct avec un guide des programmes, depuis des listes publiques ou vos propres playlists. Les modifications sont enregistrées au fur et à mesure.",
+    "channelCount": {
+      "one": "{number} chaîne",
+      "other": "{number} chaînes"
+    },
+    "switch": {
+      "label": "TV en direct",
+      "desc": "Ajoute une page TV en direct, avec chaînes et guide des programmes, pour tous les utilisateurs de ce serveur. Désactivée par défaut ; la désactiver masque la TV en direct partout, mais conserve ici vos listes et vos choix."
+    },
+    "publicNote": "Les chaînes proviennent de sources publiques sur Internet. Certaines peuvent être hors ligne, tomber en panne de temps en temps ou ne fonctionner que dans certains pays. Les chaînes pour adultes ne sont jamais ajoutées.",
+    "responsibility": "Vous choisissez les chaînes à ajouter, et vous êtes responsable de disposer du droit de les regarder là où vous êtes. Plinthio n'héberge, ne vérifie ni ne cautionne aucune chaîne.",
+    "sources": {
+      "title": "Listes de chaînes",
+      "desc": "Chaque liste est rechargée toutes les 12 heures tant que la TV en direct est activée, avec son guide des programmes.",
+      "add": "Ajouter des chaînes",
+      "empty": "Aucune chaîne pour l'instant. Ajoutez une liste toute prête ou votre propre playlist pour commencer.",
+      "off": "Désactivée",
+      "kinds": {
+        "public": "Liste publique",
+        "own": "Votre playlist"
+      },
+      "refreshing": "Chargement des chaînes et du guide…",
+      "failed": "Échec du chargement : {error}",
+      "updated": "Mise à jour le {date}",
+      "notLoaded": "Pas encore chargée",
+      "enabledAria": "Utiliser {name}",
+      "turnOn": "Activer",
+      "turnOff": "Désactiver",
+      "editAria": "Modifier {name}",
+      "removeAria": "Retirer {name}",
+      "removeTitle": "Retirer la liste de chaînes",
+      "removeMessage": {
+        "one": "Retirer {name} ? {number} chaîne est retirée aussi, avec ses réglages (masquée, autorisée aux enfants).",
+        "other": "Retirer {name} ? Ses {number} chaînes sont retirées aussi, avec leurs réglages (masquées, autorisées aux enfants)."
+      },
+      "offHint": "La TV en direct est désactivée, donc personne ne voit encore ces chaînes. Vous pouvez les préparer d'abord.",
+      "couldNotLoad": "Impossible de charger les listes de chaînes",
+      "couldNotRefresh": "Impossible de recharger la liste",
+      "couldNotSave": "Impossible d'enregistrer la liste",
+      "couldNotRemove": "Impossible de retirer la liste"
+    },
+    "editDialog": {
+      "title": "Modifier la liste de chaînes",
+      "guideHint": "Laissez vide pour utiliser le guide indiqué par la playlist, s'il y en a un."
+    },
+    "addDialog": {
+      "title": "Ajouter des chaînes",
+      "tabs": {
+        "public": "Chaînes publiques",
+        "own": "Votre propre playlist"
+      },
+      "adding": "Ajout…",
+      "couldNotAdd": "Impossible d'ajouter les chaînes",
+      "public": {
+        "intro": "Des chaînes gratuites issues des listes publiques iptv-org, mises à jour chaque jour. Choisissez-en une ou plusieurs ; chacune est ajoutée comme une liste à part.",
+        "listBy": "Lister les chaînes par",
+        "kinds": {
+          "countries": "Pays",
+          "languages": "Langue",
+          "categories": "Catégorie"
+        },
+        "search": {
+          "countries": "Rechercher un pays",
+          "languages": "Rechercher une langue",
+          "categories": "Rechercher une catégorie"
+        },
+        "noMatches": "Aucun résultat.",
+        "added": "Ajoutée",
+        "selected": {
+          "one": "{number} choisie",
+          "other": "{number} choisies"
+        },
+        "addLists": {
+          "one": "Ajouter la liste",
+          "other": "Ajouter {number} listes"
+        },
+        "note": "Ces chaînes proviennent de sources publiques : certaines peuvent être hors ligne ou ne fonctionner que dans certains pays. Les chaînes pour adultes ne sont jamais ajoutées.",
+        "couldNotLoad": "Impossible de charger les listes publiques"
+      },
+      "own": {
+        "name": "Nom",
+        "namePlaceholder": "ex. Antenne de la maison",
+        "playlistUrl": "Adresse de la playlist (M3U)",
+        "playlistHint": "Une adresse que le serveur peut joindre. Les chaînes diffusées en HLS (.m3u8) sont lisibles ; les autres sont indiquées comme non lisibles.",
+        "guideUrl": "Adresse du guide des programmes (XMLTV, facultatif)",
+        "guidePlaceholder": "https://…/guide.xml",
+        "guideHint": "Laissez vide pour utiliser le guide indiqué par la playlist, s'il y en a un. Les fichiers compressés .xml.gz fonctionnent aussi.",
+        "add": "Ajouter la playlist"
+      }
+    },
+    "acknowledge": {
+      "title": "Avant d'ajouter des chaînes publiques",
+      "points": {
+        "links": "Les listes publiques sont des liens vers des flux de tiers. Plinthio n'en héberge, n'en vérifie et n'en garantit aucun.",
+        "licensing": "Certaines chaînes ne fonctionnent que dans certains pays (géobloquées), et certaines peuvent ne pas disposer de licence là où vous êtes.",
+        "yourCall": "N'ajoutez que des chaînes que vous avez le droit de regarder. Le choix des chaînes ajoutées vous appartient, tout comme la responsabilité qui en découle.",
+        "adult": "Les chaînes pour adultes ne sont jamais ajoutées."
+      },
+      "understand": "J'ai compris",
+      "continue": "Continuer",
+      "couldNotSave": "Impossible d'enregistrer, réessayez"
+    },
+    "filters": {
+      "title": "Choisir ce qui s'affiche",
+      "desc": "Masquez des ensembles entiers de chaînes d'un coup. Ces choix sont conservés quand les listes sont rechargées, et les nouvelles chaînes correspondantes sont masquées aussi. Pour garder une chaîne d'un ensemble masqué, utilisez Toujours afficher sous Chaînes.",
+      "summary": {
+        "one": "Chaînes affichées : {visible} sur {number}",
+        "other": "Chaînes affichées : {visible} sur {number}"
+      },
+      "noChannels": "Aucune chaîne lisible pour l'instant. Les nombres apparaissent ici une fois qu'une liste est chargée.",
+      "geoBlocked": {
+        "label": "Masquer les chaînes géobloquées",
+        "desc": {
+          "one": "{number} chaîne est indiquée Géobloquée : elle ne fonctionne que dans certains pays et échoue généralement ailleurs.",
+          "other": "{number} chaînes sont indiquées Géobloquées : elles ne fonctionnent que dans certains pays et échouent généralement ailleurs."
+        }
+      },
+      "hideBy": "Masquer les chaînes par",
+      "tabs": {
+        "groups": "Catégories",
+        "languages": "Langues",
+        "countries": "Pays",
+        "hosts": "Serveurs de flux"
+      },
+      "hiddenCount": {
+        "one": "{number} masqué",
+        "other": "{number} masqués"
+      },
+      "hints": {
+        "groups": "Les catégories proviennent des listes elles-mêmes. Une chaîne présente dans plusieurs catégories est masquée dès que l'une d'elles est masquée.",
+        "languages": "Une chaîne en plusieurs langues n'est masquée que si toutes ses langues sont masquées. Les chaînes sans langue indiquée ne sont pas concernées.",
+        "countries": "Le pays d'origine d'une chaîne. Les chaînes sans pays indiqué ne sont pas concernées.",
+        "hosts": "Certaines chaînes publiques ne sont pas diffusées par la chaîne d'origine, mais relayées via un service tiers. Masquer un serveur masque toutes ses chaînes. Plinthio masque un de ces services, jmp2.uk, jusqu'à ce que vous l'affichiez ; ne le faites que si vous êtes sûr de pouvoir regarder ces chaînes."
+      },
+      "search": {
+        "groups": "Rechercher une catégorie",
+        "languages": "Rechercher une langue",
+        "countries": "Rechercher un pays",
+        "hosts": "Rechercher un serveur de flux"
+      },
+      "showing": {
+        "label": "Liste",
+        "all": "Tous",
+        "shown": "Affichés",
+        "hidden": "Masqués"
+      },
+      "showAll": "Tout afficher",
+      "hideAll": "Tout masquer",
+      "showMatching": {
+        "one": "Afficher {number} résultat",
+        "other": "Afficher {number} résultats"
+      },
+      "hideMatching": {
+        "one": "Masquer {number} résultat",
+        "other": "Masquer {number} résultats"
+      },
+      "tip": "Astuce : pour n'en garder que quelques-uns, appuyez sur Tout masquer, puis réactivez ceux que vous voulez.",
+      "hiddenLabel": "Masqué",
+      "more": {
+        "one": "Afficher {number} de plus",
+        "other": "Afficher {number} de plus"
+      },
+      "noMatches": "Aucun résultat.",
+      "empty": {
+        "groups": "Aucune chaîne n'a de catégorie.",
+        "languages": "Aucune chaîne n'a de langue indiquée.",
+        "countries": "Aucune chaîne n'a de pays indiqué.",
+        "hosts": "Aucun serveur de flux pour l'instant."
+      },
+      "couldNotLoad": "Impossible de charger les filtres"
+    },
+    "channels": {
+      "title": "Chaînes",
+      "desc": "Masquez celles dont vous ne voulez pas, ou appuyez sur le crayon pour donner à l'une d'elles son propre numéro, nom ou logo. Les comptes enfants ne voient que les chaînes autorisées aux enfants ici ou dans une sélection autorisée aux enfants, et aucune ne l'est tant que vous ne les avez pas choisies.",
+      "searchPlaceholder": "Rechercher une chaîne",
+      "sourceFilter": "Liste de chaînes",
+      "allSources": "Toutes les listes",
+      "statusFilter": "Afficher",
+      "status": {
+        "all": "Toutes",
+        "visible": "Affichées",
+        "hidden": "Masquées",
+        "filtered": "Masquées par un filtre",
+        "pinned": "Toujours affichées",
+        "offline": "Hors ligne",
+        "kids": "Autorisées aux enfants",
+        "unsupported": "Non lisibles"
+      },
+      "selectPage": "Sélectionner cette page",
+      "selected": {
+        "one": "{number} sélectionnée",
+        "other": "{number} sélectionnées"
+      },
+      "selectAria": "Sélectionner {name}",
+      "hide": "Masquer",
+      "show": "Afficher",
+      "hideAria": "Masquer {name}",
+      "showAria": "Afficher {name}",
+      "allowKids": "Autoriser aux enfants",
+      "disallowKids": "Pas pour les enfants",
+      "allowKidsAria": "Autoriser {name} aux enfants",
+      "disallowKidsAria": "Ne plus autoriser {name} aux enfants",
+      "alwaysShow": "Toujours afficher",
+      "alwaysShowHint": "Afficher même si un filtre de Choisir ce qui s'affiche la masque",
+      "followFilters": "Suivre les filtres",
+      "followFiltersHint": "Ne plus toujours afficher, pour que les filtres s'appliquent à nouveau",
+      "pinAria": "Toujours afficher {name}",
+      "badges": {
+        "hidden": "Masquée",
+        "kids": "Enfants",
+        "geoBlocked": "Géobloquée",
+        "geoBlockedHint": "Indiquée comme ne fonctionnant que dans certains pays",
+        "unsupported": "Non lisible",
+        "unsupportedHint": "Ce n'est pas un flux HLS, elle n'est donc proposée à personne",
+        "filtered": "Masquée par un filtre : {reasons}",
+        "filteredHint": "Masquée par Choisir ce qui s'affiche ({reasons}). Utilisez Toujours afficher pour garder cette chaîne malgré tout.",
+        "pinnedHint": "Toujours affichée, quels que soient les filtres. Appuyez à nouveau pour laisser les filtres décider.",
+        "pinnedOverHint": "Toujours affichée, même si un filtre masque {reasons}. Appuyez à nouveau pour laisser les filtres décider.",
+        "regionLocked": "Géobloquée",
+        "offline": "Hors ligne",
+        "offlineHint": "N'a pas fonctionné lors de ses deux dernières vérifications (dernière le {date})",
+        "inLineupsHint": "Dans les sélections : {names}"
+      },
+      "range": "{from}–{to} sur {total}",
+      "empty": "Aucune chaîne pour l'instant. Elles apparaissent ici une fois qu'une liste est chargée.",
+      "noMatches": "Aucune chaîne ne correspond.",
+      "couldNotLoad": "Impossible de charger les chaînes",
+      "edit": "Numéro, nom et logo",
+      "editAria": "Modifier le numéro, le nom et le logo de {name}",
+      "numberHint": "Numéro de chaîne",
+      "checkNow": "Vérifier",
+      "checkNowAria": "Vérifier si {name} fonctionne maintenant",
+      "checking": "Vérification…",
+      "couldNotCheck": "Impossible de vérifier la chaîne",
+      "addToLineup": "Ajouter à la sélection",
+      "addedToLineup": {
+        "one": "{number} chaîne ajoutée à {name}",
+        "other": "{number} chaînes ajoutées à {name}"
+      },
+      "stillOffline": "Toujours hors ligne · Revérifier"
+    },
+    "health": {
+      "title": "État des chaînes",
+      "desc": "Les chaînes publiques vont et viennent. Plinthio en vérifie quelques-unes à la fois en arrière-plan pour repérer celles qui ne fonctionnent plus. Chaque vérification ne demande au flux que ses premiers kilo-octets : rien n'est lu ni converti, et le serveur le remarque à peine.",
+      "enabled": {
+        "label": "Vérifier les chaînes en arrière-plan",
+        "desc": "Environ 20 chaînes toutes les 10 minutes tant que la TV en direct est activée, soit chaque chaîne environ une fois par jour."
+      },
+      "hideOffline": {
+        "label": "Masquer les chaînes hors ligne",
+        "desc": "Une chaîne qui échoue à deux vérifications d'affilée est masquée pour les spectateurs. Elle est revérifiée environ une fois par jour et revient d'elle-même dès qu'elle fonctionne."
+      },
+      "counts": {
+        "ok": "Fonctionnelles",
+        "offline": "Hors ligne",
+        "unchecked": "Pas encore vérifiées"
+      },
+      "showOffline": "Afficher les chaînes hors ligne",
+      "lastChecked": "Dernière vérification le {date}.",
+      "neverChecked": "Aucune vérification pour l'instant.",
+      "pace": "Les chaînes sont vérifiées quelques-unes à la fois ; Vérifier sur une chaîne la contrôle immédiatement.",
+      "paused": "Les vérifications en arrière-plan sont désactivées : ces chiffres restent tels quels.",
+      "couldNotLoad": "Impossible de charger l'état des chaînes"
+    },
+    "editChannel": {
+      "title": "Modifier la chaîne",
+      "number": "Numéro de chaîne",
+      "automatic": "Automatique",
+      "useAutomatic": "Utiliser l'automatique",
+      "numberHint": "De 1 à 9999, chacun utilisé une seule fois. Les spectateurs peuvent le taper pour passer directement à cette chaîne. Les chaînes sans numéro viennent après votre numéro le plus élevé.",
+      "numberInvalid": "Indiquez un nombre entier de 1 à 9999.",
+      "name": "Nom",
+      "useOriginal": "Utiliser l'original",
+      "nameHint": "Laissez vide pour utiliser le nom de la liste : {name}",
+      "logo": "Adresse du logo",
+      "useOriginalLogo": "Utiliser le logo d'origine",
+      "logoHint": "Un lien vers une image (http ou https). Laissez vide pour utiliser le logo de la liste. Le nouveau logo s'affiche une fois enregistré.",
+      "checkHint": "Vérifiez si cette chaîne fonctionne en ce moment. Une chaîne n'est marquée hors ligne qu'après deux vérifications échouées d'affilée.",
+      "health": {
+        "ok": "Fonctionne (vérifiée le {date})",
+        "offline": "Hors ligne (vérifiée le {date})",
+        "unchecked": "Pas encore vérifiée"
+      },
+      "couldNotSave": "Impossible d'enregistrer la chaîne",
+      "checkOk": "Elle fonctionne.",
+      "checkFailed": "Elle n'a pas fonctionné cette fois : {error}",
+      "checkFailedNoReason": "Elle n'a pas fonctionné cette fois."
+    },
+    "lineups": {
+      "title": "Sélections de chaînes",
+      "desc": "Créez vos propres ensembles de chaînes, comme Infos, Sport ou Pour les enfants, dans l'ordre de votre choix. Chaque sélection devient un onglet de la page TV en direct, dans l'ordre affiché ici.",
+      "create": "Nouvelle sélection",
+      "createTitle": "Nouvelle sélection",
+      "empty": "Aucune sélection pour l'instant. Les spectateurs voient toutes les chaînes par catégorie tant que vous n'en créez pas.",
+      "footer": "Dans une sélection, les spectateurs ne voient toujours pas les chaînes que vous avez masquées ou qui sont hors ligne, et les filtres s'appliquent toujours, sauf pour une chaîne réglée sur Toujours afficher.",
+      "name": "Nom",
+      "namePlaceholder": "ex. Infos",
+      "nameHint": "Affiché aux spectateurs comme nom de l'onglet.",
+      "openAria": "Ouvrir la sélection {name}",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "moveUpAria": "Monter la sélection {name}",
+      "moveDownAria": "Descendre la sélection {name}",
+      "kids": {
+        "label": "Autoriser aux enfants",
+        "desc": "Les comptes enfants peuvent regarder toutes les chaînes de cette sélection, en plus des chaînes autorisées aux enfants une par une."
+      },
+      "delete": "Supprimer la sélection",
+      "deleteTitle": "Supprimer la sélection",
+      "deleteMessage": "Supprimer {name} ? Ses chaînes restent en place ; seule la sélection disparaît.",
+      "couldNotLoad": "Impossible de charger les sélections",
+      "couldNotLoadChannels": "Impossible de charger les chaînes de cette sélection",
+      "couldNotCreate": "Impossible de créer la sélection",
+      "couldNotAdd": "Impossible d'ajouter les chaînes",
+      "couldNotDelete": "Impossible de supprimer la sélection",
+      "editor": {
+        "subtitle": "Les modifications sont enregistrées au fur et à mesure",
+        "tabs": {
+          "channels": "Chaînes",
+          "add": "Ajouter"
+        },
+        "empty": "Aucune chaîne dans cette sélection pour l'instant.",
+        "addChannels": "Ajouter des chaînes",
+        "sortName": "A–Z",
+        "sortNumber": "Par numéro",
+        "moveUpAria": "Monter {name}",
+        "moveDownAria": "Descendre {name}",
+        "remove": "Retirer de la sélection",
+        "removeAria": "Retirer {name} de cette sélection",
+        "addBy": "Ajouter des chaînes par",
+        "kinds": {
+          "search": "Recherche",
+          "categories": "Catégorie entière"
+        },
+        "search": {
+          "search": "Rechercher une chaîne",
+          "categories": "Rechercher une catégorie"
+        },
+        "searchHint": "Tapez une partie du nom d'une chaîne.",
+        "inLineup": "Ajoutée",
+        "addAria": "Ajouter {name} à cette sélection",
+        "addFound": {
+          "one": "Ajouter le résultat",
+          "other": "Ajouter les {number} résultats"
+        },
+        "moreResults": {
+          "one": "{number} autre résultat ; précisez la recherche pour affiner.",
+          "other": "{number} autres résultats ; précisez la recherche pour affiner."
+        },
+        "addAll": "Tout ajouter",
+        "addCategoryAria": "Ajouter toutes les chaînes de {name}",
+        "categoryHidden": "masquée par un filtre",
+        "hiddenByFilter": "Masquée par un filtre",
+        "nothingNew": "Toutes les chaînes de cette catégorie sont déjà là.",
+        "added": {
+          "one": "{number} chaîne ajoutée",
+          "other": "{number} chaînes ajoutées"
+        }
+      }
+    }
   },
   "logs": {
     "title": "Journaux",

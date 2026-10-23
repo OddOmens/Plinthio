@@ -1,0 +1,146 @@
+{
+  "title": "Live-TV",
+  "badge": "Live",
+  "intro": "Sender, die gerade laufen, und was als Nächstes kommt.",
+  "openAdmin": "Live-TV-Einstellungen öffnen",
+  "tabs": {
+    "channels": "Sender",
+    "guide": "TV-Programm"
+  },
+  "searchPlaceholder": "Sender und Sendungen suchen…",
+  "groupsLabel": "Sendergruppen",
+  "channelCount": {
+    "one": "{count} Sender",
+    "other": "{count} Sender"
+  },
+  "minutesLeft": {
+    "one": "noch {count} Min.",
+    "other": "noch {count} Min."
+  },
+  "nextAt": "Danach um {time}: {title}",
+  "noGuideInfo": "Keine Programminfos",
+  "geoBlocked": "Geo-gesperrt",
+  "geoBlockedHint": "Dieser Sender läuft eventuell nur in seinem Heimatland.",
+  "watchChannel": "{channel} schauen",
+  "off": {
+    "title": "Live-TV ist aus",
+    "intro": "Live-TV ist auf diesem Server gerade nicht verfügbar.",
+    "admin": "Schalte es unter Verwaltung → Live-TV ein und füge dann Sender hinzu.",
+    "viewer": "Ein Admin kann Live-TV für diesen Server einschalten."
+  },
+  "empty": {
+    "noChannelsTitle": "Noch keine Sender",
+    "noChannels": "Es gibt noch keine Sender für dich. Bitte einen Admin, welche hinzuzufügen.",
+    "noChannelsAdmin": "Füge unter Verwaltung → Live-TV Sender aus einer fertigen Liste oder deiner eigenen Playlist hinzu.",
+    "noMatchesTitle": "Keine Sender gefunden",
+    "noMatches": "Keine Sender passen zu deiner Suche oder der gewählten Gruppe.",
+    "clearFilters": "Alle Sender anzeigen"
+  },
+  "errors": {
+    "loadTitle": "Sender konnten nicht geladen werden",
+    "guideTitle": "TV-Programm konnte nicht geladen werden",
+    "unreachable": "Der Server ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "guide": {
+    "channel": "Sender",
+    "now": "Jetzt",
+    "tonight": "Heute Abend",
+    "tomorrow": "Morgen",
+    "earlier": "Früher",
+    "later": "Später",
+    "notLoadedTitle": "Das TV-Programm ist noch nicht geladen",
+    "notLoaded": "Die Sender laufen trotzdem. Das Programm füllt sich, sobald ihre Quellen aktualisiert wurden – das passiert zweimal am Tag.",
+    "onNow": {
+      "one": "Läuft jetzt · noch {count} Min.",
+      "other": "Läuft jetzt · noch {count} Min."
+    },
+    "startsIn": {
+      "one": "Beginnt in {count} Min.",
+      "other": "Beginnt in {count} Min."
+    },
+    "startsAt": "Beginnt um {time}",
+    "ended": "Beendet",
+    "watchNow": "Jetzt schauen",
+    "watchChannel": "Sender schauen"
+  },
+  "player": {
+    "back": "Zurück zu den Sendern",
+    "tuning": "Sender wird eingestellt…",
+    "now": "Jetzt",
+    "goLive": "Zurück zu Live",
+    "mute": "Stumm",
+    "unmute": "Ton an",
+    "volume": "Lautstärke",
+    "channelUp": "Sender hoch",
+    "channelDown": "Sender runter",
+    "channelUpHint": "Sender hoch (↑)",
+    "channelDownHint": "Sender runter (↓)",
+    "lastChannel": "Letzter Sender",
+    "lastChannelHint": "Letzter Sender (L)",
+    "nextChannel": "Nächster Sender",
+    "info": "Was läuft",
+    "pip": "Bild-im-Bild",
+    "fullscreen": "Vollbild",
+    "cantPlay": "Sender kann nicht abgespielt werden",
+    "errorHelp": "Fehler {code}: Was bedeutet das?",
+    "geoBlockedHint": "Dieser Sender ist als geo-gesperrt markiert und läuft daher eventuell nur in seinem Heimatland.",
+    "errors": {
+      "unavailable": "Der Stream des Senders ist nicht erreichbar. Vielleicht ist er gerade offline – versuche es später erneut oder wähle einen anderen Sender.",
+      "notFound": "Dieser Sender ist nicht mehr verfügbar.",
+      "offline": "Verbindung zum Server verloren. Prüfe dein Netzwerk und versuche es erneut.",
+      "tokenExpired": "Dein Medienzugriff ist abgelaufen und konnte nicht erneuert werden. Lade die Seite neu oder melde dich ab und wieder an.",
+      "decode": "Dieser Browser kann das Video dieses Senders nicht abspielen.",
+      "unsupportedBrowser": "Dieser Browser kann keine Livestreams abspielen."
+    }
+  },
+  "undo": "Rückgängig",
+  "lists": {
+    "label": "Senderlisten",
+    "favourites": "Favoriten",
+    "recent": "Zuletzt gesehen",
+    "all": "Alle Sender"
+  },
+  "favourites": {
+    "add": "{channel} zu Favoriten hinzufügen",
+    "remove": "{channel} aus Favoriten entfernen",
+    "addShort": "Zu Favoriten hinzufügen",
+    "removeShort": "Aus Favoriten entfernen"
+  },
+  "menu": {
+    "options": "Weitere Optionen",
+    "optionsFor": "Optionen für {channel}",
+    "hideChannel": "Für mich ausblenden",
+    "hideGroup": "Gruppe „{group}“ für mich ausblenden"
+  },
+  "hidden": {
+    "channel": "{channel} ist für dich ausgeblendet",
+    "group": "„{group}“ ist für dich ausgeblendet"
+  },
+  "search": {
+    "channels": "Sender",
+    "programmes": "Sendungen",
+    "noResultsTitle": "Nichts gefunden",
+    "noResults": "Keine Sender oder Sendungen passen zu „{query}“.",
+    "clear": "Suche löschen",
+    "errorTitle": "Suche fehlgeschlagen"
+  },
+  "mine": {
+    "button": "Für mich ausgeblendet",
+    "title": "Für mich ausgeblendet",
+    "subtitle": "Nur du siehst diese Auswahl, auf all deinen Geräten.",
+    "showOnHome": "„Jetzt live“ auf der Startseite zeigen",
+    "showOnHomeHint": "Eine Reihe mit dem, was auf deinen Favoriten läuft.",
+    "hiddenTitle": "Sender und Gruppen, die du ausgeblendet hast",
+    "nothingHidden": "Du hast nichts ausgeblendet. Über das Menü eines Senders kannst du ihn oder seine ganze Gruppe nur für dich ausblenden.",
+    "wholeGroup": "Ganze Gruppe",
+    "show": "Einblenden",
+    "showAll": "Alles einblenden",
+    "saveFailed": "Konnte nicht gespeichert werden. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "home": {
+    "title": "Jetzt live",
+    "allChannels": "Alle Sender",
+    "hideRow": "Reihe ausblenden",
+    "hideRowHint": "Diese Reihe ausblenden (zurückholen unter Live-TV → Für mich ausgeblendet)"
+  }
+}

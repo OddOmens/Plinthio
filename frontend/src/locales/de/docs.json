@@ -19,6 +19,7 @@
       "roles": "Rollen & Berechtigungen",
       "pwa": "PWA-App fürs Handy einrichten",
       "remote": "Fernzugriff & Tailscale",
+      "liveTv": "Live-TV",
       "shortcuts": "Tastenkürzel",
       "backups": "Backups & Datensicherheit",
       "api": "REST-API & Webhooks",
@@ -266,6 +267,116 @@
       "guide": "Die vollständige Anleitung mit Fehlerbehebung: {doc} auf GitHub."
     }
   },
+  "liveTv": {
+    "title": "Live-TV",
+    "intro": "Live-Sender und ein TV-Programm, direkt neben deinen eigenen Medien. Die Sender kommen aus M3U-Playlists: fertigen öffentlichen Listen oder deinen eigenen.",
+    "turnOn": {
+      "title": "Einschalten",
+      "text": "Live-TV ist aus, bis ein Admin es unter **Verwaltung → Live-TV** einschaltet. Sobald es an ist und Sender hat, erscheint **Live-TV** im Menü für alle, die mindestens einen Sender schauen dürfen.",
+      "off": "Ausschalten blendet Live-TV sofort überall aus. Die Senderlisten und alle Einstellungen dazu bleiben erhalten, bis es wieder eingeschaltet wird."
+    },
+    "adding": {
+      "title": "Sender hinzufügen",
+      "intro": "Drücke unter **Verwaltung → Live-TV** auf **Sender hinzufügen** und wähle eine von zwei Arten:",
+      "public": "**Öffentliche Sender**: kostenlose, fertige Listen aus dem öffentlichen iptv-org-Projekt, nach Land, Sprache oder Kategorie. Hake so viele an, wie du willst; jede wird als eigene Liste hinzugefügt.",
+      "own": "**Eigene Playlist**: die Adresse einer beliebigen M3U-Playlist, die der Server erreichen kann, etwa von einem TV-Tuner in deinem Netzwerk. Sender, die per HLS ({m3u8}) streamen, laufen; andere bleiben erhalten, werden aber als **Nicht abspielbar** aufgeführt.",
+      "guide": "**TV-Programm**: eine XMLTV-Adresse, die du angibst, oder sonst das Programm, das die Playlist selbst nennt (die öffentlichen Listen haben alle eins). Komprimierte {gz}-Dateien gehen auch. Das Programm reicht anderthalb Tage im Voraus.",
+      "refresh": "Jede Liste und ihr Programm werden alle 12 Stunden neu geladen, solange Live-TV an ist. **Aktualisieren** bei einer Liste lädt sie sofort neu; die Liste zeigt, wann sie zuletzt geladen wurde oder warum es nicht geklappt hat.",
+      "acknowledge": "Wenn zum ersten Mal eine öffentliche Liste hinzugefügt wird, zeigt Plinthio einen kurzen Hinweis zu öffentlichen Sendern, den du bestätigen musst. Das wird nur einmal pro Server abgefragt."
+    },
+    "filters": {
+      "title": "Anzeige auswählen",
+      "intro": "Unter **Anzeige auswählen** blendest du ganze Gruppen von Sendern auf einmal aus. Das sind Regeln, keine Löschungen: Sie gelten nach jedem Neuladen weiter, und neue passende Sender werden ebenfalls ausgeblendet. Die Karte zeigt, wie viele Sender übrig bleiben.",
+      "region": "**Geo-gesperrte Sender** sind anfangs ausgeblendet, da sie meist nur in ihrem Heimatland laufen. Schalte **Geo-gesperrte Sender ausblenden** aus, um sie aufzulisten.",
+      "sets": "**Kategorien, Sprachen, Länder und Stream-Server**: Jeder Tab listet sie mit der Anzahl ihrer Sender auf. Tippe auf einen Eintrag, um ihn ein- oder auszublenden, suche nach einem oder nutze **Alle einblenden** und **Alle ausblenden**. Um nur ein paar zu behalten, drücke **Alle ausblenden** und schalte dann genau diese wieder ein.",
+      "languages": "Ein Sender in mehreren Sprachen wird nur ausgeblendet, wenn alle seine Sprachen ausgeblendet sind. Sender ohne angegebene Sprache oder ohne angegebenes Land sind von diesen Tabs nicht betroffen.",
+      "hosts": "**Stream-Server**: Manche öffentlichen Sender werden nicht von der Sendeanstalt selbst gestreamt, sondern über einen Dienst von Dritten umgeleitet. Plinthio blendet einen solchen Dienst, {host}, aus, bis du ihn einblendest. Blende ihn nur ein, wenn du sicher bist, dass du diese Sender schauen darfst.",
+      "exceptions": "**Ausnahmen**: Um einen Sender zu behalten, den ein Filter ausblendet, suche ihn unter **Sender** (wähle **Per Filter ausgeblendet**, um alle zu sehen) und drücke **Immer anzeigen**. Ein Sender, den du von Hand ausblendest, bleibt in jedem Fall ausgeblendet."
+    },
+    "choosing": {
+      "title": "Sender auswählen",
+      "text": "Suche unter **Sender** oder filtere nach Liste und blende dann mit **Ausblenden** die Sender aus, die du nicht willst. Hake mehrere (oder eine ganze Seite) an, um sie auf einmal zu ändern. Änderungen werden sofort gespeichert.",
+      "kept": "Ausgeblendete Sender und Kinder-Freigaben bleiben erhalten, wenn eine Liste neu geladen wird. Ein Sender, der aus seiner Playlist verschwindet, wird entfernt."
+    },
+    "lineups": {
+      "title": "Senderauswahlen und Sendernummern",
+      "intro": "Unter **Senderauswahlen** stellst du eigene Sendergruppen zusammen, etwa Nachrichten, Sport oder Für Kinder. Jede Senderauswahl wird ein Tab auf der Live-TV-Seite, in der Reihenfolge, die du festlegst.",
+      "create": "**Neue Senderauswahl** fragt nach einem Namen und öffnet sie dann. Füge Sender per **Suche** hinzu (einzeln oder alle Treffer auf einmal) oder per **Ganze Kategorie**, womit alle Sender einer Kategorie in einem Rutsch hinzukommen. Du kannst auch unter **Sender** Sender anhaken und **Zur Senderauswahl hinzufügen** drücken.",
+      "order": "Mit den Pfeilen nach oben und unten ordnest du die Senderauswahlen und die Sender darin. **A–Z** und **Nach Nummer** sortieren eine ganze Senderauswahl auf einmal. Entfernst du einen Sender aus einer Senderauswahl, wird er sonst nirgends ausgeblendet.",
+      "kids": "**Für Kinder freigeben** bei einer Senderauswahl erlaubt Kinderkonten, jeden Sender darin zu schauen, zusätzlich zu den einzeln freigegebenen.",
+      "rules": "Eine Senderauswahl holt keine Sender zurück, die du ausgeblendet hast oder die offline sind, und die Filter gelten weiter – außer für Sender mit **Immer anzeigen**.",
+      "numbers": "**Nummern, Namen und Logos**: Drücke unter **Sender** auf den Stift neben einem Sender, um ihm eine eigene Nummer (1 bis 9999, jede nur einmal), einen Namen oder eine Logo-Adresse zu geben. Zuschauer können im Player eine Nummer eintippen, um direkt zu diesem Sender zu springen. Sender ohne Nummer folgen nach deiner höchsten. Lass ein Feld leer, um zu dem zurückzukehren, was die Liste vorgibt."
+    },
+    "health": {
+      "title": "Senderstatus",
+      "intro": "Öffentliche Sender fallen ab und zu aus. Ist **Sender im Hintergrund prüfen** an (das ist es anfangs), prüft Plinthio etwa 20 Sender alle 10 Minuten, solange Live-TV an ist – so kommt jeder ungefähr einmal am Tag dran.",
+      "light": "Eine Prüfung ist bewusst leicht: Der Server ruft die Playlist des Senders und die ersten paar Kilobyte Video ab, mehr nicht. Nichts wird abgespielt, dekodiert oder umgewandelt, es kostet also so gut wie nichts.",
+      "offline": "Ein Sender, der zwei Prüfungen hintereinander nicht besteht, wird als **Offline** markiert. Ist **Offline-Sender ausblenden** an, sehen Zuschauer ihn erst wieder, wenn er läuft; eine einzige erfolgreiche Prüfung holt ihn zurück.",
+      "counts": "Die Karte zeigt, wie viele Sender funktionieren, offline oder noch nicht geprüft sind, und wann die letzte Prüfung lief. Drücke auf die Offline-Zahl, um diese Sender aufzulisten, und bei einem davon auf **Jetzt prüfen**, um sofort nachzusehen."
+    },
+    "kids": {
+      "title": "Kinderkonten",
+      "text": "Kinderkonten sehen nur die Sender, die mit **Für Kinder freigeben** markiert sind, und die Sender in einer Senderauswahl mit **Für Kinder freigeben**. Keiner ist freigegeben, bis du welche auswählst – bis dahin taucht Live-TV im Menü eines Kinderkontos nicht auf."
+    },
+    "watching": {
+      "title": "Schauen",
+      "channels": "**Sender**: Tabs für Favoriten, Zuletzt gesehen, jede Senderauswahl und Alle Sender (mit Kategorien zur Auswahl), bei jedem Sender mit dem, was jetzt und als Nächstes läuft.",
+      "guide": "**TV-Programm**: eine Übersicht, was auf den Sendern läuft. Tippe auf eine Sendung für Details und eine **Jetzt schauen**-Schaltfläche.",
+      "player": "**Der Player**: Die Pfeiltasten hoch und runter (oder die Schaltflächen) wechseln den Sender. Bild-im-Bild und Vollbild funktionieren, wo der Browser sie unterstützt.",
+      "throughServer": "Die Streams laufen über diesen Server, also kann jeder schauen, der Plinthio erreicht – zu Hause oder unterwegs. Jeder Zuschauer nutzt die Internetverbindung des Servers."
+    },
+    "yours": {
+      "title": "Die eigene Auswahl jedes Zuschauers",
+      "intro": "Alle, die schauen, können sich Live-TV einrichten, wie sie wollen. Diese Auswahl gehört zu ihrem Konto und ändert für niemand anderen etwas.",
+      "favourites": "**Favoriten**: Der Stern bei einem Sender fügt ihn einem **Favoriten**-Tab hinzu, der als Erstes erscheint. Favoriten tauchen außerdem in einer Reihe **Jetzt live** auf der Startseite mit dem aktuellen Programm auf; diese Reihe lässt sich ausblenden.",
+      "recent": "**Zuletzt gesehen**: Die zuletzt geschauten Sender bekommen einen eigenen Tab, und die Schaltfläche **Letzter Sender** im Player (oder die Taste {key}) springt zum vorherigen zurück.",
+      "hiding": "**Für mich ausblenden**: Im Menü eines Senders blendest du diesen Sender oder seine ganze Gruppe nur für dich aus. **Für mich ausgeblendet** auf der Live-TV-Seite listet auf, was du ausgeblendet hast, mit der Möglichkeit, jedes davon zurückzuholen, und schaltet die Reihe auf der Startseite ein oder aus.",
+      "search": "Die **Suche** findet Sender nach Namen und Sendungen nach Titel, für die nächsten anderthalb Tage. Im TV-Programm springen **Jetzt**, **Heute Abend** und **Morgen** direkt zu dieser Zeit."
+    },
+    "publicSources": {
+      "title": "Über öffentliche Sender",
+      "text": "Öffentliche Sender werden aus den eigenen kostenlosen Streams der Sendeanstalten gesammelt. Sie kommen und gehen: Manche sind vielleicht offline, unterbrochen oder laufen nur in bestimmten Ländern (markiert als Geo-gesperrt). Sender für Erwachsene werden nie hinzugefügt."
+    },
+    "responsibility": {
+      "title": "Deine Verantwortung",
+      "text": "Plinthio spielt die Sender ab, die du ihm gibst. Es hostet, prüft oder befürwortet keinen Sender und bringt keine Sender mit. Du wählst, welche Listen und Sender du hinzufügst, und bist dafür verantwortlich, dass du sie dort, wo du bist, schauen darfst: Öffentliche Listen verlinken auf Streams, die andere betreiben, und manche sind in deinem Land vielleicht nicht lizenziert."
+    },
+    "troubleshooting": {
+      "title": "Wenn etwas schiefgeht",
+      "wontPlay": {
+        "title": "Ein Sender spielt nicht",
+        "text": "Der Stream des Senders war nicht erreichbar ({code}). Öffentliche Sender sind ab und zu offline, und geo-gesperrte laufen nur in manchen Ländern. Versuch es später erneut oder blende ihn aus."
+      },
+      "listFailed": {
+        "title": "Eine Liste zeigt „Laden fehlgeschlagen“",
+        "text": "Der Server konnte die Playlist nicht abrufen ({code}). Prüfe, ob sich die Adresse aus dem Netzwerk des Servers öffnen lässt, und drücke dann **Aktualisieren**. Bereits geladene Sender bleiben bis zum nächsten erfolgreichen Laden."
+      },
+      "notPlayable": {
+        "title": "Sender als „Nicht abspielbar“ markiert",
+        "text": "Live-TV spielt HLS-Streams ab. Sender in anderen Formaten bleiben in der Liste, damit du sie siehst, werden aber niemand anderem angezeigt."
+      },
+      "missingChannel": {
+        "title": "Ein Sender, den ich will, fehlt",
+        "text": "Vielleicht blendet ihn ein Filter unter **Anzeige auswählen** aus, oder er ist offline. Wähle unter **Sender** die Ansicht **Per Filter ausgeblendet** oder **Offline**: Bei jedem Sender steht, warum, und **Immer anzeigen** oder **Jetzt prüfen** hilft weiter. Vielleicht hat ihn auch ein Zuschauer nur für sich ausgeblendet; dann steht er auf dessen Live-TV-Seite unter **Für mich ausgeblendet**."
+      },
+      "offline": {
+        "title": "Ein Sender ist als „Offline“ markiert",
+        "text": "Er hat seine letzten zwei Prüfungen nicht bestanden. Er wird etwa einmal am Tag erneut geprüft und kommt von selbst zurück, sobald er läuft; **Jetzt prüfen** sieht sofort nach. Schlägt er weiter fehl, blende ihn aus oder schalte **Offline-Sender ausblenden** aus, um ihn trotzdem aufzulisten."
+      },
+      "numberTaken": {
+        "title": "Eine Sendernummer lässt sich nicht speichern",
+        "text": "Jede Nummer kann nur zu einem Sender gehören. Gib zuerst dem anderen Sender eine andere Nummer (oder lösche seine)."
+      },
+      "noGuide": {
+        "title": "Das TV-Programm ist bei manchen Sendern leer",
+        "text": "Nicht jeder Sender hat Programmdaten, und das Programm lädt etwas nach den Sendern. Gibst du einer Liste eine eigene Programm-Adresse, lassen sich die Lücken oft füllen."
+      },
+      "notInMenu": {
+        "title": "Live-TV fehlt im Menü",
+        "text": "Es muss eingeschaltet sein, mit mindestens einem Sender, den die Person schauen darf: einem, der weder ausgeblendet noch nicht abspielbar ist, und bei einem Kinderkonto einem, der für Kinder freigegeben ist."
+      }
+    }
+  },
   "shortcuts": {
     "title": "Tastenkürzel & Player-Steuerung",
     "intro": "Jeder Reader und Player lässt sich am Computer komplett per Tastatur bedienen, auf dem Handy zusätzlich per Tippen und Wischen.",
@@ -390,7 +501,8 @@
       "playback": "Wiedergabe",
       "metadata": "Metadaten-Anbieter",
       "lists": "Listen & Wünsche",
-      "watchParties": "Watch-Partys"
+      "watchParties": "Watch-Partys",
+      "liveTv": "Live-TV"
     }
   },
   "troubleshooting": {

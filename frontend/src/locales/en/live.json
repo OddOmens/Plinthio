@@ -1,0 +1,146 @@
+{
+  "title": "Live TV",
+  "badge": "Live",
+  "intro": "Channels streaming right now, and what's coming up.",
+  "openAdmin": "Open Live TV settings",
+  "tabs": {
+    "channels": "Channels",
+    "guide": "Guide"
+  },
+  "searchPlaceholder": "Search channels and programmes…",
+  "groupsLabel": "Channel groups",
+  "channelCount": {
+    "one": "{count} channel",
+    "other": "{count} channels"
+  },
+  "minutesLeft": {
+    "one": "{count} min left",
+    "other": "{count} min left"
+  },
+  "nextAt": "Next at {time}: {title}",
+  "noGuideInfo": "No programme information",
+  "geoBlocked": "Region-locked",
+  "geoBlockedHint": "This channel may only play in its home country.",
+  "watchChannel": "Watch {channel}",
+  "off": {
+    "title": "Live TV is off",
+    "intro": "Live TV isn't available on this server right now.",
+    "admin": "Turn it on in Admin → Live TV, then add some channels.",
+    "viewer": "An admin can turn Live TV on for this server."
+  },
+  "empty": {
+    "noChannelsTitle": "No channels yet",
+    "noChannels": "There are no channels for you to watch yet. Ask an admin to add some.",
+    "noChannelsAdmin": "Add channels from a ready-made list or your own playlist in Admin → Live TV.",
+    "noMatchesTitle": "No channels found",
+    "noMatches": "No channels match your search or the group you picked.",
+    "clearFilters": "Show all channels"
+  },
+  "errors": {
+    "loadTitle": "Couldn't load the channels",
+    "guideTitle": "Couldn't load the guide",
+    "unreachable": "The server couldn't be reached. Check your connection and try again."
+  },
+  "guide": {
+    "channel": "Channel",
+    "now": "Now",
+    "tonight": "Tonight",
+    "tomorrow": "Tomorrow",
+    "earlier": "Earlier",
+    "later": "Later",
+    "notLoadedTitle": "The programme guide hasn't loaded yet",
+    "notLoaded": "Channels still play. The guide fills in once their sources have been refreshed, which happens twice a day.",
+    "onNow": {
+      "one": "On now · {count} min left",
+      "other": "On now · {count} min left"
+    },
+    "startsIn": {
+      "one": "Starts in {count} min",
+      "other": "Starts in {count} min"
+    },
+    "startsAt": "Starts at {time}",
+    "ended": "Ended",
+    "watchNow": "Watch now",
+    "watchChannel": "Watch channel"
+  },
+  "player": {
+    "back": "Back to channels",
+    "tuning": "Tuning in…",
+    "now": "Now",
+    "goLive": "Go live",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "volume": "Volume",
+    "channelUp": "Channel up",
+    "channelDown": "Channel down",
+    "channelUpHint": "Channel up (↑)",
+    "channelDownHint": "Channel down (↓)",
+    "lastChannel": "Last channel",
+    "lastChannelHint": "Last channel (L)",
+    "nextChannel": "Next channel",
+    "info": "What's on",
+    "pip": "Picture in picture",
+    "fullscreen": "Fullscreen",
+    "cantPlay": "This channel isn't playing",
+    "errorHelp": "Error {code}: what this means",
+    "geoBlockedHint": "This channel is marked as region-locked, so it may only play in its home country.",
+    "errors": {
+      "unavailable": "The channel's stream couldn't be reached. It may be offline for now — try again later, or pick another channel.",
+      "notFound": "This channel isn't available any more.",
+      "offline": "Lost connection to the server. Check your network and try again.",
+      "tokenExpired": "Your media access expired and couldn't be renewed. Reload the page, or sign out and back in.",
+      "decode": "This browser can't play this channel's video.",
+      "unsupportedBrowser": "This browser can't play live streams."
+    }
+  },
+  "undo": "Undo",
+  "lists": {
+    "label": "Channel lists",
+    "favourites": "Favourites",
+    "recent": "Recent",
+    "all": "All channels"
+  },
+  "favourites": {
+    "add": "Add {channel} to favourites",
+    "remove": "Remove {channel} from favourites",
+    "addShort": "Add to favourites",
+    "removeShort": "Remove from favourites"
+  },
+  "menu": {
+    "options": "More options",
+    "optionsFor": "Options for {channel}",
+    "hideChannel": "Hide for me",
+    "hideGroup": "Hide all of “{group}” for me"
+  },
+  "hidden": {
+    "channel": "{channel} is hidden for you",
+    "group": "“{group}” is hidden for you"
+  },
+  "search": {
+    "channels": "Channels",
+    "programmes": "Programmes",
+    "noResultsTitle": "Nothing found",
+    "noResults": "No channels or programmes match “{query}”.",
+    "clear": "Clear search",
+    "errorTitle": "Couldn't search"
+  },
+  "mine": {
+    "button": "Hidden for me",
+    "title": "Hidden for me",
+    "subtitle": "Only you see these choices, on every device.",
+    "showOnHome": "Show “Live now” on Home",
+    "showOnHomeHint": "A row with what's on your favourite channels.",
+    "hiddenTitle": "Channels and groups you've hidden",
+    "nothingHidden": "You haven't hidden anything. Use a channel's menu to hide it, or a whole group, just for you.",
+    "wholeGroup": "Whole group",
+    "show": "Show",
+    "showAll": "Show everything",
+    "saveFailed": "Couldn't save that. Check your connection and try again."
+  },
+  "home": {
+    "title": "Live now",
+    "allChannels": "All channels",
+    "hideRow": "Hide this row",
+    "hideRowHint": "Hide this row (bring it back in Live TV → Hidden for me)"
+  }
+}

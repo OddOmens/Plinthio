@@ -541,6 +541,126 @@
           </div>
         </section>
 
+        <!-- SECTION: Live TV -->
+        <section v-if="activeSection === 'liveTv'" class="space-y-6">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">{{ $t('docs.liveTv.title') }}</h1>
+            <p class="text-sm text-muted-foreground mt-1.5">{{ $t('docs.liveTv.intro') }}</p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.turnOn.title') }}</h2>
+            <DocText keypath="docs.liveTv.turnOn.text" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+            <p class="text-xs text-muted-foreground leading-relaxed">{{ $t('docs.liveTv.turnOn.off') }}</p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.adding.title') }}</h2>
+            <DocText keypath="docs.liveTv.adding.intro" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <DocText keypath="docs.liveTv.adding.public" tag="li" />
+              <DocText keypath="docs.liveTv.adding.own" tag="li">
+                <template #m3u8><Mono>.m3u8</Mono></template>
+              </DocText>
+              <DocText keypath="docs.liveTv.adding.guide" tag="li">
+                <template #gz><Mono>.xml.gz</Mono></template>
+              </DocText>
+              <DocText keypath="docs.liveTv.adding.refresh" tag="li" />
+              <DocText keypath="docs.liveTv.adding.acknowledge" tag="li" />
+            </ul>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.filters.title') }}</h2>
+            <DocText keypath="docs.liveTv.filters.intro" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <DocText v-for="key in ['region', 'sets', 'languages']" :key="key" :keypath="`docs.liveTv.filters.${key}`" tag="li" />
+              <DocText keypath="docs.liveTv.filters.hosts" tag="li">
+                <template #host><Mono>jmp2.uk</Mono></template>
+              </DocText>
+              <DocText keypath="docs.liveTv.filters.exceptions" tag="li" />
+            </ul>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.choosing.title') }}</h2>
+            <DocText keypath="docs.liveTv.choosing.text" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+            <p class="text-xs text-muted-foreground leading-relaxed">{{ $t('docs.liveTv.choosing.kept') }}</p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.lineups.title') }}</h2>
+            <DocText keypath="docs.liveTv.lineups.intro" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <DocText v-for="key in ['create', 'order', 'kids', 'rules', 'numbers']" :key="key" :keypath="`docs.liveTv.lineups.${key}`" tag="li" />
+            </ul>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.health.title') }}</h2>
+            <DocText keypath="docs.liveTv.health.intro" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+            <div class="p-4 rounded-xl bg-muted/30 border border-border flex items-start gap-2">
+              <Activity class="w-4 h-4 text-primary flex-shrink-0 mt-px" />
+              <DocText keypath="docs.liveTv.health.light" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+            </div>
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <DocText v-for="key in ['offline', 'counts']" :key="key" :keypath="`docs.liveTv.health.${key}`" tag="li" />
+            </ul>
+          </div>
+
+          <div class="p-4 rounded-xl border border-border bg-card space-y-1.5">
+            <div class="flex items-center gap-2 font-semibold text-xs text-foreground">
+              <Baby class="w-4 h-4 text-sky-500" /> {{ $t('docs.liveTv.kids.title') }}
+            </div>
+            <DocText keypath="docs.liveTv.kids.text" tag="p" class="text-xs text-muted-foreground leading-relaxed" />
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.watching.title') }}</h2>
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <DocText v-for="key in ['channels', 'guide', 'player']" :key="key" :keypath="`docs.liveTv.watching.${key}`" tag="li" />
+            </ul>
+            <p class="text-xs text-muted-foreground leading-relaxed">{{ $t('docs.liveTv.watching.throughServer') }}</p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
+              <Star class="w-4 h-4 text-amber-500" /> {{ $t('docs.liveTv.yours.title') }}
+            </h2>
+            <p class="text-xs text-muted-foreground leading-relaxed">{{ $t('docs.liveTv.yours.intro') }}</p>
+            <ul class="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1.5">
+              <DocText keypath="docs.liveTv.yours.favourites" tag="li" />
+              <DocText keypath="docs.liveTv.yours.recent" tag="li">
+                <template #key><kbd class="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-[12px] text-foreground">L</kbd></template>
+              </DocText>
+              <DocText v-for="key in ['hiding', 'search']" :key="key" :keypath="`docs.liveTv.yours.${key}`" tag="li" />
+            </ul>
+          </div>
+
+          <div class="p-4 rounded-xl bg-muted/30 border border-border space-y-2">
+            <div class="text-xs font-semibold text-foreground flex items-center gap-2">
+              <Info class="w-4 h-4 text-primary" />
+              <span>{{ $t('docs.liveTv.publicSources.title') }}</span>
+            </div>
+            <p class="text-xs text-muted-foreground leading-relaxed">{{ $t('docs.liveTv.publicSources.text') }}</p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.responsibility.title') }}</h2>
+            <p class="text-xs text-muted-foreground leading-relaxed">{{ $t('docs.liveTv.responsibility.text') }}</p>
+          </div>
+
+          <div class="space-y-3">
+            <h2 class="text-base font-semibold text-foreground">{{ $t('docs.liveTv.troubleshooting.title') }}</h2>
+            <div v-for="item in liveTvProblems" :key="item.id" class="p-4 rounded-xl border border-border bg-card space-y-1.5">
+              <div class="font-semibold text-xs text-foreground">{{ $t(`docs.liveTv.troubleshooting.${item.id}.title`) }}</div>
+              <DocText :keypath="`docs.liveTv.troubleshooting.${item.id}.text`" tag="p" class="text-xs text-muted-foreground leading-relaxed">
+                <template v-if="item.code" #code><button type="button" class="font-mono text-primary font-medium hover:underline" @click="openErrorCode(item.code)">{{ item.code }}</button></template>
+              </DocText>
+            </div>
+          </div>
+        </section>
+
         <!-- SECTION: Backups & Data Safety -->
         <section v-if="activeSection === 'backups'" class="space-y-6">
           <div>
@@ -861,7 +981,11 @@ import {
   Lock,
   Clock,
   CircleAlert,
-  Bug
+  Bug,
+  Baby,
+  RadioTower,
+  Activity,
+  Star
 } from '@lucide/vue';
 import { reportProblemUrl, serverVersion } from '../utils/reportProblem';
 import { useAuthStore } from '../stores/auth';
@@ -919,6 +1043,19 @@ const overviewCards = [
   { id: 'movies', icon: Film },
   { id: 'shows', icon: Tv },
   { id: 'anime', icon: Sparkles }
+];
+
+// Live TV's common problems (docs.liveTv.troubleshooting.<id>), with the error code each
+// one shows, if any.
+const liveTvProblems = [
+  { id: 'wontPlay', code: 'P701' },
+  { id: 'listFailed', code: 'P702' },
+  { id: 'notPlayable' },
+  { id: 'missingChannel' },
+  { id: 'offline' },
+  { id: 'numberTaken' },
+  { id: 'noGuide' },
+  { id: 'notInMenu' }
 ];
 
 // Path → its comment in docs.overview.storage.paths.
@@ -1015,7 +1152,8 @@ const ERROR_SECTIONS = [
   { prefix: 'P3', id: 'playback' },
   { prefix: 'P4', id: 'metadata' },
   { prefix: 'P5', id: 'lists' },
-  { prefix: 'P6', id: 'watchParties' }
+  { prefix: 'P6', id: 'watchParties' },
+  { prefix: 'P7', id: 'liveTv' }
 ];
 const errorCodes = ref([]);
 const errorCodesError = ref(false);
@@ -1040,6 +1178,16 @@ async function loadErrorCodes() {
   } catch (err) {
     errorCodesError.value = true;
   }
+}
+
+// Opens the error reference on one code, from a guide that mentions it.
+async function openErrorCode(code) {
+  activeSection.value = 'errors';
+  errorFilter.value = '';
+  highlightedCode.value = code;
+  await loadErrorCodes();
+  await nextTick();
+  document.getElementById(code)?.scrollIntoView({ block: 'center' });
 }
 
 watch(activeSection, (section) => {
@@ -1081,6 +1229,7 @@ const navGroups = [
     items: [
       { id: 'pwa', icon: Smartphone },
       { id: 'remote', icon: Globe },
+      { id: 'liveTv', icon: RadioTower },
       { id: 'shortcuts', icon: Keyboard }
     ]
   },

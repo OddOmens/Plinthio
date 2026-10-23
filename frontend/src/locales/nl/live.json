@@ -1,0 +1,146 @@
+{
+  "title": "Live tv",
+  "badge": "Live",
+  "intro": "Zenders die nu uitzenden, en wat er straks komt.",
+  "openAdmin": "Instellingen voor Live tv openen",
+  "tabs": {
+    "channels": "Zenders",
+    "guide": "Gids"
+  },
+  "searchPlaceholder": "Zenders en programma's zoeken…",
+  "groupsLabel": "Zendergroepen",
+  "channelCount": {
+    "one": "{count} zender",
+    "other": "{count} zenders"
+  },
+  "minutesLeft": {
+    "one": "Nog {count} min",
+    "other": "Nog {count} min"
+  },
+  "nextAt": "Om {time}: {title}",
+  "noGuideInfo": "Geen programma-informatie",
+  "geoBlocked": "Regiogebonden",
+  "geoBlockedHint": "Deze zender speelt mogelijk alleen af in het eigen land.",
+  "watchChannel": "{channel} kijken",
+  "off": {
+    "title": "Live tv staat uit",
+    "intro": "Live tv is nu niet beschikbaar op deze server.",
+    "admin": "Zet het aan via Admin → Live tv en voeg daarna zenders toe.",
+    "viewer": "Een admin kan Live tv aanzetten voor deze server."
+  },
+  "empty": {
+    "noChannelsTitle": "Nog geen zenders",
+    "noChannels": "Er zijn nog geen zenders om te kijken. Vraag een admin om er een paar toe te voegen.",
+    "noChannelsAdmin": "Voeg zenders toe uit een kant-en-klare lijst of je eigen playlist via Admin → Live tv.",
+    "noMatchesTitle": "Geen zenders gevonden",
+    "noMatches": "Geen zenders passen bij je zoekopdracht of de gekozen groep.",
+    "clearFilters": "Alle zenders tonen"
+  },
+  "errors": {
+    "loadTitle": "Kon de zenders niet laden",
+    "guideTitle": "Kon de gids niet laden",
+    "unreachable": "De server is niet bereikbaar. Controleer je verbinding en probeer het opnieuw."
+  },
+  "guide": {
+    "channel": "Zender",
+    "now": "Nu",
+    "tonight": "Vanavond",
+    "tomorrow": "Morgen",
+    "earlier": "Eerder",
+    "later": "Later",
+    "notLoadedTitle": "De tv-gids is nog niet geladen",
+    "notLoaded": "Zenders spelen gewoon af. De gids vult zich zodra hun bronnen zijn vernieuwd, en dat gebeurt twee keer per dag.",
+    "onNow": {
+      "one": "Nu · nog {count} min",
+      "other": "Nu · nog {count} min"
+    },
+    "startsIn": {
+      "one": "Begint over {count} min",
+      "other": "Begint over {count} min"
+    },
+    "startsAt": "Begint om {time}",
+    "ended": "Afgelopen",
+    "watchNow": "Nu kijken",
+    "watchChannel": "Zender kijken"
+  },
+  "player": {
+    "back": "Terug naar zenders",
+    "tuning": "Afstemmen…",
+    "now": "Nu",
+    "goLive": "Naar live",
+    "mute": "Dempen",
+    "unmute": "Dempen opheffen",
+    "volume": "Volume",
+    "channelUp": "Zender omhoog",
+    "channelDown": "Zender omlaag",
+    "channelUpHint": "Zender omhoog (↑)",
+    "channelDownHint": "Zender omlaag (↓)",
+    "lastChannel": "Vorige zender",
+    "lastChannelHint": "Vorige zender (L)",
+    "nextChannel": "Volgende zender",
+    "info": "Wat is er op",
+    "pip": "Beeld-in-beeld",
+    "fullscreen": "Volledig scherm",
+    "cantPlay": "Deze zender speelt niet af",
+    "errorHelp": "Fout {code}: wat dit betekent",
+    "geoBlockedHint": "Deze zender is gemarkeerd als regiogebonden, dus hij speelt mogelijk alleen af in het eigen land.",
+    "errors": {
+      "unavailable": "De stream van de zender is niet bereikbaar. Misschien is hij even offline — probeer het later opnieuw of kies een andere zender.",
+      "notFound": "Deze zender is niet meer beschikbaar.",
+      "offline": "Verbinding met de server verbroken. Controleer je netwerk en probeer het opnieuw.",
+      "tokenExpired": "Je mediatoegang is verlopen en kon niet worden verlengd. Laad de pagina opnieuw, of log uit en weer in.",
+      "decode": "Deze browser kan de video van deze zender niet afspelen.",
+      "unsupportedBrowser": "Deze browser kan geen livestreams afspelen."
+    }
+  },
+  "undo": "Ongedaan maken",
+  "lists": {
+    "label": "Zenderoverzichten",
+    "favourites": "Favorieten",
+    "recent": "Recent",
+    "all": "Alle zenders"
+  },
+  "favourites": {
+    "add": "{channel} toevoegen aan favorieten",
+    "remove": "{channel} uit favorieten halen",
+    "addShort": "Aan favorieten toevoegen",
+    "removeShort": "Uit favorieten halen"
+  },
+  "menu": {
+    "options": "Meer opties",
+    "optionsFor": "Opties voor {channel}",
+    "hideChannel": "Voor mij verbergen",
+    "hideGroup": "Heel ‘{group}’ voor mij verbergen"
+  },
+  "hidden": {
+    "channel": "{channel} is voor jou verborgen",
+    "group": "‘{group}’ is voor jou verborgen"
+  },
+  "search": {
+    "channels": "Zenders",
+    "programmes": "Programma's",
+    "noResultsTitle": "Niets gevonden",
+    "noResults": "Geen zenders of programma's passen bij ‘{query}’.",
+    "clear": "Zoekopdracht wissen",
+    "errorTitle": "Kon niet zoeken"
+  },
+  "mine": {
+    "button": "Voor mij verborgen",
+    "title": "Voor mij verborgen",
+    "subtitle": "Alleen jij ziet deze keuzes, op elk apparaat.",
+    "showOnHome": "‘Nu live’ op Home tonen",
+    "showOnHomeHint": "Een rij met wat er op je favoriete zenders is.",
+    "hiddenTitle": "Zenders en groepen die je hebt verborgen",
+    "nothingHidden": "Je hebt niets verborgen. Gebruik het menu van een zender om die zender, of een hele groep, alleen voor jezelf te verbergen.",
+    "wholeGroup": "Hele groep",
+    "show": "Tonen",
+    "showAll": "Alles tonen",
+    "saveFailed": "Kon dat niet opslaan. Controleer je verbinding en probeer het opnieuw."
+  },
+  "home": {
+    "title": "Nu live",
+    "allChannels": "Alle zenders",
+    "hideRow": "Deze rij verbergen",
+    "hideRowHint": "Deze rij verbergen (terughalen via Live tv → Voor mij verborgen)"
+  }
+}
