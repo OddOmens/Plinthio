@@ -20,5 +20,8 @@ How it's reviewed:
 - CI doesn't run on a contributor's pull request until the maintainer approves the run.
 - Pushing new commits after an approval needs a fresh approval.
 
+Plinthio is licensed under the [GNU AGPL v3.0](LICENSE). By opening a pull request you agree
+that your contribution is licensed under it too.
+
 For a bug or an idea you'd rather not code yourself, open an issue. For a **security
 problem**, don't open an issue or pull request; see [SECURITY.md](SECURITY.md).
