@@ -4,7 +4,7 @@
 
 > **The all-in-one self-hosted media server and PWA for Audiobooks, Manga & Comics, Books, Movies, TV Shows, and Anime.**
 
-[![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/License-PolyForm%20Noncommercial%201.0.0-blue.svg)](LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker/docker-compose.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-v24-green?logo=node.js)](https://nodejs.org)
 [![Release](https://img.shields.io/github/v/release/OddOmens/Plinthio)](https://github.com/OddOmens/Plinthio/releases/latest)
@@ -230,6 +230,14 @@ How the code is organised, the data model, access control and conventions are in
 ---
 
 ## 📄 License
-Plinthio is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE). You're free to use, fork, modify, and self-host it for any noncommercial purpose. Selling it, hosting it as a paid service, or otherwise using it (or a derivative) for commercial gain is not permitted without a separate license from Odd Omens LLC.
+Plinthio is open source under the [GNU Affero General Public License v3.0](LICENSE) (`AGPL-3.0-only`).
+
+- **You can** use, study, modify, fork and self-host it, for any purpose, including commercial ones.
+- **If you share it:** anyone you give a copy to, modified or not, gets the complete source code under the same license.
+- **If you run a modified version for others** over a network (for example, as a hosted service), you must offer those users its complete source code under the same license, too.
+
+Copyright © Odd Omens LLC. Plinthio is distributed in the hope that it will be useful, but without any warranty; see the [license](LICENSE) for details. The libraries it uses keep their own licenses.
+
+Contributions are accepted under the same license; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 This product uses the TMDB API but is not endorsed or certified by TMDB.

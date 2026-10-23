@@ -24,7 +24,7 @@ LABEL org.opencontainers.image.title="Plinthio" \
       org.opencontainers.image.description="Self-hosted media server & PWA for audiobooks, manga, comics, books, movies, TV and anime" \
       org.opencontainers.image.source="https://github.com/OddOmens/Plinthio" \
       org.opencontainers.image.version="${APP_VERSION}" \
-      org.opencontainers.image.licenses="PolyForm-Noncommercial-1.0.0"
+      org.opencontainers.image.licenses="AGPL-3.0-only"
 
 # VAAPI/QSV drivers ship in the default image so Intel and AMD GPUs transcode out of the box
 # once /dev/dri is passed through (see docker-compose.yml). NVENC needs no extra packages
