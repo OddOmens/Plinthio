@@ -74,7 +74,7 @@
     "description": "L'apparence de Plinthio pour tout le monde : les valeurs par défaut du serveur, son nom et votre propre CSS. Les modifications sont enregistrées au fur et à mesure.",
     "personalize": {
       "label": "Autoriser la personnalisation",
-      "desc": "Chaque personne peut choisir sa couleur, sa navigation, sa largeur et son écran de pause dans Réglages → Apparence. Désactivez pour imposer l'apparence du serveur à tout le monde."
+      "desc": "Chaque personne peut choisir sa couleur, sa navigation, sa largeur et son écran de pause dans Paramètres → Apparence. Désactivez pour imposer l'apparence du serveur à tout le monde."
     },
     "usersCanChange": "Modifiable par les utilisateurs",
     "cards": {
@@ -130,7 +130,7 @@
       "writableFree": "Le serveur peut y écrire · {free} libres.",
       "sameDisk": "Il est sur le même disque que les données du serveur : il protège des erreurs, mais pas d'une panne de disque. Mieux vaut un dossier sur un autre disque.",
       "otherDisk": "Il est sur un autre disque que les données du serveur.",
-      "hint": "Un dossier tel que le serveur le voit. Avec Docker : n'importe où sous {media} qui n'est pas en lecture seule, ou un autre disque monté sur {backups} (Docs → Backups & Data Safety).",
+      "hint": "Un dossier tel que le serveur le voit. Avec Docker : n'importe où sous {media} qui n'est pas en lecture seule, ou un autre disque monté sur {backups} (Documents → Backups & Data Safety).",
       "keepThere": "Y conserver",
       "copyFiles": "Copier aussi les photos de profil, les couvertures, la clé de connexion et les certificats HTTPS",
       "couldNotCheck": "Impossible de vérifier ce dossier",
@@ -494,7 +494,7 @@
     },
     "addDialog": {
       "title": "Ajouter un utilisateur",
-      "passwordHint": "Au moins 8 caractères. La personne pourra le changer dans Réglages → Sécurité.",
+      "passwordHint": "Au moins 8 caractères. La personne pourra le changer dans Paramètres → Sécurité.",
       "adding": "Ajout…"
     },
     "access": "Accès",
@@ -562,7 +562,7 @@
     "passwordTooShort": "Le nouveau mot de passe doit contenir au moins 8 caractères.",
     "couldNotSave": "Impossible d'enregistrer ces modifications",
     "resetTitle": "Réinitialiser la double authentification ?",
-    "resetMessage": "{name} sera déconnecté partout, pourra ensuite se connecter avec son seul mot de passe, et pourra reconfigurer la double authentification dans Réglages → Sécurité.",
+    "resetMessage": "{name} sera déconnecté partout, pourra ensuite se connecter avec son seul mot de passe, et pourra reconfigurer la double authentification dans Paramètres → Sécurité.",
     "couldNotReset": "Impossible de réinitialiser la double authentification",
     "deleteTitle": "Supprimer l'utilisateur",
     "deleteMessage": "Supprimer {name} ? Sa progression, ses signets, surlignages, listes et notes disparaissent avec lui.",
@@ -637,7 +637,7 @@
     },
     "transcode": {
       "title": "Échecs récents d'encodage pour la lecture",
-      "hint": "Erreurs ffmpeg lors de la préparation de la vidéo. Souvent un problème de pilote d'accélération matérielle — essayez Admin → Lecture → Tester."
+      "hint": "Erreurs ffmpeg lors de la préparation de la vidéo. Souvent un problème de pilote d'accélération matérielle — essayez Administration → Lecture → Tester."
     },
     "mediaTypes": {
       "movie": "film",

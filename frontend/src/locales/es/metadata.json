@@ -116,7 +116,7 @@
         "one": "{count} es un vídeo y necesita una clave de TMDB: añade una en {where} y vuelve a ejecutarlo.",
         "other": "{count} son vídeos y necesitan una clave de TMDB: añade una en {where} y vuelve a ejecutarlo."
       },
-      "adminMetadata": "Admin → Metadatos",
+      "adminMetadata": "Administración → Metadatos",
       "failed": {
         "one": "{count} falló (mira la fila para ver por qué).",
         "other": "{count} fallaron (mira cada fila para ver por qué)."

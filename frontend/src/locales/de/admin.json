@@ -637,7 +637,7 @@
     },
     "transcode": {
       "title": "Aktuelle Kodierfehler bei der Wiedergabe",
-      "hint": "ffmpeg-Fehler beim Vorbereiten von Videos. Oft ein Treiberproblem der Hardwarebeschleunigung – probiere Admin → Wiedergabe → Testen."
+      "hint": "ffmpeg-Fehler beim Vorbereiten von Videos. Oft ein Treiberproblem der Hardwarebeschleunigung – probiere Verwaltung → Wiedergabe → Testen."
     },
     "mediaTypes": {
       "movie": "Film",

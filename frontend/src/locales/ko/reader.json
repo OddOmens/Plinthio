@@ -140,7 +140,7 @@
     "orange": "주황색"
   },
   "manga": {
-    "backToShelf": "서재로 돌아가기",
+    "backToShelf": "책장로 돌아가기",
     "loadingPages": "페이지를 불러오는 중…",
     "pageOf": "{page} / {total}페이지",
     "pagesOf": "{from}–{to} / {total}페이지",

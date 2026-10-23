@@ -1,0 +1,488 @@
+{
+  "codes": {
+    "P000": {
+      "title": "Unerwarteter Serverfehler",
+      "message": "Auf dem Server ist etwas schiefgelaufen",
+      "meaning": "Der Server ist auf einen Fehler gestoßen, für den es keinen eigenen Code gibt.",
+      "fix": "Den vollständigen Fehler findest du unter Verwaltung → Protokolle (oder mit `docker logs plinthio`). Admins sehen die Ursache auch direkt in der Fehlermeldung."
+    },
+    "P001": {
+      "title": "Ungültige Anfrage",
+      "message": "Die Anfrage war ungültig",
+      "meaning": "Ein Pflichtfeld fehlte oder ein Wert lag außerhalb des erlaubten Bereichs.",
+      "fix": "Die Meldung nennt das Feld. Kam die Anfrage von der Web-App, lade die Seite neu. Eine alte, zwischengespeicherte Version kann veraltete Anfragen senden."
+    },
+    "P002": {
+      "title": "Nicht gefunden",
+      "message": "Nicht gefunden",
+      "meaning": "Das Angefragte existiert nicht oder ist für dieses Konto ausgeblendet.",
+      "fix": "Es wurde vielleicht gelöscht oder durch einen erneuten Scan verschoben. Lade die Seite neu."
+    },
+    "P003": {
+      "title": "Nicht erlaubt",
+      "message": "Dazu hast du keine Berechtigung",
+      "meaning": "Das Konto ist angemeldet, darf diese Aktion aber nicht ausführen.",
+      "fix": "Wenn du das brauchst, bitte einen Admin, deine Rolle oder deinen Zugriff zu ändern."
+    },
+    "P004": {
+      "title": "Konflikt",
+      "message": "Das kollidiert mit etwas, das bereits existiert",
+      "meaning": "Die Aktion kollidiert mit vorhandenen Daten, zum Beispiel einem doppelten Namen.",
+      "fix": "Die Meldung nennt, womit es kollidiert. Benenne den vorhandenen Eintrag zuerst um oder entferne ihn."
+    },
+    "P005": {
+      "title": "Zu viele Anfragen",
+      "message": "Zu viele Anfragen, mach etwas langsamer und versuch es gleich noch einmal",
+      "meaning": "Ein Anfragelimit wurde erreicht.",
+      "fix": "Warte eine Minute und versuch es erneut. Wenn sich viele Personen hinter einem Reverse Proxy eine IP teilen, setze TRUST_PROXY=1, damit sie getrennt begrenzt werden."
+    },
+    "P006": {
+      "title": "Vorübergehend nicht verfügbar",
+      "message": "Der Server ist ausgelastet, versuch es gleich noch einmal",
+      "meaning": "Der Server konnte die Anfrage gerade nicht bearbeiten.",
+      "fix": "Versuch es in ein paar Sekunden erneut."
+    },
+    "P007": {
+      "title": "Upload abgelehnt",
+      "message": "Die Datei konnte nicht hochgeladen werden",
+      "meaning": "Eine hochgeladene Datei war zu groß oder hatte den falschen Typ.",
+      "fix": "Bilder müssen kleiner als 15 MB sein. Backups müssen Plinthio-Backupdateien sein."
+    },
+    "P100": {
+      "title": "Anmeldung erforderlich",
+      "message": "Authentifizierung erforderlich",
+      "meaning": "Die Anfrage enthielt keine Sitzung, kein Medien-Token und keinen API-Schlüssel.",
+      "fix": "Melde dich erneut an. Für Skripte sende einen X-API-Key-Header."
+    },
+    "P101": {
+      "title": "Sitzung abgelaufen",
+      "message": "Sitzung abgelaufen, bitte melde dich erneut an",
+      "meaning": "Das Sitzungstoken ist abgelaufen, fehlerhaft oder wurde durch eine Passwortänderung oder „Überall abmelden“ widerrufen.",
+      "fix": "Melde dich erneut an."
+    },
+    "P102": {
+      "title": "Token an der falschen Stelle verwendet",
+      "message": "Dieses Token ist hier nicht gültig",
+      "meaning": "Ein Medien-Token wurde als Authorization-Header gesendet oder außerhalb von /api/media verwendet. Oder ein Sitzungstoken stand in einer URL. Medien-Tokens funktionieren nur als ?token= in Medien-URLs, Sitzungstokens nur im Authorization-Header.",
+      "fix": "Das ist ein Fehler im Client, der die Anfrage gesendet hat. Lade in der Web-App die Seite neu. Wenn es weiter passiert, melde es mit diesem Code."
+    },
+    "P103": {
+      "title": "Konto abgelaufen",
+      "message": "Der Zugang zu deinem Konto ist abgelaufen. Bitte wende dich an deinen Admin.",
+      "meaning": "Das Konto hat ein Ablaufdatum, das überschritten ist.",
+      "fix": "Ein Admin kann den Ablauf unter Verwaltung → Benutzer verlängern oder entfernen."
+    },
+    "P104": {
+      "title": "Ungültiger API-Schlüssel",
+      "message": "Ungültiger API-Schlüssel",
+      "meaning": "Der X-API-Key (oder das HTTP-Basic-Passwort) passt zu keinem Schlüssel.",
+      "fix": "Erstelle einen neuen Schlüssel unter Einstellungen → Apps & API-Schlüssel. Schlüssel werden nur einmal angezeigt, beim Erstellen."
+    },
+    "P105": {
+      "title": "Nur für Admins",
+      "message": "Admin-Rechte erforderlich",
+      "meaning": "Diese Aktion erfordert die Admin-Rolle.",
+      "fix": "Bitte einen Admin, das zu erledigen oder dein Konto hochzustufen."
+    },
+    "P106": {
+      "title": "Nur für Redakteure und Admins",
+      "message": "Redakteursrechte erforderlich",
+      "meaning": "Diese Aktion erfordert die Rolle Redakteur oder Admin.",
+      "fix": "Bitte einen Admin, dein Konto zum Redakteur zu machen."
+    },
+    "P107": {
+      "title": "Falscher Benutzername oder falsches Passwort",
+      "message": "Ungültiger Benutzername oder ungültiges Passwort",
+      "meaning": "Die Anmeldedaten passen zu keinem Konto.",
+      "fix": "Prüfe Benutzername und Passwort. Ein Admin kann ein Passwort unter Verwaltung → Benutzer zurücksetzen."
+    },
+    "P108": {
+      "title": "Zu viele Anmeldeversuche",
+      "message": "Zu viele Anmeldeversuche, versuch es später erneut",
+      "meaning": "Anmeldungen sind begrenzt, um das Erraten von Passwörtern zu bremsen.",
+      "fix": "Warte 15 Minuten und versuch es erneut."
+    },
+    "P109": {
+      "title": "Unterwegs nicht verfügbar",
+      "message": "Dieser Server kann nur aus seinem Heimnetz genutzt werden",
+      "meaning": "Die Anfrage kam von außerhalb des Heimnetzes (keine Heimnetz- oder Tailscale-Adresse), und der Server erlaubt nur Zugriff von zu Hause.",
+      "fix": "Nutze Plinthio zu Hause oder über Tailscale. Ein Admin kann den Zugriff von außen unter Verwaltung → Netzwerk erlauben."
+    },
+    "P110": {
+      "title": "Dieses Konto ist nur für zu Hause",
+      "message": "Dieses Konto kann nur aus dem Heimnetz genutzt werden",
+      "meaning": "Der Server erlaubt Zugriff von außen, aber nicht für dieses Konto.",
+      "fix": "Nutze Plinthio zu Hause, oder bitte einen Admin, dieses Konto für unterwegs freizugeben (Verwaltung → Benutzer)."
+    },
+    "P111": {
+      "title": "Falscher Zwei-Faktor-Code",
+      "message": "Dieser Code ist falsch oder wurde schon verwendet",
+      "meaning": "Der sechsstellige Code (oder Backup-Code) passte nicht. Codes wechseln alle 30 Sekunden und funktionieren jeweils nur einmal.",
+      "fix": "Gib den aktuellen Code aus deiner Authenticator-App ein. Prüfe, ob die Uhrzeit auf dem Handy automatisch eingestellt wird. Handy verloren? Nutze einen Backup-Code oder bitte einen Admin, die Zwei-Faktor-Anmeldung zurückzusetzen."
+    },
+    "P112": {
+      "title": "Unterwegs ist Zwei-Faktor nötig",
+      "message": "Für die Anmeldung von außerhalb des Heimnetzes ist Zwei-Faktor nötig, aber dieses Konto hat es nicht eingerichtet",
+      "meaning": "Der Server verlangt Zwei-Faktor für Anmeldungen von außerhalb des Heimnetzes.",
+      "fix": "Melde dich einmal zu Hause an und schalte die Zwei-Faktor-Anmeldung unter Einstellungen → Sicherheit ein."
+    },
+    "P113": {
+      "title": "Anmeldeschritt abgelaufen",
+      "message": "Die Anmeldung hat zu lange gedauert, fang noch einmal an",
+      "meaning": "Für den Zwei-Faktor-Schritt einer Anmeldung bleiben nur wenige Minuten, oder es wurden zu viele falsche Codes eingegeben.",
+      "fix": "Gib deinen Benutzernamen und dein Passwort erneut ein."
+    },
+    "P200": {
+      "title": "Bibliotheksordner nicht gefunden",
+      "message": "Bibliotheksordner nicht gefunden",
+      "meaning": "Der Ordner, auf den eine Bibliothek zeigt, existiert auf dem Server (oder im Container) nicht.",
+      "fix": "In Docker sind deine Medien unter /media eingebunden, Bibliothekspfade sehen also aus wie /media/Movies. Prüfe, ob MEDIA_DIR in docker/.env auf den richtigen Ordner des Hosts zeigt."
+    },
+    "P201": {
+      "title": "Bibliotheksordner nicht lesbar (E/A-Fehler)",
+      "message": "Der Medienordner konnte nicht gelesen werden (E/A-Fehler)",
+      "meaning": "Das Lesen des Ordners schlug mit EIO fehl. Fast immer wurde das Laufwerk dahinter getrennt oder neu eingehängt, sodass ein veralteter Mount zurückbleibt. Ein neu eingehängtes USB-Laufwerk kann unter einem neuen Pfad wie /media/you/Drive1 auftauchen.",
+      "fix": "Prüfe, ob das Laufwerk angeschlossen und eingehängt ist (`mount | grep media`). Lass MEDIA_DIR auf den aktuellen Mount-Pfad zeigen und erstelle den Container neu. Wenn du das Laufwerk per UUID in /etc/fstab einhängst, bleibt der Pfad stabil."
+    },
+    "P202": {
+      "title": "Zugriff auf Bibliotheksordner verweigert",
+      "message": "Der Server hat keine Berechtigung, diesen Ordner zu lesen",
+      "meaning": "Der Ordner existiert, aber der Plinthio-Prozess kann ihn nicht lesen (EACCES).",
+      "fix": "Gib dem Container-Benutzer Lesezugriff auf den Medienordner, z. B. mit `chmod -R o+rX` auf dem Ordner des Hosts oder mit passenden PUID/PGID."
+    },
+    "P203": {
+      "title": "Kein Ordner",
+      "message": "Dieser Pfad ist kein Ordner",
+      "meaning": "Der Bibliothekspfad zeigt auf eine Datei statt auf ein Verzeichnis.",
+      "fix": "Wähle den Ordner, der deine Medien enthält."
+    },
+    "P300": {
+      "title": "Medium nicht gefunden",
+      "message": "Medium nicht gefunden",
+      "meaning": "Es gibt keinen Eintrag mit dieser ID, oder er ist für dieses Konto von einem Admin oder durch die Jugendschutzeinstellungen ausgeblendet.",
+      "fix": "Lade die Bibliothek neu. Ein erneuter Scan hat den Eintrag vielleicht ersetzt."
+    },
+    "P301": {
+      "title": "Mediendatei fehlt",
+      "message": "Die Mediendatei fehlt auf dem Datenträger",
+      "meaning": "Der Eintrag ist in der Bibliothek, aber seine Datei ist weg. Sie wurde verschoben, umbenannt oder gelöscht, oder das Laufwerk ist nicht eingehängt.",
+      "fix": "Prüfe, ob das Laufwerk eingehängt ist, und scanne die Bibliothek dann neu."
+    },
+    "P302": {
+      "title": "Mediendatei nicht lesbar",
+      "message": "Die Mediendatei konnte nicht gelesen werden",
+      "meaning": "Das Lesen der Datei schlug fehl. Meist ein getrenntes Laufwerk (EIO), ein Berechtigungsproblem oder eine beschädigte Datei.",
+      "fix": "Bei Laufwerks- und Berechtigungsproblemen siehe P201/P202. Den eigentlichen Fehler findest du unter Verwaltung → Protokolle."
+    },
+    "P303": {
+      "title": "ffmpeg nicht verfügbar",
+      "message": "Videokonvertierung nicht verfügbar: ffmpeg konnte nicht gestartet werden",
+      "meaning": "ffmpeg oder ffprobe fehlt oder ließ sich nicht starten, daher können Videos, die konvertiert werden müssen, nicht abgespielt werden.",
+      "fix": "Das Docker-Image enthält ffmpeg. Bei einer Installation ohne Docker installiere ffmpeg und stelle sicher, dass es im PATH liegt. Sieh unter Verwaltung → Protokolle nach."
+    },
+    "P304": {
+      "title": "Konvertierung fehlgeschlagen",
+      "message": "Die Konvertierung dieses Videos ist auf dem Server fehlgeschlagen",
+      "meaning": "ffmpeg wurde gestartet, brach beim Konvertieren aber mit einem Fehler ab. Meist eine beschädigte Datei, ein nicht unterstützter Codec oder ein Problem mit der Hardware-Transkodierung.",
+      "fix": "Verwaltung → Protokolle zeigt den ffmpeg-Fehler. Wird VAAPI/QSV/NVENC erwähnt, schalte die Hardware-Transkodierung unter Verwaltung → Wiedergabe aus und versuch es erneut."
+    },
+    "P305": {
+      "title": "Wird noch vorbereitet",
+      "message": "Dieses Video wird noch vorbereitet, versuch es gleich noch einmal",
+      "meaning": "Die Konvertierung läuft, hat den angefragten Teil aber noch nicht erzeugt.",
+      "fix": "Der Player versucht es von selbst erneut. Wird es nie fertig, ist der Server für Echtzeit-Transkodierung in dieser Qualität vielleicht zu langsam. Wähle eine niedrigere Qualität."
+    },
+    "P306": {
+      "title": "Ungültige Stream-Anfrage",
+      "message": "Ungültige Stream-Anfrage",
+      "meaning": "Die Stream-URL nannte eine unbekannte Qualität, Tonspur, ein unbekanntes Segment oder Vorschaublatt.",
+      "fix": "Lade den Player neu. Meist ist das eine veraltete URL, nachdem das Video neu gescannt wurde."
+    },
+    "P307": {
+      "title": "Untertitelspur nicht gefunden",
+      "message": "Untertitelspur nicht gefunden",
+      "meaning": "Die angefragte Untertitelspur existiert nicht oder konnte nicht extrahiert werden.",
+      "fix": "Wähle eine andere Spur. Bildbasierte Untertitel (PGS/VobSub) können nicht als Text angezeigt werden."
+    },
+    "P308": {
+      "title": "PDF-Reader nicht verfügbar",
+      "message": "PDF-Seiten können nicht angezeigt werden: poppler ist auf dem Server nicht installiert",
+      "meaning": "Plinthio wandelt PDF-Seiten mit poppler (pdftoppm und pdfinfo) in Bilder um und konnte diese nicht starten.",
+      "fix": "Das Docker-Image enthält poppler. Bei einer Installation ohne Docker installiere poppler-utils (apt install poppler-utils, brew install poppler) und starte neu."
+    },
+    "P309": {
+      "title": "PDF-Seite konnte nicht dargestellt werden",
+      "message": "Diese PDF-Seite konnte nicht dargestellt werden",
+      "meaning": "poppler wurde gestartet, ist an dieser Datei aber gescheitert. Meist ein beschädigtes oder passwortgeschütztes PDF.",
+      "fix": "Öffne die Datei zur Prüfung in einem anderen PDF-Reader. Ein passwortgeschütztes PDF muss zuerst entsperrt werden. Den Fehler findest du unter Verwaltung → Protokolle."
+    },
+    "P350": {
+      "title": "Browser kann dieses Format nicht abspielen",
+      "message": "Dieser Browser kann dieses Video nicht abspielen",
+      "meaning": "Der Browser hat den Stream abgelehnt, obwohl der Server ihn konvertiert hat.",
+      "fix": "Probier einen anderen Browser (Chrome, Edge oder Safari). Passiert es in jedem Browser, ist vielleicht die Datei selbst beschädigt."
+    },
+    "P351": {
+      "title": "Verbindung bei der Wiedergabe verloren",
+      "message": "Verbindung zum Server verloren",
+      "meaning": "Der Player konnte den Server nicht erreichen, um den nächsten Teil des Videos zu laden.",
+      "fix": "Prüfe deine Netzwerkverbindung und tippe dann auf Erneut versuchen."
+    },
+    "P352": {
+      "title": "Medienlink konnte nicht erneuert werden",
+      "message": "Dein Medienzugriff ist abgelaufen und konnte nicht erneuert werden",
+      "meaning": "Medien-URLs enthalten ein kurzlebiges Token. Es ist abgelaufen, und die App konnte kein neues bekommen.",
+      "fix": "Lade die Seite neu. Hilft das nicht, melde dich ab und wieder an."
+    },
+    "P400": {
+      "title": "TMDB-Schlüssel nicht eingerichtet",
+      "message": "Es ist kein TMDB-API-Schlüssel eingerichtet. Ein Admin muss unter Verwaltung → Metadaten einen hinzufügen.",
+      "meaning": "Metadaten zu Filmen, Serien und Anime kommen von TMDB, das einen API-Schlüssel braucht. Release-Images haben einen eingebauten; du siehst diese Meldung bei einem selbst gebauten Build oder wenn TMDB den eingebauten Schlüssel nicht mehr akzeptiert.",
+      "fix": "Erstelle einen Schlüssel unter themoviedb.org → Einstellungen → API und füge ihn unter Verwaltung → Metadaten ein."
+    },
+    "P401": {
+      "title": "Anbieter hat den API-Schlüssel abgelehnt",
+      "message": "Der Metadaten-Anbieter hat den eingerichteten API-Schlüssel abgelehnt",
+      "meaning": "Der Server hat den Anbieter erreicht, aber der Anbieter hat den Schlüssel abgelehnt.",
+      "fix": "Füge für TMDB entweder den „API Key“ oder den „API Read Access Token“ aus deinem TMDB-Konto unter Verwaltung → Metadaten ein."
+    },
+    "P402": {
+      "title": "Anfragelimit des Anbieters",
+      "message": "Der Metadaten-Anbieter begrenzt die Anfragen dieses Servers. Warte kurz und versuch es erneut.",
+      "meaning": "Der Anbieter lehnt Anfragen ab, weil zu viele gesendet wurden.",
+      "fix": "Warte eine Minute. Das Zuordnen großer Bibliotheken in einem Rutsch kann das auslösen."
+    },
+    "P403": {
+      "title": "Anbieter nicht erreichbar",
+      "message": "Der Metadaten-Anbieter ist vom Server aus nicht erreichbar",
+      "meaning": "Die Anfrage an den Anbieter lief in ein Zeitlimit oder scheiterte auf Netzwerkebene.",
+      "fix": "Prüfe, ob der Server (Container) ausgehenden Internetzugang und DNS hat."
+    },
+    "P500": {
+      "title": "Liste nicht gefunden",
+      "message": "Liste nicht gefunden",
+      "meaning": "Die Liste oder der Ordner existiert nicht oder gehört jemand anderem.",
+      "fix": "Lade die Seite Listen neu."
+    },
+    "P501": {
+      "title": "Falsche Art von Titel für diese Liste",
+      "message": "Diese Art von Titel passt nicht in diese Liste",
+      "meaning": "Jede Liste enthält eine Kategorie: Filme, Serien, Anime, Lesen oder Hören.",
+      "fix": "Füge ihn einer Liste der passenden Kategorie hinzu."
+    },
+    "P502": {
+      "title": "Schon in der Liste",
+      "message": "Dieser Titel ist schon in dieser Liste",
+      "meaning": "Der Titel wurde dieser Liste bereits hinzugefügt.",
+      "fix": "Nichts zu tun."
+    },
+    "P503": {
+      "title": "Schon angefragt",
+      "message": "Dieser Titel wurde schon angefragt",
+      "meaning": "Jemand hat eine offene Anfrage für diesen Titel.",
+      "fix": "Den Status siehst du auf der Seite Anfragen."
+    },
+    "P504": {
+      "title": "Schon in der Bibliothek",
+      "message": "Dieser Titel wurde der Bibliothek schon hinzugefügt",
+      "meaning": "Eine Anfrage für diesen Titel wurde angenommen und als hinzugefügt markiert.",
+      "fix": "Such ihn in der Bibliothek."
+    },
+    "P505": {
+      "title": "Anfrage kann nicht mehr zurückgezogen werden",
+      "message": "Nur offene Anfragen können zurückgezogen werden",
+      "meaning": "Ein Admin oder Redakteur hat diese Anfrage schon bearbeitet.",
+      "fix": "Frag einen Admin oder Redakteur, wenn sie entfernt werden soll."
+    },
+    "P506": {
+      "title": "Anfrage nicht gefunden",
+      "message": "Anfrage nicht gefunden",
+      "meaning": "Die Anfrage wurde gelöscht oder hat nie existiert.",
+      "fix": "Lade die Seite Anfragen neu."
+    },
+    "P600": {
+      "title": "Watch-Partys sind aus",
+      "message": "Watch-Partys sind auf diesem Server ausgeschaltet",
+      "meaning": "Ein Admin hat Watch-Partys nicht eingeschaltet.",
+      "fix": "Ein Admin kann sie unter Verwaltung → Funktionen → Watch-Partys einschalten."
+    },
+    "P601": {
+      "title": "Party nicht gefunden",
+      "message": "Diese Watch-Party ist vorbei oder hat nie existiert",
+      "meaning": "Der Host hat die Party beendet, alle sind gegangen, oder der Server wurde neu gestartet.",
+      "fix": "Bitte den Host um einen neuen Einladungslink."
+    },
+    "P602": {
+      "title": "Nur der Host kann das",
+      "message": "Nur der Host der Party kann das",
+      "meaning": "Der Host hat die Wiedergabesteuerung für sich behalten.",
+      "fix": "Frag den Host, oder bitte ihn, alle die Wiedergabe steuern zu lassen."
+    },
+    "P603": {
+      "title": "Für dein Konto nicht verfügbar",
+      "message": "Diese Party schaut etwas, das dein Konto nicht öffnen kann",
+      "meaning": "Der Titel ist für dich ausgeblendet oder liegt über der Inhaltsbeschränkung deines Kontos.",
+      "fix": "Frag einen Admin nach den Inhaltseinstellungen deines Kontos."
+    },
+    "P604": {
+      "title": "Nicht alle können das schauen",
+      "message": "Jemand in der Party kann diesen Titel nicht öffnen",
+      "meaning": "Der Titel ist für jemanden, der zuschaut, ausgeblendet oder liegt über dessen Inhaltsbeschränkung.",
+      "fix": "Wähle etwas, das alle in der Party schauen können."
+    },
+    "P605": {
+      "title": "Party ist voll",
+      "message": "Diese Watch-Party ist voll",
+      "meaning": "Eine Party fasst bis zu 20 Personen, und ein Server betreibt bis zu 20 Partys gleichzeitig.",
+      "fix": "Versuch es erneut, wenn jemand geht oder eine Party endet."
+    }
+  },
+  "messages": {
+    "tooManyAuthenticationAttemptsPleaseTry": "Zu viele Authentifizierungsversuche. Bitte versuch es später erneut.",
+    "tooManyLoginAttemptsPleaseWait": "Zu viele Anmeldeversuche. Bitte warte, bevor du es erneut versuchst.",
+    "tooManyBackupRequestsPleaseWait": "Zu viele Backup-Anfragen. Bitte warte, bevor du es erneut versuchst.",
+    "plinthioIsNotUsingItsOwn": "Plinthio verwendet keine eigene Zertifizierungsstelle",
+    "couldNotReadFile": "Datei konnte nicht gelesen werden",
+    "thisAccountNoLongerExists": "Dieses Konto existiert nicht mehr",
+    "sessionWasSignedOutPleaseLog": "Die Sitzung wurde abgemeldet, bitte melde dich erneut an",
+    "noOpeningSequence": "Kein Intro",
+    "invalidItemId": "Ungültige Eintrags-ID",
+    "noStillForThisVideo": "Kein Standbild für dieses Video",
+    "pageNotFound": "Seite nicht gefunden",
+    "thatWouldLockOutTheDevice": "Damit würdest du das Gerät aussperren, das du gerade benutzt. Ändere das aus deinem Heimnetz.",
+    "itemNotFound": "Eintrag nicht gefunden",
+    "ratingMustBeAWholeNumber": "Die Bewertung muss eine ganze Zahl von 1 bis 5 sein",
+    "personalRatingsAreTurnedOffOn": "Persönliche Bewertungen sind auf diesem Server ausgeschaltet",
+    "ratingRemoved": "Bewertung entfernt",
+    "seriesNotFound": "Reihe nicht gefunden",
+    "nothingToRemove": "Nichts zu entfernen",
+    "notInKidsMode": "Nicht im Kindermodus",
+    "addedToKidsMode": "Zum Kindermodus hinzugefügt",
+    "removedFromKidsMode": "Aus dem Kindermodus entfernt",
+    "invalidUserId": "Ungültige Benutzer-ID",
+    "avatarNotFound": "Avatar nicht gefunden",
+    "failedToReadAvatar": "Avatar konnte nicht gelesen werden",
+    "avatarImageMustBeSmallerThan": "Das Avatarbild muss kleiner als 5 MB sein",
+    "noAvatarImageFileProvided": "Keine Bilddatei für den Avatar angegeben",
+    "failedToProcessAndSaveAvatar": "Das Avatarbild konnte nicht verarbeitet und gespeichert werden",
+    "currentPasswordIsRequired": "Das aktuelle Passwort ist erforderlich",
+    "newPasswordMustBeAtLeast": "Das neue Passwort muss mindestens 8 Zeichen lang sein",
+    "currentPasswordIncorrect": "Aktuelles Passwort ist falsch",
+    "usernameAndPasswordMin8Characters": "Benutzername und Passwort (mind. 8 Zeichen) sind erforderlich",
+    "usernameAlreadyTaken": "Benutzername ist schon vergeben",
+    "userNotFound": "Benutzer nicht gefunden",
+    "cannotChangeYourOwnRole": "Du kannst deine eigene Rolle nicht ändern",
+    "cannotSetAnExpirationDateOn": "Du kannst für dein eigenes Konto kein Ablaufdatum festlegen",
+    "cannotRestrictYourOwnAccount": "Du kannst dein eigenes Konto nicht einschränken",
+    "cannotPutYourOwnAccountIn": "Du kannst dein eigenes Konto nicht in den Kindermodus versetzen",
+    "anAdminAccountCanTBe": "Ein Admin-Konto kann kein Kinderkonto sein",
+    "nothingToUpdate": "Nichts zu aktualisieren",
+    "cannotDeleteYourOwnAccount": "Du kannst dein eigenes Konto nicht löschen",
+    "youReAwayFromHomeRight": "Du bist gerade unterwegs, das würde dich also abmelden. Ändere das aus deinem Heimnetz.",
+    "twoFactorIsnTOnFor": "Für dieses Konto ist die Zwei-Faktor-Anmeldung nicht an",
+    "avatarUploadedSuccessfully": "Avatar hochgeladen",
+    "avatarRemovedSuccessfully": "Avatar entfernt",
+    "preferencesUpdated": "Einstellungen aktualisiert",
+    "passwordUpdatedSuccessfullyYouWillNeed": "Passwort aktualisiert. Du musst dich erneut anmelden.",
+    "userCreatedSuccessfully": "Benutzer erstellt",
+    "userUpdatedSuccessfully": "Benutzer aktualisiert",
+    "twoFactorTurnedOffTheyCan": "Zwei-Faktor-Anmeldung ausgeschaltet. Die Person kann sich mit ihrem Passwort anmelden und sie neu einrichten.",
+    "passwordResetSuccessfully": "Passwort zurückgesetzt",
+    "roleUpdatedSuccessfully": "Rolle aktualisiert",
+    "userDeletedSuccessfully": "Benutzer gelöscht",
+    "bookmarkNotFound": "Lesezeichen nicht gefunden",
+    "bookmarkCreated": "Lesezeichen erstellt",
+    "bookmarkUpdated": "Lesezeichen aktualisiert",
+    "bookmarkDeleted": "Lesezeichen gelöscht",
+    "logsClearedSuccessfully": "Protokolle geleert",
+    "sessionAlreadyClosed": "Sitzung bereits beendet",
+    "sessionClosed": "Sitzung beendet",
+    "segmentNotAvailable": "Segment nicht verfügbar",
+    "couldNotLoadScrubPreviews": "Vorschaubilder für die Zeitleiste konnten nicht geladen werden",
+    "sheetNotFound": "Vorschaublatt nicht gefunden",
+    "couldNotLoadScrubPreview": "Vorschaubild für die Zeitleiste konnte nicht geladen werden",
+    "markerMustEndAfterItStarts": "Ein Marker muss nach seinem Anfang enden",
+    "markersSaved": "Marker gespeichert",
+    "unknownMediaType": "Unbekannter Medientyp",
+    "requestSent": "Anfrage gesendet",
+    "requestUpdated": "Anfrage aktualisiert",
+    "requestRemoved": "Anfrage entfernt",
+    "serverIsAlreadySetUp": "Der Server ist bereits eingerichtet",
+    "adminUsernameAndPasswordMin8": "Admin-Benutzername und Passwort (mind. 8 Zeichen) sind erforderlich",
+    "setupIsAlreadyInProgress": "Die Einrichtung läuft bereits",
+    "serverIsAlreadySetUpPlease": "Der Server ist bereits eingerichtet. Bitte melde dich an.",
+    "serverSetupFailedCheckTheServer": "Die Servereinrichtung ist fehlgeschlagen. Details findest du in den Serverprotokollen.",
+    "usernameAndPasswordAreRequired": "Benutzername und Passwort sind erforderlich",
+    "loginFailedCheckTheServerLogs": "Anmeldung fehlgeschlagen. Details findest du in den Serverprotokollen.",
+    "signInFailedCheckTheServer": "Anmeldung fehlgeschlagen. Details findest du in den Serverprotokollen.",
+    "signInWithYourPasswordTo": "Melde dich mit deinem Passwort an, um die Zwei-Faktor-Anmeldung zu ändern",
+    "twoFactorIsAlreadyOnTurn": "Die Zwei-Faktor-Anmeldung ist schon an. Schalte sie zuerst aus, um sie neu einzurichten.",
+    "twoFactorIsAlreadyOn": "Die Zwei-Faktor-Anmeldung ist schon an",
+    "startSettingUpTwoFactorFirst": "Beginne zuerst mit der Einrichtung der Zwei-Faktor-Anmeldung",
+    "twoFactorIsOff": "Die Zwei-Faktor-Anmeldung ist aus",
+    "setPlinthioUpFromYourHome": "Richte Plinthio aus deinem Heimnetz ein",
+    "serverInitializedSuccessfully": "Server eingerichtet",
+    "allSessionsSignedOutPleaseSign": "Alle Sitzungen wurden abgemeldet. Bitte melde dich erneut an.",
+    "highlightNotFound": "Markierung nicht gefunden",
+    "highlightDeleted": "Markierung gelöscht",
+    "pickAMovieOrEpisodeTo": "Wähle einen Film oder eine Folge zum gemeinsamen Schauen",
+    "joinThePartyFirst": "Tritt zuerst der Party bei",
+    "saySomething": "Sag etwas",
+    "noImageUploaded": "Kein Bild hochgeladen",
+    "couldNotProcessThatImage": "Das Bild konnte nicht verarbeitet werden",
+    "seriesNameIsRequired": "Der Name der Reihe ist erforderlich",
+    "coverArtUpdated": "Cover aktualisiert",
+    "theMetadataProviderRejectedTheConfigured": "Der Metadaten-Anbieter hat den eingerichteten API-Schlüssel abgelehnt. Kopiere für TMDB entweder den „API Key“ oder den „API Read Access Token“ aus deinen TMDB-Kontoeinstellungen nach Verwaltung → Metadaten. Der Server hat den Anbieter problemlos erreicht, es liegt also an den Zugangsdaten, nicht am Netzwerk.",
+    "itemMatchedAndUpdated": "Eintrag zugeordnet und aktualisiert",
+    "metadataUpdated": "Metadaten aktualisiert",
+    "keyNameIsRequired": "Der Name des Schlüssels ist erforderlich",
+    "apiKeyGeneratedSuccessfully": "API-Schlüssel erstellt",
+    "apiKeyRevoked": "API-Schlüssel widerrufen",
+    "libraryNotFound": "Bibliothek nicht gefunden",
+    "libraryCreatedAndScanningStarted": "Bibliothek erstellt, Scan gestartet",
+    "libraryDeletedSuccessfully": "Bibliothek gelöscht",
+    "markedAllVolumesAsRead": "Alle Bände als gelesen markiert",
+    "markedAllVolumesAsUnread": "Alle Bände als ungelesen markiert",
+    "itemHiddenFromShelf": "Eintrag im Regal ausgeblendet",
+    "itemRestoredToShelf": "Eintrag wieder im Regal",
+    "seriesSettingsSaved": "Einstellungen der Reihe gespeichert",
+    "folderNameIsRequired": "Der Ordnername ist erforderlich",
+    "folderCreated": "Ordner erstellt",
+    "folderOrListNotFound": "Ordner oder Liste nicht gefunden",
+    "folderDeleted": "Ordner gelöscht",
+    "itemAddedToFolder": "Eintrag zum Ordner hinzugefügt",
+    "readingOrderSaved": "Lesereihenfolge gespeichert",
+    "itemRemovedFromFolder": "Eintrag aus dem Ordner entfernt",
+    "addedToList": "Zur Liste hinzugefügt",
+    "removedFromList": "Aus der Liste entfernt",
+    "noValidItemIds": "Keine gültigen Eintrags-IDs",
+    "progressSaved": "Fortschritt gespeichert",
+    "unknownHardwareAccelerationPreference": "Unbekannte Einstellung für die Hardwarebeschleunigung",
+    "unknownHardwareAccelerationMethod": "Unbekannte Methode für die Hardwarebeschleunigung",
+    "intervalMustBeBetween1And": "Das Intervall muss zwischen 1 und 168 Stunden liegen",
+    "retentionMustBeBetween1And": "Es müssen zwischen 1 und 30 Backups aufbewahrt werden",
+    "copiesKeptMustBeBetween1": "Die Anzahl aufbewahrter Kopien muss zwischen 1 und 365 liegen",
+    "scanIntervalMustBeBetween5": "Das Scan-Intervall muss zwischen 5 Minuten und 7 Tagen liegen",
+    "noBackupDestinationIsSet": "Es ist kein Backup-Ziel festgelegt",
+    "shelfViewsUpdated": "Regalansichten aktualisiert",
+    "transcodingSettingsSaved": "Transkodierungseinstellungen gespeichert",
+    "backupScheduleUpdated": "Backup-Zeitplan aktualisiert",
+    "automaticScanningUpdated": "Automatisches Scannen aktualisiert",
+    "backupCreated": "Backup erstellt",
+    "backupDeleted": "Backup gelöscht",
+    "couldNotLoadServerCustomization": "Die Server-Anpassungen konnten nicht geladen werden",
+    "chooseAnMp4FileToUpload": "Wähle eine MP4-Datei zum Hochladen",
+    "customizationUpdatedSuccessfully": "Anpassungen aktualisiert",
+    "chooseAFolder": "Wähle einen Ordner.",
+    "useAFullPathStartingWith": "Gib einen vollständigen Pfad an, der mit / beginnt.",
+    "thatSInsideTheServerS": "Das liegt im Datenordner des Servers selbst; wähle einen Ordner an anderer Stelle.",
+    "thatFolderContainsTheServerS": "Dieser Ordner enthält den Datenordner des Servers; wähle einen daneben oder an anderer Stelle.",
+    "thatSAFileNotA": "Das ist eine Datei, kein Ordner."
+  },
+  "patterns": {
+    "noMetadataSource": "Noch keine Metadatenquelle für {type}",
+    "folderMissing": "Weder dieser Ordner noch {parent} existiert. In Docker muss der Ordner zuerst in den Container eingebunden werden.",
+    "cantWriteFolder": "In diesen Ordner kann nicht geschrieben werden: {reason}.",
+    "backupFailed": "Backup fehlgeschlagen: {reason}"
+  }
+}

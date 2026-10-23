@@ -79,7 +79,7 @@
   "empty": {
     "title": "No se encontró contenido",
     "noMatches": "No hay coincidencias: prueba otra búsqueda o quita los filtros",
-    "noLibrary": "Añade una biblioteca en Admin → Bibliotecas y escanea tus carpetas para llenar tu estantería",
+    "noLibrary": "Añade una biblioteca en Administración → Bibliotecas y escanea tus carpetas para llenar tu estantería",
     "goToSettings": "Ir a Ajustes"
   },
   "loadedMore": {

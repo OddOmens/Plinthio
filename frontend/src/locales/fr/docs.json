@@ -58,7 +58,7 @@
     },
     "libraries": {
       "title": "Comment fonctionnent les bibliothèques",
-      "what": "Une **bibliothèque** est un dossier sur le disque associé à un type de média (livres audio, mangas et BD, livres numériques, séries, films ou anime). Ajoutez des bibliothèques depuis **Admin → Bibliothèques** : indiquez un dossier à Plinthio, choisissez le type, et l'analyse démarre aussitôt. Relancer une analyse ne présente aucun risque : elle compare avec ce qui est déjà indexé, reconnaît les fichiers renommés ou déplacés à leur contenu, ajoute les nouveautés et retire du catalogue les fichiers qui n'existent plus sur le disque (sans jamais toucher aux fichiers eux-mêmes).",
+      "what": "Une **bibliothèque** est un dossier sur le disque associé à un type de média (livres audio, mangas et BD, livres numériques, séries, films ou anime). Ajoutez des bibliothèques depuis **Administration → Bibliothèques** : indiquez un dossier à Plinthio, choisissez le type, et l'analyse démarre aussitôt. Relancer une analyse ne présente aucun risque : elle compare avec ce qui est déjà indexé, reconnaît les fichiers renommés ou déplacés à leur contenu, ajoute les nouveautés et retire du catalogue les fichiers qui n'existent plus sur le disque (sans jamais toucher aux fichiers eux-mêmes).",
       "deleting": "Supprimer une bibliothèque dans Plinthio retire seulement ses entrées du catalogue (titres, couvertures, métadonnées) — vos fichiers ne sont jamais touchés. La progression de lecture et les marque-pages sont conservés selon l'identité des fichiers : si vous rajoutez le même dossier et relancez l'analyse, ils sont rattachés automatiquement."
     },
     "storage": {
@@ -79,7 +79,7 @@
       "title": "Prérequis et première installation",
       "docker": "Docker (ou Docker Compose) est la façon recommandée de faire tourner Plinthio — voir {file} dans le dépôt.",
       "firstLaunch": "Au premier lancement, tant qu'aucun compte administrateur n'existe, le serveur vous redirige vers un écran de **configuration** unique pour créer le premier administrateur.",
-      "afterSetup": "Une fois la configuration terminée, connectez-vous et ajoutez votre première bibliothèque depuis **Admin → Bibliothèques** pour lancer l'analyse.",
+      "afterSetup": "Une fois la configuration terminée, connectez-vous et ajoutez votre première bibliothèque depuis **Administration → Bibliothèques** pour lancer l'analyse.",
       "noDatabase": "Aucune base de données externe n'est nécessaire — tout est stocké dans un seul fichier SQLite, avec la journalisation anticipée (WAL) activée pour des accès simultanés sans risque."
     }
   },
@@ -91,13 +91,13 @@
     "booksTitle": "Livres et livres numériques",
     "books": "Formats : {epub}, {pdf}. Fonctionne d'emblée avec **Google Books** et **Open Library** pour les métadonnées et les couvertures, sans clé d'API.",
     "videoTitle": "{movieIcon} Films, {tvIcon} séries et {animeIcon} anime",
-    "video": "Formats : {mp4}, {mkv}, {webm}. Le streaming utilise les requêtes HTTP par plages pour naviguer dans la vidéo ; ce que le navigateur ne sait pas lire nativement est transcodé à la volée. Les métadonnées et visuels viennent de **TMDB (The Movie Database)**, qui demande une clé d'API personnelle gratuite, à configurer une fois par un administrateur dans **Admin → Métadonnées**. Sans clé, ces trois bibliothèques s'analysent et se lisent quand même très bien — elles n'auront simplement pas d'affiches, de résumés ni d'informations sur la distribution et les saisons.",
+    "video": "Formats : {mp4}, {mkv}, {webm}. Le streaming utilise les requêtes HTTP par plages pour naviguer dans la vidéo ; ce que le navigateur ne sait pas lire nativement est transcodé à la volée. Les métadonnées et visuels viennent de **TMDB (The Movie Database)**, qui demande une clé d'API personnelle gratuite, à configurer une fois par un administrateur dans **Administration → Métadonnées**. Sans clé, ces trois bibliothèques s'analysent et se lisent quand même très bien — elles n'auront simplement pas d'affiches, de résumés ni d'informations sur la distribution et les saisons.",
     "applying": {
       "title": "Appliquer et remplacer les métadonnées",
       "text": "Les administrateurs et les éditeurs peuvent chercher dans les sources externes et appliquer une correspondance à n'importe quel élément, ou envoyer directement une couverture personnalisée, depuis la fiche de l'élément. Une nouvelle analyse n'écrase jamais les modifications manuelles — elle ne remplit que les champs encore vides."
     },
     "cleanup": {
-      "title": "Nettoyage des titres et association des métadonnées par lot (Admin → Métadonnées)",
+      "title": "Nettoyage des titres et association des métadonnées par lot (Administration → Métadonnées)",
       "text": "Quand des fichiers vidéo portant des étiquettes de release (par ex. {example}) sont analysés, le nettoyeur de titres en extrait le titre propre du film ou de la série et isole l'année de sortie à 4 chiffres.",
       "titleCleanup": "**Nettoyage des titres :** en un clic, nettoie par lot les titres de la base en noms lisibles, en conservant les années détectées.",
       "batchMatch": "**Association TMDB par lot :** cherche sur TMDB avec le titre propre et l'année exacte pour récupérer l'affiche officielle, le réalisateur, la distribution, le synopsis et les dates de sortie de tous les éléments sélectionnés.",
@@ -121,23 +121,23 @@
     },
     "manage": {
       "title": "Gérer les comptes (administrateurs uniquement)",
-      "intro": "Depuis **Admin → Utilisateurs**, vous pouvez :",
+      "intro": "Depuis **Administration → Utilisateurs**, vous pouvez :",
       "add": "**Ajouter un utilisateur** — créer un compte avec un nom d'utilisateur, un mot de passe initial et un rôle.",
       "role": "**Changer le rôle** — utilisez la liste des rôles à côté de chaque utilisateur (vous ne pouvez pas changer votre propre rôle : le serveur garde ainsi toujours au moins un administrateur capable de gérer les rôles).",
       "edit": "**Modifier** (icône crayon) — renommer le compte d'un utilisateur et/ou réinitialiser son mot de passe à sa place, sans connaître son mot de passe actuel. Réinitialiser un mot de passe déconnecte immédiatement l'utilisateur partout et l'oblige à se reconnecter avec le nouveau.",
       "delete": "**Supprimer** — supprime définitivement le compte (vous ne pouvez pas supprimer votre propre compte).",
-      "away": "**Hors de chez soi** (dans Modifier) — indique si le compte peut être utilisé en dehors du réseau domestique, quand le serveur l'autorise (Admin → Réseau).",
+      "away": "**Hors de chez soi** (dans Modifier) — indique si le compte peut être utilisé en dehors du réseau domestique, quand le serveur l'autorise (Administration → Réseau).",
       "resetTwoFactor": "**Réinitialiser la double authentification** (dans Modifier) — pour quelqu'un qui a perdu son téléphone et ses codes de secours. La personne est déconnectée ; elle se reconnecte ensuite avec son seul mot de passe et peut la réactiver.",
-      "ownPassword": "Chaque utilisateur peut changer son propre mot de passe dans **Réglages → Sécurité**, ce qui demande bien son mot de passe actuel."
+      "ownPassword": "Chaque utilisateur peut changer son propre mot de passe dans **Paramètres → Sécurité**, ce qui demande bien son mot de passe actuel."
     },
     "twoFactor": {
       "title": "Double authentification (facultative)",
       "intro": "Avec la double authentification, la connexion demande, en plus de votre mot de passe, un code à 6 chiffres d'une application d'authentification (Google Authenticator, Microsoft Authenticator, 1Password, Bitwarden, Aegis…).",
-      "turnOn": "**Activez-la** dans Réglages → Sécurité : scannez le QR code (ou copiez la clé dans l'application), puis saisissez le code affiché.",
+      "turnOn": "**Activez-la** dans Paramètres → Sécurité : scannez le QR code (ou copiez la clé dans l'application), puis saisissez le code affiché.",
       "backupCodes": "**Gardez vos codes de secours.** Dix codes à usage unique en cas de téléphone perdu, affichés une seule fois. Chacun remplace un code pour une connexion.",
       "signingIn": "**Pour vous connecter :** le mot de passe, puis le code. Sur l'écran du code, « Téléphone perdu ? » permet d'utiliser un code de secours.",
       "turnOff": "**Pour la désactiver**, il faut votre mot de passe et un code valide. Si vous êtes bloqué, un administrateur peut la réinitialiser.",
-      "required": "Les administrateurs peuvent l'exiger pour les connexions **depuis l'extérieur du réseau domestique** (Admin → Réseau). Elle n'est jamais exigée à la maison."
+      "required": "Les administrateurs peuvent l'exiger pour les connexions **depuis l'extérieur du réseau domestique** (Administration → Réseau). Elle n'est jamais exigée à la maison."
     },
     "guests": {
       "title": "Accès invités temporaires et date d'expiration des comptes",
@@ -147,7 +147,7 @@
       "lockoutTitle": "Un blocage en douceur",
       "lockout": "Quand un compte arrive à expiration, toutes ses sessions actives sont immédiatement révoquées. À la connexion, un écran dédié informe l'utilisateur que son accès est terminé et l'invite à contacter l'administrateur.",
       "renewTitle": "Renouvellements et prolongations en un clic :",
-      "renew": "Les administrateurs voient l'état d'expiration de chaque compte ({active}, {expiring} ou {expired}) directement dans le tableau **Admin → Utilisateurs**, et peuvent cliquer sur l'icône **sablier** d'un utilisateur pour ajouter des jours ou rendre le compte illimité en un clic.",
+      "renew": "Les administrateurs voient l'état d'expiration de chaque compte ({active}, {expiring} ou {expired}) directement dans le tableau **Administration → Utilisateurs**, et peuvent cliquer sur l'icône **sablier** d'un utilisateur pour ajouter des jours ou rendre le compte illimité en un clic.",
       "status": {
         "active": "Actif",
         "expiring": "Expire bientôt",
@@ -173,8 +173,8 @@
       "ios": {
         "title": "iPhone et iPad",
         "download": "Touchez **Télécharger le certificat** dans Safari et autorisez le téléchargement du profil.",
-        "install": "Réglages → **Profil téléchargé** → Installer.",
-        "trust": "Réglages → Général → Informations → **Réglages des certificats** → activez « Plinthio Local CA ».",
+        "install": "Paramètres → **Profil téléchargé** → Installer.",
+        "trust": "Paramètres → Général → Informations → **Réglages des certificats** → activez « Plinthio Local CA ».",
         "open": "Ouvrez l'adresse HTTPS ci-dessus, puis ajoutez-la à votre écran d'accueil (à la place d'une ancienne icône en http://)."
       },
       "android": {
@@ -239,7 +239,7 @@
       "title": "Option 2 : Tailscale Funnel, un lien pour tout le monde (sans domaine)",
       "text": "Ouvre la même adresse {address} à tout le monde, dans un navigateur normal : pas de Tailscale pour vos amis, pas de domaine, aucun réglage de box, et ça marche même si votre fournisseur d'accès bloque les connexions entrantes. Le trafic passe par les serveurs de Tailscale, qui limitent la bande passante : la lecture et l'écoute passent bien, la vidéo peut saccader.",
       "option1": "Mettez en place l'option 1 avec le module Docker.",
-      "allow": "**Admin → Réseau** → autorisez l'accès depuis l'extérieur (et pensez à exiger la double authentification hors de chez soi).",
+      "allow": "**Administration → Réseau** → autorisez l'accès depuis l'extérieur (et pensez à exiger la double authentification hors de chez soi).",
       "enable": "Ajoutez {setting} dans {env} et lancez {up}.",
       "check": "Vérifiez sur un téléphone, Wi-Fi et Tailscale désactivés, puis envoyez le lien à vos amis et créez-leur un compte."
     },
@@ -250,15 +250,15 @@
       "connection": "**Vérifiez que votre connexion Internet le permet.** Les box 5G/4G, Starlink et certains fournisseurs (« CGNAT ») ne le permettent pas ; le guide explique comment le vérifier en une minute.",
       "dns": "Un nom de domaine, avec un **enregistrement A** DNS qui pointe vers l'adresse publique de votre domicile.",
       "ports": "Les ports **80** et **443** redirigés vers le serveur sur votre box.",
-      "allow": "**Admin → Réseau** → autorisez l'accès depuis l'extérieur (et, si vous le souhaitez, exigez la double authentification hors de chez soi).",
+      "allow": "**Administration → Réseau** → autorisez l'accès depuis l'extérieur (et, si vous le souhaitez, exigez la double authentification hors de chez soi).",
       "compose": "Téléchargez {file} à côté de votre fichier compose, ajoutez {domain} et {composeFile} dans {env}, puis lancez {up}.",
-      "check": "Vérifiez depuis un téléphone, Wi-Fi désactivé, et ouvrez-y Admin → Réseau : la page doit indiquer « extérieur »."
+      "check": "Vérifiez depuis un téléphone, Wi-Fi désactivé, et ouvrez-y Administration → Réseau : la page doit indiquer « extérieur »."
     },
     "who": {
       "title": "Qui peut utiliser Plinthio, et d'où",
-      "network": "**Admin → Réseau :** autoriser l'accès depuis l'extérieur du réseau domestique (désactivé sur un nouveau serveur), considérer Tailscale comme la maison, et éventuellement exiger la double authentification hors de chez soi.",
-      "users": "**Admin → Utilisateurs → Modifier :** si chaque personne peut utiliser Plinthio hors de chez elle, par exemple les enfants seulement à la maison.",
-      "security": "**Réglages → Sécurité :** chacun peut activer la double authentification sur son propre compte."
+      "network": "**Administration → Réseau :** autoriser l'accès depuis l'extérieur du réseau domestique (désactivé sur un nouveau serveur), considérer Tailscale comme la maison, et éventuellement exiger la double authentification hors de chez soi.",
+      "users": "**Administration → Utilisateurs → Modifier :** si chaque personne peut utiliser Plinthio hors de chez elle, par exemple les enfants seulement à la maison.",
+      "security": "**Paramètres → Sécurité :** chacun peut activer la double authentification sur son propre compte."
     },
     "avoid": {
       "title": "À éviter : rediriger le port 8088, et les tunnels pour la vidéo",
@@ -305,7 +305,7 @@
     "intro": "Tout ce que Plinthio sait tient dans une seule base SQLite : les comptes, la progression de chacun, les marque-pages, surlignages et notes, les notes attribuées, les listes, les réglages de lecture, les bibliothèques et les réglages. Plinthio la sauvegarde tout seul, et peut copier ces sauvegardes dans un second emplacement de votre choix.",
     "automatic": {
       "title": "Sauvegardes automatiques (activées par défaut)",
-      "where": "Dans **Admin → Sauvegardes** :",
+      "where": "Dans **Administration → Sauvegardes** :",
       "frequency": "**Fréquence** : toutes les 6 ou 12 heures, tous les jours (par défaut), tous les 3 jours ou toutes les semaines.",
       "keepLast": "**Conserver les dernières** : combien en garder dans {path} (7 par défaut).",
       "upgrade": "Un instantané est aussi pris **avant chaque mise à jour** ; les cinq plus récents sont toujours conservés, pour pouvoir revenir en arrière."
@@ -334,7 +334,7 @@
     "intro": "Connectez à Plinthio des scripts externes, des widgets, Home Assistant ou des lecteurs tiers.",
     "auth": {
       "title": "Authentification",
-      "text": "Passez votre clé d'API dans l'en-tête HTTP {header}. Créez et gérez vos clés dans **Réglages → Clés d'API**. Les requêtes du navigateur utilisent plutôt un jeton JWT Bearer délivré à la connexion, dans l'en-tête {authHeader}. Les URL de médias sous {mediaPath} prennent, elles, un jeton de courte durée réservé aux médias ({tokenEndpoint}) en paramètre {tokenParam} — le jeton de session lui-même est refusé dans les URL (nécessaire pour les simples balises {img}/{video}, qui ne peuvent pas définir d'en-têtes).",
+      "text": "Passez votre clé d'API dans l'en-tête HTTP {header}. Créez et gérez vos clés dans **Paramètres → Clés d'API**. Les requêtes du navigateur utilisent plutôt un jeton JWT Bearer délivré à la connexion, dans l'en-tête {authHeader}. Les URL de médias sous {mediaPath} prennent, elles, un jeton de courte durée réservé aux médias ({tokenEndpoint}) en paramètre {tokenParam} — le jeton de session lui-même est refusé dans les URL (nécessaire pour les simples balises {img}/{video}, qui ne peuvent pas définir d'en-têtes).",
       "scope": "Tous les points d'accès de l'API ont une limite de débit, et chaque requête agit au nom de l'utilisateur propriétaire de la clé — une clé d'API hérite du rôle de cet utilisateur et ne voit que ce qu'il peut voir."
     },
     "groups": {
@@ -374,7 +374,7 @@
       "hideSearch": "Masquer la barre de recherche",
       "accent": "Remplacer la couleur d'accent"
     },
-    "apply": "Pour appliquer du CSS personnalisé, allez dans **Admin → Apparence → CSS personnalisé** (administrateurs uniquement), collez vos règles dans l'éditeur, utilisez **{tryIt}** pour le voir en direct dans votre onglet avant d'enregistrer, puis **{save}** pour l'envoyer à tous les clients connectés."
+    "apply": "Pour appliquer du CSS personnalisé, allez dans **Administration → Apparence → CSS personnalisé** (administrateurs uniquement), collez vos règles dans l'éditeur, utilisez **{tryIt}** pour le voir en direct dans votre onglet avant d'enregistrer, puis **{save}** pour l'envoyer à tous les clients connectés."
   },
   "errors": {
     "title": "Codes d'erreur",
@@ -402,15 +402,15 @@
     },
     "missingItems": {
       "title": "Une analyse s'est terminée mais il manque des éléments",
-      "text": "Consultez **Admin → Journaux** pour voir les avertissements de cette analyse — les extensions non prises en charge et les archives illisibles sont ignorées et consignées, sans faire échouer toute l'analyse. Vérifiez que l'extension du fichier correspond aux formats attendus par la bibliothèque (voir **Médias et métadonnées pris en charge**)."
+      "text": "Consultez **Administration → Journaux** pour voir les avertissements de cette analyse — les extensions non prises en charge et les archives illisibles sont ignorées et consignées, sans faire échouer toute l'analyse. Vérifiez que l'extension du fichier correspond aux formats attendus par la bibliothèque (voir **Médias et métadonnées pris en charge**)."
     },
     "noPosters": {
       "title": "Les films, séries ou anime n'ont ni affiche ni description",
-      "text": "Ces trois types utilisent TMDB pour les métadonnées, ce qui demande une clé d'API gratuite définie par un administrateur dans **Admin → Métadonnées**. Sans clé, le contenu s'analyse et se lit quand même — il n'est simplement pas associé automatiquement."
+      "text": "Ces trois types utilisent TMDB pour les métadonnées, ce qui demande une clé d'API gratuite définie par un administrateur dans **Administration → Métadonnées**. Sans clé, le contenu s'analyse et se lit quand même — il n'est simplement pas associé automatiquement."
     },
     "forgotPassword": {
       "title": "Un utilisateur a oublié son mot de passe",
-      "text": "N'importe quel administrateur peut le réinitialiser pour lui depuis **Admin → Utilisateurs** avec le bouton de modification (crayon) — inutile de connaître l'ancien mot de passe. L'utilisateur est immédiatement déconnecté partout."
+      "text": "N'importe quel administrateur peut le réinitialiser pour lui depuis **Administration → Utilisateurs** avec le bouton de modification (crayon) — inutile de connaître l'ancien mot de passe. L'utilisateur est immédiatement déconnecté partout."
     },
     "video": {
       "title": "Lecture vidéo : saccades, mise en mémoire tampon ou « Conversion pour le navigateur »",

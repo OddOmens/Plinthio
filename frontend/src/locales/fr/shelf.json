@@ -79,7 +79,7 @@
   "empty": {
     "title": "Aucun média trouvé",
     "noMatches": "Aucun résultat — essayez une autre recherche ou effacez les filtres",
-    "noLibrary": "Ajoutez une bibliothèque dans Admin → Bibliothèques et analysez vos dossiers pour remplir votre étagère",
+    "noLibrary": "Ajoutez une bibliothèque dans Administration → Bibliothèques et analysez vos dossiers pour remplir votre étagère",
     "goToSettings": "Aller aux réglages"
   },
   "loadedMore": {

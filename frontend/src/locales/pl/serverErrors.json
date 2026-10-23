@@ -1,0 +1,488 @@
+{
+  "codes": {
+    "P000": {
+      "title": "Nieoczekiwany błąd serwera",
+      "message": "Coś poszło nie tak na serwerze",
+      "meaning": "Serwer napotkał błąd, który nie ma osobnego kodu.",
+      "fix": "Pełny błąd znajdziesz w Administracja → Logi (lub `docker logs plinthio`). Administratorzy widzą przyczynę także w samym komunikacie błędu."
+    },
+    "P001": {
+      "title": "Nieprawidłowe żądanie",
+      "message": "Żądanie jest nieprawidłowe",
+      "meaning": "Brakowało wymaganego pola albo wartość była poza zakresem.",
+      "fix": "Komunikat podaje, o które pole chodzi. Jeśli żądanie wysłała aplikacja webowa, odśwież stronę. Stara wersja z pamięci podręcznej może wysyłać nieaktualne żądania."
+    },
+    "P002": {
+      "title": "Nie znaleziono",
+      "message": "Nie znaleziono",
+      "meaning": "Żądany element nie istnieje albo jest ukryty przed tym kontem.",
+      "fix": "Mógł zostać usunięty lub przeniesiony podczas ponownego skanowania. Odśwież stronę."
+    },
+    "P003": {
+      "title": "Brak uprawnień",
+      "message": "Nie masz uprawnień do tej czynności",
+      "meaning": "Konto jest zalogowane, ale nie ma uprawnień do tej czynności.",
+      "fix": "Jeśli tego potrzebujesz, poproś administratora o zmianę twojej roli lub dostępu."
+    },
+    "P004": {
+      "title": "Konflikt",
+      "message": "To koliduje z czymś, co już istnieje",
+      "meaning": "Czynność koliduje z istniejącymi danymi, np. z powtórzoną nazwą.",
+      "fix": "Komunikat podaje, z czym jest kolizja. Najpierw zmień nazwę istniejącego elementu albo go usuń."
+    },
+    "P005": {
+      "title": "Za dużo żądań",
+      "message": "Za dużo żądań, zwolnij i spróbuj ponownie za chwilę",
+      "meaning": "Przekroczono limit żądań.",
+      "fix": "Odczekaj minutę i spróbuj ponownie. Jeśli wiele osób korzysta z jednego adresu IP za reverse proxy, ustaw TRUST_PROXY=1, aby limit liczył się dla każdej osoby osobno."
+    },
+    "P006": {
+      "title": "Chwilowo niedostępne",
+      "message": "Serwer jest zajęty, spróbuj ponownie za chwilę",
+      "meaning": "Serwer nie mógł teraz obsłużyć żądania.",
+      "fix": "Spróbuj ponownie za kilka sekund."
+    },
+    "P007": {
+      "title": "Przesyłanie odrzucone",
+      "message": "Nie udało się przesłać tego pliku",
+      "meaning": "Przesłany plik był za duży lub miał nieprawidłowy typ.",
+      "fix": "Obrazy muszą mieć mniej niż 15 MB. Kopie zapasowe muszą być plikami kopii zapasowej Plinthio."
+    },
+    "P100": {
+      "title": "Wymagane logowanie",
+      "message": "Wymagane uwierzytelnienie",
+      "meaning": "Żądanie nie zawierało sesji, tokenu multimediów ani klucza API.",
+      "fix": "Zaloguj się ponownie. W skryptach wysyłaj nagłówek X-API-Key."
+    },
+    "P101": {
+      "title": "Sesja wygasła",
+      "message": "Sesja wygasła, zaloguj się ponownie",
+      "meaning": "Token sesji wygasł, jest uszkodzony albo został unieważniony przez zmianę hasła lub „Wyloguj wszędzie”.",
+      "fix": "Zaloguj się ponownie."
+    },
+    "P102": {
+      "title": "Token użyty w złym miejscu",
+      "message": "Ten token nie jest tu ważny",
+      "meaning": "Token multimediów został wysłany w nagłówku Authorization albo użyty poza /api/media. Albo token sesji trafił do adresu URL. Tokeny multimediów działają tylko jako ?token= w adresach multimediów, a tokeny sesji tylko w nagłówku Authorization.",
+      "fix": "To błąd w kliencie, który wysłał żądanie. W aplikacji webowej odśwież stronę. Jeśli problem się powtarza, zgłoś go, podając ten kod."
+    },
+    "P103": {
+      "title": "Konto wygasło",
+      "message": "Dostęp do twojego konta wygasł. Skontaktuj się z administratorem.",
+      "meaning": "Konto ma datę wygaśnięcia, która już minęła.",
+      "fix": "Administrator może przedłużyć lub usunąć datę wygaśnięcia w Administracja → Użytkownicy."
+    },
+    "P104": {
+      "title": "Nieprawidłowy klucz API",
+      "message": "Nieprawidłowy klucz API",
+      "meaning": "X-API-Key (lub hasło HTTP Basic) nie pasuje do żadnego klucza.",
+      "fix": "Utwórz nowy klucz w Ustawienia → Aplikacje i klucze API. Klucz jest pokazywany tylko raz, przy tworzeniu."
+    },
+    "P105": {
+      "title": "Tylko dla administratora",
+      "message": "Wymagane uprawnienia administratora",
+      "meaning": "Ta czynność wymaga roli administratora.",
+      "fix": "Poproś administratora o wykonanie tej czynności albo o nadanie twojemu kontu wyższej roli."
+    },
+    "P106": {
+      "title": "Tylko dla edytora lub administratora",
+      "message": "Wymagane uprawnienia edytora",
+      "meaning": "Ta czynność wymaga roli edytora lub administratora.",
+      "fix": "Poproś administratora o nadanie twojemu kontu roli edytora."
+    },
+    "P107": {
+      "title": "Zła nazwa użytkownika lub hasło",
+      "message": "Nieprawidłowa nazwa użytkownika lub hasło",
+      "meaning": "Dane logowania nie pasują do żadnego konta.",
+      "fix": "Sprawdź nazwę użytkownika i hasło. Administrator może zresetować hasło w Administracja → Użytkownicy."
+    },
+    "P108": {
+      "title": "Za dużo prób logowania",
+      "message": "Za dużo prób logowania, spróbuj ponownie później",
+      "meaning": "Liczba prób logowania jest ograniczona, aby utrudnić odgadywanie haseł.",
+      "fix": "Odczekaj 15 minut i spróbuj ponownie."
+    },
+    "P109": {
+      "title": "Niedostępne poza domem",
+      "message": "Z tego serwera można korzystać tylko w jego sieci domowej",
+      "meaning": "Żądanie przyszło spoza sieci domowej (nie z adresu domowego ani Tailscale), a serwer pozwala tylko na dostęp z domu.",
+      "fix": "Korzystaj z Plinthio w domu albo przez Tailscale. Administrator może zezwolić na dostęp z zewnątrz w Administracja → Sieć."
+    },
+    "P110": {
+      "title": "To konto jest tylko do użytku w domu",
+      "message": "Z tego konta można korzystać tylko w sieci domowej",
+      "meaning": "Serwer zezwala na dostęp z zewnątrz, ale nie dla tego konta.",
+      "fix": "Korzystaj z Plinthio w domu albo poproś administratora o zezwolenie temu kontu na dostęp poza domem (Administracja → Użytkownicy)."
+    },
+    "P111": {
+      "title": "Zły kod weryfikacji dwuetapowej",
+      "message": "Ten kod jest niepoprawny albo został już użyty",
+      "meaning": "Sześciocyfrowy kod (lub kod zapasowy) nie pasuje. Kody zmieniają się co 30 sekund i każdy działa tylko raz.",
+      "fix": "Wpisz aktualny kod z aplikacji uwierzytelniającej. Sprawdź, czy zegar telefonu ustawia się automatycznie. Nie masz telefonu? Użyj kodu zapasowego albo poproś administratora o zresetowanie weryfikacji dwuetapowej."
+    },
+    "P112": {
+      "title": "Poza domem wymagana jest weryfikacja dwuetapowa",
+      "message": "Logowanie spoza sieci domowej wymaga weryfikacji dwuetapowej, której to konto nie ma skonfigurowanej",
+      "meaning": "Serwer wymaga weryfikacji dwuetapowej przy logowaniu spoza sieci domowej.",
+      "fix": "Zaloguj się raz w domu i włącz weryfikację dwuetapową w Ustawienia → Bezpieczeństwo."
+    },
+    "P113": {
+      "title": "Etap logowania wygasł",
+      "message": "Logowanie trwało za długo, zacznij od nowa",
+      "meaning": "Na etap weryfikacji dwuetapowej przy logowaniu jest tylko kilka minut albo wpisano za dużo błędnych kodów.",
+      "fix": "Wpisz ponownie nazwę użytkownika i hasło."
+    },
+    "P200": {
+      "title": "Nie znaleziono folderu biblioteki",
+      "message": "Nie znaleziono folderu biblioteki",
+      "meaning": "Folder, na który wskazuje biblioteka, nie istnieje na serwerze (ani w kontenerze).",
+      "fix": "W Dockerze twoje multimedia są zamontowane w /media, więc ścieżki bibliotek wyglądają jak /media/Movies. Sprawdź, czy MEDIA_DIR w docker/.env wskazuje właściwy folder na hoście."
+    },
+    "P201": {
+      "title": "Nie można odczytać folderu biblioteki (błąd I/O)",
+      "message": "Nie udało się odczytać folderu z multimediami (błąd I/O)",
+      "meaning": "Odczyt folderu zakończył się błędem EIO. Prawie zawsze oznacza to, że dysk się odłączył albo został ponownie zamontowany i zostało po nim nieaktualne montowanie. Ponownie zamontowany dysk USB może pojawić się pod nową ścieżką, np. /media/you/Drive1.",
+      "fix": "Sprawdź, czy dysk jest podłączony i zamontowany (`mount | grep media`). Ustaw MEDIA_DIR na jego aktualną ścieżkę montowania i utwórz kontener od nowa. Montowanie dysku po UUID w /etc/fstab sprawia, że ścieżka się nie zmienia."
+    },
+    "P202": {
+      "title": "Brak dostępu do folderu biblioteki",
+      "message": "Serwer nie ma uprawnień do odczytu tego folderu",
+      "meaning": "Folder istnieje, ale proces Plinthio nie może go odczytać (EACCES).",
+      "fix": "Nadaj użytkownikowi kontenera prawo odczytu folderu z multimediami, np. przez `chmod -R o+rX` na folderze hosta albo dopasowanie PUID/PGID."
+    },
+    "P203": {
+      "title": "To nie jest folder",
+      "message": "Ta ścieżka nie jest folderem",
+      "meaning": "Ścieżka biblioteki wskazuje plik zamiast katalogu.",
+      "fix": "Wybierz folder, w którym są twoje multimedia."
+    },
+    "P300": {
+      "title": "Nie znaleziono multimediów",
+      "message": "Nie znaleziono multimediów",
+      "meaning": "Nie ma elementu o tym id albo jest on ukryty przed tym kontem przez administratora lub kontrolę rodzicielską.",
+      "fix": "Odśwież bibliotekę. Ponowne skanowanie mogło zastąpić ten element."
+    },
+    "P301": {
+      "title": "Brak pliku multimediów",
+      "message": "Brak pliku multimediów na dysku",
+      "meaning": "Element jest w bibliotece, ale jego pliku już nie ma. Plik przeniesiono, zmieniono mu nazwę lub go usunięto albo dysk nie jest zamontowany.",
+      "fix": "Sprawdź, czy dysk jest zamontowany, a potem ponownie przeskanuj bibliotekę."
+    },
+    "P302": {
+      "title": "Nie można odczytać pliku multimediów",
+      "message": "Nie udało się odczytać pliku multimediów",
+      "meaning": "Odczyt pliku się nie powiódł. Zwykle to odłączony dysk (EIO), problem z uprawnieniami albo uszkodzony plik.",
+      "fix": "Problemy z dyskiem i uprawnieniami opisują P201/P202. Pierwotny błąd znajdziesz w Administracja → Logi."
+    },
+    "P303": {
+      "title": "ffmpeg jest niedostępny",
+      "message": "Konwersja wideo jest niedostępna: nie udało się uruchomić ffmpeg",
+      "meaning": "Brakuje ffmpeg lub ffprobe albo nie dało się ich uruchomić, więc filmy wymagające konwersji nie mogą być odtworzone.",
+      "fix": "Obraz Dockera zawiera ffmpeg. Przy instalacji bez Dockera zainstaluj ffmpeg i upewnij się, że jest w PATH. Sprawdź Administracja → Logi."
+    },
+    "P304": {
+      "title": "Konwersja nie powiodła się",
+      "message": "Konwersja tego wideo na serwerze nie powiodła się",
+      "meaning": "ffmpeg wystartował, ale zakończył się błędem podczas konwersji wideo. Zwykle to uszkodzony plik, nieobsługiwany kodek albo problem z akceleracją sprzętową.",
+      "fix": "Błąd ffmpeg widać w Administracja → Logi. Jeśli wspomina o VAAPI/QSV/NVENC, wyłącz akcelerację sprzętową w Administracja → Odtwarzanie i spróbuj ponownie."
+    },
+    "P305": {
+      "title": "Jeszcze w przygotowaniu",
+      "message": "To wideo jest jeszcze przygotowywane, spróbuj ponownie za chwilę",
+      "meaning": "Konwersja trwa, ale żądana część nie jest jeszcze gotowa.",
+      "fix": "Odtwarzacz sam ponawia próby. Jeśli to się nigdy nie kończy, serwer może być za wolny na transkodowanie w czasie rzeczywistym w tej jakości. Wybierz niższą jakość."
+    },
+    "P306": {
+      "title": "Nieprawidłowe żądanie strumienia",
+      "message": "Nieprawidłowe żądanie strumienia",
+      "meaning": "Adres strumienia wskazywał nieznaną jakość, ścieżkę dźwiękową, segment lub arkusz podglądu.",
+      "fix": "Odśwież odtwarzacz. Zwykle oznacza to nieaktualny adres po ponownym przeskanowaniu wideo."
+    },
+    "P307": {
+      "title": "Nie znaleziono ścieżki napisów",
+      "message": "Nie znaleziono ścieżki napisów",
+      "meaning": "Żądana ścieżka napisów nie istnieje albo nie dało się jej wyodrębnić.",
+      "fix": "Wybierz inną ścieżkę. Napisów graficznych (PGS/VobSub) nie da się pokazać jako tekstu."
+    },
+    "P308": {
+      "title": "Czytnik PDF jest niedostępny",
+      "message": "Nie można wyświetlić stron PDF: na serwerze nie zainstalowano poppler",
+      "meaning": "Plinthio zamienia strony PDF na obrazy za pomocą poppler (pdftoppm i pdfinfo), a tych programów nie udało się uruchomić.",
+      "fix": "Obraz Dockera zawiera poppler. Przy instalacji bez Dockera zainstaluj poppler-utils (apt install poppler-utils, brew install poppler) i uruchom serwer ponownie."
+    },
+    "P309": {
+      "title": "Nie udało się wyrenderować strony PDF",
+      "message": "Nie udało się wyrenderować tej strony PDF",
+      "meaning": "poppler wystartował, ale nie poradził sobie z tym plikiem. Zwykle to uszkodzony PDF albo PDF chroniony hasłem.",
+      "fix": "Otwórz plik w innym czytniku PDF, aby go sprawdzić. PDF chroniony hasłem trzeba najpierw odblokować. Błąd znajdziesz w Administracja → Logi."
+    },
+    "P350": {
+      "title": "Przeglądarka nie obsługuje tego formatu",
+      "message": "Ta przeglądarka nie może odtworzyć tego wideo",
+      "meaning": "Przeglądarka odrzuciła strumień nawet po konwersji na serwerze.",
+      "fix": "Spróbuj innej przeglądarki (Chrome, Edge lub Safari). Jeśli dzieje się tak w każdej przeglądarce, sam plik może być uszkodzony."
+    },
+    "P351": {
+      "title": "Utracono połączenie podczas odtwarzania",
+      "message": "Utracono połączenie z serwerem",
+      "meaning": "Odtwarzacz nie mógł połączyć się z serwerem, aby wczytać kolejną część wideo.",
+      "fix": "Sprawdź połączenie sieciowe i naciśnij Ponów."
+    },
+    "P352": {
+      "title": "Nie udało się odnowić linku do multimediów",
+      "message": "Twój dostęp do multimediów wygasł i nie udało się go odnowić",
+      "meaning": "Adresy multimediów zawierają krótkotrwały token. Token wygasł, a aplikacja nie mogła pobrać nowego.",
+      "fix": "Odśwież stronę. Jeśli to nie pomoże, wyloguj się i zaloguj ponownie."
+    },
+    "P400": {
+      "title": "Nie skonfigurowano klucza TMDB",
+      "message": "Nie skonfigurowano klucza API TMDB. Administrator musi go dodać w Administracja → Metadane.",
+      "meaning": "Metadane filmów, seriali i anime pochodzą z TMDB, który wymaga klucza API. Oficjalne obrazy wydań mają wbudowany klucz; ten komunikat pojawia się w wersji zbudowanej ze źródeł albo gdy TMDB przestał akceptować wbudowany klucz.",
+      "fix": "Utwórz klucz na themoviedb.org → Settings → API i wklej go w Administracja → Metadane."
+    },
+    "P401": {
+      "title": "Dostawca odrzucił klucz API",
+      "message": "Dostawca metadanych odrzucił skonfigurowany klucz API",
+      "meaning": "Serwer połączył się z dostawcą, ale dostawca odrzucił klucz.",
+      "fix": "W przypadku TMDB wklej w Administracja → Metadane „API Key” albo „API Read Access Token” ze swojego konta TMDB."
+    },
+    "P402": {
+      "title": "Limit żądań u dostawcy",
+      "message": "Dostawca metadanych ogranicza żądania z tego serwera. Odczekaj chwilę i spróbuj ponownie.",
+      "meaning": "Dostawca odrzuca żądania, bo wysłano ich za dużo.",
+      "fix": "Odczekaj minutę. Może to wywołać hurtowe dopasowywanie dużych bibliotek."
+    },
+    "P403": {
+      "title": "Dostawca jest nieosiągalny",
+      "message": "Serwer nie mógł połączyć się z dostawcą metadanych",
+      "meaning": "Żądanie do dostawcy przekroczyło limit czasu albo nie powiodło się na poziomie sieci.",
+      "fix": "Sprawdź, czy serwer (kontener) ma wychodzący dostęp do internetu i działający DNS."
+    },
+    "P500": {
+      "title": "Nie znaleziono listy",
+      "message": "Nie znaleziono listy",
+      "meaning": "Lista lub folder nie istnieje albo należy do kogoś innego.",
+      "fix": "Odśwież stronę Listy."
+    },
+    "P501": {
+      "title": "Ten rodzaj tytułu nie pasuje do listy",
+      "message": "Tytuł tego rodzaju nie może trafić na tę listę",
+      "meaning": "Każda lista ma jedną kategorię: Filmy, Seriale, Anime, Czytanie lub Słuchanie.",
+      "fix": "Dodaj go do listy z pasującej kategorii."
+    },
+    "P502": {
+      "title": "Już na liście",
+      "message": "Ten tytuł jest już na tej liście",
+      "meaning": "Tytuł został już wcześniej dodany do tej listy.",
+      "fix": "Nic nie trzeba robić."
+    },
+    "P503": {
+      "title": "Prośba już istnieje",
+      "message": "Prośba o ten tytuł już istnieje",
+      "meaning": "Ktoś ma otwartą prośbę o ten tytuł.",
+      "fix": "Jej status widać na stronie Prośby."
+    },
+    "P504": {
+      "title": "Już w bibliotece",
+      "message": "Ten tytuł został już dodany do biblioteki",
+      "meaning": "Prośba o ten tytuł została przyjęta i oznaczona jako dodana.",
+      "fix": "Wyszukaj go w bibliotece."
+    },
+    "P505": {
+      "title": "Nie można już wycofać prośby",
+      "message": "Wycofać można tylko oczekujące prośby",
+      "meaning": "Administrator lub edytor już rozpatrzył tę prośbę.",
+      "fix": "Jeśli chcesz ją usunąć, poproś o to administratora lub edytora."
+    },
+    "P506": {
+      "title": "Nie znaleziono prośby",
+      "message": "Nie znaleziono prośby",
+      "meaning": "Prośba została usunięta albo nigdy nie istniała.",
+      "fix": "Odśwież stronę Prośby."
+    },
+    "P600": {
+      "title": "Wspólne seanse są wyłączone",
+      "message": "Wspólne seanse są wyłączone na tym serwerze",
+      "meaning": "Administrator nie włączył wspólnych seansów.",
+      "fix": "Administrator może je włączyć w Administracja → Funkcje → Wspólne seanse."
+    },
+    "P601": {
+      "title": "Nie znaleziono seansu",
+      "message": "Ten wspólny seans się zakończył albo nigdy nie istniał",
+      "meaning": "Gospodarz zakończył seans, wszyscy wyszli albo serwer został uruchomiony ponownie.",
+      "fix": "Poproś gospodarza o nowy link z zaproszeniem."
+    },
+    "P602": {
+      "title": "Tylko gospodarz może to zrobić",
+      "message": "Tylko gospodarz seansu może to zrobić",
+      "meaning": "Gospodarz zostawił sterowanie odtwarzaniem tylko sobie.",
+      "fix": "Poproś o to gospodarza albo poproś go o udostępnienie sterowania odtwarzaniem wszystkim."
+    },
+    "P603": {
+      "title": "Niedostępne dla twojego konta",
+      "message": "W tym seansie oglądany jest tytuł, którego twoje konto nie może otworzyć",
+      "meaning": "Tytuł jest przed tobą ukryty albo przekracza limit treści twojego konta.",
+      "fix": "Zapytaj administratora o ustawienia treści twojego konta."
+    },
+    "P604": {
+      "title": "Nie wszyscy mogą to obejrzeć",
+      "message": "Ktoś w seansie nie może otworzyć tego tytułu",
+      "meaning": "Tytuł jest ukryty przed kimś z oglądających albo przekracza jego limit treści.",
+      "fix": "Wybierz coś, co mogą obejrzeć wszyscy uczestnicy seansu."
+    },
+    "P605": {
+      "title": "Seans jest pełny",
+      "message": "Ten wspólny seans jest pełny",
+      "meaning": "Seans mieści do 20 osób, a serwer prowadzi jednocześnie do 20 seansów.",
+      "fix": "Spróbuj ponownie, gdy ktoś wyjdzie albo seans się zakończy."
+    }
+  },
+  "messages": {
+    "tooManyAuthenticationAttemptsPleaseTry": "Za dużo prób uwierzytelnienia. Spróbuj ponownie później.",
+    "tooManyLoginAttemptsPleaseWait": "Za dużo prób logowania. Odczekaj chwilę, zanim spróbujesz ponownie.",
+    "tooManyBackupRequestsPleaseWait": "Za dużo żądań kopii zapasowej. Odczekaj chwilę, zanim spróbujesz ponownie.",
+    "plinthioIsNotUsingItsOwn": "Plinthio nie używa własnego urzędu certyfikacji",
+    "couldNotReadFile": "Nie udało się odczytać pliku",
+    "thisAccountNoLongerExists": "To konto już nie istnieje",
+    "sessionWasSignedOutPleaseLog": "Sesja została wylogowana, zaloguj się ponownie",
+    "noOpeningSequence": "Brak czołówki",
+    "invalidItemId": "Nieprawidłowe id elementu",
+    "noStillForThisVideo": "Brak kadru dla tego wideo",
+    "pageNotFound": "Nie znaleziono strony",
+    "thatWouldLockOutTheDevice": "To odcięłoby urządzenie, którego teraz używasz. Zmień to z sieci domowej.",
+    "itemNotFound": "Nie znaleziono elementu",
+    "ratingMustBeAWholeNumber": "Ocena musi być liczbą całkowitą od 1 do 5",
+    "personalRatingsAreTurnedOffOn": "Oceny osobiste są wyłączone na tym serwerze",
+    "ratingRemoved": "Usunięto ocenę",
+    "seriesNotFound": "Nie znaleziono serii",
+    "nothingToRemove": "Nie ma czego usunąć",
+    "notInKidsMode": "Nie jest w trybie dziecięcym",
+    "addedToKidsMode": "Dodano do trybu dziecięcego",
+    "removedFromKidsMode": "Usunięto z trybu dziecięcego",
+    "invalidUserId": "Nieprawidłowe id użytkownika",
+    "avatarNotFound": "Nie znaleziono awatara",
+    "failedToReadAvatar": "Nie udało się odczytać awatara",
+    "avatarImageMustBeSmallerThan": "Obraz awatara musi mieć mniej niż 5 MB",
+    "noAvatarImageFileProvided": "Nie przesłano pliku z obrazem awatara",
+    "failedToProcessAndSaveAvatar": "Nie udało się przetworzyć i zapisać obrazu awatara",
+    "currentPasswordIsRequired": "Podaj obecne hasło",
+    "newPasswordMustBeAtLeast": "Nowe hasło musi mieć co najmniej 8 znaków",
+    "currentPasswordIncorrect": "Obecne hasło jest nieprawidłowe",
+    "usernameAndPasswordMin8Characters": "Wymagane są nazwa użytkownika i hasło (min. 8 znaków)",
+    "usernameAlreadyTaken": "Ta nazwa użytkownika jest już zajęta",
+    "userNotFound": "Nie znaleziono użytkownika",
+    "cannotChangeYourOwnRole": "Nie możesz zmienić własnej roli",
+    "cannotSetAnExpirationDateOn": "Nie możesz ustawić daty wygaśnięcia własnego konta",
+    "cannotRestrictYourOwnAccount": "Nie możesz ograniczyć własnego konta",
+    "cannotPutYourOwnAccountIn": "Nie możesz włączyć trybu dziecięcego dla własnego konta",
+    "anAdminAccountCanTBe": "Konto administratora nie może być kontem dziecięcym",
+    "nothingToUpdate": "Nie ma nic do zaktualizowania",
+    "cannotDeleteYourOwnAccount": "Nie możesz usunąć własnego konta",
+    "youReAwayFromHomeRight": "Jesteś teraz poza domem, więc to by cię wylogowało. Zmień to z sieci domowej.",
+    "twoFactorIsnTOnFor": "To konto nie ma włączonej weryfikacji dwuetapowej",
+    "avatarUploadedSuccessfully": "Przesłano awatar",
+    "avatarRemovedSuccessfully": "Usunięto awatar",
+    "preferencesUpdated": "Zaktualizowano preferencje",
+    "passwordUpdatedSuccessfullyYouWillNeed": "Zmieniono hasło. Musisz zalogować się ponownie.",
+    "userCreatedSuccessfully": "Utworzono użytkownika",
+    "userUpdatedSuccessfully": "Zaktualizowano użytkownika",
+    "twoFactorTurnedOffTheyCan": "Wyłączono weryfikację dwuetapową. Ta osoba może zalogować się hasłem i skonfigurować ją ponownie.",
+    "passwordResetSuccessfully": "Zresetowano hasło",
+    "roleUpdatedSuccessfully": "Zaktualizowano rolę",
+    "userDeletedSuccessfully": "Usunięto użytkownika",
+    "bookmarkNotFound": "Nie znaleziono zakładki",
+    "bookmarkCreated": "Utworzono zakładkę",
+    "bookmarkUpdated": "Zaktualizowano zakładkę",
+    "bookmarkDeleted": "Usunięto zakładkę",
+    "logsClearedSuccessfully": "Wyczyszczono logi",
+    "sessionAlreadyClosed": "Sesja jest już zamknięta",
+    "sessionClosed": "Zamknięto sesję",
+    "segmentNotAvailable": "Segment jest niedostępny",
+    "couldNotLoadScrubPreviews": "Nie udało się wczytać podglądów przewijania",
+    "sheetNotFound": "Nie znaleziono arkusza",
+    "couldNotLoadScrubPreview": "Nie udało się wczytać podglądu przewijania",
+    "markerMustEndAfterItStarts": "Znacznik musi kończyć się później, niż się zaczyna",
+    "markersSaved": "Zapisano znaczniki",
+    "unknownMediaType": "Nieznany typ multimediów",
+    "requestSent": "Wysłano prośbę",
+    "requestUpdated": "Zaktualizowano prośbę",
+    "requestRemoved": "Usunięto prośbę",
+    "serverIsAlreadySetUp": "Serwer jest już skonfigurowany",
+    "adminUsernameAndPasswordMin8": "Wymagane są nazwa i hasło administratora (min. 8 znaków)",
+    "setupIsAlreadyInProgress": "Konfiguracja już trwa",
+    "serverIsAlreadySetUpPlease": "Serwer jest już skonfigurowany. Zaloguj się.",
+    "serverSetupFailedCheckTheServer": "Konfiguracja serwera nie powiodła się. Szczegóły znajdziesz w logach serwera.",
+    "usernameAndPasswordAreRequired": "Wymagane są nazwa użytkownika i hasło",
+    "loginFailedCheckTheServerLogs": "Logowanie nie powiodło się. Szczegóły znajdziesz w logach serwera.",
+    "signInFailedCheckTheServer": "Logowanie nie powiodło się. Szczegóły znajdziesz w logach serwera.",
+    "signInWithYourPasswordTo": "Zaloguj się hasłem, aby zmienić weryfikację dwuetapową",
+    "twoFactorIsAlreadyOnTurn": "Weryfikacja dwuetapowa jest już włączona. Najpierw ją wyłącz, aby skonfigurować ją od nowa.",
+    "twoFactorIsAlreadyOn": "Weryfikacja dwuetapowa jest już włączona",
+    "startSettingUpTwoFactorFirst": "Najpierw rozpocznij konfigurację weryfikacji dwuetapowej",
+    "twoFactorIsOff": "Weryfikacja dwuetapowa jest wyłączona",
+    "setPlinthioUpFromYourHome": "Skonfiguruj Plinthio z sieci domowej",
+    "serverInitializedSuccessfully": "Serwer został skonfigurowany",
+    "allSessionsSignedOutPleaseSign": "Wylogowano wszystkie sesje. Zaloguj się ponownie.",
+    "highlightNotFound": "Nie znaleziono zakreślenia",
+    "highlightDeleted": "Usunięto zakreślenie",
+    "pickAMovieOrEpisodeTo": "Wybierz film lub odcinek do wspólnego oglądania",
+    "joinThePartyFirst": "Najpierw dołącz do seansu",
+    "saySomething": "Napisz coś",
+    "noImageUploaded": "Nie przesłano obrazu",
+    "couldNotProcessThatImage": "Nie udało się przetworzyć tego obrazu",
+    "seriesNameIsRequired": "Nazwa serii jest wymagana",
+    "coverArtUpdated": "Zaktualizowano okładkę",
+    "theMetadataProviderRejectedTheConfigured": "Dostawca metadanych odrzucił skonfigurowany klucz API. W przypadku TMDB skopiuj „API Key” albo „API Read Access Token” z ustawień konta TMDB do Administracja → Metadane. Serwer bez problemu połączył się z dostawcą, więc chodzi o dane uwierzytelniające, a nie o sieć.",
+    "itemMatchedAndUpdated": "Dopasowano i zaktualizowano element",
+    "metadataUpdated": "Zaktualizowano metadane",
+    "keyNameIsRequired": "Nazwa klucza jest wymagana",
+    "apiKeyGeneratedSuccessfully": "Wygenerowano klucz API",
+    "apiKeyRevoked": "Unieważniono klucz API",
+    "libraryNotFound": "Nie znaleziono biblioteki",
+    "libraryCreatedAndScanningStarted": "Utworzono bibliotekę i rozpoczęto skanowanie",
+    "libraryDeletedSuccessfully": "Usunięto bibliotekę",
+    "markedAllVolumesAsRead": "Oznaczono wszystkie tomy jako przeczytane",
+    "markedAllVolumesAsUnread": "Oznaczono wszystkie tomy jako nieprzeczytane",
+    "itemHiddenFromShelf": "Ukryto element na półce",
+    "itemRestoredToShelf": "Przywrócono element na półkę",
+    "seriesSettingsSaved": "Zapisano ustawienia serii",
+    "folderNameIsRequired": "Nazwa folderu jest wymagana",
+    "folderCreated": "Utworzono folder",
+    "folderOrListNotFound": "Nie znaleziono folderu ani listy",
+    "folderDeleted": "Usunięto folder",
+    "itemAddedToFolder": "Dodano element do folderu",
+    "readingOrderSaved": "Zapisano kolejność czytania",
+    "itemRemovedFromFolder": "Usunięto element z folderu",
+    "addedToList": "Dodano do listy",
+    "removedFromList": "Usunięto z listy",
+    "noValidItemIds": "Brak prawidłowych id elementów",
+    "progressSaved": "Zapisano postęp",
+    "unknownHardwareAccelerationPreference": "Nieznane ustawienie akceleracji sprzętowej",
+    "unknownHardwareAccelerationMethod": "Nieznana metoda akceleracji sprzętowej",
+    "intervalMustBeBetween1And": "Odstęp musi wynosić od 1 do 168 godzin",
+    "retentionMustBeBetween1And": "Liczba przechowywanych kopii zapasowych musi wynosić od 1 do 30",
+    "copiesKeptMustBeBetween1": "Liczba zachowanych kopii musi wynosić od 1 do 365",
+    "scanIntervalMustBeBetween5": "Odstęp skanowania musi wynosić od 5 minut do 7 dni",
+    "noBackupDestinationIsSet": "Nie ustawiono folderu na kopie zapasowe",
+    "shelfViewsUpdated": "Zaktualizowano widoki półki",
+    "transcodingSettingsSaved": "Zapisano ustawienia transkodowania",
+    "backupScheduleUpdated": "Zaktualizowano harmonogram kopii zapasowych",
+    "automaticScanningUpdated": "Zaktualizowano automatyczne skanowanie",
+    "backupCreated": "Utworzono kopię zapasową",
+    "backupDeleted": "Usunięto kopię zapasową",
+    "couldNotLoadServerCustomization": "Nie udało się wczytać personalizacji serwera",
+    "chooseAnMp4FileToUpload": "Wybierz plik MP4 do przesłania",
+    "customizationUpdatedSuccessfully": "Zaktualizowano personalizację",
+    "chooseAFolder": "Wybierz folder.",
+    "useAFullPathStartingWith": "Użyj pełnej ścieżki zaczynającej się od /.",
+    "thatSInsideTheServerS": "To jest wewnątrz folderu danych serwera; wybierz folder w innym miejscu.",
+    "thatFolderContainsTheServerS": "Ten folder zawiera folder danych serwera; wybierz folder obok niego lub w innym miejscu.",
+    "thatSAFileNotA": "To jest plik, a nie folder."
+  },
+  "patterns": {
+    "noMetadataSource": "Brak jeszcze źródła metadanych dla typu {type}",
+    "folderMissing": "Nie istnieje ani ten folder, ani {parent}. W Dockerze folder trzeba najpierw zamontować w kontenerze.",
+    "cantWriteFolder": "Nie można zapisywać w tym folderze: {reason}.",
+    "backupFailed": "Kopia zapasowa nie powiodła się: {reason}"
+  }
+}

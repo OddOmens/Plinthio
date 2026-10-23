@@ -69,7 +69,7 @@
     "role": "Rolle",
     "roles": {
       "viewer": "Zuschauer: stöbern, lesen & Fortschritt speichern",
-      "editor": "Bearbeiter: kann auch Metadaten & Cover korrigieren",
+      "editor": "Redakteur: kann auch Metadaten & Cover korrigieren",
       "admin": "Admin: volle Kontrolle über den Server"
     },
     "password": "Passwort (mindestens 8 Zeichen)",
