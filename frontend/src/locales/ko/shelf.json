@@ -73,7 +73,7 @@
   "empty": {
     "title": "미디어가 없어요",
     "noMatches": "일치하는 항목이 없어요. 다른 검색어를 쓰거나 필터를 지워 보세요",
-    "noLibrary": "관리 → 라이브러리에서 라이브러리를 추가하고 폴더를 스캔하면 서재가 채워져요",
+    "noLibrary": "관리 → 라이브러리에서 라이브러리를 추가하고 폴더를 스캔하면 책장가 채워져요",
     "goToSettings": "설정으로 이동"
   },
   "loadedMore": {
@@ -88,7 +88,7 @@
   },
   "deleteFolder": {
     "title": "사용자 폴더 삭제",
-    "message": "\"{name}\" 폴더를 삭제할까요? 안에 있는 항목은 서재에서 삭제되지 않아요.",
+    "message": "\"{name}\" 폴더를 삭제할까요? 안에 있는 항목은 책장에서 삭제되지 않아요.",
     "confirm": "폴더 삭제"
   },
   "errors": {
@@ -120,7 +120,7 @@
     "cancelDownload": "다운로드 취소",
     "downloadOffline": "오프라인용 다운로드",
     "editMetadata": "메타데이터 편집...",
-    "hide": "서재에서 숨기기",
+    "hide": "책장에서 숨기기",
     "pages": {
       "other": "{count}쪽"
     },

@@ -58,7 +58,7 @@
     },
     "libraries": {
       "title": "Cómo funcionan las bibliotecas",
-      "what": "Una **biblioteca** es una carpeta del disco asociada a un tipo de contenido (audiolibros, manga y cómics, libros electrónicos, series, películas o anime). Añade bibliotecas desde **Admin → Bibliotecas**: indica a Plinthio una carpeta, elige el tipo y empezará a analizarla de inmediato. Volver a analizar siempre es seguro: compara con lo que ya está indexado, detecta por su contenido los archivos renombrados o movidos, añade lo nuevo y quita del catálogo los archivos que ya no existen en el disco (sin tocar los archivos en sí).",
+      "what": "Una **biblioteca** es una carpeta del disco asociada a un tipo de contenido (audiolibros, manga y cómics, libros electrónicos, series, películas o anime). Añade bibliotecas desde **Administración → Bibliotecas**: indica a Plinthio una carpeta, elige el tipo y empezará a analizarla de inmediato. Volver a analizar siempre es seguro: compara con lo que ya está indexado, detecta por su contenido los archivos renombrados o movidos, añade lo nuevo y quita del catálogo los archivos que ya no existen en el disco (sin tocar los archivos en sí).",
       "deleting": "Eliminar una biblioteca de Plinthio solo quita sus entradas del catálogo (títulos, portadas, metadatos): nunca toca los archivos de tu sistema. El progreso de lectura y los marcadores se conservan según la identidad de cada archivo, así que si vuelves a añadir la misma carpeta y la analizas, se recuperan automáticamente."
     },
     "storage": {
@@ -79,7 +79,7 @@
       "title": "Requisitos y primera configuración",
       "docker": "La forma recomendada de ejecutar Plinthio es Docker (o Docker Compose): consulta {file} en el repositorio.",
       "firstLaunch": "La primera vez, si aún no hay ninguna cuenta de administrador, al abrir el servidor se te lleva a una pantalla de **configuración** única para crear el primer administrador.",
-      "afterSetup": "Después, inicia sesión y añade tu primera biblioteca desde **Admin → Bibliotecas** para empezar a analizar.",
+      "afterSetup": "Después, inicia sesión y añade tu primera biblioteca desde **Administración → Bibliotecas** para empezar a analizar.",
       "noDatabase": "No hace falta ninguna base de datos externa: todo se guarda en un único archivo SQLite con registro previo de escritura (WAL) activado para un acceso simultáneo seguro."
     }
   },
@@ -91,13 +91,13 @@
     "booksTitle": "Libros y libros electrónicos",
     "books": "Formatos: {epub}, {pdf}. Funciona sin configurar nada con **Google Books** y **Open Library** para buscar metadatos y portadas, sin clave de API.",
     "videoTitle": "{movieIcon} Películas, {tvIcon} series y {animeIcon} anime",
-    "video": "Formatos: {mp4}, {mkv}, {webm}. El streaming usa peticiones HTTP por rangos para poder avanzar y retroceder; lo que el navegador no puede reproducir de forma nativa se convierte sobre la marcha. Los metadatos y las imágenes vienen de **TMDB (The Movie Database)**, que necesita una clave de API personal y gratuita que un administrador configura una vez en **Admin → Metadatos**. Sin clave, estas tres bibliotecas se analizan y se reproducen igual de bien; simplemente no tendrán pósteres, sinopsis ni datos de reparto o temporadas automáticos.",
+    "video": "Formatos: {mp4}, {mkv}, {webm}. El streaming usa peticiones HTTP por rangos para poder avanzar y retroceder; lo que el navegador no puede reproducir de forma nativa se convierte sobre la marcha. Los metadatos y las imágenes vienen de **TMDB (The Movie Database)**, que necesita una clave de API personal y gratuita que un administrador configura una vez en **Administración → Metadatos**. Sin clave, estas tres bibliotecas se analizan y se reproducen igual de bien; simplemente no tendrán pósteres, sinopsis ni datos de reparto o temporadas automáticos.",
     "applying": {
       "title": "Aplicar y modificar metadatos",
       "text": "Los administradores y editores pueden buscar en proveedores externos y aplicar una coincidencia a cualquier elemento, o subir una portada propia, desde la página de detalle del elemento. Un nuevo análisis nunca sobrescribe los cambios manuales: solo rellena los campos que siguen vacíos."
     },
     "cleanup": {
-      "title": "Limpieza de títulos y búsqueda de metadatos por lotes (Admin → Metadatos)",
+      "title": "Limpieza de títulos y búsqueda de metadatos por lotes (Administración → Metadatos)",
       "text": "Al analizar archivos de vídeo con etiquetas de release (p. ej., {example}), el limpiador de títulos extrae el título limpio de la película o serie y aísla el año de estreno de 4 cifras.",
       "titleCleanup": "**Limpieza de títulos:** con un clic, convierte los títulos de la base de datos en nombres legibles y conserva los años detectados.",
       "batchMatch": "**Búsqueda en TMDB por lotes:** busca en TMDB con el título limpio y el año exacto para obtener el póster oficial, director, reparto, sinopsis y fechas de estreno de todos los elementos seleccionados.",
@@ -121,12 +121,12 @@
     },
     "manage": {
       "title": "Gestionar cuentas (solo administradores)",
-      "intro": "Desde **Admin → Usuarios** puedes:",
+      "intro": "Desde **Administración → Usuarios** puedes:",
       "add": "**Añadir usuario**: crea una cuenta nueva con nombre de usuario, contraseña inicial y rol.",
       "role": "**Cambiar rol**: usa el desplegable de rol junto a cualquier usuario (no puedes cambiar tu propio rol, así el servidor siempre conserva al menos un administrador capaz de gestionar roles).",
       "edit": "**Editar** (icono del lápiz): cambia el nombre de la cuenta de un usuario o restablece su contraseña por él, sin necesitar su contraseña actual. Al restablecer una contraseña, se cierra su sesión en todas partes y tendrá que volver a entrar con la nueva.",
       "delete": "**Eliminar**: borra la cuenta de forma permanente (no puedes eliminar tu propia cuenta).",
-      "away": "**Fuera de casa** (en Editar): si la cuenta se puede usar fuera de la red de casa, cuando el servidor lo permite (Admin → Red).",
+      "away": "**Fuera de casa** (en Editar): si la cuenta se puede usar fuera de la red de casa, cuando el servidor lo permite (Administración → Red).",
       "resetTwoFactor": "**Restablecer verificación en dos pasos** (en Editar): para quien ha perdido el móvil y los códigos de respaldo. Cierra su sesión; después puede entrar solo con su contraseña y volver a configurarla.",
       "ownPassword": "Cualquier usuario puede cambiar su propia contraseña desde **Ajustes → Seguridad**, para lo cual sí necesita su contraseña actual."
     },
@@ -137,7 +137,7 @@
       "backupCodes": "**Guarda tus códigos de respaldo.** Diez códigos de un solo uso por si pierdes el móvil; solo se muestran una vez. Cada uno te permite entrar una vez en lugar de un código.",
       "signingIn": "**Al iniciar sesión:** la contraseña y luego el código. En la pantalla del código, «¿Has perdido el móvil?» cambia a un código de respaldo.",
       "turnOff": "**Para desactivarla** necesitas tu contraseña y un código actual. Si te quedas sin acceso, un administrador puede restablecerla.",
-      "required": "Los administradores pueden exigirla para los inicios de sesión desde **fuera de la red de casa** (Admin → Red). En casa nunca es obligatoria."
+      "required": "Los administradores pueden exigirla para los inicios de sesión desde **fuera de la red de casa** (Administración → Red). En casa nunca es obligatoria."
     },
     "guests": {
       "title": "Pases temporales para invitados y caducidad de cuentas",
@@ -147,7 +147,7 @@
       "lockoutTitle": "Bloqueo sin sobresaltos",
       "lockout": "Cuando una cuenta llega a su fecha de caducidad, todas sus sesiones activas se cierran de inmediato. Al intentar entrar aparece una pantalla de bloqueo que avisa de que el pase ha terminado y sugiere contactar con el administrador.",
       "renewTitle": "Renovaciones y ampliaciones con un clic:",
-      "renew": "Los administradores pueden ver el estado de caducidad de cada cuenta ({active}, {expiring} o {expired}) directamente en la tabla de **Admin → Usuarios** y pulsar el icono del **reloj de arena** de cualquier usuario para añadir días o dejar la cuenta sin límite con un clic.",
+      "renew": "Los administradores pueden ver el estado de caducidad de cada cuenta ({active}, {expiring} o {expired}) directamente en la tabla de **Administración → Usuarios** y pulsar el icono del **reloj de arena** de cualquier usuario para añadir días o dejar la cuenta sin límite con un clic.",
       "status": {
         "active": "Activa",
         "expiring": "Caduca pronto",
@@ -239,7 +239,7 @@
       "title": "Opción 2: Tailscale Funnel, un enlace para cualquiera (sin dominio)",
       "text": "Abre la misma dirección {address} a cualquiera, en un navegador normal: tus amigos no necesitan Tailscale, no hace falta dominio ni tocar el router, y funciona incluso si tu proveedor de internet bloquea las conexiones entrantes. Pasa por los servidores de Tailscale, que limitan el ancho de banda: leer y escuchar va bien, el vídeo puede ir a tirones.",
       "option1": "Configura la opción 1 con el complemento de Docker.",
-      "allow": "**Admin → Red** → permite el acceso desde fuera (y plantéate exigir la verificación en dos pasos fuera de casa).",
+      "allow": "**Administración → Red** → permite el acceso desde fuera (y plantéate exigir la verificación en dos pasos fuera de casa).",
       "enable": "Añade {setting} a {env} y ejecuta {up}.",
       "check": "Compruébalo en un móvil con el wifi y Tailscale desactivados; luego envía el enlace a tus amigos y créales cuentas."
     },
@@ -250,14 +250,14 @@
       "connection": "**Comprueba que tu conexión a internet lo permite.** El internet de casa por 5G/4G, Starlink y algunos proveedores («CGNAT») no lo permiten; la guía explica cómo comprobarlo en un minuto.",
       "dns": "Un dominio, con un **registro A** de DNS que apunte a la dirección pública de tu casa.",
       "ports": "Los puertos **80** y **443** redirigidos en tu router hacia el servidor.",
-      "allow": "**Admin → Red** → permite el acceso desde fuera (y, si quieres, exige la verificación en dos pasos fuera de casa).",
+      "allow": "**Administración → Red** → permite el acceso desde fuera (y, si quieres, exige la verificación en dos pasos fuera de casa).",
       "compose": "Descarga {file} junto a tu archivo compose, añade {domain} y {composeFile} a {env}, y ejecuta {up}.",
-      "check": "Compruébalo desde un móvil con el wifi desactivado y abre ahí Admin → Red: debería decir «fuera»."
+      "check": "Compruébalo desde un móvil con el wifi desactivado y abre ahí Administración → Red: debería decir «fuera»."
     },
     "who": {
       "title": "Quién puede usar Plinthio y desde dónde",
-      "network": "**Admin → Red:** permite el acceso desde fuera de la red de casa (desactivado en servidores nuevos), trata Tailscale como si fuera casa y, si quieres, exige la verificación en dos pasos fuera de casa.",
-      "users": "**Admin → Usuarios → Editar:** si cada persona puede usar Plinthio fuera de casa; por ejemplo, los niños solo en casa.",
+      "network": "**Administración → Red:** permite el acceso desde fuera de la red de casa (desactivado en servidores nuevos), trata Tailscale como si fuera casa y, si quieres, exige la verificación en dos pasos fuera de casa.",
+      "users": "**Administración → Usuarios → Editar:** si cada persona puede usar Plinthio fuera de casa; por ejemplo, los niños solo en casa.",
       "security": "**Ajustes → Seguridad:** cualquiera puede activar la verificación en dos pasos en su propia cuenta."
     },
     "avoid": {
@@ -305,7 +305,7 @@
     "intro": "Todo lo que sabe Plinthio está en una sola base de datos SQLite: cuentas, el progreso de todos, marcadores, subrayados y notas, valoraciones, listas, ajustes del lector, bibliotecas y ajustes. Plinthio hace copias de seguridad por sí solo y puede copiarlas a un segundo lugar que elijas.",
     "automatic": {
       "title": "Copias automáticas (activadas por defecto)",
-      "where": "En **Admin → Copias de seguridad**:",
+      "where": "En **Administración → Copias de seguridad**:",
       "frequency": "**Frecuencia**: cada 6 o 12 horas, a diario (la opción predeterminada), cada 3 días o cada semana.",
       "keepLast": "**Conservar las últimas**: cuántas se guardan en {path} (7 por defecto).",
       "upgrade": "También se hace una copia **antes de cada actualización**; siempre se conservan las cinco más recientes, para que puedas volver atrás."
@@ -374,7 +374,7 @@
       "hideSearch": "Ocultar la barra de búsqueda",
       "accent": "Cambiar el color de acento"
     },
-    "apply": "Para aplicar CSS personalizado, ve a **Admin → Apariencia → CSS personalizado** (solo administradores), pega tus reglas en el editor, usa **{tryIt}** para comprobarlo en directo en tu pestaña actual antes de guardar y, después, **{save}** para enviarlo a todos los clientes conectados."
+    "apply": "Para aplicar CSS personalizado, ve a **Administración → Apariencia → CSS personalizado** (solo administradores), pega tus reglas en el editor, usa **{tryIt}** para comprobarlo en directo en tu pestaña actual antes de guardar y, después, **{save}** para enviarlo a todos los clientes conectados."
   },
   "errors": {
     "title": "Códigos de error",
@@ -402,15 +402,15 @@
     },
     "missingItems": {
       "title": "Un análisis de biblioteca terminó, pero faltan elementos",
-      "text": "Revisa **Admin → Registros** en busca de avisos durante ese análisis: las extensiones de archivo no compatibles y los archivos comprimidos ilegibles se omiten y se registran en lugar de hacer fallar todo el análisis. Comprueba que la extensión del archivo coincide con los formatos que espera la biblioteca (consulta **Contenido y metadatos compatibles**)."
+      "text": "Revisa **Administración → Registros** en busca de avisos durante ese análisis: las extensiones de archivo no compatibles y los archivos comprimidos ilegibles se omiten y se registran en lugar de hacer fallar todo el análisis. Comprueba que la extensión del archivo coincide con los formatos que espera la biblioteca (consulta **Contenido y metadatos compatibles**)."
     },
     "noPosters": {
       "title": "Las películas, series o anime no tienen pósteres ni descripciones",
-      "text": "Estos tres tipos usan TMDB para los metadatos, que necesita una clave de API gratuita que un administrador configura en **Admin → Metadatos**. Sin clave, el contenido se sigue analizando y reproduciendo; solo que no se buscan coincidencias automáticamente."
+      "text": "Estos tres tipos usan TMDB para los metadatos, que necesita una clave de API gratuita que un administrador configura en **Administración → Metadatos**. Sin clave, el contenido se sigue analizando y reproduciendo; solo que no se buscan coincidencias automáticamente."
     },
     "forgotPassword": {
       "title": "Un usuario ha olvidado su contraseña",
-      "text": "Cualquier administrador puede restablecerla desde **Admin → Usuarios** con el botón de editar (lápiz), sin necesidad de saber la contraseña anterior. Esto cierra su sesión en todas partes de inmediato."
+      "text": "Cualquier administrador puede restablecerla desde **Administración → Usuarios** con el botón de editar (lápiz), sin necesidad de saber la contraseña anterior. Esto cierra su sesión en todas partes de inmediato."
     },
     "video": {
       "title": "Reproducción de vídeo: tirones, carga constante o «Convirtiendo para el navegador»",

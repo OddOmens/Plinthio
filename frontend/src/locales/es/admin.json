@@ -91,7 +91,7 @@
       "writableFree": "El servidor puede escribir ahí · {free} libres.",
       "sameDisk": "Está en el mismo disco que los datos del servidor, así que protege frente a errores pero no frente a un disco averiado. Es mejor una carpeta en otra unidad.",
       "otherDisk": "Está en un disco distinto al de los datos del servidor.",
-      "hint": "Una carpeta tal como la ve el servidor. En Docker: cualquier lugar bajo {media} que no sea de solo lectura, u otra unidad montada en {backups} (Docs → Backups & Data Safety).",
+      "hint": "Una carpeta tal como la ve el servidor. En Docker: cualquier lugar bajo {media} que no sea de solo lectura, u otra unidad montada en {backups} (Documentos → Backups & Data Safety).",
       "keepThere": "Conservar allí",
       "copyFiles": "Copiar también las fotos de perfil, las portadas, la clave de inicio de sesión y los certificados HTTPS",
       "couldNotCheck": "No se pudo comprobar esa carpeta",
@@ -532,7 +532,7 @@
     },
     "transcode": {
       "title": "Errores recientes de codificación al reproducir",
-      "hint": "Errores de ffmpeg al preparar el video. Suele ser un problema del controlador de aceleración por hardware — prueba Admin → Reproducción → Probar."
+      "hint": "Errores de ffmpeg al preparar el video. Suele ser un problema del controlador de aceleración por hardware — prueba Administración → Reproducción → Probar."
     },
     "mediaTypes": {
       "movie": "película",

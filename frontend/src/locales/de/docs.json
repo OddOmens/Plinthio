@@ -58,7 +58,7 @@
     },
     "libraries": {
       "title": "So funktionieren Bibliotheken",
-      "what": "Eine **Bibliothek** ist ein Ordner auf der Festplatte, der genau einem Medientyp zugeordnet ist (Hörbücher, Manga & Comics, E-Books, Serien, Filme oder Anime). Bibliotheken fügst du unter **Admin → Bibliotheken** hinzu: Ordner auswählen, Typ wählen, und Plinthio scannt sofort. Ein erneuter Scan ist immer unbedenklich: Er vergleicht mit dem, was schon erfasst ist, erkennt umbenannte oder verschobene Dateien am Inhalt, fügt Neues hinzu und entfernt Katalogeinträge für Dateien, die es auf der Festplatte nicht mehr gibt (ohne die Dateien selbst anzufassen).",
+      "what": "Eine **Bibliothek** ist ein Ordner auf der Festplatte, der genau einem Medientyp zugeordnet ist (Hörbücher, Manga & Comics, E-Books, Serien, Filme oder Anime). Bibliotheken fügst du unter **Verwaltung → Bibliotheken** hinzu: Ordner auswählen, Typ wählen, und Plinthio scannt sofort. Ein erneuter Scan ist immer unbedenklich: Er vergleicht mit dem, was schon erfasst ist, erkennt umbenannte oder verschobene Dateien am Inhalt, fügt Neues hinzu und entfernt Katalogeinträge für Dateien, die es auf der Festplatte nicht mehr gibt (ohne die Dateien selbst anzufassen).",
       "deleting": "Wenn du eine Bibliothek aus Plinthio löschst, verschwinden nur ihre Katalogeinträge (Titel, Cover, Metadaten) – die Dateien auf deinem Dateisystem bleiben unberührt. Lesefortschritt und Lesezeichen hängen an der Identität der Datei. Fügst du denselben Ordner wieder hinzu und scannst ihn, werden sie automatisch wieder zugeordnet."
     },
     "storage": {
@@ -79,7 +79,7 @@
       "title": "Voraussetzungen & Ersteinrichtung",
       "docker": "Plinthio läuft offiziell mit Docker (oder Docker Compose) – siehe {file} im Repository.",
       "firstLaunch": "Beim ersten Start, solange es noch kein Admin-Konto gibt, landest du auf einer einmaligen **Einrichtung**, in der du den ersten Admin anlegst.",
-      "afterSetup": "Melde dich danach an und füge unter **Admin → Bibliotheken** deine erste Bibliothek hinzu, damit der Scan startet.",
+      "afterSetup": "Melde dich danach an und füge unter **Verwaltung → Bibliotheken** deine erste Bibliothek hinzu, damit der Scan startet.",
       "noDatabase": "Du brauchst keine externe Datenbank – alles liegt in einer einzigen SQLite-Datei mit Write-Ahead-Logging, damit gleichzeitige Zugriffe sicher sind."
     }
   },
@@ -91,13 +91,13 @@
     "booksTitle": "Bücher & E-Books",
     "books": "Formate: {epub}, {pdf}. Funktioniert direkt mit **Google Books** und **Open Library** für Metadaten und Cover, ganz ohne API-Schlüssel.",
     "videoTitle": "{movieIcon} Filme, {tvIcon} Serien & {animeIcon} Anime",
-    "video": "Formate: {mp4}, {mkv}, {webm}. Beim Streaming sorgen HTTP-Range-Anfragen fürs Spulen; was ein Browser nicht selbst abspielen kann, wird live umgewandelt. Metadaten und Bilder kommen von **TMDB (The Movie Database)**. Dafür braucht es einen kostenlosen persönlichen API-Schlüssel, den ein Admin einmal unter **Admin → Metadaten** einträgt. Auch ohne Schlüssel werden diese drei Bibliotheken problemlos gescannt und gestreamt – sie bekommen nur keine automatischen Poster, Beschreibungen oder Infos zu Besetzung und Staffeln.",
+    "video": "Formate: {mp4}, {mkv}, {webm}. Beim Streaming sorgen HTTP-Range-Anfragen fürs Spulen; was ein Browser nicht selbst abspielen kann, wird live umgewandelt. Metadaten und Bilder kommen von **TMDB (The Movie Database)**. Dafür braucht es einen kostenlosen persönlichen API-Schlüssel, den ein Admin einmal unter **Verwaltung → Metadaten** einträgt. Auch ohne Schlüssel werden diese drei Bibliotheken problemlos gescannt und gestreamt – sie bekommen nur keine automatischen Poster, Beschreibungen oder Infos zu Besetzung und Staffeln.",
     "applying": {
       "title": "Metadaten übernehmen & überschreiben",
       "text": "Admins und Redakteure können in der Detailansicht eines Titels externe Anbieter durchsuchen und einen Treffer übernehmen oder direkt ein eigenes Cover hochladen. Manuelle Änderungen werden bei einem erneuten Scan nie überschrieben – ein Scan füllt nur Felder, die noch leer sind."
     },
     "cleanup": {
-      "title": "Titel bereinigen & Metadaten im Stapel abgleichen (Admin → Metadaten)",
+      "title": "Titel bereinigen & Metadaten im Stapel abgleichen (Verwaltung → Metadaten)",
       "text": "Werden Videodateien mit Scene-Release-Tags gescannt (z. B. {example}), ermittelt die Titelbereinigung den sauberen Film- oder Serientitel und trennt das vierstellige Erscheinungsjahr ab.",
       "titleCleanup": "**Titel bereinigen:** Mit einem Klick werden die Titel in der Datenbank in lesbare Namen umgewandelt, erkannte Jahre bleiben erhalten.",
       "batchMatch": "**TMDB-Abgleich im Stapel:** Sucht bei TMDB mit dem bereinigten Titel und dem genauen Jahr und holt für alle ausgewählten Titel offizielle Poster, Regie, Besetzung, Inhaltsangaben und Erscheinungsdaten.",
@@ -121,12 +121,12 @@
     },
     "manage": {
       "title": "Konten verwalten (nur Admins)",
-      "intro": "Unter **Admin → Benutzer** kannst du:",
+      "intro": "Unter **Verwaltung → Benutzer** kannst du:",
       "add": "**Benutzer hinzufügen** – ein neues Konto mit Benutzername, Startpasswort und Rolle anlegen.",
       "role": "**Rolle ändern** – über das Rollen-Menü neben jedem Konto (deine eigene Rolle kannst du nicht ändern, so bleibt immer mindestens ein Admin übrig, der Rollen verwalten kann).",
       "edit": "**Bearbeiten** (Stift-Symbol) – ein Konto umbenennen und/oder sein Passwort zurücksetzen, ohne das aktuelle Passwort zu kennen. Nach dem Zurücksetzen wird die Person sofort überall abgemeldet und muss sich mit dem neuen Passwort wieder anmelden.",
       "delete": "**Löschen** – entfernt das Konto endgültig (dein eigenes Konto kannst du nicht löschen).",
-      "away": "**Unterwegs** (unter Bearbeiten) – ob das Konto außerhalb des Heimnetzes genutzt werden darf, sofern der Server das erlaubt (Admin → Netzwerk).",
+      "away": "**Unterwegs** (unter Bearbeiten) – ob das Konto außerhalb des Heimnetzes genutzt werden darf, sofern der Server das erlaubt (Verwaltung → Netzwerk).",
       "resetTwoFactor": "**Zwei-Faktor zurücksetzen** (unter Bearbeiten) – für alle, die Handy und Backup-Codes verloren haben. Die Person wird abgemeldet, meldet sich dann nur mit ihrem Passwort an und kann es neu einrichten.",
       "ownPassword": "Alle können ihr eigenes Passwort unter **Einstellungen → Sicherheit** ändern; dafür ist das aktuelle Passwort nötig."
     },
@@ -137,7 +137,7 @@
       "backupCodes": "**Speichere deine Backup-Codes.** Zehn Einmal-Codes für den Fall, dass dein Handy weg ist, nur einmal angezeigt. Jeder ersetzt bei einer Anmeldung einmal den Code.",
       "signingIn": "**Anmelden:** erst das Passwort, dann der Code. Auf dem Code-Bildschirm wechselst du mit „Handy verloren?“ zu einem Backup-Code.",
       "turnOff": "**Ausschalten** geht mit deinem Passwort und einem aktuellen Code. Wenn du ausgesperrt bist, kann ein Admin es zurücksetzen.",
-      "required": "Admins können es für Anmeldungen **außerhalb des Heimnetzes** verlangen (Admin → Netzwerk). Zu Hause ist es nie Pflicht."
+      "required": "Admins können es für Anmeldungen **außerhalb des Heimnetzes** verlangen (Verwaltung → Netzwerk). Zu Hause ist es nie Pflicht."
     },
     "guests": {
       "title": "Befristete Gastzugänge & Ablaufdaten für Konten",
@@ -147,7 +147,7 @@
       "lockoutTitle": "Sanfte Sperre",
       "lockout": "Läuft ein Konto ab, werden alle aktiven Sitzungen sofort beendet. Bei der Anmeldung erscheint dann ein eigener Sperrbildschirm, der erklärt, dass der Zugang abgelaufen ist, und bittet, sich an den Admin zu wenden.",
       "renewTitle": "Verlängern mit einem Klick:",
-      "renew": "Admins sehen den Ablaufstatus jedes Kontos ({active}, {expiring} oder {expired}) direkt in der Tabelle unter **Admin → Benutzer** und können über das **Sanduhr**-Symbol mit einem Klick weitere Tage hinzufügen oder das Konto unbegrenzt machen.",
+      "renew": "Admins sehen den Ablaufstatus jedes Kontos ({active}, {expiring} oder {expired}) direkt in der Tabelle unter **Verwaltung → Benutzer** und können über das **Sanduhr**-Symbol mit einem Klick weitere Tage hinzufügen oder das Konto unbegrenzt machen.",
       "status": {
         "active": "Aktiv",
         "expiring": "Läuft bald ab",
@@ -239,7 +239,7 @@
       "title": "Option 2: Tailscale Funnel, ein Link für alle (ohne Domain)",
       "text": "Macht dieselbe Adresse {address} für alle in einem normalen Browser erreichbar: kein Tailscale für deine Freunde, keine Domain, keine Änderungen am Router, und es klappt sogar, wenn dein Internetanbieter eingehende Verbindungen blockiert. Der Verkehr läuft über die Server von Tailscale, die die Bandbreite begrenzen: Lesen und Hören klappen gut, Videos können stocken.",
       "option1": "Richte Option 1 mit der Docker-Erweiterung ein.",
-      "allow": "**Admin → Netzwerk** → Zugriff von außen erlauben (und überleg dir, unterwegs Zwei-Faktor zu verlangen).",
+      "allow": "**Verwaltung → Netzwerk** → Zugriff von außen erlauben (und überleg dir, unterwegs Zwei-Faktor zu verlangen).",
       "enable": "Füge {setting} zu {env} hinzu und führe {up} aus.",
       "check": "Teste es auf einem Handy mit ausgeschaltetem WLAN und Tailscale, schick deinen Freunden dann den Link und leg ihnen Konten an."
     },
@@ -250,14 +250,14 @@
       "connection": "**Prüfe, ob dein Internetanschluss das erlaubt.** 5G/4G-Internet für zu Hause, Starlink und manche Anbieter („CGNAT“) erlauben es nicht; die Anleitung zeigt dir, wie du das in einer Minute prüfst.",
       "dns": "Eine Domain mit einem DNS-**A-Record**, der auf die öffentliche Adresse deines Zuhauses zeigt.",
       "ports": "Die Ports **80** und **443** im Router an den Server weitergeleitet.",
-      "allow": "**Admin → Netzwerk** → Zugriff von außen erlauben (und optional unterwegs Zwei-Faktor verlangen).",
+      "allow": "**Verwaltung → Netzwerk** → Zugriff von außen erlauben (und optional unterwegs Zwei-Faktor verlangen).",
       "compose": "Lade {file} neben deine Compose-Datei, füge {domain} und {composeFile} zu {env} hinzu und führe {up} aus.",
-      "check": "Teste es auf einem Handy mit ausgeschaltetem WLAN und öffne dort Admin → Netzwerk: Dort sollte „außerhalb“ stehen."
+      "check": "Teste es auf einem Handy mit ausgeschaltetem WLAN und öffne dort Verwaltung → Netzwerk: Dort sollte „außerhalb“ stehen."
     },
     "who": {
       "title": "Wer Plinthio von wo nutzen kann",
-      "network": "**Admin → Netzwerk:** Zugriff von außerhalb des Heimnetzes erlauben (bei neuen Servern aus), Tailscale wie zu Hause behandeln und optional unterwegs Zwei-Faktor verlangen.",
-      "users": "**Admin → Benutzer → Bearbeiten:** ob eine Person Plinthio auch unterwegs nutzen darf, z. B. die Kinder nur zu Hause.",
+      "network": "**Verwaltung → Netzwerk:** Zugriff von außerhalb des Heimnetzes erlauben (bei neuen Servern aus), Tailscale wie zu Hause behandeln und optional unterwegs Zwei-Faktor verlangen.",
+      "users": "**Verwaltung → Benutzer → Bearbeiten:** ob eine Person Plinthio auch unterwegs nutzen darf, z. B. die Kinder nur zu Hause.",
       "security": "**Einstellungen → Sicherheit:** Alle können für ihr eigenes Konto die Zwei-Faktor-Anmeldung einschalten."
     },
     "avoid": {
@@ -305,7 +305,7 @@
     "intro": "Alles, was Plinthio weiß, steckt in einer einzigen SQLite-Datenbank: Konten, der Fortschritt aller, Lesezeichen, Markierungen und Notizen, Bewertungen, Listen, Reader-Einstellungen, Bibliotheken und Einstellungen. Plinthio sichert sie selbstständig und kann diese Backups an einen zweiten Ort deiner Wahl kopieren.",
     "automatic": {
       "title": "Automatische Backups (standardmäßig an)",
-      "where": "Unter **Admin → Backups**:",
+      "where": "Unter **Verwaltung → Backups**:",
       "frequency": "**Häufigkeit**: alle 6 oder 12 Stunden, täglich (Standard), alle 3 Tage oder wöchentlich.",
       "keepLast": "**Behalten**: wie viele davon in {path} bleiben (standardmäßig 7).",
       "upgrade": "Außerdem wird **vor jedem Update** ein Snapshot erstellt; die neuesten fünf davon bleiben immer erhalten, damit du zurückgehen kannst."
@@ -374,7 +374,7 @@
       "hideSearch": "Suchleiste ausblenden",
       "accent": "Eigene Akzentfarbe"
     },
-    "apply": "Um eigenes CSS anzuwenden, öffne **Admin → Darstellung → Eigenes CSS** (nur Admins), füge deine Regeln in den Editor ein, prüfe sie mit **{tryIt}** live in deinem aktuellen Tab, bevor du speicherst, und verteile sie dann mit **{save}** an alle verbundenen Geräte."
+    "apply": "Um eigenes CSS anzuwenden, öffne **Verwaltung → Darstellung → Eigenes CSS** (nur Admins), füge deine Regeln in den Editor ein, prüfe sie mit **{tryIt}** live in deinem aktuellen Tab, bevor du speicherst, und verteile sie dann mit **{save}** an alle verbundenen Geräte."
   },
   "errors": {
     "title": "Fehlercodes",
@@ -402,15 +402,15 @@
     },
     "missingItems": {
       "title": "Ein Bibliotheksscan ist fertig, aber es fehlen Titel",
-      "text": "Sieh unter **Admin → Protokolle** nach Warnungen aus diesem Scan – nicht unterstützte Dateiendungen und unlesbare Archive werden übersprungen und protokolliert, statt den ganzen Scan abzubrechen. Prüfe, ob die Dateiendung zu den Formaten der Bibliothek passt (siehe **Unterstützte Medien & Metadaten**)."
+      "text": "Sieh unter **Verwaltung → Protokolle** nach Warnungen aus diesem Scan – nicht unterstützte Dateiendungen und unlesbare Archive werden übersprungen und protokolliert, statt den ganzen Scan abzubrechen. Prüfe, ob die Dateiendung zu den Formaten der Bibliothek passt (siehe **Unterstützte Medien & Metadaten**)."
     },
     "noPosters": {
       "title": "Filme/Serien/Anime haben keine Poster oder Beschreibungen",
-      "text": "Diese drei Typen holen ihre Metadaten von TMDB. Dafür braucht es einen kostenlosen API-Schlüssel, den ein Admin unter **Admin → Metadaten** einträgt. Ohne Schlüssel werden Inhalte trotzdem gescannt und gestreamt – sie werden nur nicht automatisch zugeordnet."
+      "text": "Diese drei Typen holen ihre Metadaten von TMDB. Dafür braucht es einen kostenlosen API-Schlüssel, den ein Admin unter **Verwaltung → Metadaten** einträgt. Ohne Schlüssel werden Inhalte trotzdem gescannt und gestreamt – sie werden nur nicht automatisch zugeordnet."
     },
     "forgotPassword": {
       "title": "Jemand hat sein Passwort vergessen",
-      "text": "Jeder Admin kann es unter **Admin → Benutzer** über die Bearbeiten-Schaltfläche (Stift) zurücksetzen – das alte Passwort muss niemand kennen. Die Person wird dadurch sofort überall abgemeldet."
+      "text": "Jeder Admin kann es unter **Verwaltung → Benutzer** über die Bearbeiten-Schaltfläche (Stift) zurücksetzen – das alte Passwort muss niemand kennen. Die Person wird dadurch sofort überall abgemeldet."
     },
     "video": {
       "title": "Videowiedergabe: Ruckeln, Puffern oder „Wird für den Browser umgewandelt“",

@@ -1,0 +1,488 @@
+{
+  "codes": {
+    "P000": {
+      "title": "Onverwachte serverfout",
+      "message": "Er ging iets mis op de server",
+      "meaning": "De server liep tegen een fout aan waar geen specifieke code voor is.",
+      "fix": "Bekijk Admin → Logboek (of `docker logs plinthio`) voor de volledige fout. Admins zien de oorzaak ook in de foutmelding zelf."
+    },
+    "P001": {
+      "title": "Ongeldig verzoek",
+      "message": "Het verzoek was niet geldig",
+      "meaning": "Er ontbrak een verplicht veld of een waarde viel buiten het bereik.",
+      "fix": "De melding zegt om welk veld het gaat. Kwam het verzoek van de web-app, laad de pagina dan opnieuw: een oude versie uit de cache kan verouderde verzoeken sturen."
+    },
+    "P002": {
+      "title": "Niet gevonden",
+      "message": "Niet gevonden",
+      "meaning": "Wat je opvroeg bestaat niet, of is verborgen voor dit account.",
+      "fix": "Het is misschien verwijderd of verplaatst door een nieuwe scan. Vernieuw de pagina."
+    },
+    "P003": {
+      "title": "Niet toegestaan",
+      "message": "Je hebt geen toestemming om dat te doen",
+      "meaning": "Het account is ingelogd, maar mag deze actie niet uitvoeren.",
+      "fix": "Vraag een admin om je rol of toegang aan te passen als je dit nodig hebt."
+    },
+    "P004": {
+      "title": "Conflict",
+      "message": "Dat botst met iets wat al bestaat",
+      "meaning": "De actie botst met bestaande gegevens, zoals een dubbele naam.",
+      "fix": "De melding zegt wat er botste. Geef het bestaande item eerst een andere naam of verwijder het."
+    },
+    "P005": {
+      "title": "Te veel verzoeken",
+      "message": "Te veel verzoeken, doe het even rustiger aan en probeer het zo opnieuw",
+      "meaning": "Er is een limiet bereikt.",
+      "fix": "Wacht een minuut en probeer het opnieuw. Delen veel mensen één IP achter een reverse proxy, stel dan TRUST_PROXY=1 in zodat ze elk een eigen limiet krijgen."
+    },
+    "P006": {
+      "title": "Tijdelijk niet beschikbaar",
+      "message": "De server is bezig, probeer het zo opnieuw",
+      "meaning": "De server kon het verzoek op dit moment niet afhandelen.",
+      "fix": "Probeer het over een paar seconden opnieuw."
+    },
+    "P007": {
+      "title": "Upload geweigerd",
+      "message": "Dat bestand kon niet worden geüpload",
+      "meaning": "Een geüpload bestand was te groot of van het verkeerde type.",
+      "fix": "Afbeeldingen moeten kleiner zijn dan 15 MB. Back-ups moeten back-upbestanden van Plinthio zijn."
+    },
+    "P100": {
+      "title": "Inloggen vereist",
+      "message": "Authenticatie vereist",
+      "meaning": "Het verzoek bevatte geen sessie, mediatoken of API-sleutel.",
+      "fix": "Log opnieuw in. Stuur voor scripts een X-API-Key-header mee."
+    },
+    "P101": {
+      "title": "Sessie verlopen",
+      "message": "Sessie verlopen, log opnieuw in",
+      "meaning": "Het sessietoken is verlopen, ongeldig, of ingetrokken door een wachtwoordwijziging of ‘Overal uitloggen’.",
+      "fix": "Log opnieuw in."
+    },
+    "P102": {
+      "title": "Token op de verkeerde plek gebruikt",
+      "message": "Dit token is hier niet geldig",
+      "meaning": "Een mediatoken is als Authorization-header verstuurd, of buiten /api/media gebruikt. Of een sessietoken is in een URL gezet. Mediatokens werken alleen als ?token= in media-URL's, en sessietokens alleen in de Authorization-header.",
+      "fix": "Dit is een bug in de client die het verzoek deed. Laad in de web-app de pagina opnieuw. Blijft het gebeuren, meld het dan met deze code."
+    },
+    "P103": {
+      "title": "Account verlopen",
+      "message": "De toegang tot je account is verlopen. Neem contact op met je beheerder.",
+      "meaning": "Het account heeft een vervaldatum die al voorbij is.",
+      "fix": "Een admin kan de vervaldatum verlengen of weghalen via Admin → Gebruikers."
+    },
+    "P104": {
+      "title": "Ongeldige API-sleutel",
+      "message": "Ongeldige API-sleutel",
+      "meaning": "De X-API-Key (of het HTTP Basic-wachtwoord) komt met geen enkele sleutel overeen.",
+      "fix": "Maak een nieuwe sleutel aan via Instellingen → Apps & API-sleutels. Sleutels worden maar één keer getoond, bij het aanmaken."
+    },
+    "P105": {
+      "title": "Alleen voor admins",
+      "message": "Adminrechten vereist",
+      "meaning": "Voor deze actie is de adminrol nodig.",
+      "fix": "Vraag een admin om het te doen, of om je account te promoveren."
+    },
+    "P106": {
+      "title": "Alleen voor redacteuren of admins",
+      "message": "Redacteursrechten vereist",
+      "meaning": "Voor deze actie is de rol redacteur of admin nodig.",
+      "fix": "Vraag een admin om je account redacteur te maken."
+    },
+    "P107": {
+      "title": "Verkeerde gebruikersnaam of wachtwoord",
+      "message": "Ongeldige gebruikersnaam of wachtwoord",
+      "meaning": "De inloggegevens kwamen niet overeen met een account.",
+      "fix": "Controleer de gebruikersnaam en het wachtwoord. Een admin kan een wachtwoord opnieuw instellen via Admin → Gebruikers."
+    },
+    "P108": {
+      "title": "Te veel inlogpogingen",
+      "message": "Te veel inlogpogingen, probeer het later opnieuw",
+      "meaning": "Inloggen is beperkt om het raden van wachtwoorden te vertragen.",
+      "fix": "Wacht 15 minuten en probeer het opnieuw."
+    },
+    "P109": {
+      "title": "Niet beschikbaar buitenshuis",
+      "message": "Deze server kan alleen vanaf het thuisnetwerk worden gebruikt",
+      "meaning": "Het verzoek kwam van buiten het thuisnetwerk (geen thuis- of Tailscale-adres), en de server staat alleen toegang van thuis toe.",
+      "fix": "Gebruik Plinthio thuis, of via Tailscale. Een admin kan toegang van buitenaf toestaan via Admin → Netwerk."
+    },
+    "P110": {
+      "title": "Dit account is alleen voor thuisgebruik",
+      "message": "Dit account kan alleen vanaf het thuisnetwerk worden gebruikt",
+      "meaning": "De server staat toegang van buitenaf toe, maar niet voor dit account.",
+      "fix": "Gebruik Plinthio thuis, of vraag een admin om dit account buitenshuis toe te staan (Admin → Gebruikers)."
+    },
+    "P111": {
+      "title": "Verkeerde verificatiecode",
+      "message": "Die code klopt niet, of is al gebruikt",
+      "meaning": "De zescijferige code (of back-upcode) kwam niet overeen. Codes veranderen elke 30 seconden en werken elk maar één keer.",
+      "fix": "Voer de huidige code uit je authenticator-app in. Controleer of de klok van je telefoon automatisch wordt ingesteld. Telefoon kwijt? Gebruik een back-upcode, of vraag een admin om tweestapsverificatie te resetten."
+    },
+    "P112": {
+      "title": "Tweestapsverificatie nodig buitenshuis",
+      "message": "Inloggen van buiten het thuisnetwerk vereist tweestapsverificatie, en die heeft dit account niet ingesteld",
+      "meaning": "De server vereist tweestapsverificatie voor inlogs van buiten het thuisnetwerk.",
+      "fix": "Log één keer thuis in en zet tweestapsverificatie aan via Instellingen → Beveiliging."
+    },
+    "P113": {
+      "title": "Inlogstap verlopen",
+      "message": "Het inloggen duurde te lang, begin opnieuw",
+      "meaning": "De tweestapsverificatie bij het inloggen moet binnen een paar minuten worden afgerond, of er zijn te veel verkeerde codes ingevoerd.",
+      "fix": "Voer je gebruikersnaam en wachtwoord opnieuw in."
+    },
+    "P200": {
+      "title": "Bibliotheekmap niet gevonden",
+      "message": "Bibliotheekmap niet gevonden",
+      "meaning": "De map waar een bibliotheek naar verwijst, bestaat niet binnen de server (of container).",
+      "fix": "In Docker is je media gekoppeld op /media, dus bibliotheekpaden zien eruit als /media/Movies. Controleer of MEDIA_DIR in docker/.env naar de juiste map op de host verwijst."
+    },
+    "P201": {
+      "title": "Bibliotheekmap onleesbaar (I/O-fout)",
+      "message": "De mediamap kon niet worden gelezen (I/O-fout)",
+      "meaning": "Het lezen van de map mislukte met EIO. Bijna altijd is de schijf erachter losgekoppeld of opnieuw gekoppeld, waardoor een verouderde koppeling achterbleef. Een opnieuw gekoppelde USB-schijf kan onder een nieuw pad terugkomen, zoals /media/you/Drive1.",
+      "fix": "Controleer of de schijf aangesloten en gekoppeld is (`mount | grep media`). Laat MEDIA_DIR naar het huidige koppelpad verwijzen en maak de container opnieuw aan. Als je de schijf op UUID koppelt in /etc/fstab, blijft het pad hetzelfde."
+    },
+    "P202": {
+      "title": "Geen toegang tot bibliotheekmap",
+      "message": "De server heeft geen toestemming om die map te lezen",
+      "meaning": "De map bestaat, maar het Plinthio-proces kan hem niet lezen (EACCES).",
+      "fix": "Geef de containergebruiker leestoegang tot de mediamap, bijv. met `chmod -R o+rX` op de map op de host of met passende PUID/PGID."
+    },
+    "P203": {
+      "title": "Geen map",
+      "message": "Dat pad is geen map",
+      "meaning": "Het bibliotheekpad verwijst naar een bestand in plaats van een map.",
+      "fix": "Kies de map waarin je media staat."
+    },
+    "P300": {
+      "title": "Media niet gevonden",
+      "message": "Media niet gevonden",
+      "meaning": "Er bestaat geen item met dat id, of het is voor dit account verborgen door een admin of ouderlijk toezicht.",
+      "fix": "Vernieuw de bibliotheek. Een nieuwe scan heeft het item misschien vervangen."
+    },
+    "P301": {
+      "title": "Mediabestand ontbreekt",
+      "message": "Het mediabestand staat niet meer op de schijf",
+      "meaning": "Het item staat in de bibliotheek, maar het bestand is weg. Het is verplaatst, hernoemd of verwijderd, of de schijf is niet gekoppeld.",
+      "fix": "Controleer of de schijf gekoppeld is en scan de bibliotheek daarna opnieuw."
+    },
+    "P302": {
+      "title": "Mediabestand onleesbaar",
+      "message": "Het mediabestand kon niet worden gelezen",
+      "meaning": "Het lezen van het bestand mislukte. Meestal door een losgekoppelde schijf (EIO), een probleem met rechten of een beschadigd bestand.",
+      "fix": "Zie P201/P202 voor problemen met schijven en rechten. Bekijk Admin → Logboek voor de onderliggende fout."
+    },
+    "P303": {
+      "title": "ffmpeg niet beschikbaar",
+      "message": "Video omzetten is niet beschikbaar: ffmpeg kon niet worden gestart",
+      "meaning": "ffmpeg of ffprobe ontbreekt of startte niet, dus video's die omgezet moeten worden, kunnen niet afspelen.",
+      "fix": "Het Docker-image bevat ffmpeg. Installeer bij een bare-metal-installatie ffmpeg en zorg dat het in PATH staat. Bekijk Admin → Logboek."
+    },
+    "P304": {
+      "title": "Omzetten mislukt",
+      "message": "Het omzetten van deze video is mislukt op de server",
+      "meaning": "ffmpeg is gestart, maar stopte met een fout tijdens het omzetten van de video. Meestal door een beschadigd bestand, een niet-ondersteunde codec of een probleem met hardwaretranscodering.",
+      "fix": "Admin → Logboek toont de ffmpeg-fout. Noemt die VAAPI/QSV/NVENC, zet hardwaretranscodering dan uit via Admin → Afspelen en probeer het opnieuw."
+    },
+    "P305": {
+      "title": "Nog bezig met voorbereiden",
+      "message": "Deze video wordt nog voorbereid, probeer het zo opnieuw",
+      "meaning": "Het omzetten loopt, maar het gevraagde deel is nog niet klaar.",
+      "fix": "De speler probeert het vanzelf opnieuw. Wordt het nooit klaar, dan is de server misschien te traag om in realtime te transcoderen op deze kwaliteit. Kies een lagere kwaliteit."
+    },
+    "P306": {
+      "title": "Ongeldig streamverzoek",
+      "message": "Ongeldig streamverzoek",
+      "meaning": "De stream-URL noemde een onbekende kwaliteit, audiospoor, segment of voorbeeldblad.",
+      "fix": "Laad de speler opnieuw. Meestal is dit een verouderde URL nadat de video opnieuw is gescand."
+    },
+    "P307": {
+      "title": "Ondertitelspoor niet gevonden",
+      "message": "Ondertitelspoor niet gevonden",
+      "meaning": "Het gevraagde ondertitelspoor bestaat niet of kon niet worden uitgepakt.",
+      "fix": "Kies een ander spoor. Ondertitels op basis van afbeeldingen (PGS/VobSub) kunnen niet als tekst worden getoond."
+    },
+    "P308": {
+      "title": "PDF-lezer niet beschikbaar",
+      "message": "PDF-pagina's kunnen niet worden getoond: poppler is niet geïnstalleerd op de server",
+      "meaning": "Plinthio zet PDF-pagina's om naar afbeeldingen met poppler (pdftoppm en pdfinfo), en kon die niet starten.",
+      "fix": "Het Docker-image bevat poppler. Installeer bij een bare-metal-installatie poppler-utils (apt install poppler-utils, brew install poppler) en herstart."
+    },
+    "P309": {
+      "title": "PDF-pagina kon niet worden weergegeven",
+      "message": "Deze PDF-pagina kon niet worden weergegeven",
+      "meaning": "poppler is gestart, maar liep vast op dit bestand. Meestal een beschadigde of met een wachtwoord beveiligde PDF.",
+      "fix": "Open het bestand in een andere PDF-lezer om het te controleren. Een met een wachtwoord beveiligde PDF moet eerst worden ontgrendeld. De fout staat in Admin → Logboek."
+    },
+    "P350": {
+      "title": "Browser kan dit formaat niet afspelen",
+      "message": "Deze browser kan deze video niet afspelen",
+      "meaning": "De browser weigerde de stream, zelfs nadat de server hem had omgezet.",
+      "fix": "Probeer een andere browser (Chrome, Edge of Safari). Gebeurt dit in elke browser, dan is het bestand zelf misschien beschadigd."
+    },
+    "P351": {
+      "title": "Verbinding verbroken tijdens afspelen",
+      "message": "Verbinding met de server verbroken",
+      "meaning": "De speler kon de server niet bereiken om het volgende deel van de video te laden.",
+      "fix": "Controleer je netwerkverbinding en druk daarna op Opnieuw."
+    },
+    "P352": {
+      "title": "Medialink kon niet worden vernieuwd",
+      "message": "Je toegang tot de media is verlopen en kon niet worden vernieuwd",
+      "meaning": "Media-URL's bevatten een kortlevend token. Dat is verlopen en de app kon geen nieuw token krijgen.",
+      "fix": "Laad de pagina opnieuw. Helpt dat niet, log dan uit en weer in."
+    },
+    "P400": {
+      "title": "TMDB-sleutel niet ingesteld",
+      "message": "Er is geen TMDB API-sleutel ingesteld. Een admin moet er een toevoegen via Admin → Metadata.",
+      "meaning": "Metadata voor films, series en anime komt van TMDB, waarvoor een API-sleutel nodig is. Release-images hebben er een ingebouwd; je ziet dit bij een build vanaf de broncode, of als TMDB de ingebouwde sleutel niet meer accepteert.",
+      "fix": "Maak een sleutel aan op themoviedb.org → Settings → API en plak hem in Admin → Metadata."
+    },
+    "P401": {
+      "title": "Bron heeft de API-sleutel geweigerd",
+      "message": "De metadatabron heeft de ingestelde API-sleutel geweigerd",
+      "meaning": "De server kon de bron bereiken, maar de bron weigerde de sleutel.",
+      "fix": "Plak voor TMDB de \"API Key\" of het \"API Read Access Token\" uit je TMDB-account in Admin → Metadata."
+    },
+    "P402": {
+      "title": "Limiet van de bron bereikt",
+      "message": "De metadatabron beperkt de verzoeken van deze server. Wacht even en probeer het opnieuw.",
+      "meaning": "De bron weigert verzoeken omdat er te veel zijn verstuurd.",
+      "fix": "Wacht een minuut. Grote bibliotheken in één keer koppelen kan dit veroorzaken."
+    },
+    "P403": {
+      "title": "Bron onbereikbaar",
+      "message": "Kon de metadatabron niet bereiken vanaf de server",
+      "meaning": "Het verzoek aan de bron verliep (time-out) of mislukte op netwerkniveau.",
+      "fix": "Controleer of de server (container) uitgaande internettoegang en werkende DNS heeft."
+    },
+    "P500": {
+      "title": "Lijst niet gevonden",
+      "message": "Lijst niet gevonden",
+      "meaning": "De lijst of map bestaat niet of is van iemand anders.",
+      "fix": "Vernieuw de pagina Lijsten."
+    },
+    "P501": {
+      "title": "Verkeerd soort titel voor deze lijst",
+      "message": "Dat soort titel kan niet in deze lijst",
+      "meaning": "Elke lijst bevat één categorie: Films, Series, Anime, Lezen of Luisteren.",
+      "fix": "Voeg het toe aan een lijst in de bijbehorende categorie."
+    },
+    "P502": {
+      "title": "Staat al in de lijst",
+      "message": "Die titel staat al in deze lijst",
+      "meaning": "De titel is eerder aan deze lijst toegevoegd.",
+      "fix": "Je hoeft niets te doen."
+    },
+    "P503": {
+      "title": "Al aangevraagd",
+      "message": "Die titel is al aangevraagd",
+      "meaning": "Iemand heeft een open verzoek voor deze titel.",
+      "fix": "De status staat op de pagina Verzoeken."
+    },
+    "P504": {
+      "title": "Staat al in de bibliotheek",
+      "message": "Die titel is al aan de bibliotheek toegevoegd",
+      "meaning": "Een verzoek voor deze titel is geaccepteerd en gemarkeerd als toegevoegd.",
+      "fix": "Zoek hem op in de bibliotheek."
+    },
+    "P505": {
+      "title": "Verzoek kan niet meer worden ingetrokken",
+      "message": "Alleen verzoeken in afwachting kunnen worden ingetrokken",
+      "meaning": "Een admin of redacteur heeft al iets met dit verzoek gedaan.",
+      "fix": "Vraag een admin of redacteur als je het wilt laten verwijderen."
+    },
+    "P506": {
+      "title": "Verzoek niet gevonden",
+      "message": "Verzoek niet gevonden",
+      "meaning": "Het verzoek is verwijderd of heeft nooit bestaan.",
+      "fix": "Vernieuw de pagina Verzoeken."
+    },
+    "P600": {
+      "title": "Watchparty's staan uit",
+      "message": "Watchparty's staan uit op deze server",
+      "meaning": "Een admin heeft watchparty's niet aangezet.",
+      "fix": "Een admin kan ze aanzetten via Admin → Functies → Watchparty's."
+    },
+    "P601": {
+      "title": "Watchparty niet gevonden",
+      "message": "Die watchparty is afgelopen of heeft nooit bestaan",
+      "meaning": "De host heeft de watchparty beëindigd, iedereen is vertrokken, of de server is herstart.",
+      "fix": "Vraag de host om een nieuwe uitnodigingslink."
+    },
+    "P602": {
+      "title": "Alleen de host kan dat",
+      "message": "Alleen de host van de watchparty kan dat",
+      "meaning": "De host houdt de bediening van het afspelen voor zichzelf.",
+      "fix": "Vraag het de host, of vraag of iedereen het afspelen mag bedienen."
+    },
+    "P603": {
+      "title": "Niet beschikbaar voor je account",
+      "message": "Deze watchparty kijkt naar iets wat je account niet kan openen",
+      "meaning": "De titel is voor je verborgen, of valt boven de inhoudslimiet van je account.",
+      "fix": "Vraag een admin naar de inhoudsinstellingen van je account."
+    },
+    "P604": {
+      "title": "Niet iedereen kan dat kijken",
+      "message": "Iemand in de watchparty kan die titel niet openen",
+      "meaning": "De titel is verborgen voor iemand die meekijkt, of valt boven diens inhoudslimiet.",
+      "fix": "Kies iets wat iedereen in de watchparty kan kijken."
+    },
+    "P605": {
+      "title": "Watchparty is vol",
+      "message": "Die watchparty is vol",
+      "meaning": "Er passen maximaal 20 mensen in een watchparty, en een server kan maximaal 20 watchparty's tegelijk hebben.",
+      "fix": "Probeer het opnieuw als er iemand vertrekt of een watchparty eindigt."
+    }
+  },
+  "messages": {
+    "tooManyAuthenticationAttemptsPleaseTry": "Te veel authenticatiepogingen. Probeer het later opnieuw.",
+    "tooManyLoginAttemptsPleaseWait": "Te veel inlogpogingen. Wacht even voordat je het opnieuw probeert.",
+    "tooManyBackupRequestsPleaseWait": "Te veel back-upverzoeken. Wacht even voordat je het opnieuw probeert.",
+    "plinthioIsNotUsingItsOwn": "Plinthio gebruikt zijn eigen certificeringsinstantie niet",
+    "couldNotReadFile": "Kon het bestand niet lezen",
+    "thisAccountNoLongerExists": "Dit account bestaat niet meer",
+    "sessionWasSignedOutPleaseLog": "De sessie is uitgelogd, log opnieuw in",
+    "noOpeningSequence": "Geen openingsclip",
+    "invalidItemId": "Ongeldig item-id",
+    "noStillForThisVideo": "Geen stilstaand beeld voor deze video",
+    "pageNotFound": "Pagina niet gevonden",
+    "thatWouldLockOutTheDevice": "Daarmee sluit je het apparaat dat je nu gebruikt buiten. Wijzig het vanaf je thuisnetwerk.",
+    "itemNotFound": "Item niet gevonden",
+    "ratingMustBeAWholeNumber": "Een beoordeling moet een heel getal van 1 tot 5 zijn",
+    "personalRatingsAreTurnedOffOn": "Persoonlijke beoordelingen staan uit op deze server",
+    "ratingRemoved": "Beoordeling verwijderd",
+    "seriesNotFound": "Serie niet gevonden",
+    "nothingToRemove": "Niets om te verwijderen",
+    "notInKidsMode": "Niet in Kindermodus",
+    "addedToKidsMode": "Toegevoegd aan Kindermodus",
+    "removedFromKidsMode": "Verwijderd uit Kindermodus",
+    "invalidUserId": "Ongeldig gebruikers-id",
+    "avatarNotFound": "Avatar niet gevonden",
+    "failedToReadAvatar": "Kon de avatar niet lezen",
+    "avatarImageMustBeSmallerThan": "De avatarafbeelding moet kleiner zijn dan 5 MB",
+    "noAvatarImageFileProvided": "Geen afbeeldingsbestand voor de avatar meegestuurd",
+    "failedToProcessAndSaveAvatar": "Kon de avatarafbeelding niet verwerken en opslaan",
+    "currentPasswordIsRequired": "Huidig wachtwoord is verplicht",
+    "newPasswordMustBeAtLeast": "Het nieuwe wachtwoord moet minstens 8 tekens hebben",
+    "currentPasswordIncorrect": "Huidig wachtwoord onjuist",
+    "usernameAndPasswordMin8Characters": "Gebruikersnaam en wachtwoord (min. 8 tekens) zijn verplicht",
+    "usernameAlreadyTaken": "Gebruikersnaam is al in gebruik",
+    "userNotFound": "Gebruiker niet gevonden",
+    "cannotChangeYourOwnRole": "Je kunt je eigen rol niet wijzigen",
+    "cannotSetAnExpirationDateOn": "Je kunt geen vervaldatum instellen voor je eigen account",
+    "cannotRestrictYourOwnAccount": "Je kunt je eigen account niet beperken",
+    "cannotPutYourOwnAccountIn": "Je kunt je eigen account niet in Kindermodus zetten",
+    "anAdminAccountCanTBe": "Een adminaccount kan geen kinderaccount zijn",
+    "nothingToUpdate": "Niets om bij te werken",
+    "cannotDeleteYourOwnAccount": "Je kunt je eigen account niet verwijderen",
+    "youReAwayFromHomeRight": "Je bent nu buitenshuis, dus daarmee zou je worden uitgelogd. Wijzig het vanaf je thuisnetwerk.",
+    "twoFactorIsnTOnFor": "Tweestapsverificatie staat niet aan voor dat account",
+    "avatarUploadedSuccessfully": "Avatar geüpload",
+    "avatarRemovedSuccessfully": "Avatar verwijderd",
+    "preferencesUpdated": "Voorkeuren bijgewerkt",
+    "passwordUpdatedSuccessfullyYouWillNeed": "Wachtwoord bijgewerkt. Je moet opnieuw inloggen.",
+    "userCreatedSuccessfully": "Gebruiker aangemaakt",
+    "userUpdatedSuccessfully": "Gebruiker bijgewerkt",
+    "twoFactorTurnedOffTheyCan": "Tweestapsverificatie uitgezet. Diegene kan met het wachtwoord inloggen en het opnieuw instellen.",
+    "passwordResetSuccessfully": "Wachtwoord opnieuw ingesteld",
+    "roleUpdatedSuccessfully": "Rol bijgewerkt",
+    "userDeletedSuccessfully": "Gebruiker verwijderd",
+    "bookmarkNotFound": "Bladwijzer niet gevonden",
+    "bookmarkCreated": "Bladwijzer aangemaakt",
+    "bookmarkUpdated": "Bladwijzer bijgewerkt",
+    "bookmarkDeleted": "Bladwijzer verwijderd",
+    "logsClearedSuccessfully": "Logboek gewist",
+    "sessionAlreadyClosed": "Sessie is al gesloten",
+    "sessionClosed": "Sessie gesloten",
+    "segmentNotAvailable": "Segment niet beschikbaar",
+    "couldNotLoadScrubPreviews": "Kon de spoelvoorbeelden niet laden",
+    "sheetNotFound": "Blad niet gevonden",
+    "couldNotLoadScrubPreview": "Kon het spoelvoorbeeld niet laden",
+    "markerMustEndAfterItStarts": "Een markering moet eindigen nadat hij begint",
+    "markersSaved": "Markeringen opgeslagen",
+    "unknownMediaType": "Onbekend mediatype",
+    "requestSent": "Verzoek verstuurd",
+    "requestUpdated": "Verzoek bijgewerkt",
+    "requestRemoved": "Verzoek verwijderd",
+    "serverIsAlreadySetUp": "De server is al ingesteld",
+    "adminUsernameAndPasswordMin8": "Gebruikersnaam en wachtwoord van de admin (min. 8 tekens) zijn verplicht",
+    "setupIsAlreadyInProgress": "De installatie is al bezig",
+    "serverIsAlreadySetUpPlease": "De server is al ingesteld. Log in.",
+    "serverSetupFailedCheckTheServer": "Instellen van de server mislukt. Bekijk de serverlogs voor details.",
+    "usernameAndPasswordAreRequired": "Gebruikersnaam en wachtwoord zijn verplicht",
+    "loginFailedCheckTheServerLogs": "Inloggen mislukt. Bekijk de serverlogs voor details.",
+    "signInFailedCheckTheServer": "Inloggen mislukt. Bekijk de serverlogs voor details.",
+    "signInWithYourPasswordTo": "Log in met je wachtwoord om tweestapsverificatie te wijzigen",
+    "twoFactorIsAlreadyOnTurn": "Tweestapsverificatie staat al aan. Zet het eerst uit om het opnieuw in te stellen.",
+    "twoFactorIsAlreadyOn": "Tweestapsverificatie staat al aan",
+    "startSettingUpTwoFactorFirst": "Begin eerst met het instellen van tweestapsverificatie",
+    "twoFactorIsOff": "Tweestapsverificatie staat uit",
+    "setPlinthioUpFromYourHome": "Stel Plinthio in vanaf je thuisnetwerk",
+    "serverInitializedSuccessfully": "Server ingesteld",
+    "allSessionsSignedOutPleaseSign": "Alle sessies zijn uitgelogd. Log opnieuw in.",
+    "highlightNotFound": "Markering niet gevonden",
+    "highlightDeleted": "Markering verwijderd",
+    "pickAMovieOrEpisodeTo": "Kies een film of aflevering om samen te kijken",
+    "joinThePartyFirst": "Doe eerst mee met de watchparty",
+    "saySomething": "Zeg iets",
+    "noImageUploaded": "Geen afbeelding geüpload",
+    "couldNotProcessThatImage": "Kon die afbeelding niet verwerken",
+    "seriesNameIsRequired": "Naam van de serie is verplicht",
+    "coverArtUpdated": "Cover bijgewerkt",
+    "theMetadataProviderRejectedTheConfigured": "De metadatabron heeft de ingestelde API-sleutel geweigerd. Kopieer voor TMDB de \"API Key\" of het \"API Read Access Token\" uit je TMDB-accountinstellingen naar Admin → Metadata. De server kon de bron prima bereiken, dus het ligt aan de sleutel, niet aan het netwerk.",
+    "itemMatchedAndUpdated": "Item gekoppeld en bijgewerkt",
+    "metadataUpdated": "Metadata bijgewerkt",
+    "keyNameIsRequired": "Naam van de sleutel is verplicht",
+    "apiKeyGeneratedSuccessfully": "API-sleutel aangemaakt",
+    "apiKeyRevoked": "API-sleutel ingetrokken",
+    "libraryNotFound": "Bibliotheek niet gevonden",
+    "libraryCreatedAndScanningStarted": "Bibliotheek aangemaakt, scannen gestart",
+    "libraryDeletedSuccessfully": "Bibliotheek verwijderd",
+    "markedAllVolumesAsRead": "Alle delen als gelezen gemarkeerd",
+    "markedAllVolumesAsUnread": "Alle delen als ongelezen gemarkeerd",
+    "itemHiddenFromShelf": "Item verborgen van de plank",
+    "itemRestoredToShelf": "Item teruggezet op de plank",
+    "seriesSettingsSaved": "Serie-instellingen opgeslagen",
+    "folderNameIsRequired": "Mapnaam is verplicht",
+    "folderCreated": "Map aangemaakt",
+    "folderOrListNotFound": "Map of lijst niet gevonden",
+    "folderDeleted": "Map verwijderd",
+    "itemAddedToFolder": "Item aan map toegevoegd",
+    "readingOrderSaved": "Leesvolgorde opgeslagen",
+    "itemRemovedFromFolder": "Item uit map verwijderd",
+    "addedToList": "Aan lijst toegevoegd",
+    "removedFromList": "Uit lijst verwijderd",
+    "noValidItemIds": "Geen geldige item-id's",
+    "progressSaved": "Voortgang opgeslagen",
+    "unknownHardwareAccelerationPreference": "Onbekende voorkeur voor hardwareversnelling",
+    "unknownHardwareAccelerationMethod": "Onbekende methode voor hardwareversnelling",
+    "intervalMustBeBetween1And": "Het interval moet tussen 1 en 168 uur liggen",
+    "retentionMustBeBetween1And": "Bewaren moet tussen 1 en 30 back-ups liggen",
+    "copiesKeptMustBeBetween1": "Het aantal bewaarde kopieën moet tussen 1 en 365 liggen",
+    "scanIntervalMustBeBetween5": "Het scaninterval moet tussen 5 minuten en 7 dagen liggen",
+    "noBackupDestinationIsSet": "Er is geen back-uplocatie ingesteld",
+    "shelfViewsUpdated": "Plankweergaven bijgewerkt",
+    "transcodingSettingsSaved": "Transcoderingsinstellingen opgeslagen",
+    "backupScheduleUpdated": "Back-upschema bijgewerkt",
+    "automaticScanningUpdated": "Automatisch scannen bijgewerkt",
+    "backupCreated": "Back-up gemaakt",
+    "backupDeleted": "Back-up verwijderd",
+    "couldNotLoadServerCustomization": "Kon de aanpassingen van de server niet laden",
+    "chooseAnMp4FileToUpload": "Kies een MP4-bestand om te uploaden",
+    "customizationUpdatedSuccessfully": "Aanpassingen bijgewerkt",
+    "chooseAFolder": "Kies een map.",
+    "useAFullPathStartingWith": "Gebruik een volledig pad dat begint met /.",
+    "thatSInsideTheServerS": "Dat ligt in de eigen datamap van de server; kies ergens anders een map.",
+    "thatFolderContainsTheServerS": "Die map bevat de datamap van de server; kies er een ernaast of ergens anders.",
+    "thatSAFileNotA": "Dat is een bestand, geen map."
+  },
+  "patterns": {
+    "noMetadataSource": "Nog geen metadatabron voor {type}",
+    "folderMissing": "Die map bestaat niet, en {parent} ook niet. In Docker moet de map eerst in de container worden gekoppeld.",
+    "cantWriteFolder": "Kan niet naar die map schrijven: {reason}.",
+    "backupFailed": "Back-up mislukt: {reason}"
+  }
+}

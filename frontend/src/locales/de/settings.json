@@ -69,7 +69,7 @@
     "removeFailed": "Das Bild konnte nicht entfernt werden",
     "roles": {
       "admin": { "label": "Admin", "desc": "verwaltet diesen Server" },
-      "editor": { "label": "Bearbeiter", "desc": "kann außerdem Titel, Cover und Details korrigieren" },
+      "editor": { "label": "Redakteur", "desc": "kann außerdem Titel, Cover und Details korrigieren" },
       "viewer": { "label": "Zuschauer", "desc": "stöbert, liest, schaut und hört" }
     }
   },

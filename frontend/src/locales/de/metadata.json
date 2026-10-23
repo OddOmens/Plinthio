@@ -113,7 +113,7 @@
         "one": "{count} davon ist ein Video und braucht einen TMDB-Schlüssel – füge einen unter {where} hinzu und starte erneut.",
         "other": "{count} davon sind Videos und brauchen einen TMDB-Schlüssel – füge einen unter {where} hinzu und starte erneut."
       },
-      "adminMetadata": "Admin → Metadaten",
+      "adminMetadata": "Verwaltung → Metadaten",
       "failed": {
         "one": "{count} ist fehlgeschlagen (den Grund siehst du in der Zeile).",
         "other": "{count} sind fehlgeschlagen (den Grund siehst du in der jeweiligen Zeile)."

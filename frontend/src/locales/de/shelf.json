@@ -79,7 +79,7 @@
   "empty": {
     "title": "Keine Medien gefunden",
     "noMatches": "Keine Treffer – versuch eine andere Suche oder setz die Filter zurück",
-    "noLibrary": "Füge unter Admin → Bibliotheken eine Bibliothek hinzu und scanne deine Ordner, um dein Regal zu füllen",
+    "noLibrary": "Füge unter Verwaltung → Bibliotheken eine Bibliothek hinzu und scanne deine Ordner, um dein Regal zu füllen",
     "goToSettings": "Zu den Einstellungen"
   },
   "loadedMore": {
