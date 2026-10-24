@@ -9,6 +9,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-10-24
+
 ### Changed
 - **Plinthio is now open source** under the GNU Affero General Public License v3.0 (AGPL-3.0), replacing the noncommercial license. You can use, change and share it for any purpose. If you share a modified version, or run one for other people over a network, you must offer them its source code under the same license. See the License section of the README.
 
