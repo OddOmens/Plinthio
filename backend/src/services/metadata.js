@@ -3,12 +3,12 @@ import { pdfInfo, extractPdfCover } from './pdf.js';
 import { spawn } from 'child_process';
 import path from 'path';
 import * as mm from 'music-metadata';
-import AdmZip from 'adm-zip';
 import { config } from '../config/env.js';
 import { getOrCreateThumbnail } from './thumbnails.js';
 import { listArchiveEntries, readArchiveEntry } from './archive.js';
 import { IMAGE_EXTENSIONS, findCoverInFolder } from '../utils/imageFile.js';
 import { parseMediaTitle } from './titleCleaner.js';
+import { readBookMetadata } from './bookMetadata.js';
 
 const COMIC_EXTENSIONS = new Set(['.cbz', '.zip', '.cbr', '.rar', '.cb7', '.7z']);
 
@@ -201,81 +201,31 @@ export async function extractMangaMetadata(filePath, itemId) {
 }
 
 /**
- * Extract metadata and cover for an EPUB or PDF book
+ * Extract metadata and cover for an EPUB or PDF book. `writeCover: false` reads everything
+ * but leaves the cover file alone — for refreshing a book whose cover may be one someone chose.
  */
-export async function extractBookMetadata(filePath, itemId) {
+export async function extractBookMetadata(filePath, itemId, { writeCover = true } = {}) {
   const ext = path.extname(filePath).toLowerCase();
-  const result = {
-    title: path.basename(filePath, ext),
-    author: 'Unknown Author',
-    series: null,
-    volume: null,
-    totalPages: 0,
-    coverPath: null
-  };
-
-  if (ext === '.epub') {
-    try {
-      const zip = new AdmZip(filePath);
-      const zipEntries = zip.getEntries();
-
-      // Find container.xml to locate opf rootfile
-      const containerEntry = zipEntries.find(e => e.entryName === 'META-INF/container.xml');
-      let opfPath = '';
-      if (containerEntry) {
-        const containerXml = containerEntry.getData().toString('utf8');
-        const match = containerXml.match(/full-path=["']([^"']+\.opf)["']/i);
-        if (match) opfPath = match[1];
-      }
-
-      // Fallback search for any .opf file
-      if (!opfPath) {
-        const opfEntry = zipEntries.find(e => e.entryName.endsWith('.opf'));
-        if (opfEntry) opfPath = opfEntry.entryName;
-      }
-
-      if (opfPath) {
-        const opfEntry = zipEntries.find(e => e.entryName === opfPath);
-        if (opfEntry) {
-          const opfXml = opfEntry.getData().toString('utf8');
-          const titleMatch = opfXml.match(/<dc:title[^>]*>(.*?)<\/dc:title>/i);
-          const creatorMatch = opfXml.match(/<dc:creator[^>]*>(.*?)<\/dc:creator>/i);
-
-          if (titleMatch) result.title = titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1');
-          if (creatorMatch) result.author = creatorMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1');
-
-          // Look for cover image reference in manifest
-          const opfDir = path.dirname(opfPath);
-          const coverMatch = opfXml.match(/<item[^>]+id=["'][^"']*cover[^"']*["'][^>]+href=["']([^"']+)["']/i) ||
-                             opfXml.match(/<item[^>]+href=["']([^"']+)["'][^>]+properties=["'][^"']*cover-image[^"']*["']/i);
-
-          if (coverMatch) {
-            const relativeCover = coverMatch[1];
-            const targetCoverPath = path.normalize(opfDir ? `${opfDir}/${relativeCover}` : relativeCover).replace(/\\/g, '/');
-            const coverEntry = zipEntries.find(e => e.entryName.toLowerCase() === targetCoverPath.toLowerCase() || e.entryName.endsWith(path.basename(relativeCover)));
-            if (coverEntry) {
-              const coverFilename = `${itemId}.jpg`;
-              const coverFullPath = path.join(config.coversDir, coverFilename);
-              fs.writeFileSync(coverFullPath, coverEntry.getData());
-              result.coverPath = coverFilename;
-            }
-          }
-        }
-      }
-    } catch (err) {
-      console.warn(`Could not parse EPUB metadata for ${filePath}: ${err.message}`);
-    }
-  }
-
   // A PDF reads page by page, so it needs its page count; its first page makes the cover
   // when the folder has none. Without poppler installed it still scans, just without these.
-  if (ext === '.pdf') {
+  const book = await readBookMetadata(filePath, { pdfInfo: ext === '.pdf' ? pdfInfo : null });
+  const result = {
+    ...book,
+    title: book.title || path.basename(filePath, ext),
+    author: book.author || 'Unknown Author',
+    coverPath: null
+  };
+  delete result.coverData;
+  if (!writeCover) return result;
+
+  const coverFilename = `${itemId}.jpg`;
+  const coverFullPath = path.join(config.coversDir, coverFilename);
+  if (book.coverData) {
     try {
-      const info = await pdfInfo(filePath);
-      result.totalPages = info.pages;
-      if (info.author) result.author = info.author;
+      fs.writeFileSync(coverFullPath, book.coverData);
+      result.coverPath = coverFilename;
     } catch (err) {
-      console.warn(`Could not read PDF info for ${filePath}: ${err.message}`);
+      console.warn(`Could not save EPUB cover for ${filePath}: ${err.message}`);
     }
   }
 
@@ -283,8 +233,6 @@ export async function extractBookMetadata(filePath, itemId) {
   if (!result.coverPath) {
     const folderCover = findCoverInFolder(path.dirname(filePath));
     if (folderCover) {
-      const coverFilename = `${itemId}.jpg`;
-      const coverFullPath = path.join(config.coversDir, coverFilename);
       fs.copyFileSync(folderCover, coverFullPath);
       result.coverPath = coverFilename;
     }

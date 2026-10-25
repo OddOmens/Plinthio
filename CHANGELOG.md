@@ -9,6 +9,15 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **Much better book details.** EPUBs now bring in their description, publisher, publication date, language, ISBN, subjects and series with the book's number, not just the title and author. Calibre's `metadata.opf` next to a book is read too, and wins, so your Calibre edits come through. A series repeated in the title ("Before They Are Hanged (The First Law)") is dropped, and the same series spelled two ways ("First Law" and "The First Law") is put together. Books already in your library are filled in on the next scan; only empty fields are filled, so your edits stay.
+- **ISBN, language and series number for books.** Edit Metadata has fields for them, the title page shows the ISBN and language, and they're passed on to reading apps over OPDS and the Komga API.
+- **Optional Google Books key** (Admin → Metadata). Google Books' keyless allowance is shared with everyone and often runs out during the day; a free key of your own gives your server its own. Also settable as `GOOGLE_BOOKS_API_KEY`.
+
+### Fixed
+- **EPUB covers are found in books made by Calibre** and other tools that list the cover image differently. Many such books showed a placeholder.
+- **Matching a book finds the right one.** It searches by ISBN when the book has one, otherwise by title and author, skips summaries and study guides, and leaves a book alone when nothing matches well enough, instead of taking the first result. A match fills in what's missing and keeps what the book's own file says, and takes the publisher and ISBN from the right edition. Picking a Google Books cover saves the full-size image, not the thumbnail.
+
 ## [1.6.1] - 2026-10-24
 
 ### Changed

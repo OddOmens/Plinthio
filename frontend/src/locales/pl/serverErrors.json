@@ -525,7 +525,10 @@
     "hideOfflineMustBeTrue": "hideOffline musi mieć wartość true lub false",
     "enabledMustBeTrueOr": "enabled musi mieć wartość true lub false",
     "chooseUpTo5000Channels": "Wybierz maksymalnie 5000 kanałów",
-    "youCanHaveUpTo": "Możesz mieć maksymalnie 500 ulubionych kanałów"
+    "youCanHaveUpTo": "Możesz mieć maksymalnie 500 ulubionych kanałów",
+    "theNumberInTheSeriesMust": "Numer w serii musi być liczbą dodatnią",
+    "thatIsbnIsNotValid": "Ten ISBN jest nieprawidłowy. Sprawdź cyfry (10 lub 13).",
+    "languageMustBeALanguageCode": "Język musi być kodem języka, np. „en” lub „pt-BR”."
   },
   "patterns": {
     "noMetadataSource": "Brak jeszcze źródła metadanych dla typu {type}",

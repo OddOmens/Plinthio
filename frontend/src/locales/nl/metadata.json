@@ -18,7 +18,11 @@
     "genres": "Genres",
     "themes": "Thema's",
     "description": "Beschrijving",
-    "cover": "Omslag"
+    "cover": "Omslag",
+    "isbn": "ISBN",
+    "language": "Taal",
+    "seriesNumber": "Nummer in de reeks",
+    "seriesNumberShort": "Nr."
   },
   "ageRatings": {
     "everyone": "Alle leeftijden",
@@ -68,7 +72,11 @@
       "other": "Alle {count} items in de serie bijgewerkt."
     },
     "savedOne": "‘{title}’ bijgewerkt.",
-    "saveFailed": "Metadata opslaan is mislukt — zie de browserconsole voor details."
+    "saveFailed": "Metadata opslaan is mislukt — zie de browserconsole voor details.",
+    "seriesNumberExample": "bijv. 2",
+    "isbnExample": "10 of 13 cijfers",
+    "languageExample": "bijv. en, fr, pt-BR",
+    "resultIsbn": "ISBN {isbn}"
   },
   "manager": {
     "title": "Titels opschonen en matchen",

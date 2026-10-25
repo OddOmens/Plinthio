@@ -18,7 +18,11 @@
     "genres": "Genres",
     "themes": "Thèmes",
     "description": "Description",
-    "cover": "Couverture"
+    "cover": "Couverture",
+    "isbn": "ISBN",
+    "language": "Langue",
+    "seriesNumber": "Numéro dans la série",
+    "seriesNumberShort": "N°"
   },
   "ageRatings": {
     "everyone": "Tout public",
@@ -68,7 +72,11 @@
       "other": "Les {count} éléments de la série ont été mis à jour."
     },
     "savedOne": "« {title} » mis à jour.",
-    "saveFailed": "Impossible d'enregistrer les métadonnées — consultez la console du navigateur pour plus de détails."
+    "saveFailed": "Impossible d'enregistrer les métadonnées — consultez la console du navigateur pour plus de détails.",
+    "seriesNumberExample": "ex. 2",
+    "isbnExample": "10 ou 13 chiffres",
+    "languageExample": "ex. en, fr, pt-BR",
+    "resultIsbn": "ISBN {isbn}"
   },
   "manager": {
     "title": "Nettoyage des titres et correspondance",

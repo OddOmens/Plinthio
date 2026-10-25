@@ -18,7 +18,11 @@
     "genres": "Géneros",
     "themes": "Temas",
     "description": "Descripción",
-    "cover": "Portada"
+    "cover": "Portada",
+    "isbn": "ISBN",
+    "language": "Idioma",
+    "seriesNumber": "Número en la serie",
+    "seriesNumberShort": "N.º"
   },
   "ageRatings": {
     "everyone": "Todos los públicos",
@@ -68,7 +72,11 @@
       "other": "Se actualizaron los {count} elementos de la serie."
     },
     "savedOne": "Se actualizó «{title}».",
-    "saveFailed": "No se pudieron guardar los metadatos; consulta la consola del navegador para ver los detalles."
+    "saveFailed": "No se pudieron guardar los metadatos; consulta la consola del navegador para ver los detalles.",
+    "seriesNumberExample": "p. ej. 2",
+    "isbnExample": "10 o 13 dígitos",
+    "languageExample": "p. ej. en, fr, pt-BR",
+    "resultIsbn": "ISBN {isbn}"
   },
   "manager": {
     "title": "Limpieza de títulos y coincidencias",

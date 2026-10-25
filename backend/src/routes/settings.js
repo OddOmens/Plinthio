@@ -16,7 +16,7 @@ import {
   deleteBackupFile
 } from '../services/backup.js';
 import { getAutoScanSettings, saveAutoScanSettings } from '../services/autoScan.js';
-import { verifyTmdbApiKey, getTmdbKeyInfo, hasBuiltinTmdbKey } from '../services/externalMetadata.js';
+import { verifyTmdbApiKey, getTmdbKeyInfo, hasBuiltinTmdbKey, verifyGoogleBooksKey, getGoogleBooksKeyInfo } from '../services/externalMetadata.js';
 import { serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 
@@ -83,10 +83,15 @@ async function tmdbStatus() {
   return { tmdbConfigured: !!key, tmdbSource: source, tmdbBuiltIn: hasBuiltinTmdbKey() };
 }
 
-// Admin endpoint to check whether a TMDB API key is configured
+async function googleBooksStatus() {
+  const { key, source } = await getGoogleBooksKeyInfo();
+  return { googleBooksConfigured: !!key, googleBooksSource: source };
+}
+
+// Admin endpoint to check which metadata provider keys are configured
 router.get('/metadata-providers', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    res.json(await tmdbStatus());
+    res.json({ ...await tmdbStatus(), ...await googleBooksStatus() });
   } catch (err) {
     serverError(req, res, err);
   }
@@ -175,6 +180,34 @@ router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, asyn
         : 'TMDB API key saved and verified',
       ...await tmdbStatus()
     });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
+
+// Admin endpoint to set/clear an optional Google Books API key (book metadata). Without one,
+// Google Books runs on the shared keyless quota and Open Library carries the lookups.
+router.put('/metadata-providers/google-books-key', authenticateToken, requireAdmin, async (req, res) => {
+  const { apiKey } = req.body;
+
+  try {
+    const db = await getDb();
+    if (!apiKey || !String(apiKey).trim()) {
+      await db.run("DELETE FROM settings WHERE key = 'google_books_api_key'");
+      return res.json({ message: 'Google Books API key cleared', ...await googleBooksStatus() });
+    }
+
+    const check = await verifyGoogleBooksKey(apiKey);
+    if (!check.ok) {
+      return sendError(req, res, 'P401', { message: check.reason, status: 400 });
+    }
+
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('google_books_api_key', ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+      [String(apiKey).trim()]
+    );
+    res.json({ message: 'Google Books API key saved and verified', ...await googleBooksStatus() });
   } catch (err) {
     serverError(req, res, err);
   }

@@ -18,7 +18,11 @@
     "genres": "类型",
     "themes": "主题",
     "description": "简介",
-    "cover": "封面"
+    "cover": "封面",
+    "isbn": "ISBN",
+    "language": "语言",
+    "seriesNumber": "系列中的序号",
+    "seriesNumberShort": "序号"
   },
   "ageRatings": {
     "everyone": "全年龄",
@@ -66,7 +70,11 @@
       "other": "已更新该系列中的全部{count}项。"
     },
     "savedOne": "已更新“{title}”。",
-    "saveFailed": "保存元数据失败，详情请查看浏览器控制台。"
+    "saveFailed": "保存元数据失败，详情请查看浏览器控制台。",
+    "seriesNumberExample": "例如2",
+    "isbnExample": "10位或13位数字",
+    "languageExample": "例如en、fr、pt-BR",
+    "resultIsbn": "ISBN {isbn}"
   },
   "manager": {
     "title": "标题清理与匹配",

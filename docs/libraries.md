@@ -46,10 +46,24 @@ Manga/
 
 ### Books and PDFs
 
-- **EPUB:** title, author and cover come from the book's own metadata.
-- **PDF:** the page count, and the author when the PDF names one. The cover is a
+- **EPUB:** the book's own metadata gives the title, authors, cover, description,
+  publisher, publication date, language, ISBN, subjects (shown as genres), and the series
+  with the book's number in it. Both Calibre's way of writing these (`calibre:series`) and
+  EPUB 3's (`belongs-to-collection`) are read. A series repeated in the title, as in
+  *Before They Are Hanged (The First Law)*, is dropped from the title.
+- **Calibre libraries:** a `metadata.opf` next to the book (Calibre's library folders have
+  one) wins over what's inside the file, so edits made in Calibre come through. It's only
+  used when the folder holds one book (in any number of formats).
+- **Series:** when a book names its series but not its number, a number at the start of its
+  folder or file name is used (`02. Before They Are Hanged/`). Volumes that spell the series
+  differently, such as *First Law* and *The First Law*, are put together under one name.
+- **PDF:** the page count, and the title and author when the PDF names them. The cover is a
   `cover.jpg`/`folder.jpg` next to it, else its first page. Pages are rendered on the server
   when first read and then cached.
+
+A rescan only fills fields that are empty, so your edits and metadata matches stay. Books
+added before Plinthio read all of this get their empty fields filled on the next scan.
+
 
 ### Audiobooks
 
@@ -185,7 +199,7 @@ Editors and admins can fix titles from the title page (**Edit Metadata**) or in 
 | Media | Providers |
 | --- | --- |
 | Manga | MangaDex |
-| Books, audiobooks | Google Books, Open Library |
+| Books | Open Library, Google Books |
 | Movies, shows, anime | TMDB (needs a key) |
 
 - **Auto Match** on a row matches that title and shows the result inline. You can click
@@ -193,6 +207,13 @@ Editors and admins can fix titles from the title page (**Edit Metadata**) or in 
 - **Batch match** works through the selected titles in the browser, one at a time, with a
   running summary.
 - **Clean titles** strips scene junk from file-name titles.
+- **Books** are looked up by ISBN when the book has one, otherwise by title and author. A
+  match fills in what's missing (blurb, publisher, ISBN, language, cover) and keeps what the
+  book's file already says; results that share too little with the title are not applied.
+  **Edit Metadata** has fields for the ISBN, the language and the book's number in its
+  series. Google Books works without a key, but its keyless allowance is shared with
+  everyone and often runs out during the day; a free key of your own in **Admin → Metadata
+  → Google Books key** fixes that. Open Library needs nothing.
 - **Cover upload:** any image, for one title or a whole series.
 - **Cast, crew, studios, tagline and TMDB facts** for movies and shows are fetched the first
   time a title page opens (with a key), and cached for 30 days.

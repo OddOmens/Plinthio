@@ -94,7 +94,9 @@
     "library": "Biblioteka",
     "lastOpened": "Ostatnio otwarte",
     "totalLength": "Łączna długość",
-    "totalPages": "Łącznie stron"
+    "totalPages": "Łącznie stron",
+    "isbn": "ISBN",
+    "language": "Język"
   },
   "sections": {
     "seasons": "Sezony",

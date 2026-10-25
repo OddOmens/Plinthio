@@ -1,4 +1,5 @@
 import { getDb } from '../config/database.js';
+import { htmlToText, normalizeIsbn, normalizeLanguage } from './bookMetadata.js';
 
 const FETCH_TIMEOUT_MS = 8000;
 
@@ -78,54 +79,263 @@ async function searchMangaDex(query) {
 }
 
 /**
- * Google Books — free, no API key required for basic search.
+ * Google Books — free, and works without a key, but keyless requests share one daily quota
+ * with everyone else on the internet and are often refused (429) by midday. An admin can add
+ * a free key of their own (Admin → Metadata) to get a quota that's theirs.
  * https://developers.google.com/books/docs/v1/using
+ *
+ * `terms` is either free text or { title, author, isbn }, which become Google's intitle: /
+ * inauthor: / isbn: qualifiers — far more precise than a bare title, which for a common
+ * title returns study guides and summaries ahead of the book.
  */
-async function searchGoogleBooks(query) {
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=12`;
-  const data = await fetchJson(url);
+function googleQuery(terms) {
+  if (typeof terms === 'string') return terms;
+  if (terms.isbn) return `isbn:${terms.isbn}`;
+  return [
+    terms.title ? `intitle:${terms.title}` : '',
+    terms.author ? `inauthor:${terms.author}` : ''
+  ].filter(Boolean).join(' ');
+}
 
-  return (data.items || []).map((book) => {
-    const info = book.volumeInfo || {};
-    return {
-      source: 'google-books',
-      externalId: book.id,
-      title: info.title || 'Untitled',
-      subtitle: info.subtitle || null,
-      author: (info.authors || []).join(', ') || null,
-      series: null,
-      releaseDate: info.publishedDate || null,
-      overview: info.description || null,
-      genres: info.categories || [],
-      publisher: info.publisher || null,
-      status: null,
-      coverUrl: info.imageLinks?.thumbnail?.replace('http://', 'https://') || null
-    };
-  });
+// Google's image links ask for a page-curl effect and a thumbnail size; without the curl,
+// and over https, the same link serves a clean cover.
+function googleCover(links) {
+  const url = links?.extraLarge || links?.large || links?.medium || links?.small || links?.thumbnail || links?.smallThumbnail;
+  return url ? url.replace(/^http:/, 'https:').replace(/&edge=curl/, '') : null;
+}
+
+function googleIsbn(info) {
+  const ids = info.industryIdentifiers || [];
+  return normalizeIsbn((ids.find((i) => i.type === 'ISBN_13') || ids.find((i) => i.type === 'ISBN_10'))?.identifier);
+}
+
+function googleResult(book) {
+  const info = book.volumeInfo || {};
+  return {
+    source: 'google-books',
+    externalId: book.id,
+    title: info.title || 'Untitled',
+    subtitle: info.subtitle || null,
+    author: (info.authors || []).join(', ') || null,
+    series: null,
+    releaseDate: info.publishedDate || null,
+    overview: htmlToText(info.description),
+    genres: [...new Set((info.categories || []).map((c) => c.split(/\s*\/\s*/).pop()).filter(Boolean))],
+    publisher: info.publisher || null,
+    status: null,
+    isbn: googleIsbn(info),
+    language: normalizeLanguage(info.language),
+    pageCount: info.pageCount || null,
+    coverUrl: googleCover(info.imageLinks)
+  };
+}
+
+export async function getGoogleBooksKeyInfo() {
+  const db = await getDb();
+  const row = await db.get("SELECT value FROM settings WHERE key = 'google_books_api_key'");
+  if (row?.value) return { key: row.value, source: 'custom' };
+  if (process.env.GOOGLE_BOOKS_API_KEY) return { key: process.env.GOOGLE_BOOKS_API_KEY, source: 'environment' };
+  return { key: null, source: null };
+}
+
+async function googleBooksUrl(pathAndQuery) {
+  const { key } = await getGoogleBooksKeyInfo();
+  const separator = pathAndQuery.includes('?') ? '&' : '?';
+  return `https://www.googleapis.com/books/v1/${pathAndQuery}${key ? `${separator}key=${encodeURIComponent(key)}` : ''}`;
+}
+
+/**
+ * Checks a Google Books key with one real lookup, so a wrong key or an API that isn't
+ * enabled on the key's project is reported when it's saved.
+ */
+export async function verifyGoogleBooksKey(apiKey) {
+  const key = String(apiKey || '').trim();
+  if (!key) return { ok: false, reason: 'No API key provided' };
+  try {
+    await fetchJson(`https://www.googleapis.com/books/v1/volumes?q=isbn:9780141439518&maxResults=1&key=${encodeURIComponent(key)}`);
+    return { ok: true };
+  } catch (err) {
+    if (err.status === 400 || err.status === 401 || err.status === 403) {
+      return { ok: false, rejected: true, reason: 'Google rejected this key. Check it was copied whole, and that the Books API is enabled for its project in Google Cloud Console.' };
+    }
+    if (err.status === 429) {
+      return { ok: false, reason: 'Google says this key is over its quota. Try again later, or check its limits in Google Cloud Console.' };
+    }
+    if (err.name === 'AbortError') {
+      return { ok: false, reason: 'Timed out reaching Google Books. Check the container has outbound internet access.' };
+    }
+    return { ok: false, reason: `Could not verify the key with Google Books (${err.message}).` };
+  }
+}
+
+async function searchGoogleBooks(terms) {
+  const q = googleQuery(terms);
+  if (!q) return [];
+  const data = await fetchJson(await googleBooksUrl(`volumes?q=${encodeURIComponent(q)}&maxResults=12&printType=books`));
+  return (data.items || []).map(googleResult);
 }
 
 /**
  * Open Library — free, no API key required.
  * https://openlibrary.org/dev/docs/api/search
  */
-async function searchOpenLibrary(query) {
-  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=12`;
-  const data = await fetchJson(url);
+const OPEN_LIBRARY_FIELDS = 'key,title,subtitle,author_name,first_publish_year,isbn,publisher,subject,cover_i,language,number_of_pages_median';
 
-  return (data.docs || []).map((book) => ({
+function openLibraryResult(book, isbn = null) {
+  // The search returns a work, not an edition: its ISBNs and publishers are every
+  // edition's, in no useful order (a Spanish translation's publisher for an English book).
+  // So they're only used when the search was for one ISBN — that edition, whose own record
+  // fetchBookDetails reads.
+  const isbns = (book.isbn || []).map(normalizeIsbn).filter(Boolean);
+  const edition = isbn && isbns.includes(isbn) ? isbn : null;
+  return {
     source: 'open-library',
     externalId: book.key,
     title: book.title || 'Untitled',
-    subtitle: null,
+    subtitle: book.subtitle || null,
     author: (book.author_name || []).join(', ') || null,
     series: null,
     releaseDate: book.first_publish_year ? String(book.first_publish_year) : null,
     overview: null,
-    genres: (book.subject || []).slice(0, 6),
-    publisher: (book.publisher || [])[0] || null,
+    genres: (book.subject || []).filter((s) => s.length <= 40 && !/^(fiction|accessible book|protected daisy|in library|large type books)/i.test(s)).slice(0, 6),
+    publisher: null,
     status: null,
-    coverUrl: book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg` : null
-  }));
+    isbn: edition,
+    // ISO 639-2 ("eng"); only kept when the work exists in a single language.
+    language: book.language?.length === 1 ? normalizeLanguage(book.language[0]) : null,
+    pageCount: book.number_of_pages_median || null,
+    coverUrl: edition
+      ? `https://covers.openlibrary.org/b/isbn/${edition}-L.jpg?default=false`
+      : (book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg` : null)
+  };
+}
+
+async function searchOpenLibrary(terms) {
+  let params;
+  if (typeof terms === 'string') params = `q=${encodeURIComponent(terms)}`;
+  else if (terms.isbn) params = `isbn=${encodeURIComponent(terms.isbn)}`;
+  else {
+    params = [
+      terms.title ? `title=${encodeURIComponent(terms.title)}` : '',
+      terms.author ? `author=${encodeURIComponent(terms.author)}` : ''
+    ].filter(Boolean).join('&');
+  }
+  if (!params) return [];
+  const data = await fetchJson(`https://openlibrary.org/search.json?${params}&limit=12&fields=${OPEN_LIBRARY_FIELDS}`);
+  return (data.docs || []).map((book) => openLibraryResult(book, typeof terms === 'object' ? terms.isbn : null));
+}
+
+/**
+ * Both book providers at once. Free text that's an ISBN is searched as one.
+ */
+async function searchBooks(terms) {
+  if (typeof terms === 'string') {
+    const isbn = normalizeIsbn(terms);
+    if (isbn) terms = { isbn };
+  }
+  const [google, openLibrary] = await Promise.allSettled([searchGoogleBooks(terms), searchOpenLibrary(terms)]);
+  const results = [];
+  if (google.status === 'fulfilled') results.push(...google.value);
+  if (openLibrary.status === 'fulfilled') results.push(...openLibrary.value);
+  if (results.length === 0 && google.status === 'rejected' && openLibrary.status === 'rejected') {
+    throw new Error('Book metadata providers are currently unavailable');
+  }
+  return results;
+}
+
+const bookWords = (s) => String(s || '').normalize('NFKD').toLowerCase()
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^\p{L}\p{N}]+/gu, ' ').trim().split(' ').filter(Boolean);
+
+// Share of `wanted`'s words found in `got` (0–1).
+function overlap(wanted, got) {
+  const want = bookWords(wanted);
+  if (!want.length) return 0;
+  const have = new Set(bookWords(got));
+  return want.filter((w) => have.has(w)).length / want.length;
+}
+
+// Retellings, guides and summaries match a title word for word; they're never the book.
+const NOT_THE_BOOK = /\b(summary|study guide|analysis|sparknotes|cliffsnotes|workbook|companion|boxed set|box set|collection)\b/i;
+
+/**
+ * Scores book search results against what's known about the file and returns them best
+ * first, each with a `score`. A match on ISBN wins outright; otherwise title (main title, so
+ * a subtitle doesn't count against it) and author carry it, with a little for having a cover
+ * and a blurb to pick between editions of the same book.
+ */
+export function rankBookResults(results, { title, author, isbn } = {}) {
+  const mainTitle = String(title || '').split(/[:(]/)[0];
+  return results
+    .map((r) => {
+      let score = 0;
+      if (isbn && r.isbn === isbn) score += 100;
+      const resultTitle = r.title || '';
+      const titleScore = Math.min(overlap(mainTitle, resultTitle), overlap(resultTitle.split(/[:(]/)[0], mainTitle));
+      score += titleScore * 50;
+      if (author && author !== 'Unknown Author') score += overlap(author.split(',')[0], r.author) * 30;
+      if (NOT_THE_BOOK.test(resultTitle) && !NOT_THE_BOOK.test(title || '')) score -= 40;
+      if (r.coverUrl) score += 5;
+      if (r.overview) score += 5;
+      if (r.source === 'google-books') score += 1; // carries a blurb and a language; Open Library's search doesn't
+      return { ...r, score };
+    })
+    .sort((a, b) => b.score - a.score);
+}
+
+/**
+ * The book search an automatic match runs: by ISBN when the file has one, else by title and
+ * author, else by title alone. Returns ranked results (see rankBookResults).
+ */
+export async function findBookMatches({ title, author, isbn }) {
+  const known = { title, author: author && author !== 'Unknown Author' ? author : null, isbn };
+  if (isbn) {
+    const byIsbn = (await searchBooks({ isbn }).catch(() => [])).filter((r) => r.isbn === isbn);
+    if (byIsbn.length) return rankBookResults(byIsbn, known);
+  }
+  let results = known.author ? await searchBooks({ title, author: known.author }).catch(() => []) : [];
+  if (!results.length) results = await searchBooks({ title });
+  return rankBookResults(results, known);
+}
+
+/**
+ * Fills in what a search result leaves out: Google's full record has the larger cover
+ * sizes and the whole description; an Open Library work has its description. Best-effort —
+ * the result comes back as it was when the lookup fails.
+ */
+export async function fetchBookDetails(result) {
+  try {
+    if (result.source === 'google-books' && result.externalId) {
+      const book = await fetchJson(await googleBooksUrl(`volumes/${encodeURIComponent(result.externalId)}`));
+      const full = googleResult(book);
+      return { ...result, ...Object.fromEntries(Object.entries(full).filter(([, v]) => v != null && !(Array.isArray(v) && !v.length))), score: result.score };
+    }
+    if (result.source === 'open-library') {
+      const details = { ...result };
+      const [work, edition] = await Promise.all([
+        /^\/works\/OL\d+W$/.test(result.externalId || '') && !result.overview
+          ? fetchJson(`https://openlibrary.org${result.externalId}.json`).catch(() => null) : null,
+        result.isbn ? fetchJson(`https://openlibrary.org/isbn/${result.isbn}.json`).catch(() => null) : null
+      ]);
+      if (work) {
+        const description = typeof work.description === 'string' ? work.description : work.description?.value;
+        // Open Library descriptions are Markdown-ish, with a "----------" line before links.
+        details.overview = htmlToText(description?.split(/\n-{3,}/)[0]) || null;
+      }
+      if (edition) {
+        details.publisher = edition.publishers?.[0] || null;
+        details.pageCount = edition.number_of_pages || details.pageCount;
+        const lang = edition.languages?.length === 1 ? edition.languages[0].key?.split('/').pop() : null;
+        details.language = normalizeLanguage(lang) || details.language;
+        const year = String(edition.publish_date || '').match(/\b(1[5-9]|20)\d{2}\b/);
+        if (year) details.releaseDate = year[0];
+      }
+      return details;
+    }
+  } catch (e) {
+    // keep what the search gave
+  }
+  return result;
 }
 
 /**
@@ -527,19 +737,8 @@ export async function searchExternalMetadata(mediaType, query, year = null) {
     case 'manga':
       return searchMangaDex(query);
 
-    case 'book': {
-      const [google, openLibrary] = await Promise.allSettled([
-        searchGoogleBooks(query),
-        searchOpenLibrary(query)
-      ]);
-      const results = [];
-      if (google.status === 'fulfilled') results.push(...google.value);
-      if (openLibrary.status === 'fulfilled') results.push(...openLibrary.value);
-      if (results.length === 0 && google.status === 'rejected' && openLibrary.status === 'rejected') {
-        throw new Error('Book metadata providers are currently unavailable');
-      }
-      return results;
-    }
+    case 'book':
+      return searchBooks(query);
 
     case 'movie':
     case 'show':

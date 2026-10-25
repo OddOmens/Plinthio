@@ -18,7 +18,11 @@
     "genres": "장르",
     "themes": "테마",
     "description": "설명",
-    "cover": "표지"
+    "cover": "표지",
+    "isbn": "ISBN",
+    "language": "언어",
+    "seriesNumber": "시리즈 내 번호",
+    "seriesNumberShort": "번호"
   },
   "ageRatings": {
     "everyone": "전체 이용가",
@@ -66,7 +70,11 @@
       "other": "시리즈의 항목 {count}개를 모두 업데이트했어요."
     },
     "savedOne": "'{title}'을(를) 업데이트했어요.",
-    "saveFailed": "메타데이터를 저장하지 못했어요. 자세한 내용은 브라우저 콘솔을 확인하세요."
+    "saveFailed": "메타데이터를 저장하지 못했어요. 자세한 내용은 브라우저 콘솔을 확인하세요.",
+    "seriesNumberExample": "예: 2",
+    "isbnExample": "10자리 또는 13자리",
+    "languageExample": "예: en, fr, pt-BR",
+    "resultIsbn": "ISBN {isbn}"
   },
   "manager": {
     "title": "제목 정리 및 매칭",

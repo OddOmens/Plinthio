@@ -721,6 +721,21 @@
       "attribution": "Dieses Produkt nutzt die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert.",
       "removeTitle": "TMDB-Schlüssel entfernen",
       "removeMessage": "Filme, Serien und Anime bekommen keine neuen Poster, Details und weltweiten Bewertungen mehr, bis wieder ein Schlüssel hinzugefügt wird."
+    },
+    "googleBooks": {
+      "title": "Google-Books-Schlüssel",
+      "description": "Optional. Bücher bekommen ihre Details von Open Library und Google Books, und beide funktionieren ohne Schlüssel. Google teilt sein Kontingent ohne Schlüssel aber mit allen, deshalb ist es tagsüber oft aufgebraucht. Mit einem eigenen kostenlosen Schlüssel bekommt dieser Server ein eigenes Kontingent.",
+      "sources": {
+        "custom": "Dein eigener",
+        "environment": "Aus GOOGLE_BOOKS_API_KEY",
+        "notSet": "Nicht gesetzt"
+      },
+      "keyLabel": "Google-Books-API-Schlüssel",
+      "placeholder": "Google-Books-API-Schlüssel einfügen (optional)",
+      "placeholderReplace": "Neuen Schlüssel einfügen, um ihn zu ersetzen",
+      "saveKey": "Schlüssel speichern",
+      "getOne": "Erstelle einen kostenlos in der {link}: Books API aktivieren, dann Anmeldedaten → Anmeldedaten erstellen → API-Schlüssel.",
+      "getOneLink": "Google Cloud Console"
     }
   },
   "overview": {

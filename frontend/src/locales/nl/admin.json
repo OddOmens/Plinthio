@@ -721,6 +721,21 @@
       "attribution": "Dit product gebruikt de TMDB API, maar wordt niet onderschreven of gecertificeerd door TMDB.",
       "removeTitle": "De TMDB-sleutel verwijderen",
       "removeMessage": "Films, series en anime krijgen geen nieuwe posters, details en wereldbeoordelingen meer tot er weer een sleutel wordt toegevoegd."
+    },
+    "googleBooks": {
+      "title": "Google Books-sleutel",
+      "description": "Optioneel. Boeken krijgen hun gegevens van Open Library en Google Books, en beide werken zonder sleutel. Maar Google deelt zijn tegoed zonder sleutel met iedereen, dus dat raakt overdag vaak op. Met een eigen gratis sleutel krijgt deze server een eigen tegoed.",
+      "sources": {
+        "custom": "Je eigen",
+        "environment": "Uit GOOGLE_BOOKS_API_KEY",
+        "notSet": "Niet ingesteld"
+      },
+      "keyLabel": "Google Books API-sleutel",
+      "placeholder": "Plak een Google Books API-sleutel (optioneel)",
+      "placeholderReplace": "Plak een nieuwe sleutel om hem te vervangen",
+      "saveKey": "Sleutel opslaan",
+      "getOne": "Maak er gratis een in {link}: zet de Books API aan, daarna Inloggegevens → Inloggegevens maken → API-sleutel.",
+      "getOneLink": "Google Cloud Console"
     }
   },
   "overview": {

@@ -39,6 +39,7 @@ function sendFeed(res, xml) {
 
 function feedWrapper({ id, title, selfUrl, startUrl, entries }) {
   return `<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:dc="http://purl.org/dc/terms/"
       xmlns:opds="http://opds-spec.org/2010/catalog"
       xmlns:pse="http://vaemendis.net/opds-pse/ns">
   <id>${escapeXml(id)}</id>
@@ -255,8 +256,22 @@ function acquisitionEntry(req, item) {
     <updated>${escapeXml(item.updated_at || new Date().toISOString())}</updated>
     ${item.author ? `<author><name>${escapeXml(item.author)}</name></author>` : ''}
     ${item.description ? `<summary type="text">${escapeXml(item.description)}</summary>` : ''}
-${links.join('\n')}
+${catalogueFields(item)}${links.join('\n')}
   </entry>`;
+}
+
+// The Dublin Core lines OPDS readers show on a book's details page: publisher, date,
+// language, ISBN, and its subjects as categories.
+function catalogueFields(item) {
+  const lines = [];
+  if (item.publisher) lines.push(`<dc:publisher>${escapeXml(item.publisher)}</dc:publisher>`);
+  if (item.release_date) lines.push(`<dc:issued>${escapeXml(item.release_date)}</dc:issued>`);
+  if (item.language) lines.push(`<dc:language>${escapeXml(item.language)}</dc:language>`);
+  if (item.isbn) lines.push(`<dc:identifier>urn:isbn:${escapeXml(item.isbn)}</dc:identifier>`);
+  for (const genre of String(item.genres || '').split(',').map((g) => g.trim()).filter(Boolean)) {
+    lines.push(`<category term="${escapeXml(genre)}" label="${escapeXml(genre)}"/>`);
+  }
+  return lines.map((l) => `    ${l}\n`).join('');
 }
 
 function mimeForFormat(format) {

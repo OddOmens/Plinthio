@@ -16,6 +16,7 @@ import { backfillMovieCredits } from './credits.js';
 import { findCoverInFolder, looksLikeImage } from '../utils/imageFile.js';
 import { parseMediaTitle } from './titleCleaner.js';
 import { classifyExtras } from './extras.js';
+import { BOOK_META_VERSION } from './bookMetadata.js';
 
 const VIDEO_MEDIA_TYPES = ['movie', 'show', 'anime'];
 
@@ -76,7 +77,7 @@ export async function scanLibrary(libraryId) {
     // Snapshot what's currently in the DB for this library so we can detect renamed/moved
     // files (same content, different path) instead of treating them as brand-new items,
     // which previously caused duplicates whenever a folder was renamed.
-    const dbItemsBefore = await db.all('SELECT id, path, file_size, format, total_pages, cover_path, media_type, title, series, volume, offloaded_at FROM items WHERE library_id = ?', [libraryId]);
+    const dbItemsBefore = await db.all('SELECT id, path, file_size, format, total_pages, cover_path, media_type, title, series, volume, offloaded_at, book_meta_version FROM items WHERE library_id = ?', [libraryId]);
     // An unmounted drive usually leaves its mount point behind as an empty folder, which
     // looks exactly like "every file was deleted" — and the prune below would then wipe the
     // whole catalog (and its covers, reading progress links, custom art). Refuse instead.
@@ -155,6 +156,10 @@ export async function scanLibrary(libraryId) {
             }
           } catch (err) { /* no poppler: stays as it was */ }
         }
+        // A book read by an older version of the extractor gets its empty fields filled once.
+        if (BOOK_EXTS.has(ext) && existing.media_type === 'book' && (existing.book_meta_version || 0) < BOOK_META_VERSION) {
+          await refreshBookMetadata(db, itemId, filePath);
+        }
         continue;
       }
 
@@ -212,9 +217,10 @@ export async function scanLibrary(libraryId) {
         await db.run(
           `UPDATE items SET
             title = ?, author = ?,
-            -- A film grouped into its TMDB collection keeps it; the file never names one.
-            series = CASE WHEN media_type = 'movie' AND ? IS NULL THEN series ELSE ? END,
-            volume = ?, path = ?, cover_path = ?, missing_since = NULL,
+            -- A film grouped into its TMDB collection keeps it; the file never names one. A
+            -- book whose file names no series keeps the one set by hand.
+            series = CASE WHEN media_type IN ('movie', 'book') AND ? IS NULL THEN series ELSE ? END,
+            volume = CASE WHEN media_type = 'book' AND ? IS NULL THEN volume ELSE ? END, path = ?, cover_path = ?, missing_since = NULL,
             -- A file for an offloaded title that had gone means it's back; one offloaded
             -- ahead of deleting its file (never gone) stays offloaded.
             offloaded_at = CASE WHEN missing_since IS NOT NULL OR ? THEN NULL ELSE offloaded_at END,
@@ -228,6 +234,7 @@ export async function scanLibrary(libraryId) {
             meta.series,
             meta.series,
             meta.volume,
+            meta.volume,
             filePath,
             meta.coverPath,
             isRename ? 1 : 0,
@@ -238,6 +245,7 @@ export async function scanLibrary(libraryId) {
             itemId
           ]
         );
+        if (mediaType === 'book') await saveBookFields(db, itemId, meta);
         updated++;
         if (isRename) renamed++;
 
@@ -272,6 +280,7 @@ export async function scanLibrary(libraryId) {
             format
           ]
         );
+        if (mediaType === 'book') await saveBookFields(db, itemId, meta);
         added++;
       }
     }
@@ -334,8 +343,9 @@ export async function scanLibrary(libraryId) {
  * "Farming.Life.In.Another.World.S02E01") would split one show into two. Names that differ
  * only in case or punctuation are the same show: they're merged under one spelling — the
  * show folder's, when a folder is named exactly that, otherwise the most common one. Series
- * settings and Kids Mode entries saved under a losing spelling move across. Shows and anime
- * only; everything else takes its series from folders or tags that don't vary per file.
+ * settings and Kids Mode entries saved under a losing spelling move across. Shows, anime and
+ * books (whose series comes from each file's metadata); manga and audiobooks take theirs
+ * from folders or tags that don't vary per file.
  */
 export function seriesKey(name) {
   return String(name).normalize('NFKD').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
@@ -344,13 +354,16 @@ export function seriesKey(name) {
 async function unifySeriesSpellings(db, libraryId) {
   const rows = await db.all(
     `SELECT series, media_type, path FROM items
-     WHERE library_id = ? AND media_type IN ('show', 'anime') AND series IS NOT NULL`,
+     WHERE library_id = ? AND media_type IN ('show', 'anime', 'book') AND series IS NOT NULL`,
     [libraryId]
   );
   // key -> spelling -> { count, isFolder }
   const groups = new Map();
   for (const r of rows) {
-    const key = `${r.media_type}:${seriesKey(r.series)}`;
+    // A book's series comes from each file's own metadata, which says "The First Law" in
+    // one volume and "First Law" in the next.
+    const name = r.media_type === 'book' ? String(r.series).replace(/^the\s+/i, '') : r.series;
+    const key = `${r.media_type}:${seriesKey(name)}`;
     if (!groups.has(key)) groups.set(key, new Map());
     const spellings = groups.get(key);
     const entry = spellings.get(r.series) || { count: 0, isFolder: false };
@@ -362,8 +375,9 @@ async function unifySeriesSpellings(db, libraryId) {
   for (const [key, spellings] of groups) {
     if (spellings.size < 2) continue;
     const mediaType = key.slice(0, key.indexOf(':'));
+    // Between equally common book spellings the longer is the fuller name ("The First Law").
     const [canonical] = [...spellings.entries()].sort(([a, x], [b, y]) =>
-      (y.isFolder - x.isFolder) || (y.count - x.count) || a.localeCompare(b))[0];
+      (y.isFolder - x.isFolder) || (y.count - x.count) || (mediaType === 'book' ? b.length - a.length : 0) || a.localeCompare(b))[0];
     const others = [...spellings.keys()].filter((name) => name !== canonical);
 
     await db.run('BEGIN TRANSACTION');
@@ -387,7 +401,70 @@ async function unifySeriesSpellings(db, libraryId) {
       await db.run('ROLLBACK');
       throw err;
     }
-    logger.info('scan', `Merged ${others.map((n) => `"${n}"`).join(', ')} into "${canonical}" (same show, different spelling)`);
+    logger.info('scan', `Merged ${others.map((n) => `"${n}"`).join(', ')} into "${canonical}" (same series, different spelling)`);
+  }
+}
+
+/**
+ * A book's catalogue fields from its file — description, publisher, date, language, ISBN,
+ * subjects. Only empty fields are filled, so an edit or a metadata match isn't undone by a
+ * rescan.
+ */
+async function saveBookFields(db, itemId, meta) {
+  await db.run(
+    `UPDATE items SET
+       description = COALESCE(description, ?), publisher = COALESCE(publisher, ?),
+       release_date = COALESCE(release_date, ?), language = COALESCE(language, ?),
+       isbn = COALESCE(isbn, ?), genres = COALESCE(genres, ?), book_meta_version = ?
+     WHERE id = ?`,
+    [
+      meta.description || null,
+      meta.publisher || null,
+      meta.releaseDate || null,
+      meta.language || null,
+      meta.isbn || null,
+      meta.genres?.length ? meta.genres.join(', ') : null,
+      BOOK_META_VERSION,
+      itemId
+    ]
+  );
+}
+
+/**
+ * Reads an unchanged book again with the current extractor and fills in what's missing:
+ * the catalogue fields, a series and its number, a cover, an author for "Unknown Author".
+ * The title is only tidied ("Dune (Dune Chronicles, #1)" → "Dune") when it's still exactly
+ * what the file said, so a title someone typed stays.
+ */
+async function refreshBookMetadata(db, itemId, filePath) {
+  const item = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
+  if (!item) return;
+  let meta;
+  try {
+    meta = await extractBookMetadata(filePath, itemId, { writeCover: !item.cover_path });
+  } catch (err) {
+    logger.warn('scan', `Could not re-read book metadata for ${filePath}: ${err.message}`);
+    return;
+  }
+
+  const untouchedTitle = item.title === meta.rawTitle || item.title === path.basename(filePath, path.extname(filePath));
+  const title = untouchedTitle && meta.rawTitle ? meta.title : item.title;
+  const author = !item.author || item.author === 'Unknown Author' ? meta.author : item.author;
+  const series = item.series || meta.series || null;
+  const volume = item.volume ?? (series && series === meta.series ? meta.volume : null);
+  const coverPath = item.cover_path || meta.coverPath || null;
+
+  await db.run(
+    `UPDATE items SET title = ?, author = ?, series = ?, volume = ?, cover_path = ?, updated_at = CURRENT_TIMESTAMP
+     WHERE id = ?`,
+    [title, author, series, volume, coverPath, itemId]
+  );
+  await saveBookFields(db, itemId, meta);
+  if (!item.cover_path && coverPath) {
+    for (const width of THUMB_WIDTHS) {
+      try { fs.unlinkSync(getThumbnailPath(itemId, width)); } catch (e) { /* none cached */ }
+    }
+    invalidateCoverCache(itemId);
   }
 }
 

@@ -80,7 +80,7 @@ router.get('/', async (req, res) => {
     // Search reaches past the card fields into the long-form metadata too, so "time travel",
     // a cast member, a genre or a publisher finds the title even when it isn't in its name.
     if (search) {
-      const fields = ['i.title', 'i.author', 'i.series', 'i.description', 'i.genres', 'i.themes', 'i.artists', 'i.publisher'];
+      const fields = ['i.title', 'i.author', 'i.series', 'i.description', 'i.genres', 'i.themes', 'i.artists', 'i.publisher', 'i.isbn'];
       query += ` AND (${fields.map((f) => `${f} LIKE ?`).join(' OR ')})`;
       const s = `%${String(search).trim()}%`;
       params.push(...fields.map(() => s));

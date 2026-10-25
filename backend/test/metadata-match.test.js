@@ -103,6 +103,49 @@ describe('auto-match reports setup problems plainly', () => {
   });
 });
 
+describe('book fields in the metadata editor', () => {
+  let server;
+  let admin;
+  const bookId = 'f'.repeat(32);
+  const apply = (body) => fetch(`${server.baseUrl}/api/metadata/apply/${bookId}`, {
+    method: 'POST', headers: { ...authed(admin.token), 'content-type': 'application/json' }, body: JSON.stringify(body)
+  });
+
+  before(async () => {
+    server = await startTestServer();
+    admin = await setupAdmin(server.baseUrl);
+    const db = await open({ filename: path.join(server.dataDir, 'plinthio.sqlite'), driver: sqlite3.Database });
+    await db.run('PRAGMA busy_timeout = 5000');
+    await db.run("INSERT INTO libraries (id, name, path, type) VALUES ('books', 'Books', '/tmp/books', 'books')");
+    await db.run(`INSERT INTO items (id, library_id, title, path, media_type, format) VALUES (?, 'books', 'Dune', '/tmp/books/Dune.epub', 'book', 'epub')`, [bookId]);
+    await db.close();
+  });
+  after(async () => { await server.stop(); });
+
+  test('ISBN, language and number in series are checked and stored canonically', async () => {
+    let res = await apply({ isbn: '978-0-441-17271-9', language: 'eng', series: 'Dune', volume: '1' });
+    assert.equal(res.status, 200);
+    const { item } = await res.json();
+    assert.equal(item.isbn, '9780441172719');
+    assert.equal(item.language, 'en');
+    assert.equal(item.volume, 1);
+
+    res = await apply({ isbn: '0-441-17271-7' }); // the same book's ISBN-10
+    assert.equal((await res.json()).item.isbn, '9780441172719');
+  });
+
+  test('a bad ISBN, language or number is refused', async () => {
+    assert.equal((await apply({ isbn: '9780441172717' })).status, 400);
+    assert.equal((await apply({ language: 'Klingonish!' })).status, 400);
+    assert.equal((await apply({ volume: '-3' })).status, 400);
+    const res = await apply({ isbn: '', language: '', volume: null });
+    const { item } = await res.json();
+    assert.equal(item.isbn, null);
+    assert.equal(item.language, null);
+    assert.equal(item.volume, null);
+  });
+});
+
 describe('matchItemMetadata granularity: episodes and manga volumes', () => {
   let db;
   let origFetch;

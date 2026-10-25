@@ -721,6 +721,21 @@
       "attribution": "Questo prodotto usa l'API di TMDB ma non è approvato né certificato da TMDB.",
       "removeTitle": "Rimuovi la chiave TMDB",
       "removeMessage": "Film, serie TV e anime non riceveranno più nuove locandine, dettagli e voti dal mondo finché non verrà aggiunta di nuovo una chiave."
+    },
+    "googleBooks": {
+      "title": "Chiave Google Books",
+      "description": "Facoltativa. I libri ricevono i dettagli da Open Library e Google Books, che funzionano entrambi senza chiave. Ma Google condivide la sua quota senza chiave con tutti, quindi spesso si esaurisce durante la giornata. Una chiave gratuita tua dà a questo server una quota tutta sua.",
+      "sources": {
+        "custom": "La tua",
+        "environment": "Da GOOGLE_BOOKS_API_KEY",
+        "notSet": "Non impostata"
+      },
+      "keyLabel": "Chiave API di Google Books",
+      "placeholder": "Incolla una chiave API di Google Books (facoltativa)",
+      "placeholderReplace": "Incolla una nuova chiave per sostituirla",
+      "saveKey": "Salva chiave",
+      "getOne": "Creane una gratis in {link}: attiva la Books API, poi Credenziali → Crea credenziali → Chiave API.",
+      "getOneLink": "Google Cloud Console"
     }
   },
   "overview": {

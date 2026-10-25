@@ -704,6 +704,21 @@
       "attribution": "本产品使用TMDB API，但未经TMDB认可或认证。",
       "removeTitle": "移除TMDB密钥",
       "removeMessage": "在重新添加密钥之前，电影、剧集和动画将不再获取新的海报、详情和全球评分。"
+    },
+    "googleBooks": {
+      "title": "Google Books 密钥",
+      "description": "可选。图书信息来自 Open Library 和 Google Books，两者都无需密钥即可使用。但 Google 的免密钥额度由所有人共用，白天经常用完。使用你自己的免费密钥，这台服务器就有独立的额度。",
+      "sources": {
+        "custom": "你自己的",
+        "environment": "来自GOOGLE_BOOKS_API_KEY",
+        "notSet": "未设置"
+      },
+      "keyLabel": "Google Books API 密钥",
+      "placeholder": "粘贴 Google Books API 密钥（可选）",
+      "placeholderReplace": "粘贴新密钥以替换",
+      "saveKey": "保存密钥",
+      "getOne": "可在 {link} 免费创建：启用 Books API，然后依次选择“凭据”→“创建凭据”→“API 密钥”。",
+      "getOneLink": "Google Cloud Console"
     }
   },
   "overview": {

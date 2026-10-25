@@ -88,7 +88,9 @@
     "library": "Bibliotheek",
     "lastOpened": "Laatst geopend",
     "totalLength": "Totale lengte",
-    "totalPages": "Totaal pagina's"
+    "totalPages": "Totaal pagina's",
+    "isbn": "ISBN",
+    "language": "Taal"
   },
   "sections": {
     "seasons": "Seizoenen",

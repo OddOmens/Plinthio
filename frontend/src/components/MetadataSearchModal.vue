@@ -88,13 +88,26 @@
                   class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
-              <div>
-                <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.series') }}</label>
-                <input
-                  v-model="form.series"
-                  :placeholder="$t('metadata.edit.seriesName')"
-                  class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                />
+              <div class="flex gap-2">
+                <div class="flex-1 min-w-0">
+                  <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.series') }}</label>
+                  <input
+                    v-model="form.series"
+                    :placeholder="$t('metadata.edit.seriesName')"
+                    class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
+                <!-- A book's or volume's place in its series; episodes keep theirs in the file name. -->
+                <div v-if="showSeriesNumber" class="w-20 flex-shrink-0">
+                  <label class="block text-[12px] font-medium text-muted-foreground mb-1 truncate" :title="$t('metadata.fields.seriesNumber')">{{ $t('metadata.fields.seriesNumberShort') }}</label>
+                  <input
+                    v-model="form.volume"
+                    inputmode="decimal"
+                    :placeholder="$t('metadata.edit.seriesNumberExample')"
+                    :aria-label="$t('metadata.fields.seriesNumber')"
+                    class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -135,6 +148,27 @@
                 class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
+            <template v-if="isBook">
+              <div v-if="!isBulk">
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.isbn') }}</label>
+                <input
+                  v-model="form.isbn"
+                  inputmode="numeric"
+                  :placeholder="$t('metadata.edit.isbnExample')"
+                  class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+              <div>
+                <label class="block text-[12px] font-medium text-muted-foreground mb-1">
+                  {{ $t('metadata.fields.language') }}<span v-if="languageName(form.language) !== form.language.trim()" class="font-normal text-muted-foreground/70"> · {{ languageName(form.language.trim()) }}</span>
+                </label>
+                <input
+                  v-model="form.language"
+                  :placeholder="$t('metadata.edit.languageExample')"
+                  class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+            </template>
             <div>
               <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.genres') }}</label>
               <input
@@ -259,6 +293,7 @@
                     <span v-if="result.releaseDate" class="text-[12px] text-muted-foreground font-mono">
                       {{ result.releaseDate }}<template v-if="result.rating != null"> · ★ {{ $n(result.rating, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }}/10</template>
                     </span>
+                    <span v-if="result.isbn || result.language" class="text-[12px] text-muted-foreground truncate">{{ [result.isbn && $t('metadata.edit.resultIsbn', { isbn: result.isbn }), result.language && languageName(result.language)].filter(Boolean).join(' · ') }}</span>
                     <span v-if="result.genres?.length" class="text-[12px] text-muted-foreground truncate">{{ result.genres.join(', ') }}</span>
                     <span v-if="result.themes?.length" class="text-[12px] text-muted-foreground truncate">{{ result.themes.join(', ') }}</span>
                     <span class="text-[11px] uppercase font-mono tracking-wide text-muted-foreground/70 mt-auto">{{ sourceLabel(result.source) }}</span>
@@ -299,7 +334,7 @@ import { getMediaToken } from '../utils/mediaToken';
 import { ref, reactive, computed, watch } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
-import { t } from '../i18n';
+import { t, languageName } from '../i18n';
 import { X, Search as SearchIcon, ImageOff, Check, ChevronDown, Upload, Loader2 } from '@lucide/vue';
 
 const dialog = useDialogStore();
@@ -320,8 +355,12 @@ const isBulk = computed(() => props.applyToIds && props.applyToIds.length > 0);
 const AGE_RATINGS = ['Everyone', 'Teen', 'Mature', 'Explicit'];
 const form = reactive({ ageRating: '',
   title: '', author: '', artists: '', series: '',
-  description: '', releaseDate: '', genres: '', themes: '', publisher: '', status: ''
+  description: '', releaseDate: '', genres: '', themes: '', publisher: '', status: '',
+  volume: '', isbn: '', language: ''
 });
+// Where a picked cover came from: a Google Books pick is saved from its full-size image,
+// not the search thumbnail (see POST /metadata/apply).
+const pickedCoverFrom = ref(null);
 const pickedCoverUrl = ref(null);
 // A TMDB result's community score, carried along when "use all" picks that result so the
 // item gets its world rating saved with the rest of the metadata.
@@ -380,6 +419,8 @@ const token = getMediaToken() || '';
 const isVideoType = computed(() =>
   ['movie', 'show', 'anime'].includes(props.item?.media_type)
 );
+const isBook = computed(() => props.item?.media_type === 'book');
+const showSeriesNumber = computed(() => !isBulk.value && !isVideoType.value);
 
 const authorLabel = computed(() => isVideoType.value ? t('metadata.fields.directors') : t('metadata.fields.authors'));
 const artistsLabel = computed(() => isVideoType.value ? t('metadata.fields.castActors') : t('metadata.fields.artists'));
@@ -398,7 +439,7 @@ const previewCoverUrl = computed(() => {
 const providerLabel = computed(() => {
   switch (props.item?.media_type) {
     case 'manga': return 'MangaDex';
-    case 'book': return 'Google Books / Open Library';
+    case 'book': return 'Open Library / Google Books';
     case 'movie': return 'TMDB';
     case 'show': return 'TMDB';
     case 'anime': return 'TMDB';
@@ -425,6 +466,8 @@ const PICK_FIELDS = computed(() => [
   { key: 'releaseDate', label: t('metadata.fields.date') },
   { key: 'status', label: t('metadata.fields.status') },
   { key: 'publisher', label: t('metadata.fields.publisher') },
+  { key: 'isbn', label: t('metadata.fields.isbn'), bulkHidden: true },
+  { key: 'language', label: t('metadata.fields.language') },
   { key: 'genres', label: t('metadata.fields.genres') },
   { key: 'themes', label: t('metadata.fields.themes') },
   { key: 'overview', label: t('metadata.fields.description'), formKey: 'description' },
@@ -443,6 +486,7 @@ function applyField(result, field) {
   const raw = result[field.key];
   if (field.key === 'coverUrl') {
     pickedCoverUrl.value = raw;
+    pickedCoverFrom.value = result.source === 'google-books' ? { source: result.source, externalId: result.externalId } : null;
     return;
   }
   const formKey = field.formKey || field.key;
@@ -466,9 +510,10 @@ watch(
           .finally(() => { loadingFull.value = false; });
       }
       pickedCoverUrl.value = null;
+      pickedCoverFrom.value = null;
       pickedRating.value = null;
       pickedTmdbId.value = null;
-      query.value = props.item.cleanTitle || props.item.series || props.item.title || '';
+      query.value = defaultQuery(props.item);
       yearQuery.value = (props.item.release_date ? props.item.release_date.slice(0, 4) : props.item.detectedYear) || '';
       results.value = [];
       hasSearched.value = false;
@@ -480,6 +525,16 @@ watch(
 );
 
 const loadingFull = ref(false);
+
+// A book is found by title and author: a title alone brings up every summary and study
+// guide of it first.
+function defaultQuery(item) {
+  if (item.media_type === 'book' && !isBulk.value && item.title) {
+    const author = item.author && item.author !== 'Unknown Author' ? item.author.split(',')[0].trim() : '';
+    return author ? `${item.title} ${author}` : item.title;
+  }
+  return item.cleanTitle || item.series || item.title || '';
+}
 
 function fillForm(item) {
   form.title = isBulk.value ? '' : (item.title || '');
@@ -493,6 +548,9 @@ function fillForm(item) {
   form.publisher = item.publisher || '';
   form.status = item.status || '';
   form.ageRating = item.age_rating || '';
+  form.volume = item.volume != null ? String(item.volume) : '';
+  form.isbn = item.isbn || '';
+  form.language = item.language || '';
 }
 
 async function search() {
@@ -543,6 +601,8 @@ async function saveForm() {
       publisher: form.publisher.trim() || null,
       status: form.status.trim() || null,
       ageRating: form.ageRating || null,
+      ...(isBook.value ? { language: form.language.trim() || null } : {}),
+      ...(pickedCoverUrl.value && pickedCoverFrom.value ? pickedCoverFrom.value : {}),
       ...(pickedRating.value || {}),
       ...(pickedTmdbId.value ? { source: 'tmdb', externalId: pickedTmdbId.value } : {})
     };
@@ -564,7 +624,9 @@ async function saveForm() {
       if (!props.item) return;
       const payload = {
         title: form.title.trim() || props.item.title,
-        ...sharedFields
+        ...sharedFields,
+        ...(showSeriesNumber.value ? { volume: form.volume.trim() || null } : {}),
+        ...(isBook.value ? { isbn: form.isbn.trim() || null } : {})
       };
       if (pickedCoverUrl.value) payload.coverUrl = pickedCoverUrl.value;
       await api.post(`/metadata/apply/${props.item.id}`, payload);

@@ -18,7 +18,11 @@
     "genres": "Genres",
     "themes": "Themes",
     "description": "Description",
-    "cover": "Cover"
+    "cover": "Cover",
+    "isbn": "ISBN",
+    "language": "Language",
+    "seriesNumber": "Number in series",
+    "seriesNumberShort": "No."
   },
   "ageRatings": {
     "everyone": "Everyone",
@@ -68,7 +72,11 @@
       "other": "Updated all {count} items in the series."
     },
     "savedOne": "Updated \"{title}\".",
-    "saveFailed": "Failed to save metadata — see browser console for details."
+    "saveFailed": "Failed to save metadata — see browser console for details.",
+    "seriesNumberExample": "e.g. 2",
+    "isbnExample": "10 or 13 digits",
+    "languageExample": "e.g. en, fr, pt-BR",
+    "resultIsbn": "ISBN {isbn}"
   },
   "manager": {
     "title": "Title cleanup and matching",

@@ -525,7 +525,10 @@
     "hideOfflineMustBeTrue": "hideOffline muss true oder false sein",
     "enabledMustBeTrueOr": "enabled muss true oder false sein",
     "chooseUpTo5000Channels": "Wähle bis zu 5000 Sender",
-    "youCanHaveUpTo": "Du kannst bis zu 500 Sender als Favoriten haben"
+    "youCanHaveUpTo": "Du kannst bis zu 500 Sender als Favoriten haben",
+    "theNumberInTheSeriesMust": "Die Nummer in der Reihe muss eine positive Zahl sein",
+    "thatIsbnIsNotValid": "Diese ISBN ist ungültig. Prüfe die Ziffern (10 oder 13).",
+    "languageMustBeALanguageCode": "Die Sprache muss ein Sprachcode wie „en“ oder „pt-BR“ sein."
   },
   "patterns": {
     "noMetadataSource": "Noch keine Metadatenquelle für {type}",

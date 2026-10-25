@@ -115,7 +115,7 @@ async function loadLibrary(db, user) {
   const rows = await db.all(`
     SELECT i.id, i.library_id, i.title, i.author, i.artists, i.series, i.volume, i.path,
            i.total_pages, i.file_size, i.format, i.media_type, i.description, i.release_date,
-           i.genres, i.themes, i.publisher, i.status, i.created_at, i.updated_at,
+           i.genres, i.themes, i.publisher, i.status, i.isbn, i.language, i.created_at, i.updated_at,
            p.is_finished, p.is_skipped, p.progress_percent, p.current_page,
            ss.title_override, ss.reading_direction, ss.age_rating AS series_age_rating
     FROM items i
@@ -215,7 +215,7 @@ function seriesDto(g) {
       publisherLock: false,
       ageRating: AGE[String(first.series_age_rating || '').toLowerCase()] ?? null,
       ageRatingLock: false,
-      language: '',
+      language: first.language || '',
       languageLock: false,
       genres: splitList(first.genres),
       genresLock: false,
@@ -279,7 +279,7 @@ function bookDto(g, b) {
       authorsLock: false,
       tags: [],
       tagsLock: false,
-      isbn: '',
+      isbn: b.isbn || '',
       isbnLock: false,
       links: [],
       linksLock: false,

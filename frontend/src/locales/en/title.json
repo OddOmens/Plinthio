@@ -88,7 +88,9 @@
     "library": "Library",
     "lastOpened": "Last opened",
     "totalLength": "Total Length",
-    "totalPages": "Total Pages"
+    "totalPages": "Total Pages",
+    "isbn": "ISBN",
+    "language": "Language"
   },
   "sections": {
     "seasons": "Seasons",

@@ -18,7 +18,11 @@
     "genres": "Genres",
     "themes": "Themen",
     "description": "Beschreibung",
-    "cover": "Cover"
+    "cover": "Cover",
+    "isbn": "ISBN",
+    "language": "Sprache",
+    "seriesNumber": "Nummer in der Reihe",
+    "seriesNumberShort": "Nr."
   },
   "ageRatings": {
     "everyone": "Alle",
@@ -68,7 +72,11 @@
       "other": "Alle {count} Einträge der Reihe aktualisiert."
     },
     "savedOne": "„{title}“ aktualisiert.",
-    "saveFailed": "Die Metadaten konnten nicht gespeichert werden – Details findest du in der Browserkonsole."
+    "saveFailed": "Die Metadaten konnten nicht gespeichert werden – Details findest du in der Browserkonsole.",
+    "seriesNumberExample": "z. B. 2",
+    "isbnExample": "10 oder 13 Ziffern",
+    "languageExample": "z. B. en, fr, pt-BR",
+    "resultIsbn": "ISBN {isbn}"
   },
   "manager": {
     "title": "Titelbereinigung und Abgleich",

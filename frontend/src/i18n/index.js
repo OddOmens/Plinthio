@@ -188,8 +188,19 @@ export function list(items, options = { type: 'conjunction' }) {
   return new Intl.ListFormat(formatLocale(), options).format(items);
 }
 
+// A language code in the reader's language: languageName('fr') → "French" / "français".
+// Anything Intl doesn't know comes back as given.
+export function languageName(code) {
+  if (!code) return '';
+  try {
+    return new Intl.DisplayNames(formatLocale(), { type: 'language' }).of(code) || code;
+  } catch {
+    return code;
+  }
+}
+
 export function useI18n() {
-  return { t, te, n, d, relative, list, locale, languages: LANGUAGES, setLanguage, applyLanguage, current: computed(() => locale.value) };
+  return { t, te, n, d, relative, list, languageName, locale, languages: LANGUAGES, setLanguage, applyLanguage, current: computed(() => locale.value) };
 }
 
 export default {

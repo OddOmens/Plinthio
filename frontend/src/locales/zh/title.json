@@ -85,7 +85,9 @@
     "library": "媒体库",
     "lastOpened": "上次打开",
     "totalLength": "总时长",
-    "totalPages": "总页数"
+    "totalPages": "总页数",
+    "isbn": "ISBN",
+    "language": "语言"
   },
   "sections": {
     "seasons": "季",

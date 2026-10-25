@@ -354,7 +354,11 @@ async function initSchema(db) {
     // removing) its file to free space. Hidden like a missing title, but shown on its title
     // page, greyed, with everyone's progress; restored if the file comes back.
     'offloaded_at DATETIME',
-    'tmdb_id TEXT', 'credits_json TEXT', 'credits_checked_at DATETIME'
+    'tmdb_id TEXT', 'credits_json TEXT', 'credits_checked_at DATETIME',
+    // Books: the edition's ISBN-13 and language (BCP 47, e.g. "en"), from the file or a match.
+    // book_meta_version is the BOOK_META_VERSION the file was last read with
+    // (services/bookMetadata.js); an older one is read again once to fill empty fields.
+    'isbn TEXT', 'language TEXT', 'book_meta_version INTEGER'
   ]) {
     try {
       await db.exec(`ALTER TABLE items ADD COLUMN ${col}`);

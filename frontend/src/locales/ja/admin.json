@@ -704,6 +704,21 @@
       "attribution": "この製品はTMDB APIを使用していますが、TMDBによる推奨や認定を受けたものではありません。",
       "removeTitle": "TMDBキーを削除",
       "removeMessage": "キーを再び追加するまで、映画、番組、アニメの新しいポスター、詳細情報、世界の評価は取得されなくなります。"
+    },
+    "googleBooks": {
+      "title": "Google Books キー",
+      "description": "任意です。本の詳細は Open Library と Google Books から取得し、どちらもキーなしで使えます。ただし Google のキーなしの利用枠は全員で共有しているため、日中に使い切られることがよくあります。無料の独自キーを使うと、このサーバー専用の利用枠になります。",
+      "sources": {
+        "custom": "独自のキー",
+        "environment": "GOOGLE_BOOKS_API_KEYから",
+        "notSet": "未設定"
+      },
+      "keyLabel": "Google Books API キー",
+      "placeholder": "Google Books API キーを貼り付け（任意）",
+      "placeholderReplace": "置き換える新しいキーを貼り付け",
+      "saveKey": "キーを保存",
+      "getOne": "{link} で無料で作成できます。Books API を有効にしてから、「認証情報」→「認証情報を作成」→「API キー」を選びます。",
+      "getOneLink": "Google Cloud Console"
     }
   },
   "overview": {

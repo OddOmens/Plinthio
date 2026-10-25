@@ -525,7 +525,10 @@
     "hideOfflineMustBeTrue": "hideOffline 必须为 true 或 false",
     "enabledMustBeTrueOr": "enabled 必须为 true 或 false",
     "chooseUpTo5000Channels": "最多选择5000个频道",
-    "youCanHaveUpTo": "最多可以收藏500个频道"
+    "youCanHaveUpTo": "最多可以收藏500个频道",
+    "theNumberInTheSeriesMust": "系列中的序号必须是正数",
+    "thatIsbnIsNotValid": "该 ISBN 无效。请检查数字（10 位或 13 位）。",
+    "languageMustBeALanguageCode": "语言必须是语言代码，例如“en”或“pt-BR”。"
   },
   "patterns": {
     "noMetadataSource": "暂无{type}的元数据来源",

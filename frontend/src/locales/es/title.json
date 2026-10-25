@@ -88,7 +88,9 @@
     "library": "Biblioteca",
     "lastOpened": "Última apertura",
     "totalLength": "Duración total",
-    "totalPages": "Total de páginas"
+    "totalPages": "Total de páginas",
+    "isbn": "ISBN",
+    "language": "Idioma"
   },
   "sections": {
     "seasons": "Temporadas",

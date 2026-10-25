@@ -1362,7 +1362,7 @@ import AvailabilityBadge from '../components/AvailabilityBadge.vue';
 import AddToListButton from '../components/AddToListButton.vue';
 import { startParty } from '../utils/party';
 import { coverUrl as buildCoverUrl, stillUrl } from '../utils/cover';
-import { t, te, n, d, relative } from '../i18n';
+import { t, te, n, d, relative, languageName } from '../i18n';
 import I18nT from '../i18n/I18nT.vue';
 import {
   ArrowLeft,
@@ -1820,6 +1820,8 @@ const singleFacts = computed(() => {
   if (it.artists && it.artists !== it.author) facts.push({ label: isVideo(it.media_type) ? t('title.facts.cast') : t('title.facts.artists'), value: it.artists });
   if (it.genres) facts.push({ label: t('title.facts.genres'), value: it.genres });
   if (it.publisher) facts.push({ label: t('title.facts.publisher'), value: it.publisher });
+  if (it.language) facts.push({ label: t('title.facts.language'), value: languageName(it.language) });
+  if (it.isbn) facts.push({ label: t('title.facts.isbn'), value: it.isbn });
   if (it.status) facts.push({ label: t('title.facts.status'), value: it.status });
   if (it.format) facts.push({ label: t('title.facts.format'), value: it.format.toUpperCase() });
   if (it.file_size) facts.push({ label: t('title.facts.fileSize'), value: formatFileSize(it.file_size) });
@@ -2222,6 +2224,8 @@ const mediaFacts = computed(() => {
     if (it.release_date) facts.push({ label: t('title.facts.released'), value: it.release_date });
     if (isTimeBased(it.media_type) && it.duration) facts.push({ label: t('title.facts.runtime'), value: formatLength(it.duration) });
     if (it.total_pages) facts.push({ label: t('title.facts.pages'), value: n(it.total_pages) });
+    if (it.language) facts.push({ label: t('title.facts.language'), value: languageName(it.language) });
+    if (it.isbn) facts.push({ label: t('title.facts.isbn'), value: it.isbn });
     if (it.format) facts.push({ label: t('title.facts.format'), value: it.format.toUpperCase() });
     if (it.file_size) facts.push({ label: t('title.facts.fileSize'), value: formatFileSize(it.file_size) });
     if (series.value?.libraryName) facts.push({ label: t('title.facts.library'), value: series.value.libraryName });
@@ -2231,6 +2235,9 @@ const mediaFacts = computed(() => {
     facts.push({ label: typed('totalUnits'), value: n(series.value.volumeCount) });
     if (totalDuration.value > 0) facts.push({ label: t('title.facts.totalLength'), value: formatLength(totalDuration.value) });
     if (series.value.totalPages > 0) facts.push({ label: t('title.facts.totalPages'), value: n(series.value.totalPages) });
+    // A series whose volumes all say the same language.
+    const languages = new Set((series.value.volumes || []).map((v) => v.language || null));
+    if (languages.size === 1 && it?.language) facts.push({ label: t('title.facts.language'), value: languageName(it.language) });
     if (it?.format) facts.push({ label: t('title.facts.format'), value: it.format.toUpperCase() });
   }
   return facts;

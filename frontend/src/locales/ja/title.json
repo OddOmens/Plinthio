@@ -85,7 +85,9 @@
     "library": "ライブラリ",
     "lastOpened": "最後に開いた日",
     "totalLength": "合計時間",
-    "totalPages": "合計ページ数"
+    "totalPages": "合計ページ数",
+    "isbn": "ISBN",
+    "language": "言語"
   },
   "sections": {
     "seasons": "シーズン",

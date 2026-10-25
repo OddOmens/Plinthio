@@ -721,6 +721,21 @@
       "attribution": "This product uses the TMDB API but is not endorsed or certified by TMDB.",
       "removeTitle": "Remove the TMDB key",
       "removeMessage": "Movies, shows and anime stop getting new posters, details and world ratings until a key is added again."
+    },
+    "googleBooks": {
+      "title": "Google Books key",
+      "description": "Optional. Books get their details from Open Library and Google Books, and both work without a key. But Google shares its keyless allowance with everyone, so it often runs out during the day. A free key of your own gives this server an allowance of its own.",
+      "sources": {
+        "custom": "Your own",
+        "environment": "From GOOGLE_BOOKS_API_KEY",
+        "notSet": "Not set"
+      },
+      "keyLabel": "Google Books API key",
+      "placeholder": "Paste a Google Books API key (optional)",
+      "placeholderReplace": "Paste a new key to replace it",
+      "saveKey": "Save key",
+      "getOne": "Create one free in {link}: enable the Books API, then Credentials → Create credentials → API key.",
+      "getOneLink": "Google Cloud Console"
     }
   },
   "overview": {

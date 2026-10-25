@@ -85,7 +85,9 @@
     "library": "라이브러리",
     "lastOpened": "마지막으로 연 날",
     "totalLength": "전체 길이",
-    "totalPages": "전체 쪽수"
+    "totalPages": "전체 쪽수",
+    "isbn": "ISBN",
+    "language": "언어"
   },
   "sections": {
     "seasons": "시즌",

@@ -18,7 +18,11 @@
     "genres": "Gatunki",
     "themes": "Motywy",
     "description": "Opis",
-    "cover": "Okładka"
+    "cover": "Okładka",
+    "isbn": "ISBN",
+    "language": "Język",
+    "seriesNumber": "Numer w serii",
+    "seriesNumberShort": "Nr"
   },
   "ageRatings": {
     "everyone": "Dla wszystkich",
@@ -72,7 +76,11 @@
       "other": "Zaktualizowano wszystkie {count} pozycji w serii."
     },
     "savedOne": "Zaktualizowano „{title}”.",
-    "saveFailed": "Nie udało się zapisać metadanych — szczegóły w konsoli przeglądarki."
+    "saveFailed": "Nie udało się zapisać metadanych — szczegóły w konsoli przeglądarki.",
+    "seriesNumberExample": "np. 2",
+    "isbnExample": "10 lub 13 cyfr",
+    "languageExample": "np. en, fr, pt-BR",
+    "resultIsbn": "ISBN {isbn}"
   },
   "manager": {
     "title": "Porządkowanie tytułów i dopasowywanie",

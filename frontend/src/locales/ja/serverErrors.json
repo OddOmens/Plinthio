@@ -525,7 +525,10 @@
     "hideOfflineMustBeTrue": "hideOffline は true か false である必要があります",
     "enabledMustBeTrueOr": "enabled は true か false である必要があります",
     "chooseUpTo5000Channels": "選べるチャンネルは 5000 件までです",
-    "youCanHaveUpTo": "お気に入りのチャンネルは 500 件までです"
+    "youCanHaveUpTo": "お気に入りのチャンネルは 500 件までです",
+    "theNumberInTheSeriesMust": "シリーズ内の番号は正の数にしてください",
+    "thatIsbnIsNotValid": "この ISBN は無効です。桁（10桁または13桁）を確認してください。",
+    "languageMustBeALanguageCode": "言語は「en」や「pt-BR」のような言語コードで指定してください。"
   },
   "patterns": {
     "noMetadataSource": "{type} のメタデータの提供元はまだありません",

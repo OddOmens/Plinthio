@@ -525,7 +525,10 @@
     "hideOfflineMustBeTrue": "hideOffline은 true 또는 false여야 해요",
     "enabledMustBeTrueOr": "enabled는 true 또는 false여야 해요",
     "chooseUpTo5000Channels": "채널은 최대 5000개까지 고를 수 있어요",
-    "youCanHaveUpTo": "즐겨찾기 채널은 최대 500개까지 둘 수 있어요"
+    "youCanHaveUpTo": "즐겨찾기 채널은 최대 500개까지 둘 수 있어요",
+    "theNumberInTheSeriesMust": "시리즈 내 번호는 양수여야 해요",
+    "thatIsbnIsNotValid": "유효하지 않은 ISBN이에요. 자릿수(10자리 또는 13자리)를 확인하세요.",
+    "languageMustBeALanguageCode": "언어는 \"en\"이나 \"pt-BR\" 같은 언어 코드여야 해요."
   },
   "patterns": {
     "noMetadataSource": "{type} 메타데이터 소스가 아직 없어요",

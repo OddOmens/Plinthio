@@ -755,6 +755,21 @@
       "attribution": "Ten produkt korzysta z API TMDB, ale nie jest wspierany ani certyfikowany przez TMDB.",
       "removeTitle": "Usuń klucz TMDB",
       "removeMessage": "Filmy, seriale i anime przestaną otrzymywać nowe plakaty, szczegóły i oceny światowe, dopóki klucz nie zostanie dodany ponownie."
+    },
+    "googleBooks": {
+      "title": "Klucz Google Books",
+      "description": "Opcjonalny. Książki pobierają szczegóły z Open Library i Google Books, a oba działają bez klucza. Google dzieli jednak swój limit bez klucza ze wszystkimi, więc często wyczerpuje się w ciągu dnia. Własny darmowy klucz daje temu serwerowi osobny limit.",
+      "sources": {
+        "custom": "Własny",
+        "environment": "Z GOOGLE_BOOKS_API_KEY",
+        "notSet": "Nie ustawiono"
+      },
+      "keyLabel": "Klucz API Google Books",
+      "placeholder": "Wklej klucz API Google Books (opcjonalnie)",
+      "placeholderReplace": "Wklej nowy klucz, aby go zastąpić",
+      "saveKey": "Zapisz klucz",
+      "getOne": "Utwórz go za darmo w {link}: włącz Books API, a potem Dane logowania → Utwórz dane logowania → Klucz API.",
+      "getOneLink": "Google Cloud Console"
     }
   },
   "overview": {

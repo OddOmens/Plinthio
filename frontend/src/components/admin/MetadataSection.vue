@@ -29,6 +29,33 @@
     <p class="field-hint">{{ $t('admin.metadata.tmdb.attribution') }}</p>
   </SettingsCard>
 
+  <SettingsCard :title="$t('admin.metadata.googleBooks.title')" :description="$t('admin.metadata.googleBooks.description')">
+    <template #actions>
+      <span :class="['text-[11px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border', googleBooksSource ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : 'text-muted-foreground border-border bg-muted/40']">
+        {{ $t(`admin.metadata.googleBooks.sources.${googleBooksSource || 'notSet'}`) }}
+      </span>
+    </template>
+    <form @submit.prevent="saveGoogleBooksKey" class="flex flex-col sm:flex-row gap-2">
+      <label for="google-books-key" class="sr-only">{{ $t('admin.metadata.googleBooks.keyLabel') }}</label>
+      <input
+        id="google-books-key"
+        v-model="googleBooksKeyInput"
+        type="password"
+        autocomplete="off"
+        :placeholder="googleBooksSource === 'custom' ? $t('admin.metadata.googleBooks.placeholderReplace') : $t('admin.metadata.googleBooks.placeholder')"
+        class="field flex-1 min-w-0"
+      />
+      <button type="submit" :disabled="savingGoogle || !googleBooksKeyInput" class="btn btn-primary">{{ savingGoogle ? $t('common.saving') : $t('admin.metadata.googleBooks.saveKey') }}</button>
+      <button v-if="googleBooksSource === 'custom'" type="button" @click="putGoogleBooksKey('')" :disabled="savingGoogle" class="btn btn-ghost">{{ $t('common.remove') }}</button>
+    </form>
+    <p class="field-hint">
+      <I18nT keypath="admin.metadata.googleBooks.getOne">
+        <template #link><a href="https://console.cloud.google.com/apis/library/books.googleapis.com" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">{{ $t('admin.metadata.googleBooks.getOneLink') }}</a></template>
+      </I18nT>
+      <SaveStatus :status="googleSave.status.value" :message="googleSave.message.value" class="inline-flex ml-1" />
+    </p>
+  </SettingsCard>
+
   <AdminMetadataManager :libraries="libraries" />
 </template>
 
@@ -49,6 +76,7 @@ defineProps({
 });
 const dialog = useDialogStore();
 const save = useSaveStatus();
+const googleSave = useSaveStatus();
 
 const tmdbConfigured = ref(false);
 // "custom" (saved here), "environment" (TMDB_API_KEY), "builtin", or null. Servers before the
@@ -61,10 +89,20 @@ const sourceLabel = computed(() => (['custom', 'environment', 'builtin'].include
   ? t(`admin.metadata.tmdb.sources.${tmdbSource.value}`)
   : t(tmdbConfigured.value ? 'admin.metadata.tmdb.sources.set' : 'admin.metadata.tmdb.sources.notSet')));
 
+// "custom" (saved here), "environment" (GOOGLE_BOOKS_API_KEY), or null for none — books
+// then use Open Library and Google's shared keyless quota.
+const googleBooksSource = ref(null);
+const googleBooksKeyInput = ref('');
+const savingGoogle = ref(false);
+
 function readStatus(data) {
   tmdbConfigured.value = !!data.tmdbConfigured;
   tmdbSource.value = data.tmdbSource || null;
   tmdbBuiltIn.value = !!data.tmdbBuiltIn;
+}
+
+function readGoogleBooksStatus(data) {
+  googleBooksSource.value = ['custom', 'environment'].includes(data.googleBooksSource) ? data.googleBooksSource : null;
 }
 const saving = ref(false);
 
@@ -72,6 +110,7 @@ onMounted(async () => {
   try {
     const res = await api.get('/settings/metadata-providers');
     readStatus(res.data);
+    readGoogleBooksStatus(res.data);
   } catch (err) {
     console.warn('Could not load metadata providers:', err);
   }
@@ -90,6 +129,19 @@ async function putKey(apiKey) {
 }
 
 const saveTmdbKey = () => putKey(tmdbKeyInput.value.trim());
+
+async function putGoogleBooksKey(apiKey) {
+  savingGoogle.value = true;
+  const { ok, data } = await googleSave.run(() => api.put('/settings/metadata-providers/google-books-key', { apiKey }));
+  if (ok) {
+    readGoogleBooksStatus(data.data);
+    googleBooksKeyInput.value = '';
+    googleSave.message.value = data.data.message || '';
+  }
+  savingGoogle.value = false;
+}
+
+const saveGoogleBooksKey = () => putGoogleBooksKey(googleBooksKeyInput.value.trim());
 
 async function clearTmdbKey() {
   // Going back to the built-in key loses nothing.

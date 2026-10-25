@@ -8,8 +8,11 @@ import {
   searchExternalMetadata,
   fetchTmdbSeason,
   fetchTmdbEpisode,
-  fetchMangaDexVolumeCovers
+  fetchMangaDexVolumeCovers,
+  findBookMatches,
+  fetchBookDetails
 } from '../services/externalMetadata.js';
+import { normalizeIsbn, normalizeLanguage } from '../services/bookMetadata.js';
 import { getThumbnailPath, THUMB_WIDTHS } from '../services/thumbnails.js';
 import { invalidateCoverCache } from './media.js';
 import { downloadCover, downloadCoverBuffer, saveCoverJpeg, cleanSearchTitle } from '../services/artwork.js';
@@ -372,6 +375,10 @@ export async function matchItemMetadata(db, item, {
     throw err;
   }
 
+  if (item.media_type === 'book') {
+    return matchBookMetadata(db, item, { overwriteCover, useCanonicalTitle, cleanTitle, year });
+  }
+
   const isTv = parsedPath.isTv || item.media_type === 'show' || item.media_type === 'anime';
   let season = parsedPath.season;
   let episode = parsedPath.episode;
@@ -556,6 +563,83 @@ export async function matchItemMetadata(db, item, {
   };
 }
 
+// Below this a book result shares too little of the title (and author) to be trusted
+// unattended: half the title words, or most of them with no author to go on.
+const BOOK_MATCH_MIN_SCORE = 35;
+
+/**
+ * Matches a book. A book's file usually knows more about the edition in hand than a search
+ * does (its own blurb, publisher and date), so a match fills in what's missing rather than
+ * replacing it, and only renames a book whose title is still its file name. The search uses
+ * the ISBN when the file has one, otherwise title and author.
+ */
+async function matchBookMetadata(db, item, { overwriteCover, useCanonicalTitle, cleanTitle, year }) {
+  const fileName = path.basename(item.path, path.extname(item.path));
+  const titleIsFileName = item.title === fileName;
+  const ranked = await findBookMatches({ title: titleIsFileName ? cleanTitle : item.title, author: item.author, isbn: item.isbn });
+  if (!ranked.length || ranked[0].score < BOOK_MATCH_MIN_SCORE) {
+    const err = new Error(ranked.length ? 'No confident match on Google Books or Open Library' : 'No metadata found on external provider');
+    err.code = 'NO_METADATA_FOUND';
+    err.cleanTitle = cleanTitle;
+    err.year = year;
+    throw err;
+  }
+  const best = await fetchBookDetails(ranked[0]);
+
+  const newTitle = useCanonicalTitle && titleIsFileName && best.title
+    ? (best.subtitle ? `${best.title}: ${best.subtitle}` : best.title)
+    : item.title;
+  const unknownAuthor = !item.author || item.author === 'Unknown Author';
+
+  let newCoverPath = null;
+  if (best.coverUrl && (!item.cover_path || overwriteCover || item.cover_source === 'frame')) {
+    try {
+      newCoverPath = await downloadCover(best.coverUrl, item.id);
+    } catch (e) {
+      logger.warn('metadata', `Cover download failed for ${item.id}: ${e.message}`);
+    }
+  }
+
+  await db.run(
+    `UPDATE items SET
+      title = ?, author = ?,
+      description = COALESCE(description, ?), release_date = COALESCE(release_date, ?),
+      publisher = COALESCE(publisher, ?), genres = COALESCE(genres, ?),
+      isbn = COALESCE(isbn, ?), language = COALESCE(language, ?),
+      cover_path = COALESCE(?, cover_path), cover_source = CASE WHEN ? IS NULL THEN cover_source ELSE ? END,
+      updated_at = CURRENT_TIMESTAMP
+     WHERE id = ?`,
+    [
+      newTitle,
+      unknownAuthor ? (best.author || item.author) : item.author,
+      best.overview || null,
+      best.releaseDate || null,
+      best.publisher || null,
+      best.genres?.length ? best.genres.join(', ') : null,
+      best.isbn || null,
+      best.language || null,
+      newCoverPath,
+      newCoverPath,
+      best.source,
+      item.id
+    ]
+  );
+  if (newCoverPath) clearCachedThumbnails(item.id);
+
+  const updated = await db.get('SELECT * FROM items WHERE id = ?', [item.id]);
+  return {
+    success: true,
+    id: item.id,
+    originalTitle: item.title,
+    cleanTitle,
+    matchedTitle: newTitle,
+    year: best.releaseDate ? best.releaseDate.slice(0, 4) : year,
+    posterUpdated: !!newCoverPath,
+    item: updated,
+    matched: best
+  };
+}
+
 // Admin / Editor: Batch Find & Match Metadata with TMDB / external provider
 router.post('/admin/batch-match', requireEditor, async (req, res) => {
   const { itemIds, overwriteCovers = false, useCanonicalTitle = true } = req.body;
@@ -649,7 +733,20 @@ router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
 // Apply a chosen external metadata result to an item: updates fields and downloads the cover
 router.post('/apply/:itemId', requireEditor, async (req, res) => {
   const { itemId } = req.params;
-  const { title, author, artists, series, coverUrl, description, releaseDate, genres, themes, publisher, status, ageRating, source, rating, externalId } = req.body;
+  const { title, author, artists, series, volume, coverUrl, description, releaseDate, genres, themes, publisher, status, ageRating, isbn, language, source, rating, externalId } = req.body;
+
+  // Checked before anything is written: a refused save mustn't leave a new cover behind.
+  const number = volume === undefined || volume === null || volume === '' ? null : Number(volume);
+  if (number !== null && !(Number.isFinite(number) && number >= 0 && number < 100000)) {
+    return res.status(400).json({ error: 'The number in the series must be a positive number' });
+  }
+  const normalizedIsbn = isbn ? normalizeIsbn(isbn) : null;
+  if (isbn && !normalizedIsbn) return res.status(400).json({ error: 'That ISBN is not valid. Check the digits (10 or 13).' });
+  const normalizedLanguage = language ? normalizeLanguage(language) : null;
+  if (language && !normalizedLanguage) return res.status(400).json({ error: 'Language must be a language code such as "en" or "pt-BR".' });
+  if (ageRating && !AGE_RATINGS.includes(ageRating)) {
+    return res.status(400).json({ error: `Age rating must be one of: ${AGE_RATINGS.join(', ')}` });
+  }
 
   try {
     const db = await getDb();
@@ -661,7 +758,12 @@ router.post('/apply/:itemId', requireEditor, async (req, res) => {
     let coverPath = null;
     if (coverUrl) {
       try {
-        coverPath = await downloadCover(coverUrl, itemId);
+        // A Google Books search result only links a thumbnail; its full record has the
+        // larger sizes.
+        const full = source === 'google-books' && externalId
+          ? await fetchBookDetails({ source, externalId, coverUrl })
+          : null;
+        coverPath = await downloadCover(full?.coverUrl || coverUrl, itemId);
       } catch (err) {
         console.warn(`Failed to download cover for item ${itemId}: ${err.message}`);
       }
@@ -674,6 +776,7 @@ router.post('/apply/:itemId', requireEditor, async (req, res) => {
     if (author !== undefined) { fields.push('author = ?'); params.push(author || null); }
     if (artists !== undefined) { fields.push('artists = ?'); params.push(artists || null); }
     if (series !== undefined) { fields.push('series = ?'); params.push(series || null); }
+    if (volume !== undefined) { fields.push('volume = ?'); params.push(number); }
     if (coverPath) {
       fields.push('cover_path = ?'); params.push(coverPath);
       fields.push('cover_source = ?'); params.push(typeof source === 'string' && source ? source : 'provider');
@@ -690,12 +793,9 @@ router.post('/apply/:itemId', requireEditor, async (req, res) => {
     }
     if (publisher !== undefined) { fields.push('publisher = ?'); params.push(publisher || null); }
     if (status !== undefined) { fields.push('status = ?'); params.push(status || null); }
-    if (ageRating !== undefined) {
-      if (ageRating && !AGE_RATINGS.includes(ageRating)) {
-        return res.status(400).json({ error: `Age rating must be one of: ${AGE_RATINGS.join(', ')}` });
-      }
-      fields.push('age_rating = ?'); params.push(ageRating || null);
-    }
+    if (isbn !== undefined) { fields.push('isbn = ?'); params.push(normalizedIsbn); }
+    if (language !== undefined) { fields.push('language = ?'); params.push(normalizedLanguage); }
+    if (ageRating !== undefined) { fields.push('age_rating = ?'); params.push(ageRating || null); }
     // A TMDB result carries its community score — keep it as the item's world rating so it
     // shows without a separate lookup. Other providers' results don't set one.
     if (source === 'tmdb' && typeof rating === 'number' && rating >= 0 && rating <= 10) {
@@ -739,6 +839,7 @@ router.post('/apply-series', requireEditor, async (req, res) => {
     publisher,
     status,
     ageRating,
+    language,
     source,
     rating,
     ratingVotes,
@@ -748,6 +849,10 @@ router.post('/apply-series', requireEditor, async (req, res) => {
 
   if (!Array.isArray(applyToIds) || applyToIds.length === 0) {
     return res.status(400).json({ error: 'applyToIds array is required' });
+  }
+  const normalizedLanguage = language ? normalizeLanguage(language) : null;
+  if (language && !normalizedLanguage) {
+    return res.status(400).json({ error: 'Language must be a language code such as "en" or "pt-BR".' });
   }
 
   try {
@@ -870,6 +975,7 @@ router.post('/apply-series', requireEditor, async (req, res) => {
       }
       if (publisher !== undefined) { fields.push('publisher = ?'); params.push(publisher || null); }
       if (status !== undefined) { fields.push('status = ?'); params.push(status || null); }
+      if (language !== undefined) { fields.push('language = ?'); params.push(normalizedLanguage); }
       if (ageRating !== undefined) {
         if (ageRating && !AGE_RATINGS.includes(ageRating)) {
           return res.status(400).json({ error: `Age rating must be one of: ${AGE_RATINGS.join(', ')}` });

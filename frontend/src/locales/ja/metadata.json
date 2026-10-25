@@ -18,7 +18,11 @@
     "genres": "ジャンル",
     "themes": "テーマ",
     "description": "説明",
-    "cover": "カバー"
+    "cover": "カバー",
+    "isbn": "ISBN",
+    "language": "言語",
+    "seriesNumber": "シリーズ内の番号",
+    "seriesNumberShort": "番号"
   },
   "ageRatings": {
     "everyone": "全年齢",
@@ -66,7 +70,11 @@
       "other": "シリーズの全 {count} 件を更新しました。"
     },
     "savedOne": "「{title}」を更新しました。",
-    "saveFailed": "メタデータを保存できませんでした。詳しくはブラウザのコンソールを確認してください。"
+    "saveFailed": "メタデータを保存できませんでした。詳しくはブラウザのコンソールを確認してください。",
+    "seriesNumberExample": "例: 2",
+    "isbnExample": "10桁または13桁",
+    "languageExample": "例: en、fr、pt-BR",
+    "resultIsbn": "ISBN {isbn}"
   },
   "manager": {
     "title": "タイトルの整理とマッチング",

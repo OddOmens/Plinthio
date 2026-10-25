@@ -525,7 +525,10 @@
     "hideOfflineMustBeTrue": "hideOffline moet true of false zijn",
     "enabledMustBeTrueOr": "enabled moet true of false zijn",
     "chooseUpTo5000Channels": "Kies maximaal 5000 zenders",
-    "youCanHaveUpTo": "Je kunt maximaal 500 favoriete zenders hebben"
+    "youCanHaveUpTo": "Je kunt maximaal 500 favoriete zenders hebben",
+    "theNumberInTheSeriesMust": "Het nummer in de reeks moet een positief getal zijn",
+    "thatIsbnIsNotValid": "Dat ISBN is niet geldig. Controleer de cijfers (10 of 13).",
+    "languageMustBeALanguageCode": "De taal moet een taalcode zijn, zoals \"en\" of \"pt-BR\"."
   },
   "patterns": {
     "noMetadataSource": "Nog geen metadatabron voor {type}",
