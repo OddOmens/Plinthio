@@ -1470,6 +1470,14 @@ const metadataApplyIds = ref([]);
 
 function openSeriesMetadataSearch() {
   if (!series.value) return;
+  // One title (a film, a standalone book): edit that title itself. The series-wide editor
+  // would save the page's name as its series, turning "Dune" into a series called "Dune".
+  if (isSingle.value) {
+    metadataTargetItem.value = series.value.volumes[0];
+    metadataApplyIds.value = [];
+    showMetadataModal.value = true;
+    return;
+  }
   const firstVol = series.value.volumes?.[0];
   metadataTargetItem.value = {
     id: firstVol?.id,
@@ -1493,6 +1501,19 @@ function openSeriesMetadataSearch() {
 
 async function handleMetadataApplied() {
   showMetadataModal.value = false;
+  // A one-title series page whose title just moved to another series (or none): follow it,
+  // rather than reload a series that's now empty.
+  const seriesParam = route.params.seriesName;
+  const edited = metadataApplyIds.value.length ? null : metadataTargetItem.value;
+  if (seriesParam && edited?.id) {
+    try {
+      const fresh = (await api.get(`/items/${edited.id}`)).data.item;
+      if (fresh && fresh.series !== seriesParam) {
+        router.replace(fresh.series ? { path: `/series/${encodeURIComponent(fresh.series)}`, query: route.query } : `/title/${fresh.id}`);
+        return;
+      }
+    } catch (e) { /* reload below */ }
+  }
   await fetchSeriesData();
 }
 

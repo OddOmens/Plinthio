@@ -293,8 +293,11 @@ export async function findBookMatches({ title, author, isbn }) {
     const byIsbn = (await searchBooks({ isbn }).catch(() => [])).filter((r) => r.isbn === isbn);
     if (byIsbn.length) return rankBookResults(byIsbn, known);
   }
-  let results = known.author ? await searchBooks({ title, author: known.author }).catch(() => []) : [];
-  if (!results.length) results = await searchBooks({ title });
+  // Searched by the main title: "Talk: The Science of Conversation…" finds nothing on Open
+  // Library, "Talk" by its author finds the book. Ranking still sees the whole title.
+  const mainTitle = String(title || '').split(/:|\s[-–]\s|\(/)[0].trim() || title;
+  let results = known.author ? await searchBooks({ title: mainTitle, author: known.author }).catch(() => []) : [];
+  if (!results.length) results = await searchBooks({ title: mainTitle });
   return rankBookResults(results, known);
 }
 

@@ -315,6 +315,15 @@ describe('matching a book online', () => {
     assert.ok(result.posterUpdated);
   });
 
+  test('without an ISBN, it searches by main title and author', async () => {
+    const seen = mockProviders({ docs: [{ key: '/works/OL3W', title: 'Talk', author_name: ['Alison Wood Brooks'] }] });
+    const { findBookMatches } = await import('../src/services/externalMetadata.js');
+    const ranked = await findBookMatches({ title: 'Talk: The Science of Conversation and the Art of Being Ourselves', author: 'Alison Wood Brooks' });
+    assert.ok(seen.some((u) => u.includes('search.json?title=Talk&author=Alison%20Wood%20Brooks')), seen.join('\n'));
+    assert.equal(ranked[0].title, 'Talk');
+    assert.ok(ranked[0].score >= 35);
+  });
+
   test('a result that shares little with the book is not applied', async () => {
     mockProviders({ docs: [{ key: '/works/OL2W', title: 'Cooking for Two', author_name: ['A Chef'] }] });
     const { matchItemMetadata } = await import('../src/routes/metadata.js');

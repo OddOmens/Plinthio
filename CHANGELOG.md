@@ -15,6 +15,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Optional Google Books key** (Admin → Metadata). Google Books' keyless allowance is shared with everyone and often runs out during the day; a free key of your own gives your server its own. Also settable as `GOOGLE_BOOKS_API_KEY`.
 
 ### Fixed
+- **Edit Metadata on a single title edits that title.** On the page of a film or a book that isn't in a series, it opened the series editor, and saving gave the title a series named after itself.
 - **EPUB covers are found in books made by Calibre** and other tools that list the cover image differently. Many such books showed a placeholder.
 - **Matching a book finds the right one.** It searches by ISBN when the book has one, otherwise by title and author, skips summaries and study guides, and leaves a book alone when nothing matches well enough, instead of taking the first result. A match fills in what's missing and keeps what the book's own file says, and takes the publisher and ISBN from the right edition. Picking a Google Books cover saves the full-size image, not the thumbnail.
 
