@@ -1,6 +1,11 @@
 import fs from 'fs';
 import { pipeline } from 'stream';
 
+// Options for res.sendFile/res.download on paths the server built itself. Express 5 refuses
+// any path with a dot segment by default, which would 404 every cover and backup when the
+// data directory lives somewhere like ~/.local/share.
+export const SEND_OPTS = { dotfiles: 'allow' };
+
 // Parses a single-range `Range: bytes=…` header against a file of `size` bytes. Returns
 // { start, end } (inclusive), `null` when there's no usable range header (serve the whole
 // file), or `false` when the range can't be satisfied (416).

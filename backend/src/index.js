@@ -58,6 +58,7 @@ import { sweepHlsCache } from './services/hls.js';
 import { sweepArchiveCache } from './services/archive/sevenZipBackend.js';
 import { sweepPageCache } from './services/pageImages.js';
 import { tlsSettings, loadTlsCredentials, tlsStatus, caCertificate, noteRequestHost } from './services/tls.js';
+import { SEND_OPTS } from './utils/fileStream.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -139,6 +140,11 @@ app.use(compression({
 }));
 
 app.use(express.json());
+// Express 5 leaves req.body undefined when a request has no JSON body; routes destructure it.
+app.use((req, res, next) => {
+  req.body ??= {};
+  next();
+});
 
 // Built-in HTTPS learns the addresses devices use (see noteRequestHost in services/tls.js);
 // the re-issue is debounced so a burst of requests produces one new certificate.
@@ -301,10 +307,10 @@ if (fs.existsSync(frontendDist)) {
         : 'no-cache');
     }
   }));
-  app.get('*', (req, res, next) => {
+  app.get('/{*splat}', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
     res.setHeader('Cache-Control', 'no-cache');
-    res.sendFile(path.join(frontendDist, 'index.html'));
+    res.sendFile(path.join(frontendDist, 'index.html'), SEND_OPTS);
   });
 }
 
