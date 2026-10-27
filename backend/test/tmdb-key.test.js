@@ -2,6 +2,8 @@ import { test, before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { startTestServer, setupAdmin, authed } from './helpers/server.js';
 
+const ALL_ON = { tmdb: true, tvmaze: true, anilist: true, mangadex: true, comicvine: true, 'open-library': true, 'google-books': true, audible: true };
+
 // No network needed: none of these cases checks a key with TMDB. A built-in key is checked
 // with TMDB on first use, so it isn't set here.
 const status = async (server, admin) => (await fetch(`${server.baseUrl}/api/settings/metadata-providers`, { headers: authed(admin.token) })).json();
@@ -18,7 +20,7 @@ describe('TMDB and Google Books key status', () => {
 
   test('no key anywhere: not configured, no source, no built-in key', async () => {
     assert.deepEqual(await status(server, admin), {
-      tmdbConfigured: false, tmdbSource: null, tmdbBuiltIn: false, googleBooksConfigured: false, googleBooksSource: null
+      tmdbConfigured: false, tmdbSource: null, tmdbBuiltIn: false, googleBooksConfigured: false, googleBooksSource: null, comicVineConfigured: false, comicVineSource: null, providers: ALL_ON
     });
   });
 
@@ -55,7 +57,7 @@ describe('TMDB key from the environment', () => {
   test('TMDB_API_KEY is reported as the environment, never as the key', async () => {
     const body = await status(server, admin);
     assert.deepEqual(body, {
-      tmdbConfigured: true, tmdbSource: 'environment', tmdbBuiltIn: false, googleBooksConfigured: true, googleBooksSource: 'environment'
+      tmdbConfigured: true, tmdbSource: 'environment', tmdbBuiltIn: false, googleBooksConfigured: true, googleBooksSource: 'environment', comicVineConfigured: false, comicVineSource: null, providers: ALL_ON
     });
     assert.ok(!JSON.stringify(body).includes('from-the-environment'));
   });

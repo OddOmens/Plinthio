@@ -682,6 +682,49 @@
   "metadata": {
     "title": "메타데이터",
     "description": "포스터, 설명, 출연진, 평점을 어디서 가져오는지, 그리고 파일 이름에서 들어온 제목을 정리하는 곳이에요.",
+    "providers": {
+      "title": "소스",
+      "description": "Plinthio가 세부 정보와 이미지를 요청하는 서비스입니다. 꺼진 서비스는 검색, 매칭, 표지, 출연진, 평점 등 어떤 용도로도 연결하지 않습니다.",
+      "tmdb": {
+        "label": "TMDB",
+        "desc": "영화, 시리즈, 애니메이션: 포스터, 설명, 출연진, 평점."
+      },
+      "tvmaze": {
+        "label": "TVmaze",
+        "desc": "시리즈와 애니메이션: 에피소드 제목, 날짜, 줄거리, 스틸컷. TMDB 키 없이도 작동합니다. 데이터 제공: TVmaze.com (CC BY-SA)."
+      },
+      "anilist": {
+        "label": "AniList",
+        "desc": "만화와 애니메이션: 영어 및 로마자 제목, 큰 표지, 장르, 작가."
+      },
+      "mangadex": {
+        "label": "MangaDex",
+        "desc": "만화: 제목, 작가, 설명, 권별 표지."
+      },
+      "comicvine": {
+        "label": "Comic Vine",
+        "desc": "코믹스: 시리즈, 출판사, 작가, 호별 표지. 무료 Comic Vine 키가 필요합니다(아래)."
+      },
+      "openLibrary": {
+        "label": "Open Library",
+        "desc": "도서: 판본, ISBN, 출판사, 설명, 표지. 키가 필요 없습니다."
+      },
+      "googleBooks": {
+        "label": "Google Books",
+        "desc": "도서: 설명과 표지를 위한 두 번째 소스. 키 없이도 작동하지만, 공유 무료 한도가 정오쯤이면 소진되는 경우가 많습니다."
+      },
+      "audible": {
+        "label": "Audible",
+        "desc": "오디오북: 내레이터, 시리즈와 번호, 소개, 출판사, 표지. Audible 자체 카탈로그로 공식 API가 아니어서 예고 없이 바뀔 수 있습니다."
+      },
+      "keys": {
+        "none": "키 필요 없음",
+        "optional": "키 선택 사항",
+        "builtin": "키 내장",
+        "set": "키 설정됨",
+        "missing": "키 필요"
+      }
+    },
     "tmdb": {
       "title": "TMDB 키",
       "descBuiltIn": "영화, 시리즈, 애니메이션은 Plinthio에 내장된 키로 TMDB에서 상세 정보를 가져와요. 대신 내 TMDB 키를 붙여 넣어 쓸 수도 있어요. 만화(MangaDex)와 책(Google Books, Open Library)은 아무것도 필요 없어요.",
@@ -719,6 +762,21 @@
       "saveKey": "키 저장",
       "getOne": "{link}에서 무료로 만들 수 있어요. Books API를 사용 설정한 다음 사용자 인증 정보 → 사용자 인증 정보 만들기 → API 키를 선택하세요.",
       "getOneLink": "Google Cloud Console"
+    },
+    "comicVine": {
+      "title": "Comic Vine 키",
+      "description": "서양 코믹스의 소스인 Comic Vine은 키가 있어야 작동합니다. 무료입니다: Comic Vine에 가입한 다음 API 페이지에서 키를 복사하세요. 키가 없으면 코믹스는 MangaDex와 AniList에서 찾습니다.",
+      "sources": {
+        "custom": "내 키",
+        "environment": "COMICVINE_API_KEY에서",
+        "notSet": "설정 안 됨"
+      },
+      "keyLabel": "Comic Vine API 키",
+      "placeholder": "Comic Vine API 키 붙여넣기",
+      "placeholderReplace": "바꿀 새 키를 붙여넣으세요",
+      "saveKey": "키 저장",
+      "getOne": "로그인한 뒤 {link}에서 무료로 받으세요.",
+      "getOneLink": "Comic Vine API 페이지"
     }
   },
   "overview": {

@@ -7,6 +7,8 @@
     "directors": "Regista/i",
     "artists": "Artista/i",
     "artistsShort": "Artisti",
+    "narrators": "Narratore/i",
+    "narratorsShort": "Narratori",
     "cast": "Cast",
     "castActors": "Cast / Attori",
     "series": "Serie",
@@ -63,6 +65,7 @@
     "resultDirector": "Regia: {name}",
     "resultCast": "Cast: {names}",
     "resultArt": "Disegni: {names}",
+    "resultNarrators": "Letto da {names}",
     "useAll": "Usa tutto",
     "uploadFailed": "Impossibile caricare l'immagine.",
     "searchFailed": "Ricerca nei fornitori di metadati non riuscita: vedi la console del browser per i dettagli.",
@@ -76,7 +79,15 @@
     "seriesNumberExample": "es. 2",
     "isbnExample": "10 o 13 cifre",
     "languageExample": "es. en, fr, pt-BR",
-    "resultIsbn": "ISBN {isbn}"
+    "resultIsbn": "ISBN {isbn}",
+    "loadingDetails": "Caricamento dei dettagli…",
+    "notices": {
+      "googleQuota": "Google Books ha esaurito le ricerche gratuite di oggi, quindi questi risultati provengono solo da Open Library. Una chiave Google Books gratuita in Amministrazione → Metadati dà al tuo server una quota tutta sua.",
+      "keyQuota": "La tua chiave {provider} ha superato la quota, quindi mancano i risultati di {provider}.",
+      "keyRejected": "{provider} ha rifiutato la chiave in Amministrazione → Metadati, quindi mancano i risultati di {provider}.",
+      "busy": "{provider} è sovraccarico in questo momento, quindi mancano i suoi risultati. Riprova tra un minuto.",
+      "unavailable": "{provider} non ha risposto, quindi mancano i suoi risultati."
+    }
   },
   "manager": {
     "title": "Pulizia dei titoli e abbinamento",

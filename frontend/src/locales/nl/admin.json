@@ -699,6 +699,49 @@
   "metadata": {
     "title": "Metadata",
     "description": "Waar posters, beschrijvingen, cast en beoordelingen vandaan komen, en het opschonen van titels die uit bestandsnamen komen.",
+    "providers": {
+      "title": "Bronnen",
+      "description": "Welke diensten Plinthio om details en afbeeldingen vraagt. Een dienst die uit staat wordt nooit benaderd: niet voor zoeken, koppelen, covers, cast of beoordelingen.",
+      "tmdb": {
+        "label": "TMDB",
+        "desc": "Films, series en anime: posters, beschrijvingen, cast en beoordelingen."
+      },
+      "tvmaze": {
+        "label": "TVmaze",
+        "desc": "Series en anime: titels van afleveringen, datums, samenvattingen en stills. Werkt zonder TMDB-sleutel. Gegevens van TVmaze.com (CC BY-SA)."
+      },
+      "anilist": {
+        "label": "AniList",
+        "desc": "Manga en anime: Engelse en romaji-titels, grote covers, genres en makers."
+      },
+      "mangadex": {
+        "label": "MangaDex",
+        "desc": "Manga: titels, auteurs, beschrijvingen en covers per deel."
+      },
+      "comicvine": {
+        "label": "Comic Vine",
+        "desc": "Strips: reeksen, uitgevers, makers en de cover van elk nummer. Heeft een gratis Comic Vine-sleutel nodig (hieronder)."
+      },
+      "openLibrary": {
+        "label": "Open Library",
+        "desc": "Boeken: edities, ISBN's, uitgevers, beschrijvingen en covers. Geen sleutel nodig."
+      },
+      "googleBooks": {
+        "label": "Google Books",
+        "desc": "Boeken: een tweede bron voor beschrijvingen en covers. Werkt zonder sleutel, maar het gedeelde gratis tegoed is vaak rond het middaguur op."
+      },
+      "audible": {
+        "label": "Audible",
+        "desc": "Luisterboeken: vertellers, reeks en nummer, flaptekst, uitgever en cover. Audibles eigen catalogus, geen officiële API, dus die kan zonder aankondiging veranderen."
+      },
+      "keys": {
+        "none": "Geen sleutel nodig",
+        "optional": "Sleutel optioneel",
+        "builtin": "Sleutel ingebouwd",
+        "set": "Sleutel ingesteld",
+        "missing": "Sleutel nodig"
+      }
+    },
     "tmdb": {
       "title": "TMDB-sleutel",
       "descBuiltIn": "Films, series en anime krijgen hun details van TMDB, met de sleutel die in Plinthio is ingebouwd. Je kunt je eigen TMDB-sleutel plakken om die in plaats daarvan te gebruiken. Manga (MangaDex) en boeken (Google Books, Open Library) hebben niets nodig.",
@@ -736,6 +779,21 @@
       "saveKey": "Sleutel opslaan",
       "getOne": "Maak er gratis een in {link}: zet de Books API aan, daarna Inloggegevens → Inloggegevens maken → API-sleutel.",
       "getOneLink": "Google Cloud Console"
+    },
+    "comicVine": {
+      "title": "Comic Vine-sleutel",
+      "description": "Comic Vine, de bron voor westerse strips, werkt alleen met een sleutel. Die is gratis: maak een account bij Comic Vine en kopieer de sleutel van de API-pagina. Zonder sleutel worden strips opgezocht bij MangaDex en AniList.",
+      "sources": {
+        "custom": "Je eigen",
+        "environment": "Uit COMICVINE_API_KEY",
+        "notSet": "Niet ingesteld"
+      },
+      "keyLabel": "Comic Vine API-sleutel",
+      "placeholder": "Plak een Comic Vine API-sleutel",
+      "placeholderReplace": "Plak een nieuwe sleutel om hem te vervangen",
+      "saveKey": "Sleutel opslaan",
+      "getOne": "Haal er gratis een op {link} als je bent ingelogd.",
+      "getOneLink": "de API-pagina van Comic Vine"
     }
   },
   "overview": {

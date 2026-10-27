@@ -6,6 +6,7 @@
       <p :id="labelId" class="text-xs font-semibold text-foreground flex items-center gap-1.5">
         <component v-if="icon" :is="icon" class="w-3.5 h-3.5 text-muted-foreground" />
         {{ label }}
+        <span v-if="badge" :class="['text-[10px] font-medium uppercase tracking-wide px-1.5 py-px rounded-full border', badgeClass]">{{ badge }}</span>
       </p>
       <p v-if="description || $slots.default" class="text-[12px] text-muted-foreground mt-0.5 leading-relaxed">
         <slot>{{ description }}</slot>
@@ -39,7 +40,10 @@ defineProps({
   label: { type: String, required: true },
   description: { type: String, default: '' },
   icon: { type: [Object, Function], default: null },
-  disabled: { type: Boolean, default: false }
+  disabled: { type: Boolean, default: false },
+  // A short tag after the label ("No key needed"), and its colours.
+  badge: { type: String, default: '' },
+  badgeClass: { type: String, default: 'text-muted-foreground border-border bg-muted/40' }
 });
 defineEmits(['update:modelValue']);
 const labelId = useId();

@@ -7,6 +7,8 @@
     "directors": "Réalisateur(s)",
     "artists": "Artiste(s)",
     "artistsShort": "Artistes",
+    "narrators": "Narrateur(s)",
+    "narratorsShort": "Narrateurs",
     "cast": "Distribution",
     "castActors": "Distribution / Acteurs",
     "series": "Série",
@@ -63,6 +65,7 @@
     "resultDirector": "Réal. : {name}",
     "resultCast": "Avec : {names}",
     "resultArt": "Dessin : {names}",
+    "resultNarrators": "Lu par {names}",
     "useAll": "Tout utiliser",
     "uploadFailed": "Impossible d'importer cette image.",
     "searchFailed": "La recherche auprès des fournisseurs de métadonnées a échoué — consultez la console du navigateur pour plus de détails.",
@@ -76,7 +79,15 @@
     "seriesNumberExample": "ex. 2",
     "isbnExample": "10 ou 13 chiffres",
     "languageExample": "ex. en, fr, pt-BR",
-    "resultIsbn": "ISBN {isbn}"
+    "resultIsbn": "ISBN {isbn}",
+    "loadingDetails": "Chargement des détails…",
+    "notices": {
+      "googleQuota": "Google Books a épuisé ses recherches gratuites du jour, ces résultats viennent donc uniquement d'Open Library. Une clé Google Books gratuite dans Administration → Métadonnées donne à votre serveur son propre quota.",
+      "keyQuota": "Votre clé {provider} a dépassé son quota, les résultats de {provider} manquent donc.",
+      "keyRejected": "{provider} a refusé la clé saisie dans Administration → Métadonnées, les résultats de {provider} manquent donc.",
+      "busy": "{provider} est surchargé pour le moment, ses résultats manquent donc. Réessayez dans une minute.",
+      "unavailable": "{provider} n'a pas répondu, ses résultats manquent donc."
+    }
   },
   "manager": {
     "title": "Nettoyage des titres et correspondance",

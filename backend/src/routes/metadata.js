@@ -10,8 +10,14 @@ import {
   fetchTmdbEpisode,
   fetchMangaDexVolumeCovers,
   findBookMatches,
-  fetchBookDetails
+  fetchBookDetails,
+  fetchResultDetails,
+  fetchComicIssueCovers,
+  fetchShowEpisodes,
+  searchMetadata,
+  rankBookResults
 } from '../services/externalMetadata.js';
+import { AUDIBLE_REGIONS } from '../services/audible.js';
 import { normalizeIsbn, normalizeLanguage } from '../services/bookMetadata.js';
 import { getThumbnailPath, THUMB_WIDTHS } from '../services/thumbnails.js';
 import { invalidateCoverCache } from './media.js';
@@ -43,7 +49,7 @@ const coverUpload = multer({
 
 const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 // Media types a metadata provider exists for (see services/externalMetadata.js).
-const MATCHABLE_TYPES = new Set(['manga', 'book', 'movie', 'show', 'anime']);
+const MATCHABLE_TYPES = new Set(['manga', 'book', 'audiobook', 'movie', 'show', 'anime']);
 
 // Batch/single auto-match already has the TMDB result in hand; store its score as the item's
 // world rating rather than looking it up again the first time someone opens the rating.
@@ -159,7 +165,7 @@ router.use((err, req, res, next) => {
 
 // Search external metadata providers (MangaDex, Google Books, Open Library, TMDB)
 router.get('/search', async (req, res) => {
-  const { mediaType, query, year } = req.query;
+  const { mediaType, query, year, language } = req.query;
 
   if (!mediaType || !query) {
     return res.status(400).json({ error: 'mediaType and query are required' });
@@ -174,11 +180,16 @@ router.get('/search', async (req, res) => {
     const searchQuery = parsed ? (parsed.cleanTitle || query.trim()) : query.trim();
     const searchYear = year || (parsed?.year ?? null);
 
-    const results = await searchExternalMetadata(mediaType, searchQuery, searchYear);
-    res.json({ results, searchedAs: searchQuery !== query.trim() ? searchQuery : undefined, year: searchYear });
+    // A source that didn't answer is reported (`notices`), so results from the others alone
+    // don't read as that source having nothing.
+    const { results, unavailable } = await searchMetadata(mediaType, searchQuery, { year: searchYear, language: normalizeLanguage(language) });
+    res.json({ results, notices: unavailable, searchedAs: searchQuery !== query.trim() ? searchQuery : undefined, year: searchYear });
   } catch (err) {
     if (err.code === 'MISSING_API_KEY') {
-      return sendError(req, res, 'P400');
+      return sendError(req, res, 'P400', err.provider ? { message: err.message } : {});
+    }
+    if (err.code === 'PROVIDER_OFF') {
+      return sendError(req, res, 'P404');
     }
     console.error(`[metadata] Search failed for mediaType="${mediaType}" query="${query}":`, err);
 
@@ -196,6 +207,29 @@ router.get('/search', async (req, res) => {
       : 'Could not reach the external metadata provider from the server. Check the container has outbound internet access.';
     sendError(req, res, 'P403', { message: `${hint} (${err.message || 'unknown error'})` });
   }
+});
+
+// The rest of one search result, for the sources whose search leaves things out (Open
+// Library's description, Audnexus's ISBN and genres, a Comic Vine series' creators). The
+// editor asks for it after a search.
+const DETAIL_IDS = {
+  'open-library': /^\/works\/OL\d+W$/,
+  'google-books': /^[\w-]{1,40}$/,
+  audible: /^[A-Z0-9]{10}$/,
+  comicvine: /^\d{1,10}$/
+};
+router.get('/details', async (req, res) => {
+  const { source, externalId, region } = req.query;
+  if (!DETAIL_IDS[source]?.test(String(externalId || ''))) {
+    return res.status(400).json({ error: 'A search result from Open Library, Google Books, Audible or Comic Vine is required' });
+  }
+  const details = await fetchResultDetails({
+    source,
+    externalId,
+    isbn: normalizeIsbn(req.query.isbn),
+    region: AUDIBLE_REGIONS[region] ? region : undefined
+  });
+  res.json({ details });
 });
 
 // Admin / Editor: Fetch items for title cleanup & metadata inspection
@@ -378,6 +412,9 @@ export async function matchItemMetadata(db, item, {
   if (item.media_type === 'book') {
     return matchBookMetadata(db, item, { overwriteCover, useCanonicalTitle, cleanTitle, year });
   }
+  if (item.media_type === 'audiobook') {
+    return matchAudiobookMetadata(db, item, { overwriteCover, useCanonicalTitle, cleanTitle, year });
+  }
 
   const isTv = parsedPath.isTv || item.media_type === 'show' || item.media_type === 'anime';
   let season = parsedPath.season;
@@ -398,13 +435,7 @@ export async function matchItemMetadata(db, item, {
     queryTitle = item.series || cleanTitle.replace(/v(?:ol(?:ume)?)?\s*(\d+(?:\.\d+)?)/i, '').replace(/ch(?:apter)?\s*(\d+(?:\.\d+)?)/i, '').replace(/#\s*(\d+(?:\.\d+)?)/i, '').trim();
   }
 
-  let searchResults;
-  try {
-    searchResults = await searchExternalMetadata(item.media_type, queryTitle, year);
-  } catch (err) {
-    if (err.code === 'MISSING_API_KEY') throw err;
-    throw err;
-  }
+  const searchResults = await searchExternalMetadata(item.media_type, queryTitle, year);
 
   if (!searchResults || searchResults.length === 0) {
     const err = new Error('No metadata found on external provider');
@@ -467,6 +498,16 @@ export async function matchItemMetadata(db, item, {
           }
         }
       }
+    } else if (best.source === 'tvmaze' && season != null && episode != null) {
+      const found = (await fetchShowEpisodes(best.externalId)).get(`${Number(season)}x${Number(episode)}`);
+      if (found) {
+        newTitle = useCanonicalTitle && found.name ? found.name : (parsedPath.episodeTitle || cleanTitle);
+        if (found.overview) newOverview = found.overview;
+        if (found.airdate) newReleaseDate = found.airdate;
+        if (found.stillUrl) targetCoverUrl = found.stillUrl;
+      } else {
+        newTitle = parsedPath.episodeTitle || cleanTitle;
+      }
     } else {
       newTitle = parsedPath.episodeTitle || cleanTitle;
     }
@@ -486,13 +527,17 @@ export async function matchItemMetadata(db, item, {
     if (vol != null) {
       newVolume = vol;
       newTitle = useCanonicalTitle ? `${best.title}, Vol. ${vol}` : item.title;
-      if (best.source === 'mangadex' && best.externalId) {
+      // MangaDex has a cover per volume, Comic Vine one per issue.
+      if ((best.source === 'mangadex' || best.source === 'comicvine') && best.externalId) {
+        const cacheKey = `${best.source}:${best.externalId}`;
         let volumeCovers = null;
-        if (mangaDexCoverCache?.has(best.externalId)) {
-          volumeCovers = mangaDexCoverCache.get(best.externalId);
+        if (mangaDexCoverCache?.has(cacheKey)) {
+          volumeCovers = mangaDexCoverCache.get(cacheKey);
         } else {
-          volumeCovers = await fetchMangaDexVolumeCovers(best.externalId);
-          if (mangaDexCoverCache) mangaDexCoverCache.set(best.externalId, volumeCovers);
+          volumeCovers = best.source === 'mangadex'
+            ? await fetchMangaDexVolumeCovers(best.externalId)
+            : await fetchComicIssueCovers(best.externalId);
+          if (mangaDexCoverCache) mangaDexCoverCache.set(cacheKey, volumeCovers);
         }
         if (volumeCovers) {
           const volKey = String(vol);
@@ -576,7 +621,7 @@ const BOOK_MATCH_MIN_SCORE = 35;
 async function matchBookMetadata(db, item, { overwriteCover, useCanonicalTitle, cleanTitle, year }) {
   const fileName = path.basename(item.path, path.extname(item.path));
   const titleIsFileName = item.title === fileName;
-  const ranked = await findBookMatches({ title: titleIsFileName ? cleanTitle : item.title, author: item.author, isbn: item.isbn });
+  const ranked = await findBookMatches({ title: titleIsFileName ? cleanTitle : item.title, author: item.author, isbn: item.isbn, language: item.language });
   if (!ranked.length || ranked[0].score < BOOK_MATCH_MIN_SCORE) {
     const err = new Error(ranked.length ? 'No confident match on Google Books or Open Library' : 'No metadata found on external provider');
     err.code = 'NO_METADATA_FOUND';
@@ -585,6 +630,10 @@ async function matchBookMetadata(db, item, { overwriteCover, useCanonicalTitle, 
     throw err;
   }
   const best = await fetchBookDetails(ranked[0]);
+  // An ISBN or publisher belongs to one edition, and only a match made by the book's own ISBN
+  // is known to be that edition; a title match could be any printing (a large-print one, a
+  // translation). A wrong ISBN stored would also steer every later ISBN-first match.
+  const sameEdition = !!item.isbn && best.isbn === item.isbn;
 
   const newTitle = useCanonicalTitle && titleIsFileName && best.title
     ? (best.subtitle ? `${best.title}: ${best.subtitle}` : best.title)
@@ -605,7 +654,7 @@ async function matchBookMetadata(db, item, { overwriteCover, useCanonicalTitle, 
       title = ?, author = ?,
       description = COALESCE(description, ?), release_date = COALESCE(release_date, ?),
       publisher = COALESCE(publisher, ?), genres = COALESCE(genres, ?),
-      isbn = COALESCE(isbn, ?), language = COALESCE(language, ?),
+      language = COALESCE(language, ?),
       cover_path = COALESCE(?, cover_path), cover_source = CASE WHEN ? IS NULL THEN cover_source ELSE ? END,
       updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
@@ -614,9 +663,91 @@ async function matchBookMetadata(db, item, { overwriteCover, useCanonicalTitle, 
       unknownAuthor ? (best.author || item.author) : item.author,
       best.overview || null,
       best.releaseDate || null,
+      sameEdition ? best.publisher || null : null,
+      best.genres?.length ? best.genres.join(', ') : null,
+      best.language || null,
+      newCoverPath,
+      newCoverPath,
+      best.source,
+      item.id
+    ]
+  );
+  if (newCoverPath) clearCachedThumbnails(item.id);
+
+  const updated = await db.get('SELECT * FROM items WHERE id = ?', [item.id]);
+  return {
+    success: true,
+    id: item.id,
+    originalTitle: item.title,
+    cleanTitle,
+    matchedTitle: newTitle,
+    year: best.releaseDate ? best.releaseDate.slice(0, 4) : year,
+    posterUpdated: !!newCoverPath,
+    item: updated,
+    matched: best
+  };
+}
+
+/**
+ * Matches an audiobook on Audible. Its own tags usually know the title and author, often the
+ * narrator, so like a book a match fills in what's missing (narrators, series and number,
+ * blurb, publisher, date, genres, language, cover) and only renames one still titled by its
+ * file name.
+ */
+async function matchAudiobookMetadata(db, item, { overwriteCover, useCanonicalTitle, cleanTitle, year }) {
+  const fileName = path.basename(item.path, path.extname(item.path));
+  const titleIsFileName = item.title === fileName;
+  const title = titleIsFileName ? cleanTitle : item.title;
+  const author = item.author && item.author !== 'Unknown Author' ? item.author : null;
+  const mainTitle = String(title || '').split(/:|\s[-–]\s|\(/)[0].trim() || title;
+  const search = async (query) => (await searchMetadata('audiobook', query, { language: item.language, firstOnly: true })).results;
+  let results = await search([mainTitle, author?.split(',')[0]].filter(Boolean).join(' '));
+  if (!results.length && author) results = await search(mainTitle);
+  const ranked = rankBookResults(results, { title, author });
+  if (!ranked.length || ranked[0].score < BOOK_MATCH_MIN_SCORE) {
+    const err = new Error(ranked.length ? 'No confident match on Audible' : 'No metadata found on external provider');
+    err.code = 'NO_METADATA_FOUND';
+    err.cleanTitle = cleanTitle;
+    err.year = year;
+    throw err;
+  }
+  const best = await fetchResultDetails(ranked[0]);
+
+  const newTitle = useCanonicalTitle && titleIsFileName && best.title
+    ? (best.subtitle ? `${best.title}: ${best.subtitle}` : best.title)
+    : item.title;
+  // The number belongs to the series Audible named; a different series the file already has
+  // keeps its own.
+  const sameSeries = !item.series || (best.series && item.series.toLowerCase() === best.series.toLowerCase());
+
+  let newCoverPath = null;
+  if (best.coverUrl && (!item.cover_path || overwriteCover || item.cover_source === 'frame')) {
+    try {
+      newCoverPath = await downloadCover(best.coverUrl, item.id);
+    } catch (e) {
+      logger.warn('metadata', `Cover download failed for ${item.id}: ${e.message}`);
+    }
+  }
+
+  await db.run(
+    `UPDATE items SET
+      title = ?, author = ?, artists = COALESCE(artists, ?),
+      series = COALESCE(series, ?), volume = COALESCE(volume, ?),
+      description = COALESCE(description, ?), release_date = COALESCE(release_date, ?),
+      publisher = COALESCE(publisher, ?), genres = COALESCE(genres, ?), language = COALESCE(language, ?),
+      cover_path = COALESCE(?, cover_path), cover_source = CASE WHEN ? IS NULL THEN cover_source ELSE ? END,
+      updated_at = CURRENT_TIMESTAMP
+     WHERE id = ?`,
+    [
+      newTitle,
+      author || best.author || item.author,
+      best.artists || null,
+      best.series || null,
+      sameSeries ? best.seriesNumber ?? null : null,
+      best.overview || null,
+      best.releaseDate || null,
       best.publisher || null,
       best.genres?.length ? best.genres.join(', ') : null,
-      best.isbn || null,
       best.language || null,
       newCoverPath,
       newCoverPath,
@@ -718,7 +849,10 @@ router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
       res.json({ message: 'Item matched and updated', item: result.item, matched: result.matched });
     } catch (err) {
       if (err.code === 'MISSING_API_KEY') {
-        return sendError(req, res, 'P400');
+        return sendError(req, res, 'P400', err.provider ? { message: err.message } : {});
+      }
+      if (err.code === 'PROVIDER_OFF') {
+        return sendError(req, res, 'P404');
       }
       if (err.code === 'UNMATCHABLE_TYPE' || err.code === 'NO_METADATA_FOUND') {
         return res.status(404).json({ error: err.message, cleanTitle: err.cleanTitle, year: err.year });

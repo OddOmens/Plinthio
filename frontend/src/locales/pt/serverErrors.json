@@ -258,6 +258,12 @@
       "meaning": "A requisição ao provedor expirou ou falhou no nível da rede.",
       "fix": "Confira se o servidor (contêiner) tem acesso de saída à internet e DNS."
     },
+    "P404": {
+      "title": "Fonte de metadados desativada",
+      "message": "Esta fonte de metadados está desativada em Administração → Metadados.",
+      "meaning": "Um administrador desativou a única fonte para este tipo de título, por isso ele não é buscado nem correspondido.",
+      "fix": "Ative a fonte novamente em Administração → Metadados → Fontes ou preencha os detalhes manualmente."
+    },
     "P500": {
       "title": "Lista não encontrada",
       "message": "Lista não encontrada",

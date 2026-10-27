@@ -7,6 +7,8 @@
     "directors": "Director(es)",
     "artists": "Artista(s)",
     "artistsShort": "Artistas",
+    "narrators": "Narrador(es)",
+    "narratorsShort": "Narradores",
     "cast": "Reparto",
     "castActors": "Reparto / actores",
     "series": "Serie",
@@ -63,6 +65,7 @@
     "resultDirector": "Dir.: {name}",
     "resultCast": "Reparto: {names}",
     "resultArt": "Dibujo: {names}",
+    "resultNarrators": "Narrado por {names}",
     "useAll": "Usar todo",
     "uploadFailed": "No se pudo subir esa imagen.",
     "searchFailed": "No se pudo buscar en los proveedores de metadatos; consulta la consola del navegador para ver los detalles.",
@@ -76,7 +79,15 @@
     "seriesNumberExample": "p. ej. 2",
     "isbnExample": "10 o 13 dígitos",
     "languageExample": "p. ej. en, fr, pt-BR",
-    "resultIsbn": "ISBN {isbn}"
+    "resultIsbn": "ISBN {isbn}",
+    "loadingDetails": "Cargando detalles…",
+    "notices": {
+      "googleQuota": "Google Books ha agotado sus búsquedas gratuitas de hoy, así que estos resultados son solo de Open Library. Una clave gratuita de Google Books en Administración → Metadatos le da a tu servidor su propia cuota.",
+      "keyQuota": "Tu clave de {provider} superó su cuota, así que faltan los resultados de {provider}.",
+      "keyRejected": "{provider} rechazó la clave de Administración → Metadatos, así que faltan los resultados de {provider}.",
+      "busy": "{provider} está saturado ahora mismo, así que faltan sus resultados. Vuelve a intentarlo en un minuto.",
+      "unavailable": "{provider} no respondió, así que faltan sus resultados."
+    }
   },
   "manager": {
     "title": "Limpieza de títulos y coincidencias",

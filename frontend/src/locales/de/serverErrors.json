@@ -258,6 +258,12 @@
       "meaning": "Die Anfrage an den Anbieter lief in ein Zeitlimit oder scheiterte auf Netzwerkebene.",
       "fix": "Prüfe, ob der Server (Container) ausgehenden Internetzugang und DNS hat."
     },
+    "P404": {
+      "title": "Metadatenquelle ausgeschaltet",
+      "message": "Diese Metadatenquelle ist unter Verwaltung → Metadaten ausgeschaltet.",
+      "meaning": "Ein Admin hat die einzige Quelle für diese Art von Titel ausgeschaltet, daher wird sie weder durchsucht noch abgeglichen.",
+      "fix": "Schalte die Quelle unter Verwaltung → Metadaten → Quellen wieder ein oder trage die Details von Hand ein."
+    },
     "P500": {
       "title": "Liste nicht gefunden",
       "message": "Liste nicht gefunden",

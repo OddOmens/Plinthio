@@ -258,6 +258,12 @@
       "meaning": "Żądanie do dostawcy przekroczyło limit czasu albo nie powiodło się na poziomie sieci.",
       "fix": "Sprawdź, czy serwer (kontener) ma wychodzący dostęp do internetu i działający DNS."
     },
+    "P404": {
+      "title": "Źródło metadanych wyłączone",
+      "message": "To źródło metadanych jest wyłączone w Administracja → Metadane.",
+      "meaning": "Administrator wyłączył jedyne źródło dla tego rodzaju tytułów, więc nie są one wyszukiwane ani dopasowywane.",
+      "fix": "Włącz źródło ponownie w Administracja → Metadane → Źródła albo uzupełnij dane ręcznie."
+    },
     "P500": {
       "title": "Nie znaleziono listy",
       "message": "Nie znaleziono listy",

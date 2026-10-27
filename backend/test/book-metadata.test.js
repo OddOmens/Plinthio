@@ -15,7 +15,7 @@ process.env.JWT_SECRET = 'test-secret';
 const { getDb } = await import('../src/config/database.js');
 const { scanLibrary } = await import('../src/services/scanner.js');
 const { parseOpf, normalizeIsbn, normalizeLanguage, stripSeriesFromTitle, htmlToText, BOOK_META_VERSION } = await import('../src/services/bookMetadata.js');
-const { rankBookResults } = await import('../src/services/externalMetadata.js');
+const { rankBookResults, searchBooks, fetchBookDetails } = await import('../src/services/externalMetadata.js');
 
 // Calibre's layout: <item href> before <item id>, the cover named by <meta name="cover">,
 // an HTML blurb escaped inside <dc:description>, series in calibre:* metas.
@@ -283,7 +283,7 @@ describe('matching a book online', () => {
       seen.push(u);
       if (u.includes('googleapis.com')) return { ok: false, status: 429, json: async () => ({}) };
       if (u.includes('openlibrary.org/search.json')) return json({ docs });
-      if (u.includes('openlibrary.org/isbn/')) return json({ publishers: ['Orbit'], publish_date: 'September 8, 2015', languages: [{ key: '/languages/eng' }] });
+      if (u.includes('openlibrary.org/isbn/')) return json({ publishers: ['Orbit'], publish_date: 'September 8, 2015', languages: [{ key: '/languages/eng' }], covers: [7] });
       if (u.includes('openlibrary.org/works/')) return json({ description: { value: 'Superior Glokta has a problem.\n----------\nSee also' } });
       if (u.includes('covers.openlibrary.org')) {
         return {
@@ -333,5 +333,142 @@ describe('matching a book online', () => {
       matchItemMetadata(db, await db.get('SELECT * FROM items WHERE id = ?', [bookId])),
       (err) => err.code === 'NO_METADATA_FOUND'
     );
+  });
+
+  test('a match by title takes the blurb and language, but not a guessed edition\'s ISBN or publisher', async () => {
+    const id = '8'.repeat(32);
+    const db = await getDb();
+    await db.run(
+      `INSERT INTO items (id, library_id, title, author, path, media_type, format)
+       VALUES (?, 'lib-match', 'Last Argument of Kings', 'Joe Abercrombie', '/tmp/match/Last Argument of Kings.epub', 'book', 'epub')`,
+      [id]
+    );
+    mockProviders({
+      docs: [{
+        key: '/works/OL4W', title: 'Last Argument of Kings', author_name: ['Joe Abercrombie'], first_publish_year: 2008,
+        editions: { docs: [{ key: '/books/OL4M', isbn: ['9781616561895'], publisher: ['Large Print Press'], language: ['eng'], cover_i: 7 }] }
+      }]
+    });
+    const { matchItemMetadata } = await import('../src/routes/metadata.js');
+    const result = await matchItemMetadata(db, await db.get('SELECT * FROM items WHERE id = ?', [id]));
+    assert.equal(result.item.isbn, null);
+    assert.equal(result.item.publisher, null);
+    assert.equal(result.item.language, 'en');
+    assert.equal(result.item.description, 'Superior Glokta has a problem.');
+    assert.ok(result.posterUpdated);
+  });
+});
+
+describe('searching for a book by hand', () => {
+  let origFetch;
+  const json = (body) => ({ ok: true, status: 200, json: async () => body });
+  const quotaSpent = { ok: false, status: 429, json: async () => ({}) };
+  const rothfuss = {
+    key: '/works/OL5W', title: 'The Name of the Wind', author_name: ['Patrick Rothfuss'], first_publish_year: 2007,
+    cover_i: 111, language: ['eng', 'ger'],
+    editions: { docs: [{ key: '/books/OL9M', isbn: ['360893815X', '9783608938159'], publisher: ['Klett-Cotta'], language: ['ger'], publish_date: ['1. Januar 2012'], cover_i: 222 }] }
+  };
+
+  function mockProviders(respond) {
+    const seen = [];
+    globalThis.fetch = async (url) => {
+      const u = String(url);
+      seen.push(u);
+      const res = respond(u);
+      if (!res) throw new Error(`unexpected fetch ${u}`);
+      return res;
+    };
+    return seen;
+  }
+
+  before(() => { origFetch = globalThis.fetch; });
+  after(() => {
+    globalThis.fetch = origFetch;
+    delete process.env.GOOGLE_BOOKS_API_KEY;
+  });
+
+  test('an Open Library result is one edition, in the language asked for, with its own cover', async () => {
+    const seen = mockProviders((u) => (u.includes('googleapis.com') ? quotaSpent : json({ docs: [rothfuss] })));
+    const { results } = await searchBooks('The Name of the Wind', { language: 'de-AT' });
+    assert.ok(seen.some((u) => u.includes('search.json?q=The%20Name%20of%20the%20Wind&limit=12&lang=de&fields=') && u.includes('editions.isbn')), seen.join('\n'));
+    const [r] = results;
+    assert.deepEqual([r.isbn, r.publisher, r.language, r.releaseDate], ['9783608938159', 'Klett-Cotta', 'de', '2007']);
+    assert.equal(r.coverUrl, 'https://covers.openlibrary.org/b/id/222-L.jpg');
+  });
+
+  test('by ISBN it is that edition; with no cover of its own, the work\'s, never a link that may not exist', async () => {
+    const work = { ...rothfuss, editions: { docs: [{ key: '/books/OL8M', isbn: ['9780756404741'], publisher: ['DAW'], publish_date: ['March 27, 2007'] }] } };
+    mockProviders((u) => (u.includes('googleapis.com') ? quotaSpent : json({ docs: [work] })));
+    const { results: [r] } = await searchBooks('978-0-7564-0474-1');
+    assert.deepEqual([r.isbn, r.publisher, r.releaseDate], ['9780756404741', 'DAW', '2007'], 'that edition\'s ISBN, publisher and year');
+    assert.equal(r.coverUrl, 'https://covers.openlibrary.org/b/id/111-L.jpg');
+  });
+
+  test('a spent Google quota is reported, and Google is left alone until a key is added', async () => {
+    let googleCalls = 0;
+    const respond = (google) => (u) => {
+      if (u.includes('googleapis.com')) { googleCalls++; return google(u); }
+      return json({ docs: [] });
+    };
+    mockProviders(respond(() => quotaSpent));
+    const first = await searchBooks('Dune');
+    assert.deepEqual(first.unavailable, [{ provider: 'google-books', reason: 'quota', keyed: false }]);
+    const callsAfterFirst = googleCalls;
+    const second = await searchBooks('Dune');
+    assert.equal(googleCalls, callsAfterFirst, 'Google is not asked again while its quota is spent');
+    assert.equal(second.unavailable[0].reason, 'quota');
+
+    process.env.GOOGLE_BOOKS_API_KEY = 'my-key';
+    const seen = mockProviders(respond(() => json({ items: [{ id: 'g1', volumeInfo: { title: 'Dune', authors: ['Frank Herbert'] } }] })));
+    const third = await searchBooks('Dune');
+    assert.ok(seen.some((u) => u.includes('googleapis.com') && u.includes('key=my-key')));
+    assert.deepEqual(third.unavailable, []);
+    assert.equal(third.results[0].source, 'google-books');
+  });
+
+  test('a rejected key and an unreachable provider are told apart', async () => {
+    process.env.GOOGLE_BOOKS_API_KEY = 'bad-key';
+    mockProviders((u) => (u.includes('googleapis.com')
+      ? { ok: false, status: 400, json: async () => ({}) }
+      : { ok: false, status: 503, json: async () => ({}) }));
+    await assert.rejects(searchBooks('Dune'), /unavailable/);
+    mockProviders((u) => (u.includes('googleapis.com') ? { ok: false, status: 403, json: async () => ({}) } : json({ docs: [rothfuss] })));
+    const { unavailable } = await searchBooks('Dune');
+    assert.deepEqual(unavailable, [{ provider: 'google-books', reason: 'rejected', keyed: true }]);
+  });
+
+  test('the details of a result: the work\'s description and cover, and no edition lookup it doesn\'t need', async () => {
+    const seen = mockProviders((u) => (u.endsWith('/works/OL7W.json')
+      ? json({ description: 'A boy grows up.\n----------\nLinks', covers: [-1, 333] })
+      : null));
+    const details = await fetchBookDetails({ source: 'open-library', externalId: '/works/OL7W', isbn: '9780756404741', publisher: 'DAW' });
+    assert.equal(details.overview, 'A boy grows up.');
+    assert.equal(details.coverUrl, 'https://covers.openlibrary.org/b/id/333-L.jpg', 'the first real cover id (-1 means none)');
+    assert.deepEqual(seen, ['https://openlibrary.org/works/OL7W.json']);
+  });
+
+  test('a source switched off in Admin → Metadata is never asked, and not reported as missing', async () => {
+    const db = await getDb();
+    const switchOff = (list) => db.run(
+      `INSERT INTO settings (key, value) VALUES ('metadata_providers_off', ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+      [JSON.stringify(list)]
+    );
+    try {
+      await switchOff(['google-books']);
+      const seen = mockProviders((u) => (u.includes('googleapis.com') ? quotaSpent : json({ docs: [rothfuss] })));
+      const { results, unavailable } = await searchBooks('The Name of the Wind');
+      assert.ok(!seen.some((u) => u.includes('googleapis.com')), 'Google was not asked');
+      assert.deepEqual(unavailable, []);
+      assert.equal(results[0].source, 'open-library');
+
+      await switchOff(['google-books', 'open-library']);
+      await assert.rejects(searchBooks('The Name of the Wind'), (err) => err.code === 'PROVIDER_OFF');
+      const details = await fetchBookDetails({ source: 'open-library', externalId: '/works/OL7W', title: 'X' });
+      assert.equal(details.title, 'X');
+      assert.equal(seen.filter((u) => u.includes('openlibrary.org')).length, 1, 'Open Library was not asked again');
+    } finally {
+      await db.run("DELETE FROM settings WHERE key = 'metadata_providers_off'");
+    }
   });
 });

@@ -280,6 +280,12 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 
 **What to do:** Check the server (container) has outbound internet access and DNS.
 
+### P404: Metadata source turned off
+
+*HTTP 409.* An admin switched off the only source for this kind of title, so it is not searched or matched.
+
+**What to do:** Turn the source back on in Admin → Metadata → Sources, or fill the details in by hand.
+
 ## Lists & requests
 
 ### P500: List not found

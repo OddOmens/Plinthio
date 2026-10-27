@@ -682,6 +682,49 @@
   "metadata": {
     "title": "メタデータ",
     "description": "ポスター、説明、キャスト、評価の取得元と、ファイル名から取り込んだタイトルの整理です。",
+    "providers": {
+      "title": "ソース",
+      "description": "Plinthio が詳細や画像を問い合わせるサービスです。オフにしたサービスには、検索・照合・カバー・キャスト・評価のいずれでも一切接続しません。",
+      "tmdb": {
+        "label": "TMDB",
+        "desc": "映画・番組・アニメ：ポスター、説明、キャスト、評価。"
+      },
+      "tvmaze": {
+        "label": "TVmaze",
+        "desc": "番組とアニメ：エピソードのタイトル、放送日、あらすじ、場面写真。TMDB キーなしでも使えます。データ提供：TVmaze.com（CC BY-SA）。"
+      },
+      "anilist": {
+        "label": "AniList",
+        "desc": "マンガとアニメ：英語とローマ字のタイトル、大きなカバー、ジャンル、作者。"
+      },
+      "mangadex": {
+        "label": "MangaDex",
+        "desc": "マンガ：タイトル、著者、説明、巻ごとのカバー。"
+      },
+      "comicvine": {
+        "label": "Comic Vine",
+        "desc": "コミック：シリーズ、出版社、作者、各号のカバー。無料の Comic Vine キーが必要です（下）。"
+      },
+      "openLibrary": {
+        "label": "Open Library",
+        "desc": "書籍：版、ISBN、出版社、説明、カバー。キーは不要です。"
+      },
+      "googleBooks": {
+        "label": "Google Books",
+        "desc": "書籍：説明とカバーの第2のソース。キーなしでも使えますが、共有の無料枠は昼ごろまでに尽きることがよくあります。"
+      },
+      "audible": {
+        "label": "Audible",
+        "desc": "オーディオブック：ナレーター、シリーズと巻数、あらすじ、出版社、カバー。Audible 自身のカタログで公式 API ではないため、予告なく変わることがあります。"
+      },
+      "keys": {
+        "none": "キー不要",
+        "optional": "キーは任意",
+        "builtin": "キー内蔵",
+        "set": "キー設定済み",
+        "missing": "キーが必要"
+      }
+    },
     "tmdb": {
       "title": "TMDBキー",
       "descBuiltIn": "映画、番組、アニメの詳細情報は、Plinthioに組み込まれたキーを使ってTMDBから取得します。代わりに自分のTMDBキーを貼り付けて使うこともできます。マンガ（MangaDex）と書籍（Google Books、Open Library）には何も必要ありません。",
@@ -719,6 +762,21 @@
       "saveKey": "キーを保存",
       "getOne": "{link} で無料で作成できます。Books API を有効にしてから、「認証情報」→「認証情報を作成」→「API キー」を選びます。",
       "getOneLink": "Google Cloud Console"
+    },
+    "comicVine": {
+      "title": "Comic Vine キー",
+      "description": "アメコミなどの情報源である Comic Vine は、キーがないと使えません。無料です：Comic Vine に登録し、API ページからキーをコピーしてください。キーがなければ、コミックは MangaDex と AniList で検索します。",
+      "sources": {
+        "custom": "独自のキー",
+        "environment": "COMICVINE_API_KEYから",
+        "notSet": "未設定"
+      },
+      "keyLabel": "Comic Vine API キー",
+      "placeholder": "Comic Vine API キーを貼り付け",
+      "placeholderReplace": "置き換える新しいキーを貼り付け",
+      "saveKey": "キーを保存",
+      "getOne": "ログイン後、{link}から無料で取得できます。",
+      "getOneLink": "Comic Vine の API ページ"
     }
   },
   "overview": {

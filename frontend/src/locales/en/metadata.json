@@ -7,6 +7,8 @@
     "directors": "Director(s)",
     "artists": "Artist(s)",
     "artistsShort": "Artists",
+    "narrators": "Narrator(s)",
+    "narratorsShort": "Narrators",
     "cast": "Cast",
     "castActors": "Cast / Actors",
     "series": "Series",
@@ -63,6 +65,7 @@
     "resultDirector": "Dir: {name}",
     "resultCast": "Cast: {names}",
     "resultArt": "Art: {names}",
+    "resultNarrators": "Narrated by {names}",
     "useAll": "Use All",
     "uploadFailed": "Could not upload that image.",
     "searchFailed": "Failed to search metadata providers — see browser console for details.",
@@ -76,7 +79,15 @@
     "seriesNumberExample": "e.g. 2",
     "isbnExample": "10 or 13 digits",
     "languageExample": "e.g. en, fr, pt-BR",
-    "resultIsbn": "ISBN {isbn}"
+    "resultIsbn": "ISBN {isbn}",
+    "loadingDetails": "Loading details…",
+    "notices": {
+      "googleQuota": "Google Books has used up its free daily searches, so these results are from Open Library only. A free Google Books key in Admin → Metadata gives your server its own allowance.",
+      "keyQuota": "Your {provider} key is over its quota, so {provider} results are missing.",
+      "keyRejected": "{provider} rejected the key in Admin → Metadata, so {provider} results are missing.",
+      "busy": "{provider} is busy right now, so its results are missing. Try again in a minute.",
+      "unavailable": "{provider} didn't answer, so its results are missing."
+    }
   },
   "manager": {
     "title": "Title cleanup and matching",

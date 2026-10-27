@@ -7,6 +7,8 @@
     "directors": "Regisseur(s)",
     "artists": "Tekenaar(s)",
     "artistsShort": "Tekenaars",
+    "narrators": "Verteller(s)",
+    "narratorsShort": "Vertellers",
     "cast": "Cast",
     "castActors": "Cast / acteurs",
     "series": "Serie",
@@ -63,6 +65,7 @@
     "resultDirector": "Regie: {name}",
     "resultCast": "Cast: {names}",
     "resultArt": "Tekeningen: {names}",
+    "resultNarrators": "Voorgelezen door {names}",
     "useAll": "Alles gebruiken",
     "uploadFailed": "Kon die afbeelding niet uploaden.",
     "searchFailed": "Zoeken bij de metadatabronnen is mislukt — zie de browserconsole voor details.",
@@ -76,7 +79,15 @@
     "seriesNumberExample": "bijv. 2",
     "isbnExample": "10 of 13 cijfers",
     "languageExample": "bijv. en, fr, pt-BR",
-    "resultIsbn": "ISBN {isbn}"
+    "resultIsbn": "ISBN {isbn}",
+    "loadingDetails": "Details laden…",
+    "notices": {
+      "googleQuota": "Google Books heeft zijn gratis zoekopdrachten voor vandaag opgebruikt, dus deze resultaten komen alleen van Open Library. Een gratis Google Books-sleutel in Admin → Metadata geeft je server een eigen tegoed.",
+      "keyQuota": "Je {provider}-sleutel zit boven zijn limiet, dus de resultaten van {provider} ontbreken.",
+      "keyRejected": "{provider} heeft de sleutel in Admin → Metadata geweigerd, dus de resultaten van {provider} ontbreken.",
+      "busy": "{provider} is nu te druk, dus de resultaten ervan ontbreken. Probeer het over een minuut opnieuw.",
+      "unavailable": "{provider} gaf geen antwoord, dus de resultaten ervan ontbreken."
+    }
   },
   "manager": {
     "title": "Titels opschonen en matchen",

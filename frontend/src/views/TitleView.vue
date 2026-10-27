@@ -1838,7 +1838,7 @@ const singleFacts = computed(() => {
   if (isTimeBased(it.media_type) && it.duration) facts.push({ label: t('title.facts.length'), value: formatLength(it.duration) });
   if (it.total_pages) facts.push({ label: t('title.facts.pages'), value: n(it.total_pages) });
   if (shownCreator.value) facts.push({ label: vocab.value.creator, value: shownCreator.value });
-  if (it.artists && it.artists !== it.author) facts.push({ label: isVideo(it.media_type) ? t('title.facts.cast') : t('title.facts.artists'), value: it.artists });
+  if (it.artists && it.artists !== it.author) facts.push({ label: isVideo(it.media_type) ? t('title.facts.cast') : it.media_type === 'audiobook' ? t('title.facts.narrators') : t('title.facts.artists'), value: it.artists });
   if (it.genres) facts.push({ label: t('title.facts.genres'), value: it.genres });
   if (it.publisher) facts.push({ label: t('title.facts.publisher'), value: it.publisher });
   if (it.language) facts.push({ label: t('title.facts.language'), value: languageName(it.language) });
@@ -2085,7 +2085,7 @@ const infoRows = computed(() => {
     if (c?.networks?.length) rows.push({ label: t('title.facts.network'), value: c.networks.join(', ') });
   } else {
     if (shownCreator.value) rows.push({ label: vocab.value.creator, value: shownCreator.value });
-    if (s?.artists && s.artists !== s.author) rows.push({ label: t('title.facts.artists'), value: s.artists });
+    if (s?.artists && s.artists !== s.author) rows.push({ label: (it?.media_type || s.media_type) === 'audiobook' ? t('title.facts.narrators') : t('title.facts.artists'), value: s.artists });
     const publisher = s?.publisher || it?.publisher;
     if (publisher) rows.push({ label: t('title.facts.publisher'), value: publisher });
   }

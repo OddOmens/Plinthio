@@ -7,6 +7,8 @@
     "directors": "監督",
     "artists": "作画",
     "artistsShort": "作画",
+    "narrators": "ナレーター",
+    "narratorsShort": "ナレーター",
     "cast": "キャスト",
     "castActors": "キャスト",
     "series": "シリーズ",
@@ -62,6 +64,7 @@
     "resultDirector": "監督: {name}",
     "resultCast": "キャスト: {names}",
     "resultArt": "作画: {names}",
+    "resultNarrators": "ナレーター：{names}",
     "useAll": "すべて使う",
     "uploadFailed": "画像をアップロードできませんでした。",
     "searchFailed": "メタデータプロバイダーを検索できませんでした。詳しくはブラウザのコンソールを確認してください。",
@@ -74,7 +77,15 @@
     "seriesNumberExample": "例: 2",
     "isbnExample": "10桁または13桁",
     "languageExample": "例: en、fr、pt-BR",
-    "resultIsbn": "ISBN {isbn}"
+    "resultIsbn": "ISBN {isbn}",
+    "loadingDetails": "詳細を読み込み中…",
+    "notices": {
+      "googleQuota": "Google Books の本日の無料検索枠が上限に達したため、この結果は Open Library のみのものです。「管理 → メタデータ」で無料の Google Books キーを設定すると、サーバー専用の枠が使えます。",
+      "keyQuota": "{provider} キーの上限を超えたため、{provider} の結果がありません。",
+      "keyRejected": "「管理 → メタデータ」のキーが {provider} に拒否されたため、{provider} の結果がありません。",
+      "busy": "{provider} が混み合っているため、その結果がありません。1分ほどしてからもう一度お試しください。",
+      "unavailable": "{provider} から応答がなかったため、その結果がありません。"
+    }
   },
   "manager": {
     "title": "タイトルの整理とマッチング",

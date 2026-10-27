@@ -258,6 +258,12 @@
       "meaning": "La richiesta al fornitore è andata in timeout o è fallita a livello di rete.",
       "fix": "Controlla che il server (container) abbia accesso a internet in uscita e un DNS funzionante."
     },
+    "P404": {
+      "title": "Fonte di metadati disattivata",
+      "message": "Questa fonte di metadati è disattivata in Amministrazione → Metadati.",
+      "meaning": "Un amministratore ha disattivato l'unica fonte per questo tipo di titolo, quindi non viene cercato né abbinato.",
+      "fix": "Riattiva la fonte in Amministrazione → Metadati → Fonti, oppure inserisci i dettagli a mano."
+    },
     "P500": {
       "title": "Lista non trovata",
       "message": "Lista non trovata",

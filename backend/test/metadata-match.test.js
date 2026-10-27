@@ -32,10 +32,14 @@ describe('auto-match reports setup problems plainly', () => {
     assert.notEqual(res.status, 500);
   });
 
-  test('a type with no metadata source is "no match", not a failure', async () => {
+  test('an audiobook with Audible switched off is P404, said plainly', async () => {
+    const off = await fetch(`${server.baseUrl}/api/settings/metadata-providers/enabled`, {
+      method: 'PUT', headers: { ...authed(admin.token), 'content-type': 'application/json' }, body: JSON.stringify({ provider: 'audible', enabled: false })
+    });
+    assert.equal(off.status, 200);
     const res = await match('b'.repeat(32));
-    assert.equal(res.status, 404);
-    assert.match((await res.json()).error, /No metadata source for audiobooks/);
+    assert.equal(res.status, 409);
+    assert.equal((await res.json()).code, 'P404');
   });
 
   test('admin items lists frames as missing artwork and flags isFrame', async () => {
@@ -132,6 +136,48 @@ describe('book fields in the metadata editor', () => {
 
     res = await apply({ isbn: '0-441-17271-7' }); // the same book's ISBN-10
     assert.equal((await res.json()).item.isbn, '9780441172719');
+  });
+
+  test('result details are only fetched for a real search result', async () => {
+    const details = (q) => fetch(`${server.baseUrl}/api/metadata/details?${q}`, { headers: authed(admin.token) });
+    for (const q of [
+      'source=open-library&externalId=/authors/OL1A', 'source=open-library&externalId=https://example.com', 'source=tmdb&externalId=1',
+      'source=google-books&externalId=a/b', 'source=audible&externalId=../x', 'source=comicvine&externalId=4050-1'
+    ]) {
+      assert.equal((await details(q)).status, 400, q);
+    }
+  });
+
+  test('a source switched off answers searches with P404, and switches back on', async () => {
+    const headers = { ...authed(admin.token), 'content-type': 'application/json' };
+    const set = (body) => fetch(`${server.baseUrl}/api/settings/metadata-providers/enabled`, { method: 'PUT', headers, body: JSON.stringify(body) });
+    const search = (mediaType) => fetch(`${server.baseUrl}/api/metadata/search?mediaType=${mediaType}&query=Dune`, { headers });
+
+    assert.equal((await set({ provider: 'imdb', enabled: false })).status, 400);
+    assert.equal((await set({ provider: 'tmdb', enabled: 'no' })).status, 400);
+
+    let res = await set({ provider: 'mangadex', enabled: false });
+    assert.deepEqual((await res.json()).providers, {
+      tmdb: true, tvmaze: true, anilist: true, mangadex: false, comicvine: true, 'open-library': true, 'google-books': true, audible: true
+    });
+    await set({ provider: 'anilist', enabled: false });
+    // Only Comic Vine is left for manga, and it has no key: that's said, not "turned off".
+    res = await search('manga');
+    assert.equal(res.status, 409);
+    assert.deepEqual([(await res.clone().json()).code, /Comic Vine needs an API key/.test((await res.json()).error)], ['P400', true]);
+
+    await set({ provider: 'comicvine', enabled: false });
+    await set({ provider: 'tmdb', enabled: false });
+    for (const type of ['manga', 'movie']) {
+      res = await search(type);
+      assert.equal(res.status, 409, type);
+      assert.equal((await res.json()).code, 'P404', type);
+    }
+
+    for (const provider of ['mangadex', 'anilist', 'comicvine', 'tmdb']) res = await set({ provider, enabled: true });
+    assert.ok(Object.values((await res.json()).providers).every(Boolean));
+    const status = await (await fetch(`${server.baseUrl}/api/settings/metadata-providers`, { headers })).json();
+    assert.equal(status.providers.tmdb, true);
   });
 
   test('a bad ISBN, language or number is refused', async () => {

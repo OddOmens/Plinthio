@@ -196,11 +196,22 @@ the shelves if the files are still there, or missing again if not) and **Remove 
 Editors and admins can fix titles from the title page (**Edit Metadata**) or in bulk
 (**Admin → Metadata**).
 
-| Media | Providers |
-| --- | --- |
-| Manga | MangaDex |
-| Books | Open Library, Google Books |
-| Movies, shows, anime | TMDB (needs a key) |
+| Media | Providers, in the order a match prefers them | Key |
+| --- | --- | --- |
+| Movies | TMDB | Built into release images |
+| Shows | TMDB, TVmaze | TVmaze needs none |
+| Anime | TMDB, AniList, TVmaze | AniList and TVmaze need none |
+| Manga and comics | MangaDex, AniList, Comic Vine | Comic Vine needs a free key |
+| Books | Google Books, Open Library | None; Google's is optional |
+| Audiobooks | Audible (details from Audnexus) | None |
+
+A search in **Edit Metadata** asks every source that's switched on and shows their results
+together; **Auto Match** uses the first source with a result. Every source can be switched
+off in **Admin → Metadata → Sources**. Without a TMDB key, shows and anime are still
+matched (TVmaze has every episode's title, date, summary and still). Audiobooks are matched
+like books: what the file's tags already say is kept, and narrators, series and number,
+blurb, publisher, genres and cover are filled in. Audible's catalog is not an official API,
+so it could change without notice.
 
 - **Auto Match** on a row matches that title and shows the result inline. You can click
   down a list without a pop-up in the way.
@@ -208,12 +219,16 @@ Editors and admins can fix titles from the title page (**Edit Metadata**) or in 
   running summary.
 - **Clean titles** strips scene junk from file-name titles.
 - **Books** are looked up by ISBN when the book has one, otherwise by title and author. A
-  match fills in what's missing (blurb, publisher, ISBN, language, cover) and keeps what the
-  book's file already says; results that share too little with the title are not applied.
-  **Edit Metadata** has fields for the ISBN, the language and the book's number in its
-  series. Google Books works without a key, but its keyless allowance is shared with
-  everyone and often runs out during the day; a free key of your own in **Admin → Metadata
-  → Google Books key** fixes that. Open Library needs nothing.
+  match fills in what's missing (blurb, language, cover) and keeps what the book's file
+  already says; results that share too little with the title are not applied. The publisher
+  and ISBN are only taken from a match made by the book's own ISBN, since a title match
+  could be any edition. **Edit Metadata** has fields for the ISBN, the language and the
+  book's number in its series. Its search shows each Open Library result as one edition (in
+  the book's language, or yours) with that edition's ISBN, publisher and cover, and loads
+  the description for the top results. Google Books works without a key, but its keyless
+  allowance is shared with everyone and often runs out during the day; the search then says
+  so, and a free key of your own in **Admin → Metadata → Google Books key** fixes it.
+  Open Library needs nothing.
 - **Cover upload:** any image, for one title or a whole series.
 - **Cast, crew, studios, tagline and TMDB facts** for movies and shows are fetched the first
   time a title page opens (with a key), and cached for 30 days.

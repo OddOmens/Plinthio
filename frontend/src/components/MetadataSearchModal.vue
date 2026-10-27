@@ -148,8 +148,8 @@
                 class="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
-            <template v-if="isBook">
-              <div v-if="!isBulk">
+            <template v-if="hasLanguage">
+              <div v-if="!isBulk && isBook">
                 <label class="block text-[12px] font-medium text-muted-foreground mb-1">{{ $t('metadata.fields.isbn') }}</label>
                 <input
                   v-model="form.isbn"
@@ -268,19 +268,28 @@
                 </I18nT>
               </div>
 
+              <p
+                v-for="notice in (searching ? [] : notices)"
+                :key="notice.provider"
+                class="text-[11px] leading-snug text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded-md px-2.5 py-1.5"
+              >
+                {{ noticeText(notice) }}
+              </p>
+
               <div
                 v-for="result in results"
-                :key="`${result.source}-${result.externalId}`"
+                :key="resultKey(result)"
                 class="flex flex-col gap-2 p-2.5 rounded-lg border border-border hover:border-muted-foreground/30 transition"
               >
                 <div class="flex gap-3">
                   <div class="w-10 h-14 flex-shrink-0 rounded-md overflow-hidden bg-muted/40 border border-border/60">
                     <img
-                      v-if="result.coverUrl"
+                      v-if="hasCover(result)"
                       :src="result.coverUrl"
                       :alt="result.title"
                       class="w-full h-full object-cover"
                       loading="lazy"
+                      @error="brokenCovers.add(result.coverUrl)"
                     />
                     <div v-else class="w-full h-full flex items-center justify-center">
                       <ImageOff class="w-4 h-4 text-muted-foreground" />
@@ -289,13 +298,18 @@
                   <div class="flex flex-col min-w-0 flex-1 gap-0.5">
                     <span class="text-xs font-semibold text-foreground truncate">{{ result.title }}</span>
                     <span v-if="result.author" class="text-[12px] text-muted-foreground truncate">{{ isVideoType ? $t('metadata.edit.resultDirector', { name: result.author }) : result.author }}</span>
-                    <span v-if="result.artists" class="text-[12px] text-muted-foreground truncate">{{ isVideoType ? $t('metadata.edit.resultCast', { names: result.artists }) : $t('metadata.edit.resultArt', { names: result.artists }) }}</span>
+                    <span v-if="result.artists" class="text-[12px] text-muted-foreground truncate">{{ isVideoType ? $t('metadata.edit.resultCast', { names: result.artists }) : isAudiobook ? $t('metadata.edit.resultNarrators', { names: result.artists }) : $t('metadata.edit.resultArt', { names: result.artists }) }}</span>
+                    <span v-if="result.series && result.series !== result.title" class="text-[12px] text-muted-foreground truncate">{{ result.seriesNumber != null ? `${result.series} #${$n(result.seriesNumber)}` : result.series }}</span>
                     <span v-if="result.releaseDate" class="text-[12px] text-muted-foreground font-mono">
                       {{ result.releaseDate }}<template v-if="result.rating != null"> · ★ {{ $n(result.rating, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }}/10</template>
                     </span>
-                    <span v-if="result.isbn || result.language" class="text-[12px] text-muted-foreground truncate">{{ [result.isbn && $t('metadata.edit.resultIsbn', { isbn: result.isbn }), result.language && languageName(result.language)].filter(Boolean).join(' · ') }}</span>
+                    <span v-if="result.isbn || result.language || result.publisher" class="text-[12px] text-muted-foreground truncate">{{ [result.publisher, result.isbn && $t('metadata.edit.resultIsbn', { isbn: result.isbn }), result.language && languageName(result.language)].filter(Boolean).join(' · ') }}</span>
                     <span v-if="result.genres?.length" class="text-[12px] text-muted-foreground truncate">{{ result.genres.join(', ') }}</span>
                     <span v-if="result.themes?.length" class="text-[12px] text-muted-foreground truncate">{{ result.themes.join(', ') }}</span>
+                    <span v-if="result.overview" class="text-[12px] text-muted-foreground line-clamp-2">{{ result.overview }}</span>
+                    <span v-else-if="loadingDetails.has(resultKey(result))" class="text-[12px] text-muted-foreground/70 flex items-center gap-1">
+                      <Loader2 class="w-3 h-3 animate-spin" />{{ $t('metadata.edit.loadingDetails') }}
+                    </span>
                     <span class="text-[11px] uppercase font-mono tracking-wide text-muted-foreground/70 mt-auto">{{ sourceLabel(result.source) }}</span>
                   </div>
                 </div>
@@ -334,7 +348,8 @@ import { getMediaToken } from '../utils/mediaToken';
 import { ref, reactive, computed, watch } from 'vue';
 import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
-import { t, languageName } from '../i18n';
+import { t, languageName, locale } from '../i18n';
+import { SOURCE_LABELS } from '../utils/externalTitle';
 import { X, Search as SearchIcon, ImageOff, Check, ChevronDown, Upload, Loader2 } from '@lucide/vue';
 
 const dialog = useDialogStore();
@@ -412,7 +427,17 @@ const searching = ref(false);
 const hasSearched = ref(false);
 const errorMessage = ref('');
 const searchedAs = ref('');
+// Book providers that didn't answer the last search, and why (see GET /metadata/search).
+const notices = ref([]);
 const expanded = ref(false);
+// Cover links that failed to load, so their result shows the placeholder and offers no cover.
+const brokenCovers = reactive(new Set());
+// Results whose details are being fetched (see loadDetails), and the fetches themselves, so
+// "Use all" can wait for one.
+const loadingDetails = reactive(new Set());
+let detailRequests = new Map();
+// How many results get their missing details fetched right after a search.
+const DETAILS_PREFETCH = 5;
 
 const token = getMediaToken() || '';
 
@@ -420,10 +445,14 @@ const isVideoType = computed(() =>
   ['movie', 'show', 'anime'].includes(props.item?.media_type)
 );
 const isBook = computed(() => props.item?.media_type === 'book');
+const isAudiobook = computed(() => props.item?.media_type === 'audiobook');
+// Books and audiobooks have a language; it also picks Open Library's edition and Audible's
+// country when searching.
+const hasLanguage = computed(() => isBook.value || isAudiobook.value);
 const showSeriesNumber = computed(() => !isBulk.value && !isVideoType.value);
 
 const authorLabel = computed(() => isVideoType.value ? t('metadata.fields.directors') : t('metadata.fields.authors'));
-const artistsLabel = computed(() => isVideoType.value ? t('metadata.fields.castActors') : t('metadata.fields.artists'));
+const artistsLabel = computed(() => (isVideoType.value ? t('metadata.fields.castActors') : isAudiobook.value ? t('metadata.fields.narrators') : t('metadata.fields.artists')));
 
 const previewCoverUrl = computed(() => {
   if (pickedCoverUrl.value) return pickedCoverUrl.value;
@@ -438,22 +467,35 @@ const previewCoverUrl = computed(() => {
 
 const providerLabel = computed(() => {
   switch (props.item?.media_type) {
-    case 'manga': return 'MangaDex';
+    case 'manga': return 'MangaDex / AniList / Comic Vine';
     case 'book': return 'Open Library / Google Books';
+    case 'audiobook': return 'Audible';
     case 'movie': return 'TMDB';
-    case 'show': return 'TMDB';
-    case 'anime': return 'TMDB';
+    case 'show': return 'TMDB / TVmaze';
+    case 'anime': return 'TMDB / AniList / TVmaze';
     default: return t('metadata.edit.externalSources');
   }
 });
 
+function resultKey(result) {
+  return `${result.source}-${result.externalId}`;
+}
+
+function hasCover(result) {
+  return !!result.coverUrl && !brokenCovers.has(result.coverUrl);
+}
+
+function noticeText(notice) {
+  const provider = sourceLabel(notice.provider);
+  if (notice.reason === 'quota' && notice.keyed) return t('metadata.edit.notices.keyQuota', { provider });
+  if (notice.reason === 'quota' && notice.provider === 'google-books') return t('metadata.edit.notices.googleQuota');
+  if (notice.reason === 'quota') return t('metadata.edit.notices.busy', { provider });
+  if (notice.reason === 'rejected' && notice.keyed) return t('metadata.edit.notices.keyRejected', { provider });
+  return t('metadata.edit.notices.unavailable', { provider });
+}
+
 function sourceLabel(source) {
-  return {
-    mangadex: 'MangaDex',
-    'google-books': 'Google Books',
-    'open-library': 'Open Library',
-    tmdb: 'TMDB'
-  }[source] || source;
+  return SOURCE_LABELS[source] || source;
 }
 
 // Fields a search result can contribute, and which form field they map to. `bulkHidden`
@@ -461,8 +503,9 @@ function sourceLabel(source) {
 const PICK_FIELDS = computed(() => [
   { key: 'title', label: t('metadata.fields.title'), bulkHidden: true },
   { key: 'author', label: isVideoType.value ? t('metadata.fields.director') : t('metadata.fields.author') },
-  { key: 'artists', label: isVideoType.value ? t('metadata.fields.cast') : t('metadata.fields.artistsShort') },
+  { key: 'artists', label: isVideoType.value ? t('metadata.fields.cast') : isAudiobook.value ? t('metadata.fields.narratorsShort') : t('metadata.fields.artistsShort') },
   { key: 'series', label: t('metadata.fields.series') },
+  { key: 'seriesNumber', label: t('metadata.fields.seriesNumberShort'), formKey: 'volume', bulkHidden: true },
   { key: 'releaseDate', label: t('metadata.fields.date') },
   { key: 'status', label: t('metadata.fields.status') },
   { key: 'publisher', label: t('metadata.fields.publisher') },
@@ -479,7 +522,39 @@ function hasValue(val) {
 }
 
 function pickableFields(result) {
-  return PICK_FIELDS.value.filter((f) => (!isBulk.value || !f.bulkHidden) && hasValue(result[f.key]));
+  return PICK_FIELDS.value.filter((f) => (!isBulk.value || !f.bulkHidden) && hasValue(result[f.key])
+    && (f.key !== 'coverUrl' || hasCover(result)));
+}
+
+// Some searches leave things out: Open Library's the description, Audible's the ISBN and
+// tidier genres (from Audnexus), Comic Vine's the creators. This fetches the rest and fills
+// in only what the result is missing.
+const DETAIL_SOURCES = new Set(['open-library', 'audible', 'comicvine']);
+const needsDetails = (r) => (r.source === 'open-library' && !r.overview) || (r.source === 'comicvine' && !r.author);
+
+function loadDetails(result) {
+  const key = resultKey(result);
+  if (!DETAIL_SOURCES.has(result.source)) return Promise.resolve();
+  if (!detailRequests.has(key)) {
+    const requests = detailRequests;
+    loadingDetails.add(key);
+    requests.set(key, api.get('/metadata/details', {
+      params: {
+        source: result.source,
+        externalId: result.externalId,
+        isbn: result.publisher ? undefined : result.isbn || undefined,
+        region: result.region || undefined
+      }
+    })
+      .then((res) => {
+        for (const [field, value] of Object.entries(res.data.details || {})) {
+          if (hasValue(value) && !hasValue(result[field])) result[field] = value;
+        }
+      })
+      .catch(() => {})
+      .finally(() => { if (requests === detailRequests) loadingDetails.delete(key); }));
+  }
+  return detailRequests.get(key);
 }
 
 function applyField(result, field) {
@@ -490,7 +565,7 @@ function applyField(result, field) {
     return;
   }
   const formKey = field.formKey || field.key;
-  form[formKey] = Array.isArray(raw) ? raw.join(', ') : raw;
+  form[formKey] = Array.isArray(raw) ? raw.join(', ') : String(raw);
 }
 
 watch(
@@ -516,6 +591,7 @@ watch(
       query.value = defaultQuery(props.item);
       yearQuery.value = (props.item.release_date ? props.item.release_date.slice(0, 4) : props.item.detectedYear) || '';
       results.value = [];
+      notices.value = [];
       hasSearched.value = false;
       errorMessage.value = '';
       searchedAs.value = '';
@@ -529,7 +605,7 @@ const loadingFull = ref(false);
 // A book is found by title and author: a title alone brings up every summary and study
 // guide of it first.
 function defaultQuery(item) {
-  if (item.media_type === 'book' && !isBulk.value && item.title) {
+  if ((item.media_type === 'book' || item.media_type === 'audiobook') && !isBulk.value && item.title) {
     const author = item.author && item.author !== 'Unknown Author' ? item.author.split(',')[0].trim() : '';
     return author ? `${item.title} ${author}` : item.title;
   }
@@ -558,16 +634,26 @@ async function search() {
   searching.value = true;
   errorMessage.value = '';
   searchedAs.value = '';
+  notices.value = [];
+  detailRequests = new Map();
+  loadingDetails.clear();
   try {
     const res = await api.get('/metadata/search', {
       params: {
         mediaType: props.item.media_type,
         query: query.value.trim(),
-        year: yearQuery.value.trim() || undefined
+        year: yearQuery.value.trim() || undefined,
+        // Which edition Open Library brings along: the book's language, else the reader's.
+        language: hasLanguage.value ? (props.item.language || locale.value) : undefined
       }
     });
     results.value = res.data.results || [];
     searchedAs.value = res.data.searchedAs || '';
+    notices.value = res.data.notices || [];
+    results.value
+      .filter(needsDetails)
+      .slice(0, DETAILS_PREFETCH)
+      .forEach(loadDetails);
   } catch (err) {
     console.error('Metadata search failed:', err);
     results.value = [];
@@ -578,7 +664,8 @@ async function search() {
   }
 }
 
-function fillFromResult(result) {
+async function fillFromResult(result) {
+  await loadDetails(result);
   pickableFields(result).forEach((field) => applyField(result, field));
   pickedTmdbId.value = result.source === 'tmdb' ? result.externalId : null;
   pickedRating.value = result.source === 'tmdb' && result.rating != null
@@ -601,7 +688,7 @@ async function saveForm() {
       publisher: form.publisher.trim() || null,
       status: form.status.trim() || null,
       ageRating: form.ageRating || null,
-      ...(isBook.value ? { language: form.language.trim() || null } : {}),
+      ...(hasLanguage.value ? { language: form.language.trim() || null } : {}),
       ...(pickedCoverUrl.value && pickedCoverFrom.value ? pickedCoverFrom.value : {}),
       ...(pickedRating.value || {}),
       ...(pickedTmdbId.value ? { source: 'tmdb', externalId: pickedTmdbId.value } : {})

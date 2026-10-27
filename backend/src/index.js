@@ -86,7 +86,8 @@ app.use((req, res, next) => { noteProxyHeaders(req, config.trustProxy); noteTail
 const cspMode = (process.env.CSP || 'on').toLowerCase();
 const COVER_PROVIDER_HOSTS = [
   'uploads.mangadex.org', 'books.google.com', 'books.googleusercontent.com',
-  'covers.openlibrary.org', '*.archive.org', 'image.tmdb.org'
+  'covers.openlibrary.org', '*.archive.org', 'image.tmdb.org',
+  's4.anilist.co', 'static.tvmaze.com', 'm.media-amazon.com', 'comicvine.gamespot.com'
 ];
 const contentSecurityPolicy = cspMode === 'off' ? false : {
   useDefaults: false,

@@ -14,6 +14,26 @@ export function booksPath() {
   return path.join(os.tmpdir(), `plinthio-e2e-${process.env.E2E_PORT || '18090'}`, 'media', 'books');
 }
 
+// The id of a book from the EPUB library, adding and scanning that library the first time.
+export async function bookId(request, token) {
+  const headers = { Authorization: `Bearer ${token}` };
+  let res = await request.get('/api/items?mediaType=book', { headers });
+  let { items } = await res.json();
+  if (!items.length) {
+    res = await request.post('/api/libraries', { headers, data: { name: 'Books', type: 'books', path: booksPath() } });
+    expect(res.ok()).toBeTruthy();
+    const { library } = await res.json();
+    // Creating a library starts a scan by itself; this one waits for its own to finish.
+    expect((await request.post(`/api/libraries/${library.id}/scan`, { headers })).ok()).toBeTruthy();
+    await expect.poll(async () => {
+      ({ items } = await (await request.get('/api/items?mediaType=book', { headers })).json());
+      return items.length;
+    }).toBeGreaterThan(0);
+  }
+  expect(items.length).toBeGreaterThan(0);
+  return items[0].id;
+}
+
 // Signs in through the API and puts the session where the app looks for it, so each test
 // starts signed in without replaying the login form.
 export async function signIn(page, request) {

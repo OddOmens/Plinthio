@@ -7,6 +7,8 @@
     "directors": "Diretor(es)",
     "artists": "Artista(s)",
     "artistsShort": "Artistas",
+    "narrators": "Narrador(es)",
+    "narratorsShort": "Narradores",
     "cast": "Elenco",
     "castActors": "Elenco / Atores",
     "series": "Série",
@@ -63,6 +65,7 @@
     "resultDirector": "Dir.: {name}",
     "resultCast": "Elenco: {names}",
     "resultArt": "Arte: {names}",
+    "resultNarrators": "Narrado por {names}",
     "useAll": "Usar tudo",
     "uploadFailed": "Não foi possível enviar essa imagem.",
     "searchFailed": "Falha ao pesquisar nos provedores de metadados — veja o console do navegador para detalhes.",
@@ -76,7 +79,15 @@
     "seriesNumberExample": "ex.: 2",
     "isbnExample": "10 ou 13 dígitos",
     "languageExample": "ex.: en, fr, pt-BR",
-    "resultIsbn": "ISBN {isbn}"
+    "resultIsbn": "ISBN {isbn}",
+    "loadingDetails": "Carregando detalhes…",
+    "notices": {
+      "googleQuota": "O Google Books esgotou as buscas gratuitas de hoje, então estes resultados são apenas do Open Library. Uma chave gratuita do Google Books em Administração → Metadados dá ao seu servidor uma cota própria.",
+      "keyQuota": "Sua chave do {provider} passou da cota, então os resultados do {provider} estão faltando.",
+      "keyRejected": "O {provider} rejeitou a chave em Administração → Metadados, então os resultados do {provider} estão faltando.",
+      "busy": "O {provider} está sobrecarregado agora, então os resultados dele estão faltando. Tente de novo em um minuto.",
+      "unavailable": "O {provider} não respondeu, então os resultados dele estão faltando."
+    }
   },
   "manager": {
     "title": "Limpeza de títulos e correspondência",

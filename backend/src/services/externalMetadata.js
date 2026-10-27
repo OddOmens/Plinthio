@@ -1,26 +1,91 @@
 import { getDb } from '../config/database.js';
 import { htmlToText, normalizeIsbn, normalizeLanguage } from './bookMetadata.js';
+import { fetchJson } from './providerHttp.js';
+import { searchAniList } from './anilist.js';
+import { searchTvmaze, fetchTvmazeEpisodes } from './tvmaze.js';
+import { searchAudible, fetchAudibleDetails } from './audible.js';
+import { searchComicVine, fetchComicVineDetails, fetchComicVineIssueCovers, getComicVineKeyInfo } from './comicvine.js';
 
-const FETCH_TIMEOUT_MS = 8000;
+// Every provider can be switched off in Admin → Metadata; all are on by default. One that's
+// off is never asked: not for searches, matches, covers, credits or ratings.
+export const METADATA_PROVIDERS = ['tmdb', 'tvmaze', 'anilist', 'mangadex', 'comicvine', 'open-library', 'google-books', 'audible'];
 
-async function fetchJson(url, options = {}) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+export async function providersOff() {
+  const db = await getDb();
+  const row = await db.get("SELECT value FROM settings WHERE key = 'metadata_providers_off'");
   try {
-    const headers = { 'User-Agent': 'Plinthio/1.4.1 (https://github.com/OddOmens/Plinthio)', ...(options.headers || {}) };
-    const res = await fetch(url, { ...options, headers, signal: controller.signal });
-    if (!res.ok) {
-      // The status is attached, not just interpolated into the message, so callers can tell
-      // "your key is wrong" (401/403) apart from "the server can't get out" — advice that
-      // sends someone to debug their firewall over a rejected credential wastes their time.
-      const err = new Error(`Request failed with status ${res.status}`);
-      err.status = res.status;
-      throw err;
-    }
-    return await res.json();
-  } finally {
-    clearTimeout(timeout);
+    const list = JSON.parse(row?.value || '[]');
+    return new Set(Array.isArray(list) ? list.filter((p) => METADATA_PROVIDERS.includes(p)) : []);
+  } catch {
+    return new Set();
   }
+}
+
+function providerOffError() {
+  const err = new Error('This metadata source is turned off in Admin → Metadata.');
+  err.code = 'PROVIDER_OFF';
+  return err;
+}
+
+function providerFailure(err) {
+  if (err?.status === 429) return 'quota';
+  if (err?.status === 400 || err?.status === 401 || err?.status === 403) return 'rejected';
+  return 'unreachable';
+}
+
+/**
+ * Asks several sources for one search. Each is { id, search, ready, keyed }: `ready` says
+ * whether it can be asked at all (a key it needs is set), `keyed` whether a key of the
+ * admin's own is in use (for the note when it refuses).
+ *
+ * Every source that's on and ready is asked at once, and the answers are put together in
+ * the order given; `firstOnly` instead asks them one after another and stops at the first
+ * with results, the way an automatic match wants (the best source decides, and nobody else
+ * is bothered). Returns the results and, for a source that didn't answer, why.
+ */
+async function searchSources(sources, { firstOnly = false } = {}) {
+  const off = await providersOff();
+  const on = sources.filter((s) => !off.has(s.id));
+  if (!on.length) throw providerOffError();
+  const ready = [];
+  let notReady = null;
+  for (const source of on) {
+    if (!source.ready || await source.ready()) ready.push(source);
+    else notReady ||= source;
+  }
+  // Nothing can be asked, because the only source left needs a key nobody has set.
+  if (!ready.length) throw notReady.missingKeyError();
+
+  const results = [];
+  const unavailable = [];
+  const failures = [];
+  const settle = async (source, outcome) => {
+    if (outcome.status === 'fulfilled') results.push(...(outcome.value || []));
+    else {
+      failures.push(outcome.reason);
+      unavailable.push({
+        provider: source.id,
+        reason: providerFailure(outcome.reason),
+        ...(source.keyed ? { keyed: await source.keyed().catch(() => false) } : {})
+      });
+    }
+  };
+  if (firstOnly) {
+    for (const source of ready) {
+      const [outcome] = await Promise.allSettled([source.search()]);
+      await settle(source, outcome);
+      if (results.length) break;
+    }
+  } else {
+    const outcomes = await Promise.allSettled(ready.map((s) => s.search()));
+    for (const [i, outcome] of outcomes.entries()) await settle(ready[i], outcome);
+  }
+  if (!results.length && failures.length === ready.length) {
+    // One source: its own error, so a rejected key or a timeout is reported as such.
+    if (ready.length === 1) throw failures[0];
+    throw new Error('Metadata providers are currently unavailable');
+  }
+  return { results, unavailable };
 }
 
 /**
@@ -138,10 +203,26 @@ export async function getGoogleBooksKeyInfo() {
   return { key: null, source: null };
 }
 
-async function googleBooksUrl(pathAndQuery) {
+// Once Google answers 429 its daily quota is spent, and asking again only makes every search
+// wait on another refusal, so it's left alone for a while. Remembered per key, so saving a
+// key takes effect at once.
+const GOOGLE_QUOTA_PAUSE_MS = 15 * 60 * 1000;
+let googleQuotaSpent = null; // { key, until }
+
+async function googleBooksJson(pathAndQuery) {
   const { key } = await getGoogleBooksKeyInfo();
+  if (googleQuotaSpent && googleQuotaSpent.key === key && Date.now() < googleQuotaSpent.until) {
+    const err = new Error('Google Books has used up its daily quota');
+    err.status = 429;
+    throw err;
+  }
   const separator = pathAndQuery.includes('?') ? '&' : '?';
-  return `https://www.googleapis.com/books/v1/${pathAndQuery}${key ? `${separator}key=${encodeURIComponent(key)}` : ''}`;
+  try {
+    return await fetchJson(`https://www.googleapis.com/books/v1/${pathAndQuery}${key ? `${separator}key=${encodeURIComponent(key)}` : ''}`);
+  } catch (err) {
+    if (err.status === 429) googleQuotaSpent = { key, until: Date.now() + GOOGLE_QUOTA_PAUSE_MS };
+    throw err;
+  }
 }
 
 /**
@@ -171,7 +252,7 @@ export async function verifyGoogleBooksKey(apiKey) {
 async function searchGoogleBooks(terms) {
   const q = googleQuery(terms);
   if (!q) return [];
-  const data = await fetchJson(await googleBooksUrl(`volumes?q=${encodeURIComponent(q)}&maxResults=12&printType=books`));
+  const data = await googleBooksJson(`volumes?q=${encodeURIComponent(q)}&maxResults=12&printType=books`);
   return (data.items || []).map(googleResult);
 }
 
@@ -179,15 +260,23 @@ async function searchGoogleBooks(terms) {
  * Open Library — free, no API key required.
  * https://openlibrary.org/dev/docs/api/search
  */
-const OPEN_LIBRARY_FIELDS = 'key,title,subtitle,author_name,first_publish_year,isbn,publisher,subject,cover_i,language,number_of_pages_median';
+// The search finds works, and brings each one's best edition along (`editions.*`): the one
+// with the ISBN searched for, or else one in the language asked for.
+const OPEN_LIBRARY_FIELDS = [
+  'key,title,subtitle,author_name,first_publish_year,subject,cover_i,language,number_of_pages_median',
+  'editions,editions.key,editions.isbn,editions.publisher,editions.language,editions.publish_date,editions.cover_i'
+].join(',');
+
+const openLibraryCover = (id) => (id > 0 ? `https://covers.openlibrary.org/b/id/${id}-L.jpg` : null);
+const yearOf = (date) => String(date || '').match(/\b(1[5-9]|20)\d{2}\b/)?.[0] || null;
 
 function openLibraryResult(book, isbn = null) {
-  // The search returns a work, not an edition: its ISBNs and publishers are every
-  // edition's, in no useful order (a Spanish translation's publisher for an English book).
-  // So they're only used when the search was for one ISBN — that edition, whose own record
-  // fetchBookDetails reads.
-  const isbns = (book.isbn || []).map(normalizeIsbn).filter(Boolean);
-  const edition = isbn && isbns.includes(isbn) ? isbn : null;
+  // A work's own lists of ISBNs and publishers are every edition's, in no useful order (a
+  // Spanish translation's publisher for an English book), so those come from the one edition
+  // the search brought along, and always together.
+  const edition = book.editions?.docs?.[0] || null;
+  const editionIsbn = (edition?.isbn || []).map(normalizeIsbn).find(Boolean) || null;
+  const editionLanguages = edition?.language || [];
   return {
     source: 'open-library',
     externalId: book.key,
@@ -195,22 +284,22 @@ function openLibraryResult(book, isbn = null) {
     subtitle: book.subtitle || null,
     author: (book.author_name || []).join(', ') || null,
     series: null,
-    releaseDate: book.first_publish_year ? String(book.first_publish_year) : null,
+    releaseDate: (isbn && yearOf(edition?.publish_date?.[0])) || (book.first_publish_year ? String(book.first_publish_year) : null),
     overview: null,
     genres: (book.subject || []).filter((s) => s.length <= 40 && !/^(fiction|accessible book|protected daisy|in library|large type books)/i.test(s)).slice(0, 6),
-    publisher: null,
+    publisher: edition?.publisher?.[0] || null,
     status: null,
-    isbn: edition,
-    // ISO 639-2 ("eng"); only kept when the work exists in a single language.
-    language: book.language?.length === 1 ? normalizeLanguage(book.language[0]) : null,
+    // A search by ISBN only finds works with that ISBN, so the result is that edition.
+    isbn: isbn || editionIsbn,
+    // ISO 639-2 ("eng"); the edition's, else the work's when it exists in one language.
+    language: normalizeLanguage(editionLanguages.length === 1 ? editionLanguages[0] : (book.language?.length === 1 ? book.language[0] : null)),
     pageCount: book.number_of_pages_median || null,
-    coverUrl: edition
-      ? `https://covers.openlibrary.org/b/isbn/${edition}-L.jpg?default=false`
-      : (book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg` : null)
+    // Covers by id always exist; one asked for by ISBN is missing for many editions.
+    coverUrl: openLibraryCover(edition?.cover_i) || openLibraryCover(book.cover_i)
   };
 }
 
-async function searchOpenLibrary(terms) {
+async function searchOpenLibrary(terms, language = null) {
   let params;
   if (typeof terms === 'string') params = `q=${encodeURIComponent(terms)}`;
   else if (terms.isbn) params = `isbn=${encodeURIComponent(terms.isbn)}`;
@@ -221,26 +310,28 @@ async function searchOpenLibrary(terms) {
     ].filter(Boolean).join('&');
   }
   if (!params) return [];
-  const data = await fetchJson(`https://openlibrary.org/search.json?${params}&limit=12&fields=${OPEN_LIBRARY_FIELDS}`);
+  // `lang` takes ISO 639-1 ("de"): which edition comes back, not which works.
+  const lang = String(language || '').split('-')[0].toLowerCase();
+  const data = await fetchJson(`https://openlibrary.org/search.json?${params}&limit=12${/^[a-z]{2}$/.test(lang) ? `&lang=${lang}` : ''}&fields=${OPEN_LIBRARY_FIELDS}`);
   return (data.docs || []).map((book) => openLibraryResult(book, typeof terms === 'object' ? terms.isbn : null));
 }
 
 /**
- * Both book providers at once. Free text that's an ISBN is searched as one.
+ * Both book providers at once. Free text that's an ISBN is searched as one. `language`
+ * ("de") picks which edition Open Library brings along. Returns the results, and for a
+ * provider that didn't answer, why — so a search that lost Google can say so rather than
+ * look as if Google had nothing.
  */
-async function searchBooks(terms) {
+export async function searchBooks(terms, { language } = {}) {
   if (typeof terms === 'string') {
     const isbn = normalizeIsbn(terms);
     if (isbn) terms = { isbn };
   }
-  const [google, openLibrary] = await Promise.allSettled([searchGoogleBooks(terms), searchOpenLibrary(terms)]);
-  const results = [];
-  if (google.status === 'fulfilled') results.push(...google.value);
-  if (openLibrary.status === 'fulfilled') results.push(...openLibrary.value);
-  if (results.length === 0 && google.status === 'rejected' && openLibrary.status === 'rejected') {
-    throw new Error('Book metadata providers are currently unavailable');
-  }
-  return results;
+  // A source that's switched off isn't asked, and isn't reported as missing either.
+  return searchSources([
+    { id: 'google-books', search: () => searchGoogleBooks(terms), keyed: async () => !!(await getGoogleBooksKeyInfo()).key },
+    { id: 'open-library', search: () => searchOpenLibrary(terms, language) }
+  ]);
 }
 
 const bookWords = (s) => String(s || '').normalize('NFKD').toLowerCase()
@@ -285,31 +376,36 @@ export function rankBookResults(results, { title, author, isbn } = {}) {
 
 /**
  * The book search an automatic match runs: by ISBN when the file has one, else by title and
- * author, else by title alone. Returns ranked results (see rankBookResults).
+ * author, else by title alone. `language` is the book's, for Open Library's edition. Returns
+ * ranked results (see rankBookResults).
  */
-export async function findBookMatches({ title, author, isbn }) {
+export async function findBookMatches({ title, author, isbn, language }) {
   const known = { title, author: author && author !== 'Unknown Author' ? author : null, isbn };
+  const search = async (terms) => (await searchBooks(terms, { language })).results;
   if (isbn) {
-    const byIsbn = (await searchBooks({ isbn }).catch(() => [])).filter((r) => r.isbn === isbn);
+    const byIsbn = (await search({ isbn }).catch(() => [])).filter((r) => r.isbn === isbn);
     if (byIsbn.length) return rankBookResults(byIsbn, known);
   }
   // Searched by the main title: "Talk: The Science of Conversation…" finds nothing on Open
   // Library, "Talk" by its author finds the book. Ranking still sees the whole title.
   const mainTitle = String(title || '').split(/:|\s[-–]\s|\(/)[0].trim() || title;
-  let results = known.author ? await searchBooks({ title: mainTitle, author: known.author }).catch(() => []) : [];
-  if (!results.length) results = await searchBooks({ title: mainTitle });
+  let results = known.author ? await search({ title: mainTitle, author: known.author }).catch(() => []) : [];
+  if (!results.length) results = await search({ title: mainTitle });
   return rankBookResults(results, known);
 }
 
 /**
  * Fills in what a search result leaves out: Google's full record has the larger cover
- * sizes and the whole description; an Open Library work has its description. Best-effort —
- * the result comes back as it was when the lookup fails.
+ * sizes and the whole description; an Open Library work has its description (and a cover
+ * when no edition had one), and an edition found by ISBN that the search didn't bring along
+ * has its publisher and date. Best-effort — the result comes back as it was when the lookup
+ * fails.
  */
 export async function fetchBookDetails(result) {
+  if ((await providersOff()).has(result.source)) return result;
   try {
     if (result.source === 'google-books' && result.externalId) {
-      const book = await fetchJson(await googleBooksUrl(`volumes/${encodeURIComponent(result.externalId)}`));
+      const book = await googleBooksJson(`volumes/${encodeURIComponent(result.externalId)}`);
       const full = googleResult(book);
       return { ...result, ...Object.fromEntries(Object.entries(full).filter(([, v]) => v != null && !(Array.isArray(v) && !v.length))), score: result.score };
     }
@@ -318,20 +414,21 @@ export async function fetchBookDetails(result) {
       const [work, edition] = await Promise.all([
         /^\/works\/OL\d+W$/.test(result.externalId || '') && !result.overview
           ? fetchJson(`https://openlibrary.org${result.externalId}.json`).catch(() => null) : null,
-        result.isbn ? fetchJson(`https://openlibrary.org/isbn/${result.isbn}.json`).catch(() => null) : null
+        result.isbn && !result.publisher ? fetchJson(`https://openlibrary.org/isbn/${result.isbn}.json`).catch(() => null) : null
       ]);
       if (work) {
         const description = typeof work.description === 'string' ? work.description : work.description?.value;
         // Open Library descriptions are Markdown-ish, with a "----------" line before links.
         details.overview = htmlToText(description?.split(/\n-{3,}/)[0]) || null;
+        details.coverUrl ||= openLibraryCover(work.covers?.find((c) => c > 0));
       }
       if (edition) {
         details.publisher = edition.publishers?.[0] || null;
         details.pageCount = edition.number_of_pages || details.pageCount;
         const lang = edition.languages?.length === 1 ? edition.languages[0].key?.split('/').pop() : null;
         details.language = normalizeLanguage(lang) || details.language;
-        const year = String(edition.publish_date || '').match(/\b(1[5-9]|20)\d{2}\b/);
-        if (year) details.releaseDate = year[0];
+        details.releaseDate = yearOf(edition.publish_date) || details.releaseDate;
+        details.coverUrl = openLibraryCover(edition.covers?.find((c) => c > 0)) || details.coverUrl;
       }
       return details;
     }
@@ -565,7 +662,10 @@ export function hasBuiltinTmdbKey() {
   return !!builtinTmdbKey();
 }
 
+// Switched off, TMDB has no key as far as its callers know, so credits, ratings and artwork
+// skip it quietly, as they do on a server without one.
 export async function getTmdbApiKey() {
+  if ((await providersOff()).has('tmdb')) return null;
   return (await getTmdbKeyInfo()).key;
 }
 
@@ -731,33 +831,103 @@ export async function findTmdbId(mediaType, query, year = null) {
  * Providers are chosen by media type, matching only free / keyless services
  * except TMDB (movies/shows/anime), which needs an admin-configured key.
  */
-export async function searchExternalMetadata(mediaType, query, year = null) {
+function missingTmdbKeyError() {
+  const err = new Error('TMDB API key is not configured. An admin must add one in Admin → Metadata.');
+  err.code = 'MISSING_API_KEY';
+  return err;
+}
+
+function missingComicVineKeyError() {
+  const err = new Error('Comic Vine needs an API key: an admin can add one in Admin → Metadata.');
+  err.code = 'MISSING_API_KEY';
+  err.provider = 'comicvine';
+  return err;
+}
+
+/**
+ * Searches every source for a kind of title that's switched on (Admin → Metadata), in this
+ * order: the first is the one an automatic match prefers.
+ *   movie      TMDB
+ *   show       TMDB, TVmaze
+ *   anime      TMDB, AniList, TVmaze
+ *   manga      MangaDex, AniList, Comic Vine (with a key)
+ *   book       Google Books, Open Library
+ *   audiobook  Audible
+ * `language` ("de") picks Open Library's edition and Audible's country. Returns { results,
+ * unavailable } (see searchSources); `firstOnly` stops at the first source with results.
+ */
+export async function searchMetadata(mediaType, query, { year = null, language = null, firstOnly = false } = {}) {
   if (!query || !query.trim()) {
     throw new Error('A search query is required');
   }
+  const tmdb = {
+    id: 'tmdb',
+    search: async () => searchTMDB(query, mediaType, await getTmdbApiKey(), year),
+    ready: async () => !!(await getTmdbKeyInfo()).key,
+    missingKeyError: missingTmdbKeyError
+  };
+  const tvmaze = { id: 'tvmaze', search: () => searchTvmaze(query) };
+  const anilist = (type) => ({ id: 'anilist', search: () => searchAniList(query, type) });
 
   switch (mediaType) {
-    case 'manga':
-      return searchMangaDex(query);
-
-    case 'book':
-      return searchBooks(query);
-
     case 'movie':
+      return searchSources([tmdb], { firstOnly });
     case 'show':
-    case 'anime': {
-      const apiKey = await getTmdbApiKey();
-      if (!apiKey) {
-        const err = new Error('TMDB API key is not configured. An admin must add one in Admin → Metadata.');
-        err.code = 'MISSING_API_KEY';
-        throw err;
-      }
-      return searchTMDB(query, mediaType, apiKey, year);
-    }
-
+      return searchSources([tmdb, tvmaze], { firstOnly });
+    case 'anime':
+      return searchSources([tmdb, anilist('ANIME'), tvmaze], { firstOnly });
+    case 'manga':
+      return searchSources([
+        { id: 'mangadex', search: () => searchMangaDex(query) },
+        anilist('MANGA'),
+        {
+          id: 'comicvine',
+          search: () => searchComicVine(query),
+          ready: async () => !!(await getComicVineKeyInfo()).key,
+          keyed: async () => true,
+          missingKeyError: missingComicVineKeyError
+        }
+      ], { firstOnly });
+    case 'book':
+      return searchBooks(query, { language });
+    case 'audiobook':
+      return searchSources([{ id: 'audible', search: () => searchAudible(query, { language }) }], { firstOnly });
     default:
       throw new Error(`No metadata provider available for media type "${mediaType}"`);
   }
+}
+
+/** The results of an automatic match's search: the first source with any. */
+export async function searchExternalMetadata(mediaType, query, year = null) {
+  return (await searchMetadata(mediaType, query, { year, firstOnly: true })).results;
+}
+
+/**
+ * The rest of one search result, from the source's own record: an Open Library work's
+ * description, Google's full-size cover, Audnexus's ISBN and genres, a Comic Vine series'
+ * creators. Best-effort; a source that's switched off isn't asked.
+ */
+export async function fetchResultDetails(result) {
+  if ((await providersOff()).has(result.source)) return result;
+  switch (result.source) {
+    case 'audible': return fetchAudibleDetails(result);
+    case 'comicvine': return fetchComicVineDetails(result);
+    case 'open-library':
+    case 'google-books': return fetchBookDetails(result);
+    default: return result;
+  }
+}
+
+/** Comic Vine issue covers by number, or an empty map when Comic Vine is off. */
+export async function fetchComicIssueCovers(volumeId) {
+  if ((await providersOff()).has('comicvine')) return new Map();
+  return fetchComicVineIssueCovers(volumeId);
+}
+
+/** A show's TVmaze episodes ("1x2" → episode), or an empty map when TVmaze is off. */
+export async function fetchShowEpisodes(showId) {
+  if ((await providersOff()).has('tvmaze')) return new Map();
+  return fetchTvmazeEpisodes(showId);
 }
 
 /**
@@ -816,6 +986,7 @@ export async function fetchTmdbEpisode(tmdbId, seasonNumber, episodeNumber, apiK
  * Returns a Map of volumeString -> coverUrl.
  */
 export async function fetchMangaDexVolumeCovers(mangaId) {
+  if ((await providersOff()).has('mangadex')) return new Map();
   try {
     const url = `https://api.mangadex.org/cover?manga[]=${encodeURIComponent(mangaId)}&limit=100`;
     const data = await fetchJson(url);

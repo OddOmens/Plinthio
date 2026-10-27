@@ -133,7 +133,8 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 
 | Route | Who | |
 | --- | --- | --- |
-| `GET /metadata/search?mediaType=&query=&year=` | V | Search providers |
+| `GET /metadata/search?mediaType=&query=&year=&language=` | V | Search providers. For books, `language` picks Open Library's edition, and `notices` lists a provider that didn't answer and why (`quota`, `rejected`, `unreachable`) |
+| `GET /metadata/details?source=&externalId=&isbn=&region=` | V | The rest of one search result: Open Library's description, Audnexus's ISBN and genres for Audible, a Comic Vine series' creators |
 | `POST /metadata/apply/:itemId` · `/metadata/cover/:itemId` · `/metadata/series-cover` | E | Apply a match, upload covers |
 | `GET /metadata/admin/items` · `POST /metadata/admin/match-single/:itemId` · `/batch-match` · `/batch-clean-titles` | E | Bulk tools |
 
@@ -145,7 +146,7 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `POST /customization/intro` · `DELETE` | A | Upload (multipart field `intro`) or remove the opening sequence clip |
 | `GET /media/intro` | V | The opening sequence clip (range requests; `?v=` is the upload version) |
 | `GET /settings/filters` · `PATCH` | V / A | Which shelf views are offered |
-| `/settings/transcoding` · `/transcoding/test` · `/metadata-providers` · `/metadata-providers/tmdb-key` · `/auto-scan` · `/backup/*` | A | Server settings and backups |
+| `/settings/transcoding` · `/transcoding/test` · `/metadata-providers` · `/metadata-providers/enabled` · `/metadata-providers/tmdb-key` · `/metadata-providers/google-books-key` · `/metadata-providers/comicvine-key` · `/auto-scan` · `/backup/*` | A | Server settings and backups |
 | `GET /admin/health` · `POST /admin/health/remove-missing` | A | Library Health (with missing and offloaded titles grouped by film, series or season), removing missing titles |
 | `POST /admin/health/offload` · `/unoffload` | A | Keep titles as history (`{ itemIds }`), or undo that |
 | `GET /admin/logs` · `DELETE` | A | Server log |

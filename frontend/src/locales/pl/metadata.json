@@ -7,6 +7,8 @@
     "directors": "Reżyser(zy)",
     "artists": "Rysownik(cy)",
     "artistsShort": "Rysownicy",
+    "narrators": "Lektor(zy)",
+    "narratorsShort": "Lektorzy",
     "cast": "Obsada",
     "castActors": "Obsada / aktorzy",
     "series": "Seria",
@@ -65,6 +67,7 @@
     "resultDirector": "Reż.: {name}",
     "resultCast": "Obsada: {names}",
     "resultArt": "Rys.: {names}",
+    "resultNarrators": "Czyta: {names}",
     "useAll": "Użyj wszystkiego",
     "uploadFailed": "Nie udało się przesłać tego obrazu.",
     "searchFailed": "Nie udało się przeszukać dostawców metadanych — szczegóły w konsoli przeglądarki.",
@@ -80,7 +83,15 @@
     "seriesNumberExample": "np. 2",
     "isbnExample": "10 lub 13 cyfr",
     "languageExample": "np. en, fr, pt-BR",
-    "resultIsbn": "ISBN {isbn}"
+    "resultIsbn": "ISBN {isbn}",
+    "loadingDetails": "Wczytywanie szczegółów…",
+    "notices": {
+      "googleQuota": "Google Books wyczerpało dzisiejszy limit darmowych wyszukiwań, więc te wyniki pochodzą tylko z Open Library. Darmowy klucz Google Books w Administracja → Metadane daje Twojemu serwerowi własny limit.",
+      "keyQuota": "Twój klucz {provider} przekroczył limit, więc brakuje wyników z {provider}.",
+      "keyRejected": "{provider} odrzuciło klucz z Administracja → Metadane, więc brakuje wyników z {provider}.",
+      "busy": "{provider} jest teraz przeciążone, więc brakuje jego wyników. Spróbuj ponownie za minutę.",
+      "unavailable": "{provider} nie odpowiedziało, więc brakuje jego wyników."
+    }
   },
   "manager": {
     "title": "Porządkowanie tytułów i dopasowywanie",

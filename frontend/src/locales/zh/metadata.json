@@ -7,6 +7,8 @@
     "directors": "导演",
     "artists": "画师",
     "artistsShort": "画师",
+    "narrators": "朗读者",
+    "narratorsShort": "朗读者",
     "cast": "演员",
     "castActors": "演员阵容",
     "series": "系列",
@@ -62,6 +64,7 @@
     "resultDirector": "导演：{name}",
     "resultCast": "演员：{names}",
     "resultArt": "作画：{names}",
+    "resultNarrators": "朗读：{names}",
     "useAll": "全部使用",
     "uploadFailed": "无法上传该图片。",
     "searchFailed": "搜索元数据来源失败，详情请查看浏览器控制台。",
@@ -74,7 +77,15 @@
     "seriesNumberExample": "例如2",
     "isbnExample": "10位或13位数字",
     "languageExample": "例如en、fr、pt-BR",
-    "resultIsbn": "ISBN {isbn}"
+    "resultIsbn": "ISBN {isbn}",
+    "loadingDetails": "正在加载详情…",
+    "notices": {
+      "googleQuota": "Google Books 今天的免费搜索额度已用完，因此这些结果仅来自 Open Library。在“管理 → 元数据”中添加免费的 Google Books 密钥，可让你的服务器拥有独立额度。",
+      "keyQuota": "你的 {provider} 密钥已超出配额，因此缺少 {provider} 的结果。",
+      "keyRejected": "{provider} 拒绝了“管理 → 元数据”中的密钥，因此缺少 {provider} 的结果。",
+      "busy": "{provider} 当前繁忙，因此缺少它的结果。请一分钟后再试。",
+      "unavailable": "{provider} 没有响应，因此缺少它的结果。"
+    }
   },
   "manager": {
     "title": "标题清理与匹配",

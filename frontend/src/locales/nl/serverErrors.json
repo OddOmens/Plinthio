@@ -258,6 +258,12 @@
       "meaning": "Het verzoek aan de bron verliep (time-out) of mislukte op netwerkniveau.",
       "fix": "Controleer of de server (container) uitgaande internettoegang en werkende DNS heeft."
     },
+    "P404": {
+      "title": "Metadatabron uitgeschakeld",
+      "message": "Deze metadatabron staat uit in Admin → Metadata.",
+      "meaning": "Een beheerder heeft de enige bron voor dit soort titel uitgezet, dus er wordt niet gezocht of gekoppeld.",
+      "fix": "Zet de bron weer aan in Admin → Metadata → Bronnen, of vul de gegevens met de hand in."
+    },
     "P500": {
       "title": "Lijst niet gevonden",
       "message": "Lijst niet gevonden",

@@ -258,6 +258,12 @@
       "meaning": "The request to the provider timed out or failed at the network level.",
       "fix": "Check the server (container) has outbound internet access and DNS."
     },
+    "P404": {
+      "title": "Metadata source turned off",
+      "message": "This metadata source is turned off in Admin → Metadata.",
+      "meaning": "An admin switched off the only source for this kind of title, so it is not searched or matched.",
+      "fix": "Turn the source back on in Admin → Metadata → Sources, or fill the details in by hand."
+    },
     "P500": {
       "title": "List not found",
       "message": "List not found",

@@ -15,7 +15,11 @@ export function externalTitlePayload(result, mediaType) {
 
 export const SOURCE_LABELS = {
   tmdb: 'TMDB',
+  tvmaze: 'TVmaze',
+  anilist: 'AniList',
   mangadex: 'MangaDex',
+  comicvine: 'Comic Vine',
   'google-books': 'Google Books',
-  'open-library': 'Open Library'
+  'open-library': 'Open Library',
+  audible: 'Audible'
 };

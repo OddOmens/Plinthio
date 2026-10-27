@@ -258,6 +258,12 @@
       "meaning": "La requête vers le fournisseur a expiré ou a échoué au niveau du réseau.",
       "fix": "Vérifiez que le serveur (conteneur) a accès à Internet en sortie et au DNS."
     },
+    "P404": {
+      "title": "Source de métadonnées désactivée",
+      "message": "Cette source de métadonnées est désactivée dans Administration → Métadonnées.",
+      "meaning": "Un administrateur a désactivé la seule source pour ce type de titre : il n'est donc ni recherché ni associé.",
+      "fix": "Réactivez la source dans Administration → Métadonnées → Sources, ou saisissez les détails à la main."
+    },
     "P500": {
       "title": "Liste introuvable",
       "message": "Liste introuvable",

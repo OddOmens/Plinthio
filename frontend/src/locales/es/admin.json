@@ -699,6 +699,49 @@
   "metadata": {
     "title": "Metadatos",
     "description": "De dónde vienen los pósteres, las descripciones, el reparto y las valoraciones, y cómo arreglar títulos que llegaron desde nombres de archivo.",
+    "providers": {
+      "title": "Fuentes",
+      "description": "Qué servicios consulta Plinthio para obtener detalles e imágenes. Uno desactivado nunca se contacta: ni para búsquedas, ni para emparejar, portadas, reparto o valoraciones.",
+      "tmdb": {
+        "label": "TMDB",
+        "desc": "Películas, series y anime: pósteres, descripciones, reparto y valoraciones."
+      },
+      "tvmaze": {
+        "label": "TVmaze",
+        "desc": "Series y anime: títulos de episodios, fechas, resúmenes e imágenes. Funciona sin clave de TMDB. Datos de TVmaze.com (CC BY-SA)."
+      },
+      "anilist": {
+        "label": "AniList",
+        "desc": "Manga y anime: títulos en inglés y romaji, portadas grandes, géneros y autores."
+      },
+      "mangadex": {
+        "label": "MangaDex",
+        "desc": "Manga: títulos, autores, descripciones y portadas de tomos."
+      },
+      "comicvine": {
+        "label": "Comic Vine",
+        "desc": "Cómics: series, editoriales, autores y la portada de cada número. Necesita una clave gratuita de Comic Vine (abajo)."
+      },
+      "openLibrary": {
+        "label": "Open Library",
+        "desc": "Libros: ediciones, ISBN, editoriales, descripciones y portadas. No necesita clave."
+      },
+      "googleBooks": {
+        "label": "Google Books",
+        "desc": "Libros: una segunda fuente de descripciones y portadas. Funciona sin clave, pero su cuota gratuita compartida suele agotarse a mediodía."
+      },
+      "audible": {
+        "label": "Audible",
+        "desc": "Audiolibros: narradores, serie y número, sinopsis, editorial y portada. Es el catálogo de Audible, no una API oficial, así que podría cambiar sin aviso."
+      },
+      "keys": {
+        "none": "Sin clave",
+        "optional": "Clave opcional",
+        "builtin": "Clave incluida",
+        "set": "Clave configurada",
+        "missing": "Necesita clave"
+      }
+    },
     "tmdb": {
       "title": "Clave de TMDB",
       "descBuiltIn": "Las películas, series y anime obtienen sus detalles de TMDB, con la clave integrada en Plinthio. Puedes pegar tu propia clave de TMDB para usarla en su lugar. El manga (MangaDex) y los libros (Google Books, Open Library) no necesitan nada.",
@@ -736,6 +779,21 @@
       "saveKey": "Guardar clave",
       "getOne": "Crea una gratis en {link}: activa la Books API y luego Credenciales → Crear credenciales → Clave de API.",
       "getOneLink": "Google Cloud Console"
+    },
+    "comicVine": {
+      "title": "Clave de Comic Vine",
+      "description": "Comic Vine, la fuente para cómics occidentales, solo funciona con una clave. Es gratuita: regístrate en Comic Vine y copia la clave de su página de la API. Sin ella, los cómics se buscan en MangaDex y AniList.",
+      "sources": {
+        "custom": "La tuya",
+        "environment": "Desde COMICVINE_API_KEY",
+        "notSet": "Sin configurar"
+      },
+      "keyLabel": "Clave de API de Comic Vine",
+      "placeholder": "Pega una clave de API de Comic Vine",
+      "placeholderReplace": "Pega una clave nueva para reemplazarla",
+      "saveKey": "Guardar clave",
+      "getOne": "Consigue una gratis en {link} después de iniciar sesión.",
+      "getOneLink": "la página de la API de Comic Vine"
     }
   },
   "overview": {

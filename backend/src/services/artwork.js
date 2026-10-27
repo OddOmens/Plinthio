@@ -21,7 +21,11 @@ const ALLOWED_COVER_HOSTS = new Set([
   'covers.openlibrary.org',
   'openlibrary.org',
   'image.tmdb.org',
-  'themoviedb.org'
+  'themoviedb.org',
+  's4.anilist.co',
+  'static.tvmaze.com',
+  'm.media-amazon.com',
+  'comicvine.gamespot.com'
 ]);
 // Open Library covers 302 through archive.org to a numbered `iaNNNNNN.us.archive.org`
 // mirror that varies per request. Google Books redirects to `lh*.googleusercontent.com`.

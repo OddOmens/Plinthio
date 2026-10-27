@@ -682,6 +682,49 @@
   "metadata": {
     "title": "元数据",
     "description": "海报、简介、演职人员和评分的来源，以及整理从文件名得来的标题。",
+    "providers": {
+      "title": "来源",
+      "description": "Plinthio 向哪些服务获取详情和图片。关闭的服务永远不会被联系：搜索、匹配、封面、演职员或评分都不会用到它。",
+      "tmdb": {
+        "label": "TMDB",
+        "desc": "电影、剧集和动画：海报、简介、演职员和评分。"
+      },
+      "tvmaze": {
+        "label": "TVmaze",
+        "desc": "剧集和动画：分集标题、日期、简介和剧照。无需 TMDB 密钥即可使用。数据来自 TVmaze.com（CC BY-SA）。"
+      },
+      "anilist": {
+        "label": "AniList",
+        "desc": "漫画和动画：英文和罗马字标题、大尺寸封面、类型和作者。"
+      },
+      "mangadex": {
+        "label": "MangaDex",
+        "desc": "漫画：标题、作者、简介和各卷封面。"
+      },
+      "comicvine": {
+        "label": "Comic Vine",
+        "desc": "欧美漫画：系列、出版社、作者和每一期的封面。需要免费的 Comic Vine 密钥（见下方）。"
+      },
+      "openLibrary": {
+        "label": "Open Library",
+        "desc": "图书：版本、ISBN、出版社、简介和封面。无需密钥。"
+      },
+      "googleBooks": {
+        "label": "Google Books",
+        "desc": "图书：简介和封面的第二个来源。无需密钥即可使用，但共享的免费额度常常到中午就用完了。"
+      },
+      "audible": {
+        "label": "Audible",
+        "desc": "有声书：朗读者、系列及序号、简介、出版社和封面。来自 Audible 自己的目录，并非官方 API，可能会在没有通知的情况下变化。"
+      },
+      "keys": {
+        "none": "无需密钥",
+        "optional": "密钥可选",
+        "builtin": "内置密钥",
+        "set": "已设置密钥",
+        "missing": "需要密钥"
+      }
+    },
     "tmdb": {
       "title": "TMDB密钥",
       "descBuiltIn": "电影、剧集和动画的详情来自TMDB，使用Plinthio内置的密钥。你也可以粘贴自己的TMDB密钥来代替。漫画（MangaDex）和书籍（Google Books、Open Library）无需任何设置。",
@@ -719,6 +762,21 @@
       "saveKey": "保存密钥",
       "getOne": "可在 {link} 免费创建：启用 Books API，然后依次选择“凭据”→“创建凭据”→“API 密钥”。",
       "getOneLink": "Google Cloud Console"
+    },
+    "comicVine": {
+      "title": "Comic Vine 密钥",
+      "description": "Comic Vine 是欧美漫画的来源，必须有密钥才能使用。密钥免费：在 Comic Vine 注册，然后从其 API 页面复制密钥。没有密钥时，漫画会在 MangaDex 和 AniList 上查找。",
+      "sources": {
+        "custom": "你自己的",
+        "environment": "来自COMICVINE_API_KEY",
+        "notSet": "未设置"
+      },
+      "keyLabel": "Comic Vine API 密钥",
+      "placeholder": "粘贴 Comic Vine API 密钥",
+      "placeholderReplace": "粘贴新密钥以替换",
+      "saveKey": "保存密钥",
+      "getOne": "登录后在{link}免费获取。",
+      "getOneLink": "Comic Vine 的 API 页面"
     }
   },
   "overview": {

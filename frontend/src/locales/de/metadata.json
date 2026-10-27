@@ -7,6 +7,8 @@
     "directors": "Regie",
     "artists": "Zeichner",
     "artistsShort": "Zeichner",
+    "narrators": "Sprecher",
+    "narratorsShort": "Sprecher",
     "cast": "Besetzung",
     "castActors": "Besetzung",
     "series": "Reihe",
@@ -63,6 +65,7 @@
     "resultDirector": "Regie: {name}",
     "resultCast": "Mit: {names}",
     "resultArt": "Zeichnungen: {names}",
+    "resultNarrators": "Gelesen von {names}",
     "useAll": "Alles übernehmen",
     "uploadFailed": "Das Bild konnte nicht hochgeladen werden.",
     "searchFailed": "Die Suche bei den Metadatenanbietern ist fehlgeschlagen – Details findest du in der Browserkonsole.",
@@ -76,7 +79,15 @@
     "seriesNumberExample": "z. B. 2",
     "isbnExample": "10 oder 13 Ziffern",
     "languageExample": "z. B. en, fr, pt-BR",
-    "resultIsbn": "ISBN {isbn}"
+    "resultIsbn": "ISBN {isbn}",
+    "loadingDetails": "Details werden geladen…",
+    "notices": {
+      "googleQuota": "Google Books hat seine kostenlosen Suchanfragen für heute aufgebraucht, daher stammen diese Ergebnisse nur von Open Library. Ein kostenloser Google-Books-Schlüssel unter Verwaltung → Metadaten gibt deinem Server ein eigenes Kontingent.",
+      "keyQuota": "Dein {provider}-Schlüssel hat sein Kontingent überschritten, daher fehlen die Ergebnisse von {provider}.",
+      "keyRejected": "{provider} hat den Schlüssel unter Verwaltung → Metadaten abgelehnt, daher fehlen die Ergebnisse von {provider}.",
+      "busy": "{provider} ist gerade ausgelastet, daher fehlen seine Ergebnisse. Versuch es in einer Minute noch einmal.",
+      "unavailable": "{provider} hat nicht geantwortet, daher fehlen seine Ergebnisse."
+    }
   },
   "manager": {
     "title": "Titelbereinigung und Abgleich",

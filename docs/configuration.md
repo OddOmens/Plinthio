@@ -41,6 +41,7 @@ the compose-level ones.
 | `HLS_CACHE_MAX_AGE_HOURS` | `24` | How long converted video segments stay on disk after their last use |
 | `TMDB_API_KEY` | none | TMDB key used when none is set in the app. A key saved in the app wins. Release images also have a built-in key (`PLINTHIO_BUILTIN_TMDB_KEY`), used when neither is set |
 | `GOOGLE_BOOKS_API_KEY` | none | Google Books key for book metadata, used when none is set in the app. Optional: without one, Google Books uses its shared keyless allowance |
+| `COMICVINE_API_KEY` | none | Comic Vine key for comics metadata, used when none is set in the app. Comic Vine isn't asked without one |
 | `UPDATE_CHECK` | on | `false` stops the twice-daily check for new releases, and with it the admin update banner |
 | `UPDATE_CHECK_URL` | GitHub releases API | Where the update check looks. For testing |
 | `APP_VERSION` | from `package.json` | Overrides the reported version. For development builds |
@@ -53,7 +54,9 @@ button. Sections are listed in [Administration](administration.md).
 | Where | Setting | Default | What it controls |
 | --- | --- | --- | --- |
 | Libraries | **Automatic scanning** | on, every 60 min, watcher on | Rescan of every library at an interval (15 minutes to a day) or at set times each day, and the file watcher, which picks up new files about 30 s after they appear. The schedule and the watcher are independent switches |
+| Metadata | **Sources** | all on | A switch for each of TMDB, TVmaze, AniList, MangaDex, Comic Vine, Open Library, Google Books and Audible, each marked with whether it needs a key. A source that's off is never contacted (searches, matching, covers, cast, ratings); with both book sources or the only source for a type off, searches answer P404 |
 | Metadata | **TMDB key** | built in (release images) | Your own key, checked against TMDB when saved, replaces the built-in one. MangaDex, Google Books and Open Library need no key |
+| Metadata | **Comic Vine key** | none | Needed for Comic Vine (Western comics). Free with a Comic Vine account; checked with Comic Vine when saved |
 | Metadata | **Google Books key** | none | Optional. Your own key, checked with Google when saved, gives book lookups an allowance of their own instead of the shared keyless one |
 | Kids Mode | **Whole libraries** | off | Makes everything in a library visible to Kids Mode accounts |
 | Appearance | **Let people personalize** | on, each allowed | Whether people can choose their own accent colour, navigation, page width and pause screen (Settings → Appearance). One switch for all, and **Users can change** on each. Anything not allowed follows the server's choice |

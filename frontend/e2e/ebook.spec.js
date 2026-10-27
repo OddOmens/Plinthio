@@ -1,27 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { signIn, booksPath } from './helpers.js';
+import { signIn, bookId } from './helpers.js';
 
 // The EPUB reader on a phone: bookmarks, highlights, and display settings that belong to
 // the person (saved to their preferences, so the next book opens the same way).
-async function bookId(request, token) {
-  const headers = { Authorization: `Bearer ${token}` };
-  let res = await request.get('/api/items?mediaType=book', { headers });
-  let { items } = await res.json();
-  if (!items.length) {
-    res = await request.post('/api/libraries', { headers, data: { name: 'Books', type: 'books', path: booksPath() } });
-    expect(res.ok()).toBeTruthy();
-    const { library } = await res.json();
-    // Creating a library starts a scan by itself; this one waits for its own to finish.
-    expect((await request.post(`/api/libraries/${library.id}/scan`, { headers })).ok()).toBeTruthy();
-    await expect.poll(async () => {
-      ({ items } = await (await request.get('/api/items?mediaType=book', { headers })).json());
-      return items.length;
-    }).toBeGreaterThan(0);
-  }
-  expect(items.length).toBeGreaterThan(0);
-  return items[0].id;
-}
-
 async function openBook(page, id) {
   await page.goto(`/title/${id}`);
   await page.getByRole('button', { name: /Start Reading|Continue Reading|Read Again/ }).first().click();

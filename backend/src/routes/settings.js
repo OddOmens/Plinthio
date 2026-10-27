@@ -16,7 +16,8 @@ import {
   deleteBackupFile
 } from '../services/backup.js';
 import { getAutoScanSettings, saveAutoScanSettings } from '../services/autoScan.js';
-import { verifyTmdbApiKey, getTmdbKeyInfo, hasBuiltinTmdbKey, verifyGoogleBooksKey, getGoogleBooksKeyInfo } from '../services/externalMetadata.js';
+import { verifyTmdbApiKey, getTmdbKeyInfo, hasBuiltinTmdbKey, verifyGoogleBooksKey, getGoogleBooksKeyInfo, METADATA_PROVIDERS, providersOff } from '../services/externalMetadata.js';
+import { getComicVineKeyInfo, verifyComicVineKey } from '../services/comicvine.js';
 import { SEND_OPTS } from '../utils/fileStream.js';
 import { serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
@@ -89,10 +90,21 @@ async function googleBooksStatus() {
   return { googleBooksConfigured: !!key, googleBooksSource: source };
 }
 
+async function comicVineStatus() {
+  const { key, source } = await getComicVineKeyInfo();
+  return { comicVineConfigured: !!key, comicVineSource: source };
+}
+
+// Which providers are switched on: { tmdb: true, mangadex: true, … }.
+async function providerSwitches() {
+  const off = await providersOff();
+  return { providers: Object.fromEntries(METADATA_PROVIDERS.map((p) => [p, !off.has(p)])) };
+}
+
 // Admin endpoint to check which metadata provider keys are configured
 router.get('/metadata-providers', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    res.json({ ...await tmdbStatus(), ...await googleBooksStatus() });
+    res.json({ ...await tmdbStatus(), ...await googleBooksStatus(), ...await comicVineStatus(), ...await providerSwitches() });
   } catch (err) {
     serverError(req, res, err);
   }
@@ -148,6 +160,27 @@ router.post('/transcoding/test', authenticateToken, requireAdmin, async (req, re
 });
 
 // Admin endpoint to set/clear the TMDB API key used for movie/show/anime metadata search
+// Switch one metadata provider on or off: { provider: 'google-books', enabled: false }.
+router.put('/metadata-providers/enabled', authenticateToken, requireAdmin, async (req, res) => {
+  const { provider, enabled } = req.body;
+  if (!METADATA_PROVIDERS.includes(provider) || typeof enabled !== 'boolean') {
+    return res.status(400).json({ error: `provider must be one of ${METADATA_PROVIDERS.join(', ')}, and enabled true or false` });
+  }
+  try {
+    const off = await providersOff();
+    if (enabled) off.delete(provider);
+    else off.add(provider);
+    const db = await getDb();
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('metadata_providers_off', ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+      [JSON.stringify([...off])]
+    );
+    res.json(await providerSwitches());
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
 router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, async (req, res) => {
   const { apiKey } = req.body;
 
@@ -188,6 +221,31 @@ router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, asyn
 
 // Admin endpoint to set/clear an optional Google Books API key (book metadata). Without one,
 // Google Books runs on the shared keyless quota and Open Library carries the lookups.
+router.put('/metadata-providers/comicvine-key', authenticateToken, requireAdmin, async (req, res) => {
+  const { apiKey } = req.body;
+
+  try {
+    const db = await getDb();
+    if (!apiKey || !String(apiKey).trim()) {
+      await db.run("DELETE FROM settings WHERE key = 'comicvine_api_key'");
+      return res.json({ message: 'Comic Vine API key cleared', ...await comicVineStatus() });
+    }
+
+    const check = await verifyComicVineKey(apiKey);
+    if (!check.ok) {
+      return sendError(req, res, 'P401', { message: check.reason, status: 400 });
+    }
+
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('comicvine_api_key', ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+      [String(apiKey).trim()]
+    );
+    res.json({ message: 'Comic Vine API key saved and verified', ...await comicVineStatus() });
+  } catch (err) {
+    serverError(req, res, err);
+  }
+});
 router.put('/metadata-providers/google-books-key', authenticateToken, requireAdmin, async (req, res) => {
   const { apiKey } = req.body;
 

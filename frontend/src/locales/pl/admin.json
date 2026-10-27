@@ -733,6 +733,49 @@
   "metadata": {
     "title": "Metadane",
     "description": "Skąd pochodzą plakaty, opisy, obsada i oceny oraz porządkowanie tytułów wziętych z nazw plików.",
+    "providers": {
+      "title": "Źródła",
+      "description": "Usługi, o które Plinthio pyta o szczegóły i grafiki. Wyłączona usługa nigdy nie jest odpytywana: ani przy wyszukiwaniu, ani przy dopasowywaniu, okładkach, obsadzie czy ocenach.",
+      "tmdb": {
+        "label": "TMDB",
+        "desc": "Filmy, seriale i anime: plakaty, opisy, obsada i oceny."
+      },
+      "tvmaze": {
+        "label": "TVmaze",
+        "desc": "Seriale i anime: tytuły odcinków, daty, streszczenia i kadry. Działa bez klucza TMDB. Dane z TVmaze.com (CC BY-SA)."
+      },
+      "anilist": {
+        "label": "AniList",
+        "desc": "Manga i anime: tytuły angielskie i romaji, duże okładki, gatunki i twórcy."
+      },
+      "mangadex": {
+        "label": "MangaDex",
+        "desc": "Manga: tytuły, autorzy, opisy i okładki tomów."
+      },
+      "comicvine": {
+        "label": "Comic Vine",
+        "desc": "Komiksy: serie, wydawcy, twórcy i okładka każdego zeszytu. Wymaga darmowego klucza Comic Vine (poniżej)."
+      },
+      "openLibrary": {
+        "label": "Open Library",
+        "desc": "Książki: wydania, numery ISBN, wydawcy, opisy i okładki. Klucz nie jest potrzebny."
+      },
+      "googleBooks": {
+        "label": "Google Books",
+        "desc": "Książki: drugie źródło opisów i okładek. Działa bez klucza, ale wspólny darmowy limit często kończy się już w południe."
+      },
+      "audible": {
+        "label": "Audible",
+        "desc": "Audiobooki: lektorzy, seria i numer, opis, wydawca i okładka. To katalog samego Audible, a nie oficjalne API, więc może się zmienić bez ostrzeżenia."
+      },
+      "keys": {
+        "none": "Bez klucza",
+        "optional": "Klucz opcjonalny",
+        "builtin": "Klucz wbudowany",
+        "set": "Klucz ustawiony",
+        "missing": "Wymaga klucza"
+      }
+    },
     "tmdb": {
       "title": "Klucz TMDB",
       "descBuiltIn": "Filmy, seriale i anime pobierają szczegóły z TMDB za pomocą klucza wbudowanego w Plinthio. Możesz wkleić własny klucz TMDB, aby używać go zamiast niego. Manga (MangaDex) i książki (Google Books, Open Library) nie wymagają niczego.",
@@ -770,6 +813,21 @@
       "saveKey": "Zapisz klucz",
       "getOne": "Utwórz go za darmo w {link}: włącz Books API, a potem Dane logowania → Utwórz dane logowania → Klucz API.",
       "getOneLink": "Google Cloud Console"
+    },
+    "comicVine": {
+      "title": "Klucz Comic Vine",
+      "description": "Comic Vine, źródło dla zachodnich komiksów, działa tylko z kluczem. Jest darmowy: załóż konto w Comic Vine i skopiuj klucz ze strony API. Bez niego komiksy są wyszukiwane w MangaDex i AniList.",
+      "sources": {
+        "custom": "Własny",
+        "environment": "Z COMICVINE_API_KEY",
+        "notSet": "Nie ustawiono"
+      },
+      "keyLabel": "Klucz API Comic Vine",
+      "placeholder": "Wklej klucz API Comic Vine",
+      "placeholderReplace": "Wklej nowy klucz, aby go zastąpić",
+      "saveKey": "Zapisz klucz",
+      "getOne": "Odbierz go za darmo na {link} po zalogowaniu.",
+      "getOneLink": "stronie API Comic Vine"
     }
   },
   "overview": {

@@ -699,6 +699,49 @@
   "metadata": {
     "title": "Métadonnées",
     "description": "La provenance des affiches, descriptions, distributions et notes, et le nettoyage des titres issus des noms de fichiers.",
+    "providers": {
+      "title": "Sources",
+      "description": "Les services que Plinthio interroge pour les détails et les images. Un service désactivé n'est jamais contacté : ni pour les recherches, ni pour l'association, les couvertures, la distribution ou les notes.",
+      "tmdb": {
+        "label": "TMDB",
+        "desc": "Films, séries et anime : affiches, descriptions, distribution et notes."
+      },
+      "tvmaze": {
+        "label": "TVmaze",
+        "desc": "Séries et anime : titres d'épisodes, dates, résumés et images. Fonctionne sans clé TMDB. Données de TVmaze.com (CC BY-SA)."
+      },
+      "anilist": {
+        "label": "AniList",
+        "desc": "Manga et anime : titres anglais et romaji, grandes couvertures, genres et auteurs."
+      },
+      "mangadex": {
+        "label": "MangaDex",
+        "desc": "Manga : titres, auteurs, descriptions et couvertures des tomes."
+      },
+      "comicvine": {
+        "label": "Comic Vine",
+        "desc": "Comics : séries, éditeurs, auteurs et la couverture de chaque numéro. Nécessite une clé Comic Vine gratuite (ci-dessous)."
+      },
+      "openLibrary": {
+        "label": "Open Library",
+        "desc": "Livres : éditions, ISBN, éditeurs, descriptions et couvertures. Aucune clé nécessaire."
+      },
+      "googleBooks": {
+        "label": "Google Books",
+        "desc": "Livres : une seconde source de descriptions et de couvertures. Fonctionne sans clé, mais son quota gratuit partagé est souvent épuisé dès midi."
+      },
+      "audible": {
+        "label": "Audible",
+        "desc": "Livres audio : narrateurs, série et numéro, résumé, éditeur et couverture. Le catalogue d'Audible lui-même, pas une API officielle : il peut changer sans préavis."
+      },
+      "keys": {
+        "none": "Sans clé",
+        "optional": "Clé facultative",
+        "builtin": "Clé intégrée",
+        "set": "Clé définie",
+        "missing": "Clé requise"
+      }
+    },
     "tmdb": {
       "title": "Clé TMDB",
       "descBuiltIn": "Les films, séries et animes obtiennent leurs détails de TMDB, avec la clé intégrée à Plinthio. Vous pouvez coller votre propre clé TMDB pour l'utiliser à la place. Les mangas (MangaDex) et les livres (Google Books, Open Library) n'ont besoin de rien.",
@@ -736,6 +779,21 @@
       "saveKey": "Enregistrer la clé",
       "getOne": "Créez-en une gratuitement dans {link} : activez la Books API, puis Identifiants → Créer des identifiants → Clé API.",
       "getOneLink": "Google Cloud Console"
+    },
+    "comicVine": {
+      "title": "Clé Comic Vine",
+      "description": "Comic Vine, la source pour les comics occidentaux, ne fonctionne qu'avec une clé. Elle est gratuite : inscrivez-vous sur Comic Vine, puis copiez la clé depuis sa page API. Sans clé, les comics sont recherchés sur MangaDex et AniList.",
+      "sources": {
+        "custom": "La vôtre",
+        "environment": "Depuis COMICVINE_API_KEY",
+        "notSet": "Non définie"
+      },
+      "keyLabel": "Clé API Comic Vine",
+      "placeholder": "Collez une clé API Comic Vine",
+      "placeholderReplace": "Collez une nouvelle clé pour la remplacer",
+      "saveKey": "Enregistrer la clé",
+      "getOne": "Obtenez-en une gratuitement sur {link} une fois connecté.",
+      "getOneLink": "la page API de Comic Vine"
     }
   },
   "overview": {

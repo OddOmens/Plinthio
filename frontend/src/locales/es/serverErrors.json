@@ -258,6 +258,12 @@
       "meaning": "La solicitud al proveedor agotó el tiempo de espera o falló a nivel de red.",
       "fix": "Comprueba que el servidor (contenedor) tiene acceso saliente a internet y DNS."
     },
+    "P404": {
+      "title": "Fuente de metadatos desactivada",
+      "message": "Esta fuente de metadatos está desactivada en Administración → Metadatos.",
+      "meaning": "Un administrador desactivó la única fuente para este tipo de título, así que no se busca ni se empareja.",
+      "fix": "Vuelve a activar la fuente en Administración → Metadatos → Fuentes o rellena los datos a mano."
+    },
     "P500": {
       "title": "Lista no encontrada",
       "message": "Lista no encontrada",

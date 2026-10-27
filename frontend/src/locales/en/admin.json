@@ -699,6 +699,49 @@
   "metadata": {
     "title": "Metadata",
     "description": "Where posters, descriptions, cast and ratings come from, and tidying titles that came in from file names.",
+    "providers": {
+      "title": "Sources",
+      "description": "Which services Plinthio asks for details and artwork. One that's off is never contacted: not for searches, matching, covers, cast or ratings.",
+      "tmdb": {
+        "label": "TMDB",
+        "desc": "Movies, shows and anime: posters, descriptions, cast and ratings."
+      },
+      "tvmaze": {
+        "label": "TVmaze",
+        "desc": "Shows and anime: episode titles, dates, summaries and stills. Works without a TMDB key. Data from TVmaze.com (CC BY-SA)."
+      },
+      "anilist": {
+        "label": "AniList",
+        "desc": "Manga and anime: English and romaji titles, large covers, genres and creators."
+      },
+      "mangadex": {
+        "label": "MangaDex",
+        "desc": "Manga: titles, authors, descriptions and volume covers."
+      },
+      "comicvine": {
+        "label": "Comic Vine",
+        "desc": "Comics: series, publishers, creators and each issue's cover. Needs a free Comic Vine key (below)."
+      },
+      "openLibrary": {
+        "label": "Open Library",
+        "desc": "Books: editions, ISBNs, publishers, descriptions and covers. No key needed."
+      },
+      "googleBooks": {
+        "label": "Google Books",
+        "desc": "Books: a second source of descriptions and covers. Works without a key, but its shared free allowance often runs out by midday."
+      },
+      "audible": {
+        "label": "Audible",
+        "desc": "Audiobooks: narrators, series and number, blurb, publisher and cover. Audible's own catalog, not an official API, so it could change without notice."
+      },
+      "keys": {
+        "none": "No key needed",
+        "optional": "Optional key",
+        "builtin": "Key built in",
+        "set": "Key set",
+        "missing": "Needs a key"
+      }
+    },
     "tmdb": {
       "title": "TMDB key",
       "descBuiltIn": "Movies, shows and anime get their details from TMDB, using the key built into Plinthio. You can paste your own TMDB key to use it instead. Manga (MangaDex) and books (Google Books, Open Library) need nothing.",
@@ -736,6 +779,21 @@
       "saveKey": "Save key",
       "getOne": "Create one free in {link}: enable the Books API, then Credentials → Create credentials → API key.",
       "getOneLink": "Google Cloud Console"
+    },
+    "comicVine": {
+      "title": "Comic Vine key",
+      "description": "Comic Vine, the source for Western comics, only works with a key. It's free: sign up at Comic Vine, then copy the key from its API page. Without one, comics are looked up on MangaDex and AniList.",
+      "sources": {
+        "custom": "Your own",
+        "environment": "From COMICVINE_API_KEY",
+        "notSet": "Not set"
+      },
+      "keyLabel": "Comic Vine API key",
+      "placeholder": "Paste a Comic Vine API key",
+      "placeholderReplace": "Paste a new key to replace it",
+      "saveKey": "Save key",
+      "getOne": "Get one free from {link} once you're signed in.",
+      "getOneLink": "Comic Vine's API page"
     }
   },
   "overview": {
