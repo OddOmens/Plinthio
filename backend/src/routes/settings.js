@@ -17,6 +17,7 @@ import {
 } from '../services/backup.js';
 import { getAutoScanSettings, saveAutoScanSettings } from '../services/autoScan.js';
 import { verifyTmdbApiKey, getTmdbKeyInfo, hasBuiltinTmdbKey } from '../services/externalMetadata.js';
+import { SEND_OPTS } from '../utils/fileStream.js';
 import { serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 
@@ -199,9 +200,10 @@ router.get('/backup', authenticateToken, requireAdmin, async (req, res) => {
     const db = await getDb();
     await db.exec(`VACUUM INTO '${backupPath.replace(/'/g, "''")}'`);
 
-    res.download(backupPath, filename, (err) => {
+    res.download(backupPath, filename, SEND_OPTS, (err) => {
       fs.unlink(backupPath, () => {});
-      if (err) console.error('Backup download failed:', err.message);
+      // Fails before any bytes are sent (file unreadable) need an answer, or the browser waits forever.
+      if (err) serverError(req, res, err);
     });
   } catch (err) {
     fs.unlink(backupPath, () => {});
@@ -349,7 +351,7 @@ router.post('/backup/create', authenticateToken, requireAdmin, async (req, res) 
 router.get('/backup/:filename', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const filePath = getBackupFilePath(req.params.filename);
-    res.download(filePath, req.params.filename);
+    res.download(filePath, req.params.filename, SEND_OPTS);
   } catch (err) {
     res.status(404).json({ error: err.message });
   }

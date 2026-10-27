@@ -13,10 +13,6 @@ updates:
         update-types: [minor, patch]
       backend-major:
         update-types: [major]
-    ignore:
-      # Upgraded by hand as its own piece of work: route patterns change in Express 5.
-      - dependency-name: express
-        update-types: [version-update:semver-major]
 
   - package-ecosystem: npm
     directory: /frontend
@@ -29,15 +25,11 @@ updates:
         update-types: [major]
     ignore:
       # Upgraded by hand as their own pieces of work: Tailwind 4 is a migration, and
-      # vue-router 5 needs Vite 7+, so they move together with Vite.
+      # vue-router 5 is held until there's a reason to move.
       - dependency-name: tailwindcss
         update-types: [version-update:semver-major]
       # Tailwind 3 pins this; a major bump of it drags Tailwind 4 in with it (see #44).
       - dependency-name: postcss-selector-parser
-        update-types: [version-update:semver-major]
-      - dependency-name: vite
-        update-types: [version-update:semver-major]
-      - dependency-name: "@vitejs/plugin-vue"
         update-types: [version-update:semver-major]
       - dependency-name: vue-router
         update-types: [version-update:semver-major]

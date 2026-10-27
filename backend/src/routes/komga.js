@@ -11,6 +11,7 @@ import { accessSql } from '../services/visibility.js';
 import { getMangaPagesList, extractMangaPage } from '../services/archive.js';
 import { sendError } from '../errors.js';
 import { serverError } from '../utils/http.js';
+import { SEND_OPTS } from '../utils/fileStream.js';
 import { logger } from '../services/logger.js';
 
 // A Komga-compatible slice of the API, so Mihon (and other Tachiyomi forks) can browse and
@@ -400,7 +401,7 @@ function sendCover(res, itemId) {
       if (!fs.existsSync(cover)) return res.status(404).end();
       res.setHeader('Content-Type', mime.lookup(cover) || 'image/jpeg');
       res.setHeader('Cache-Control', 'private, max-age=86400');
-      return res.sendFile(cover);
+      return res.sendFile(cover, SEND_OPTS);
     });
 }
 

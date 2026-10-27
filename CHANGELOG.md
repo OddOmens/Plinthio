@@ -9,6 +9,12 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Changed
+- **Newer foundations:** the server now runs on Express 5 and the web app is built with Vite 8, with the latest minor updates of the other libraries. Nothing changes in how Plinthio looks or works.
+
+### Fixed
+- **Backup downloads no longer hang** when the backup file can't be read; you get an error instead of a download that never starts.
+
 ## [1.6.1] - 2026-10-24
 
 ### Changed

@@ -90,7 +90,7 @@ router.post('/titles', async (req, res) => {
 });
 
 // Remove by entry id, or by the same body as POST.
-router.delete('/titles/:id?', async (req, res) => {
+router.delete('/titles{/:id}', async (req, res) => {
   const { itemId, libraryId, series } = req.body || {};
   try {
     const db = await getDb();

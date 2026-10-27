@@ -79,6 +79,13 @@ describe('Kids Mode', () => {
   test('removing access takes effect immediately', async () => {
     await send(server.baseUrl, 'DELETE', '/kids/titles', editor, { itemId: id('c') });
     assert.ok(!(await titles(kid)).includes('Family Film'));
+
+    // The admin page removes by entry id instead.
+    const entry = (await getJson(server.baseUrl, '/kids', editor)).body.titles.find((t) => t.series === 'Bluey');
+    assert.equal((await send(server.baseUrl, 'DELETE', `/kids/titles/${entry.id}`, editor)).status, 200);
+    assert.deepEqual(await titles(kid), ['Cartoon Film']);
+
+    await send(server.baseUrl, 'POST', '/kids/titles', editor, { libraryId: 'shows', series: 'Bluey' });
   });
 
   test('never on yourself, never on an admin', async () => {

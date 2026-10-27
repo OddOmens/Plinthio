@@ -10,7 +10,7 @@ import { pickPageWidth, resizedMangaPage } from '../services/pageImages.js';
 import { getThumbnailPath, getOrCreateThumbnail, THUMB_WIDTHS } from '../services/thumbnails.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
 import { escapeXml } from '../utils/xml.js';
-import { sendRangedFile, streamFile } from '../utils/fileStream.js';
+import { sendRangedFile, streamFile, SEND_OPTS } from '../utils/fileStream.js';
 import { sendError, codeForFsError } from '../errors.js';
 import { getOrCreateStill } from '../services/videoFrame.js';
 import { activeIntroFile } from '../services/intro.js';
@@ -75,7 +75,7 @@ router.get('/still/:id', authenticateToken, async (req, res) => {
     res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
     res.setHeader('ETag', etag);
     if (req.headers['if-none-match'] === etag) return res.status(304).end();
-    return res.sendFile(still);
+    return res.sendFile(still, SEND_OPTS);
   } catch (err) {
     mediaFileError(req, res, err);
   }
@@ -107,7 +107,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
         res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
         res.setHeader('ETag', etag);
         if (req.headers['if-none-match'] === etag) return res.status(304).end();
-        return res.sendFile(thumbPath);
+        return res.sendFile(thumbPath, SEND_OPTS);
       }
     }
 
@@ -130,7 +130,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
           res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
           res.setHeader('ETag', etag);
           if (req.headers['if-none-match'] === etag) return res.status(304).end();
-          return res.sendFile(coverFullPath);
+          return res.sendFile(coverFullPath, SEND_OPTS);
         }
 
         // Generate WebP thumbnail on-the-fly and save to cache
@@ -142,7 +142,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
           res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
           res.setHeader('ETag', etag);
           if (req.headers['if-none-match'] === etag) return res.status(304).end();
-          return res.sendFile(thumbPath);
+          return res.sendFile(thumbPath, SEND_OPTS);
         }
       }
     }
