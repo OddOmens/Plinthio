@@ -25,7 +25,10 @@ test('a viewer picks their own accent in onboarding, without changing the server
   await next.click(); // accent
   await next.click(); // interests
   await page.getByRole('button', { name: 'Not now' }).click(); // two-factor
+  // Finishing saves in the background; read the account back only once that has landed.
+  const saved = page.waitForResponse((r) => r.url().endsWith('/api/users/preferences') && r.request().method() === 'PATCH');
   await page.getByRole('button', { name: 'Start browsing' }).click();
+  await saved;
 
   const me = await (await request.post('/api/auth/login', { data: user })).json();
   expect(me.user.preferences.accentTheme).toBe(pick.toLowerCase());
