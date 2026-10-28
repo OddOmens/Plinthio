@@ -440,6 +440,7 @@ async function initSchema(db) {
   }
 
   await finishItemsCascadeMigration(db, 'user_progress', 'user_id, item_id, current_time, duration, current_page, total_pages, progress_percent, is_finished, cfi, playback_rate, is_skipped, updated_at');
+  await repairClockTextProgressTimes(db);
 
   // Settings table
   await db.exec(`
@@ -763,9 +764,39 @@ async function finishItemsCascadeMigration(db, table, columns) {
   const oldColumnInfo = await db.all(`PRAGMA table_info(${oldTable})`);
   const oldColumnNames = new Set(oldColumnInfo.map((c) => c.name));
   const requestedColumns = columns.split(',').map((c) => c.trim());
-  const copyableColumns = requestedColumns.filter((c) => oldColumnNames.has(c)).join(', ');
+  // Each name is double-quoted so SQLite always reads it as a column. Unquoted, a column
+  // that shares its name with a keyword is read as the keyword instead: `current_time` in
+  // the SELECT became the wall-clock CURRENT_TIME ("20:44:06"), overwriting every saved
+  // position. (Only columns that exist on the old table reach here, which matters because
+  // SQLite treats a quoted name that matches no column as a string literal.)
+  const copyableColumns = requestedColumns
+    .filter((c) => oldColumnNames.has(c))
+    .map((c) => `"${c}"`)
+    .join(', ');
 
   await db.run(`INSERT INTO ${table} (${copyableColumns}) SELECT ${copyableColumns} FROM ${oldTable}`);
   await db.exec(`DROP TABLE ${oldTable}`);
   console.log(`Migrated "${table}" off the items cascade FK — reading/watching history now survives a library delete + re-scan.`);
+}
+
+// One-time repair for progress rows damaged by an earlier version of the cascade migration
+// above, which copied the wall-clock time ("20:44:06") into current_time instead of the
+// saved position. The original seconds are gone, but progress_percent and duration were
+// copied intact, and for video/audio the percent is current_time / duration rounded to a
+// whole number — so percent × duration gets the position back to within 1% of the runtime.
+// Page-based items (manga, books) have no duration and never use current_time, so they
+// get 0. A healthy current_time is always a number (the column is REAL), so on a clean
+// database this matches nothing and changes nothing.
+async function repairClockTextProgressTimes(db) {
+  const result = await db.run(`
+    UPDATE user_progress
+    SET "current_time" = CASE
+      WHEN duration > 0 AND progress_percent > 0 THEN progress_percent * duration / 100.0
+      ELSE 0
+    END
+    WHERE typeof("current_time") = 'text'
+  `);
+  if (result.changes > 0) {
+    console.log(`Repaired ${result.changes} progress position(s) that held a clock time instead of seconds.`);
+  }
 }
