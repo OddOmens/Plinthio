@@ -23,8 +23,8 @@
       "desc": "Mediatypen, startpagina, weergaven"
     },
     "hidden": {
-      "label": "Verborgen titels",
-      "desc": "Titels die je hebt verborgen"
+      "label": "Verborgen",
+      "desc": "Bibliotheken en titels die je hebt verborgen"
     },
     "activity": {
       "label": "Activiteit",
@@ -191,8 +191,21 @@
     }
   },
   "hidden": {
-    "title": "Verborgen titels",
-    "description": "Titels die je van je planken hebt verborgen. Alleen jij ziet ze niet meer; je kunt ze altijd terughalen.",
+    "title": "Verborgen",
+    "description": "Wat je liever niet ziet. Alleen je eigen account verandert, en je kunt alles altijd terughalen.",
+    "libraries": {
+      "title": "Bibliotheken",
+      "desc": "Zet een bibliotheek uit en niets daaruit verschijnt nog bij jou: niet op je planken, niet in zoekresultaten en niet in je lees- en sync-apps.",
+      "none": "Nog geen bibliotheken."
+    },
+    "kids": {
+      "label": "Kindercontent",
+      "desc": "Kinderbibliotheken, en elke titel die je beheerder aan de Kindermodus heeft toegevoegd."
+    },
+    "titles": {
+      "title": "Verborgen titels",
+      "desc": "Titels die je via hun pagina hebt verborgen."
+    },
     "empty": "Niets verborgen. Verberg een titel via de pagina ervan, dan verschijnt hij hier.",
     "unhide": "Tonen",
     "unhideFailed": "Kon die titel niet weer zichtbaar maken"

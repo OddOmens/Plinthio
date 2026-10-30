@@ -62,7 +62,7 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `POST /auth/login/2fa` | public | Second step of a two-factor sign-in: `{ challenge, code }` or `{ challenge, recoveryCode }`. Five tries per challenge (P111, then P113) |
 | `GET /auth/access` | public | Whether this device is home, Tailscale or outside, and whether it may sign in from there |
 | `GET /auth/2fa` · `POST /auth/2fa/setup` · `/2fa/enable` · `/2fa/disable` · `/2fa/recovery-codes` | V (session only, not API keys) | Two-factor for your own account: status, start (returns the `otpauth://` link and key), confirm with `{ code }`, turn off or make new backup codes with `{ password, code }` (or `recoveryCode`) |
-| `PATCH /users/preferences` · `PATCH /users/password` | V | Your preferences (merged, not replaced) and password |
+| `PATCH /users/preferences` · `PATCH /users/password` | V | Your preferences (merged, not replaced) and password. `hiddenLibraries` (library ids) and `hideKids` (true/false) hide whole libraries and kids content from you |
 | `POST /users/avatar` · `DELETE /users/avatar` · `GET /users/:id/avatar` | V | Profile picture |
 | `GET /keys` · `POST /keys` · `DELETE /keys/:id` | V | Your API keys (a new key is returned once) |
 

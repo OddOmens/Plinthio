@@ -23,8 +23,8 @@
       "desc": "Tipi di contenuto, pagina iniziale, viste"
     },
     "hidden": {
-      "label": "Titoli nascosti",
-      "desc": "I titoli che hai nascosto"
+      "label": "Nascosti",
+      "desc": "Librerie e titoli che hai nascosto"
     },
     "activity": {
       "label": "Attività",
@@ -191,8 +191,21 @@
     }
   },
   "hidden": {
-    "title": "Titoli nascosti",
-    "description": "I titoli che hai nascosto dai tuoi scaffali. Smetti di vederli solo tu; puoi ripristinarli quando vuoi.",
+    "title": "Nascosti",
+    "description": "Quello che preferisci non vedere. Cambia solo il tuo account e puoi ripristinare tutto quando vuoi.",
+    "libraries": {
+      "title": "Librerie",
+      "desc": "Disattiva una libreria e non vedrai più nulla di suo: né sui tuoi scaffali, né nella ricerca, né nelle app di lettura e sincronizzazione.",
+      "none": "Ancora nessuna libreria."
+    },
+    "kids": {
+      "label": "Contenuti per bambini",
+      "desc": "Le librerie per bambini e ogni titolo che il tuo amministratore ha aggiunto alla Modalità bambini."
+    },
+    "titles": {
+      "title": "Titoli nascosti",
+      "desc": "I titoli che hai nascosto dalla loro pagina."
+    },
     "empty": "Niente di nascosto. Nascondi un titolo dalla sua pagina e comparirà qui.",
     "unhide": "Mostra",
     "unhideFailed": "Impossibile mostrare di nuovo quel titolo"

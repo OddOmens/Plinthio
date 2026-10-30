@@ -10,7 +10,7 @@
     "security": { "label": "Sécurité", "desc": "Mot de passe, double authentification, appareils" },
     "appearance": { "label": "Apparence", "desc": "Couleur, navigation, largeur, écran de pause" },
     "shelves": { "label": "Étagères", "desc": "Types de médias, page d'accueil, vues" },
-    "hidden": { "label": "Titres masqués", "desc": "Les titres que vous avez masqués" },
+    "hidden": { "label": "Masqués", "desc": "Bibliothèques et titres que vous avez masqués" },
     "activity": { "label": "Activité", "desc": "Vos statistiques et connexions" },
     "apps": { "label": "Applis et clés d'API", "desc": "Mihon, KOReader, OPDS, scripts" }
   },
@@ -125,8 +125,21 @@
     }
   },
   "hidden": {
-    "title": "Titres masqués",
-    "description": "Les titres que vous avez masqués de vos étagères. Vous seul ne les voyez plus ; vous pouvez les réafficher à tout moment.",
+    "title": "Masqués",
+    "description": "Ce que vous préférez ne pas voir. Seul votre compte change, et vous pouvez tout réafficher à tout moment.",
+    "libraries": {
+      "title": "Bibliothèques",
+      "desc": "Désactivez une bibliothèque et plus rien n'en apparaît pour vous : ni sur vos étagères, ni dans la recherche, ni dans vos applis de lecture et de synchronisation.",
+      "none": "Aucune bibliothèque pour l'instant."
+    },
+    "kids": {
+      "label": "Contenu pour enfants",
+      "desc": "Les bibliothèques pour enfants, et tout titre ajouté au Mode Enfants par votre administrateur."
+    },
+    "titles": {
+      "title": "Titres masqués",
+      "desc": "Les titres que vous avez masqués depuis leur page."
+    },
     "empty": "Rien de masqué. Masquez un titre depuis sa page et il apparaîtra ici.",
     "unhide": "Réafficher",
     "unhideFailed": "Impossible de réafficher ce titre"

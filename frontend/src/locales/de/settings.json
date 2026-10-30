@@ -10,7 +10,7 @@
     "security": { "label": "Sicherheit", "desc": "Passwort, Zwei-Faktor, Geräte" },
     "appearance": { "label": "Darstellung", "desc": "Farbe, Navigation, Breite, Pausenbildschirm" },
     "shelves": { "label": "Regale", "desc": "Medientypen, Startseite, Ansichten" },
-    "hidden": { "label": "Ausgeblendete Titel", "desc": "Titel, die du ausgeblendet hast" },
+    "hidden": { "label": "Ausgeblendet", "desc": "Ausgeblendete Bibliotheken und Titel" },
     "activity": { "label": "Aktivität", "desc": "Deine Statistiken und Anmeldungen" },
     "apps": { "label": "Apps & API-Schlüssel", "desc": "Mihon, KOReader, OPDS, Skripte" }
   },
@@ -125,8 +125,21 @@
     }
   },
   "hidden": {
-    "title": "Ausgeblendete Titel",
-    "description": "Titel, die du aus deinen Regalen ausgeblendet hast. Nur du siehst sie nicht mehr; du kannst sie jederzeit zurückholen.",
+    "title": "Ausgeblendet",
+    "description": "Was du lieber nicht sehen möchtest. Das betrifft nur dein Konto, und du kannst alles jederzeit zurückholen.",
+    "libraries": {
+      "title": "Bibliotheken",
+      "desc": "Schalte eine Bibliothek aus, und nichts daraus taucht mehr bei dir auf: nicht in deinen Regalen, nicht in der Suche und nicht in deinen Lese- und Sync-Apps.",
+      "none": "Noch keine Bibliotheken."
+    },
+    "kids": {
+      "label": "Kinderinhalte",
+      "desc": "Kinderbibliotheken und alle Titel, die dein Admin zum Kindermodus hinzugefügt hat."
+    },
+    "titles": {
+      "title": "Ausgeblendete Titel",
+      "desc": "Titel, die du auf ihrer Seite ausgeblendet hast."
+    },
     "empty": "Nichts ausgeblendet. Blende einen Titel auf seiner Seite aus, dann erscheint er hier.",
     "unhide": "Einblenden",
     "unhideFailed": "Der Titel konnte nicht wieder eingeblendet werden"

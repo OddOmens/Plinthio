@@ -240,6 +240,9 @@ async function issueSession(req, res, db, user, where) {
       role: user.role,
       avatar: user.avatar || null,
       expires_at: user.expires_at || null,
+      // As /auth/me reports it, so screens that differ for a Kids Mode account are right
+      // from the first sign-in, not only after the session next refreshes.
+      kids_mode: user.kids_mode ? 1 : 0,
       preferences
     }
   });

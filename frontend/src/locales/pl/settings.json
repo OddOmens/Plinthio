@@ -23,8 +23,8 @@
       "desc": "Typy mediów, strona startowa, widoki"
     },
     "hidden": {
-      "label": "Ukryte tytuły",
-      "desc": "Tytuły ukryte przez ciebie"
+      "label": "Ukryte",
+      "desc": "Ukryte biblioteki i tytuły"
     },
     "activity": {
       "label": "Aktywność",
@@ -191,8 +191,21 @@
     }
   },
   "hidden": {
-    "title": "Ukryte tytuły",
-    "description": "Tytuły ukryte na twoich półkach. Tylko ty przestajesz je widzieć; każdy możesz w każdej chwili przywrócić.",
+    "title": "Ukryte",
+    "description": "To, czego wolisz nie widzieć. Zmienia się tylko twoje konto i wszystko możesz w każdej chwili przywrócić.",
+    "libraries": {
+      "title": "Biblioteki",
+      "desc": "Wyłącz bibliotekę, a nic z niej nie pojawi się u ciebie: ani na półkach, ani w wyszukiwaniu, ani w aplikacjach do czytania i synchronizacji.",
+      "none": "Nie ma jeszcze bibliotek."
+    },
+    "kids": {
+      "label": "Treści dla dzieci",
+      "desc": "Biblioteki dla dzieci oraz każdy tytuł dodany przez administratora do Trybu dziecięcego."
+    },
+    "titles": {
+      "title": "Ukryte tytuły",
+      "desc": "Tytuły ukryte na ich stronie."
+    },
     "empty": "Nic nie jest ukryte. Ukryj tytuł na jego stronie, a pojawi się tutaj.",
     "unhide": "Przywróć",
     "unhideFailed": "Nie udało się przywrócić tego tytułu"

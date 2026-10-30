@@ -10,7 +10,7 @@ import { config } from '../config/env.js';
 import { authenticateToken, requireAdmin, invalidateUserCache } from '../middleware/auth.js';
 import { serverError } from '../utils/http.js';
 import { normalizeUsername, USERNAME_RULE } from '../utils/username.js';
-import { AGE_RATINGS } from '../services/visibility.js';
+import { AGE_RATINGS, LIBRARY_ID_PATTERN, MAX_HIDDEN_LIBRARIES } from '../services/visibility.js';
 import { requestLocation } from '../services/network.js';
 import { logger } from '../services/logger.js';
 
@@ -161,6 +161,15 @@ router.patch('/preferences', async (req, res) => {
 
   if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
     return res.status(400).json({ error: 'Preferences must be an object' });
+  }
+  // These two feed the visibility filter (services/visibility.js), so they're held to a shape.
+  if ('hiddenLibraries' in patch && !(Array.isArray(patch.hiddenLibraries)
+      && patch.hiddenLibraries.length <= MAX_HIDDEN_LIBRARIES
+      && patch.hiddenLibraries.every((id) => typeof id === 'string' && LIBRARY_ID_PATTERN.test(id)))) {
+    return res.status(400).json({ error: 'hiddenLibraries must be a list of library ids' });
+  }
+  if ('hideKids' in patch && typeof patch.hideKids !== 'boolean') {
+    return res.status(400).json({ error: 'hideKids must be true or false' });
   }
 
   try {

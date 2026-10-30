@@ -10,7 +10,7 @@
     "security": { "label": "Security", "desc": "Password, two-factor, devices" },
     "appearance": { "label": "Appearance", "desc": "Colour, navigation, width, pause screen" },
     "shelves": { "label": "Shelves", "desc": "Media types, start page, views" },
-    "hidden": { "label": "Hidden titles", "desc": "Titles you've hidden" },
+    "hidden": { "label": "Hidden", "desc": "Libraries and titles you've hidden" },
     "activity": { "label": "Activity", "desc": "Your stats and sign-ins" },
     "apps": { "label": "Apps & API keys", "desc": "Mihon, KOReader, OPDS, scripts" }
   },
@@ -125,8 +125,21 @@
     }
   },
   "hidden": {
-    "title": "Hidden titles",
-    "description": "Titles you've hidden from your shelves. Only you stop seeing them; bring one back any time.",
+    "title": "Hidden",
+    "description": "What you'd rather not see. Only your account changes, and anything can come back any time.",
+    "libraries": {
+      "title": "Libraries",
+      "desc": "Switch a library off and nothing from it shows up for you: not on your shelves, in search, or in your reading and sync apps.",
+      "none": "No libraries yet."
+    },
+    "kids": {
+      "label": "Kids content",
+      "desc": "Kids libraries, and any title your admin added to Kids Mode."
+    },
+    "titles": {
+      "title": "Hidden titles",
+      "desc": "Titles you've hidden from their pages."
+    },
     "empty": "Nothing hidden. Hide a title from its page and it shows up here.",
     "unhide": "Unhide",
     "unhideFailed": "Could not unhide that title"

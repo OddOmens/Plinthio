@@ -20,6 +20,7 @@ export function ratingRank(rating) {
 //     never an offloaded one (kept as history, see offloaded_at). A title page passes
 //     { includeOffloaded: true } to show offloaded ones greyed with their progress.
 //   • Kids Mode: only kids-safe libraries, series and titles
+//   • the libraries, and the kids content, this person has chosen to hide
 //   • parental controls: nothing above the account's age rating
 // It carries no bind parameters — every interpolated value is an integer or a fixed string
 // computed here, never user input — so it can be dropped into any existing query without
@@ -40,6 +41,8 @@ export function accessSql(user, alias = 'i', { includeOffloaded = false } = {}) 
     )`;
   }
 
+  sql += personalSql(user, alias);
+
   const maxRank = ratingRank(user?.max_age_rating);
   if (maxRank !== null) {
     const unratedRank = user.allow_unrated === 0 || user.allow_unrated === false ? 99 : 0;
@@ -48,6 +51,39 @@ export function accessSql(user, alias = 'i', { includeOffloaded = false } = {}) 
       SELECT ss.age_rating FROM series_settings ss
       WHERE ss.library_id = ${alias}.library_id AND ss.series_name = ${alias}.series
     )) ${cases} ELSE ${unratedRank} END) <= ${maxRank}`;
+  }
+  return sql;
+}
+
+// What someone has chosen not to see (Settings → Hidden), as opposed to what they aren't
+// allowed to see: whole libraries (`hiddenLibraries`, library ids), and kids content
+// (`hideKids`: kids-safe libraries and every title or series marked for Kids Mode). A Kids
+// Mode account sees only kids content, so `hideKids` is ignored there rather than leaving
+// it with nothing.
+export const LIBRARY_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+export const MAX_HIDDEN_LIBRARIES = 200;
+
+function personalSql(user, alias) {
+  const prefs = user?.preferences;
+  if (!prefs || typeof prefs !== 'object') return '';
+  let sql = '';
+
+  // Preferences are the user's own JSON, so the ids are checked here too, not only when
+  // saved: only ids of the library-id shape reach the SQL, each quoted.
+  const hidden = Array.isArray(prefs.hiddenLibraries)
+    ? prefs.hiddenLibraries.filter((id) => typeof id === 'string' && LIBRARY_ID_PATTERN.test(id)).slice(0, MAX_HIDDEN_LIBRARIES)
+    : [];
+  if (hidden.length) {
+    sql += ` AND ${alias}.library_id NOT IN (${hidden.map((id) => `'${id}'`).join(', ')})`;
+  }
+
+  if (prefs.hideKids === true && !(user.kids_mode === 1 || user.kids_mode === true)) {
+    sql += ` AND NOT EXISTS (SELECT 1 FROM libraries hl WHERE hl.id = ${alias}.library_id AND hl.kids_allowed = 1)
+      AND NOT EXISTS (
+        SELECT 1 FROM kids_titles hk
+        WHERE hk.item_id = ${alias}.id
+           OR (hk.series IS NOT NULL AND hk.library_id = ${alias}.library_id AND hk.series = ${alias}.series)
+      )`;
   }
   return sql;
 }

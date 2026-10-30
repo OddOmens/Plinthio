@@ -10,7 +10,7 @@
     "security": { "label": "Seguridad", "desc": "Contraseña, verificación en dos pasos, dispositivos" },
     "appearance": { "label": "Apariencia", "desc": "Color, navegación, ancho, pantalla de pausa" },
     "shelves": { "label": "Estanterías", "desc": "Tipos de medios, página de inicio, vistas" },
-    "hidden": { "label": "Títulos ocultos", "desc": "Los títulos que has ocultado" },
+    "hidden": { "label": "Ocultos", "desc": "Bibliotecas y títulos que has ocultado" },
     "activity": { "label": "Actividad", "desc": "Tus estadísticas e inicios de sesión" },
     "apps": { "label": "Apps y claves de API", "desc": "Mihon, KOReader, OPDS, scripts" }
   },
@@ -125,8 +125,21 @@
     }
   },
   "hidden": {
-    "title": "Títulos ocultos",
-    "description": "Los títulos que has ocultado de tus estanterías. Solo tú dejas de verlos; puedes recuperarlos cuando quieras.",
+    "title": "Ocultos",
+    "description": "Lo que prefieres no ver. Solo cambia tu cuenta y puedes recuperar cualquier cosa cuando quieras.",
+    "libraries": {
+      "title": "Bibliotecas",
+      "desc": "Desactiva una biblioteca y nada de ella volverá a aparecerte: ni en tus estanterías, ni en la búsqueda, ni en tus apps de lectura y sincronización.",
+      "none": "Aún no hay bibliotecas."
+    },
+    "kids": {
+      "label": "Contenido infantil",
+      "desc": "Las bibliotecas infantiles y cualquier título que tu administrador haya añadido al Modo Niños."
+    },
+    "titles": {
+      "title": "Títulos ocultos",
+      "desc": "Los títulos que has ocultado desde su página."
+    },
     "empty": "No hay nada oculto. Oculta un título desde su página y aparecerá aquí.",
     "unhide": "Mostrar",
     "unhideFailed": "No se pudo volver a mostrar ese título"

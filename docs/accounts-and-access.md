@@ -8,7 +8,7 @@ Roles are enforced by the server on every request, not only hidden in the app.
 | --- | :-: | :-: | :-: |
 | Read, watch, listen; progress, bookmarks, ratings, lists, custom folders | ✓ | ✓ | ✓ |
 | Request titles; join watch parties (and start one, when parties are on) | ✓ | ✓ | ✓ |
-| Hide titles from their own shelves | ✓ | ✓ | ✓ |
+| Hide titles, whole libraries and kids content from their own shelves | ✓ | ✓ | ✓ |
 | API keys and reading apps for themselves | ✓ | ✓ | ✓ |
 | Edit metadata, upload covers, series settings (name, reading direction, age rating) | | ✓ | ✓ |
 | Add series and titles to Kids Mode (the **Kids** button on title pages) | | ✓ | ✓ |
@@ -59,15 +59,25 @@ Rules:
   parties (a kids account can't join, or be moved to, something outside it) and the reading
   apps.
 
-## Hiding titles
+## Hiding titles and libraries
 
 - **Anyone** can hide a title from their own shelves: the ⋯ menu on its card → Hide.
   **Settings → Hidden** brings it back.
+- **Anyone** can hide whole libraries from themselves in **Settings → Hidden**: one switch
+  per library. Someone who only wants films switches off everything but Movies; someone
+  else keeps Movies and Shows. It changes only their own account.
+- The same page has a **Kids content** switch, which hides kids-safe libraries and every
+  series or title added to Kids Mode, wherever it lives. A kids account ignores it, since
+  kids content is all it sees.
 - **An admin** can hide a title from everyone. There's no button for this yet; use the API:
   `POST /api/items/<id>/hide` with `{"global": true}`, and undo it with
   `POST /api/items/<id>/unhide` with `{"global": true}`.
 
-A hidden title is also refused when opened by direct link.
+A hidden title, or anything in a hidden library, is also left out of search, Continue, lists
+and the reading apps, and refused when opened by direct link.
+
+Hiding is a personal choice, not a restriction: the person can switch a library back on
+whenever they like. To keep content from someone, use a content limit or Kids Mode.
 
 ## Expiring accounts
 
