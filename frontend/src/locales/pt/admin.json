@@ -794,6 +794,10 @@
       "saveKey": "Salvar chave",
       "getOne": "Consiga uma grátis na {link} depois de entrar.",
       "getOneLink": "página da API do Comic Vine"
+    },
+    "homeVideos": {
+      "title": "Vídeos caseiros",
+      "description": "Bibliotecas sem nada a encontrar online, como vídeos caseiros ou gravações. Pôsteres e detalhes que faltam não são apontados aqui nem em Saúde."
     }
   },
   "overview": {

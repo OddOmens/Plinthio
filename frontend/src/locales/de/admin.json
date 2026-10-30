@@ -794,6 +794,10 @@
       "saveKey": "Schlüssel speichern",
       "getOne": "Hol dir einen kostenlos auf {link}, sobald du angemeldet bist.",
       "getOneLink": "der API-Seite von Comic Vine"
+    },
+    "homeVideos": {
+      "title": "Heimvideos",
+      "description": "Bibliotheken, zu denen es online nichts gibt, etwa Heimvideos oder Aufnahmen. Fehlende Poster und Details werden hier und unter Zustand nicht gemeldet."
     }
   },
   "overview": {

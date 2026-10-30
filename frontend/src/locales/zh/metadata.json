@@ -94,7 +94,7 @@
       "total": "媒体项目总数",
       "totalHint": "所有已索引的内容",
       "dirty": "标题需要清理",
-      "dirtyHint": "标题中含有发布标签或年份",
+      "dirtyHint": "看起来仍像文件名",
       "missingCover": "缺少封面图",
       "missingCoverHint": "没有海报或封面文件",
       "missingMeta": "缺少简介 / 日期",
@@ -105,19 +105,24 @@
       "allMediaTypes": "所有媒体类型",
       "tvShows": "电视剧",
       "needsCleanup": "需要清理",
-      "searchPlaceholder": "按标题或路径筛选..."
+      "searchPlaceholder": "按标题或路径筛选...",
+      "ignored": "已忽略（{count}）"
     },
     "batch": {
       "selectAll": "全选（{count}）",
       "selected": "已选择{count}项",
       "overwritePosters": "覆盖海报",
       "useCanonicalTitle": "使用规范标题",
-      "cleanHint": "从数据库标题中去除发布标签和末尾的年份",
+      "cleanHint": "整理仍像文件名的标题：点号、发布标签、[ID]、括号里的年份以及 ｜ 频道后缀。来自匹配或编辑的标题保持不变",
       "cleanCount": "清理标题（{count}）",
       "findHint": "将每个选中的标题与元数据来源（TMDB、MangaDex、Google Books、Open Library）匹配：封面图、简介、发行日期",
       "findCount": "查找元数据（{count}）",
       "stop": "停止",
-      "stopping": "正在停止…"
+      "stopping": "正在停止…",
+      "ignoreCount": "忽略缺失信息（{count}）",
+      "ignoreHint": "不再标记所选作品缺少的海报和详情，适用于家庭录像等在网上找不到信息的内容",
+      "unignoreCount": "重新标记（{count}）",
+      "unignoreHint": "重新统计所选作品缺少的海报和详情"
     },
     "summary": {
       "matched": "已匹配{matched}/{total}项。",
@@ -147,7 +152,9 @@
       "noPoster": "无海报",
       "synopsis": "简介",
       "noSynopsis": "无简介",
-      "noDate": "无日期"
+      "noDate": "无日期",
+      "ignored": "已忽略",
+      "ignoredByLibrary": "已对整个媒体库忽略（管理 → 元数据 → 家庭录像）"
     },
     "cleanLabel": "清理后：",
     "actions": {
@@ -163,7 +170,8 @@
       "failed": "匹配失败，请重试"
     },
     "errors": {
-      "loadFailed": "加载项目失败"
+      "loadFailed": "加载项目失败",
+      "ignoreFailed": "无法更改这些作品"
     },
     "clean": {
       "confirmTitle": {

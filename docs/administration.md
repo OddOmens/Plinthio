@@ -36,7 +36,7 @@ See [Libraries](libraries.md) for types, folder layouts and what a scan does.
 
 Checks for what needs attention: unreachable libraries, missing files (keep them as history
 or remove them for good), titles offloaded to free space, likely duplicates, clashing volume numbers, titles with no cover, description,
-author or age rating, and recent video conversion failures. See
+author or age rating (unless their missing metadata is ignored, see Metadata), and recent video conversion failures. See
 [Libraries → Library Health](libraries.md#library-health).
 
 ## Metadata
@@ -49,7 +49,13 @@ filters, for fixing metadata in bulk:
 - **Auto Match** per row, with the result shown inline, so you can work down a list.
 - **Batch match** the selected titles. It runs in your browser one title at a time and ends
   with a summary.
-- **Clean titles:** strip scene junk from titles taken from file names.
+- **Clean titles:** tidy titles that still look like file names (dots, release tags, [ids],
+  a year in brackets, a "｜ channel" tail from a video download). Titles from a match or an
+  edit are left alone.
+- **Ignore missing info:** stop flagging the selected titles' missing poster and details,
+  for home videos and anything else with nothing to find online. **Ignored** lists them, to
+  flag them again. **Home videos** above the table does the same for whole libraries,
+  including titles added later.
 - **Search** providers manually, and apply a result to a title or a whole series.
 
 TMDB matches need a TMDB key, built in or your own (P400 without one).

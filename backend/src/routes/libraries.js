@@ -132,19 +132,30 @@ router.post('/', requireAdmin, async (req, res) => {
   }
 });
 
-// Library options admins and editors can change. Today: whether it's kids-safe — every
-// title in a kids-safe library is visible to Kids Mode accounts.
+// Library options admins and editors can change: whether it's kids-safe (every title in a
+// kids-safe library is visible to Kids Mode accounts), and whether its missing posters and
+// details are flagged at all (off for home videos; services/metadataGaps.js).
+const LIBRARY_OPTIONS = { kidsAllowed: 'kids_allowed', ignoreMissingMetadata: 'ignore_missing_metadata' };
+
 router.patch('/:id', requireEditor, async (req, res) => {
-  const { kidsAllowed } = req.body;
-  if (typeof kidsAllowed !== 'boolean') {
-    return res.status(400).json({ error: 'kidsAllowed must be true or false' });
+  const changes = Object.entries(LIBRARY_OPTIONS).filter(([field]) => req.body?.[field] !== undefined);
+  if (!changes.length || changes.some(([field]) => typeof req.body[field] !== 'boolean')) {
+    return res.status(400).json({ error: `Send ${Object.keys(LIBRARY_OPTIONS).join(' or ')} as true or false` });
   }
   try {
     const db = await getDb();
-    const result = await db.run('UPDATE libraries SET kids_allowed = ? WHERE id = ?', [kidsAllowed ? 1 : 0, req.params.id]);
+    const result = await db.run(
+      `UPDATE libraries SET ${changes.map(([, column]) => `${column} = ?`).join(', ')} WHERE id = ?`,
+      [...changes.map(([field]) => (req.body[field] ? 1 : 0)), req.params.id]
+    );
     if (!result.changes) return res.status(404).json({ error: 'Library not found' });
-    logger.info('library', `Library ${req.params.id} ${kidsAllowed ? 'added to' : 'removed from'} Kids Mode by ${req.user.username}`);
-    res.json({ id: req.params.id, kidsAllowed });
+    for (const [field] of changes) {
+      const on = req.body[field];
+      logger.info('library', field === 'kidsAllowed'
+        ? `Library ${req.params.id} ${on ? 'added to' : 'removed from'} Kids Mode by ${req.user.username}`
+        : `Library ${req.params.id}: missing metadata ${on ? 'ignored' : 'flagged again'} by ${req.user.username}`);
+    }
+    res.json({ id: req.params.id, ...Object.fromEntries(changes.map(([field]) => [field, req.body[field]])) });
   } catch (err) {
     serverError(req, res, err);
   }

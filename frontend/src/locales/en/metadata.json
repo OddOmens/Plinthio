@@ -96,7 +96,7 @@
       "total": "Total Media Items",
       "totalHint": "All indexed content",
       "dirty": "Needs Title Cleanup",
-      "dirtyHint": "Has release tags or year in title",
+      "dirtyHint": "Still looks like a file name",
       "missingCover": "Missing Artwork",
       "missingCoverHint": "No poster or cover file",
       "missingMeta": "Missing Overview / Date",
@@ -107,19 +107,24 @@
       "allMediaTypes": "All Media Types",
       "tvShows": "TV Shows",
       "needsCleanup": "Needs Cleanup",
-      "searchPlaceholder": "Filter by title or path..."
+      "searchPlaceholder": "Filter by title or path...",
+      "ignored": "Ignored ({count})"
     },
     "batch": {
       "selectAll": "Select All ({count})",
       "selected": "{count} selected",
       "overwritePosters": "Overwrite Posters",
       "useCanonicalTitle": "Use Canonical Title",
-      "cleanHint": "Strip release tags and trailing years from database titles",
+      "cleanHint": "Tidy titles that still look like file names: dots, release tags, [ids], years in brackets and ｜ channel tails. Titles from a match or an edit are left alone",
       "cleanCount": "Clean Titles ({count})",
       "findHint": "Match each selected title against the metadata providers (TMDB, MangaDex, Google Books, Open Library): artwork, synopsis, release date",
       "findCount": "Find Metadata ({count})",
       "stop": "Stop",
-      "stopping": "Stopping…"
+      "stopping": "Stopping…",
+      "ignoreCount": "Ignore Missing Info ({count})",
+      "ignoreHint": "Stop flagging the selected titles' missing poster and details, for home videos and anything else with nothing to find online",
+      "unignoreCount": "Flag Again ({count})",
+      "unignoreHint": "Count the selected titles' missing poster and details again"
     },
     "summary": {
       "matched": "Matched {matched} of {total}.",
@@ -152,7 +157,9 @@
       "noPoster": "No Poster",
       "synopsis": "Synopsis",
       "noSynopsis": "No Synopsis",
-      "noDate": "No Date"
+      "noDate": "No Date",
+      "ignored": "Ignored",
+      "ignoredByLibrary": "Ignored for its whole library (Admin → Metadata → Home videos)"
     },
     "cleanLabel": "Clean:",
     "actions": {
@@ -168,7 +175,8 @@
       "failed": "Match failed — try again"
     },
     "errors": {
-      "loadFailed": "Failed to load items"
+      "loadFailed": "Failed to load items",
+      "ignoreFailed": "Couldn't change those titles"
     },
     "clean": {
       "confirmTitle": {

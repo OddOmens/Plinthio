@@ -777,6 +777,10 @@
       "saveKey": "保存密钥",
       "getOne": "登录后在{link}免费获取。",
       "getOneLink": "Comic Vine 的 API 页面"
+    },
+    "homeVideos": {
+      "title": "家庭录像",
+      "description": "在网上找不到信息的媒体库，比如家庭录像或录制节目。这里和健康状况中都不会标记它们缺少的海报和详情。"
     }
   },
   "overview": {

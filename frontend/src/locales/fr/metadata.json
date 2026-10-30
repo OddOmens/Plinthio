@@ -96,7 +96,7 @@
       "total": "Total des médias",
       "totalHint": "Tout le contenu indexé",
       "dirty": "Titres à nettoyer",
-      "dirtyHint": "Tags de release ou année dans le titre",
+      "dirtyHint": "Ressemble encore à un nom de fichier",
       "missingCover": "Illustration manquante",
       "missingCoverHint": "Aucune affiche ni couverture",
       "missingMeta": "Résumé / date manquants",
@@ -107,7 +107,8 @@
       "allMediaTypes": "Tous les types de médias",
       "tvShows": "Séries TV",
       "needsCleanup": "À nettoyer",
-      "searchPlaceholder": "Filtrer par titre ou chemin…"
+      "searchPlaceholder": "Filtrer par titre ou chemin…",
+      "ignored": "Ignorés ({count})"
     },
     "batch": {
       "selectAll": "Tout sélectionner ({count})",
@@ -117,12 +118,16 @@
       },
       "overwritePosters": "Remplacer les affiches",
       "useCanonicalTitle": "Utiliser le titre officiel",
-      "cleanHint": "Retirer les tags de release et les années finales des titres en base",
+      "cleanHint": "Nettoyer les titres qui ressemblent encore à des noms de fichiers : points, tags de release, [identifiants], années entre parenthèses et suffixes ｜ chaîne. Les titres venus d'une correspondance ou d'une modification ne sont pas touchés",
       "cleanCount": "Nettoyer les titres ({count})",
       "findHint": "Chercher chaque titre sélectionné auprès des fournisseurs de métadonnées (TMDB, MangaDex, Google Books, Open Library) : illustration, résumé, date de sortie",
       "findCount": "Trouver les métadonnées ({count})",
       "stop": "Arrêter",
-      "stopping": "Arrêt…"
+      "stopping": "Arrêt…",
+      "ignoreCount": "Ignorer les infos manquantes ({count})",
+      "ignoreHint": "Ne plus signaler l'affiche et les détails manquants des titres choisis, pour les vidéos perso et tout ce qui n'a rien à trouver en ligne",
+      "unignoreCount": "Signaler à nouveau ({count})",
+      "unignoreHint": "Compter à nouveau l'affiche et les détails manquants des titres choisis"
     },
     "summary": {
       "matched": "{matched} sur {total} trouvés.",
@@ -155,7 +160,9 @@
       "noPoster": "Sans affiche",
       "synopsis": "Résumé",
       "noSynopsis": "Sans résumé",
-      "noDate": "Sans date"
+      "noDate": "Sans date",
+      "ignored": "Ignoré",
+      "ignoredByLibrary": "Ignoré pour toute sa bibliothèque (Administration → Métadonnées → Vidéos perso)"
     },
     "cleanLabel": "Nettoyé :",
     "actions": {
@@ -171,7 +178,8 @@
       "failed": "La correspondance a échoué — réessayez"
     },
     "errors": {
-      "loadFailed": "Impossible de charger les éléments"
+      "loadFailed": "Impossible de charger les éléments",
+      "ignoreFailed": "Impossible de modifier ces titres"
     },
     "clean": {
       "confirmTitle": {

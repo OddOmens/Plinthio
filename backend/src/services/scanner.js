@@ -89,6 +89,10 @@ export async function scanLibrary(libraryId) {
       );
     }
     const dbItemsById = new Map(dbItemsBefore.map((i) => [i.id, i]));
+    // A row is found by its path too: a file re-linked after a rename keeps its old id, which
+    // isn't the hash of its new path, so looking it up by id alone added the file a second time
+    // on the next scan (two rows, one file — shown in Health as duplicates and clashes).
+    const dbItemsByPath = new Map(dbItemsBefore.map((i) => [i.path, i]));
     const discoveredPathSet = new Set(files);
 
     // Orphaned rows (path no longer exists on disk) are candidates for a rename match,
@@ -127,10 +131,10 @@ export async function scanLibrary(libraryId) {
       // Deterministic ID based on file path
       const computedId = crypto.createHash('md5').update(filePath).digest('hex');
 
-      let itemId = computedId;
+      let itemId = dbItemsById.has(computedId) ? computedId : (dbItemsByPath.get(filePath)?.id || computedId);
       let isRename = false;
 
-      if (!dbItemsById.has(computedId)) {
+      if (!dbItemsById.has(itemId)) {
         const key = `${path.basename(filePath)}::${stats.size}`;
         const candidates = (orphanedByKey.get(key) || []).filter((c) => !claimedOrphanIds.has(c.id));
         if (candidates.length === 1) {

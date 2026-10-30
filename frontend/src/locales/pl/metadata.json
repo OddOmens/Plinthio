@@ -100,7 +100,7 @@
       "total": "Wszystkie pozycje",
       "totalHint": "Cała zindeksowana zawartość",
       "dirty": "Tytuły do uporządkowania",
-      "dirtyHint": "Znaczniki wydania lub rok w tytule",
+      "dirtyHint": "Wciąż wygląda jak nazwa pliku",
       "missingCover": "Brak grafiki",
       "missingCoverHint": "Brak pliku plakatu lub okładki",
       "missingMeta": "Brak opisu / daty",
@@ -111,19 +111,24 @@
       "allMediaTypes": "Wszystkie typy mediów",
       "tvShows": "Seriale",
       "needsCleanup": "Do uporządkowania",
-      "searchPlaceholder": "Filtruj po tytule lub ścieżce..."
+      "searchPlaceholder": "Filtruj po tytule lub ścieżce...",
+      "ignored": "Pomijane ({count})"
     },
     "batch": {
       "selectAll": "Zaznacz wszystko ({count})",
       "selected": "Zaznaczono: {count}",
       "overwritePosters": "Nadpisz plakaty",
       "useCanonicalTitle": "Użyj oficjalnego tytułu",
-      "cleanHint": "Usuń znaczniki wydań i końcowe lata z tytułów w bazie danych",
+      "cleanHint": "Porządkuje tytuły, które wciąż wyglądają jak nazwy plików: kropki, znaczniki wydań, [identyfikatory], lata w nawiasach i dopiski ｜ kanał. Tytuły z dopasowania lub edycji zostają bez zmian",
       "cleanCount": "Uporządkuj tytuły ({count})",
       "findHint": "Dopasuj każdy zaznaczony tytuł u dostawców metadanych (TMDB, MangaDex, Google Books, Open Library): grafika, opis, data wydania",
       "findCount": "Znajdź metadane ({count})",
       "stop": "Zatrzymaj",
-      "stopping": "Zatrzymywanie…"
+      "stopping": "Zatrzymywanie…",
+      "ignoreCount": "Pomijaj brakujące informacje ({count})",
+      "ignoreHint": "Przestań zgłaszać brak plakatu i szczegółów w wybranych tytułach – dla domowych nagrań i wszystkiego, o czym w sieci nic nie ma",
+      "unignoreCount": "Zgłaszaj znowu ({count})",
+      "unignoreHint": "Znowu licz brakujący plakat i szczegóły wybranych tytułów"
     },
     "summary": {
       "matched": "Dopasowano {matched} z {total}.",
@@ -162,7 +167,9 @@
       "noPoster": "Brak plakatu",
       "synopsis": "Opis",
       "noSynopsis": "Brak opisu",
-      "noDate": "Brak daty"
+      "noDate": "Brak daty",
+      "ignored": "Pomijane",
+      "ignoredByLibrary": "Pomijane w całej bibliotece (Administracja → Metadane → Domowe nagrania)"
     },
     "cleanLabel": "Po uporządkowaniu:",
     "actions": {
@@ -178,7 +185,8 @@
       "failed": "Dopasowanie nie powiodło się — spróbuj ponownie"
     },
     "errors": {
-      "loadFailed": "Nie udało się wczytać pozycji"
+      "loadFailed": "Nie udało się wczytać pozycji",
+      "ignoreFailed": "Nie udało się zmienić tych tytułów"
     },
     "clean": {
       "confirmTitle": {

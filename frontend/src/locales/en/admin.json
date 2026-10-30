@@ -794,6 +794,10 @@
       "saveKey": "Save key",
       "getOne": "Get one free from {link} once you're signed in.",
       "getOneLink": "Comic Vine's API page"
+    },
+    "homeVideos": {
+      "title": "Home videos",
+      "description": "Libraries with nothing to find online, like home videos or recordings. Their missing posters and details aren't flagged here or in Health."
     }
   },
   "overview": {

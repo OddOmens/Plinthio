@@ -8,7 +8,7 @@ const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'plinthio-videometa-'));
 process.env.DATA_DIR = dataDir;
 
 const { extractVideoMetadata } = await import('../src/services/metadata.js');
-const { parseMediaTitle } = await import('../src/services/titleCleaner.js');
+const { parseMediaTitle, suggestCleanTitle } = await import('../src/services/titleCleaner.js');
 
 // The files needn't exist: duration probing fails quietly and the cover lookup finds nothing.
 const meta = (p, type = 'show') => extractVideoMetadata(p, 'id', type);
@@ -75,5 +75,38 @@ describe('episode patterns need word boundaries', () => {
     const p = parseMediaTitle('Show.S02E05.Title');
     assert.equal(p.season, 2);
     assert.equal(p.episode, 5);
+  });
+});
+
+// Admin → Metadata's title cleanup works from the title as it stands, so matched and edited
+// titles are left alone, and a cleaned title has nothing more to clean.
+describe('title cleanup', () => {
+  const clean = (title, series = null) => suggestCleanTitle({ title, series })?.title ?? null;
+
+  test('a video download\'s "｜ channel ｜ pitch" tail and [id] come off the episode name', () => {
+    assert.equal(clean('S01E01: Tricky Sticky Rice Dumplings ｜ Cartoon For Kids ｜ The Bumble Nums [6a6x0WQnFzY]', 'Bumble Nums'),
+      'S01E01: Tricky Sticky Rice Dumplings');
+    assert.equal(clean('S01E03: Bumble Nums - Atomic Avocado Toast', 'Bumble Nums'), 'S01E03: Atomic Avocado Toast');
+    assert.equal(parseMediaTitle('Bumble Nums - S01E01 - Tricky Sticky Rice Dumplings ｜ Cartoon For Kids ｜ The Bumble Nums [6a6x0WQnFzY].webm').cleanTitle,
+      'S01E01: Tricky Sticky Rice Dumplings', 'new scans name it cleanly to begin with');
+  });
+
+  test('release names are cleaned, with the year kept aside', () => {
+    assert.deepEqual(suggestCleanTitle({ title: 'Coyote.vs.Acme.2026.1080p.HEVC.x265.RMTeam' }), { title: 'Coyote vs Acme', year: '2026' });
+    assert.deepEqual(suggestCleanTitle({ title: 'My Neighbor Totoro (1988) [1080p] [BluRay] [YTS.MX]' }), { title: 'My Neighbor Totoro', year: '1988' });
+    assert.equal(clean("I Parry Everything! v01 (2023) (Digital) (1r0n)"), 'I Parry Everything! v01');
+  });
+
+  test('real titles are left alone, so cleaning never makes one worse or keeps flagging it', () => {
+    for (const title of ['The Magic Xylophone', 'Hans Zimmer: The Sound of Hollywood', 'Avatar: Fire and Ash',
+      'Blade Runner 2049', 'Dr. Stone', 'S01E05: Mr. Smith Goes to Washington', 'Robin Hood - S01E07']) {
+      assert.equal(clean(title, 'Some Show'), null, title);
+    }
+  });
+
+  test('a cleaned title has nothing left to clean', () => {
+    for (const title of ['Coyote.vs.Acme.2026.1080p.HEVC.x265.RMTeam', 'S02E15: Groovy Movie Popcorn ｜ Cartoons For Kids']) {
+      assert.equal(clean(clean(title)), null, title);
+    }
   });
 });

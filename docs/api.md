@@ -72,7 +72,7 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | --- | --- | --- |
 | `GET /libraries` | V | Libraries with visible item counts |
 | `POST /libraries` · `DELETE /libraries/:id` · `POST /libraries/:id/scan` · `GET /libraries/browse` | A | Manage libraries and scans |
-| `PATCH /libraries/:id` `{ kidsAllowed }` | E | Kids Mode for a whole library |
+| `PATCH /libraries/:id` `{ kidsAllowed, ignoreMissingMetadata }` | E | Kids Mode for a whole library; stop flagging its missing posters and details |
 | `GET /items` | V | Visible titles. Filters: `libraryId`, `mediaType`, `author`, `series`, `search`, `progress` (`unread`, `in_progress`, `finished`, `skipped`), `genre`, `addedWithinDays`, `sort`, `limit`, `offset` |
 | `GET /items/:id` · `/items/:id/extras` · `/credits` · `/collection` · `/chapters` | V | One title, its extras, TMDB credits and facts, its collection, audiobook or video chapters |
 | `GET /items/series` · `/items/series/:name?library=&type=` | V | Series list and one series (volumes, counts, next volume) |
@@ -136,7 +136,7 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `GET /metadata/search?mediaType=&query=&year=&language=` | V | Search providers. For books, `language` picks Open Library's edition, and `notices` lists a provider that didn't answer and why (`quota`, `rejected`, `unreachable`) |
 | `GET /metadata/details?source=&externalId=&isbn=&region=` | V | The rest of one search result: Open Library's description, Audnexus's ISBN and genres for Audible, a Comic Vine series' creators |
 | `POST /metadata/apply/:itemId` · `/metadata/cover/:itemId` · `/metadata/series-cover` | E | Apply a match, upload covers |
-| `GET /metadata/admin/items` · `POST /metadata/admin/match-single/:itemId` · `/batch-match` · `/batch-clean-titles` | E | Bulk tools |
+| `GET /metadata/admin/items` · `POST /metadata/admin/match-single/:itemId` · `/batch-match` · `/batch-clean-titles` · `/ignore-missing` `{ itemIds, ignored }` | E | Bulk tools |
 
 ### Server
 

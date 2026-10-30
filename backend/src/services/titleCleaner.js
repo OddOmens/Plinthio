@@ -14,6 +14,89 @@ export const VIDEO_EXTENSIONS = /\.(mkv|mp4|avi|mov|wmv|m4v|webm|flv|ts)$/i;
 // All media extensions handled by Plinthio
 export const ALL_MEDIA_EXTENSIONS = /\.(mkv|mp4|avi|mov|wmv|m4v|webm|flv|ts|cbz|cbr|epub|pdf|m4b|mp3)$/i;
 
+// "｜" (fullwidth, what YouTube titles use in file names) or a spaced "|".
+const BAR_SPLIT = /\s*[｜|]\s+|\s+[｜|]\s*/;
+
+function cutBarTail(str) {
+  const [head] = str.split(BAR_SPLIT);
+  return head && head.trim() ? head : str;
+}
+
+// Release-name clutter that never belongs in a title. Narrower than TECH_MARKERS, which also
+// lists real words ("Web", "Extended", "Proper") because it only ever reads file names.
+const RELEASE_JUNK = /\b(?:\d{3,4}p|x26[45]|h ?26[45]|hevc|blu-?ray|brrip|bdrip|webrip|web-?dl|hdtv|dvdrip|hdrip|10bit|yts(?:\.mx)?)\b/i;
+const EPISODE_TITLE = /^(S\d+E\d+(?:-?E\d+)?):\s*(.*)$/i;
+
+/**
+ * Whether a title still carries a file name's clutter: words.joined.by.dots, underscores,
+ * [tags], release markers, a year in brackets, a file extension or a "｜ channel" tail. A
+ * plain title with a colon, a year that's part of the name ("Blade Runner 2049") or an
+ * initial ("Dr. Stone") doesn't.
+ */
+export function looksLikeFileName(title) {
+  const t = String(title || '');
+  return /_/.test(t) ||
+    /\p{L}{2,}\.\p{L}{2,}\.\p{L}/u.test(t) ||
+    /\[[^\]]*\]/.test(t) ||
+    RELEASE_JUNK.test(t) ||
+    /\((?:19|20)\d\d\)/.test(t) ||
+    ALL_MEDIA_EXTENSIONS.test(t) ||
+    BAR_SPLIT.test(t);
+}
+
+// An episode's own name, without a "｜ channel" tail, [ids], release markers, or the
+// series' name repeated at either end ("Bumble Nums - Atomic Avocado Toast").
+function cleanEpisodeName(name, series) {
+  let out = cutBarTail(String(name || ''));
+  out = out.replace(/\[[^\]]*\]/g, ' ');
+  const junk = out.match(RELEASE_JUNK);
+  if (junk && junk.index > 0) out = out.slice(0, junk.index);
+  if (series) {
+    const s = String(series).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out.replace(new RegExp(`^(?:the\\s+)?${s}\\s*[-–—:]\\s+`, 'i'), '')
+      .replace(new RegExp(`\\s+[-–—:]\\s*(?:the\\s+)?${s}$`, 'i'), '');
+  }
+  return out.replace(/\s+/g, ' ').replace(/^[\s\-–—:]+|[\s\-–—:]+$/g, '').trim();
+}
+
+/**
+ * The title Admin → Metadata's cleanup proposes, or null when there's nothing to clean:
+ * `{ title, year }`. It works from the title as it stands, not the file name, so a title a
+ * match or an edit gave ("The Magic Xylophone", "Hans Zimmer: The Sound of Hollywood") is
+ * left alone, and cleaning a title once leaves nothing more to clean.
+ */
+export function suggestCleanTitle({ title, path: filePath, series } = {}) {
+  const current = String(title || '').trim();
+  if (!current) {
+    const fromFile = parseMediaTitle(String(filePath || '').split(/[/\\]/).pop());
+    return fromFile.cleanTitle ? { title: fromFile.cleanTitle, year: fromFile.year } : null;
+  }
+
+  const episode = current.match(EPISODE_TITLE);
+  if (episode) {
+    const name = cleanEpisodeName(episode[2], series);
+    const cleaned = name ? `${episode[1].toUpperCase()}: ${name}` : current;
+    return cleaned !== current ? { title: cleaned, year: null } : null;
+  }
+
+  if (!looksLikeFileName(current)) return null;
+
+  // Comic and film releases end in bracketed tags: "… v01 (2023) (Digital) (1r0n)". They
+  // all go, the year kept from among them.
+  let rest = cutBarTail(current);
+  let tagYear = null;
+  for (let m; (m = rest.match(/\s*\(([^()]*)\)\s*$/)) && m.index > 0;) {
+    if (/^(?:19|20)\d\d$/.test(m[1].trim())) tagYear = m[1].trim();
+    rest = rest.slice(0, m.index);
+  }
+  rest = rest.trim();
+  if (rest && rest !== current && !looksLikeFileName(rest)) return { title: rest, year: tagYear };
+
+  const parsed = parseMediaTitle(rest || current);
+  const cleaned = parsed.cleanTitle && parsed.cleanTitle !== parsed.original ? parsed.cleanTitle : rest;
+  return cleaned && cleaned !== current ? { title: cleaned, year: parsed.year || tagYear } : null;
+}
+
 /**
  * Parse a raw filename or existing title into structured components:
  * { cleanTitle, year, isTv, series, season, episode, episodeTitle, original }
@@ -33,6 +116,11 @@ export function parseMediaTitle(rawInput) {
 
   // Strip media extension
   str = str.replace(ALL_MEDIA_EXTENSIONS, '');
+
+  // Video downloads (YouTube and the like) tack the channel and a pitch on with bars:
+  // "Tricky Sticky Rice Dumplings ｜ Cartoon For Kids ｜ The Bumble Nums [6a6x0WQnFzY]".
+  // What comes before the first bar is the name.
+  str = cutBarTail(str);
 
   // Strip anime/fansub group tags at start: e.g. [SubsPlease], [Erai-raws], [Judas]
   str = str.replace(/^\[[^\]]+\]\s*/, '');

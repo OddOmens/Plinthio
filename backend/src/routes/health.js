@@ -7,6 +7,7 @@ import { logger } from '../services/logger.js';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { serverError } from '../utils/http.js';
+import { isMetadataIgnored } from '../services/metadataGaps.js';
 
 const router = express.Router();
 
@@ -104,7 +105,7 @@ router.get('/', async (req, res) => {
     const items = await db.all(`
       SELECT i.id, i.title, i.series, i.volume, i.media_type, i.path, i.updated_at,
              i.cover_path, i.description, i.author, i.age_rating, i.library_id, i.missing_since,
-             i.offloaded_at, i.file_size, l.name AS library_name
+             i.offloaded_at, i.file_size, i.metadata_ignored, l.name AS library_name, l.ignore_missing_metadata
       FROM items i
       JOIN libraries l ON l.id = i.library_id
     `);
@@ -119,13 +120,17 @@ router.get('/', async (req, res) => {
     const missingFiles = items.filter((i) => !i.offloaded_at && (i.missing_since || goneNow.has(i.id)));
     const offloaded = items.filter((i) => i.offloaded_at);
 
+    // Both checks compare files that are there: a missing title is already listed as missing
+    // (its replacement under a new name would otherwise show up a second time as its
+    // duplicate), an offloaded one is history, and an extra belongs to its film.
+    const present = 'i.missing_since IS NULL AND i.offloaded_at IS NULL AND i.extra_type IS NULL';
     // Same title + same byte size in the same media type is almost always the same file
     // twice (a copy in two folders, or in two libraries).
     const duplicateGroups = await db.all(`
       SELECT i.media_type, LOWER(TRIM(i.title)) AS norm_title, i.file_size,
              COUNT(*) AS copies, GROUP_CONCAT(i.id) AS ids
       FROM items i
-      WHERE i.file_size > 0
+      WHERE i.file_size > 0 AND ${present}
       GROUP BY i.media_type, norm_title, i.file_size
       HAVING copies > 1
       ORDER BY copies DESC
@@ -137,7 +142,7 @@ router.get('/', async (req, res) => {
              COUNT(*) AS copies, GROUP_CONCAT(i.id) AS ids
       FROM items i
       JOIN libraries l ON l.id = i.library_id
-      WHERE i.series IS NOT NULL AND i.series != '' AND i.volume IS NOT NULL
+      WHERE i.series IS NOT NULL AND i.series != '' AND i.volume IS NOT NULL AND ${present}
       GROUP BY i.library_id, i.series, i.volume
       HAVING copies > 1
       ORDER BY i.series ASC, i.volume ASC
@@ -147,9 +152,11 @@ router.get('/', async (req, res) => {
     const byId = new Map(items.map((i) => [i.id, i]));
     const expand = (ids) => ids.split(',').map((id) => byId.get(id)).filter(Boolean).map(publicRow);
 
-    const noCover = items.filter((i) => !i.cover_path);
-    const noDescription = items.filter((i) => !i.description);
-    const noAuthor = items.filter((i) => !i.author && ['book', 'manga', 'audiobook'].includes(i.media_type));
+    // Titles whose missing metadata an admin has said to ignore aren't flagged for it.
+    const gapsCount = items.filter((i) => !isMetadataIgnored(i));
+    const noCover = gapsCount.filter((i) => !i.cover_path);
+    const noDescription = gapsCount.filter((i) => !i.description);
+    const noAuthor = gapsCount.filter((i) => !i.author && ['book', 'manga', 'audiobook'].includes(i.media_type));
 
     const seriesRatings = await db.all('SELECT library_id, series_name, age_rating FROM series_settings WHERE age_rating IS NOT NULL');
     const ratedSeries = new Set(seriesRatings.map((r) => `${r.library_id}::${r.series_name}`));

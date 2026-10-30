@@ -217,7 +217,14 @@ so it could change without notice.
   down a list without a pop-up in the way.
 - **Batch match** works through the selected titles in the browser, one at a time, with a
   running summary.
-- **Clean titles** strips scene junk from file-name titles.
+- **Clean titles** tidies titles that still look like file names: dots, release tags,
+  [ids], a year in brackets, and the "｜ channel ｜ pitch" tail video downloads carry. It
+  works from the title as it stands, so a title from a match or an edit is left alone, and
+  a cleaned title isn't flagged again. Scans name new files this way to begin with.
+- **Ignore missing info** stops the selected titles' missing poster and details being
+  flagged, here and in Health: for home videos and anything else with nothing to find
+  online. The **Ignored** filter lists them, to flag them again. **Home videos** switches it
+  on for a whole library, including titles added later.
 - **Books** are looked up by ISBN when the book has one, otherwise by title and author. A
   match fills in what's missing (blurb, language, cover) and keeps what the book's file
   already says; results that share too little with the title are not applied. The publisher
@@ -244,10 +251,15 @@ frames. Metadata searches that need the key fail with P400.
 
 - unreachable libraries (folder missing or unreadable)
 - missing files (see above)
-- likely duplicates (the same title twice)
-- clashing volume numbers in a series
-- titles with no cover, no description or no author
+- likely duplicates (the same title, the same size, twice)
+- clashing volume numbers in a series (two files claiming the same volume or episode)
+- titles with no cover, no description or no author, unless their missing metadata is
+  ignored (Admin → Metadata)
 - titles with no age rating (relevant when content limits are in use)
 - recent video conversion failures
 
 Each list links to the titles, with a rescan or fix action where one applies.
+
+Duplicates and clashes only compare files that are there: a missing title is listed once,
+as missing, not also as the duplicate of its replacement under a new name. Clearing the
+missing list (**Remove missing**) is how a renamed or re-downloaded file's old entry goes.

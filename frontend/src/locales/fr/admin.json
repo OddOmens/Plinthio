@@ -794,6 +794,10 @@
       "saveKey": "Enregistrer la clé",
       "getOne": "Obtenez-en une gratuitement sur {link} une fois connecté.",
       "getOneLink": "la page API de Comic Vine"
+    },
+    "homeVideos": {
+      "title": "Vidéos perso",
+      "description": "Les bibliothèques sans rien à trouver en ligne, comme des vidéos perso ou des enregistrements. Leurs affiches et détails manquants ne sont signalés ni ici ni dans État."
     }
   },
   "overview": {

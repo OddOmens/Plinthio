@@ -94,7 +94,7 @@
       "total": "メディアの総数",
       "totalHint": "インデックス済みのすべてのコンテンツ",
       "dirty": "タイトルの整理が必要",
-      "dirtyHint": "タイトルにリリースタグや年が含まれています",
+      "dirtyHint": "まだファイル名のように見えます",
       "missingCover": "アートワークなし",
       "missingCoverHint": "ポスターやカバーのファイルがありません",
       "missingMeta": "あらすじ・日付なし",
@@ -105,19 +105,24 @@
       "allMediaTypes": "すべてのメディアの種類",
       "tvShows": "テレビ番組",
       "needsCleanup": "整理が必要",
-      "searchPlaceholder": "タイトルまたはパスで絞り込み…"
+      "searchPlaceholder": "タイトルまたはパスで絞り込み…",
+      "ignored": "無視中（{count}）"
     },
     "batch": {
       "selectAll": "すべて選択（{count}）",
       "selected": "{count} 件選択中",
       "overwritePosters": "ポスターを上書き",
       "useCanonicalTitle": "正式タイトルを使う",
-      "cleanHint": "データベースのタイトルからリリースタグと末尾の年を取り除きます",
+      "cleanHint": "まだファイル名のように見えるタイトルを整理します：ドット、リリースタグ、[ID]、括弧内の年、｜ チャンネル名の付け足し。照合や編集で付いたタイトルはそのままです",
       "cleanCount": "タイトルを整理（{count}）",
       "findHint": "選択した各タイトルをメタデータプロバイダー（TMDB、MangaDex、Google Books、Open Library）と照合します: アートワーク、あらすじ、公開日",
       "findCount": "メタデータを検索（{count}）",
       "stop": "停止",
-      "stopping": "停止中…"
+      "stopping": "停止中…",
+      "ignoreCount": "不足情報を無視（{count}）",
+      "ignoreHint": "選んだタイトルのポスターや詳細の不足を表示しないようにします。ホームビデオなど、オンラインで見つかる情報がないもの向けです",
+      "unignoreCount": "再び表示（{count}）",
+      "unignoreHint": "選んだタイトルのポスターや詳細の不足を再び数えます"
     },
     "summary": {
       "matched": "{total} 件中 {matched} 件が一致しました。",
@@ -147,7 +152,9 @@
       "noPoster": "ポスターなし",
       "synopsis": "あらすじ",
       "noSynopsis": "あらすじなし",
-      "noDate": "日付なし"
+      "noDate": "日付なし",
+      "ignored": "無視中",
+      "ignoredByLibrary": "ライブラリ全体で無視しています（管理 → メタデータ → ホームビデオ）"
     },
     "cleanLabel": "整理後:",
     "actions": {
@@ -163,7 +170,8 @@
       "failed": "マッチングに失敗しました。もう一度お試しください"
     },
     "errors": {
-      "loadFailed": "項目を読み込めませんでした"
+      "loadFailed": "項目を読み込めませんでした",
+      "ignoreFailed": "タイトルを変更できませんでした"
     },
     "clean": {
       "confirmTitle": {

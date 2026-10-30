@@ -96,7 +96,7 @@
       "total": "Total de elementos",
       "totalHint": "Todo el contenido indexado",
       "dirty": "Títulos por limpiar",
-      "dirtyHint": "Con etiquetas de release o año en el título",
+      "dirtyHint": "Aún parece un nombre de archivo",
       "missingCover": "Sin imagen",
       "missingCoverHint": "Sin póster ni portada",
       "missingMeta": "Sin sinopsis / fecha",
@@ -107,7 +107,8 @@
       "allMediaTypes": "Todos los tipos de medios",
       "tvShows": "Series de TV",
       "needsCleanup": "Por limpiar",
-      "searchPlaceholder": "Filtrar por título o ruta…"
+      "searchPlaceholder": "Filtrar por título o ruta…",
+      "ignored": "Ignorados ({count})"
     },
     "batch": {
       "selectAll": "Seleccionar todo ({count})",
@@ -117,12 +118,16 @@
       },
       "overwritePosters": "Sobrescribir pósteres",
       "useCanonicalTitle": "Usar título oficial",
-      "cleanHint": "Quitar las etiquetas de release y los años finales de los títulos de la base de datos",
+      "cleanHint": "Arreglar los títulos que aún parecen nombres de archivo: puntos, etiquetas de release, [ids], años entre paréntesis y colas con ｜ canal. Los títulos de una coincidencia o una edición no se tocan",
       "cleanCount": "Limpiar títulos ({count})",
       "findHint": "Buscar cada título seleccionado en los proveedores de metadatos (TMDB, MangaDex, Google Books, Open Library): imagen, sinopsis, fecha de estreno",
       "findCount": "Buscar metadatos ({count})",
       "stop": "Detener",
-      "stopping": "Deteniendo…"
+      "stopping": "Deteniendo…",
+      "ignoreCount": "Ignorar información que falta ({count})",
+      "ignoreHint": "Dejar de señalar el póster y los detalles que faltan en los títulos elegidos, para vídeos caseros y todo lo que no tenga nada que buscar en internet",
+      "unignoreCount": "Volver a señalar ({count})",
+      "unignoreHint": "Volver a contar el póster y los detalles que faltan en los títulos elegidos"
     },
     "summary": {
       "matched": "{matched} de {total} encontrados.",
@@ -155,7 +160,9 @@
       "noPoster": "Sin póster",
       "synopsis": "Sinopsis",
       "noSynopsis": "Sin sinopsis",
-      "noDate": "Sin fecha"
+      "noDate": "Sin fecha",
+      "ignored": "Ignorado",
+      "ignoredByLibrary": "Ignorado en toda su biblioteca (Administración → Metadatos → Vídeos caseros)"
     },
     "cleanLabel": "Limpio:",
     "actions": {
@@ -171,7 +178,8 @@
       "failed": "La búsqueda falló: inténtalo de nuevo"
     },
     "errors": {
-      "loadFailed": "No se pudieron cargar los elementos"
+      "loadFailed": "No se pudieron cargar los elementos",
+      "ignoreFailed": "No se pudieron cambiar esos títulos"
     },
     "clean": {
       "confirmTitle": {

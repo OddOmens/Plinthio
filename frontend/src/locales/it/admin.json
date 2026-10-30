@@ -794,6 +794,10 @@
       "saveKey": "Salva chiave",
       "getOne": "Ottienine una gratis da {link} dopo aver effettuato l'accesso.",
       "getOneLink": "la pagina API di Comic Vine"
+    },
+    "homeVideos": {
+      "title": "Video di casa",
+      "description": "Librerie senza nulla da trovare online, come video di casa o registrazioni. Locandine e dettagli mancanti non vengono segnalati qui né in Stato."
     }
   },
   "overview": {

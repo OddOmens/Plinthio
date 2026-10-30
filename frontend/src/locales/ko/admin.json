@@ -777,6 +777,10 @@
       "saveKey": "키 저장",
       "getOne": "로그인한 뒤 {link}에서 무료로 받으세요.",
       "getOneLink": "Comic Vine API 페이지"
+    },
+    "homeVideos": {
+      "title": "홈 비디오",
+      "description": "홈 비디오나 녹화본처럼 온라인에서 찾을 정보가 없는 라이브러리예요. 여기와 상태 점검에서 빠진 포스터와 세부 정보를 표시하지 않아요."
     }
   },
   "overview": {

@@ -9,6 +9,14 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **Ignore missing metadata.** Home videos and other titles with nothing to find online no longer have to sit in the "No poster" and "No synopsis" lists forever. In Admin → Metadata, select titles and **Ignore Missing Info**, or switch on a whole library under **Home videos** (titles added later included). They're left out of those lists and counts there and in Health, and the **Ignored** filter brings them back.
+
+### Fixed
+- **A renamed file is no longer listed twice.** After a file or folder was renamed, the next scan added the file a second time, so it showed up twice and Health reported duplicates and volume clashes that were really one file. Scans now find the file's existing entry, and upgrading folds the doubled entries back into one, keeping watch progress, ratings and bookmarks.
+- **Health's duplicates and clashes only compare files that are there.** A missing file's old entry is listed as missing, not also as a duplicate of the file under its new name.
+- **Title cleanup cleans titles, and only titles that need it.** It used to rebuild titles from file names, so it offered "Bluey - S01E01" in place of a matched episode's name and kept flagging titles like "Blade Runner 2049" it could never change. It now tidies a title as it stands: dots, release tags, [ids], years in brackets and the "｜ channel ｜ pitch" tail video downloads carry. Matched and edited titles are left alone, and new scans name files cleanly to begin with.
+
 ## [1.7.0] - 2026-10-29
 
 ### Added

@@ -136,6 +136,12 @@
           >
             {{ $t('metadata.manager.badges.noSynopsis') }}
           </button>
+          <button
+            @click="setStatusFilter('ignored')"
+            :class="['px-2.5 py-1 rounded-md transition text-[12px]', statusFilter === 'ignored' ? 'bg-card text-foreground font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground']"
+          >
+            {{ $t('metadata.manager.filters.ignored', { count: totalIgnored }) }}
+          </button>
         </div>
       </div>
 
@@ -199,6 +205,18 @@
           />
           <span>{{ $t('metadata.manager.batch.useCanonicalTitle') }}</span>
         </label>
+
+        <!-- Stop flagging missing poster/details (home videos), or flag them again -->
+        <button
+          @click="setIgnored(statusFilter !== 'ignored')"
+          :disabled="selectedIds.size === 0 || processingBatch"
+          class="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-medium transition flex items-center gap-1.5 disabled:opacity-40"
+          :title="statusFilter === 'ignored' ? $t('metadata.manager.batch.unignoreHint') : $t('metadata.manager.batch.ignoreHint')"
+        >
+          <Bell v-if="statusFilter === 'ignored'" class="w-3.5 h-3.5 text-muted-foreground" />
+          <BellOff v-else class="w-3.5 h-3.5 text-muted-foreground" />
+          <span>{{ statusFilter === 'ignored' ? $t('metadata.manager.batch.unignoreCount', { count: selectedIds.size }) : $t('metadata.manager.batch.ignoreCount', { count: selectedIds.size }) }}</span>
+        </button>
 
         <!-- Clean Titles Button -->
         <button
@@ -301,6 +319,7 @@
           <div class="flex items-center gap-3 min-w-0 flex-1">
             <input
               type="checkbox"
+              :aria-label="item.title"
               :checked="selectedIds.has(item.id)"
               @change="toggleSelectItem(item.id)"
               class="rounded border-border text-primary focus:ring-primary h-4 w-4 flex-shrink-0 cursor-pointer"
@@ -401,6 +420,10 @@
               <Check class="w-3 h-3" />
               {{ $t('metadata.manager.badges.poster') }}
             </span>
+            <span v-else-if="item.metadataIgnored" class="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium flex items-center gap-1" :title="item.ignoredByLibrary ? $t('metadata.manager.badges.ignoredByLibrary') : undefined">
+              <BellOff class="w-3 h-3" />
+              {{ $t('metadata.manager.badges.ignored') }}
+            </span>
             <span v-else-if="item.isFrame" class="text-[11px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 font-medium" :title="$t('metadata.manager.badges.frameHint')">
               {{ $t('metadata.manager.badges.frame') }}
             </span>
@@ -417,7 +440,7 @@
               <Check class="w-3 h-3" />
               {{ $t('metadata.manager.badges.synopsis') }}
             </span>
-            <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
+            <span v-else-if="!item.metadataIgnored" class="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
               {{ $t('metadata.manager.badges.noSynopsis') }}
             </span>
 
@@ -428,7 +451,7 @@
             >
               {{ item.release_date }}
             </span>
-            <span v-else class="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
+            <span v-else-if="!item.metadataIgnored" class="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
               {{ $t('metadata.manager.badges.noDate') }}
             </span>
           </div>
@@ -495,7 +518,9 @@ import {
   Pencil,
   Loader2,
   X,
-  CheckCircle2
+  CheckCircle2,
+  Bell,
+  BellOff
 } from '@lucide/vue';
 
 const props = defineProps({
@@ -515,6 +540,7 @@ const totalAll = ref(0);
 const totalDirty = ref(0);
 const totalMissingCover = ref(0);
 const totalMissingMeta = ref(0);
+const totalIgnored = ref(0);
 
 const selectedLibraryId = ref('');
 const selectedMediaType = ref('');
@@ -574,6 +600,7 @@ async function fetchItems() {
     totalDirty.value = res.data.totalDirty || 0;
     totalMissingCover.value = res.data.totalMissingCover || 0;
     totalMissingMeta.value = res.data.totalMissingMeta || 0;
+    totalIgnored.value = res.data.totalIgnored || 0;
 
     // Prune selections that are no longer in items
     const currentItemIds = new Set(items.value.map((i) => i.id));
@@ -673,6 +700,27 @@ async function performMatch(item) {
 
 function matchSingle(item) {
   return performMatch(item);
+}
+
+// Ignore the selected titles' missing poster and details (or flag them again). Titles a
+// library's switch ignores stay ignored either way; Admin → Metadata → Home videos owns them.
+async function setIgnored(ignored) {
+  const ids = Array.from(selectedIds.value);
+  if (ids.length === 0) return;
+  processingBatch.value = true;
+  try {
+    await api.post('/metadata/admin/ignore-missing', { itemIds: ids, ignored });
+    selectedIds.value.clear();
+    await fetchItems();
+  } catch (err) {
+    dialog.alert({
+      title: t('metadata.manager.errors.ignoreFailed'),
+      message: err.response?.data?.error || err.message,
+      variant: 'error'
+    });
+  } finally {
+    processingBatch.value = false;
+  }
 }
 
 // Batch clean titles
@@ -784,4 +832,7 @@ function onItemSaved() {
 onMounted(() => {
   fetchItems();
 });
+
+// The library switches above (Home videos) change the counts.
+defineExpose({ fetchItems });
 </script>

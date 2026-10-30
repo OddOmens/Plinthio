@@ -61,7 +61,23 @@
     @saved="readComicVineStatus"
   />
 
-  <AdminMetadataManager :libraries="libraries" />
+  <!-- Libraries whose titles have nothing to find online (home videos): their missing
+       posters and details aren't flagged below or in Health. -->
+  <SettingsCard v-if="libraries.length" :title="$t('admin.metadata.homeVideos.title')" :description="$t('admin.metadata.homeVideos.description')">
+    <template #actions><SaveStatus :status="librarySave.status.value" :message="librarySave.message.value" /></template>
+    <div class="divide-y divide-border" data-testid="home-video-libraries">
+      <ToggleRow
+        v-for="lib in libraries"
+        :key="lib.id"
+        :label="lib.name"
+        :description="$t('admin.kids.items', { count: lib.item_count || 0, number: $n(lib.item_count || 0) })"
+        :model-value="!!lib.ignore_missing_metadata"
+        @update:model-value="setLibraryIgnored(lib, $event)"
+      />
+    </div>
+  </SettingsCard>
+
+  <AdminMetadataManager ref="manager" :libraries="libraries" />
 </template>
 
 <script setup>
@@ -84,6 +100,16 @@ defineProps({
 const dialog = useDialogStore();
 const save = useSaveStatus();
 const providerSave = useSaveStatus();
+const librarySave = useSaveStatus();
+const manager = ref(null);
+
+async function setLibraryIgnored(lib, on) {
+  const before = lib.ignore_missing_metadata;
+  lib.ignore_missing_metadata = on ? 1 : 0;
+  const { ok } = await librarySave.run(() => api.patch(`/libraries/${lib.id}`, { ignoreMissingMetadata: on }));
+  if (!ok) lib.ignore_missing_metadata = before;
+  else manager.value?.fetchItems();
+}
 
 // The sources Plinthio asks, each of which an admin can switch off. `key` names its strings;
 // `apiKey` says whether it needs one: never, optional, required, or built into release images.

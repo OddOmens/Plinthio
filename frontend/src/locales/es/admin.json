@@ -794,6 +794,10 @@
       "saveKey": "Guardar clave",
       "getOne": "Consigue una gratis en {link} después de iniciar sesión.",
       "getOneLink": "la página de la API de Comic Vine"
+    },
+    "homeVideos": {
+      "title": "Vídeos caseros",
+      "description": "Bibliotecas sin nada que buscar en internet, como vídeos caseros o grabaciones. No se señalan sus pósteres ni detalles que faltan, ni aquí ni en Estado."
     }
   },
   "overview": {

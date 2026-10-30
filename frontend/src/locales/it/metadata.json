@@ -96,7 +96,7 @@
       "total": "Elementi totali",
       "totalHint": "Tutti i contenuti indicizzati",
       "dirty": "Titolo da pulire",
-      "dirtyHint": "Tag di release o anno nel titolo",
+      "dirtyHint": "Sembra ancora un nome di file",
       "missingCover": "Senza immagine",
       "missingCoverHint": "Nessuna locandina o copertina",
       "missingMeta": "Senza trama / data",
@@ -107,19 +107,24 @@
       "allMediaTypes": "Tutti i tipi",
       "tvShows": "Serie TV",
       "needsCleanup": "Da pulire",
-      "searchPlaceholder": "Filtra per titolo o percorso..."
+      "searchPlaceholder": "Filtra per titolo o percorso...",
+      "ignored": "Ignorati ({count})"
     },
     "batch": {
       "selectAll": "Seleziona tutti ({count})",
       "selected": "{count} selezionati",
       "overwritePosters": "Sovrascrivi locandine",
       "useCanonicalTitle": "Usa il titolo ufficiale",
-      "cleanHint": "Togli i tag di release e gli anni finali dai titoli nel database",
+      "cleanHint": "Sistema i titoli che sembrano ancora nomi di file: punti, tag di release, [id], anni tra parentesi e code con ｜ canale. I titoli da una corrispondenza o da una modifica restano come sono",
       "cleanCount": "Pulisci titoli ({count})",
       "findHint": "Abbina ogni titolo selezionato ai fornitori di metadati (TMDB, MangaDex, Google Books, Open Library): immagini, trama, data di uscita",
       "findCount": "Trova metadati ({count})",
       "stop": "Ferma",
-      "stopping": "Arresto…"
+      "stopping": "Arresto…",
+      "ignoreCount": "Ignora info mancanti ({count})",
+      "ignoreHint": "Smetti di segnalare locandina e dettagli mancanti dei titoli scelti, per i video di casa e tutto ciò che non ha nulla da trovare online",
+      "unignoreCount": "Segnala di nuovo ({count})",
+      "unignoreHint": "Conta di nuovo locandina e dettagli mancanti dei titoli scelti"
     },
     "summary": {
       "matched": "Abbinati {matched} su {total}.",
@@ -152,7 +157,9 @@
       "noPoster": "Senza locandina",
       "synopsis": "Trama",
       "noSynopsis": "Senza trama",
-      "noDate": "Senza data"
+      "noDate": "Senza data",
+      "ignored": "Ignorato",
+      "ignoredByLibrary": "Ignorato per tutta la sua libreria (Amministrazione → Metadati → Video di casa)"
     },
     "cleanLabel": "Pulito:",
     "actions": {
@@ -168,7 +175,8 @@
       "failed": "Abbinamento non riuscito: riprova"
     },
     "errors": {
-      "loadFailed": "Impossibile caricare gli elementi"
+      "loadFailed": "Impossibile caricare gli elementi",
+      "ignoreFailed": "Impossibile modificare quei titoli"
     },
     "clean": {
       "confirmTitle": {

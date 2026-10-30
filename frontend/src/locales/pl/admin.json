@@ -828,6 +828,10 @@
       "saveKey": "Zapisz klucz",
       "getOne": "Odbierz go za darmo na {link} po zalogowaniu.",
       "getOneLink": "stronie API Comic Vine"
+    },
+    "homeVideos": {
+      "title": "Domowe nagrania",
+      "description": "Biblioteki, o których w sieci nic nie ma, np. domowe nagrania lub zapisy z TV. Brak plakatów i szczegółów nie jest zgłaszany ani tutaj, ani w Kondycji."
     }
   },
   "overview": {

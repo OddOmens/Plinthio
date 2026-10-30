@@ -94,7 +94,7 @@
       "total": "전체 미디어 항목",
       "totalHint": "색인된 모든 콘텐츠",
       "dirty": "제목 정리 필요",
-      "dirtyHint": "제목에 릴리스 태그나 연도가 있어요",
+      "dirtyHint": "아직 파일 이름처럼 보여요",
       "missingCover": "이미지 없음",
       "missingCoverHint": "포스터나 표지 파일이 없어요",
       "missingMeta": "줄거리 / 날짜 없음",
@@ -105,19 +105,24 @@
       "allMediaTypes": "모든 미디어 유형",
       "tvShows": "TV 프로그램",
       "needsCleanup": "정리 필요",
-      "searchPlaceholder": "제목이나 경로로 필터…"
+      "searchPlaceholder": "제목이나 경로로 필터…",
+      "ignored": "무시함({count})"
     },
     "batch": {
       "selectAll": "모두 선택({count})",
       "selected": "{count}개 선택됨",
       "overwritePosters": "포스터 덮어쓰기",
       "useCanonicalTitle": "공식 제목 사용",
-      "cleanHint": "데이터베이스 제목에서 릴리스 태그와 끝에 붙은 연도를 없애요",
+      "cleanHint": "아직 파일 이름처럼 보이는 제목을 정리해요: 점, 릴리스 태그, [ID], 괄호 안의 연도, ｜ 채널 꼬리말. 매칭이나 편집으로 정해진 제목은 그대로 둬요",
       "cleanCount": "제목 정리({count})",
       "findHint": "선택한 각 작품을 메타데이터 제공처(TMDB, MangaDex, Google Books, Open Library)와 매칭해요: 이미지, 줄거리, 출시일",
       "findCount": "메타데이터 찾기({count})",
       "stop": "중지",
-      "stopping": "중지 중…"
+      "stopping": "중지 중…",
+      "ignoreCount": "빠진 정보 무시({count})",
+      "ignoreHint": "선택한 작품의 포스터와 세부 정보가 없다고 더 이상 표시하지 않아요. 홈 비디오처럼 온라인에서 찾을 정보가 없는 경우에 쓰세요",
+      "unignoreCount": "다시 표시({count})",
+      "unignoreHint": "선택한 작품의 빠진 포스터와 세부 정보를 다시 세요"
     },
     "summary": {
       "matched": "{total}개 중 {matched}개를 매칭했어요.",
@@ -147,7 +152,9 @@
       "noPoster": "포스터 없음",
       "synopsis": "줄거리",
       "noSynopsis": "줄거리 없음",
-      "noDate": "날짜 없음"
+      "noDate": "날짜 없음",
+      "ignored": "무시함",
+      "ignoredByLibrary": "라이브러리 전체에서 무시 중이에요(관리 → 메타데이터 → 홈 비디오)"
     },
     "cleanLabel": "정리 후:",
     "actions": {
@@ -163,7 +170,8 @@
       "failed": "매칭 실패. 다시 시도하세요"
     },
     "errors": {
-      "loadFailed": "항목을 불러오지 못했어요"
+      "loadFailed": "항목을 불러오지 못했어요",
+      "ignoreFailed": "작품을 바꾸지 못했어요"
     },
     "clean": {
       "confirmTitle": {

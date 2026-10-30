@@ -794,6 +794,10 @@
       "saveKey": "Sleutel opslaan",
       "getOne": "Haal er gratis een op {link} als je bent ingelogd.",
       "getOneLink": "de API-pagina van Comic Vine"
+    },
+    "homeVideos": {
+      "title": "Thuisvideo's",
+      "description": "Bibliotheken waarover online niets te vinden is, zoals thuisvideo's of opnames. Ontbrekende posters en details worden hier en bij Gezondheid niet gemeld."
     }
   },
   "overview": {

@@ -617,6 +617,17 @@ async function initSchema(db) {
     );
   `);
 
+  // Missing posters and details that don't matter (home videos, recordings nobody has
+  // catalogued): an admin can stop them being flagged per title, or for a whole library.
+  // See services/metadataGaps.js.
+  for (const [table, column] of [['items', 'metadata_ignored'], ['libraries', 'ignore_missing_metadata']]) {
+    try {
+      await db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} INTEGER DEFAULT 0`);
+    } catch (e) {
+      // Column already exists
+    }
+  }
+
   // Kids Mode: whole libraries can be kids-safe, and so can single series or titles.
   try {
     await db.exec('ALTER TABLE libraries ADD COLUMN kids_allowed INTEGER DEFAULT 0');
@@ -827,6 +838,12 @@ async function initSchema(db) {
     );
     CREATE INDEX IF NOT EXISTS idx_live_recent_channel ON live_recent(channel_id);
   `);
+
+  // One file, one row: folds away the second rows earlier scans added after a rename.
+  // Imported here rather than at the top, as catalogRepair reaches back into this module.
+  const { mergeSamePathRows } = await import('../services/catalogRepair.js');
+  const merged = await mergeSamePathRows(db);
+  if (merged > 0) console.log(`Merged ${merged} title(s) the library had listed twice for the same file.`);
 
   console.log('Database initialized successfully at:', config.dbPath);
 }

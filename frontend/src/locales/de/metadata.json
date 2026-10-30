@@ -96,7 +96,7 @@
       "total": "Medien gesamt",
       "totalHint": "Alle indexierten Inhalte",
       "dirty": "Titel bereinigen",
-      "dirtyHint": "Release-Tags oder Jahr im Titel",
+      "dirtyHint": "Sieht noch wie ein Dateiname aus",
       "missingCover": "Fehlende Bilder",
       "missingCoverHint": "Kein Poster und kein Cover",
       "missingMeta": "Fehlende Inhaltsangabe / Datum",
@@ -107,19 +107,24 @@
       "allMediaTypes": "Alle Medientypen",
       "tvShows": "Serien",
       "needsCleanup": "Zu bereinigen",
-      "searchPlaceholder": "Nach Titel oder Pfad filtern…"
+      "searchPlaceholder": "Nach Titel oder Pfad filtern…",
+      "ignored": "Ignoriert ({count})"
     },
     "batch": {
       "selectAll": "Alle auswählen ({count})",
       "selected": "{count} ausgewählt",
       "overwritePosters": "Poster überschreiben",
       "useCanonicalTitle": "Offiziellen Titel verwenden",
-      "cleanHint": "Release-Tags und angehängte Jahreszahlen aus den Titeln in der Datenbank entfernen",
+      "cleanHint": "Titel aufräumen, die noch wie Dateinamen aussehen: Punkte, Release-Tags, [IDs], Jahreszahlen in Klammern und ｜-Kanalanhänge. Titel aus einem Abgleich oder einer Bearbeitung bleiben unverändert",
       "cleanCount": "Titel bereinigen ({count})",
       "findHint": "Jeden ausgewählten Titel mit den Metadatenanbietern abgleichen (TMDB, MangaDex, Google Books, Open Library): Bild, Inhaltsangabe, Erscheinungsdatum",
       "findCount": "Metadaten suchen ({count})",
       "stop": "Stopp",
-      "stopping": "Wird gestoppt…"
+      "stopping": "Wird gestoppt…",
+      "ignoreCount": "Fehlende Infos ignorieren ({count})",
+      "ignoreHint": "Fehlendes Poster und fehlende Details der ausgewählten Titel nicht mehr melden – für Heimvideos und alles, wozu es online nichts gibt",
+      "unignoreCount": "Wieder melden ({count})",
+      "unignoreHint": "Fehlendes Poster und fehlende Details der ausgewählten Titel wieder mitzählen"
     },
     "summary": {
       "matched": "{matched} von {total} gefunden.",
@@ -152,7 +157,9 @@
       "noPoster": "Kein Poster",
       "synopsis": "Inhaltsangabe",
       "noSynopsis": "Keine Inhaltsangabe",
-      "noDate": "Kein Datum"
+      "noDate": "Kein Datum",
+      "ignored": "Ignoriert",
+      "ignoredByLibrary": "Für die ganze Bibliothek ignoriert (Verwaltung → Metadaten → Heimvideos)"
     },
     "cleanLabel": "Bereinigt:",
     "actions": {
@@ -168,7 +175,8 @@
       "failed": "Abgleich fehlgeschlagen – versuch es noch einmal"
     },
     "errors": {
-      "loadFailed": "Einträge konnten nicht geladen werden"
+      "loadFailed": "Einträge konnten nicht geladen werden",
+      "ignoreFailed": "Die Titel konnten nicht geändert werden"
     },
     "clean": {
       "confirmTitle": {

@@ -121,6 +121,13 @@ describe('library scanner', () => {
 
     assert.equal(after.c, before.c, 'a renamed folder must not create a second row');
     assert.equal(result.renamed, 1);
+
+    // The re-linked row keeps its old id, which isn't the hash of its new path. The next scan
+    // has to find it by path, not add the same file again.
+    const again = await scanLibrary('lib-movies');
+    const afterAgain = await db.get('SELECT COUNT(*) c FROM items WHERE library_id = ?', ['lib-movies']);
+    assert.equal(afterAgain.c, before.c, 'the scan after a rename must not add the file a second time');
+    assert.equal(again.added, 0);
   });
 
   test('deleted files are pruned', async () => {

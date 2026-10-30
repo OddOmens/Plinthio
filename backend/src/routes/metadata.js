@@ -22,7 +22,8 @@ import { normalizeIsbn, normalizeLanguage } from '../services/bookMetadata.js';
 import { getThumbnailPath, THUMB_WIDTHS } from '../services/thumbnails.js';
 import { invalidateCoverCache } from './media.js';
 import { downloadCover, downloadCoverBuffer, saveCoverJpeg, cleanSearchTitle } from '../services/artwork.js';
-import { parseMediaTitle } from '../services/titleCleaner.js';
+import { parseMediaTitle, suggestCleanTitle } from '../services/titleCleaner.js';
+import { isMetadataIgnored } from '../services/metadataGaps.js';
 import multer from 'multer';
 import sharp from 'sharp';
 import { logger } from '../services/logger.js';
@@ -260,8 +261,8 @@ router.get('/admin/items', requireEditor, async (req, res) => {
       SELECT i.id, i.library_id, i.title, i.author, i.series, i.volume, i.path,
              i.cover_path, i.cover_source, i.media_type, i.duration, i.file_size,
              i.format, i.description, i.release_date, i.genres, i.artists, i.updated_at,
-             i.themes, i.publisher, i.status, i.age_rating,
-             l.name as library_name, l.type as library_type
+             i.themes, i.publisher, i.status, i.age_rating, i.metadata_ignored,
+             l.name as library_name, l.type as library_type, l.ignore_missing_metadata
       FROM items i
       LEFT JOIN libraries l ON i.library_id = l.id
       ${whereClause}
@@ -273,38 +274,47 @@ router.get('/admin/items', requireEditor, async (req, res) => {
     let totalDirty = 0;
     let totalMissingCover = 0;
     let totalMissingMeta = 0;
+    let totalIgnored = 0;
 
     const enriched = allRows.map((item) => {
       const filename = path.basename(item.path);
-      const parsedPath = parseMediaTitle(filename);
-      const parsedTitle = parseMediaTitle(item.title);
-
-      const cleanTitle = parsedPath.cleanTitle || parsedTitle.cleanTitle || item.title;
-      const detectedYear = parsedPath.year || parsedTitle.year || (item.release_date ? item.release_date.slice(0, 4) : null);
+      // The same suggestion the cleanup applies, so a cleaned title stops showing as dirty.
+      const suggestion = suggestCleanTitle(item);
+      const cleanTitle = suggestion?.title || item.title;
+      const detectedYear = suggestion?.year || (item.release_date ? item.release_date.slice(0, 4) : null);
 
       const isFrame = item.cover_source === 'frame';
       const hasCover = !!item.cover_path && !isFrame;
       const hasDescription = !!(item.description && item.description.trim());
       const hasReleaseDate = !!item.release_date;
 
-      // "Dirty" if current title differs from cleanTitle, contains release tags or trailing year
-      const isDirty = (item.title !== cleanTitle) || /\b(19\d\d|20\d\d)\b/.test(item.title) || /[._]/.test(item.title);
+      const isDirty = !!suggestion;
+      // Ignored titles aren't counted as missing anything (services/metadataGaps.js).
+      const metadataIgnored = isMetadataIgnored(item);
+      const missingCover = !hasCover && !metadataIgnored;
+      const missingMeta = (!hasDescription || !hasReleaseDate) && !metadataIgnored;
 
       if (isDirty) totalDirty++;
-      if (!hasCover) totalMissingCover++;
-      if (!hasDescription || !hasReleaseDate) totalMissingMeta++;
+      if (missingCover) totalMissingCover++;
+      if (missingMeta) totalMissingMeta++;
+      if (metadataIgnored) totalIgnored++;
 
       return {
         ...item,
         filename,
         cleanTitle,
         detectedYear,
-        isTv: parsedPath.isTv,
+        isTv: parseMediaTitle(filename).isTv,
         hasCover,
         isFrame,
         hasDescription,
         hasReleaseDate,
-        isDirty
+        isDirty,
+        metadataIgnored,
+        // Ignored by the library's switch, so it can't be un-ignored title by title.
+        ignoredByLibrary: item.ignore_missing_metadata === 1,
+        missingCover,
+        missingMeta
       };
     });
 
@@ -312,9 +322,11 @@ router.get('/admin/items', requireEditor, async (req, res) => {
     if (filter === 'dirty') {
       filtered = enriched.filter((i) => i.isDirty);
     } else if (filter === 'missing_cover') {
-      filtered = enriched.filter((i) => !i.hasCover);
+      filtered = enriched.filter((i) => i.missingCover);
     } else if (filter === 'missing_meta') {
-      filtered = enriched.filter((i) => !i.hasDescription || !i.hasReleaseDate);
+      filtered = enriched.filter((i) => i.missingMeta);
+    } else if (filter === 'ignored') {
+      filtered = enriched.filter((i) => i.metadataIgnored);
     }
 
     const total = filtered.length;
@@ -326,10 +338,39 @@ router.get('/admin/items', requireEditor, async (req, res) => {
       totalAll: allRows.length,
       totalDirty,
       totalMissingCover,
-      totalMissingMeta
+      totalMissingMeta,
+      totalIgnored
     });
   } catch (err) {
     console.error('[metadata] admin/items error:', err);
+    serverError(req, res, err);
+  }
+});
+
+// Admin / Editor: stop flagging the selected titles' missing poster and details (a home
+// video has none to find), or start again.
+router.post('/admin/ignore-missing', requireEditor, async (req, res) => {
+  const { itemIds, ignored } = req.body;
+  if (!Array.isArray(itemIds) || itemIds.length === 0 || itemIds.length > 5000 || !itemIds.every((id) => typeof id === 'string')) {
+    return res.status(400).json({ error: 'itemIds array is required' });
+  }
+  if (typeof ignored !== 'boolean') {
+    return res.status(400).json({ error: 'ignored must be true or false' });
+  }
+  try {
+    const db = await getDb();
+    let updated = 0;
+    for (let i = 0; i < itemIds.length; i += 500) {
+      const batch = itemIds.slice(i, i + 500);
+      const result = await db.run(
+        `UPDATE items SET metadata_ignored = ? WHERE id IN (${batch.map(() => '?').join(', ')})`,
+        [ignored ? 1 : 0, ...batch]
+      );
+      updated += result.changes || 0;
+    }
+    logger.info('metadata', `${req.user.username} ${ignored ? 'ignored' : 'stopped ignoring'} missing metadata on ${updated} title(s)`);
+    res.json({ updated, ignored });
+  } catch (err) {
     serverError(req, res, err);
   }
 });
@@ -347,14 +388,12 @@ router.post('/admin/batch-clean-titles', requireEditor, async (req, res) => {
     const results = [];
 
     for (const id of itemIds) {
-      const item = await db.get('SELECT id, title, path, release_date FROM items WHERE id = ?', [id]);
+      const item = await db.get('SELECT id, title, path, series, release_date FROM items WHERE id = ?', [id]);
       if (!item) continue;
 
-      const filename = path.basename(item.path);
-      const parsedPath = parseMediaTitle(filename);
-      const parsedTitle = parseMediaTitle(item.title);
-      const cleanTitle = parsedPath.cleanTitle || parsedTitle.cleanTitle;
-      const detectedYear = parsedPath.year || parsedTitle.year;
+      const suggestion = suggestCleanTitle(item);
+      const cleanTitle = suggestion?.title;
+      const detectedYear = suggestion?.year;
 
       if (cleanTitle && cleanTitle !== item.title) {
         let releaseDate = item.release_date;

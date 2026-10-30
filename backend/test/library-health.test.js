@@ -32,6 +32,10 @@ describe('GET /api/admin/health', () => {
     await insert('c'.repeat(32), 'Twin', 'twin1.cbz', 500, 'S', 1);
     await insert('d'.repeat(32), 'twin ', 'twin2.cbz', 500, 'S', 1);
     await insert('e'.repeat(32), 'On unreachable lib', 'x.cbz', 7, null, null, 'lib2');
+    // "Present" before it was renamed: a scan flagged the old row missing. It's listed as
+    // missing, not also as a duplicate of the file under its new name.
+    await insert('f'.repeat(32), 'Present', 'present-old-name.cbz', 1);
+    await db.run("UPDATE items SET missing_since = CURRENT_TIMESTAMP WHERE id = ?", ['f'.repeat(32)]);
     await db.close();
   });
 
@@ -42,11 +46,11 @@ describe('GET /api/admin/health', () => {
     assert.equal(status, 200);
     assert.equal(body.summary.unreachableLibraries, 1);
     // twin1/twin2 are missing too; the unreachable library's item is not double-counted.
-    assert.deepEqual(body.missingFiles.map((i) => i.title).sort(), ['Gone Missing', 'Twin', 'twin '].sort());
-    assert.equal(body.duplicates.length, 1);
+    assert.deepEqual(body.missingFiles.map((i) => i.title).sort(), ['Gone Missing', 'Present', 'Twin', 'twin '].sort());
+    assert.equal(body.duplicates.length, 1, 'a renamed file\'s missing old row is not its duplicate');
     assert.equal(body.duplicates[0].items.length, 2);
     assert.equal(body.volumeClashes.length, 1);
-    assert.equal(body.summary.noCover, 5);
+    assert.equal(body.summary.noCover, 6);
   });
 
   test('is admin-only', async () => {

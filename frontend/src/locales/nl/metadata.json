@@ -96,7 +96,7 @@
       "total": "Totaal aantal items",
       "totalHint": "Alle geïndexeerde inhoud",
       "dirty": "Titel moet opgeschoond",
-      "dirtyHint": "Heeft release-tags of een jaartal in de titel",
+      "dirtyHint": "Lijkt nog op een bestandsnaam",
       "missingCover": "Geen artwork",
       "missingCoverHint": "Geen poster of omslagbestand",
       "missingMeta": "Geen samenvatting / datum",
@@ -107,19 +107,24 @@
       "allMediaTypes": "Alle mediatypen",
       "tvShows": "Tv-series",
       "needsCleanup": "Moet opgeschoond",
-      "searchPlaceholder": "Filteren op titel of pad..."
+      "searchPlaceholder": "Filteren op titel of pad...",
+      "ignored": "Genegeerd ({count})"
     },
     "batch": {
       "selectAll": "Alles selecteren ({count})",
       "selected": "{count} geselecteerd",
       "overwritePosters": "Posters overschrijven",
       "useCanonicalTitle": "Officiële titel gebruiken",
-      "cleanHint": "Release-tags en jaartallen aan het eind uit titels in de database halen",
+      "cleanHint": "Titels opruimen die nog op bestandsnamen lijken: punten, release-tags, [id's], jaartallen tussen haakjes en ｜ kanaal-staarten. Titels uit een match of een bewerking blijven zoals ze zijn",
       "cleanCount": "Titels opschonen ({count})",
       "findHint": "Elke geselecteerde titel matchen met de metadatabronnen (TMDB, MangaDex, Google Books, Open Library): artwork, samenvatting, releasedatum",
       "findCount": "Metadata zoeken ({count})",
       "stop": "Stoppen",
-      "stopping": "Stoppen…"
+      "stopping": "Stoppen…",
+      "ignoreCount": "Ontbrekende info negeren ({count})",
+      "ignoreHint": "Een ontbrekende poster en details van de gekozen titels niet meer melden, voor thuisvideo's en alles waar online niets over te vinden is",
+      "unignoreCount": "Weer melden ({count})",
+      "unignoreHint": "Een ontbrekende poster en details van de gekozen titels weer meetellen"
     },
     "summary": {
       "matched": "{matched} van {total} gematcht.",
@@ -152,7 +157,9 @@
       "noPoster": "Geen poster",
       "synopsis": "Samenvatting",
       "noSynopsis": "Geen samenvatting",
-      "noDate": "Geen datum"
+      "noDate": "Geen datum",
+      "ignored": "Genegeerd",
+      "ignoredByLibrary": "Genegeerd voor de hele bibliotheek (Admin → Metadata → Thuisvideo's)"
     },
     "cleanLabel": "Opgeschoond:",
     "actions": {
@@ -168,7 +175,8 @@
       "failed": "Matchen mislukt — probeer het opnieuw"
     },
     "errors": {
-      "loadFailed": "Items laden is mislukt"
+      "loadFailed": "Items laden is mislukt",
+      "ignoreFailed": "Die titels konden niet worden aangepast"
     },
     "clean": {
       "confirmTitle": {
