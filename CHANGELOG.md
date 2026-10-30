@@ -9,6 +9,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-10-29
+
 ### Added
 - **Hide whole libraries, or kids content, from yourself** (Settings → Hidden). Each library has a switch, so one person can keep just Movies and another Movies and Shows, while the Kids Movies and Kids Shows libraries stay for the kids. A **Kids content** switch hides every kids-safe library and every series or title added to Kids Mode. It changes only your own account, and applies everywhere: shelves, search, Continue, lists, direct links and the reading apps.
 - **Much better book details.** EPUBs now bring in their description, publisher, publication date, language, ISBN, subjects and series with the book's number, not just the title and author. Calibre's `metadata.opf` next to a book is read too, and wins, so your Calibre edits come through. A series repeated in the title ("Before They Are Hanged (The First Law)") is dropped, and the same series spelled two ways ("First Law" and "The First Law") is put together. Books already in your library are filled in on the next scan; only empty fields are filled, so your edits stay.
