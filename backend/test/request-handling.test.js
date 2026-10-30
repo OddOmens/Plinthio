@@ -23,6 +23,19 @@ describe('Request handling', () => {
     fs.rmSync(parent, { recursive: true, force: true });
   });
 
+  test('the browser may load every cover the server would save, redirect hops included', async () => {
+    const res = await fetch(`${server.baseUrl}/api/health`);
+    const imgSrc = (res.headers.get('content-security-policy') || '').split(';')
+      .map((d) => d.trim().split(/\s+/)).find(([name]) => name === 'img-src')?.slice(1) || [];
+    const allowed = (host) => imgSrc.some((src) => src === host || (src.startsWith('*.') && host.endsWith(src.slice(1))));
+    // An Open Library cover goes covers.openlibrary.org → archive.org → iaNNNNNN.us.archive.org,
+    // and the browser checks every hop; a Google Books cover can land on lh3.googleusercontent.com.
+    for (const host of ['covers.openlibrary.org', 'archive.org', 'ia600404.us.archive.org',
+      'books.google.com', 'lh3.googleusercontent.com', 'm.media-amazon.com', 's4.anilist.co']) {
+      assert.ok(allowed(host), `img-src allows ${host}`);
+    }
+  });
+
   test('a POST with no body is a bad request, not a server error', async () => {
     const res = await fetch(`${server.baseUrl}/api/auth/login`, { method: 'POST' });
     assert.equal(res.status, 400);

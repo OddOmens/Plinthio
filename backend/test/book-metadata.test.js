@@ -15,7 +15,7 @@ process.env.JWT_SECRET = 'test-secret';
 const { getDb } = await import('../src/config/database.js');
 const { scanLibrary } = await import('../src/services/scanner.js');
 const { parseOpf, normalizeIsbn, normalizeLanguage, stripSeriesFromTitle, htmlToText, BOOK_META_VERSION } = await import('../src/services/bookMetadata.js');
-const { rankBookResults, searchBooks, fetchBookDetails } = await import('../src/services/externalMetadata.js');
+const { rankBookResults, putNotTheBookLast, searchBooks, fetchBookDetails } = await import('../src/services/externalMetadata.js');
 
 // Calibre's layout: <item href> before <item id>, the cover named by <meta name="cover">,
 // an HTML blurb escaped inside <dc:description>, series in calibre:* metas.
@@ -164,6 +164,14 @@ describe('ranking book search results', () => {
       result({ externalId: 'book', title: 'Four Thousand Weeks: Time Management for Mortals', author: 'Oliver Burkeman' })
     ], { title: 'Four Thousand Weeks', author: 'Oliver Burkeman' });
     assert.deepEqual(ranked.map((r) => r.externalId), ['book', 'other', 'guide']);
+  });
+
+  test('Edit Metadata lists guides, summaries and omnibuses after the books, unless they were asked for', () => {
+    const titles = ['Project Hail Mary', 'The Martian / Artemis / Project Hail Mary', 'SUMMARY and REVIEW : PROJECT HAIL MARY', 'Project Hail Mary: A Novel'];
+    const found = titles.map((title) => result({ title }));
+    assert.deepEqual(putNotTheBookLast(found, 'Project Hail Mary Andy Weir').map((r) => r.title),
+      ['Project Hail Mary', 'Project Hail Mary: A Novel', 'The Martian / Artemis / Project Hail Mary', 'SUMMARY and REVIEW : PROJECT HAIL MARY']);
+    assert.deepEqual(putNotTheBookLast(found, 'summary of project hail mary').map((r) => r.title), titles);
   });
 
   test('an unrelated result scores below the auto-match bar', () => {

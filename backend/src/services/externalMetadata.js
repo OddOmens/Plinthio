@@ -347,7 +347,17 @@ function overlap(wanted, got) {
 }
 
 // Retellings, guides and summaries match a title word for word; they're never the book.
-const NOT_THE_BOOK = /\b(summary|study guide|analysis|sparknotes|cliffsnotes|workbook|companion|boxed set|box set|collection)\b/i;
+// Nor is an omnibus listed as "The Martian / Artemis / Project Hail Mary".
+const NOT_THE_BOOK = /\b(summary|study guide|analysis|sparknotes|cliffsnotes|workbook|companion|boxed set|box set|collection)\b|\s\/\s/i;
+
+// Edit Metadata's results with those moved to the end, otherwise in the providers' order.
+// Kept, not dropped: someone searching for the summary itself still finds it (and when the
+// search names one, nothing moves).
+export function putNotTheBookLast(results, query) {
+  if (NOT_THE_BOOK.test(query || '')) return results;
+  const isBook = (r) => !NOT_THE_BOOK.test(r.title || '');
+  return [...results.filter(isBook), ...results.filter((r) => !isBook(r))];
+}
 
 /**
  * Scores book search results against what's known about the file and returns them best
@@ -888,8 +898,10 @@ export async function searchMetadata(mediaType, query, { year = null, language =
           missingKeyError: missingComicVineKeyError
         }
       ], { firstOnly });
-    case 'book':
-      return searchBooks(query, { language });
+    case 'book': {
+      const found = await searchBooks(query, { language });
+      return { ...found, results: putNotTheBookLast(found.results, query) };
+    }
     case 'audiobook':
       return searchSources([{ id: 'audible', search: () => searchAudible(query, { language }) }], { firstOnly });
     default:

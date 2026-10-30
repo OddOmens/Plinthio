@@ -278,6 +278,16 @@ html {
    out — so on narrow screens they're all 16px, whatever their utility class says.
    min-width: 0 lets a field shrink inside a flex row instead of pushing out of its box. */
 input, select, textarea { min-width: 0; }
+
+/* A <select>'s open list takes its colours from the select. One with a see-through tint
+   (a shelf filter that's set) can't have that drawn behind the list, so the browser falls
+   back to a white list, under the dark theme's white text. The options carry the theme's
+   own solid colours instead. */
+select option,
+select optgroup {
+  background-color: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+}
 @media (max-width: 639px) {
   input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),
   select,

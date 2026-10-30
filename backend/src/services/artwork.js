@@ -5,6 +5,7 @@ import { getThumbnailPath, THUMB_WIDTHS } from './thumbnails.js';
 import { invalidateCoverCache } from '../routes/media.js';
 import { searchExternalMetadata, getTmdbApiKey } from './externalMetadata.js';
 import { logger } from './logger.js';
+import { USER_AGENT } from './providerHttp.js';
 
 import sharp from 'sharp';
 import { looksLikeImageBuffer } from '../utils/imageFile.js';
@@ -40,6 +41,16 @@ const ALLOWED_COVER_EXACT_HOSTS = new Set(['archive.org']);
 const MAX_COVER_BYTES = 15 * 1024 * 1024; // 15MB
 const COVER_FETCH_TIMEOUT_MS = 15000;
 
+// The same hosts in Content-Security-Policy form, for the browser's img-src (index.js), so
+// the editor can preview every cover the server would save. Kept in one place because the
+// two lists drifted: the browser list lacked bare archive.org, which every Open Library
+// cover redirects through, so no Open Library cover ever showed in Edit Metadata.
+export const COVER_CSP_SOURCES = [
+  ...ALLOWED_COVER_HOSTS,
+  ...ALLOWED_COVER_EXACT_HOSTS,
+  ...ALLOWED_COVER_HOST_SUFFIXES.map((suffix) => `*${suffix}`)
+];
+
 export function isAllowedCoverHost(hostname) {
   const host = String(hostname || '').toLowerCase();
   return ALLOWED_COVER_HOSTS.has(host) ||
@@ -62,7 +73,7 @@ export async function downloadCoverBuffer(coverUrl) {
   }
 
   const res = await fetch(parsed.toString(), {
-    headers: { 'User-Agent': 'Plinthio/1.4.1 (https://github.com/OddOmens/Plinthio)' },
+    headers: { 'User-Agent': USER_AGENT },
     signal: AbortSignal.timeout(COVER_FETCH_TIMEOUT_MS)
   });
   if (!res.ok) {

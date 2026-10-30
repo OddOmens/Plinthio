@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 
 import { config } from './config/env.js';
 import { getDb, closeDb } from './config/database.js';
+import { COVER_CSP_SOURCES } from './services/artwork.js';
 import { APP_VERSION } from './config/version.js';
 import { backupBeforeUpgrade, recordRunningVersion } from './services/upgrade.js';
 import { initUpdateCheck } from './services/updateCheck.js';
@@ -77,18 +78,14 @@ app.use((req, res, next) => { noteProxyHeaders(req, config.trustProxy); noteTail
 // Content-Security-Policy. The session token lives in localStorage, so any injected script
 // could lift it — the CSP is the backstop: no inline or third-party script except Google's
 // Cast SDK (loaded on demand, Chromium only), and images only from ourselves plus the
-// metadata providers whose cover art the editor previews.
+// metadata providers whose cover art the editor previews (COVER_CSP_SOURCES: the same hosts
+// the server will save a cover from, redirect hops included).
 //   - style 'unsafe-inline': Vue style bindings, the admin's custom CSS and EPUB styling
 //   - blob:/data: — hls.js MediaSource URLs, epub.js resource URLs, placeholder covers
 //   - no upgrade-insecure-requests: most installs are reached over plain HTTP on a LAN,
 //     where it would rewrite every same-origin request to https and break the app
 // Set CSP=off to disable (e.g. while diagnosing a blocked resource), or CSP=report-only.
 const cspMode = (process.env.CSP || 'on').toLowerCase();
-const COVER_PROVIDER_HOSTS = [
-  'uploads.mangadex.org', 'books.google.com', 'books.googleusercontent.com',
-  'covers.openlibrary.org', '*.archive.org', 'image.tmdb.org',
-  's4.anilist.co', 'static.tvmaze.com', 'm.media-amazon.com', 'comicvine.gamespot.com'
-];
 const contentSecurityPolicy = cspMode === 'off' ? false : {
   useDefaults: false,
   reportOnly: cspMode === 'report-only',
@@ -96,7 +93,7 @@ const contentSecurityPolicy = cspMode === 'off' ? false : {
     defaultSrc: ["'self'"],
     scriptSrc: ["'self'", 'https://www.gstatic.com'],
     styleSrc: ["'self'", "'unsafe-inline'"],
-    imgSrc: ["'self'", 'data:', 'blob:', ...COVER_PROVIDER_HOSTS],
+    imgSrc: ["'self'", 'data:', 'blob:', ...COVER_CSP_SOURCES],
     mediaSrc: ["'self'", 'blob:'],
     fontSrc: ["'self'", 'data:', 'blob:'],
     connectSrc: ["'self'", 'https://www.gstatic.com'],

@@ -24,6 +24,9 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Newer foundations:** the server now runs on Express 5 and the web app is built with Vite 8, with the latest minor updates of the other libraries. Nothing changes in how Plinthio looks or works.
 
 ### Fixed
+- **Book covers show in Edit Metadata's search.** Most Open Library covers pass through archive.org on their way, and the browser was told not to load images from there, so they came up blank. Google Books covers served from Google's image servers were blocked the same way.
+- **Edit Metadata lists the books first.** Summaries, study guides and box sets that share a book's title now come after the book itself, instead of mixed in among its editions.
+- **Shelf filters stay readable in the dark theme.** Once a filter (status, genre, added, sort) was set, opening it again showed white text on a white list.
 - **Edit Metadata on a single title edits that title.** On the page of a film or a book that isn't in a series, it opened the series editor, and saving gave the title a series named after itself.
 - **EPUB covers are found in books made by Calibre** and other tools that list the cover image differently. Many such books showed a placeholder.
 - **Matching a book finds the right one.** It searches by ISBN when the book has one, otherwise by title and author, skips summaries and study guides, and leaves a book alone when nothing matches well enough, instead of taking the first result. A match fills in what's missing and keeps what the book's own file says. It only takes a publisher from the edition the book's own ISBN names, and never stores an ISBN it guessed, since a title match could be any printing. Picking a Google Books cover saves the full-size image, not the thumbnail.
