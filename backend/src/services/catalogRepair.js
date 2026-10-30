@@ -11,7 +11,7 @@ const FILLABLE = ['cover_path', 'cover_source', 'description', 'release_date', '
 const pathHash = (p) => crypto.createHash('md5').update(p).digest('hex');
 
 /**
- * One file, one row. Before 1.7.1 the scan after a rename added a renamed file a second
+ * One file, one row. Before 1.8.0 the scan after a rename added a renamed file a second
  * time (the re-linked row kept its old id; see dbItemsByPath in scanner.js), so a library
  * could hold two rows for the same path: shown twice, and in Health as duplicates and
  * volume clashes. This folds each such pair into one, keeping the row people have history

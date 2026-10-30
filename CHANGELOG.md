@@ -9,6 +9,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-10-30
+
 ### Added
 - **Ignore missing metadata.** Home videos and other titles with nothing to find online no longer have to sit in the "No poster" and "No synopsis" lists forever. In Admin → Metadata, select titles and **Ignore Missing Info**, or switch on a whole library under **Home videos** (titles added later included). They're left out of those lists and counts there and in Health, and the **Ignored** filter brings them back.
 
