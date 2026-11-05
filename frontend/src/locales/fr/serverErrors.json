@@ -375,7 +375,7 @@
     "pageNotFound": "Page introuvable",
     "thatWouldLockOutTheDevice": "Cela bloquerait l'appareil que vous utilisez en ce moment. Modifiez-le depuis votre réseau domestique.",
     "itemNotFound": "Élément introuvable",
-    "ratingMustBeAWholeNumber": "La note doit être un nombre entier de 1 à 5",
+    "ratingHalfStarSteps": "La note doit être comprise entre 0,5 et 5, par demi-étoiles",
     "personalRatingsAreTurnedOffOn": "Les notes personnelles sont désactivées sur ce serveur",
     "ratingRemoved": "Note supprimée",
     "seriesNotFound": "Série introuvable",

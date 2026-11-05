@@ -457,11 +457,11 @@
                     v-if="customizationStore.ratings.showPersonal"
                     @click="openRating(ep)"
                     class="ep-btn gap-1 !w-auto px-2"
-                    :title="ep.user_rating ? $t('title.rating.youRated', { rating: ep.user_rating }) : typed('rateInHeader')"
+                    :title="ep.user_rating ? $t('title.rating.youRated', { rating: $n(ep.user_rating) }) : typed('rateInHeader')"
                     :aria-label="typed('rateThis')"
                   >
                     <Star class="w-4 h-4" :class="ep.user_rating ? 'text-amber-400 fill-amber-400' : ''" />
-                    <span v-if="ep.user_rating" class="text-xs font-semibold text-foreground">{{ ep.user_rating }}</span>
+                    <span v-if="ep.user_rating" class="text-xs font-semibold text-foreground">{{ $n(ep.user_rating) }}</span>
                   </button>
                 </div>
               </div>
@@ -523,7 +523,7 @@
                   <span v-if="yearOf(film) && film.duration">·</span>
                   <span v-if="film.duration">{{ formatLength(film.duration) }}</span>
                   <span v-if="film.user_rating" class="inline-flex items-center gap-0.5 text-foreground font-semibold">
-                    <Star class="w-3 h-3 text-amber-400 fill-amber-400" />{{ film.user_rating }}
+                    <Star class="w-3 h-3 text-amber-400 fill-amber-400" />{{ $n(film.user_rating) }}
                   </span>
                 </p>
               </div>
@@ -811,10 +811,10 @@
                   <button v-if="customizationStore.ratings.showPersonal" :aria-label="typed('rateThis')"
                     @click="openRating(vol)"
                     class="h-8 min-w-0 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center gap-0.5 transition active:scale-95 text-[12px] font-semibold"
-                    :title="vol.user_rating ? $t('title.rating.youRated', { rating: vol.user_rating }) : typed('rateInHeader')"
+                    :title="vol.user_rating ? $t('title.rating.youRated', { rating: $n(vol.user_rating) }) : typed('rateInHeader')"
                   >
                     <Star class="w-3.5 h-3.5 flex-shrink-0" :class="vol.user_rating ? 'text-amber-400 fill-amber-400' : ''" />
-                    <span v-if="vol.user_rating" class="text-foreground">{{ vol.user_rating }}</span>
+                    <span v-if="vol.user_rating" class="text-foreground">{{ $n(vol.user_rating) }}</span>
                   </button>
                 </div>
               </div>
@@ -976,10 +976,10 @@
               <button v-if="customizationStore.ratings.showPersonal" :aria-label="typed('rateThis')"
                 @click="openRating(vol)"
                 class="hidden sm:flex h-9 min-w-9 px-2 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground items-center justify-center gap-1 transition active:scale-95 text-xs font-semibold"
-                :title="vol.user_rating ? $t('title.rating.youRated', { rating: vol.user_rating }) : typed('rateInHeader')"
+                :title="vol.user_rating ? $t('title.rating.youRated', { rating: $n(vol.user_rating) }) : typed('rateInHeader')"
               >
                 <Star class="w-4 h-4" :class="vol.user_rating ? 'text-amber-400 fill-amber-400' : ''" />
-                <span v-if="vol.user_rating" class="text-foreground">{{ vol.user_rating }}</span>
+                <span v-if="vol.user_rating" class="text-foreground">{{ $n(vol.user_rating) }}</span>
               </button>
             </div>
           </div>
@@ -1190,7 +1190,7 @@
               </button>
               <button v-if="customizationStore.ratings.showPersonal" type="button" class="sheet-item" @click="sheetRun(openRating)">
                 <Star class="w-5 h-5" :class="sheetVolume.user_rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'" />
-                <span>{{ sheetVolume.user_rating ? $t('title.rating.yourRatingChange', { rating: sheetVolume.user_rating }) : typed('rateThis') }}</span>
+                <span>{{ sheetVolume.user_rating ? $t('title.rating.yourRatingChange', { rating: $n(sheetVolume.user_rating) }) : typed('rateThis') }}</span>
               </button>
             </div>
 
@@ -2705,11 +2705,13 @@ function handleMangaJump({ item, page }) {
 }
 
 // ─── Navigation Helpers ─────────────────────────────────────────────────────
+// vue-router records the previous in-app page in history.state.back; history.length also
+// counts pages from other sites, so a title opened from a link would "go back" out of the app.
 function goBack() {
-  if (window.history.length > 1) {
+  if (window.history.state?.back) {
     router.back();
   } else {
-    router.push('/');
+    goBackToType();
   }
 }
 

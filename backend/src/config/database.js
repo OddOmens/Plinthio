@@ -721,22 +721,43 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_highlights_user_item ON highlights(user_id, item_id);
   `);
 
-  // Internal 1–5 star ratings, one per user per item. item_id carries no FK/cascade for the
-  // same reason as user_progress and bookmarks — a rating should survive a library wipe and
-  // re-attach via the path-derived item id on re-scan. The item_id index serves the
-  // community average ("what does everyone on this server think of it").
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS user_ratings (
+  // Internal star ratings, ½ to 5 in half-star steps, one per user per item. item_id carries
+  // no FK/cascade for the same reason as user_progress and bookmarks — a rating should
+  // survive a library wipe and re-attach via the path-derived item id on re-scan. The item_id
+  // index serves the community average ("what does everyone on this server think of it").
+  const userRatingsTable = (name) => `
+    CREATE TABLE IF NOT EXISTS ${name} (
       user_id TEXT NOT NULL,
       item_id TEXT NOT NULL,
-      rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+      rating REAL NOT NULL CHECK (rating BETWEEN 0.5 AND 5 AND rating * 2 = CAST(rating * 2 AS INTEGER)),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (user_id, item_id),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    );
-    CREATE INDEX IF NOT EXISTS idx_user_ratings_item ON user_ratings(item_id);
-  `);
+    );`;
+  await db.exec(userRatingsTable('user_ratings'));
+  // Before half stars the column was a whole number 1–5, and SQLite can't change a CHECK in
+  // place: rebuild the table once, keeping every rating.
+  const ratingsSchema = await db.get(`SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'user_ratings'`);
+  if (/rating INTEGER/i.test(ratingsSchema?.sql || '')) {
+    await db.exec('BEGIN');
+    try {
+      await db.exec(`
+        DROP TABLE IF EXISTS user_ratings_half_stars;
+        ${userRatingsTable('user_ratings_half_stars')}
+        INSERT INTO user_ratings_half_stars (user_id, item_id, rating, created_at, updated_at)
+          SELECT user_id, item_id, rating, created_at, updated_at FROM user_ratings;
+        DROP TABLE user_ratings;
+        ALTER TABLE user_ratings_half_stars RENAME TO user_ratings;
+      `);
+      await db.exec('COMMIT');
+    } catch (err) {
+      await db.exec('ROLLBACK');
+      throw err;
+    }
+    console.log('Migrated "user_ratings" to half-star ratings.');
+  }
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_user_ratings_item ON user_ratings(item_id);');
 
   // Live TV (services/liveTv.js). A source is one M3U playlist — a public preset or the
   // admin's own — and its channels are re-read from it on every refresh, upserted on

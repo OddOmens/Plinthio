@@ -41,12 +41,12 @@ router.get('/:itemId', async (req, res) => {
   }
 });
 
-// Set (or with rating: null, clear) your own 1–5 star rating.
+// Set (or with rating: null, clear) your own star rating: ½ to 5 in half-star steps.
 router.put('/:itemId', async (req, res) => {
   const { rating } = req.body;
   const clearing = rating === null || rating === 0;
-  if (!clearing && !(Number.isInteger(rating) && rating >= 1 && rating <= 5)) {
-    return res.status(400).json({ error: 'Rating must be a whole number from 1 to 5' });
+  if (!clearing && !(typeof rating === 'number' && Number.isInteger(rating * 2) && rating >= 0.5 && rating <= 5)) {
+    return res.status(400).json({ error: 'Rating must be from 0.5 to 5 in half-star steps' });
   }
 
   try {

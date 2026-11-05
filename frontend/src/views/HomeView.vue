@@ -451,9 +451,23 @@ const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(au
 // ?type= lets other pages (e.g. the sidebar on Admin/Settings/Docs) deep-link straight into
 // a filtered shelf instead of always dumping you on "All".
 const route = useRoute();
-const activeType = ref(
-  route.query.type || authStore.user?.preferences?.defaultView || 'all'
-);
+const defaultType = () => authStore.user?.preferences?.defaultView || 'all';
+const activeType = ref(route.query.type || defaultType());
+
+// The category you pick is kept in the URL (replaced, not pushed), so Back from a title
+// page returns to the shelf you left — Shows stays Shows — rather than to whatever ?type=
+// the history entry was first opened with. The default category leaves the URL bare.
+watch(activeType, (type) => {
+  const wanted = type === defaultType() ? undefined : type;
+  if (route.path !== '/' || route.query.type === wanted) return;
+  const query = { ...route.query };
+  if (wanted) query.type = wanted;
+  else delete query.type;
+  router.replace({ query });
+});
+watch(() => route.query.type, (type) => {
+  if (route.path === '/') activeType.value = type || defaultType();
+});
 const searchQuery = ref('');
 const groupBy = ref('series');
 

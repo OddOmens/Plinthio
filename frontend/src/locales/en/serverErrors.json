@@ -375,7 +375,7 @@
     "pageNotFound": "Page not found",
     "thatWouldLockOutTheDevice": "That would lock out the device you're using right now. Change it from your home network.",
     "itemNotFound": "Item not found",
-    "ratingMustBeAWholeNumber": "Rating must be a whole number from 1 to 5",
+    "ratingHalfStarSteps": "Rating must be from 0.5 to 5 in half-star steps",
     "personalRatingsAreTurnedOffOn": "Personal ratings are turned off on this server",
     "ratingRemoved": "Rating removed",
     "seriesNotFound": "Series not found",

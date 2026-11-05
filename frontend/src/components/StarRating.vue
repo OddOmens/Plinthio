@@ -1,12 +1,14 @@
 <template>
-  <!-- Interactive when `readonly` is false: click a star to set it, click the current value
-       again to clear. Read-only mode renders fractional averages with a partial last star. -->
+  <!-- Interactive when `readonly` is false: click a star's left half for a half star, its
+       right half for a whole one, or the current value again to clear; arrow keys step by
+       halves. Read-only mode renders fractional averages with a partial last star. -->
   <div
     class="inline-flex items-center"
     :class="gapClass"
     :role="readonly ? 'img' : 'radiogroup'"
     :aria-label="readonly ? $t('title.rating.outOfFive', { value: $n(displayValue) }) : $t('title.rating.yourRating')"
     @mouseleave="hover = 0"
+    @keydown="onKeydown"
   >
     <component
       :is="readonly ? 'span' : 'button'"
@@ -14,14 +16,14 @@
       :key="n"
       :type="readonly ? undefined : 'button'"
       :role="readonly ? undefined : 'radio'"
-      :aria-checked="readonly ? undefined : modelValue === n"
+      :aria-checked="readonly ? undefined : Math.ceil(modelValue || 0) === n"
       :aria-label="readonly ? undefined : $t('title.rating.stars', { count: n })"
-      :title="readonly ? undefined : (modelValue === n ? $t('title.rating.clear') : $t('title.rating.stars', { count: n }))"
+      :title="readonly ? undefined : (hover && hover === modelValue ? $t('title.rating.clear') : $t('title.rating.stars', { count: hover || n }))"
       class="inline-flex"
       :class="readonly ? '' : 'p-1 rounded transition active:scale-90 hover:scale-110 disabled:opacity-50 disabled:pointer-events-none'"
       :disabled="readonly ? undefined : disabled"
-      @mouseenter="!readonly && (hover = n)"
-      @click="!readonly && select(n)"
+      @mousemove="!readonly && (hover = pointedValue(n, $event))"
+      @click="!readonly && select(pointedValue(n, $event))"
     >
       <span class="relative inline-flex">
         <Star :class="[sizeClass, 'text-muted-foreground/40']" />
@@ -73,8 +75,26 @@ function fillWidth(n) {
   return `${Math.round((value - (n - 1)) * 100)}%`;
 }
 
-function select(n) {
+// Which value a pointer on star `n` means: its left half is n − ½. A click from the keyboard
+// (Enter/Space, detail 0) has no position, so it picks the whole star.
+function pointedValue(n, event) {
+  if (!event || (event.type === 'click' && event.detail === 0)) return n;
+  const rect = event.currentTarget.getBoundingClientRect();
+  return event.clientX - rect.left < rect.width / 2 ? n - 0.5 : n;
+}
+
+function select(value) {
   hover.value = 0;
-  emit('update:modelValue', props.modelValue === n ? null : n);
+  emit('update:modelValue', props.modelValue === value ? null : value);
+}
+
+function onKeydown(event) {
+  if (props.readonly || props.disabled) return;
+  const step = { ArrowRight: 0.5, ArrowUp: 0.5, ArrowLeft: -0.5, ArrowDown: -0.5 }[event.key];
+  if (!step) return;
+  event.preventDefault();
+  const next = Math.min(5, Math.max(0, (props.modelValue || 0) + step));
+  hover.value = 0;
+  emit('update:modelValue', next === 0 ? null : next);
 }
 </script>

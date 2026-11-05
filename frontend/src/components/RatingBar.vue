@@ -10,7 +10,6 @@
       <span v-if="!compact" :class="mutedClass" class="font-medium">{{ label || $t('title.rating.yourRating') }}</span>
       <StarRating
         :modelValue="userRating"
-        :disabled="saving"
         :size="compact ? 'sm' : 'md'"
         @update:modelValue="rate"
       />
@@ -118,18 +117,32 @@ async function load() {
   }
 }
 
+// The stars stay usable while a rating saves (disabling them dropped keyboard focus, so arrow
+// keys stepping by half stars stopped after one press); a change made mid-save is sent once
+// the first save is done, so only the latest value sticks.
+let pending;
 async function rate(value) {
-  if (!props.item || saving.value) return;
-  const previous = userRating.value;
+  if (!props.item) return;
   userRating.value = value;
-  saving.value = true;
   saveError.value = '';
+  if (saving.value) { pending = value; return; }
+  const previous = summary.value?.userRating ?? props.item?.user_rating ?? null;
+  saving.value = true;
+  let next = value;
   try {
-    const res = await api.put(`/ratings/${props.item.id}`, { rating: value });
-    summary.value = res.data;
-    userRating.value = res.data.userRating ?? null;
-    emit('rated', { itemId: props.item.id, rating: userRating.value });
+    for (;;) {
+      const res = await api.put(`/ratings/${props.item.id}`, { rating: next });
+      if (pending === undefined) {
+        summary.value = res.data;
+        userRating.value = res.data.userRating ?? null;
+        emit('rated', { itemId: props.item.id, rating: userRating.value });
+        break;
+      }
+      next = pending;
+      pending = undefined;
+    }
   } catch (err) {
+    pending = undefined;
     userRating.value = previous;
     saveError.value = err.response?.data?.error || t('title.rating.saveFailed');
   } finally {

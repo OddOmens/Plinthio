@@ -375,7 +375,7 @@
     "pageNotFound": "未找到页面",
     "thatWouldLockOutTheDevice": "这会把你正在使用的设备锁在外面。请在家庭网络中更改。",
     "itemNotFound": "未找到项目",
-    "ratingMustBeAWholeNumber": "评分必须是1到5之间的整数",
+    "ratingHalfStarSteps": "评分必须在0.5到5之间，以半星为单位",
     "personalRatingsAreTurnedOffOn": "此服务器已关闭个人评分",
     "ratingRemoved": "已移除评分",
     "seriesNotFound": "未找到系列",
