@@ -10,6 +10,7 @@ import {
   canControl, snapshot, applyAction, setBuffering, changeItem, setControlMode, addChat, endParty
 } from '../services/party.js';
 import { getSetting, setSetting } from '../services/settings.js';
+import { ITEM_ID_RE } from '../utils/ids.js';
 
 // Watch parties (see services/party.js). Off unless an admin turns them on.
 const PARTY_SETTING_KEY = 'party_mode_enabled';
@@ -46,7 +47,7 @@ router.param('code', (req, res, next, code) => {
 });
 
 async function loadWatchable(db, itemId, user) {
-  if (typeof itemId !== 'string' || !/^[a-f0-9]{32}$/.test(itemId)) return null;
+  if (typeof itemId !== 'string' || !ITEM_ID_RE.test(itemId)) return null;
   const item = await db.get('SELECT id, media_type, extra_type FROM items WHERE id = ?', [itemId]);
   if (!item || !PARTY_TYPES.has(item.media_type)) return null;
   if (await isItemHiddenForUser(db, itemId, user)) return null;

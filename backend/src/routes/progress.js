@@ -4,6 +4,7 @@ import { authenticateToken } from '../middleware/auth.js';
 import { handle } from '../utils/http.js';
 import { shapeItems, shapeItem } from '../services/itemView.js';
 import { accessSql } from '../services/visibility.js';
+import { ITEM_ID_RE } from '../utils/ids.js';
 
 const router = express.Router();
 
@@ -48,7 +49,7 @@ router.post('/skip', handle(async (req, res) => {
   if (!Array.isArray(itemIds) || itemIds.length === 0 || itemIds.length > 2000) {
     return res.status(400).json({ error: 'itemIds must be a non-empty array' });
   }
-  const ids = [...new Set(itemIds.filter((id) => typeof id === 'string' && /^[a-f0-9]{32}$/.test(id)))];
+  const ids = [...new Set(itemIds.filter((id) => typeof id === 'string' && ITEM_ID_RE.test(id)))];
   if (ids.length === 0) return res.status(400).json({ error: 'No valid item ids' });
 
   const db = await getDb();
@@ -90,7 +91,7 @@ router.post('/finish', handle(async (req, res) => {
   if (!Array.isArray(itemIds) || itemIds.length === 0 || itemIds.length > 2000) {
     return res.status(400).json({ error: 'itemIds must be a non-empty array' });
   }
-  const ids = [...new Set(itemIds.filter((id) => typeof id === 'string' && /^[a-f0-9]{32}$/.test(id)))];
+  const ids = [...new Set(itemIds.filter((id) => typeof id === 'string' && ITEM_ID_RE.test(id)))];
   if (ids.length === 0) return res.status(400).json({ error: 'No valid item ids' });
 
   const db = await getDb();

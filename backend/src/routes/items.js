@@ -8,9 +8,7 @@ import { accessSql, isItemHiddenForUser } from '../services/visibility.js';
 import { probeChapters } from '../services/chapters.js';
 import { ensureCredits } from '../services/credits.js';
 import { getFilmCollection } from '../services/collections.js';
-
-// Item ids are always a 32-char hex md5 of the file path (see scanner.js).
-const ITEM_ID_RE = /^[a-f0-9]{32}$/;
+import { ITEM_ID_RE } from '../utils/ids.js';
 
 const router = express.Router();
 

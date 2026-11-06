@@ -8,6 +8,7 @@ import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { handle, serverError } from '../utils/http.js';
 import { isMetadataIgnored } from '../services/metadataGaps.js';
+import { ITEM_ID_RE } from '../utils/ids.js';
 
 const router = express.Router();
 
@@ -270,7 +271,6 @@ router.post('/unoffload', handle(async (req, res) => {
   res.json({ restored: result.changes });
 }));
 
-const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 function validIds(ids) {
   if (!Array.isArray(ids) || ids.length === 0 || ids.length > 5000) return null;
   return ids.every((id) => typeof id === 'string' && ITEM_ID_RE.test(id)) ? [...new Set(ids)] : null;

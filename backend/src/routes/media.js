@@ -14,6 +14,7 @@ import { sendRangedFile, streamFile, SEND_OPTS } from '../utils/fileStream.js';
 import { sendError, codeForFsError } from '../errors.js';
 import { getOrCreateStill } from '../services/videoFrame.js';
 import { activeIntroFile } from '../services/intro.js';
+import { ITEM_ID_RE } from '../utils/ids.js';
 
 // Reading a book/comic/audiobook file: a disconnected drive or unreadable file is P302/P301,
 // anything else the generic P000.
@@ -33,10 +34,6 @@ export function invalidateCoverCache(itemId) {
   coverPathCache.delete(itemId);
 }
 
-// Item ids are always a 32-char hex md5 of the file path (see scanner.js) — reject anything
-// else before it's used to build a filesystem path or hits the DB, closing off any path
-// traversal / injection surface via a malformed :id.
-const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 // Only a fixed, small set of widths are ever actually requested by the frontend — capping
 // to this list (matching the widths the invalidation code elsewhere already assumes) means
 // no amount of requests can make the server cache more than a handful of thumbnail variants

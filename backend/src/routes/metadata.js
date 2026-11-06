@@ -31,6 +31,7 @@ import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { AGE_RATINGS } from '../services/visibility.js';
 import { resetCredits } from '../services/credits.js';
+import { ITEM_ID_RE } from '../utils/ids.js';
 
 const router = express.Router();
 
@@ -48,7 +49,6 @@ const coverUpload = multer({
   }
 });
 
-const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 // Media types a metadata provider exists for (see services/externalMetadata.js).
 const MATCHABLE_TYPES = new Set(['manga', 'book', 'audiobook', 'movie', 'show', 'anime']);
 

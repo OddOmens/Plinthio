@@ -3,6 +3,7 @@ import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
+import { ITEM_ID_RE as CHANNEL_ID_RE } from '../utils/ids.js'; // channel ids are an md5 too
 import { logger } from '../services/logger.js';
 import { logoPath } from '../services/liveProxy.js';
 import crypto from 'crypto';
@@ -24,7 +25,6 @@ router.use(authenticateToken);
 
 const HOUR_MS = 60 * 60 * 1000;
 const HALF_HOUR_MS = HOUR_MS / 2;
-const CHANNEL_ID_RE = /^[a-f0-9]{32}$/;
 const URL_MAX = 2048;
 
 const CHANNEL_NOT_FOUND = 'Channel not found';

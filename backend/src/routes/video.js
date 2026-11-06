@@ -16,6 +16,7 @@ import { generateTrickplay, getTrickplayIndex, getSheetPath } from '../services/
 import { sendRangedFile, streamFile } from '../utils/fileStream.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError, codeForFsError } from '../errors.js';
+import { ITEM_ID_RE } from '../utils/ids.js';
 
 // A playback failure's code: ffmpeg/ffprobe errors are tagged by the services (P303 can't
 // start, P304 conversion failed, P302 unreadable file); filesystem errors map to P301/P302.
@@ -25,9 +26,6 @@ function playbackError(req, res, err, message) {
 }
 
 const router = express.Router();
-
-// Item ids are always a 32-char hex md5 of the file path (see scanner.js).
-const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 
 
 // Resolves an item for playback, applying the same existence + visibility + path-containment

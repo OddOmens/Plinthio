@@ -3,10 +3,10 @@ import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { escapeXml } from '../utils/xml.js';
 import { accessSql } from '../services/visibility.js';
+import { ITEM_ID_RE } from '../utils/ids.js';
 
 const router = express.Router();
 
-const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 const COMIC_MEDIA_TYPES = ['manga', 'book'];
 const PAGED_FORMATS = new Set(['cbz', 'cbr', 'cb7', 'zip', 'rar', '7z', 'pdf']);
 
