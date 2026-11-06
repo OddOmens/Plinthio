@@ -1416,8 +1416,6 @@ const customizationStore = useCustomizationStore();
 
 const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(authStore.user) === 'sidebar');
 
-const token = getMediaToken() || '';
-
 function handleNavFilter(type) {
   router.push({ path: '/', query: { type } });
 }

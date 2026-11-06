@@ -218,7 +218,6 @@
 </template>
 
 <script setup>
-import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
 import { useIsPhone } from '../composables/useIsPhone';
 import api from '../api/client';
@@ -300,7 +299,6 @@ function openMetadataDialog() {
   showMenu.value = false;
   emit('edit-metadata', props.item);
 }
-const token = getMediaToken() || '';
 
 const coverUrl = computed(() => {
   return buildCoverUrl(props.item, { width: 360 });
