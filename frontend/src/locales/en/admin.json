@@ -1050,7 +1050,6 @@
       "removeAll": "Remove all for good"
     },
     "keepAsHistory": "Keep as history",
-    "removeForGood": "Remove for good",
     "offloaded": {
       "title": "Offloaded (kept as history)",
       "hint": "Removed to free space and kept as history: hidden from shelves and search, shown greyed on their title page with everyone's progress. If the files come back, they're restored by themselves.",

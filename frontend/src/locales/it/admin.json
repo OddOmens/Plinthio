@@ -1050,7 +1050,6 @@
       "removeAll": "Rimuovi tutti definitivamente"
     },
     "keepAsHistory": "Tieni come cronologia",
-    "removeForGood": "Rimuovi definitivamente",
     "offloaded": {
       "title": "Archiviati (tenuti come cronologia)",
       "hint": "Rimossi per liberare spazio e tenuti come cronologia: nascosti da scaffali e ricerca, mostrati in grigio nella pagina del titolo con i progressi di tutti. Se i file tornano, vengono ripristinati da soli.",
