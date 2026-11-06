@@ -1,5 +1,5 @@
-// Closes a menu on a click anywhere else. The listener is attached on a deferred tick so the
-// click that opened the menu doesn't close it straight away (as the shelf cards' menu).
+// v-click-outside: calls its value on a click anywhere else. The listener is attached on a
+// deferred tick so the click that opened the menu (or dialog) doesn't close it straight away.
 export const vClickOutside = {
   mounted(el, binding) {
     el.clickOutsideEvent = (event) => {

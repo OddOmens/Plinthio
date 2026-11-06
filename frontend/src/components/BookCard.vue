@@ -96,33 +96,18 @@
             <MoreVertical class="w-4 h-4" />
           </button>
 
-          <!-- Menu: a dropdown beside the button, or on a phone a sheet from the bottom of the
-               screen (a dropdown from a left-column card ran off the screen's left edge). -->
-          <Teleport to="body" :disabled="!isPhone">
-          <Transition :name="isPhone ? 'sheet' : ''" :duration="isPhone ? 260 : 0">
-          <div
-            v-if="showMenu"
-            :class="isPhone ? 'fixed inset-0 z-[60] bg-black/50 flex items-end' : 'contents'"
-            @click.self="showMenu = false"
+          <!-- Menu: a dropdown beside the button, or a sheet on a phone. -->
+          <ActionSheet
+            v-model:open="showMenu"
+            :title="item.title"
+            :label="$t('shelf.card.optionsFor', { title: item.title })"
+            v-slot="{ itemClass }"
           >
-          <div
-            v-click-outside="() => { if (!isPhone) showMenu = false; }"
-            @click.stop
-            :role="isPhone ? 'dialog' : 'menu'"
-            :aria-label="$t('shelf.card.optionsFor', { title: item.title })"
-            :class="isPhone
-              ? 'sheet-panel w-full rounded-t-2xl border-t border-border bg-card shadow-2xl px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm text-foreground'
-              : 'absolute right-0 top-8 z-30 w-48 bg-popover/95 backdrop-blur-md border border-border rounded-xl shadow-2xl py-1.5 text-xs text-foreground divide-y divide-border/40'"
-          >
-            <template v-if="isPhone">
-              <div class="mx-auto mb-2 h-1 w-10 rounded-full bg-muted-foreground/30" aria-hidden="true" />
-              <p class="px-2 pb-2 text-sm font-semibold truncate border-b border-border/60">{{ item.title }}</p>
-            </template>
             <div class="pb-1">
               <button
                 type="button"
                 @click="toggleFinished"
-                :class="menuItemClass"
+                :class="itemClass"
               >
                 <component :is="item.is_finished ? inProgressIcon : finishedIcon" class="w-4 h-4 text-muted-foreground" />
                 <span>{{ item.is_finished ? $t('shelf.card.markInProgress') : $t('shelf.card.markFinished') }}</span>
@@ -130,7 +115,7 @@
               <button
                 type="button"
                 @click="openFolderDialog"
-                :class="menuItemClass"
+                :class="itemClass"
               >
                 <FolderPlus class="w-4 h-4 text-muted-foreground" />
                 <span>{{ $t('shelf.card.addToFolder') }}</span>
@@ -139,7 +124,7 @@
                 v-if="inCustomFolder"
                 type="button"
                 @click="$emit('remove-from-folder', item)"
-                :class="[menuItemClass, 'text-destructive']"
+                :class="[itemClass, 'text-destructive']"
               >
                 <FolderMinus class="w-4 h-4" />
                 <span>{{ $t('shelf.card.removeFromFolder') }}</span>
@@ -147,7 +132,7 @@
               <button
                 type="button"
                 @click="openBookmarksDialog"
-                :class="menuItemClass"
+                :class="itemClass"
               >
                 <Bookmark class="w-4 h-4 text-muted-foreground" />
                 <span>{{ $t('shelf.card.bookmarks') }}</span>
@@ -156,7 +141,7 @@
                 v-if="downloads.canDownload(item)"
                 type="button"
                 @click="toggleDownload"
-                :class="menuItemClass"
+                :class="itemClass"
               >
                 <component :is="isDownloaded ? Trash2 : (isDownloading ? X : Download)" class="w-4 h-4 text-muted-foreground" />
                 <span>{{ isDownloaded ? $t('shelf.card.removeDownload') : (isDownloading ? $t('shelf.card.cancelDownload') : $t('shelf.card.downloadOffline')) }}</span>
@@ -165,7 +150,7 @@
                 v-if="authStore.isEditor"
                 type="button"
                 @click="openMetadataDialog"
-                :class="menuItemClass"
+                :class="itemClass"
               >
                 <Search class="w-4 h-4 text-muted-foreground" />
                 <span>{{ $t('shelf.card.editMetadata') }}</span>
@@ -175,16 +160,13 @@
               <button
                 type="button"
                 @click="hideItem"
-                :class="[menuItemClass, 'text-destructive']"
+                :class="[itemClass, 'text-destructive']"
               >
                 <EyeOff class="w-4 h-4" />
                 <span>{{ $t('shelf.card.hide') }}</span>
               </button>
             </div>
-          </div>
-          </div>
-          </Transition>
-          </Teleport>
+          </ActionSheet>
         </div>
       </div>
 
@@ -219,7 +201,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { useIsPhone } from '../composables/useIsPhone';
+import ActionSheet from './ActionSheet.vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
@@ -264,10 +246,6 @@ const customizationStore = useCustomizationStore();
 const emit = defineEmits(['select', 'refresh', 'add-to-folder', 'remove-from-folder', 'open-bookmarks', 'edit-metadata']);
 
 const showMenu = ref(false);
-const isPhone = useIsPhone();
-const menuItemClass = computed(() => isPhone.value
-  ? 'sheet-item'
-  : 'w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5');
 const imgLoaded = ref(false);
 
 function openFolderDialog() {
@@ -377,24 +355,4 @@ async function hideItem() {
     console.error('Failed to hide item:', err);
   }
 }
-
-// Simple click outside directive. The listener is attached on a deferred tick so the
-// same click that mounts this element (opening the menu) doesn't immediately bubble
-// into it and close the menu right back up.
-const vClickOutside = {
-  mounted(el, binding) {
-    el.clickOutsideEvent = (event) => {
-      if (!(el === event.target || el.contains(event.target))) {
-        binding.value();
-      }
-    };
-    el._clickOutsideTimer = setTimeout(() => {
-      document.addEventListener('click', el.clickOutsideEvent);
-    }, 0);
-  },
-  unmounted(el) {
-    clearTimeout(el._clickOutsideTimer);
-    document.removeEventListener('click', el.clickOutsideEvent);
-  }
-};
 </script>
