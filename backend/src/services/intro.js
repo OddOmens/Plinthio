@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { spawn } from 'child_process';
+import { runProbe } from './probe.js';
 import { fileURLToPath } from 'url';
 import { config } from '../config/env.js';
 import { setSetting } from './settings.js';
@@ -56,34 +56,20 @@ export async function saveIntroSettings(db, { introEnabled, introMovies, introSh
 }
 
 // What ffprobe says about a file: container, duration, and the first video stream's codec.
-function probe(filePath) {
-  return new Promise((resolve) => {
-    let out = '';
-    let proc;
-    const timer = setTimeout(() => { try { proc?.kill('SIGKILL'); } catch (e) { /* gone */ } resolve(null); }, 15000);
-    try {
-      proc = spawn('ffprobe', ['-v', 'error', '-show_entries', 'format=format_name,duration:stream=codec_type,codec_name', '-of', 'json', filePath]);
-    } catch (e) {
-      clearTimeout(timer);
-      return resolve(null);
-    }
-    proc.stdout.on('data', (d) => { out += d; });
-    proc.on('error', () => { clearTimeout(timer); resolve(null); });
-    proc.on('close', () => {
-      clearTimeout(timer);
-      try {
-        const data = JSON.parse(out);
-        const video = (data.streams || []).find((st) => st.codec_type === 'video');
-        resolve({
-          format: data.format?.format_name || '',
-          duration: parseFloat(data.format?.duration) || 0,
-          videoCodec: video?.codec_name || null
-        });
-      } catch (e) {
-        resolve(null);
-      }
-    });
-  });
+async function probe(filePath) {
+  const result = await runProbe('ffprobe', ['-v', 'error', '-show_entries', 'format=format_name,duration:stream=codec_type,codec_name', '-of', 'json', filePath], 15000);
+  if (!result) return null;
+  try {
+    const data = JSON.parse(result.stdout);
+    const video = (data.streams || []).find((st) => st.codec_type === 'video');
+    return {
+      format: data.format?.format_name || '',
+      duration: parseFloat(data.format?.duration) || 0,
+      videoCodec: video?.codec_name || null
+    };
+  } catch (e) {
+    return null;
+  }
 }
 
 /**
