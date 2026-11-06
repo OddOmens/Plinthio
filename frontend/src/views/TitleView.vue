@@ -1335,7 +1335,6 @@
 
 <script setup>
 import { placeholderCover } from '../utils/placeholder';
-import { getMediaToken } from '../utils/mediaToken';
 import { ref, reactive, computed, onMounted, watch, nextTick, defineAsyncComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../api/client';
@@ -1361,9 +1360,10 @@ import MissingFilmAction from '../components/MissingFilmAction.vue';
 import AvailabilityBadge from '../components/AvailabilityBadge.vue';
 import AddToListButton from '../components/AddToListButton.vue';
 import { startParty } from '../utils/party';
-import { coverUrl as buildCoverUrl, stillUrl } from '../utils/cover';
+import { coverUrl as buildCoverUrl, stillUrl, bookFileUrl } from '../utils/cover';
 import { t, te, n, d, relative, languageName } from '../i18n';
 import I18nT from '../i18n/I18nT.vue';
+import { formatClock } from '../utils/time';
 import {
   ArrowLeft,
   ChevronRight,
@@ -1415,8 +1415,6 @@ const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
 
 const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(authStore.user) === 'sidebar');
-
-const token = getMediaToken() || '';
 
 function handleNavFilter(type) {
   router.push({ path: '/', query: { type } });
@@ -1895,14 +1893,6 @@ function hasStarted(vol) {
   return isTimeBased(vol.media_type) ? (vol.current_time || 0) > 1 : (vol.current_page || 0) > 0;
 }
 
-function formatClock(seconds) {
-  const s = Math.max(0, Math.floor(seconds || 0));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}` : `${m}:${String(sec).padStart(2, '0')}`;
-}
-
 function formatLength(seconds) {
   const mins = Math.round((seconds || 0) / 60);
   if (mins < 60) return t('title.duration.minutes', { m: mins });
@@ -2368,7 +2358,7 @@ async function fetchSeriesData() {
           volumes: [item]
         };
         // Its extras, and the collection it's part of (if any), load alongside.
-        if (['movie', 'show', 'anime'].includes(item.media_type)) loadCredits(item.id);
+        if (isVideo(item.media_type)) loadCredits(item.id);
         if (item.media_type === 'movie') loadFilmCollection(item.id);
         api.get(`/items/${item.id}/extras`)
           .then((r) => { if (series.value?.id === item.id) extrasList.value = r.data.extras || []; })
@@ -2624,7 +2614,7 @@ function openVolumeReader(vol) {
   } else if ((vol.format || '').toLowerCase() === 'epub') {
     activeEpubItem.value = vol;
   } else {
-    window.open(`/api/media/book/${vol.id}/file?token=${getMediaToken()}`, '_blank');
+    window.open(bookFileUrl(vol.id), '_blank');
   }
 }
 

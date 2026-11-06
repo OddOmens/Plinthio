@@ -40,6 +40,10 @@ function evictUntilWithinLimits() {
  * Returns the cached handle for `archivePath`, building it with `factory(archivePath)` on a
  * miss. `bytes` is the archive's own size — used only to bound how much the cache pins.
  */
+// The most one archive entry (a page) may unpack to. Real pages are a few MB; this only stops
+// a crafted entry that would inflate to gigabytes.
+export const MAX_ENTRY_BYTES = 256 * 1024 * 1024;
+
 export async function getArchiveHandle(archivePath, factory) {
   let stat;
   try {

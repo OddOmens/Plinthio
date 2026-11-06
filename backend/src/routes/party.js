@@ -2,13 +2,15 @@ import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { logger } from '../services/logger.js';
 import {
   MAX_PARTIES, createParty, getParty, partyCount, addConnection, removeConnection, isFull,
   canControl, snapshot, applyAction, setBuffering, changeItem, setControlMode, addChat, endParty
 } from '../services/party.js';
+import { getSetting, setSetting } from '../services/settings.js';
+import { ITEM_ID_RE } from '../utils/ids.js';
 
 // Watch parties (see services/party.js). Off unless an admin turns them on.
 const PARTY_SETTING_KEY = 'party_mode_enabled';
@@ -17,16 +19,11 @@ const CLIENT_ID_RE = /^[A-Za-z0-9_-]{8,64}$/;
 const KEEPALIVE_MS = 20000;
 
 export async function isPartyModeEnabled(db) {
-  const row = await db.get('SELECT value FROM settings WHERE key = ?', [PARTY_SETTING_KEY]);
-  return row?.value === 'true';
+  return (await getSetting(db, PARTY_SETTING_KEY)) === 'true';
 }
 
 export async function savePartyModeEnabled(db, enabled) {
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [PARTY_SETTING_KEY, enabled ? 'true' : 'false']
-  );
+  await setSetting(db, PARTY_SETTING_KEY, enabled ? 'true' : 'false');
 }
 
 const router = express.Router();
@@ -50,7 +47,7 @@ router.param('code', (req, res, next, code) => {
 });
 
 async function loadWatchable(db, itemId, user) {
-  if (typeof itemId !== 'string' || !/^[a-f0-9]{32}$/.test(itemId)) return null;
+  if (typeof itemId !== 'string' || !ITEM_ID_RE.test(itemId)) return null;
   const item = await db.get('SELECT id, media_type, extra_type FROM items WHERE id = ?', [itemId]);
   if (!item || !PARTY_TYPES.has(item.media_type)) return null;
   if (await isItemHiddenForUser(db, itemId, user)) return null;
@@ -58,29 +55,21 @@ async function loadWatchable(db, itemId, user) {
 }
 
 // Start a party on a movie or episode. The creator hosts.
-router.post('/', async (req, res) => {
-  try {
-    const db = await getDb();
-    const item = await loadWatchable(db, req.body?.itemId, req.user);
-    if (!item) return res.status(400).json({ error: 'Pick a movie or episode to watch together' });
-    if (partyCount() >= MAX_PARTIES) return sendError(req, res, 'P605');
-    const party = createParty({ host: req.user, item });
-    logger.info('media', `${req.user.username} started watch party ${party.code}`);
-    res.status(201).json({ party: snapshot(party) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.post('/', handle(async (req, res) => {
+  const db = await getDb();
+  const item = await loadWatchable(db, req.body?.itemId, req.user);
+  if (!item) return res.status(400).json({ error: 'Pick a movie or episode to watch together' });
+  if (partyCount() >= MAX_PARTIES) return sendError(req, res, 'P605');
+  const party = createParty({ host: req.user, item });
+  logger.info('media', `${req.user.username} started watch party ${party.code}`);
+  res.status(201).json({ party: snapshot(party) });
+}));
 
-router.get('/:code', async (req, res) => {
-  try {
-    const db = await getDb();
-    if (await isItemHiddenForUser(db, req.party.itemId, req.user)) return sendError(req, res, 'P603');
-    res.json({ party: snapshot(req.party) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/:code', handle(async (req, res) => {
+  const db = await getDb();
+  if (await isItemHiddenForUser(db, req.party.itemId, req.user)) return sendError(req, res, 'P603');
+  res.json({ party: snapshot(req.party) });
+}));
 
 // The live connection: Server-Sent Events. Being connected is being in the party. The
 // first event is a full snapshot; after that, changes (state, presence, item, chat, ended).

@@ -73,6 +73,16 @@ describe('parental controls (max age rating)', () => {
 
     const rating = await getJson(server.baseUrl, '/ratings/seed-00000', kid.token);
     assert.equal(rating.status, 404, 'ratings don\'t reveal titles above the limit either');
+
+    // Hiding a title isn't a way round it: the hide is refused, so it never lists back
+    // (with its details) under Hidden.
+    const hide = await fetch(`${server.baseUrl}/api/items/seed-00000/hide`, { method: 'POST', headers: authed(kid.token) });
+    assert.equal(hide.status, 404);
+    const hidden = await getJson(server.baseUrl, '/items/hidden', kid.token);
+    assert.ok(!hidden.body.hiddenItems.some((i) => i.id === 'seed-00000'));
+    const own = await fetch(`${server.baseUrl}/api/items/seed-00012/hide`, { method: 'POST', headers: authed(kid.token) });
+    assert.equal(own.status, 200, 'an allowed title can still be hidden');
+    await fetch(`${server.baseUrl}/api/items/seed-00012/unhide`, { method: 'POST', headers: authed(kid.token) });
   });
 
   test('blocking unrated leaves only rated-and-allowed items', async () => {

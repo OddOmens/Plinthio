@@ -5,6 +5,7 @@ import { searchAniList } from './anilist.js';
 import { searchTvmaze, fetchTvmazeEpisodes } from './tvmaze.js';
 import { searchAudible, fetchAudibleDetails } from './audible.js';
 import { searchComicVine, fetchComicVineDetails, fetchComicVineIssueCovers, getComicVineKeyInfo } from './comicvine.js';
+import { getSetting } from './settings.js';
 
 // Every provider can be switched off in Admin → Metadata; all are on by default. One that's
 // off is never asked: not for searches, matches, covers, credits or ratings.
@@ -12,9 +13,9 @@ export const METADATA_PROVIDERS = ['tmdb', 'tvmaze', 'anilist', 'mangadex', 'com
 
 export async function providersOff() {
   const db = await getDb();
-  const row = await db.get("SELECT value FROM settings WHERE key = 'metadata_providers_off'");
+  const value = await getSetting(db, 'metadata_providers_off');
   try {
-    const list = JSON.parse(row?.value || '[]');
+    const list = JSON.parse(value || '[]');
     return new Set(Array.isArray(list) ? list.filter((p) => METADATA_PROVIDERS.includes(p)) : []);
   } catch {
     return new Set();
@@ -197,8 +198,8 @@ function googleResult(book) {
 
 export async function getGoogleBooksKeyInfo() {
   const db = await getDb();
-  const row = await db.get("SELECT value FROM settings WHERE key = 'google_books_api_key'");
-  if (row?.value) return { key: row.value, source: 'custom' };
+  const key = await getSetting(db, 'google_books_api_key');
+  if (key) return { key, source: 'custom' };
   if (process.env.GOOGLE_BOOKS_API_KEY) return { key: process.env.GOOGLE_BOOKS_API_KEY, source: 'environment' };
   return { key: null, source: null };
 }
@@ -660,8 +661,8 @@ function builtinKeyUsable(key) {
  */
 export async function getTmdbKeyInfo() {
   const db = await getDb();
-  const row = await db.get("SELECT value FROM settings WHERE key = 'tmdb_api_key'");
-  if (row?.value) return { key: row.value, source: 'custom' };
+  const key = await getSetting(db, 'tmdb_api_key');
+  if (key) return { key, source: 'custom' };
   if (process.env.TMDB_API_KEY) return { key: process.env.TMDB_API_KEY, source: 'environment' };
   const builtin = builtinTmdbKey();
   if (builtin && await builtinKeyUsable(builtin)) return { key: builtin, source: 'builtin' };

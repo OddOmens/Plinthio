@@ -1050,7 +1050,6 @@
       "removeAll": "Tout supprimer définitivement"
     },
     "keepAsHistory": "Garder dans l'historique",
-    "removeForGood": "Supprimer définitivement",
     "offloaded": {
       "title": "Archivés (gardés dans l'historique)",
       "hint": "Supprimés pour libérer de la place et gardés dans l'historique : masqués des étagères et de la recherche, affichés grisés sur leur page avec la progression de chacun. Si les fichiers reviennent, ils sont restaurés automatiquement.",

@@ -147,7 +147,7 @@ async function savePreferences() {
   // keys: dropping `onboardingComplete` would pop the onboarding flow open on the spot.
   if (authStore.user) {
     authStore.user.preferences = data.data.preferences || { ...authStore.user.preferences, ...body };
-    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+    authStore.persistUser();
   }
   savedPrefs = JSON.stringify(prefs.value);
 }

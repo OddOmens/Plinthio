@@ -62,35 +62,17 @@ async function initSchema(db) {
     );
   `);
 
-  // Migrate preferences column if users table existed previously
-  try {
-    await db.exec(`ALTER TABLE users ADD COLUMN preferences TEXT DEFAULT '{"enabledMediaTypes":["audiobook","manga","book","show","movie","anime"],"defaultView":"all"}'`);
-  } catch (e) {
-    // Column already exists
-  }
-
-  // Migrate avatar column
-  try {
-    await db.exec(`ALTER TABLE users ADD COLUMN avatar TEXT`);
-  } catch (e) {
-    // Column already exists
-  }
-
-  // Migrate expires_at column
-  try {
-    await db.exec(`ALTER TABLE users ADD COLUMN expires_at DATETIME`);
-  } catch (e) {
-    // Column already exists
-  }
+  // For users tables created before these columns existed.
+  await addColumns(db, 'users', [
+    `preferences TEXT DEFAULT '{"enabledMediaTypes":["audiobook","manga","book","show","movie","anime"],"defaultView":"all"}'`,
+    'avatar TEXT',
+    'expires_at DATETIME'
+  ]);
 
   // token_version is embedded in every JWT and checked on every request. Bumping it (on
   // password change) instantly invalidates every previously-issued token for that user,
   // instead of leaving a stolen token valid for its full ~30-day life.
-  try {
-    await db.exec(`ALTER TABLE users ADD COLUMN token_version INTEGER DEFAULT 0`);
-  } catch (e) {
-    // Column already exists
-  }
+  await addColumns(db, 'users', ['token_version INTEGER DEFAULT 0']);
 
   // Roles were originally just 'admin' / 'user'. The three-tier model (admin / editor /
   // viewer) replaces the old catch-all 'user' role with 'viewer' — the safe, read-only
@@ -100,25 +82,13 @@ async function initSchema(db) {
 
   // Sign-in tracking: a quick "last seen" per user, backed by a full history table below
   // for the actual date/time-stamped audit trail (including failed attempts).
-  for (const col of ['last_login_at DATETIME', 'last_login_ip TEXT']) {
-    try {
-      await db.exec(`ALTER TABLE users ADD COLUMN ${col}`);
-    } catch (e) {
-      // Column already exists
-    }
-  }
+  await addColumns(db, 'users', ['last_login_at DATETIME', 'last_login_ip TEXT']);
 
   // Parental controls: the highest age rating this account may see (NULL = no limit), and
   // whether content nobody has rated yet is allowed through for a restricted account.
   // kids_mode: the account only sees what's been marked kids-safe (a kids library, or a
   // series/title an admin or editor added to Kids Mode) — see services/visibility.js.
-  for (const col of ['max_age_rating TEXT', 'allow_unrated INTEGER DEFAULT 1', 'kids_mode INTEGER DEFAULT 0']) {
-    try {
-      await db.exec(`ALTER TABLE users ADD COLUMN ${col}`);
-    } catch (e) {
-      // Column already exists
-    }
-  }
+  await addColumns(db, 'users', ['max_age_rating TEXT', 'allow_unrated INTEGER DEFAULT 1', 'kids_mode INTEGER DEFAULT 0']);
 
   // Every sign-in attempt, success or failure. user_id is NULL for attempts against a
   // username that doesn't exist — username is still recorded so a pattern of guesses
@@ -147,21 +117,11 @@ async function initSchema(db) {
   // Away from home (services/network.js):
   //   remote_access — 1 this account may use Plinthio from outside the home network
   //   last_login_network — home / tailscale / outside, for Admin → Users
-  for (const col of [
+  await addColumns(db, 'users', [
     'totp_secret TEXT', 'totp_pending TEXT', 'totp_enabled_at DATETIME', 'totp_last_step INTEGER',
     'totp_recovery TEXT', 'remote_access INTEGER DEFAULT 1', 'last_login_network TEXT'
-  ]) {
-    try {
-      await db.exec(`ALTER TABLE users ADD COLUMN ${col}`);
-    } catch (e) {
-      // Column already exists
-    }
-  }
-  try {
-    await db.exec('ALTER TABLE login_history ADD COLUMN network TEXT');
-  } catch (e) {
-    // Column already exists
-  }
+  ]);
+  await addColumns(db, 'login_history', ['network TEXT']);
 
   // One "opened this item" → "closed this item" span per row, for the readers/players
   // (manga, book, video, audio). item_id carries no FK to items for the same reason as
@@ -200,19 +160,11 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_api_keys_token ON api_keys(key);
   `);
 
-  try {
-    await db.exec(`ALTER TABLE api_keys ADD COLUMN key_last4 TEXT`);
-  } catch (e) {
-    // Column already exists
-  }
+  await addColumns(db, 'api_keys', ['key_last4 TEXT']);
 
   // KOReader sync signs in with the MD5 of the password (a key) — see routes/kosync.js.
   // Keys made before 1.0.0 have none and need re-creating for KOReader.
-  try {
-    await db.exec(`ALTER TABLE api_keys ADD COLUMN key_md5 TEXT`);
-  } catch (e) {
-    // Column already exists
-  }
+  await addColumns(db, 'api_keys', ['key_md5 TEXT']);
   await db.exec(`CREATE INDEX IF NOT EXISTS idx_api_keys_md5 ON api_keys(key_md5)`);
 
 
@@ -273,11 +225,7 @@ async function initSchema(db) {
   `);
 
   // Added after the fact for libraries created before automatic scanning existed.
-  try {
-    await db.exec('ALTER TABLE libraries ADD COLUMN last_scanned_at DATETIME');
-  } catch (e) {
-    // Column already exists
-  }
+  await addColumns(db, 'libraries', ['last_scanned_at DATETIME']);
 
   // TMDB collections (every film in "Shrek Collection", owned or not), cached so a collection
   // page doesn't ask TMDB each time. Refreshed weekly: announced films get dates and posters.
@@ -342,7 +290,7 @@ async function initSchema(db) {
   // tmdb_id / credits_json hold a movie's or show's full credits (cast with characters,
   // key crew, studios) fetched from TMDB the first time its page is opened; a metadata
   // match sets tmdb_id and clears credits_checked_at so the next view refetches.
-  for (const col of [
+  await addColumns(db, 'items', [
     'description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT', 'cover_source TEXT',
     'age_rating TEXT', 'chapters_json TEXT', 'extra_type TEXT', 'extra_of TEXT',
     'external_rating REAL', 'external_rating_votes INTEGER', 'external_rating_source TEXT', 'external_rating_checked_at DATETIME',
@@ -359,25 +307,13 @@ async function initSchema(db) {
     // book_meta_version is the BOOK_META_VERSION the file was last read with
     // (services/bookMetadata.js); an older one is read again once to fill empty fields.
     'isbn TEXT', 'language TEXT', 'book_meta_version INTEGER'
-  ]) {
-    try {
-      await db.exec(`ALTER TABLE items ADD COLUMN ${col}`);
-    } catch (e) {
-      // Column already exists
-    }
-  }
+  ]);
 
   // KOReader identifies a book by a hash of the file ("binary", its default) or of the file
   // name. Both are kept per item, filled in lazily by routes/kosync.js. Its last reported
   // position is kept as it sent it (an EPUB position is a KOReader XPointer, which only
   // KOReader understands) alongside the percentage Plinthio shows.
-  for (const col of ['koreader_hash TEXT', 'koreader_name_hash TEXT']) {
-    try {
-      await db.exec(`ALTER TABLE items ADD COLUMN ${col}`);
-    } catch (e) {
-      // Column already exists
-    }
-  }
+  await addColumns(db, 'items', ['koreader_hash TEXT', 'koreader_name_hash TEXT']);
   await db.exec(`
     CREATE INDEX IF NOT EXISTS idx_items_koreader_hash ON items(koreader_hash);
     CREATE INDEX IF NOT EXISTS idx_items_koreader_name_hash ON items(koreader_name_hash);
@@ -422,26 +358,14 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_progress_user ON user_progress(user_id);
     CREATE INDEX IF NOT EXISTS idx_progress_item ON user_progress(item_id);
   `);
-  try {
-    await db.exec(`ALTER TABLE user_progress ADD COLUMN cfi TEXT`);
-  } catch (e) {
-    // Column already exists
-  }
+  await addColumns(db, 'user_progress', ['cfi TEXT']);
   // Per-book playback speed for audiobooks, stored with progress so it follows the listener
   // across devices.
-  try {
-    await db.exec(`ALTER TABLE user_progress ADD COLUMN playback_rate REAL`);
-  } catch (e) {
-    // Column already exists
-  }
+  await addColumns(db, 'user_progress', ['playback_rate REAL']);
   // "Skipped" — the reader chose to pass over this volume (e.g. they watched the anime
   // adaptation of it). Separate from is_finished so their real read history stays honest;
   // any actual reading progress clears it again.
-  try {
-    await db.exec(`ALTER TABLE user_progress ADD COLUMN is_skipped INTEGER DEFAULT 0`);
-  } catch (e) {
-    // Column already exists
-  }
+  await addColumns(db, 'user_progress', ['is_skipped INTEGER DEFAULT 0']);
 
   await finishItemsCascadeMigration(db, 'user_progress', 'user_id, item_id, current_time, duration, current_page, total_pages, progress_percent, is_finished, cfi, playback_rate, is_skipped, updated_at');
 
@@ -515,11 +439,7 @@ async function initSchema(db) {
   // Read lists are collections with type='readlist': same CRUD, but their items carry an
   // explicit order (a Komga-style reading order spanning several series) rather than being
   // sorted by when they were added.
-  try {
-    await db.exec(`ALTER TABLE collections ADD COLUMN type TEXT DEFAULT 'collection'`);
-  } catch (e) {
-    // Column already exists
-  }
+  await addColumns(db, 'collections', [`type TEXT DEFAULT 'collection'`]);
   try {
     await db.exec(`ALTER TABLE collection_items ADD COLUMN position INTEGER`);
     // Existing rows have no meaningful order yet, so seed it from the order they were added.
@@ -538,11 +458,7 @@ async function initSchema(db) {
   // Lists (the ordered "readlist" collections) are grouped by what they hold — movies,
   // shows, anime, read (books + manga) or listen (audiobooks). Every list made before the
   // categories existed was a comic/book reading order, so those land in 'read'.
-  try {
-    await db.exec(`ALTER TABLE collections ADD COLUMN category TEXT`);
-  } catch (e) {
-    // Column already exists
-  }
+  await addColumns(db, 'collections', ['category TEXT']);
   await db.run(`UPDATE collections SET category = 'read' WHERE type = 'readlist' AND category IS NULL`);
 
   // List entries that aren't in the library: a title picked from an external metadata search
@@ -620,20 +536,11 @@ async function initSchema(db) {
   // Missing posters and details that don't matter (home videos, recordings nobody has
   // catalogued): an admin can stop them being flagged per title, or for a whole library.
   // See services/metadataGaps.js.
-  for (const [table, column] of [['items', 'metadata_ignored'], ['libraries', 'ignore_missing_metadata']]) {
-    try {
-      await db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} INTEGER DEFAULT 0`);
-    } catch (e) {
-      // Column already exists
-    }
-  }
+  await addColumns(db, 'items', ['metadata_ignored INTEGER DEFAULT 0']);
+  await addColumns(db, 'libraries', ['ignore_missing_metadata INTEGER DEFAULT 0']);
 
   // Kids Mode: whole libraries can be kids-safe, and so can single series or titles.
-  try {
-    await db.exec('ALTER TABLE libraries ADD COLUMN kids_allowed INTEGER DEFAULT 0');
-  } catch (e) {
-    // Column already exists
-  }
+  await addColumns(db, 'libraries', ['kids_allowed INTEGER DEFAULT 0']);
   await db.exec(`
     CREATE TABLE IF NOT EXISTS kids_titles (
       id TEXT PRIMARY KEY,
@@ -693,11 +600,7 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_bookmarks_user_item ON bookmarks(user_id, item_id);
     CREATE INDEX IF NOT EXISTS idx_bookmarks_item ON bookmarks(item_id);
   `);
-  try {
-    await db.exec(`ALTER TABLE bookmarks ADD COLUMN cfi TEXT`);
-  } catch (e) {
-    // Column already exists
-  }
+  await addColumns(db, 'bookmarks', ['cfi TEXT']);
   await finishItemsCascadeMigration(db, 'bookmarks', 'id, user_id, item_id, type, position, title, notes, cfi, created_at');
 
   // Highlighted passages in EPUBs, each with a colour and an optional note. Like bookmarks,
@@ -814,17 +717,11 @@ async function initSchema(db) {
   // Added with the admin's filters (where a channel is from, what it speaks, "always show").
   // Then with line-ups: the admin's own number, name and logo for a channel, and the result of
   // the background check that spots dead streams. Like hidden / pinned, refreshes keep them.
-  for (const col of [
+  await addColumns(db, 'live_channels', [
     'pinned INTEGER DEFAULT 0', 'country TEXT', 'languages TEXT',
     'custom_number INTEGER', 'custom_name TEXT', 'custom_logo TEXT',
     'health TEXT', 'health_checked_at DATETIME', 'health_fails INTEGER DEFAULT 0'
-  ]) {
-    try {
-      await db.exec(`ALTER TABLE live_channels ADD COLUMN ${col}`);
-    } catch (e) {
-      // Column already exists
-    }
-  }
+  ]);
   // Line-ups are the admin's own channel lists (with their own order); favourites and the
   // recently watched list (newest 10) are each viewer's. All go with the channel they name.
   await db.exec(`
@@ -867,6 +764,18 @@ async function initSchema(db) {
   if (merged > 0) console.log(`Merged ${merged} title(s) the library had listed twice for the same file.`);
 
   console.log('Database initialized successfully at:', config.dbPath);
+}
+
+// Columns added after a table was first created. SQLite has no ADD COLUMN IF NOT EXISTS, so
+// each ALTER runs on its own and the error it gives for an existing column is ignored.
+async function addColumns(db, table, columns) {
+  for (const col of columns) {
+    try {
+      await db.exec(`ALTER TABLE ${table} ADD COLUMN ${col}`);
+    } catch (e) {
+      // The column is already there.
+    }
+  }
 }
 
 // One-time migration for DBs created before item_id stopped cascading from items. SQLite

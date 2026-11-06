@@ -61,56 +61,39 @@
           <MoreVertical class="w-4 h-4" />
         </button>
 
-        <!-- A dropdown beside the button, or on a phone a sheet from the bottom of the screen
-             (as the shelf cards' menu). -->
-        <Teleport to="body" :disabled="!isPhone">
-          <Transition :name="isPhone ? 'sheet' : ''" :duration="isPhone ? 260 : 0">
-            <div
-              v-if="showMenu"
-              :class="isPhone ? 'fixed inset-0 z-[60] bg-black/50 flex items-end' : 'contents'"
-              @click.self="showMenu = false"
+        <!-- A dropdown beside the button, or a sheet on a phone (as the shelf cards' menu). -->
+        <ActionSheet
+          v-model:open="showMenu"
+          :title="channel.name"
+          :label="$t('live.menu.optionsFor', { channel: channel.name })"
+          dropdown-class="top-9 w-60"
+          close-on-escape
+          v-slot="{ itemClass }"
+        >
+          <div class="pb-1">
+            <button type="button" role="menuitem" @click="toggleFavourite(); showMenu = false" :class="itemClass">
+              <Star class="w-4 h-4" :class="favourite ? 'text-amber-500 fill-current' : 'text-muted-foreground'" />
+              <span>{{ favourite ? $t('live.favourites.removeShort') : $t('live.favourites.addShort') }}</span>
+            </button>
+          </div>
+          <div class="pt-1">
+            <button type="button" role="menuitem" @click="hide('channel', channel.id)" :class="itemClass">
+              <EyeOff class="w-4 h-4 text-muted-foreground" />
+              <span>{{ $t('live.menu.hideChannel') }}</span>
+            </button>
+            <button
+              v-for="g in hideableGroups"
+              :key="g"
+              type="button"
+              role="menuitem"
+              @click="hide('group', g)"
+              :class="itemClass"
             >
-              <div
-                v-click-outside="() => { if (!isPhone) showMenu = false; }"
-                @click.stop
-                @keydown.esc="showMenu = false"
-                :role="isPhone ? 'dialog' : 'menu'"
-                :aria-label="$t('live.menu.optionsFor', { channel: channel.name })"
-                :class="isPhone
-                  ? 'sheet-panel w-full rounded-t-2xl border-t border-border bg-card shadow-2xl px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm text-foreground'
-                  : 'absolute right-0 top-9 z-30 w-60 bg-popover/95 backdrop-blur-md border border-border rounded-xl shadow-2xl py-1.5 text-xs text-foreground divide-y divide-border/40'"
-              >
-                <template v-if="isPhone">
-                  <div class="mx-auto mb-2 h-1 w-10 rounded-full bg-muted-foreground/30" aria-hidden="true" />
-                  <p class="px-2 pb-2 text-sm font-semibold truncate border-b border-border/60">{{ channel.name }}</p>
-                </template>
-                <div class="pb-1">
-                  <button type="button" role="menuitem" @click="toggleFavourite(); showMenu = false" :class="menuItemClass">
-                    <Star class="w-4 h-4" :class="favourite ? 'text-amber-500 fill-current' : 'text-muted-foreground'" />
-                    <span>{{ favourite ? $t('live.favourites.removeShort') : $t('live.favourites.addShort') }}</span>
-                  </button>
-                </div>
-                <div class="pt-1">
-                  <button type="button" role="menuitem" @click="hide('channel', channel.id)" :class="menuItemClass">
-                    <EyeOff class="w-4 h-4 text-muted-foreground" />
-                    <span>{{ $t('live.menu.hideChannel') }}</span>
-                  </button>
-                  <button
-                    v-for="g in hideableGroups"
-                    :key="g"
-                    type="button"
-                    role="menuitem"
-                    @click="hide('group', g)"
-                    :class="menuItemClass"
-                  >
-                    <EyeOff class="w-4 h-4 text-muted-foreground" />
-                    <span class="truncate">{{ $t('live.menu.hideGroup', { group: g }) }}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Transition>
-        </Teleport>
+              <EyeOff class="w-4 h-4 text-muted-foreground" />
+              <span class="truncate">{{ $t('live.menu.hideGroup', { group: g }) }}</span>
+            </button>
+          </div>
+        </ActionSheet>
       </div>
     </div>
   </div>
@@ -118,11 +101,10 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { useIsPhone } from '../../composables/useIsPhone';
 import { useLiveStore } from '../../stores/live';
 import ChannelLogo from './ChannelLogo.vue';
+import ActionSheet from '../ActionSheet.vue';
 import { clock, progressPercent, minutesLeft, airingNow, upNextAfter } from './liveFormat';
-import { vClickOutside } from './clickOutside';
 import { Star, MoreVertical, EyeOff } from '@lucide/vue';
 
 const props = defineProps({
@@ -134,11 +116,7 @@ const props = defineProps({
 const emit = defineEmits(['hide']);
 
 const liveStore = useLiveStore();
-const isPhone = useIsPhone();
 const showMenu = ref(false);
-const menuItemClass = computed(() => isPhone.value
-  ? 'sheet-item'
-  : 'w-full text-left px-3.5 py-2 hover:bg-muted/70 transition flex items-center gap-2.5');
 
 const favourite = computed(() => liveStore.isFavourite(props.channel));
 const airing = computed(() => airingNow(props.channel, props.now));

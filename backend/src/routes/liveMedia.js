@@ -3,6 +3,7 @@ import { pipeline } from 'stream';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { sendError } from '../errors.js';
+import { ITEM_ID_RE as CHANNEL_ID_RE } from '../utils/ids.js'; // channel ids are an md5 too
 import {
   isLiveTvEnabled, isKidsUser, channelPrivateHost, getLiveFilters, isFilteredOut, getHealthSettings,
   upstreamHeaders, USER_AGENT
@@ -26,7 +27,6 @@ import {
 
 const router = express.Router();
 
-const CHANNEL_ID_RE = /^[a-f0-9]{32}$/;
 const PLAYLIST_MAX_BYTES = 2 * 1024 * 1024;
 const SEGMENT_MAX_BYTES = 100 * 1024 * 1024;
 const LOGO_MAX_BYTES = 2 * 1024 * 1024;
@@ -142,7 +142,7 @@ router.param('id', async (req, res, next, id) => {
     if (!CHANNEL_ID_RE.test(id)) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
     const db = await getDb();
     const channel = await db.get(
-      `SELECT c.id, c.http_headers, ${CHANNEL_COLUMNS}, s.kind AS source_kind
+      `SELECT c.id, c.http_headers, ${CHANNEL_COLUMNS}, s.kind AS source_kind, s.playlist_url AS source_playlist_url
        FROM live_channels c JOIN live_sources s ON s.id = c.source_id
        WHERE c.id = ?`,
       [id]

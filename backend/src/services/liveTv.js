@@ -11,6 +11,7 @@ import { parseM3u, isHlsUrl, isAdultGroup } from './m3u.js';
 import { parseXmltv } from './xmltv.js';
 import { logoPath } from './liveProxy.js';
 import { checkStream, nextHealth } from './liveHealth.js';
+import { getSetting, setSetting } from './settings.js';
 
 // Live TV: channels from M3U playlists, with programme guides from XMLTV. Off until an admin
 // turns it on (Admin → Live TV). Two kinds of source:
@@ -58,16 +59,11 @@ const WRITE_BATCH = 500;
 // ─── The switch ─────────────────────────────────────────────────────────────
 
 export async function isLiveTvEnabled(db) {
-  const row = await db.get('SELECT value FROM settings WHERE key = ?', [SETTING_KEY]);
-  return row?.value === 'true';
+  return (await getSetting(db, SETTING_KEY)) === 'true';
 }
 
 export async function saveLiveTvEnabled(db, enabled) {
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [SETTING_KEY, enabled ? 'true' : 'false']
-  );
+  await setSetting(db, SETTING_KEY, enabled ? 'true' : 'false');
   // Sources that went stale while it was off catch up straight away.
   if (enabled) kickLiveTv();
 }
@@ -328,11 +324,7 @@ export async function getLiveFilters(db) {
 
 export async function saveLiveFilters(db, filters) {
   const clean = storedFilters(filters);
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [FILTERS_KEY, JSON.stringify(clean)]
-  );
+  await setSetting(db, FILTERS_KEY, JSON.stringify(clean));
   filtersState = { filters: clean, compiled: compileFilters(clean) };
   channelsChanged();
   return clean;
@@ -496,11 +488,7 @@ export async function saveHealthSettings(db, changes) {
   for (const key of Object.keys(DEFAULT_HEALTH)) {
     if (typeof changes[key] === 'boolean') next[key] = changes[key];
   }
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [HEALTH_KEY, JSON.stringify(next)]
-  );
+  await setSetting(db, HEALTH_KEY, JSON.stringify(next));
   const hideChanged = next.hideOffline !== healthSettings.hideOffline;
   healthSettings = next;
   if (hideChanged) channelsChanged();
@@ -699,10 +687,6 @@ const refreshing = new Set();
 const lastFailure = new Map();
 let queue = Promise.resolve();
 
-export function isRefreshing(sourceId) {
-  return refreshing.has(sourceId);
-}
-
 export function sourceJson(row) {
   return {
     id: row.id,
@@ -736,9 +720,20 @@ function sourcePrivateHosts(source) {
     : iptvOrgTestHosts();
 }
 
-/** The private host a channel's stream may use: its own LAN host, and only for an admin's own playlist. */
+/**
+ * The private host a channel's stream may use: its own LAN host, only for an admin's own
+ * playlist, and only when that playlist was itself loaded from the local network. A playlist
+ * from the internet is someone else's list, and mustn't point the server at the LAN (or at
+ * localhost, where the Caddy and Tailscale add-ons listen). Loopback only for a playlist
+ * served from that same host.
+ */
 export function channelPrivateHost(channel) {
-  return channel.source_kind === 'm3u' ? lanHostOf(channel.stream_url) : null;
+  if (channel.source_kind !== 'm3u') return null;
+  const streamHost = lanHostOf(channel.stream_url);
+  const listHost = lanHostOf(channel.source_playlist_url);
+  if (!streamHost || !listHost) return null;
+  const loopback = streamHost === 'localhost' || streamHost === '::1' || streamHost.startsWith('127.');
+  return loopback && streamHost !== listHost ? null : streamHost;
 }
 
 /** The headers a channel's stream is fetched with (its playlist's #EXTVLCOPT User-Agent / Referer). */
@@ -1022,7 +1017,7 @@ const HEALTH_RETRY_MS = 60 * 60 * 1000;
 const HEALTH_OFFLINE_RECHECK_MS = 24 * 60 * 60 * 1000;
 
 const HEALTH_COLUMNS = `c.id, c.stream_url, c.http_headers, c.health, c.health_fails, c.pinned, c.geo_blocked,
-       c.groups, c.languages, c.country, s.kind AS source_kind`;
+       c.groups, c.languages, c.country, s.kind AS source_kind, s.playlist_url AS source_playlist_url`;
 
 /**
  * The channels due a check, the longest unchecked first: playable channels of enabled

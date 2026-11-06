@@ -31,18 +31,13 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { ChevronsRight } from '@lucide/vue';
 import { useCustomizationStore } from '../stores/customization';
-import { getMediaToken } from '../utils/mediaToken';
+import { introUrl } from '../utils/cover';
 
 const emit = defineEmits(['done']);
 const customizationStore = useCustomizationStore();
 
 const videoEl = ref(null);
-const src = computed(() => {
-  const params = new URLSearchParams({ v: customizationStore.introVersion || '1' });
-  const token = getMediaToken();
-  if (token) params.set('token', token);
-  return `/api/media/intro?${params}`;
-});
+const src = computed(() => introUrl(customizationStore.introVersion));
 
 let finished = false;
 let safety = null;

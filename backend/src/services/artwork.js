@@ -40,6 +40,7 @@ const ALLOWED_COVER_HOST_SUFFIXES = [
 const ALLOWED_COVER_EXACT_HOSTS = new Set(['archive.org']);
 const MAX_COVER_BYTES = 15 * 1024 * 1024; // 15MB
 const COVER_FETCH_TIMEOUT_MS = 15000;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
 // The same hosts in Content-Security-Policy form, for the browser's img-src (index.js), so
 // the editor can preview every cover the server would save. Kept in one place because the
@@ -72,22 +73,38 @@ export async function downloadCoverBuffer(coverUrl) {
     throw new Error('Cover URL is not from an approved metadata provider');
   }
 
-  const res = await fetch(parsed.toString(), {
-    headers: { 'User-Agent': USER_AGENT },
-    signal: AbortSignal.timeout(COVER_FETCH_TIMEOUT_MS)
-  });
+  // Redirects are followed by hand so every hop has to be an approved https provider host
+  // too: an approved host redirecting to a private or link-local address is refused, not
+  // fetched. The body is read with a running cap rather than buffered whole first.
+  let url = parsed;
+  let res;
+  for (let hop = 0; ; hop++) {
+    res = await fetch(url.toString(), {
+      headers: { 'User-Agent': USER_AGENT },
+      redirect: 'manual',
+      signal: AbortSignal.timeout(COVER_FETCH_TIMEOUT_MS)
+    });
+    const location = REDIRECT_STATUSES.has(res.status) && res.headers.get('location');
+    if (!location) break;
+    if (hop >= 5) throw new Error('Cover URL redirected too many times');
+    url = new URL(location, url);
+    if (url.protocol !== 'https:' || !isAllowedCoverHost(url.hostname)) {
+      throw new Error('Cover URL redirected off the approved provider host');
+    }
+  }
   if (!res.ok) {
     throw new Error(`Cover download failed with status ${res.status}`);
   }
-  const finalHost = res.url ? new URL(res.url).hostname : parsed.hostname;
-  if (!isAllowedCoverHost(finalHost)) {
-    throw new Error('Cover URL redirected off the approved provider host');
-  }
 
-  const buffer = Buffer.from(await res.arrayBuffer());
-  if (buffer.length > MAX_COVER_BYTES) {
-    throw new Error('Cover image is too large');
+  if (Number(res.headers.get('content-length')) > MAX_COVER_BYTES) throw new Error('Cover image is too large');
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of res.body || []) {
+    size += chunk.length;
+    if (size > MAX_COVER_BYTES) throw new Error('Cover image is too large');
+    chunks.push(chunk);
   }
+  const buffer = Buffer.concat(chunks);
 
   const contentType = res.headers.get('content-type') || '';
   if (!contentType.startsWith('image/') && !looksLikeImageBuffer(buffer)) {

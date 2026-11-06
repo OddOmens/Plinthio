@@ -1,27 +1,22 @@
 import express from 'express';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
-import { authenticateToken } from '../middleware/auth.js';
-import { serverError } from '../utils/http.js';
+import { authenticateToken, requireSession } from '../middleware/auth.js';
+import { handle, serverError } from '../utils/http.js';
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, requireSession);
 
-// List current user's API keys
-router.get('/', async (req, res) => {
+router.get('/', handle(async (req, res) => {
   const userId = req.user.id;
-  try {
-    const db = await getDb();
-    const keys = await db.all(
-      'SELECT id, name, created_at, key_last4 as last4 FROM api_keys WHERE user_id = ? ORDER BY created_at DESC',
-      [userId]
-    );
-    res.json({ keys });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  const keys = await db.all(
+    'SELECT id, name, created_at, key_last4 as last4 FROM api_keys WHERE user_id = ? ORDER BY created_at DESC',
+    [userId]
+  );
+  res.json({ keys });
+}));
 
 // Create new API key. Only the raw key is ever returned to the client (once, here) —
 // the database stores a SHA-256 hash of it so a DB leak can't be used as live credentials.
@@ -63,16 +58,11 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Delete API key
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', handle(async (req, res) => {
   const userId = req.user.id;
-  try {
-    const db = await getDb();
-    await db.run('DELETE FROM api_keys WHERE id = ? AND user_id = ?', [req.params.id, userId]);
-    res.json({ message: 'API key revoked' });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  await db.run('DELETE FROM api_keys WHERE id = ? AND user_id = ?', [req.params.id, userId]);
+  res.json({ message: 'API key revoked' });
+}));
 
 export default router;

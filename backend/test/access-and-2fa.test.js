@@ -17,8 +17,8 @@ describe('away from home, and two-factor', () => {
   let server;
   let base;
 
-  const req = async (method, url, { from = HOME, token, apiKey, body } = {}) => {
-    const headers = { 'x-forwarded-for': from };
+  const req = async (method, url, { from = HOME, token, apiKey, body, headers: extra = {} } = {}) => {
+    const headers = { 'x-forwarded-for': from, ...extra };
     if (token) Object.assign(headers, authed(token));
     if (apiKey) headers['x-api-key'] = apiKey;
     if (body) headers['content-type'] = 'application/json';
@@ -46,6 +46,10 @@ describe('away from home, and two-factor', () => {
     assert.equal(away.status, 403);
     assert.equal(away.body.code, 'P109');
     assert.equal((await req('GET', '/auth/setup/browse', { from: outside() })).body.code, 'P109');
+    // Nor from a page on another site, even one open on a home computer.
+    const crossSite = await req('POST', '/auth/setup', { body: { ...ADMIN }, headers: { origin: 'https://evil.example' } });
+    assert.equal(crossSite.status, 403);
+    assert.equal((await req('POST', '/auth/setup', { body: { ...ADMIN }, headers: { 'sec-fetch-site': 'cross-site' } })).status, 403);
 
     const res = await req('POST', '/auth/setup', { body: { ...ADMIN } });
     assert.equal(res.status, 200);
@@ -139,6 +143,10 @@ describe('away from home, and two-factor', () => {
     assert.equal(on.body.enabled, true);
     assert.equal(on.body.recoveryCodes.length, 10);
     recovery = on.body.recoveryCodes;
+    // Every earlier session is signed out; this device carries on with the token it was given.
+    assert.equal((await req('GET', '/auth/2fa', { token: adminToken })).body.code, 'P101');
+    assert.ok(on.body.token && on.body.mediaToken);
+    adminToken = on.body.token;
     assert.equal((await req('GET', '/auth/2fa', { token: adminToken })).body.recoveryCodesLeft, 10);
   });
 
@@ -184,6 +192,11 @@ describe('away from home, and two-factor', () => {
   test('turning it off needs the password and a code; API keys can’t touch it', async () => {
     const key = await req('POST', '/keys', { token: adminToken, body: { name: 'script' } });
     assert.equal((await req('GET', '/auth/2fa', { apiKey: key.body.key.key })).status, 403);
+    // Nor can a key be swapped for a session (which would skip two-factor), or make more keys.
+    assert.equal((await req('POST', '/auth/refresh', { apiKey: key.body.key.key })).status, 403);
+    assert.equal((await req('POST', '/keys', { apiKey: key.body.key.key, body: { name: 'more' } })).status, 403);
+    assert.equal((await req('GET', '/keys', { apiKey: key.body.key.key })).status, 403);
+    assert.equal((await req('POST', '/auth/refresh', { token: adminToken })).status, 200, 'a session still refreshes');
 
     const noCode = await req('POST', '/auth/2fa/disable', { token: adminToken, body: { password: ADMIN.password } });
     assert.equal(noCode.body.code, 'P111');
@@ -195,9 +208,9 @@ describe('away from home, and two-factor', () => {
 
   test('an admin can reset someone’s two-factor, which signs them out', async () => {
     const guestLogin = await login(GUEST.username, GUEST.password, HOME);
-    const gToken = guestLogin.body.token;
-    const gStart = await req('POST', '/auth/2fa/setup', { token: gToken });
-    await req('POST', '/auth/2fa/enable', { token: gToken, body: { code: codeFor(gStart.body.secret) } });
+    const gStart = await req('POST', '/auth/2fa/setup', { token: guestLogin.body.token });
+    const gOn = await req('POST', '/auth/2fa/enable', { token: guestLogin.body.token, body: { code: codeFor(gStart.body.secret) } });
+    const gToken = gOn.body.token;
     assert.equal((await login(GUEST.username, GUEST.password, HOME)).body.twoFactorRequired, true);
 
     const reset = await req('POST', `/users/${guestId}/two-factor/reset`, { token: adminToken });
@@ -215,5 +228,13 @@ describe('away from home, and two-factor', () => {
     assert.equal(owner.remote_access, 1);
     assert.ok(!('totp_secret' in owner) && !('totp_recovery' in owner), 'no secrets in the list');
     assert.equal(owner.last_login_network, 'outside');
+  });
+
+  test('wrong passwords from outside hold that account back, but never at home', async () => {
+    for (let i = 0; i < 10; i++) {
+      assert.equal((await login(GUEST.username, 'not-the-password', outside())).body.code, 'P107');
+    }
+    assert.equal((await login(GUEST.username, GUEST.password, outside())).body.code, 'P108', 'even the right password waits');
+    assert.equal((await login(GUEST.username, GUEST.password, HOME)).status, 200, 'home is never locked out');
   });
 });

@@ -1050,7 +1050,6 @@
       "removeAll": "Remover todos de vez"
     },
     "keepAsHistory": "Manter no histórico",
-    "removeForGood": "Remover de vez",
     "offloaded": {
       "title": "Arquivados (mantidos no histórico)",
       "hint": "Removidos para liberar espaço e mantidos no histórico: ocultos das estantes e da busca, exibidos em cinza na página do título com o progresso de todos. Se os arquivos voltarem, eles são restaurados sozinhos.",

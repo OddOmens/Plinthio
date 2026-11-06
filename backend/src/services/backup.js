@@ -3,6 +3,7 @@ import path from 'path';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
 import { logger } from './logger.js';
+import { setSetting } from './settings.js';
 
 const BACKUP_PREFIX = 'plinthio-backup-';
 const FILENAME_RE = /^plinthio-backup-[A-Za-z0-9.\-]+\.sqlite$/;
@@ -63,11 +64,7 @@ export async function getBackupSettings() {
 async function writeSettings(entries) {
   const db = await getDb();
   for (const [key, value] of entries) {
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [key, value]
-    );
+    await setSetting(db, key, value);
   }
 }
 

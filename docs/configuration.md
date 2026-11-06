@@ -38,6 +38,7 @@ the compose-level ones.
 | `MEDIA_TOKEN_EXPIRES_IN` | `24h` | Lifetime of the short-lived media-only token used in image, audio and video URLs. The player renews it when it expires |
 | `CORS_ORIGIN` | `*` | Allowed browser origins for the API |
 | `CSP` | `on` | Content-Security-Policy. `report-only` logs violations without blocking, `off` disables it. Only change this to diagnose a blocked resource |
+| `TRANSCODE_LIMIT` | `4` | Most video conversions running at once across the server (remuxes aren't counted). Past it, new conversions wait. Each account can run 2; starting a third stops its oldest |
 | `HLS_CACHE_MAX_AGE_HOURS` | `24` | How long converted video segments stay on disk after their last use |
 | `TMDB_API_KEY` | none | TMDB key used when none is set in the app. A key saved in the app wins. Release images also have a built-in key (`PLINTHIO_BUILTIN_TMDB_KEY`), used when neither is set |
 | `GOOGLE_BOOKS_API_KEY` | none | Google Books key for book metadata, used when none is set in the app. Optional: without one, Google Books uses its shared keyless allowance |

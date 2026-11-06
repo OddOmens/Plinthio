@@ -1,6 +1,7 @@
 import { getDb } from '../config/database.js';
 import { fetchJson } from './providerHttp.js';
 import { htmlToText } from './bookMetadata.js';
+import { getSetting } from './settings.js';
 
 /**
  * Comic Vine — free, but every request needs a key of your own: a free account at
@@ -13,8 +14,8 @@ const API = 'https://comicvine.gamespot.com/api';
 
 export async function getComicVineKeyInfo() {
   const db = await getDb();
-  const row = await db.get("SELECT value FROM settings WHERE key = 'comicvine_api_key'");
-  if (row?.value) return { key: row.value, source: 'custom' };
+  const key = await getSetting(db, 'comicvine_api_key');
+  if (key) return { key, source: 'custom' };
   if (process.env.COMICVINE_API_KEY) return { key: process.env.COMICVINE_API_KEY, source: 'environment' };
   return { key: null, source: null };
 }

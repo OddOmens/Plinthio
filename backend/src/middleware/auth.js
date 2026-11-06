@@ -137,7 +137,7 @@ export async function authenticateToken(req, res, next) {
   }
 
   try {
-    const payload = jwt.verify(token, config.jwtSecret);
+    const payload = jwt.verify(token, config.jwtSecret, { algorithms: ['HS256'] });
 
     // A URL token must be a media token on a media route; a header token must be a full
     // session token. So a leaked media URL can't drive the API, and a session token pasted
@@ -193,6 +193,16 @@ export async function authenticateToken(req, res, next) {
       message: fromQuery ? 'Media link expired, reload to get a new one' : 'Session expired, please log in again'
     });
   }
+}
+
+// A key acts as its owner (scripts may run admin tasks with one), but it can't be turned into
+// a sign-in or make more keys: a key copied out of a reader app could otherwise be exchanged
+// for a session that skips two-factor and the away-from-home sign-in rules.
+export function requireSession(req, res, next) {
+  if (req.isApiKey) {
+    return sendError(req, res, 'P003', { message: 'API keys cannot do this. Sign in with your password' });
+  }
+  next();
 }
 
 export function requireAdmin(req, res, next) {

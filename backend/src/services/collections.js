@@ -3,6 +3,7 @@ import { ensureCredits } from './credits.js';
 import { latestRequestStatuses } from './listMatching.js';
 import { accessSql } from './visibility.js';
 import { logger } from './logger.js';
+import { setSetting } from './settings.js';
 
 // A film's whole TMDB collection — the films the library has and the ones it doesn't — for
 // the collection page and a film's "More in …" row. Missing films are shown (greyed, with a
@@ -17,11 +18,7 @@ export async function getShowMissingFilms(db) {
 }
 
 export async function saveShowMissingFilms(db, value) {
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [SHOW_MISSING_KEY, value ? 'true' : 'false']
-  );
+  await setSetting(db, SHOW_MISSING_KEY, value ? 'true' : 'false');
 }
 
 // The collection's films from the cache, or from TMDB when it's missing or a week old.

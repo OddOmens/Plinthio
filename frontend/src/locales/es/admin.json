@@ -1050,7 +1050,6 @@
       "removeAll": "Quitar todo definitivamente"
     },
     "keepAsHistory": "Guardar como historial",
-    "removeForGood": "Quitar definitivamente",
     "offloaded": {
       "title": "Archivados (guardados como historial)",
       "hint": "Quitados para liberar espacio y guardados como historial: ocultos en estantes y búsquedas, mostrados en gris en su página con el progreso de todos. Si los archivos vuelven, se restauran solos.",
