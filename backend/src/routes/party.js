@@ -9,6 +9,7 @@ import {
   MAX_PARTIES, createParty, getParty, partyCount, addConnection, removeConnection, isFull,
   canControl, snapshot, applyAction, setBuffering, changeItem, setControlMode, addChat, endParty
 } from '../services/party.js';
+import { getSetting, setSetting } from '../services/settings.js';
 
 // Watch parties (see services/party.js). Off unless an admin turns them on.
 const PARTY_SETTING_KEY = 'party_mode_enabled';
@@ -17,16 +18,11 @@ const CLIENT_ID_RE = /^[A-Za-z0-9_-]{8,64}$/;
 const KEEPALIVE_MS = 20000;
 
 export async function isPartyModeEnabled(db) {
-  const row = await db.get('SELECT value FROM settings WHERE key = ?', [PARTY_SETTING_KEY]);
-  return row?.value === 'true';
+  return (await getSetting(db, PARTY_SETTING_KEY)) === 'true';
 }
 
 export async function savePartyModeEnabled(db, enabled) {
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [PARTY_SETTING_KEY, enabled ? 'true' : 'false']
-  );
+  await setSetting(db, PARTY_SETTING_KEY, enabled ? 'true' : 'false');
 }
 
 const router = express.Router();

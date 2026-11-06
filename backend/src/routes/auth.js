@@ -17,6 +17,7 @@ import {
   newSecret, otpauthUri, verifyTotp, sealSecret, openSecret, newRecoveryCodes, useRecoveryCode,
   recoveryCodesLeft, createChallenge, takeChallengeAttempt, endChallenge
 } from '../services/twoFactor.js';
+import { getSetting, setSetting } from '../services/settings.js';
 
 const router = express.Router();
 const VALID_ROLES = ['admin', 'editor', 'viewer'];
@@ -167,11 +168,7 @@ router.post('/setup', async (req, res) => {
 
     // Save Server Name if provided
     if (typeof serverName === 'string' && serverName.trim()) {
-      await db.run(
-        `INSERT INTO settings (key, value, updated_at) VALUES ('server_name', ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-        [serverName.trim()]
-      );
+      await setSetting(db, 'server_name', serverName.trim());
     }
 
     for (const lib of libraryRows) {
@@ -541,7 +538,7 @@ router.post('/2fa/setup', authenticateToken, sessionOnly, handle(async (req, res
   if (row?.totp_enabled_at) return res.status(400).json({ error: 'Two-factor is already on. Turn it off first to set it up again.' });
   const secret = newSecret();
   await db.run('UPDATE users SET totp_pending = ? WHERE id = ?', [sealSecret(secret), req.user.id]);
-  const name = (await db.get("SELECT value FROM settings WHERE key = 'server_name'"))?.value?.trim() || 'Plinthio';
+  const name = (await getSetting(db, 'server_name'))?.trim() || 'Plinthio';
   res.json({ secret, uri: otpauthUri(secret, { issuer: name, account: req.user.username }) });
 }));
 

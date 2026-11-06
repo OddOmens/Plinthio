@@ -2,6 +2,7 @@ import fs from 'fs';
 import { getDb } from '../config/database.js';
 import { scanLibrary } from './scanner.js';
 import { logger } from './logger.js';
+import { setSetting } from './settings.js';
 
 // Until this existed, a file added to a library stayed invisible until an admin opened the
 // Admin panel and clicked Scan — the thing every other media server does for you. Two
@@ -75,11 +76,7 @@ export async function saveAutoScanSettings(patch) {
     )
   };
 
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [SETTINGS_KEY, JSON.stringify(next)]
-  );
+  await setSetting(db, SETTINGS_KEY, JSON.stringify(next));
 
   // Apply immediately rather than at the next restart.
   await syncWatchers();

@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { config } from '../config/env.js';
+import { setSetting } from './settings.js';
 
 // The opening sequence: a short clip played before a movie or episode starts
 // (components/IntroSequence.vue). Plinthio ships its own (assets/default-intro.mp4), off until
@@ -46,14 +47,6 @@ export async function getIntroSettings(db) {
     introVersion: !file ? null : custom ? (s.intro_version || '1') : DEFAULT_INTRO_VERSION,
     introDuration: !file ? null : custom ? (s.intro_duration ? Number(s.intro_duration) : null) : DEFAULT_INTRO_DURATION
   };
-}
-
-async function setSetting(db, key, value) {
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [key, value]
-  );
 }
 
 export async function saveIntroSettings(db, { introEnabled, introMovies, introShows }) {

@@ -10,6 +10,7 @@ import { endAllParties } from '../services/party.js';
 import { isLiveTvEnabled, saveLiveTvEnabled } from '../services/liveTv.js';
 import multer from 'multer';
 import { getIntroSettings, saveIntroSettings, installIntro, removeIntro, INTRO_MAX_BYTES } from '../services/intro.js';
+import { getSetting, setSetting } from '../services/settings.js';
 
 const router = express.Router();
 
@@ -130,11 +131,7 @@ router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
   const db = await getDb();
 
   if (serverName !== undefined) {
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('server_name', ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [String(serverName).trim() || 'Plinthio']
-    );
+    await setSetting(db, 'server_name', String(serverName).trim() || 'Plinthio');
   }
 
   if (customCss !== undefined) {
@@ -143,80 +140,51 @@ router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
     // text, never parsed as HTML/JS, so no client-side sink here to sanitize against. Do
     // not add a `v-html` (or similarly HTML-parsing) consumer of this value without
     // reintroducing real sanitization first.
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('custom_css', ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [String(customCss)]
-    );
+    await setSetting(db, 'custom_css', String(customCss));
   }
 
   if (accentTheme !== undefined) {
     const allowedThemes = ['zinc', 'slate', 'red', 'orange', 'amber', 'lime', 'emerald', 'teal', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
     const theme = allowedThemes.includes(accentTheme) ? accentTheme : 'zinc';
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('accent_theme', ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [theme]
-    );
+    await setSetting(db, 'accent_theme', theme);
   }
 
   if (loginMessage !== undefined) {
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('login_message', ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [String(loginMessage).trim()]
-    );
+    await setSetting(db, 'login_message', String(loginMessage).trim());
   }
 
   if (layoutMode !== undefined) {
     const allowedLayouts = ['topnav', 'sidebar'];
     const layout = allowedLayouts.includes(layoutMode) ? layoutMode : 'topnav';
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('layout_mode', ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [layout]
-    );
+    await setSetting(db, 'layout_mode', layout);
   }
 
   if (pageWidth !== undefined) {
     if (!PAGE_WIDTHS.includes(pageWidth)) {
       return res.status(400).json({ error: `pageWidth must be one of ${PAGE_WIDTHS.join(', ')}` });
     }
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('page_width', ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [pageWidth]
-    );
+    await setSetting(db, 'page_width', pageWidth);
   }
 
   if (pauseScreen !== undefined) {
     if (!PAUSE_SCREENS.includes(pauseScreen)) {
       return res.status(400).json({ error: `pauseScreen must be one of ${PAUSE_SCREENS.join(', ')}` });
     }
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('pause_screen', ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [pauseScreen]
-    );
+    await setSetting(db, 'pause_screen', pauseScreen);
   }
 
   if (defaultLanguage !== undefined) {
     if (!LANGUAGES.includes(defaultLanguage)) {
       return res.status(400).json({ error: `defaultLanguage must be one of ${LANGUAGES.join(', ')}` });
     }
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('default_language', ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [defaultLanguage]
-    );
+    await setSetting(db, 'default_language', defaultLanguage);
   }
 
   if (userCustomization !== undefined) {
     if (!userCustomization || typeof userCustomization !== 'object' || Array.isArray(userCustomization)) {
       return res.status(400).json({ error: 'userCustomization must be an object' });
     }
-    const currentRow = await db.get("SELECT value FROM settings WHERE key = 'user_customization'");
-    const current = parseUserCustomization(currentRow?.value);
+    const current = parseUserCustomization(await getSetting(db, 'user_customization'));
     const updated = {
       enabled: userCustomization.enabled !== undefined ? !!userCustomization.enabled : current.enabled,
       accentColor: userCustomization.accentColor !== undefined ? !!userCustomization.accentColor : current.accentColor,
@@ -224,11 +192,7 @@ router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
       pageWidth: userCustomization.pageWidth !== undefined ? !!userCustomization.pageWidth : current.pageWidth,
       pauseScreen: userCustomization.pauseScreen !== undefined ? !!userCustomization.pauseScreen : current.pauseScreen
     };
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('user_customization', ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [JSON.stringify(updated)]
-    );
+    await setSetting(db, 'user_customization', JSON.stringify(updated));
   }
 
   if (ratings && typeof ratings === 'object') {

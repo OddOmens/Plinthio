@@ -11,6 +11,7 @@ import { parseM3u, isHlsUrl, isAdultGroup } from './m3u.js';
 import { parseXmltv } from './xmltv.js';
 import { logoPath } from './liveProxy.js';
 import { checkStream, nextHealth } from './liveHealth.js';
+import { getSetting, setSetting } from './settings.js';
 
 // Live TV: channels from M3U playlists, with programme guides from XMLTV. Off until an admin
 // turns it on (Admin → Live TV). Two kinds of source:
@@ -58,16 +59,11 @@ const WRITE_BATCH = 500;
 // ─── The switch ─────────────────────────────────────────────────────────────
 
 export async function isLiveTvEnabled(db) {
-  const row = await db.get('SELECT value FROM settings WHERE key = ?', [SETTING_KEY]);
-  return row?.value === 'true';
+  return (await getSetting(db, SETTING_KEY)) === 'true';
 }
 
 export async function saveLiveTvEnabled(db, enabled) {
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [SETTING_KEY, enabled ? 'true' : 'false']
-  );
+  await setSetting(db, SETTING_KEY, enabled ? 'true' : 'false');
   // Sources that went stale while it was off catch up straight away.
   if (enabled) kickLiveTv();
 }
@@ -328,11 +324,7 @@ export async function getLiveFilters(db) {
 
 export async function saveLiveFilters(db, filters) {
   const clean = storedFilters(filters);
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [FILTERS_KEY, JSON.stringify(clean)]
-  );
+  await setSetting(db, FILTERS_KEY, JSON.stringify(clean));
   filtersState = { filters: clean, compiled: compileFilters(clean) };
   channelsChanged();
   return clean;
@@ -496,11 +488,7 @@ export async function saveHealthSettings(db, changes) {
   for (const key of Object.keys(DEFAULT_HEALTH)) {
     if (typeof changes[key] === 'boolean') next[key] = changes[key];
   }
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [HEALTH_KEY, JSON.stringify(next)]
-  );
+  await setSetting(db, HEALTH_KEY, JSON.stringify(next));
   const hideChanged = next.hideOffline !== healthSettings.hideOffline;
   healthSettings = next;
   if (hideChanged) channelsChanged();

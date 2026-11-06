@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import { getDb } from '../config/database.js';
 import { logger } from './logger.js';
+import { getSetting } from './settings.js';
 
 // Frames are decoded in software then uploaded to the GPU for encoding (sw-decode + hw-encode).
 // A full hw-decode + hw-encode pipeline (via -hwaccel vaapi + vpp_vaapi) would be marginally
@@ -100,8 +101,8 @@ export async function getActiveHwaccel() {
   let preference = 'auto';
   try {
     const db = await getDb();
-    const row = await db.get("SELECT value FROM settings WHERE key = 'transcode_hwaccel'");
-    if (row?.value) preference = row.value;
+    const stored = await getSetting(db, 'transcode_hwaccel');
+    if (stored) preference = stored;
   } catch {
     // Settings unavailable (very early boot) — fall back to auto-detection.
   }

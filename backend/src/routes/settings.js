@@ -21,6 +21,7 @@ import { getComicVineKeyInfo, verifyComicVineKey } from '../services/comicvine.j
 import { SEND_OPTS } from '../utils/fileStream.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
+import { getSetting, setSetting } from '../services/settings.js';
 
 const router = express.Router();
 
@@ -38,9 +39,9 @@ export function normalizeShelfModes(stored) {
 }
 
 async function readShelfModes(db) {
-  const row = await db.get("SELECT value FROM settings WHERE key = 'allowed_grouping_modes'");
+  const value = await getSetting(db, 'allowed_grouping_modes');
   let stored = null;
-  try { stored = row?.value ? JSON.parse(row.value) : null; } catch (e) { /* fall back to all */ }
+  try { stored = value ? JSON.parse(value) : null; } catch (e) { /* fall back to all */ }
   return normalizeShelfModes(stored);
 }
 
@@ -61,11 +62,7 @@ router.patch('/filters', authenticateToken, requireAdmin, handle(async (req, res
 
   const db = await getDb();
   const modes = normalizeShelfModes(allowedGroupingModes);
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES ('allowed_grouping_modes', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [JSON.stringify(modes)]
-  );
+  await setSetting(db, 'allowed_grouping_modes', JSON.stringify(modes));
 
   res.json({ message: 'Shelf views updated', allowedGroupingModes: modes });
 }));
@@ -101,9 +98,9 @@ router.get('/metadata-providers', authenticateToken, requireAdmin, handle(async 
 // Hardware transcoding: what this machine can do, and what the admin has chosen.
 router.get('/transcoding', authenticateToken, requireAdmin, handle(async (req, res) => {
   const db = await getDb();
-  const row = await db.get("SELECT value FROM settings WHERE key = 'transcode_hwaccel'");
+  const preference = await getSetting(db, 'transcode_hwaccel');
   res.json({
-    preference: row?.value || 'auto',
+    preference: preference || 'auto',
     detected: await getDetectedHwaccel(),
     available: listHwaccels()
   });
@@ -116,11 +113,7 @@ router.put('/transcoding', authenticateToken, requireAdmin, handle(async (req, r
   }
 
   const db = await getDb();
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES ('transcode_hwaccel', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [preference]
-  );
+  await setSetting(db, 'transcode_hwaccel', preference);
   res.json({ message: 'Transcoding settings saved', preference });
 }));
 
@@ -146,11 +139,7 @@ router.put('/metadata-providers/enabled', authenticateToken, requireAdmin, handl
   if (enabled) off.delete(provider);
   else off.add(provider);
   const db = await getDb();
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES ('metadata_providers_off', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [JSON.stringify([...off])]
-  );
+  await setSetting(db, 'metadata_providers_off', JSON.stringify([...off]));
   res.json(await providerSwitches());
 }));
 router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, handle(async (req, res) => {
@@ -173,11 +162,7 @@ router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, hand
     return sendError(req, res, 'P401', { message: check.reason, status: 400 });
   }
 
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES ('tmdb_api_key', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [apiKey.trim()]
-  );
+  await setSetting(db, 'tmdb_api_key', apiKey.trim());
 
   res.json({
     message: check.authStyle === 'read-access-token'
@@ -203,11 +188,7 @@ router.put('/metadata-providers/comicvine-key', authenticateToken, requireAdmin,
     return sendError(req, res, 'P401', { message: check.reason, status: 400 });
   }
 
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES ('comicvine_api_key', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [String(apiKey).trim()]
-  );
+  await setSetting(db, 'comicvine_api_key', String(apiKey).trim());
   res.json({ message: 'Comic Vine API key saved and verified', ...await comicVineStatus() });
 }));
 router.put('/metadata-providers/google-books-key', authenticateToken, requireAdmin, handle(async (req, res) => {
@@ -224,11 +205,7 @@ router.put('/metadata-providers/google-books-key', authenticateToken, requireAdm
     return sendError(req, res, 'P401', { message: check.reason, status: 400 });
   }
 
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES ('google_books_api_key', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [String(apiKey).trim()]
-  );
+  await setSetting(db, 'google_books_api_key', String(apiKey).trim());
   res.json({ message: 'Google Books API key saved and verified', ...await googleBooksStatus() });
 }));
 
