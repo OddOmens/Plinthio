@@ -27,7 +27,7 @@ import { isMetadataIgnored } from '../services/metadataGaps.js';
 import multer from 'multer';
 import sharp from 'sharp';
 import { logger } from '../services/logger.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { AGE_RATINGS } from '../services/visibility.js';
 import { resetCredits } from '../services/credits.js';
@@ -349,7 +349,7 @@ router.get('/admin/items', requireEditor, async (req, res) => {
 
 // Admin / Editor: stop flagging the selected titles' missing poster and details (a home
 // video has none to find), or start again.
-router.post('/admin/ignore-missing', requireEditor, async (req, res) => {
+router.post('/admin/ignore-missing', requireEditor, handle(async (req, res) => {
   const { itemIds, ignored } = req.body;
   if (!Array.isArray(itemIds) || itemIds.length === 0 || itemIds.length > 5000 || !itemIds.every((id) => typeof id === 'string')) {
     return res.status(400).json({ error: 'itemIds array is required' });
@@ -357,23 +357,19 @@ router.post('/admin/ignore-missing', requireEditor, async (req, res) => {
   if (typeof ignored !== 'boolean') {
     return res.status(400).json({ error: 'ignored must be true or false' });
   }
-  try {
-    const db = await getDb();
-    let updated = 0;
-    for (let i = 0; i < itemIds.length; i += 500) {
-      const batch = itemIds.slice(i, i + 500);
-      const result = await db.run(
-        `UPDATE items SET metadata_ignored = ? WHERE id IN (${batch.map(() => '?').join(', ')})`,
-        [ignored ? 1 : 0, ...batch]
-      );
-      updated += result.changes || 0;
-    }
-    logger.info('metadata', `${req.user.username} ${ignored ? 'ignored' : 'stopped ignoring'} missing metadata on ${updated} title(s)`);
-    res.json({ updated, ignored });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  let updated = 0;
+  for (let i = 0; i < itemIds.length; i += 500) {
+    const batch = itemIds.slice(i, i + 500);
+    const result = await db.run(
+      `UPDATE items SET metadata_ignored = ? WHERE id IN (${batch.map(() => '?').join(', ')})`,
+      [ignored ? 1 : 0, ...batch]
+    );
+    updated += result.changes || 0;
   }
-});
+  logger.info('metadata', `${req.user.username} ${ignored ? 'ignored' : 'stopped ignoring'} missing metadata on ${updated} title(s)`);
+  res.json({ updated, ignored });
+}));
 
 // Admin / Editor: Batch Clean Titles for selected items
 router.post('/admin/batch-clean-titles', requireEditor, async (req, res) => {
@@ -869,42 +865,38 @@ router.post('/admin/batch-match', requireEditor, async (req, res) => {
 });
 
 // Admin / Editor: Auto-match single item
-router.post('/admin/match-single/:itemId', requireEditor, async (req, res) => {
+router.post('/admin/match-single/:itemId', requireEditor, handle(async (req, res) => {
   const { itemId } = req.params;
   const { overwriteCover = false, useCanonicalTitle = true } = req.body;
 
-  try {
-    const db = await getDb();
-    const item = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
-    if (!item) {
-      return res.status(404).json({ error: 'Item not found' });
-    }
-
-    try {
-      const result = await matchItemMetadata(db, item, {
-        overwriteCover,
-        useCanonicalTitle
-      });
-      res.json({ message: 'Item matched and updated', item: result.item, matched: result.matched });
-    } catch (err) {
-      if (err.code === 'MISSING_API_KEY') {
-        return sendError(req, res, 'P400', err.provider ? { message: err.message } : {});
-      }
-      if (err.code === 'PROVIDER_OFF') {
-        return sendError(req, res, 'P404');
-      }
-      if (err.code === 'UNMATCHABLE_TYPE' || err.code === 'NO_METADATA_FOUND') {
-        return res.status(404).json({ error: err.message, cleanTitle: err.cleanTitle, year: err.year });
-      }
-      throw err;
-    }
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  const item = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
+  if (!item) {
+    return res.status(404).json({ error: 'Item not found' });
   }
-});
+
+  try {
+    const result = await matchItemMetadata(db, item, {
+      overwriteCover,
+      useCanonicalTitle
+    });
+    res.json({ message: 'Item matched and updated', item: result.item, matched: result.matched });
+  } catch (err) {
+    if (err.code === 'MISSING_API_KEY') {
+      return sendError(req, res, 'P400', err.provider ? { message: err.message } : {});
+    }
+    if (err.code === 'PROVIDER_OFF') {
+      return sendError(req, res, 'P404');
+    }
+    if (err.code === 'UNMATCHABLE_TYPE' || err.code === 'NO_METADATA_FOUND') {
+      return res.status(404).json({ error: err.message, cleanTitle: err.cleanTitle, year: err.year });
+    }
+    throw err;
+  }
+}));
 
 // Apply a chosen external metadata result to an item: updates fields and downloads the cover
-router.post('/apply/:itemId', requireEditor, async (req, res) => {
+router.post('/apply/:itemId', requireEditor, handle(async (req, res) => {
   const { itemId } = req.params;
   const { title, author, artists, series, volume, coverUrl, description, releaseDate, genres, themes, publisher, status, ageRating, isbn, language, source, rating, externalId } = req.body;
 
@@ -921,83 +913,79 @@ router.post('/apply/:itemId', requireEditor, async (req, res) => {
     return res.status(400).json({ error: `Age rating must be one of: ${AGE_RATINGS.join(', ')}` });
   }
 
-  try {
-    const db = await getDb();
-    const item = await db.get('SELECT id FROM items WHERE id = ?', [itemId]);
-    if (!item) {
-      return res.status(404).json({ error: 'Item not found' });
-    }
-
-    let coverPath = null;
-    if (coverUrl) {
-      try {
-        // A Google Books search result only links a thumbnail; its full record has the
-        // larger sizes.
-        const full = source === 'google-books' && externalId
-          ? await fetchBookDetails({ source, externalId, coverUrl })
-          : null;
-        coverPath = await downloadCover(full?.coverUrl || coverUrl, itemId);
-      } catch (err) {
-        console.warn(`Failed to download cover for item ${itemId}: ${err.message}`);
-      }
-    }
-
-    const fields = [];
-    const params = [];
-
-    if (title) { fields.push('title = ?'); params.push(title); }
-    if (author !== undefined) { fields.push('author = ?'); params.push(author || null); }
-    if (artists !== undefined) { fields.push('artists = ?'); params.push(artists || null); }
-    if (series !== undefined) { fields.push('series = ?'); params.push(series || null); }
-    if (volume !== undefined) { fields.push('volume = ?'); params.push(number); }
-    if (coverPath) {
-      fields.push('cover_path = ?'); params.push(coverPath);
-      fields.push('cover_source = ?'); params.push(typeof source === 'string' && source ? source : 'provider');
-    }
-    if (description !== undefined) { fields.push('description = ?'); params.push(description || null); }
-    if (releaseDate !== undefined) { fields.push('release_date = ?'); params.push(releaseDate || null); }
-    if (genres !== undefined) {
-      const gVal = Array.isArray(genres) ? genres.join(', ') : (genres || null);
-      fields.push('genres = ?'); params.push(gVal);
-    }
-    if (themes !== undefined) {
-      const tVal = Array.isArray(themes) ? themes.join(', ') : (themes || null);
-      fields.push('themes = ?'); params.push(tVal);
-    }
-    if (publisher !== undefined) { fields.push('publisher = ?'); params.push(publisher || null); }
-    if (status !== undefined) { fields.push('status = ?'); params.push(status || null); }
-    if (isbn !== undefined) { fields.push('isbn = ?'); params.push(normalizedIsbn); }
-    if (language !== undefined) { fields.push('language = ?'); params.push(normalizedLanguage); }
-    if (ageRating !== undefined) { fields.push('age_rating = ?'); params.push(ageRating || null); }
-    // A TMDB result carries its community score — keep it as the item's world rating so it
-    // shows without a separate lookup. Other providers' results don't set one.
-    if (source === 'tmdb' && typeof rating === 'number' && rating >= 0 && rating <= 10) {
-      fields.push('external_rating = ?'); params.push(rating);
-      fields.push('external_rating_votes = ?'); params.push(Number.isInteger(req.body.ratingVotes) ? req.body.ratingVotes : null);
-      fields.push("external_rating_source = 'tmdb'");
-      fields.push('external_rating_checked_at = CURRENT_TIMESTAMP');
-    }
-
-    if (fields.length === 0) {
-      return res.status(400).json({ error: 'No metadata fields provided to apply' });
-    }
-
-    fields.push('updated_at = CURRENT_TIMESTAMP');
-    params.push(itemId);
-
-    await db.run(`UPDATE items SET ${fields.join(', ')} WHERE id = ?`, params);
-
-    const updated = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
-    // A TMDB pick: the title page's cast and crew follow the title that was chosen.
-    if (source === 'tmdb' && externalId) await resetCredits(db, updated, externalId);
-    res.json({ message: 'Metadata updated', item: updated });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  const item = await db.get('SELECT id FROM items WHERE id = ?', [itemId]);
+  if (!item) {
+    return res.status(404).json({ error: 'Item not found' });
   }
-});
+
+  let coverPath = null;
+  if (coverUrl) {
+    try {
+      // A Google Books search result only links a thumbnail; its full record has the
+      // larger sizes.
+      const full = source === 'google-books' && externalId
+        ? await fetchBookDetails({ source, externalId, coverUrl })
+        : null;
+      coverPath = await downloadCover(full?.coverUrl || coverUrl, itemId);
+    } catch (err) {
+      console.warn(`Failed to download cover for item ${itemId}: ${err.message}`);
+    }
+  }
+
+  const fields = [];
+  const params = [];
+
+  if (title) { fields.push('title = ?'); params.push(title); }
+  if (author !== undefined) { fields.push('author = ?'); params.push(author || null); }
+  if (artists !== undefined) { fields.push('artists = ?'); params.push(artists || null); }
+  if (series !== undefined) { fields.push('series = ?'); params.push(series || null); }
+  if (volume !== undefined) { fields.push('volume = ?'); params.push(number); }
+  if (coverPath) {
+    fields.push('cover_path = ?'); params.push(coverPath);
+    fields.push('cover_source = ?'); params.push(typeof source === 'string' && source ? source : 'provider');
+  }
+  if (description !== undefined) { fields.push('description = ?'); params.push(description || null); }
+  if (releaseDate !== undefined) { fields.push('release_date = ?'); params.push(releaseDate || null); }
+  if (genres !== undefined) {
+    const gVal = Array.isArray(genres) ? genres.join(', ') : (genres || null);
+    fields.push('genres = ?'); params.push(gVal);
+  }
+  if (themes !== undefined) {
+    const tVal = Array.isArray(themes) ? themes.join(', ') : (themes || null);
+    fields.push('themes = ?'); params.push(tVal);
+  }
+  if (publisher !== undefined) { fields.push('publisher = ?'); params.push(publisher || null); }
+  if (status !== undefined) { fields.push('status = ?'); params.push(status || null); }
+  if (isbn !== undefined) { fields.push('isbn = ?'); params.push(normalizedIsbn); }
+  if (language !== undefined) { fields.push('language = ?'); params.push(normalizedLanguage); }
+  if (ageRating !== undefined) { fields.push('age_rating = ?'); params.push(ageRating || null); }
+  // A TMDB result carries its community score — keep it as the item's world rating so it
+  // shows without a separate lookup. Other providers' results don't set one.
+  if (source === 'tmdb' && typeof rating === 'number' && rating >= 0 && rating <= 10) {
+    fields.push('external_rating = ?'); params.push(rating);
+    fields.push('external_rating_votes = ?'); params.push(Number.isInteger(req.body.ratingVotes) ? req.body.ratingVotes : null);
+    fields.push("external_rating_source = 'tmdb'");
+    fields.push('external_rating_checked_at = CURRENT_TIMESTAMP');
+  }
+
+  if (fields.length === 0) {
+    return res.status(400).json({ error: 'No metadata fields provided to apply' });
+  }
+
+  fields.push('updated_at = CURRENT_TIMESTAMP');
+  params.push(itemId);
+
+  await db.run(`UPDATE items SET ${fields.join(', ')} WHERE id = ?`, params);
+
+  const updated = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
+  // A TMDB pick: the title page's cast and crew follow the title that was chosen.
+  if (source === 'tmdb' && externalId) await resetCredits(db, updated, externalId);
+  res.json({ message: 'Metadata updated', item: updated });
+}));
 
 // Apply a chosen external metadata result or edited fields across a series (all volumes/episodes)
-router.post('/apply-series', requireEditor, async (req, res) => {
+router.post('/apply-series', requireEditor, handle(async (req, res) => {
   const {
     applyToIds,
     series,
@@ -1028,155 +1016,151 @@ router.post('/apply-series', requireEditor, async (req, res) => {
     return res.status(400).json({ error: 'Language must be a language code such as "en" or "pt-BR".' });
   }
 
-  try {
-    const db = await getDb();
-    let coverBuffer = null;
-    if (coverUrl) {
-      try {
-        coverBuffer = await downloadCoverBuffer(coverUrl);
-      } catch (err) {
-        logger.warn('metadata', `Failed to download cover buffer from ${coverUrl}: ${err.message}`);
-      }
+  const db = await getDb();
+  let coverBuffer = null;
+  if (coverUrl) {
+    try {
+      coverBuffer = await downloadCoverBuffer(coverUrl);
+    } catch (err) {
+      logger.warn('metadata', `Failed to download cover buffer from ${coverUrl}: ${err.message}`);
     }
-
-    let mangaVolumeCovers = null;
-    if (source === 'mangadex' && externalId) {
-      mangaVolumeCovers = await fetchMangaDexVolumeCovers(externalId);
-    }
-
-    const tmdbSeasonCache = new Map();
-    let updatedCount = 0;
-
-    for (const itemId of applyToIds) {
-      const item = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
-      if (!item) continue;
-
-      let itemCoverPath = null;
-      if (mangaVolumeCovers && item.volume != null) {
-        const volKey = String(item.volume);
-        const volKeyInt = String(Math.floor(item.volume));
-        const volCoverUrl = mangaVolumeCovers.get(volKey) || mangaVolumeCovers.get(volKeyInt);
-        if (volCoverUrl) {
-          try {
-            itemCoverPath = await downloadCover(volCoverUrl, itemId);
-          } catch (e) {
-            // fallback to shared coverBuffer
-          }
-        }
-      }
-
-      if (!itemCoverPath && coverBuffer) {
-        try {
-          itemCoverPath = await saveCoverJpeg(coverBuffer, itemId);
-        } catch (e) {
-          logger.warn('metadata', `Failed to save cover JPEG for ${itemId}: ${e.message}`);
-        }
-      }
-
-      let itemTitle = undefined;
-      let itemDescription = description;
-      let itemReleaseDate = releaseDate;
-      let itemAuthor = author;
-      let itemArtists = artists;
-      let itemRating = rating;
-      let itemRatingVotes = ratingVotes;
-
-      const isTv = item.media_type === 'show' || item.media_type === 'anime';
-      if (isTv && source === 'tmdb' && externalId && syncEpisodes) {
-        const filename = path.basename(item.path);
-        const parsedPath = parseMediaTitle(filename);
-        let season = parsedPath.season;
-        let episode = parsedPath.episode;
-        if ((season == null || episode == null) && item.volume != null) {
-          const s = Math.floor(item.volume);
-          const ep = Math.round((item.volume - s) * 1000);
-          if (ep > 0) { season = s; episode = ep; }
-        }
-        if (season != null && episode != null) {
-          const cacheKey = `${externalId}_s${season}`;
-          let seasonData;
-          if (tmdbSeasonCache.has(cacheKey)) {
-            seasonData = tmdbSeasonCache.get(cacheKey);
-          } else {
-            seasonData = await fetchTmdbSeason(externalId, season);
-            if (seasonData) tmdbSeasonCache.set(cacheKey, seasonData);
-          }
-          const ep = seasonData?.episodes?.find((e) => Number(e.episode_number) === Number(episode));
-          if (ep) {
-            if (ep.name) itemTitle = ep.name;
-            if (ep.overview) itemDescription = ep.overview;
-            if (ep.air_date) itemReleaseDate = ep.air_date;
-            if (ep.still_path && !itemCoverPath) {
-              try {
-                itemCoverPath = await downloadCover(`https://image.tmdb.org/t/p/w500${ep.still_path}`, itemId);
-              } catch (e) { /* ignore */ }
-            }
-            if (ep.vote_count > 0 && typeof ep.vote_average === 'number') {
-              itemRating = ep.vote_average;
-              itemRatingVotes = ep.vote_count;
-            }
-            const directors = (ep.crew || []).filter((c) => c.job === 'Director').map((c) => c.name).filter(Boolean);
-            const cast = (ep.guest_stars || []).slice(0, 5).map((c) => c.name).filter(Boolean);
-            if (directors.length) itemAuthor = directors.join(', ');
-            if (cast.length) itemArtists = cast.join(', ');
-          }
-        }
-      } else if (item.media_type === 'manga' && item.volume != null && (series || title)) {
-        itemTitle = `${series || title}, Vol. ${item.volume}`;
-      }
-
-      const fields = [];
-      const params = [];
-
-      if (itemTitle !== undefined) { fields.push('title = ?'); params.push(itemTitle); }
-      if (itemAuthor !== undefined) { fields.push('author = ?'); params.push(itemAuthor || null); }
-      if (itemArtists !== undefined) { fields.push('artists = ?'); params.push(itemArtists || null); }
-      if (series !== undefined) { fields.push('series = ?'); params.push(series || null); }
-      if (itemCoverPath) {
-        fields.push('cover_path = ?'); params.push(itemCoverPath);
-        fields.push('cover_source = ?'); params.push(typeof source === 'string' && source ? source : 'provider');
-      }
-      if (itemDescription !== undefined) { fields.push('description = ?'); params.push(itemDescription || null); }
-      if (itemReleaseDate !== undefined) { fields.push('release_date = ?'); params.push(itemReleaseDate || null); }
-      if (genres !== undefined) {
-        const gVal = Array.isArray(genres) ? genres.join(', ') : (genres || null);
-        fields.push('genres = ?'); params.push(gVal);
-      }
-      if (themes !== undefined) {
-        const tVal = Array.isArray(themes) ? themes.join(', ') : (themes || null);
-        fields.push('themes = ?'); params.push(tVal);
-      }
-      if (publisher !== undefined) { fields.push('publisher = ?'); params.push(publisher || null); }
-      if (status !== undefined) { fields.push('status = ?'); params.push(status || null); }
-      if (language !== undefined) { fields.push('language = ?'); params.push(normalizedLanguage); }
-      if (ageRating !== undefined) {
-        if (ageRating && !AGE_RATINGS.includes(ageRating)) {
-          return res.status(400).json({ error: `Age rating must be one of: ${AGE_RATINGS.join(', ')}` });
-        }
-        fields.push('age_rating = ?'); params.push(ageRating || null);
-      }
-      if (source === 'tmdb' && typeof itemRating === 'number' && itemRating >= 0 && itemRating <= 10) {
-        fields.push('external_rating = ?'); params.push(itemRating);
-        fields.push('external_rating_votes = ?'); params.push(Number.isInteger(itemRatingVotes) ? itemRatingVotes : null);
-        fields.push("external_rating_source = 'tmdb'");
-        fields.push('external_rating_checked_at = CURRENT_TIMESTAMP');
-      }
-
-      if (fields.length > 0) {
-        fields.push('updated_at = CURRENT_TIMESTAMP');
-        params.push(itemId);
-        await db.run(`UPDATE items SET ${fields.join(', ')} WHERE id = ?`, params);
-        if (source === 'tmdb' && externalId) {
-          await resetCredits(db, item, externalId);
-        }
-        updatedCount++;
-      }
-    }
-
-    res.json({ message: `Updated ${updatedCount} items in series`, updatedCount });
-  } catch (err) {
-    serverError(req, res, err);
   }
-});
+
+  let mangaVolumeCovers = null;
+  if (source === 'mangadex' && externalId) {
+    mangaVolumeCovers = await fetchMangaDexVolumeCovers(externalId);
+  }
+
+  const tmdbSeasonCache = new Map();
+  let updatedCount = 0;
+
+  for (const itemId of applyToIds) {
+    const item = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
+    if (!item) continue;
+
+    let itemCoverPath = null;
+    if (mangaVolumeCovers && item.volume != null) {
+      const volKey = String(item.volume);
+      const volKeyInt = String(Math.floor(item.volume));
+      const volCoverUrl = mangaVolumeCovers.get(volKey) || mangaVolumeCovers.get(volKeyInt);
+      if (volCoverUrl) {
+        try {
+          itemCoverPath = await downloadCover(volCoverUrl, itemId);
+        } catch (e) {
+          // fallback to shared coverBuffer
+        }
+      }
+    }
+
+    if (!itemCoverPath && coverBuffer) {
+      try {
+        itemCoverPath = await saveCoverJpeg(coverBuffer, itemId);
+      } catch (e) {
+        logger.warn('metadata', `Failed to save cover JPEG for ${itemId}: ${e.message}`);
+      }
+    }
+
+    let itemTitle = undefined;
+    let itemDescription = description;
+    let itemReleaseDate = releaseDate;
+    let itemAuthor = author;
+    let itemArtists = artists;
+    let itemRating = rating;
+    let itemRatingVotes = ratingVotes;
+
+    const isTv = item.media_type === 'show' || item.media_type === 'anime';
+    if (isTv && source === 'tmdb' && externalId && syncEpisodes) {
+      const filename = path.basename(item.path);
+      const parsedPath = parseMediaTitle(filename);
+      let season = parsedPath.season;
+      let episode = parsedPath.episode;
+      if ((season == null || episode == null) && item.volume != null) {
+        const s = Math.floor(item.volume);
+        const ep = Math.round((item.volume - s) * 1000);
+        if (ep > 0) { season = s; episode = ep; }
+      }
+      if (season != null && episode != null) {
+        const cacheKey = `${externalId}_s${season}`;
+        let seasonData;
+        if (tmdbSeasonCache.has(cacheKey)) {
+          seasonData = tmdbSeasonCache.get(cacheKey);
+        } else {
+          seasonData = await fetchTmdbSeason(externalId, season);
+          if (seasonData) tmdbSeasonCache.set(cacheKey, seasonData);
+        }
+        const ep = seasonData?.episodes?.find((e) => Number(e.episode_number) === Number(episode));
+        if (ep) {
+          if (ep.name) itemTitle = ep.name;
+          if (ep.overview) itemDescription = ep.overview;
+          if (ep.air_date) itemReleaseDate = ep.air_date;
+          if (ep.still_path && !itemCoverPath) {
+            try {
+              itemCoverPath = await downloadCover(`https://image.tmdb.org/t/p/w500${ep.still_path}`, itemId);
+            } catch (e) { /* ignore */ }
+          }
+          if (ep.vote_count > 0 && typeof ep.vote_average === 'number') {
+            itemRating = ep.vote_average;
+            itemRatingVotes = ep.vote_count;
+          }
+          const directors = (ep.crew || []).filter((c) => c.job === 'Director').map((c) => c.name).filter(Boolean);
+          const cast = (ep.guest_stars || []).slice(0, 5).map((c) => c.name).filter(Boolean);
+          if (directors.length) itemAuthor = directors.join(', ');
+          if (cast.length) itemArtists = cast.join(', ');
+        }
+      }
+    } else if (item.media_type === 'manga' && item.volume != null && (series || title)) {
+      itemTitle = `${series || title}, Vol. ${item.volume}`;
+    }
+
+    const fields = [];
+    const params = [];
+
+    if (itemTitle !== undefined) { fields.push('title = ?'); params.push(itemTitle); }
+    if (itemAuthor !== undefined) { fields.push('author = ?'); params.push(itemAuthor || null); }
+    if (itemArtists !== undefined) { fields.push('artists = ?'); params.push(itemArtists || null); }
+    if (series !== undefined) { fields.push('series = ?'); params.push(series || null); }
+    if (itemCoverPath) {
+      fields.push('cover_path = ?'); params.push(itemCoverPath);
+      fields.push('cover_source = ?'); params.push(typeof source === 'string' && source ? source : 'provider');
+    }
+    if (itemDescription !== undefined) { fields.push('description = ?'); params.push(itemDescription || null); }
+    if (itemReleaseDate !== undefined) { fields.push('release_date = ?'); params.push(itemReleaseDate || null); }
+    if (genres !== undefined) {
+      const gVal = Array.isArray(genres) ? genres.join(', ') : (genres || null);
+      fields.push('genres = ?'); params.push(gVal);
+    }
+    if (themes !== undefined) {
+      const tVal = Array.isArray(themes) ? themes.join(', ') : (themes || null);
+      fields.push('themes = ?'); params.push(tVal);
+    }
+    if (publisher !== undefined) { fields.push('publisher = ?'); params.push(publisher || null); }
+    if (status !== undefined) { fields.push('status = ?'); params.push(status || null); }
+    if (language !== undefined) { fields.push('language = ?'); params.push(normalizedLanguage); }
+    if (ageRating !== undefined) {
+      if (ageRating && !AGE_RATINGS.includes(ageRating)) {
+        return res.status(400).json({ error: `Age rating must be one of: ${AGE_RATINGS.join(', ')}` });
+      }
+      fields.push('age_rating = ?'); params.push(ageRating || null);
+    }
+    if (source === 'tmdb' && typeof itemRating === 'number' && itemRating >= 0 && itemRating <= 10) {
+      fields.push('external_rating = ?'); params.push(itemRating);
+      fields.push('external_rating_votes = ?'); params.push(Number.isInteger(itemRatingVotes) ? itemRatingVotes : null);
+      fields.push("external_rating_source = 'tmdb'");
+      fields.push('external_rating_checked_at = CURRENT_TIMESTAMP');
+    }
+
+    if (fields.length > 0) {
+      fields.push('updated_at = CURRENT_TIMESTAMP');
+      params.push(itemId);
+      await db.run(`UPDATE items SET ${fields.join(', ')} WHERE id = ?`, params);
+      if (source === 'tmdb' && externalId) {
+        await resetCredits(db, item, externalId);
+      }
+      updatedCount++;
+    }
+  }
+
+  res.json({ message: `Updated ${updatedCount} items in series`, updatedCount });
+}));
 
 export default router;

@@ -6,7 +6,7 @@ import { getThumbnailPath, THUMB_WIDTHS } from '../services/thumbnails.js';
 import { logger } from '../services/logger.js';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { isMetadataIgnored } from '../services/metadataGaps.js';
 
 const router = express.Router();
@@ -212,75 +212,63 @@ router.get('/', async (req, res) => {
 //
 // Offloaded titles are only removed when asked for by id: "remove everything missing" must
 // never take history someone chose to keep.
-router.post('/remove-missing', async (req, res) => {
+router.post('/remove-missing', handle(async (req, res) => {
   const { itemIds } = req.body || {};
-  try {
-    const db = await getDb();
-    let rows = await db.all('SELECT id, path, cover_path, title, offloaded_at FROM items WHERE missing_since IS NOT NULL');
-    if (Array.isArray(itemIds)) {
-      const wanted = new Set(itemIds);
-      rows = rows.filter((r) => wanted.has(r.id));
-    } else {
-      rows = rows.filter((r) => !r.offloaded_at);
-    }
-    let removed = 0;
-    for (const row of rows) {
-      const stillGone = await fs.promises.access(row.path).then(() => false, () => true);
-      if (!stillGone) continue;
-      await db.run('DELETE FROM items WHERE id = ?', [row.id]);
-      removed++;
-      if (row.cover_path) {
-        try { fs.unlinkSync(path.join(config.coversDir, row.cover_path)); } catch (e) { /* already gone */ }
-      }
-      for (const width of THUMB_WIDTHS) {
-        try { fs.unlinkSync(getThumbnailPath(row.id, width)); } catch (e) { /* not cached */ }
-      }
-    }
-    logger.info('library', `${removed} missing title(s) removed from the catalog by ${req.user.username}`);
-    res.json({ removed, skipped: rows.length - removed });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  let rows = await db.all('SELECT id, path, cover_path, title, offloaded_at FROM items WHERE missing_since IS NOT NULL');
+  if (Array.isArray(itemIds)) {
+    const wanted = new Set(itemIds);
+    rows = rows.filter((r) => wanted.has(r.id));
+  } else {
+    rows = rows.filter((r) => !r.offloaded_at);
   }
-});
+  let removed = 0;
+  for (const row of rows) {
+    const stillGone = await fs.promises.access(row.path).then(() => false, () => true);
+    if (!stillGone) continue;
+    await db.run('DELETE FROM items WHERE id = ?', [row.id]);
+    removed++;
+    if (row.cover_path) {
+      try { fs.unlinkSync(path.join(config.coversDir, row.cover_path)); } catch (e) { /* already gone */ }
+    }
+    for (const width of THUMB_WIDTHS) {
+      try { fs.unlinkSync(getThumbnailPath(row.id, width)); } catch (e) { /* not cached */ }
+    }
+  }
+  logger.info('library', `${removed} missing title(s) removed from the catalog by ${req.user.username}`);
+  res.json({ removed, skipped: rows.length - removed });
+}));
 
 // Keep titles as history: hidden from shelves, search and playback, shown greyed on their
 // title page with everyone's progress. Usually for titles already gone from disk (Library
 // Health's missing list), but it also works ahead of deleting the files.
-router.post('/offload', async (req, res) => {
+router.post('/offload', handle(async (req, res) => {
   const itemIds = validIds(req.body?.itemIds);
   if (!itemIds) return res.status(400).json({ error: 'itemIds must be a list of item ids' });
-  try {
-    const db = await getDb();
-    const result = await db.run(
-      `UPDATE items SET offloaded_at = CURRENT_TIMESTAMP
+  const db = await getDb();
+  const result = await db.run(
+    `UPDATE items SET offloaded_at = CURRENT_TIMESTAMP
        WHERE offloaded_at IS NULL AND id IN (${itemIds.map(() => '?').join(', ')})`,
-      itemIds
-    );
-    logger.info('library', `${result.changes} title(s) offloaded (kept as history) by ${req.user.username}`);
-    res.json({ offloaded: result.changes });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+    itemIds
+  );
+  logger.info('library', `${result.changes} title(s) offloaded (kept as history) by ${req.user.username}`);
+  res.json({ offloaded: result.changes });
+}));
 
 // Undo that. A title whose file is still there is back on the shelves; one whose file is
 // gone goes back to being missing.
-router.post('/unoffload', async (req, res) => {
+router.post('/unoffload', handle(async (req, res) => {
   const itemIds = validIds(req.body?.itemIds);
   if (!itemIds) return res.status(400).json({ error: 'itemIds must be a list of item ids' });
-  try {
-    const db = await getDb();
-    const result = await db.run(
-      `UPDATE items SET offloaded_at = NULL
+  const db = await getDb();
+  const result = await db.run(
+    `UPDATE items SET offloaded_at = NULL
        WHERE offloaded_at IS NOT NULL AND id IN (${itemIds.map(() => '?').join(', ')})`,
-      itemIds
-    );
-    logger.info('library', `${result.changes} title(s) no longer offloaded, by ${req.user.username}`);
-    res.json({ restored: result.changes });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+    itemIds
+  );
+  logger.info('library', `${result.changes} title(s) no longer offloaded, by ${req.user.username}`);
+  res.json({ restored: result.changes });
+}));
 
 const ITEM_ID_RE = /^[a-f0-9]{32}$/;
 function validIds(ids) {

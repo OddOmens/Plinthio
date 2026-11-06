@@ -1,7 +1,7 @@
 import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { serverError } from '../utils/http.js';
+import { handle } from '../utils/http.js';
 import { shapeItems, shapeItem } from '../services/itemView.js';
 import { accessSql } from '../services/visibility.js';
 
@@ -10,11 +10,10 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // Get "Continue Listening / Reading" items for the user
-router.get('/continue', async (req, res) => {
+router.get('/continue', handle(async (req, res) => {
   const userId = req.user.id;
-  try {
-    const db = await getDb();
-    const items = await db.all(`
+  const db = await getDb();
+  const items = await db.all(`
       SELECT
         i.*,
         p.current_time,
@@ -37,17 +36,14 @@ router.get('/continue', async (req, res) => {
       LIMIT 10
     `, [userId, userId]);
 
-    await shapeItems(db, items, req.user);
-    res.json({ items });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  await shapeItems(db, items, req.user);
+  res.json({ items });
+}));
 
 // Mark volumes skipped (or not). Used for "I watched the anime for these volumes".
 // Only the skip flag changes — a volume already read stays read, and partial progress is
 // kept so un-skipping restores it. Declared before /:itemId so "skip" isn't taken for an id.
-router.post('/skip', async (req, res) => {
+router.post('/skip', handle(async (req, res) => {
   const { itemIds, skipped = true } = req.body || {};
   if (!Array.isArray(itemIds) || itemIds.length === 0 || itemIds.length > 2000) {
     return res.status(400).json({ error: 'itemIds must be a non-empty array' });
@@ -55,10 +51,9 @@ router.post('/skip', async (req, res) => {
   const ids = [...new Set(itemIds.filter((id) => typeof id === 'string' && /^[a-f0-9]{32}$/.test(id)))];
   if (ids.length === 0) return res.status(400).json({ error: 'No valid item ids' });
 
-  try {
-    const db = await getDb();
-    // Only items this user can actually see.
-    const visible = await db.all(`
+  const db = await getDb();
+  // Only items this user can actually see.
+  const visible = await db.all(`
       SELECT i.id, i.total_pages FROM items i
       WHERE i.id IN (${ids.map(() => '?').join(',')})
       AND NOT EXISTS (
@@ -67,33 +62,30 @@ router.post('/skip', async (req, res) => {
       )${accessSql(req.user, 'i')}
     `, [...ids, req.user.id]);
 
-    const flag = skipped ? 1 : 0;
-    await db.run('BEGIN TRANSACTION');
-    try {
-      for (const item of visible) {
-        await db.run(`
+  const flag = skipped ? 1 : 0;
+  await db.run('BEGIN TRANSACTION');
+  try {
+    for (const item of visible) {
+      await db.run(`
           INSERT INTO user_progress (user_id, item_id, total_pages, is_skipped, updated_at)
           VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
           ON CONFLICT(user_id, item_id) DO UPDATE SET
             is_skipped = excluded.is_skipped,
             updated_at = CURRENT_TIMESTAMP
         `, [req.user.id, item.id, item.total_pages || 0, flag]);
-      }
-      await db.run('COMMIT');
-    } catch (err) {
-      await db.run('ROLLBACK');
-      throw err;
     }
-
-    res.json({ message: skipped ? 'Marked as skipped' : 'No longer skipped', count: visible.length });
+    await db.run('COMMIT');
   } catch (err) {
-    serverError(req, res, err);
+    await db.run('ROLLBACK');
+    throw err;
   }
-});
+
+  res.json({ message: skipped ? 'Marked as skipped' : 'No longer skipped', count: visible.length });
+}));
 
 // Mark several titles finished (or not) at once — "mark read up to here". Finishing clears
 // skipped, like reading does. Declared before /:itemId for the same reason as /skip.
-router.post('/finish', async (req, res) => {
+router.post('/finish', handle(async (req, res) => {
   const { itemIds, finished = true } = req.body || {};
   if (!Array.isArray(itemIds) || itemIds.length === 0 || itemIds.length > 2000) {
     return res.status(400).json({ error: 'itemIds must be a non-empty array' });
@@ -101,9 +93,8 @@ router.post('/finish', async (req, res) => {
   const ids = [...new Set(itemIds.filter((id) => typeof id === 'string' && /^[a-f0-9]{32}$/.test(id)))];
   if (ids.length === 0) return res.status(400).json({ error: 'No valid item ids' });
 
-  try {
-    const db = await getDb();
-    const visible = await db.all(`
+  const db = await getDb();
+  const visible = await db.all(`
       SELECT i.id, i.total_pages, i.duration FROM items i
       WHERE i.id IN (${ids.map(() => '?').join(',')})
       AND NOT EXISTS (
@@ -112,12 +103,12 @@ router.post('/finish', async (req, res) => {
       )${accessSql(req.user, 'i')}
     `, [...ids, req.user.id]);
 
-    const done = finished ? 1 : 0;
-    await db.run('BEGIN TRANSACTION');
-    try {
-      for (const item of visible) {
-        const pages = item.total_pages || 0;
-        await db.run(`
+  const done = finished ? 1 : 0;
+  await db.run('BEGIN TRANSACTION');
+  try {
+    for (const item of visible) {
+      const pages = item.total_pages || 0;
+      await db.run(`
           INSERT INTO user_progress
             (user_id, item_id, current_time, duration, current_page, total_pages, progress_percent, is_finished, is_skipped, updated_at)
           VALUES (?, ?, 0, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
@@ -129,36 +120,29 @@ router.post('/finish', async (req, res) => {
             is_skipped = 0,
             updated_at = CURRENT_TIMESTAMP
         `, [req.user.id, item.id, item.duration || 0, done ? pages : 0, pages, done ? 100 : 0, done]);
-      }
-      await db.run('COMMIT');
-    } catch (err) {
-      await db.run('ROLLBACK');
-      throw err;
     }
-
-    res.json({ message: finished ? 'Marked as finished' : 'Marked as not started', count: visible.length });
+    await db.run('COMMIT');
   } catch (err) {
-    serverError(req, res, err);
+    await db.run('ROLLBACK');
+    throw err;
   }
-});
+
+  res.json({ message: finished ? 'Marked as finished' : 'Marked as not started', count: visible.length });
+}));
 
 // Get progress for single item
-router.get('/:itemId', async (req, res) => {
+router.get('/:itemId', handle(async (req, res) => {
   const userId = req.user.id;
-  try {
-    const db = await getDb();
-    const progress = await db.get(
-      'SELECT * FROM user_progress WHERE user_id = ? AND item_id = ?',
-      [userId, req.params.itemId]
-    );
-    res.json({ progress: progress || null });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  const progress = await db.get(
+    'SELECT * FROM user_progress WHERE user_id = ? AND item_id = ?',
+    [userId, req.params.itemId]
+  );
+  res.json({ progress: progress || null });
+}));
 
 // Save progress (called periodically or on pause/page change)
-router.post('/:itemId', async (req, res) => {
+router.post('/:itemId', handle(async (req, res) => {
   const userId = req.user.id;
   const itemId = req.params.itemId;
   const { currentTime, duration, currentPage, totalPages, cfi } = req.body;
@@ -166,28 +150,27 @@ router.post('/:itemId', async (req, res) => {
   const rate = Number(req.body.playbackRate);
   const playbackRate = Number.isFinite(rate) && rate >= 0.5 && rate <= 3 ? rate : null;
 
-  try {
-    const db = await getDb();
+  const db = await getDb();
 
-    let percent = 0;
-    let isFinished = 0;
+  let percent = 0;
+  let isFinished = 0;
 
-    if (req.body.isFinished !== undefined) {
-      isFinished = req.body.isFinished ? 1 : 0;
-      if (req.body.progressPercent !== undefined) {
-        percent = Math.min(100, Math.max(0, Number(req.body.progressPercent) || 0));
-      } else {
-        percent = isFinished ? 100 : 0;
-      }
-    } else if (duration && duration > 0) {
-      percent = Math.min(100, Math.round((currentTime / duration) * 100));
-      if (percent >= 98) isFinished = 1;
-    } else if (totalPages && totalPages > 0) {
-      percent = Math.min(100, Math.round((currentPage / totalPages) * 100));
-      if (currentPage >= totalPages) isFinished = 1;
+  if (req.body.isFinished !== undefined) {
+    isFinished = req.body.isFinished ? 1 : 0;
+    if (req.body.progressPercent !== undefined) {
+      percent = Math.min(100, Math.max(0, Number(req.body.progressPercent) || 0));
+    } else {
+      percent = isFinished ? 100 : 0;
     }
+  } else if (duration && duration > 0) {
+    percent = Math.min(100, Math.round((currentTime / duration) * 100));
+    if (percent >= 98) isFinished = 1;
+  } else if (totalPages && totalPages > 0) {
+    percent = Math.min(100, Math.round((currentPage / totalPages) * 100));
+    if (currentPage >= totalPages) isFinished = 1;
+  }
 
-    await db.run(`
+  await db.run(`
       INSERT INTO user_progress
         (user_id, item_id, current_time, duration, current_page, total_pages, progress_percent, is_finished, cfi, playback_rate, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
@@ -204,22 +187,19 @@ router.post('/:itemId', async (req, res) => {
         is_skipped = 0,
         updated_at = CURRENT_TIMESTAMP
     `, [
-      userId,
-      itemId,
-      currentTime || 0,
-      duration || 0,
-      currentPage || 0,
-      totalPages || 0,
-      percent,
-      isFinished,
-      cfi || null,
-      playbackRate
-    ]);
+    userId,
+    itemId,
+    currentTime || 0,
+    duration || 0,
+    currentPage || 0,
+    totalPages || 0,
+    percent,
+    isFinished,
+    cfi || null,
+    playbackRate
+  ]);
 
-    res.json({ message: 'Progress saved', progressPercent: percent, isFinished });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  res.json({ message: 'Progress saved', progressPercent: percent, isFinished });
+}));
 
 export default router;

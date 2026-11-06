@@ -3,7 +3,7 @@ import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
 import { getRatingSettings, getRatingSummary } from '../services/ratings.js';
-import { serverError } from '../utils/http.js';
+import { handle } from '../utils/http.js';
 
 // Only ever used in parameterised queries (never a file path), so this just rejects junk
 // rather than insisting on the 32-hex shape the media routes need.
@@ -28,65 +28,53 @@ async function loadVisibleItem(db, itemId, user) {
 
 // Rating summary for one item: your stars, the server-wide average, and (movies/shows/anime)
 // TMDB's score — each only when the admin has that display switched on.
-router.get('/:itemId', async (req, res) => {
-  try {
-    const db = await getDb();
-    const item = await loadVisibleItem(db, req.params.itemId, req.user);
-    if (!item) return res.status(404).json({ error: 'Item not found' });
+router.get('/:itemId', handle(async (req, res) => {
+  const db = await getDb();
+  const item = await loadVisibleItem(db, req.params.itemId, req.user);
+  if (!item) return res.status(404).json({ error: 'Item not found' });
 
-    const settings = await getRatingSettings(db);
-    res.json(await getRatingSummary(db, item, req.user.id, settings));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const settings = await getRatingSettings(db);
+  res.json(await getRatingSummary(db, item, req.user.id, settings));
+}));
 
 // Set (or with rating: null, clear) your own star rating: ½ to 5 in half-star steps.
-router.put('/:itemId', async (req, res) => {
+router.put('/:itemId', handle(async (req, res) => {
   const { rating } = req.body;
   const clearing = rating === null || rating === 0;
   if (!clearing && !(typeof rating === 'number' && Number.isInteger(rating * 2) && rating >= 0.5 && rating <= 5)) {
     return res.status(400).json({ error: 'Rating must be from 0.5 to 5 in half-star steps' });
   }
 
-  try {
-    const db = await getDb();
-    const settings = await getRatingSettings(db);
-    if (!settings.showPersonal) {
-      return res.status(403).json({ error: 'Personal ratings are turned off on this server' });
-    }
+  const db = await getDb();
+  const settings = await getRatingSettings(db);
+  if (!settings.showPersonal) {
+    return res.status(403).json({ error: 'Personal ratings are turned off on this server' });
+  }
 
-    const item = await loadVisibleItem(db, req.params.itemId, req.user);
-    if (!item) return res.status(404).json({ error: 'Item not found' });
+  const item = await loadVisibleItem(db, req.params.itemId, req.user);
+  if (!item) return res.status(404).json({ error: 'Item not found' });
 
-    if (clearing) {
-      await db.run('DELETE FROM user_ratings WHERE user_id = ? AND item_id = ?', [req.user.id, item.id]);
-    } else {
-      await db.run(
-        `INSERT INTO user_ratings (user_id, item_id, rating) VALUES (?, ?, ?)
+  if (clearing) {
+    await db.run('DELETE FROM user_ratings WHERE user_id = ? AND item_id = ?', [req.user.id, item.id]);
+  } else {
+    await db.run(
+      `INSERT INTO user_ratings (user_id, item_id, rating) VALUES (?, ?, ?)
          ON CONFLICT(user_id, item_id) DO UPDATE SET rating = excluded.rating, updated_at = CURRENT_TIMESTAMP`,
-        [req.user.id, item.id, rating]
-      );
-    }
-
-    res.json(await getRatingSummary(db, item, req.user.id, settings));
-  } catch (err) {
-    serverError(req, res, err);
+      [req.user.id, item.id, rating]
+    );
   }
-});
 
-router.delete('/:itemId', async (req, res) => {
-  try {
-    const db = await getDb();
-    const settings = await getRatingSettings(db);
-    if (!settings.showPersonal) {
-      return res.status(403).json({ error: 'Personal ratings are turned off on this server' });
-    }
-    await db.run('DELETE FROM user_ratings WHERE user_id = ? AND item_id = ?', [req.user.id, req.params.itemId]);
-    res.json({ message: 'Rating removed' });
-  } catch (err) {
-    serverError(req, res, err);
+  res.json(await getRatingSummary(db, item, req.user.id, settings));
+}));
+
+router.delete('/:itemId', handle(async (req, res) => {
+  const db = await getDb();
+  const settings = await getRatingSettings(db);
+  if (!settings.showPersonal) {
+    return res.status(403).json({ error: 'Personal ratings are turned off on this server' });
   }
-});
+  await db.run('DELETE FROM user_ratings WHERE user_id = ? AND item_id = ?', [req.user.id, req.params.itemId]);
+  res.json({ message: 'Rating removed' });
+}));
 
 export default router;

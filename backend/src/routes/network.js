@@ -2,7 +2,7 @@ import express from 'express';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
-import { serverError } from '../utils/http.js';
+import { handle } from '../utils/http.js';
 import { logger } from '../services/logger.js';
 import { getNetworkSettings, saveNetworkSettings, requestLocation, proxyWarning, tailscaleStatus } from '../services/network.js';
 
@@ -43,35 +43,27 @@ async function report(req, db) {
   };
 }
 
-router.get('/', async (req, res) => {
-  try {
-    res.json(await report(req, await getDb()));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/', handle(async (req, res) => {
+  res.json(await report(req, await getDb()));
+}));
 
-router.patch('/', async (req, res) => {
+router.patch('/', handle(async (req, res) => {
   const { remoteAccess, tailscaleIsHome, require2faOutside } = req.body || {};
   for (const [name, value] of Object.entries({ remoteAccess, tailscaleIsHome, require2faOutside })) {
     if (value !== undefined && typeof value !== 'boolean') return res.status(400).json({ error: `${name} must be true or false` });
   }
-  try {
-    const db = await getDb();
-    // Don't let an admin shut themselves out: turning outside access off (or making
-    // Tailscale count as outside) from a device that would then be outside.
-    const loc = await requestLocation(req);
-    const after = { ...loc.settings, ...Object.fromEntries(Object.entries({ remoteAccess, tailscaleIsHome }).filter(([, v]) => v !== undefined)) };
-    const wouldBeAway = loc.where === 'outside' || (loc.where === 'tailscale' && !after.tailscaleIsHome);
-    if (wouldBeAway && !after.remoteAccess) {
-      return res.status(400).json({ error: "That would lock out the device you're using right now. Change it from your home network." });
-    }
-    await saveNetworkSettings(db, { remoteAccess, tailscaleIsHome, require2faOutside });
-    logger.info('system', `Network access settings changed by ${req.user.username}`, { remoteAccess, tailscaleIsHome, require2faOutside });
-    res.json(await report(req, db));
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  // Don't let an admin shut themselves out: turning outside access off (or making
+  // Tailscale count as outside) from a device that would then be outside.
+  const loc = await requestLocation(req);
+  const after = { ...loc.settings, ...Object.fromEntries(Object.entries({ remoteAccess, tailscaleIsHome }).filter(([, v]) => v !== undefined)) };
+  const wouldBeAway = loc.where === 'outside' || (loc.where === 'tailscale' && !after.tailscaleIsHome);
+  if (wouldBeAway && !after.remoteAccess) {
+    return res.status(400).json({ error: "That would lock out the device you're using right now. Change it from your home network." });
   }
-});
+  await saveNetworkSettings(db, { remoteAccess, tailscaleIsHome, require2faOutside });
+  logger.info('system', `Network access settings changed by ${req.user.username}`, { remoteAccess, tailscaleIsHome, require2faOutside });
+  res.json(await report(req, db));
+}));
 
 export default router;

@@ -8,7 +8,7 @@ import sharp from 'sharp';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
 import { authenticateToken, requireAdmin, invalidateUserCache } from '../middleware/auth.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { normalizeUsername, USERNAME_RULE } from '../utils/username.js';
 import { AGE_RATINGS, LIBRARY_ID_PATTERN, MAX_HIDDEN_LIBRARIES } from '../services/visibility.js';
 import { requestLocation } from '../services/network.js';
@@ -155,7 +155,7 @@ router.delete('/avatar', async (req, res) => {
 // screen owns (the Settings page sends three), and a replace silently dropped every other
 // key — including `onboardingComplete`, which made saving Settings replay the onboarding
 // flow on the next render.
-router.patch('/preferences', async (req, res) => {
+router.patch('/preferences', handle(async (req, res) => {
   const userId = req.user.id;
   const patch = req.body;
 
@@ -172,37 +172,33 @@ router.patch('/preferences', async (req, res) => {
     return res.status(400).json({ error: 'hideKids must be true or false' });
   }
 
+  const db = await getDb();
+  const row = await db.get('SELECT preferences FROM users WHERE id = ?', [userId]);
+
+  let stored = {};
   try {
-    const db = await getDb();
-    const row = await db.get('SELECT preferences FROM users WHERE id = ?', [userId]);
-
-    let stored = {};
-    try {
-      const parsed = row?.preferences ? JSON.parse(row.preferences) : {};
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) stored = parsed;
-    } catch (e) {
-      // Malformed stored JSON — start clean rather than failing the save.
-    }
-
-    const preferences = { ...stored, ...patch };
-
-    await db.run(
-      'UPDATE users SET preferences = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [JSON.stringify(preferences), userId]
-    );
-    // authenticateToken caches the user row (preferences included) for a minute, so without
-    // this every request for the next 60s — /auth/me among them — keeps answering with the
-    // preferences the user just changed away from.
-    invalidateUserCache(userId);
-
-    res.json({ message: 'Preferences updated', preferences });
-  } catch (err) {
-    serverError(req, res, err);
+    const parsed = row?.preferences ? JSON.parse(row.preferences) : {};
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) stored = parsed;
+  } catch (e) {
+    // Malformed stored JSON — start clean rather than failing the save.
   }
-});
+
+  const preferences = { ...stored, ...patch };
+
+  await db.run(
+    'UPDATE users SET preferences = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    [JSON.stringify(preferences), userId]
+  );
+  // authenticateToken caches the user row (preferences included) for a minute, so without
+  // this every request for the next 60s — /auth/me among them — keeps answering with the
+  // preferences the user just changed away from.
+  invalidateUserCache(userId);
+
+  res.json({ message: 'Preferences updated', preferences });
+}));
 
 // Change current user's password
-router.patch('/password', async (req, res) => {
+router.patch('/password', handle(async (req, res) => {
   const userId = req.user.id;
   const { currentPassword, newPassword } = req.body;
 
@@ -213,29 +209,25 @@ router.patch('/password', async (req, res) => {
     return res.status(400).json({ error: 'New password must be at least 8 characters' });
   }
 
-  try {
-    const db = await getDb();
-    const user = await db.get('SELECT password_hash FROM users WHERE id = ?', [userId]);
+  const db = await getDb();
+  const user = await db.get('SELECT password_hash FROM users WHERE id = ?', [userId]);
 
-    const isValid = await bcrypt.compare(currentPassword, user.password_hash);
-    if (!isValid) {
-      return res.status(401).json({ error: 'Current password incorrect' });
-    }
-
-    const newHash = await bcrypt.hash(newPassword, 10);
-    // Bump token_version so every previously-issued token (e.g. one that may have leaked)
-    // is invalidated immediately instead of remaining valid until it naturally expires.
-    await db.run(
-      'UPDATE users SET password_hash = ?, token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [newHash, userId]
-    );
-    invalidateUserCache(userId);
-
-    res.json({ message: 'Password updated successfully. You will need to log in again.' });
-  } catch (err) {
-    serverError(req, res, err);
+  const isValid = await bcrypt.compare(currentPassword, user.password_hash);
+  if (!isValid) {
+    return res.status(401).json({ error: 'Current password incorrect' });
   }
-});
+
+  const newHash = await bcrypt.hash(newPassword, 10);
+  // Bump token_version so every previously-issued token (e.g. one that may have leaked)
+  // is invalidated immediately instead of remaining valid until it naturally expires.
+  await db.run(
+    'UPDATE users SET password_hash = ?, token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    [newHash, userId]
+  );
+  invalidateUserCache(userId);
+
+  res.json({ message: 'Password updated successfully. You will need to log in again.' });
+}));
 
 // ==========================================
 // Admin Only Endpoints Below
@@ -268,21 +260,17 @@ export function parseExpiration(durationOrDate, fromDate = new Date()) {
 }
 
 // List all users
-router.get('/', requireAdmin, async (req, res) => {
-  try {
-    const db = await getDb();
-    const users = await db.all(`SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at,
+router.get('/', requireAdmin, handle(async (req, res) => {
+  const db = await getDb();
+  const users = await db.all(`SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at,
       last_login_network, max_age_rating, allow_unrated, kids_mode, remote_access, totp_enabled_at FROM users ORDER BY created_at ASC`);
-    const parsed = users.map(({ totp_enabled_at: totpOn, ...u }) => ({
-      ...u,
-      two_factor: !!totpOn,
-      preferences: u.preferences ? JSON.parse(u.preferences) : {}
-    }));
-    res.json({ users: parsed });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const parsed = users.map(({ totp_enabled_at: totpOn, ...u }) => ({
+    ...u,
+    two_factor: !!totpOn,
+    preferences: u.preferences ? JSON.parse(u.preferences) : {}
+  }));
+  res.json({ users: parsed });
+}));
 
 // Create a new user (Admin only)
 router.post('/', requireAdmin, async (req, res) => {
@@ -323,199 +311,183 @@ router.post('/', requireAdmin, async (req, res) => {
 });
 
 // Edit another user's account info (Admin only) — username, role, or expiration.
-router.patch('/:id', requireAdmin, async (req, res) => {
+router.patch('/:id', requireAdmin, handle(async (req, res) => {
   const { username, role, expires_at, duration, maxAgeRating, allowUnrated, kidsMode, remoteAccess } = req.body;
 
-  try {
-    const db = await getDb();
-    const target = await db.get('SELECT id, role, expires_at FROM users WHERE id = ?', [req.params.id]);
-    if (!target) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const updates = [];
-    const params = [];
-
-    if (username !== undefined) {
-      const trimmed = normalizeUsername(username);
-      if (!trimmed) {
-        return res.status(400).json({ error: USERNAME_RULE });
-      }
-      const existing = await db.get('SELECT id FROM users WHERE username = ? AND id != ?', [trimmed, req.params.id]);
-      if (existing) {
-        return res.status(400).json({ error: 'Username already taken' });
-      }
-      updates.push('username = ?');
-      params.push(trimmed);
-    }
-
-    if (role !== undefined) {
-      if (req.user.id === req.params.id) {
-        return res.status(400).json({ error: 'Cannot change your own role' });
-      }
-      if (!VALID_ROLES.includes(role)) {
-        return res.status(400).json({ error: `Role must be one of: ${VALID_ROLES.join(', ')}` });
-      }
-      updates.push('role = ?');
-      params.push(role);
-    }
-
-    if (expires_at !== undefined || duration !== undefined) {
-      if (req.user.id === req.params.id && (expires_at || duration) && expires_at !== 'forever' && duration !== 'forever') {
-        return res.status(400).json({ error: 'Cannot set an expiration date on your own account' });
-      }
-      const calculatedExpiry = expires_at !== undefined ? parseExpiration(expires_at) : parseExpiration(duration);
-      updates.push('expires_at = ?');
-      params.push(calculatedExpiry);
-    }
-
-    // Parental controls. null/'' clears the limit. An admin can't restrict themselves —
-    // the same guard as role changes, so nobody locks themselves out of their own library.
-    if (maxAgeRating !== undefined) {
-      if (req.user.id === req.params.id && maxAgeRating) {
-        return res.status(400).json({ error: 'Cannot restrict your own account' });
-      }
-      if (maxAgeRating && !AGE_RATINGS.includes(maxAgeRating)) {
-        return res.status(400).json({ error: `Age rating must be one of: ${AGE_RATINGS.join(', ')}` });
-      }
-      updates.push('max_age_rating = ?');
-      params.push(maxAgeRating || null);
-    }
-    if (allowUnrated !== undefined) {
-      updates.push('allow_unrated = ?');
-      params.push(allowUnrated ? 1 : 0);
-    }
-    // Kids Mode: the account sees only kids-safe libraries, series and titles. Never on your
-    // own account or an admin's — either would lock someone out of their own server.
-    if (kidsMode !== undefined) {
-      if (kidsMode && req.user.id === req.params.id) {
-        return res.status(400).json({ error: 'Cannot put your own account in Kids Mode' });
-      }
-      if (kidsMode && (role || target.role) === 'admin') {
-        return res.status(400).json({ error: 'An admin account can\'t be a kids account' });
-      }
-      updates.push('kids_mode = ?');
-      params.push(kidsMode ? 1 : 0);
-    }
-
-    // Away from home: whether this account may use Plinthio outside the home network (when
-    // the server allows that at all). Never switched off for your own account from outside,
-    // which would end the session you're using.
-    if (remoteAccess !== undefined) {
-      if (!remoteAccess && req.user.id === req.params.id && (await requestLocation(req)).away) {
-        return res.status(400).json({ error: "You're away from home right now, so that would sign you out. Change it from your home network." });
-      }
-      updates.push('remote_access = ?');
-      params.push(remoteAccess ? 1 : 0);
-    }
-
-    if (updates.length === 0) {
-      return res.status(400).json({ error: 'Nothing to update' });
-    }
-
-    params.push(req.params.id);
-    await db.run(`UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, params);
-    invalidateUserCache(req.params.id);
-
-    const updated = await db.get(`SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at,
-      last_login_network, max_age_rating, allow_unrated, kids_mode, remote_access, totp_enabled_at FROM users WHERE id = ?`, [req.params.id]);
-    updated.two_factor = !!updated.totp_enabled_at;
-    delete updated.totp_enabled_at;
-    updated.preferences = updated.preferences ? JSON.parse(updated.preferences) : {};
-
-    res.json({ message: 'User updated successfully', user: updated });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  const target = await db.get('SELECT id, role, expires_at FROM users WHERE id = ?', [req.params.id]);
+  if (!target) {
+    return res.status(404).json({ error: 'User not found' });
   }
-});
+
+  const updates = [];
+  const params = [];
+
+  if (username !== undefined) {
+    const trimmed = normalizeUsername(username);
+    if (!trimmed) {
+      return res.status(400).json({ error: USERNAME_RULE });
+    }
+    const existing = await db.get('SELECT id FROM users WHERE username = ? AND id != ?', [trimmed, req.params.id]);
+    if (existing) {
+      return res.status(400).json({ error: 'Username already taken' });
+    }
+    updates.push('username = ?');
+    params.push(trimmed);
+  }
+
+  if (role !== undefined) {
+    if (req.user.id === req.params.id) {
+      return res.status(400).json({ error: 'Cannot change your own role' });
+    }
+    if (!VALID_ROLES.includes(role)) {
+      return res.status(400).json({ error: `Role must be one of: ${VALID_ROLES.join(', ')}` });
+    }
+    updates.push('role = ?');
+    params.push(role);
+  }
+
+  if (expires_at !== undefined || duration !== undefined) {
+    if (req.user.id === req.params.id && (expires_at || duration) && expires_at !== 'forever' && duration !== 'forever') {
+      return res.status(400).json({ error: 'Cannot set an expiration date on your own account' });
+    }
+    const calculatedExpiry = expires_at !== undefined ? parseExpiration(expires_at) : parseExpiration(duration);
+    updates.push('expires_at = ?');
+    params.push(calculatedExpiry);
+  }
+
+  // Parental controls. null/'' clears the limit. An admin can't restrict themselves —
+  // the same guard as role changes, so nobody locks themselves out of their own library.
+  if (maxAgeRating !== undefined) {
+    if (req.user.id === req.params.id && maxAgeRating) {
+      return res.status(400).json({ error: 'Cannot restrict your own account' });
+    }
+    if (maxAgeRating && !AGE_RATINGS.includes(maxAgeRating)) {
+      return res.status(400).json({ error: `Age rating must be one of: ${AGE_RATINGS.join(', ')}` });
+    }
+    updates.push('max_age_rating = ?');
+    params.push(maxAgeRating || null);
+  }
+  if (allowUnrated !== undefined) {
+    updates.push('allow_unrated = ?');
+    params.push(allowUnrated ? 1 : 0);
+  }
+  // Kids Mode: the account sees only kids-safe libraries, series and titles. Never on your
+  // own account or an admin's — either would lock someone out of their own server.
+  if (kidsMode !== undefined) {
+    if (kidsMode && req.user.id === req.params.id) {
+      return res.status(400).json({ error: 'Cannot put your own account in Kids Mode' });
+    }
+    if (kidsMode && (role || target.role) === 'admin') {
+      return res.status(400).json({ error: 'An admin account can\'t be a kids account' });
+    }
+    updates.push('kids_mode = ?');
+    params.push(kidsMode ? 1 : 0);
+  }
+
+  // Away from home: whether this account may use Plinthio outside the home network (when
+  // the server allows that at all). Never switched off for your own account from outside,
+  // which would end the session you're using.
+  if (remoteAccess !== undefined) {
+    if (!remoteAccess && req.user.id === req.params.id && (await requestLocation(req)).away) {
+      return res.status(400).json({ error: "You're away from home right now, so that would sign you out. Change it from your home network." });
+    }
+    updates.push('remote_access = ?');
+    params.push(remoteAccess ? 1 : 0);
+  }
+
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'Nothing to update' });
+  }
+
+  params.push(req.params.id);
+  await db.run(`UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, params);
+  invalidateUserCache(req.params.id);
+
+  const updated = await db.get(`SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at,
+      last_login_network, max_age_rating, allow_unrated, kids_mode, remote_access, totp_enabled_at FROM users WHERE id = ?`, [req.params.id]);
+  updated.two_factor = !!updated.totp_enabled_at;
+  delete updated.totp_enabled_at;
+  updated.preferences = updated.preferences ? JSON.parse(updated.preferences) : {};
+
+  res.json({ message: 'User updated successfully', user: updated });
+}));
 
 // Turn off someone's two-factor, for a lost phone with no backup codes left (Admin only).
 // Their sessions are signed out, so whoever has the account now has to sign in again.
-router.post('/:id/two-factor/reset', requireAdmin, async (req, res) => {
-  try {
-    const db = await getDb();
-    const target = await db.get('SELECT id, username, totp_enabled_at FROM users WHERE id = ?', [req.params.id]);
-    if (!target) return res.status(404).json({ error: 'User not found' });
-    if (!target.totp_enabled_at) return res.status(400).json({ error: "Two-factor isn't on for that account" });
-    await db.run(
-      `UPDATE users SET totp_secret = NULL, totp_pending = NULL, totp_enabled_at = NULL, totp_last_step = NULL,
+router.post('/:id/two-factor/reset', requireAdmin, handle(async (req, res) => {
+  const db = await getDb();
+  const target = await db.get('SELECT id, username, totp_enabled_at FROM users WHERE id = ?', [req.params.id]);
+  if (!target) return res.status(404).json({ error: 'User not found' });
+  if (!target.totp_enabled_at) return res.status(400).json({ error: "Two-factor isn't on for that account" });
+  await db.run(
+    `UPDATE users SET totp_secret = NULL, totp_pending = NULL, totp_enabled_at = NULL, totp_last_step = NULL,
          totp_recovery = NULL, token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [target.id]
-    );
-    invalidateUserCache(target.id);
-    logger.warn('auth', `Two-factor for "${target.username}" was reset by admin ${req.user.username}`);
-    res.json({ message: 'Two-factor turned off. They can sign in with their password and set it up again.' });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+    [target.id]
+  );
+  invalidateUserCache(target.id);
+  logger.warn('auth', `Two-factor for "${target.username}" was reset by admin ${req.user.username}`);
+  res.json({ message: 'Two-factor turned off. They can sign in with their password and set it up again.' });
+}));
 
 // Extend user account access (Admin only)
-router.post('/:id/extend', requireAdmin, async (req, res) => {
+router.post('/:id/extend', requireAdmin, handle(async (req, res) => {
   const { duration = '7d' } = req.body;
-  try {
-    const db = await getDb();
-    const target = await db.get('SELECT id, expires_at FROM users WHERE id = ?', [req.params.id]);
-    if (!target) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    let baseTime = new Date();
-    if (target.expires_at && new Date(target.expires_at).getTime() > Date.now()) {
-      baseTime = new Date(target.expires_at);
-    }
-
-    const newExpiry = parseExpiration(duration, baseTime);
-    await db.run('UPDATE users SET expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newExpiry, req.params.id]);
-    invalidateUserCache(req.params.id);
-
-    const updated = await db.get('SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at, max_age_rating, allow_unrated, kids_mode FROM users WHERE id = ?', [req.params.id]);
-    if (updated) {
-      updated.preferences = updated.preferences ? JSON.parse(updated.preferences) : {};
-    }
-
-    res.json({
-      message: newExpiry ? `Access extended until ${newExpiry}` : 'Access set to unlimited',
-      user: updated
-    });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  const target = await db.get('SELECT id, expires_at FROM users WHERE id = ?', [req.params.id]);
+  if (!target) {
+    return res.status(404).json({ error: 'User not found' });
   }
-});
+
+  let baseTime = new Date();
+  if (target.expires_at && new Date(target.expires_at).getTime() > Date.now()) {
+    baseTime = new Date(target.expires_at);
+  }
+
+  const newExpiry = parseExpiration(duration, baseTime);
+  await db.run('UPDATE users SET expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newExpiry, req.params.id]);
+  invalidateUserCache(req.params.id);
+
+  const updated = await db.get('SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at, max_age_rating, allow_unrated, kids_mode FROM users WHERE id = ?', [req.params.id]);
+  if (updated) {
+    updated.preferences = updated.preferences ? JSON.parse(updated.preferences) : {};
+  }
+
+  res.json({
+    message: newExpiry ? `Access extended until ${newExpiry}` : 'Access set to unlimited',
+    user: updated
+  });
+}));
 
 // Reset another user's password (Admin only) — no current-password check, since the admin is
 // acting on someone else's account (e.g. they forgot it). Bumps token_version like the
 // self-service change so any existing sessions for that user are invalidated immediately.
-router.patch('/:id/password', requireAdmin, async (req, res) => {
+router.patch('/:id/password', requireAdmin, handle(async (req, res) => {
   const { newPassword } = req.body;
 
   if (!newPassword || newPassword.length < 8) {
     return res.status(400).json({ error: 'New password must be at least 8 characters' });
   }
 
-  try {
-    const db = await getDb();
-    const target = await db.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
-    if (!target) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const newHash = await bcrypt.hash(newPassword, 10);
-    await db.run(
-      'UPDATE users SET password_hash = ?, token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [newHash, req.params.id]
-    );
-    invalidateUserCache(req.params.id);
-
-    res.json({ message: 'Password reset successfully' });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  const target = await db.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
+  if (!target) {
+    return res.status(404).json({ error: 'User not found' });
   }
-});
+
+  const newHash = await bcrypt.hash(newPassword, 10);
+  await db.run(
+    'UPDATE users SET password_hash = ?, token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    [newHash, req.params.id]
+  );
+  invalidateUserCache(req.params.id);
+
+  res.json({ message: 'Password reset successfully' });
+}));
 
 // Change another user's role (Admin only) — never your own, so an admin can't accidentally
 // lock themselves out or leave the server with zero admins.
-router.patch('/:id/role', requireAdmin, async (req, res) => {
+router.patch('/:id/role', requireAdmin, handle(async (req, res) => {
   const { role } = req.body;
 
   if (req.user.id === req.params.id) {
@@ -525,36 +497,28 @@ router.patch('/:id/role', requireAdmin, async (req, res) => {
     return res.status(400).json({ error: `Role must be one of: ${VALID_ROLES.join(', ')}` });
   }
 
-  try {
-    const db = await getDb();
-    const target = await db.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
-    if (!target) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    await db.run('UPDATE users SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [role, req.params.id]);
-    invalidateUserCache(req.params.id);
-
-    res.json({ message: 'Role updated successfully', role });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  const target = await db.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
+  if (!target) {
+    return res.status(404).json({ error: 'User not found' });
   }
-});
+
+  await db.run('UPDATE users SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [role, req.params.id]);
+  invalidateUserCache(req.params.id);
+
+  res.json({ message: 'Role updated successfully', role });
+}));
 
 // Delete user (Admin only)
-router.delete('/:id', requireAdmin, async (req, res) => {
+router.delete('/:id', requireAdmin, handle(async (req, res) => {
   if (req.user.id === req.params.id) {
     return res.status(400).json({ error: 'Cannot delete your own account' });
   }
 
-  try {
-    const db = await getDb();
-    await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
-    invalidateUserCache(req.params.id);
-    res.json({ message: 'User deleted successfully' });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
+  invalidateUserCache(req.params.id);
+  res.json({ message: 'User deleted successfully' });
+}));
 
 export default router;

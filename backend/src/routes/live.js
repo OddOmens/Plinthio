@@ -1,7 +1,7 @@
 import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { logger } from '../services/logger.js';
 import { logoPath } from '../services/liveProxy.js';
@@ -100,166 +100,138 @@ admin.get('/presets', async (req, res) => {
   }
 });
 
-admin.get('/sources', async (req, res) => {
-  try {
-    const db = await getDb();
-    const rows = await db.all('SELECT * FROM live_sources ORDER BY created_at, rowid');
-    res.json({ sources: rows.map(sourceJson), publicListsAcknowledged: await publicListsAcknowledged(db) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+admin.get('/sources', handle(async (req, res) => {
+  const db = await getDb();
+  const rows = await db.all('SELECT * FROM live_sources ORDER BY created_at, rowid');
+  res.json({ sources: rows.map(sourceJson), publicListsAcknowledged: await publicListsAcknowledged(db) });
+}));
 
 // The note an admin confirms before adding the first public list.
-admin.post('/acknowledge', async (req, res) => {
-  try {
-    const db = await getDb();
-    await acknowledgePublicLists(db, req.user.id);
-    logger.info('media', `Live TV: admin ${req.user.username} confirmed the note about public channels`);
-    res.json({ publicListsAcknowledged: true });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+admin.post('/acknowledge', handle(async (req, res) => {
+  const db = await getDb();
+  await acknowledgePublicLists(db, req.user.id);
+  logger.info('media', `Live TV: admin ${req.user.username} confirmed the note about public channels`);
+  res.json({ publicListsAcknowledged: true });
+}));
 
-admin.post('/sources', async (req, res) => {
+admin.post('/sources', handle(async (req, res) => {
   const body = req.body || {};
-  try {
-    const db = await getDb();
-    const id = newSourceId();
+  const db = await getDb();
+  const id = newSourceId();
 
-    if (body.kind === 'iptv-org') {
-      if (!await publicListsAcknowledged(db)) {
-        return sendError(req, res, 'P001', { message: 'Confirm the note about public channels first' });
-      }
-      const preset = String(body.preset || '').toLowerCase();
-      if (!PRESET_RE.test(preset)) return sendError(req, res, 'P001', { message: 'Choose a country, language or category' });
-      let presets;
-      try {
-        presets = await getPresets();
-      } catch (err) {
-        return sendError(req, res, 'P702', { err });
-      }
-      const name = presetName(presets, preset);
-      if (!name) return sendError(req, res, 'P001', { message: 'Choose a country, language or category' });
-      if (await db.get("SELECT 1 FROM live_sources WHERE kind = 'iptv-org' AND preset = ?", [preset])) {
-        return sendError(req, res, 'P004', { message: 'Those channels are already added' });
-      }
-      await db.run(
-        "INSERT INTO live_sources (id, kind, name, preset, playlist_url) VALUES (?, 'iptv-org', ?, ?, ?)",
-        [id, name, preset, presetPlaylistUrl(preset)]
-      );
-    } else if (body.kind === 'm3u') {
-      const name = typeof body.name === 'string' ? body.name.trim().slice(0, 100) : '';
-      if (!name) return sendError(req, res, 'P001', { message: 'Enter a name for these channels' });
-      const playlistUrl = httpUrl(body.playlistUrl);
-      if (!playlistUrl) return sendError(req, res, 'P001', { message: 'Enter the playlist address, starting with http:// or https://' });
-      let guideUrl = null;
-      if (body.guideUrl !== undefined && body.guideUrl !== null && String(body.guideUrl).trim() !== '') {
-        guideUrl = httpUrl(body.guideUrl);
-        if (!guideUrl) return sendError(req, res, 'P001', { message: 'The guide address must start with http:// or https://' });
-      }
-      if (await db.get('SELECT 1 FROM live_sources WHERE playlist_url = ?', [playlistUrl])) {
-        return sendError(req, res, 'P004', { message: 'That playlist is already added' });
-      }
-      await db.run(
-        "INSERT INTO live_sources (id, kind, name, playlist_url, guide_url) VALUES (?, 'm3u', ?, ?, ?)",
-        [id, name, playlistUrl, guideUrl]
-      );
-    } else {
-      return sendError(req, res, 'P001', { message: 'Choose what kind of channels to add' });
+  if (body.kind === 'iptv-org') {
+    if (!await publicListsAcknowledged(db)) {
+      return sendError(req, res, 'P001', { message: 'Confirm the note about public channels first' });
     }
-
-    // Load it straight away, in the background; the admin page watches `refreshing`.
-    refreshSource(id);
-    const source = await loadSource(db, id);
-    logger.info('media', `Live TV source "${source.name}" added by admin ${req.user.username}`);
-    res.status(201).json({ source: sourceJson(source) });
-  } catch (err) {
-    serverError(req, res, err);
+    const preset = String(body.preset || '').toLowerCase();
+    if (!PRESET_RE.test(preset)) return sendError(req, res, 'P001', { message: 'Choose a country, language or category' });
+    let presets;
+    try {
+      presets = await getPresets();
+    } catch (err) {
+      return sendError(req, res, 'P702', { err });
+    }
+    const name = presetName(presets, preset);
+    if (!name) return sendError(req, res, 'P001', { message: 'Choose a country, language or category' });
+    if (await db.get("SELECT 1 FROM live_sources WHERE kind = 'iptv-org' AND preset = ?", [preset])) {
+      return sendError(req, res, 'P004', { message: 'Those channels are already added' });
+    }
+    await db.run(
+      "INSERT INTO live_sources (id, kind, name, preset, playlist_url) VALUES (?, 'iptv-org', ?, ?, ?)",
+      [id, name, preset, presetPlaylistUrl(preset)]
+    );
+  } else if (body.kind === 'm3u') {
+    const name = typeof body.name === 'string' ? body.name.trim().slice(0, 100) : '';
+    if (!name) return sendError(req, res, 'P001', { message: 'Enter a name for these channels' });
+    const playlistUrl = httpUrl(body.playlistUrl);
+    if (!playlistUrl) return sendError(req, res, 'P001', { message: 'Enter the playlist address, starting with http:// or https://' });
+    let guideUrl = null;
+    if (body.guideUrl !== undefined && body.guideUrl !== null && String(body.guideUrl).trim() !== '') {
+      guideUrl = httpUrl(body.guideUrl);
+      if (!guideUrl) return sendError(req, res, 'P001', { message: 'The guide address must start with http:// or https://' });
+    }
+    if (await db.get('SELECT 1 FROM live_sources WHERE playlist_url = ?', [playlistUrl])) {
+      return sendError(req, res, 'P004', { message: 'That playlist is already added' });
+    }
+    await db.run(
+      "INSERT INTO live_sources (id, kind, name, playlist_url, guide_url) VALUES (?, 'm3u', ?, ?, ?)",
+      [id, name, playlistUrl, guideUrl]
+    );
+  } else {
+    return sendError(req, res, 'P001', { message: 'Choose what kind of channels to add' });
   }
-});
 
-admin.patch('/sources/:id', async (req, res) => {
+  // Load it straight away, in the background; the admin page watches `refreshing`.
+  refreshSource(id);
+  const source = await loadSource(db, id);
+  logger.info('media', `Live TV source "${source.name}" added by admin ${req.user.username}`);
+  res.status(201).json({ source: sourceJson(source) });
+}));
+
+admin.patch('/sources/:id', handle(async (req, res) => {
   const body = req.body || {};
-  try {
-    const db = await getDb();
-    const source = await loadSource(db, req.params.id);
-    if (!source) return sendError(req, res, 'P002', { message: 'Source not found' });
+  const db = await getDb();
+  const source = await loadSource(db, req.params.id);
+  if (!source) return sendError(req, res, 'P002', { message: 'Source not found' });
 
-    const updates = [];
-    const params = [];
-    if (body.name !== undefined) {
-      const name = typeof body.name === 'string' ? body.name.trim().slice(0, 100) : '';
-      if (!name) return sendError(req, res, 'P001', { message: 'Enter a name for these channels' });
-      updates.push('name = ?');
-      params.push(name);
-    }
-    let guideChanged = false;
-    if (body.guideUrl !== undefined) {
-      let guideUrl = null;
-      if (body.guideUrl !== null && String(body.guideUrl).trim() !== '') {
-        guideUrl = httpUrl(body.guideUrl);
-        if (!guideUrl) return sendError(req, res, 'P001', { message: 'The guide address must start with http:// or https://' });
-      }
-      guideChanged = guideUrl !== (source.guide_url || null);
-      updates.push('guide_url = ?');
-      params.push(guideUrl);
-    }
-    if (body.enabled !== undefined) {
-      if (typeof body.enabled !== 'boolean') return sendError(req, res, 'P001', { message: 'enabled must be true or false' });
-      updates.push('enabled = ?');
-      params.push(body.enabled ? 1 : 0);
-    }
-
-    if (updates.length) {
-      await db.run(`UPDATE live_sources SET ${updates.join(', ')} WHERE id = ?`, [...params, source.id]);
-      channelsChanged();
-    }
-    // A new guide address is worth fetching now rather than in up to 12 hours.
-    if (guideChanged) refreshSource(source.id);
-    res.json({ source: sourceJson(await loadSource(db, source.id)) });
-  } catch (err) {
-    serverError(req, res, err);
+  const updates = [];
+  const params = [];
+  if (body.name !== undefined) {
+    const name = typeof body.name === 'string' ? body.name.trim().slice(0, 100) : '';
+    if (!name) return sendError(req, res, 'P001', { message: 'Enter a name for these channels' });
+    updates.push('name = ?');
+    params.push(name);
   }
-});
+  let guideChanged = false;
+  if (body.guideUrl !== undefined) {
+    let guideUrl = null;
+    if (body.guideUrl !== null && String(body.guideUrl).trim() !== '') {
+      guideUrl = httpUrl(body.guideUrl);
+      if (!guideUrl) return sendError(req, res, 'P001', { message: 'The guide address must start with http:// or https://' });
+    }
+    guideChanged = guideUrl !== (source.guide_url || null);
+    updates.push('guide_url = ?');
+    params.push(guideUrl);
+  }
+  if (body.enabled !== undefined) {
+    if (typeof body.enabled !== 'boolean') return sendError(req, res, 'P001', { message: 'enabled must be true or false' });
+    updates.push('enabled = ?');
+    params.push(body.enabled ? 1 : 0);
+  }
 
-admin.delete('/sources/:id', async (req, res) => {
-  try {
-    const db = await getDb();
-    const source = await loadSource(db, req.params.id);
-    if (!source) return sendError(req, res, 'P002', { message: 'Source not found' });
-    await db.run('DELETE FROM live_sources WHERE id = ?', [source.id]);
-    await pruneProgrammes(db);
+  if (updates.length) {
+    await db.run(`UPDATE live_sources SET ${updates.join(', ')} WHERE id = ?`, [...params, source.id]);
     channelsChanged();
-    logger.info('media', `Live TV source "${source.name}" removed by admin ${req.user.username}`);
-    res.json({ ok: true });
-  } catch (err) {
-    serverError(req, res, err);
   }
-});
+  // A new guide address is worth fetching now rather than in up to 12 hours.
+  if (guideChanged) refreshSource(source.id);
+  res.json({ source: sourceJson(await loadSource(db, source.id)) });
+}));
 
-admin.post('/sources/:id/refresh', async (req, res) => {
-  try {
-    const db = await getDb();
-    const source = await loadSource(db, req.params.id);
-    if (!source) return sendError(req, res, 'P002', { message: 'Source not found' });
-    refreshSource(source.id);
-    res.status(202).json({ source: sourceJson(source) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+admin.delete('/sources/:id', handle(async (req, res) => {
+  const db = await getDb();
+  const source = await loadSource(db, req.params.id);
+  if (!source) return sendError(req, res, 'P002', { message: 'Source not found' });
+  await db.run('DELETE FROM live_sources WHERE id = ?', [source.id]);
+  await pruneProgrammes(db);
+  channelsChanged();
+  logger.info('media', `Live TV source "${source.name}" removed by admin ${req.user.username}`);
+  res.json({ ok: true });
+}));
+
+admin.post('/sources/:id/refresh', handle(async (req, res) => {
+  const db = await getDb();
+  const source = await loadSource(db, req.params.id);
+  if (!source) return sendError(req, res, 'P002', { message: 'Source not found' });
+  refreshSource(source.id);
+  res.status(202).json({ source: sourceJson(source) });
+}));
 
 // ─── Filters ────────────────────────────────────────────────────────────────
 
-admin.get('/filters', async (req, res) => {
-  try {
-    res.json(await filterOverview(await getDb()));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+admin.get('/filters', handle(async (req, res) => {
+  res.json(await filterOverview(await getDb()));
+}));
 
 const FILTER_LIST_INVALID = {
   hiddenGroups: 'Hidden categories must be a list of up to 5000 names',
@@ -269,29 +241,25 @@ const FILTER_LIST_INVALID = {
 };
 
 // Each field given replaces what's saved; the ones left out stay as they are.
-admin.patch('/filters', async (req, res) => {
+admin.patch('/filters', handle(async (req, res) => {
   const body = req.body || {};
-  try {
-    const db = await getDb();
-    const next = { ...(await getLiveFilters(db)).filters };
-    if (body.hideGeoBlocked !== undefined) {
-      if (typeof body.hideGeoBlocked !== 'boolean') {
-        return sendError(req, res, 'P001', { message: 'hideGeoBlocked must be true or false' });
-      }
-      next.hideGeoBlocked = body.hideGeoBlocked;
+  const db = await getDb();
+  const next = { ...(await getLiveFilters(db)).filters };
+  if (body.hideGeoBlocked !== undefined) {
+    if (typeof body.hideGeoBlocked !== 'boolean') {
+      return sendError(req, res, 'P001', { message: 'hideGeoBlocked must be true or false' });
     }
-    for (const key of FILTER_LISTS) {
-      if (body[key] === undefined) continue;
-      const cleaned = cleanFilterList(key, body[key]);
-      if (!cleaned) return sendError(req, res, 'P001', { message: FILTER_LIST_INVALID[key] });
-      next[key] = cleaned;
-    }
-    await saveLiveFilters(db, next);
-    res.json(await filterOverview(db));
-  } catch (err) {
-    serverError(req, res, err);
+    next.hideGeoBlocked = body.hideGeoBlocked;
   }
-});
+  for (const key of FILTER_LISTS) {
+    if (body[key] === undefined) continue;
+    const cleaned = cleanFilterList(key, body[key]);
+    if (!cleaned) return sendError(req, res, 'P001', { message: FILTER_LIST_INVALID[key] });
+    next[key] = cleaned;
+  }
+  await saveLiveFilters(db, next);
+  res.json(await filterOverview(db));
+}));
 
 // ─── Channel manager ────────────────────────────────────────────────────────
 
@@ -352,56 +320,52 @@ async function adminChannelsJson(db, rows) {
   }));
 }
 
-admin.get('/channels', async (req, res) => {
-  try {
-    const db = await getDb();
-    const where = [];
-    const params = [];
-    if (typeof req.query.source === 'string' && req.query.source) {
-      where.push(' AND c.source_id = ?');
-      params.push(req.query.source);
-    }
-    // One whole category (groups are stored ';'-joined), so a line-up can take all of it.
-    if (typeof req.query.group === 'string' && req.query.group) {
-      where.push(" AND instr(';' || COALESCE(c.groups, '') || ';', ';' || ? || ';') > 0");
-      params.push(req.query.group.slice(0, 200));
-    }
-    const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
-    if (q) {
-      // The playlist's name, the admin's own, or (for a number) the admin's channel number.
-      where.push(" AND (c.name LIKE ? ESCAPE '\\' OR c.custom_name LIKE ? ESCAPE '\\' OR c.custom_number = ?)");
-      params.push(likePattern(q), likePattern(q), /^\d{1,4}$/.test(q) ? Number(q) : -1);
-    }
-    const status = Object.hasOwn(ADMIN_STATUS_SQL, req.query.status) ? req.query.status : 'all';
-    // Offline channels aren't 'visible' while the dead-channel check hides them.
-    const offline = status === 'visible' && (await getHealthSettings(db)).hideOffline
-      ? " AND (c.health IS NULL OR c.health <> 'offline')"
-      : '';
-    const filter = `${where.join('')}${ADMIN_STATUS_SQL[status]}${offline}`;
-    const offset = intParam(req.query.offset, 0, 0, Number.MAX_SAFE_INTEGER);
-    const limit = intParam(req.query.limit, 100, 1, 500);
-
-    const { compiled } = await getLiveFilters(db);
-    const from = 'FROM live_channels c JOIN live_sources s ON s.id = c.source_id WHERE 1 = 1';
-    const order = 'ORDER BY s.created_at, s.rowid, c.position';
-    const after = ADMIN_STATUS_AFTER[status];
-    let total;
-    let rows;
-    if (after) {
-      const matching = (await db.all(`SELECT ${ADMIN_CHANNEL_COLUMNS} ${from}${filter} ${order}`, params)).filter((r) => after(r, compiled));
-      total = matching.length;
-      rows = matching.slice(offset, offset + limit);
-    } else {
-      ({ total } = await db.get(`SELECT COUNT(*) AS total ${from}${filter}`, params));
-      rows = await db.all(`SELECT ${ADMIN_CHANNEL_COLUMNS} ${from}${filter} ${order} LIMIT ? OFFSET ?`, [...params, limit, offset]);
-    }
-    res.json({ total, channels: await adminChannelsJson(db, rows) });
-  } catch (err) {
-    serverError(req, res, err);
+admin.get('/channels', handle(async (req, res) => {
+  const db = await getDb();
+  const where = [];
+  const params = [];
+  if (typeof req.query.source === 'string' && req.query.source) {
+    where.push(' AND c.source_id = ?');
+    params.push(req.query.source);
   }
-});
+  // One whole category (groups are stored ';'-joined), so a line-up can take all of it.
+  if (typeof req.query.group === 'string' && req.query.group) {
+    where.push(" AND instr(';' || COALESCE(c.groups, '') || ';', ';' || ? || ';') > 0");
+    params.push(req.query.group.slice(0, 200));
+  }
+  const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+  if (q) {
+    // The playlist's name, the admin's own, or (for a number) the admin's channel number.
+    where.push(" AND (c.name LIKE ? ESCAPE '\\' OR c.custom_name LIKE ? ESCAPE '\\' OR c.custom_number = ?)");
+    params.push(likePattern(q), likePattern(q), /^\d{1,4}$/.test(q) ? Number(q) : -1);
+  }
+  const status = Object.hasOwn(ADMIN_STATUS_SQL, req.query.status) ? req.query.status : 'all';
+  // Offline channels aren't 'visible' while the dead-channel check hides them.
+  const offline = status === 'visible' && (await getHealthSettings(db)).hideOffline
+    ? " AND (c.health IS NULL OR c.health <> 'offline')"
+    : '';
+  const filter = `${where.join('')}${ADMIN_STATUS_SQL[status]}${offline}`;
+  const offset = intParam(req.query.offset, 0, 0, Number.MAX_SAFE_INTEGER);
+  const limit = intParam(req.query.limit, 100, 1, 500);
 
-admin.patch('/channels', async (req, res) => {
+  const { compiled } = await getLiveFilters(db);
+  const from = 'FROM live_channels c JOIN live_sources s ON s.id = c.source_id WHERE 1 = 1';
+  const order = 'ORDER BY s.created_at, s.rowid, c.position';
+  const after = ADMIN_STATUS_AFTER[status];
+  let total;
+  let rows;
+  if (after) {
+    const matching = (await db.all(`SELECT ${ADMIN_CHANNEL_COLUMNS} ${from}${filter} ${order}`, params)).filter((r) => after(r, compiled));
+    total = matching.length;
+    rows = matching.slice(offset, offset + limit);
+  } else {
+    ({ total } = await db.get(`SELECT COUNT(*) AS total ${from}${filter}`, params));
+    rows = await db.all(`SELECT ${ADMIN_CHANNEL_COLUMNS} ${from}${filter} ${order} LIMIT ? OFFSET ?`, [...params, limit, offset]);
+  }
+  res.json({ total, channels: await adminChannelsJson(db, rows) });
+}));
+
+admin.patch('/channels', handle(async (req, res) => {
   const { ids, hidden, kidsAllowed, pinned } = req.body || {};
   if (!Array.isArray(ids) || !ids.length || ids.length > 1000 || !ids.every((id) => typeof id === 'string' && CHANNEL_ID_RE.test(id))) {
     return sendError(req, res, 'P001', { message: 'Choose up to 1000 channels' });
@@ -421,22 +385,18 @@ admin.patch('/channels', async (req, res) => {
     params.push(pinned ? 1 : 0);
   }
   if (!sets.length) return sendError(req, res, 'P001', { message: 'Nothing to change' });
-  try {
-    const db = await getDb();
-    const result = await db.run(
-      `UPDATE live_channels SET ${sets.join(', ')} WHERE id IN (SELECT value FROM json_each(?))`,
-      [...params, JSON.stringify(ids)]
-    );
-    channelsChanged();
-    res.json({ updated: result.changes || 0 });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  const result = await db.run(
+    `UPDATE live_channels SET ${sets.join(', ')} WHERE id IN (SELECT value FROM json_each(?))`,
+    [...params, JSON.stringify(ids)]
+  );
+  channelsChanged();
+  res.json({ updated: result.changes || 0 });
+}));
 
 // The admin's own number, name and logo for one channel. Each field given replaces what's
 // saved; null (or an empty name / logo) clears it, back to the playlist's.
-admin.patch('/channels/:id', async (req, res) => {
+admin.patch('/channels/:id', handle(async (req, res) => {
   const body = req.body || {};
   if (!CHANNEL_ID_RE.test(req.params.id)) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
   const sets = [];
@@ -466,56 +426,44 @@ admin.patch('/channels/:id', async (req, res) => {
     params.push(logo);
   }
   if (!sets.length) return sendError(req, res, 'P001', { message: 'Nothing to change' });
-  try {
-    const db = await getDb();
-    if (!await db.get('SELECT 1 FROM live_channels WHERE id = ?', [req.params.id])) {
-      return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
-    }
-    if (Number.isInteger(body.number)
-      && await db.get('SELECT 1 FROM live_channels WHERE custom_number = ? AND id <> ?', [body.number, req.params.id])) {
-      return sendError(req, res, 'P004', { message: 'Another channel already has that number' });
-    }
-    try {
-      await db.run(`UPDATE live_channels SET ${sets.join(', ')} WHERE id = ?`, [...params, req.params.id]);
-    } catch (err) {
-      // Two admins giving out the same number at once.
-      if (/UNIQUE/.test(err.message)) return sendError(req, res, 'P004', { message: 'Another channel already has that number' });
-      throw err;
-    }
-    channelsChanged();
-    const row = await db.get(
-      `SELECT ${ADMIN_CHANNEL_COLUMNS} FROM live_channels c JOIN live_sources s ON s.id = c.source_id WHERE c.id = ?`,
-      [req.params.id]
-    );
-    res.json({ channel: (await adminChannelsJson(db, [row]))[0] });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  if (!await db.get('SELECT 1 FROM live_channels WHERE id = ?', [req.params.id])) {
+    return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
   }
-});
+  if (Number.isInteger(body.number)
+    && await db.get('SELECT 1 FROM live_channels WHERE custom_number = ? AND id <> ?', [body.number, req.params.id])) {
+    return sendError(req, res, 'P004', { message: 'Another channel already has that number' });
+  }
+  try {
+    await db.run(`UPDATE live_channels SET ${sets.join(', ')} WHERE id = ?`, [...params, req.params.id]);
+  } catch (err) {
+    // Two admins giving out the same number at once.
+    if (/UNIQUE/.test(err.message)) return sendError(req, res, 'P004', { message: 'Another channel already has that number' });
+    throw err;
+  }
+  channelsChanged();
+  const row = await db.get(
+    `SELECT ${ADMIN_CHANNEL_COLUMNS} FROM live_channels c JOIN live_sources s ON s.id = c.source_id WHERE c.id = ?`,
+    [req.params.id]
+  );
+  res.json({ channel: (await adminChannelsJson(db, [row]))[0] });
+}));
 
 // Checks one channel's stream now (see services/liveHealth.js) and records the result.
-admin.post('/channels/:id/check', async (req, res) => {
-  try {
-    if (!CHANNEL_ID_RE.test(req.params.id)) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
-    const result = await checkChannelById(await getDb(), req.params.id);
-    if (!result) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
-    res.json({ health: result.health, checkedAt: result.checkedAt, error: result.error });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+admin.post('/channels/:id/check', handle(async (req, res) => {
+  if (!CHANNEL_ID_RE.test(req.params.id)) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
+  const result = await checkChannelById(await getDb(), req.params.id);
+  if (!result) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
+  res.json({ health: result.health, checkedAt: result.checkedAt, error: result.error });
+}));
 
 // ─── Dead-channel check ─────────────────────────────────────────────────────
 
-admin.get('/health', async (req, res) => {
-  try {
-    res.json(await healthOverview(await getDb()));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+admin.get('/health', handle(async (req, res) => {
+  res.json(await healthOverview(await getDb()));
+}));
 
-admin.patch('/health', async (req, res) => {
+admin.patch('/health', handle(async (req, res) => {
   const body = req.body || {};
   const invalid = { enabled: 'enabled must be true or false', hideOffline: 'hideOffline must be true or false' };
   for (const key of Object.keys(invalid)) {
@@ -523,14 +471,10 @@ admin.patch('/health', async (req, res) => {
       return sendError(req, res, 'P001', { message: invalid[key] });
     }
   }
-  try {
-    const db = await getDb();
-    await saveHealthSettings(db, body);
-    res.json(await healthOverview(db));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  await saveHealthSettings(db, body);
+  res.json(await healthOverview(db));
+}));
 
 // ─── Line-ups ───────────────────────────────────────────────────────────────
 
@@ -554,57 +498,45 @@ function lineupName(value) {
   return typeof value === 'string' ? value.trim().slice(0, 100) : '';
 }
 
-admin.get('/lineups', async (req, res) => {
-  try {
-    const rows = await (await getDb()).all(`${LINEUP_SELECT} ORDER BY l.position, l.created_at, l.rowid`);
-    res.json({ lineups: rows.map(lineupJson) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+admin.get('/lineups', handle(async (req, res) => {
+  const rows = await (await getDb()).all(`${LINEUP_SELECT} ORDER BY l.position, l.created_at, l.rowid`);
+  res.json({ lineups: rows.map(lineupJson) });
+}));
 
-admin.post('/lineups', async (req, res) => {
+admin.post('/lineups', handle(async (req, res) => {
   const name = lineupName(req.body?.name);
   if (!name) return sendError(req, res, 'P001', { message: 'Enter a name for the line-up' });
-  try {
-    const db = await getDb();
-    const id = crypto.randomUUID();
-    await db.run(
-      'INSERT INTO live_lineups (id, name, position) VALUES (?, ?, (SELECT COALESCE(MAX(position), 0) + 1 FROM live_lineups))',
-      [id, name]
-    );
-    channelsChanged();
-    res.status(201).json({ lineup: lineupJson(await loadLineup(db, id)) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  const id = crypto.randomUUID();
+  await db.run(
+    'INSERT INTO live_lineups (id, name, position) VALUES (?, ?, (SELECT COALESCE(MAX(position), 0) + 1 FROM live_lineups))',
+    [id, name]
+  );
+  channelsChanged();
+  res.status(201).json({ lineup: lineupJson(await loadLineup(db, id)) });
+}));
 
 // Before /lineups/:id, so 'order' isn't taken for an id. Line-ups left out keep their
 // order after the ones given.
-admin.put('/lineups/order', async (req, res) => {
+admin.put('/lineups/order', handle(async (req, res) => {
   const ids = req.body?.ids;
   if (!Array.isArray(ids) || ids.length > 1000 || !ids.every((id) => typeof id === 'string')) {
     return sendError(req, res, 'P001', { message: 'Send the line-ups in their new order' });
   }
-  try {
-    const db = await getDb();
-    const rows = await db.all('SELECT id FROM live_lineups ORDER BY position, created_at, rowid');
-    const given = [...new Set(ids)].filter((id) => rows.some((r) => r.id === id));
-    const order = [...given, ...rows.map((r) => r.id).filter((id) => !given.includes(id))];
-    await db.run(
-      'UPDATE live_lineups SET position = (SELECT key + 1 FROM json_each(?) WHERE value = live_lineups.id)',
-      [JSON.stringify(order)]
-    );
-    channelsChanged();
-    const after = await db.all(`${LINEUP_SELECT} ORDER BY l.position, l.created_at, l.rowid`);
-    res.json({ lineups: after.map(lineupJson) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  const rows = await db.all('SELECT id FROM live_lineups ORDER BY position, created_at, rowid');
+  const given = [...new Set(ids)].filter((id) => rows.some((r) => r.id === id));
+  const order = [...given, ...rows.map((r) => r.id).filter((id) => !given.includes(id))];
+  await db.run(
+    'UPDATE live_lineups SET position = (SELECT key + 1 FROM json_each(?) WHERE value = live_lineups.id)',
+    [JSON.stringify(order)]
+  );
+  channelsChanged();
+  const after = await db.all(`${LINEUP_SELECT} ORDER BY l.position, l.created_at, l.rowid`);
+  res.json({ lineups: after.map(lineupJson) });
+}));
 
-admin.patch('/lineups/:id', async (req, res) => {
+admin.patch('/lineups/:id', handle(async (req, res) => {
   const body = req.body || {};
   const sets = [];
   const params = [];
@@ -619,46 +551,34 @@ admin.patch('/lineups/:id', async (req, res) => {
     sets.push('kids_allowed = ?');
     params.push(body.kidsAllowed ? 1 : 0);
   }
-  try {
-    const db = await getDb();
-    if (!await loadLineup(db, req.params.id)) return sendError(req, res, 'P002', { message: LINEUP_NOT_FOUND });
-    if (sets.length) {
-      await db.run(`UPDATE live_lineups SET ${sets.join(', ')} WHERE id = ?`, [...params, req.params.id]);
-      channelsChanged();
-    }
-    res.json({ lineup: lineupJson(await loadLineup(db, req.params.id)) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
-
-admin.delete('/lineups/:id', async (req, res) => {
-  try {
-    const db = await getDb();
-    const result = await db.run('DELETE FROM live_lineups WHERE id = ?', [req.params.id]);
-    if (!result.changes) return sendError(req, res, 'P002', { message: LINEUP_NOT_FOUND });
+  const db = await getDb();
+  if (!await loadLineup(db, req.params.id)) return sendError(req, res, 'P002', { message: LINEUP_NOT_FOUND });
+  if (sets.length) {
+    await db.run(`UPDATE live_lineups SET ${sets.join(', ')} WHERE id = ?`, [...params, req.params.id]);
     channelsChanged();
-    res.json({ ok: true });
-  } catch (err) {
-    serverError(req, res, err);
   }
-});
+  res.json({ lineup: lineupJson(await loadLineup(db, req.params.id)) });
+}));
 
-admin.get('/lineups/:id/channels', async (req, res) => {
-  try {
-    const db = await getDb();
-    if (!await loadLineup(db, req.params.id)) return sendError(req, res, 'P002', { message: LINEUP_NOT_FOUND });
-    const rows = await db.all(
-      `SELECT ${ADMIN_CHANNEL_COLUMNS} FROM live_lineup_channels lc
+admin.delete('/lineups/:id', handle(async (req, res) => {
+  const db = await getDb();
+  const result = await db.run('DELETE FROM live_lineups WHERE id = ?', [req.params.id]);
+  if (!result.changes) return sendError(req, res, 'P002', { message: LINEUP_NOT_FOUND });
+  channelsChanged();
+  res.json({ ok: true });
+}));
+
+admin.get('/lineups/:id/channels', handle(async (req, res) => {
+  const db = await getDb();
+  if (!await loadLineup(db, req.params.id)) return sendError(req, res, 'P002', { message: LINEUP_NOT_FOUND });
+  const rows = await db.all(
+    `SELECT ${ADMIN_CHANNEL_COLUMNS} FROM live_lineup_channels lc
        JOIN live_channels c ON c.id = lc.channel_id JOIN live_sources s ON s.id = c.source_id
        WHERE lc.lineup_id = ? ORDER BY lc.position, lc.rowid`,
-      [req.params.id]
-    );
-    res.json({ channels: await adminChannelsJson(db, rows) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+    [req.params.id]
+  );
+  res.json({ channels: await adminChannelsJson(db, rows) });
+}));
 
 // PUT replaces a line-up's channels (in the order given), POST adds to the end, DELETE takes
 // out. Ids of channels that don't exist are skipped. Answers with the line-up.
@@ -704,16 +624,12 @@ router.use('/admin', admin);
 // ─── Viewers ────────────────────────────────────────────────────────────────
 
 // Answers even while Live TV is off, so the app can decide whether to show it at all.
-router.get('/status', async (req, res) => {
-  try {
-    const db = await getDb();
-    if (!await isLiveTvEnabled(db)) return res.json({ enabled: false, channelCount: 0 });
-    const channels = await visibleChannels(db, req.user);
-    res.json({ enabled: true, channelCount: channels.length });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/status', handle(async (req, res) => {
+  const db = await getDb();
+  if (!await isLiveTvEnabled(db)) return res.json({ enabled: false, channelCount: 0 });
+  const channels = await visibleChannels(db, req.user);
+  res.json({ enabled: true, channelCount: channels.length });
+}));
 
 router.use(async (req, res, next) => {
   try {
@@ -768,235 +684,195 @@ async function nowAndNextFor(db, channels) {
   return nowAndNext(db, Date.now(), new Set(channels.map((c) => c.tvgId).filter(Boolean)));
 }
 
-router.get('/channels', async (req, res) => {
-  try {
-    const db = await getDb();
-    const { index, keep, favouriteSet, base } = await viewerView(db, req);
-    if (!base) return sendError(req, res, 'P002', { message: LINEUP_NOT_FOUND });
-    const groups = [...new Set(base.flatMap((c) => c.groups))].sort((a, b) => a.localeCompare(b));
-    const lineups = index.lineups
-      .map((l) => ({ id: l.id, name: l.name, channelCount: l.channels.filter(keep).length }))
-      .filter((l) => l.channelCount > 0);
-    const list = filterChannels(base, req.query);
-    const { nowMap, nextMap } = list.length > 200 ? await nowAndNext(db) : await nowAndNextFor(db, list);
-    const channels = list.map((c) => channelJson(c, nowMap, nextMap, favouriteSet));
-    res.json({ groups, lineups, channels });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/channels', handle(async (req, res) => {
+  const db = await getDb();
+  const { index, keep, favouriteSet, base } = await viewerView(db, req);
+  if (!base) return sendError(req, res, 'P002', { message: LINEUP_NOT_FOUND });
+  const groups = [...new Set(base.flatMap((c) => c.groups))].sort((a, b) => a.localeCompare(b));
+  const lineups = index.lineups
+    .map((l) => ({ id: l.id, name: l.name, channelCount: l.channels.filter(keep).length }))
+    .filter((l) => l.channelCount > 0);
+  const list = filterChannels(base, req.query);
+  const { nowMap, nextMap } = list.length > 200 ? await nowAndNext(db) : await nowAndNextFor(db, list);
+  const channels = list.map((c) => channelJson(c, nowMap, nextMap, favouriteSet));
+  res.json({ groups, lineups, channels });
+}));
 
-router.get('/channels/:id', async (req, res) => {
-  try {
-    const db = await getDb();
-    const index = await channelIndex(db, req.user);
-    const channel = index.byId.get(req.params.id);
-    if (!channel) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
+router.get('/channels/:id', handle(async (req, res) => {
+  const db = await getDb();
+  const index = await channelIndex(db, req.user);
+  const channel = index.byId.get(req.params.id);
+  if (!channel) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
 
-    const now = Date.now();
-    const { nowMap, nextMap } = await nowAndNext(db, now, new Set([channel.tvgId].filter(Boolean)));
-    const favourite = await db.get('SELECT 1 FROM live_favourites WHERE user_id = ? AND channel_id IN (?, ?)', [req.user.id, channel.id, req.params.id]);
-    const programmes = channel.tvgId
-      ? await db.all(
-        `SELECT start, stop, title, subtitle, description, category FROM live_programmes
+  const now = Date.now();
+  const { nowMap, nextMap } = await nowAndNext(db, now, new Set([channel.tvgId].filter(Boolean)));
+  const favourite = await db.get('SELECT 1 FROM live_favourites WHERE user_id = ? AND channel_id IN (?, ?)', [req.user.id, channel.id, req.params.id]);
+  const programmes = channel.tvgId
+    ? await db.all(
+      `SELECT start, stop, title, subtitle, description, category FROM live_programmes
          WHERE tvg_id = ? AND stop > ? AND start < ? ORDER BY start`,
-        [channel.tvgId, now, now + 12 * HOUR_MS]
-      )
-      : [];
-    res.json({
-      channel: channelJson(channel, nowMap, nextMap, new Set(favourite ? [channel.id] : [])),
-      programmes,
-      streamPath: `/api/media/live/${channel.id}/index.m3u8`
-    });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+      [channel.tvgId, now, now + 12 * HOUR_MS]
+    )
+    : [];
+  res.json({
+    channel: channelJson(channel, nowMap, nextMap, new Set(favourite ? [channel.id] : [])),
+    programmes,
+    streamPath: `/api/media/live/${channel.id}/index.m3u8`
+  });
+}));
 
 // Recently watched: the player says so once a channel has played a little while.
-router.post('/channels/:id/watched', async (req, res) => {
-  try {
-    const db = await getDb();
-    const channel = (await channelIndex(db, req.user)).byId.get(req.params.id);
-    if (!channel) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
-    await db.run(
-      `INSERT INTO live_recent (user_id, channel_id, watched_at) VALUES (?, ?, ?)
+router.post('/channels/:id/watched', handle(async (req, res) => {
+  const db = await getDb();
+  const channel = (await channelIndex(db, req.user)).byId.get(req.params.id);
+  if (!channel) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
+  await db.run(
+    `INSERT INTO live_recent (user_id, channel_id, watched_at) VALUES (?, ?, ?)
        ON CONFLICT(user_id, channel_id) DO UPDATE SET watched_at = excluded.watched_at`,
-      [req.user.id, channel.id, Date.now()]
-    );
-    await db.run(
-      `DELETE FROM live_recent WHERE user_id = ? AND channel_id NOT IN (
+    [req.user.id, channel.id, Date.now()]
+  );
+  await db.run(
+    `DELETE FROM live_recent WHERE user_id = ? AND channel_id NOT IN (
          SELECT channel_id FROM live_recent WHERE user_id = ? ORDER BY watched_at DESC LIMIT ?)`,
-      [req.user.id, req.user.id, RECENT_KEEP]
-    );
-    res.json({ ok: true });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+    [req.user.id, req.user.id, RECENT_KEEP]
+  );
+  res.json({ ok: true });
+}));
 
-router.get('/recent', async (req, res) => {
-  try {
-    const db = await getDb();
-    const { index, keep, favouriteSet } = await viewerView(db, req, { selector: null });
-    const ids = (await db.all(
-      'SELECT channel_id FROM live_recent WHERE user_id = ? ORDER BY watched_at DESC LIMIT ?',
-      [req.user.id, RECENT_KEEP]
-    )).map((r) => r.channel_id);
-    const list = resolveChannels(index, ids).filter(keep);
-    const { nowMap, nextMap } = await nowAndNextFor(db, list);
-    res.json({ channels: list.map((c) => channelJson(c, nowMap, nextMap, favouriteSet)) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/recent', handle(async (req, res) => {
+  const db = await getDb();
+  const { index, keep, favouriteSet } = await viewerView(db, req, { selector: null });
+  const ids = (await db.all(
+    'SELECT channel_id FROM live_recent WHERE user_id = ? ORDER BY watched_at DESC LIMIT ?',
+    [req.user.id, RECENT_KEEP]
+  )).map((r) => r.channel_id);
+  const list = resolveChannels(index, ids).filter(keep);
+  const { nowMap, nextMap } = await nowAndNextFor(db, list);
+  res.json({ channels: list.map((c) => channelJson(c, nowMap, nextMap, favouriteSet)) });
+}));
 
-router.post('/favourites/:channelId', async (req, res) => {
-  try {
-    const db = await getDb();
-    const channel = (await channelIndex(db, req.user)).byId.get(req.params.channelId);
-    if (!channel) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
-    const { count } = await db.get('SELECT COUNT(*) AS count FROM live_favourites WHERE user_id = ?', [req.user.id]);
-    if (count >= FAVOURITES_MAX && !await db.get('SELECT 1 FROM live_favourites WHERE user_id = ? AND channel_id = ?', [req.user.id, channel.id])) {
-      return sendError(req, res, 'P001', { message: 'You can have up to 500 favourite channels' });
-    }
-    await db.run('INSERT OR IGNORE INTO live_favourites (user_id, channel_id) VALUES (?, ?)', [req.user.id, channel.id]);
-    res.json({ favourite: true });
-  } catch (err) {
-    serverError(req, res, err);
+router.post('/favourites/:channelId', handle(async (req, res) => {
+  const db = await getDb();
+  const channel = (await channelIndex(db, req.user)).byId.get(req.params.channelId);
+  if (!channel) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
+  const { count } = await db.get('SELECT COUNT(*) AS count FROM live_favourites WHERE user_id = ?', [req.user.id]);
+  if (count >= FAVOURITES_MAX && !await db.get('SELECT 1 FROM live_favourites WHERE user_id = ? AND channel_id = ?', [req.user.id, channel.id])) {
+    return sendError(req, res, 'P001', { message: 'You can have up to 500 favourite channels' });
   }
-});
+  await db.run('INSERT OR IGNORE INTO live_favourites (user_id, channel_id) VALUES (?, ?)', [req.user.id, channel.id]);
+  res.json({ favourite: true });
+}));
 
 // Works for a channel this viewer can't see any more too, so a stale favourite can go.
-router.delete('/favourites/:channelId', async (req, res) => {
-  try {
-    if (!CHANNEL_ID_RE.test(req.params.channelId)) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
-    const db = await getDb();
-    const canonical = (await channelIndex(db, req.user)).byId.get(req.params.channelId)?.id || req.params.channelId;
-    await db.run(
-      'DELETE FROM live_favourites WHERE user_id = ? AND channel_id IN (?, ?)',
-      [req.user.id, req.params.channelId, canonical]
-    );
-    res.json({ favourite: false });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.delete('/favourites/:channelId', handle(async (req, res) => {
+  if (!CHANNEL_ID_RE.test(req.params.channelId)) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
+  const db = await getDb();
+  const canonical = (await channelIndex(db, req.user)).byId.get(req.params.channelId)?.id || req.params.channelId;
+  await db.run(
+    'DELETE FROM live_favourites WHERE user_id = ? AND channel_id IN (?, ?)',
+    [req.user.id, req.params.channelId, canonical]
+  );
+  res.json({ favourite: false });
+}));
 
 // The Home row: the viewer's favourites they can watch, with what's on.
-router.get('/now', async (req, res) => {
-  try {
-    const db = await getDb();
-    const limit = intParam(req.query.limit, 20, 1, 50);
-    const { base, favouriteSet } = await viewerView(db, req, { selector: 'favourites' });
-    const list = base.slice(0, limit);
-    const { nowMap, nextMap } = await nowAndNextFor(db, list);
-    res.json({ channels: list.map((c) => channelJson(c, nowMap, nextMap, favouriteSet)) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/now', handle(async (req, res) => {
+  const db = await getDb();
+  const limit = intParam(req.query.limit, 20, 1, 50);
+  const { base, favouriteSet } = await viewerView(db, req, { selector: 'favourites' });
+  const list = base.slice(0, limit);
+  const { nowMap, nextMap } = await nowAndNextFor(db, list);
+  res.json({ channels: list.map((c) => channelJson(c, nowMap, nextMap, favouriteSet)) });
+}));
 
 // Channels by name and programmes by title, from now to the end of the guide, over the
 // channels this viewer sees. Under two characters there's nothing to look for.
-router.get('/search', async (req, res) => {
-  try {
-    const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 100) : '';
-    if (q.length < 2) return res.json({ channels: [], programmes: [] });
-    const limit = intParam(req.query.limit, 30, 1, 100);
-    const db = await getDb();
-    const { base, favouriteSet } = await viewerView(db, req, { selector: null });
+router.get('/search', handle(async (req, res) => {
+  const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 100) : '';
+  if (q.length < 2) return res.json({ channels: [], programmes: [] });
+  const limit = intParam(req.query.limit, 30, 1, 100);
+  const db = await getDb();
+  const { base, favouriteSet } = await viewerView(db, req, { selector: null });
 
-    const needle = q.toLowerCase();
-    const channelHits = base.filter((c) => c.name.toLowerCase().includes(needle)).slice(0, limit);
+  const needle = q.toLowerCase();
+  const channelHits = base.filter((c) => c.name.toLowerCase().includes(needle)).slice(0, limit);
 
-    const byTvg = new Map();
-    for (const c of base) if (c.tvgId && !byTvg.has(c.tvgId)) byTvg.set(c.tvgId, c);
-    const now = Date.now();
-    const rows = byTvg.size
-      ? await db.all(
-        `SELECT tvg_id, start, stop, title, subtitle FROM live_programmes
+  const byTvg = new Map();
+  for (const c of base) if (c.tvgId && !byTvg.has(c.tvgId)) byTvg.set(c.tvgId, c);
+  const now = Date.now();
+  const rows = byTvg.size
+    ? await db.all(
+      `SELECT tvg_id, start, stop, title, subtitle FROM live_programmes
          WHERE stop > ? AND start < ? AND (title LIKE ? ESCAPE '\\' OR subtitle LIKE ? ESCAPE '\\')
            AND tvg_id IN (SELECT value FROM json_each(?))
          ORDER BY start LIMIT ?`,
-        [now, now + GUIDE_AHEAD_MS, likePattern(q), likePattern(q), JSON.stringify([...byTvg.keys()]), limit]
-      )
-      : [];
-    const programmes = rows.map((p) => {
-      const c = byTvg.get(p.tvg_id);
-      return {
-        channelId: c.id, channelName: c.name, logo: c.logo, number: c.number,
-        start: p.start, stop: p.stop, title: p.title, subtitle: p.subtitle
-      };
-    });
+      [now, now + GUIDE_AHEAD_MS, likePattern(q), likePattern(q), JSON.stringify([...byTvg.keys()]), limit]
+    )
+    : [];
+  const programmes = rows.map((p) => {
+    const c = byTvg.get(p.tvg_id);
+    return {
+      channelId: c.id, channelName: c.name, logo: c.logo, number: c.number,
+      start: p.start, stop: p.stop, title: p.title, subtitle: p.subtitle
+    };
+  });
 
-    const { nowMap, nextMap } = await nowAndNextFor(db, channelHits);
-    res.json({ channels: channelHits.map((c) => channelJson(c, nowMap, nextMap, favouriteSet)), programmes });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const { nowMap, nextMap } = await nowAndNextFor(db, channelHits);
+  res.json({ channels: channelHits.map((c) => channelJson(c, nowMap, nextMap, favouriteSet)), programmes });
+}));
 
 // What the viewer hid for themselves, by current name, for the "Hidden for me" list.
 // Channels they can't get any more are left out.
-router.get('/me/hidden', async (req, res) => {
-  try {
-    const db = await getDb();
-    const index = await channelIndex(db, req.user);
-    const hiding = personalHiding(req.user, index);
-    const channels = resolveChannels(index, [...hiding.channels])
-      .map((c) => ({ id: c.id, name: c.name, logo: c.logo, number: c.number }));
-    res.json({ channels, groups: [...hiding.groups] });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/me/hidden', handle(async (req, res) => {
+  const db = await getDb();
+  const index = await channelIndex(db, req.user);
+  const hiding = personalHiding(req.user, index);
+  const channels = resolveChannels(index, [...hiding.channels])
+    .map((c) => ({ id: c.id, name: c.name, logo: c.logo, number: c.number }));
+  res.json({ channels, groups: [...hiding.groups] });
+}));
 
-router.get('/guide', async (req, res) => {
-  try {
-    const db = await getDb();
-    const fromParam = parseInt(req.query.from, 10);
-    // Without a start, the guide opens on the current half hour.
-    const from = Number.isFinite(fromParam) ? fromParam : Math.floor(Date.now() / HALF_HOUR_MS) * HALF_HOUR_MS;
-    const hours = intParam(req.query.hours, 4, 1, 12);
-    const to = from + hours * HOUR_MS;
-    const offset = intParam(req.query.offset, 0, 0, Number.MAX_SAFE_INTEGER);
-    const limit = intParam(req.query.limit, 50, 1, 200);
+router.get('/guide', handle(async (req, res) => {
+  const db = await getDb();
+  const fromParam = parseInt(req.query.from, 10);
+  // Without a start, the guide opens on the current half hour.
+  const from = Number.isFinite(fromParam) ? fromParam : Math.floor(Date.now() / HALF_HOUR_MS) * HALF_HOUR_MS;
+  const hours = intParam(req.query.hours, 4, 1, 12);
+  const to = from + hours * HOUR_MS;
+  const offset = intParam(req.query.offset, 0, 0, Number.MAX_SAFE_INTEGER);
+  const limit = intParam(req.query.limit, 50, 1, 200);
 
-    const { base } = await viewerView(db, req);
-    if (!base) return sendError(req, res, 'P002', { message: LINEUP_NOT_FOUND });
-    const matching = filterChannels(base, req.query);
-    const page = matching.slice(offset, offset + limit);
-    const tvgIds = [...new Set(page.map((c) => c.tvgId).filter(Boolean))];
-    const rows = tvgIds.length
-      ? await db.all(
-        `SELECT tvg_id, start, stop, title, subtitle, category FROM live_programmes
+  const { base } = await viewerView(db, req);
+  if (!base) return sendError(req, res, 'P002', { message: LINEUP_NOT_FOUND });
+  const matching = filterChannels(base, req.query);
+  const page = matching.slice(offset, offset + limit);
+  const tvgIds = [...new Set(page.map((c) => c.tvgId).filter(Boolean))];
+  const rows = tvgIds.length
+    ? await db.all(
+      `SELECT tvg_id, start, stop, title, subtitle, category FROM live_programmes
          WHERE tvg_id IN (SELECT value FROM json_each(?)) AND stop > ? AND start < ?
          ORDER BY start`,
-        [JSON.stringify(tvgIds), from, to]
-      )
-      : [];
-    const byTvg = new Map();
-    for (const { tvg_id: tvgId, ...programme } of rows) {
-      if (!byTvg.has(tvgId)) byTvg.set(tvgId, []);
-      byTvg.get(tvgId).push(programme);
-    }
-
-    res.json({
-      from,
-      to,
-      total: matching.length,
-      channels: page.map((c) => ({
-        id: c.id,
-        name: c.name,
-        logo: c.logo,
-        number: c.number,
-        programmes: (c.tvgId && byTvg.get(c.tvgId)) || []
-      }))
-    });
-  } catch (err) {
-    serverError(req, res, err);
+      [JSON.stringify(tvgIds), from, to]
+    )
+    : [];
+  const byTvg = new Map();
+  for (const { tvg_id: tvgId, ...programme } of rows) {
+    if (!byTvg.has(tvgId)) byTvg.set(tvgId, []);
+    byTvg.get(tvgId).push(programme);
   }
-});
+
+  res.json({
+    from,
+    to,
+    total: matching.length,
+    channels: page.map((c) => ({
+      id: c.id,
+      name: c.name,
+      logo: c.logo,
+      number: c.number,
+      programmes: (c.tvgId && byTvg.get(c.tvgId)) || []
+    }))
+  });
+}));
 
 export default router;

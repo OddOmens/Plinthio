@@ -14,7 +14,7 @@ import {
 import { listSubtitleTracks, getSubtitleVtt } from '../services/subtitles.js';
 import { generateTrickplay, getTrickplayIndex, getSheetPath } from '../services/trickplay.js';
 import { sendRangedFile, streamFile } from '../utils/fileStream.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { sendError, codeForFsError } from '../errors.js';
 
 // A playback failure's code: ffmpeg/ffprobe errors are tagged by the services (P303 can't
@@ -306,21 +306,17 @@ router.get('/:id/trickplay/sheet_:sheet.jpg', authenticateToken, async (req, res
 });
 
 // Intro/credits markers, so the player can offer a skip button.
-router.get('/:id/markers', authenticateToken, async (req, res) => {
+router.get('/:id/markers', authenticateToken, handle(async (req, res) => {
   if (!ITEM_ID_RE.test(req.params.id)) {
     return res.status(400).json({ error: 'Invalid item id' });
   }
-  try {
-    const db = await getDb();
-    const markers = await db.all(
-      'SELECT type, start_seconds as startSeconds, end_seconds as endSeconds FROM intro_credit_markers WHERE item_id = ?',
-      [req.params.id]
-    );
-    res.json({ markers });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  const markers = await db.all(
+    'SELECT type, start_seconds as startSeconds, end_seconds as endSeconds FROM intro_credit_markers WHERE item_id = ?',
+    [req.params.id]
+  );
+  res.json({ markers });
+}));
 
 router.put('/:id/markers', authenticateToken, requireEditor, async (req, res) => {
   if (!ITEM_ID_RE.test(req.params.id)) {

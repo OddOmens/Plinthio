@@ -10,7 +10,7 @@ import { userForApiKey, userForApiKeyId, basicAuthApiKey, blockedByNetwork } fro
 import { accessSql } from '../services/visibility.js';
 import { getMangaPagesList, extractMangaPage } from '../services/archive.js';
 import { sendError } from '../errors.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { SEND_OPTS } from '../utils/fileStream.js';
 import { logger } from '../services/logger.js';
 
@@ -406,98 +406,66 @@ function sendCover(res, itemId) {
 }
 
 // ─── Routes ──────────────────────────────────────────────────────────────────────────────
-komgaV1.get('/libraries', async (req, res) => {
-  try {
-    const db = await getDb();
-    const groups = await loadLibrary(db, req.user);
-    const ids = new Set([...groups.values()].map((g) => g.libraryId));
-    const libs = ids.size
-      ? await db.all(`SELECT id, name FROM libraries WHERE id IN (${[...ids].map(() => '?').join(',')}) ORDER BY name`, [...ids])
-      : [];
-    res.json(libs.map((l) => ({ id: l.id, name: l.name, unavailable: false })));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+komgaV1.get('/libraries', handle(async (req, res) => {
+  const db = await getDb();
+  const groups = await loadLibrary(db, req.user);
+  const ids = new Set([...groups.values()].map((g) => g.libraryId));
+  const libs = ids.size
+    ? await db.all(`SELECT id, name FROM libraries WHERE id IN (${[...ids].map(() => '?').join(',')}) ORDER BY name`, [...ids])
+    : [];
+  res.json(libs.map((l) => ({ id: l.id, name: l.name, unavailable: false })));
+}));
 
-komgaV1.get('/series', async (req, res) => {
-  try {
-    const db = await getDb();
-    const groups = [...(await loadLibrary(db, req.user)).values()].filter((g) => matchesSeries(g, req));
-    sortBy(groups, req, { title: (g) => g.name, created: (g) => g.created, modified: (g) => g.lastModified });
-    res.json(paged(req, groups.map(seriesDto)));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+komgaV1.get('/series', handle(async (req, res) => {
+  const db = await getDb();
+  const groups = [...(await loadLibrary(db, req.user)).values()].filter((g) => matchesSeries(g, req));
+  sortBy(groups, req, { title: (g) => g.name, created: (g) => g.created, modified: (g) => g.lastModified });
+  res.json(paged(req, groups.map(seriesDto)));
+}));
 
-komgaV1.get('/series/:id', async (req, res) => {
-  try {
-    const found = await findSeries(req, res);
-    if (found) res.json(seriesDto(found.g));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+komgaV1.get('/series/:id', handle(async (req, res) => {
+  const found = await findSeries(req, res);
+  if (found) res.json(seriesDto(found.g));
+}));
 
-komgaV1.get('/series/:id/thumbnail', async (req, res) => {
-  try {
-    const found = await findSeries(req, res);
-    if (found) await sendCover(res, found.g.books[0].id);
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+komgaV1.get('/series/:id/thumbnail', handle(async (req, res) => {
+  const found = await findSeries(req, res);
+  if (found) await sendCover(res, found.g.books[0].id);
+}));
 
-komgaV1.get('/series/:id/books', async (req, res) => {
-  try {
-    const found = await findSeries(req, res);
-    if (!found) return;
-    const books = found.g.books.map((b) => bookDto(found.g, b));
-    if (String(req.query.sort || '').includes('desc')) books.reverse();
-    res.json(paged(req, books));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+komgaV1.get('/series/:id/books', handle(async (req, res) => {
+  const found = await findSeries(req, res);
+  if (!found) return;
+  const books = found.g.books.map((b) => bookDto(found.g, b));
+  if (String(req.query.sort || '').includes('desc')) books.reverse();
+  res.json(paged(req, books));
+}));
 
-komgaV1.get('/books', async (req, res) => {
-  try {
-    const db = await getDb();
-    const search = String(req.query.search || '').trim().toLowerCase();
-    const libs = multi(req, 'library_id');
-    const all = [];
-    for (const g of (await loadLibrary(db, req.user)).values()) {
-      if (libs.length && !libs.includes(g.libraryId)) continue;
-      for (const b of g.books) {
-        if (search && !b.title.toLowerCase().includes(search) && !g.name.toLowerCase().includes(search)) continue;
-        all.push({ g, b });
-      }
+komgaV1.get('/books', handle(async (req, res) => {
+  const db = await getDb();
+  const search = String(req.query.search || '').trim().toLowerCase();
+  const libs = multi(req, 'library_id');
+  const all = [];
+  for (const g of (await loadLibrary(db, req.user)).values()) {
+    if (libs.length && !libs.includes(g.libraryId)) continue;
+    for (const b of g.books) {
+      if (search && !b.title.toLowerCase().includes(search) && !g.name.toLowerCase().includes(search)) continue;
+      all.push({ g, b });
     }
-    sortBy(all, req, { title: (x) => x.b.title, created: (x) => x.b.created_at, modified: (x) => x.b.updated_at });
-    res.json(paged(req, all.map(({ g, b }) => bookDto(g, b))));
-  } catch (err) {
-    serverError(req, res, err);
   }
-});
+  sortBy(all, req, { title: (x) => x.b.title, created: (x) => x.b.created_at, modified: (x) => x.b.updated_at });
+  res.json(paged(req, all.map(({ g, b }) => bookDto(g, b))));
+}));
 
-komgaV1.get('/books/:id', async (req, res) => {
-  try {
-    const found = await findBook(req, res);
-    if (found) res.json(bookDto(found.g, found.b));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+komgaV1.get('/books/:id', handle(async (req, res) => {
+  const found = await findBook(req, res);
+  if (found) res.json(bookDto(found.g, found.b));
+}));
 
-komgaV1.get('/books/:id/thumbnail', async (req, res) => {
-  try {
-    const found = await findBook(req, res);
-    if (found) await sendCover(res, found.b.id);
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+komgaV1.get('/books/:id/thumbnail', handle(async (req, res) => {
+  const found = await findBook(req, res);
+  if (found) await sendCover(res, found.b.id);
+}));
 
 komgaV1.get('/books/:id/pages', async (req, res) => {
   try {
@@ -542,27 +510,23 @@ async function distinctValues(req, pick) {
   }
   return [...out].sort((a, b) => a.localeCompare(b));
 }
-komgaV1.get('/genres', async (req, res) => {
-  try { res.json(await distinctValues(req, (g) => splitList(g.books[0].genres))); } catch (err) { serverError(req, res, err); }
-});
-komgaV1.get('/tags', async (req, res) => {
-  try { res.json(await distinctValues(req, (g) => splitList(g.books[0].themes))); } catch (err) { serverError(req, res, err); }
-});
-komgaV1.get('/publishers', async (req, res) => {
-  try { res.json(await distinctValues(req, (g) => (g.books[0].publisher ? [g.books[0].publisher] : []))); } catch (err) { serverError(req, res, err); }
-});
-komgaV1.get('/authors', async (req, res) => {
-  try {
-    const db = await getDb();
-    const seen = new Map();
-    for (const g of (await loadLibrary(db, req.user)).values()) {
-      for (const b of g.books) for (const a of authorsOf(b)) seen.set(`${a.role}:${a.name}`, a);
-    }
-    res.json([...seen.values()].sort((a, b) => a.name.localeCompare(b.name)));
-  } catch (err) {
-    serverError(req, res, err);
+komgaV1.get('/genres', handle(async (req, res) => {
+  res.json(await distinctValues(req, (g) => splitList(g.books[0].genres)));
+}));
+komgaV1.get('/tags', handle(async (req, res) => {
+  res.json(await distinctValues(req, (g) => splitList(g.books[0].themes)));
+}));
+komgaV1.get('/publishers', handle(async (req, res) => {
+  res.json(await distinctValues(req, (g) => (g.books[0].publisher ? [g.books[0].publisher] : [])));
+}));
+komgaV1.get('/authors', handle(async (req, res) => {
+  const db = await getDb();
+  const seen = new Map();
+  for (const g of (await loadLibrary(db, req.user)).values()) {
+    for (const b of g.books) for (const a of authorsOf(b)) seen.set(`${a.role}:${a.name}`, a);
   }
-});
+  res.json([...seen.values()].sort((a, b) => a.name.localeCompare(b.name)));
+}));
 
 // Collections and read lists aren't mapped (Plinthio's Lists mix media types and outside
 // titles); empty pages keep the extension's filters happy.
@@ -589,46 +553,38 @@ function readProgressV2(g) {
   };
 }
 
-komgaV2.get('/series/:id/read-progress/tachiyomi', async (req, res) => {
-  try {
-    const found = await findSeries(req, res);
-    if (found) res.json(readProgressV2(found.g));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+komgaV2.get('/series/:id/read-progress/tachiyomi', handle(async (req, res) => {
+  const found = await findSeries(req, res);
+  if (found) res.json(readProgressV2(found.g));
+}));
 
 // "I've read up to chapter N": every book numbered N or lower is marked read. Nothing is
 // ever marked unread from here — Mihon only moves forward.
-komgaV2.put('/series/:id/read-progress/tachiyomi', async (req, res) => {
+komgaV2.put('/series/:id/read-progress/tachiyomi', handle(async (req, res) => {
   const upTo = Number(req.body?.lastBookNumberSortRead);
   if (!Number.isFinite(upTo)) return sendError(req, res, 'P001', { message: 'lastBookNumberSortRead must be a number' });
+  const found = await findSeries(req, res);
+  if (!found) return;
+  const { db, g } = found;
+  const toMark = g.books.filter((b) => b.numberSort <= upTo && !b.is_finished);
+  await db.run('BEGIN TRANSACTION');
   try {
-    const found = await findSeries(req, res);
-    if (!found) return;
-    const { db, g } = found;
-    const toMark = g.books.filter((b) => b.numberSort <= upTo && !b.is_finished);
-    await db.run('BEGIN TRANSACTION');
-    try {
-      for (const b of toMark) {
-        const pages = b.total_pages || 0;
-        await db.run(`
+    for (const b of toMark) {
+      const pages = b.total_pages || 0;
+      await db.run(`
           INSERT INTO user_progress (user_id, item_id, current_page, total_pages, progress_percent, is_finished, is_skipped, updated_at)
           VALUES (?, ?, ?, ?, 100, 1, 0, CURRENT_TIMESTAMP)
           ON CONFLICT(user_id, item_id) DO UPDATE SET
             current_page = excluded.current_page, progress_percent = 100, is_finished = 1, is_skipped = 0,
             updated_at = CURRENT_TIMESTAMP
         `, [req.user.id, b.id, pages, pages]);
-        b.is_finished = 1;
-      }
-      await db.run('COMMIT');
-    } catch (err) {
-      await db.run('ROLLBACK');
-      throw err;
+      b.is_finished = 1;
     }
-    if (toMark.length) logger.info('sync', `Mihon marked ${toMark.length} of "${g.name}" read for ${req.user.username}`);
-    res.status(204).end();
+    await db.run('COMMIT');
   } catch (err) {
-    serverError(req, res, err);
+    await db.run('ROLLBACK');
+    throw err;
   }
-});
+  if (toMark.length) logger.info('sync', `Mihon marked ${toMark.length} of "${g.name}" read for ${req.user.username}`);
+  res.status(204).end();
+}));

@@ -2,7 +2,7 @@ import express from 'express';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { serverError } from '../utils/http.js';
+import { handle } from '../utils/http.js';
 
 // Highlighted passages in the EPUB reader. Each one is the reader's own: every query is
 // scoped to the signed-in user.
@@ -25,21 +25,17 @@ function cleanProgress(value) {
   return Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : null;
 }
 
-router.get('/:itemId', async (req, res) => {
-  try {
-    const db = await getDb();
-    const highlights = await db.all(
-      `SELECT * FROM highlights WHERE user_id = ? AND item_id = ?
+router.get('/:itemId', handle(async (req, res) => {
+  const db = await getDb();
+  const highlights = await db.all(
+    `SELECT * FROM highlights WHERE user_id = ? AND item_id = ?
        ORDER BY COALESCE(progress, 0) ASC, created_at ASC`,
-      [req.user.id, req.params.itemId]
-    );
-    res.json({ highlights });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+    [req.user.id, req.params.itemId]
+  );
+  res.json({ highlights });
+}));
 
-router.post('/', async (req, res) => {
+router.post('/', handle(async (req, res) => {
   const { itemId, cfiRange, text, color = 'yellow', note, chapter, progress } = req.body || {};
   if (!itemId) return res.status(400).json({ error: 'Item ID is required' });
   if (!cfiRange || typeof cfiRange !== 'string' || cfiRange.length > MAX_CFI) {
@@ -49,24 +45,20 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: `Color must be one of: ${HIGHLIGHT_COLORS.join(', ')}` });
   }
 
-  try {
-    const db = await getDb();
-    const id = crypto.randomUUID();
-    await db.run(
-      `INSERT INTO highlights (id, user_id, item_id, cfi_range, text, color, note, chapter, progress)
+  const db = await getDb();
+  const id = crypto.randomUUID();
+  await db.run(
+    `INSERT INTO highlights (id, user_id, item_id, cfi_range, text, color, note, chapter, progress)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, req.user.id, String(itemId), cfiRange, cleanText(text, MAX_TEXT), color,
-        cleanText(note, MAX_NOTE), cleanText(chapter, 500), cleanProgress(progress)]
-    );
-    const highlight = await db.get('SELECT * FROM highlights WHERE id = ?', [id]);
-    res.status(201).json({ highlight });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+    [id, req.user.id, String(itemId), cfiRange, cleanText(text, MAX_TEXT), color,
+      cleanText(note, MAX_NOTE), cleanText(chapter, 500), cleanProgress(progress)]
+  );
+  const highlight = await db.get('SELECT * FROM highlights WHERE id = ?', [id]);
+  res.status(201).json({ highlight });
+}));
 
 // Change the colour or the note. Sending note: null (or "") clears it.
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', handle(async (req, res) => {
   const { color, note } = req.body || {};
   const fields = [];
   const params = [];
@@ -83,30 +75,22 @@ router.patch('/:id', async (req, res) => {
   }
   if (!fields.length) return res.status(400).json({ error: 'No fields provided to update' });
 
-  try {
-    const db = await getDb();
-    params.push(req.params.id, req.user.id);
-    const result = await db.run(
-      `UPDATE highlights SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
-      params
-    );
-    if (result.changes === 0) return res.status(404).json({ error: 'Highlight not found' });
-    const highlight = await db.get('SELECT * FROM highlights WHERE id = ?', [req.params.id]);
-    res.json({ highlight });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  params.push(req.params.id, req.user.id);
+  const result = await db.run(
+    `UPDATE highlights SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`,
+    params
+  );
+  if (result.changes === 0) return res.status(404).json({ error: 'Highlight not found' });
+  const highlight = await db.get('SELECT * FROM highlights WHERE id = ?', [req.params.id]);
+  res.json({ highlight });
+}));
 
-router.delete('/:id', async (req, res) => {
-  try {
-    const db = await getDb();
-    const result = await db.run('DELETE FROM highlights WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-    if (result.changes === 0) return res.status(404).json({ error: 'Highlight not found' });
-    res.json({ message: 'Highlight deleted' });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.delete('/:id', handle(async (req, res) => {
+  const db = await getDb();
+  const result = await db.run('DELETE FROM highlights WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+  if (result.changes === 0) return res.status(404).json({ error: 'Highlight not found' });
+  res.json({ message: 'Highlight deleted' });
+}));
 
 export default router;

@@ -2,7 +2,7 @@ import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { logger } from '../services/logger.js';
 import {
@@ -58,29 +58,21 @@ async function loadWatchable(db, itemId, user) {
 }
 
 // Start a party on a movie or episode. The creator hosts.
-router.post('/', async (req, res) => {
-  try {
-    const db = await getDb();
-    const item = await loadWatchable(db, req.body?.itemId, req.user);
-    if (!item) return res.status(400).json({ error: 'Pick a movie or episode to watch together' });
-    if (partyCount() >= MAX_PARTIES) return sendError(req, res, 'P605');
-    const party = createParty({ host: req.user, item });
-    logger.info('media', `${req.user.username} started watch party ${party.code}`);
-    res.status(201).json({ party: snapshot(party) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.post('/', handle(async (req, res) => {
+  const db = await getDb();
+  const item = await loadWatchable(db, req.body?.itemId, req.user);
+  if (!item) return res.status(400).json({ error: 'Pick a movie or episode to watch together' });
+  if (partyCount() >= MAX_PARTIES) return sendError(req, res, 'P605');
+  const party = createParty({ host: req.user, item });
+  logger.info('media', `${req.user.username} started watch party ${party.code}`);
+  res.status(201).json({ party: snapshot(party) });
+}));
 
-router.get('/:code', async (req, res) => {
-  try {
-    const db = await getDb();
-    if (await isItemHiddenForUser(db, req.party.itemId, req.user)) return sendError(req, res, 'P603');
-    res.json({ party: snapshot(req.party) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/:code', handle(async (req, res) => {
+  const db = await getDb();
+  if (await isItemHiddenForUser(db, req.party.itemId, req.user)) return sendError(req, res, 'P603');
+  res.json({ party: snapshot(req.party) });
+}));
 
 // The live connection: Server-Sent Events. Being connected is being in the party. The
 // first event is a full snapshot; after that, changes (state, presence, item, chat, ended).

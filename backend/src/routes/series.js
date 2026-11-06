@@ -2,7 +2,7 @@ import express from 'express';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireEditor } from '../middleware/auth.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 
 const router = express.Router();
 
@@ -13,26 +13,22 @@ router.use(authenticateToken);
 
 // Reader settings for a series. Returns defaults rather than 404 when a series has never
 // been configured, so the reader always has something to open with.
-router.get('/:libraryId/:seriesName/settings', async (req, res) => {
+router.get('/:libraryId/:seriesName/settings', handle(async (req, res) => {
   const { libraryId, seriesName } = req.params;
-  try {
-    const db = await getDb();
-    const row = await db.get(
-      'SELECT * FROM series_settings WHERE library_id = ? AND series_name = ?',
-      [libraryId, decodeURIComponent(seriesName)]
-    );
+  const db = await getDb();
+  const row = await db.get(
+    'SELECT * FROM series_settings WHERE library_id = ? AND series_name = ?',
+    [libraryId, decodeURIComponent(seriesName)]
+  );
 
-    res.json({
-      settings: {
-        readingDirection: row?.reading_direction || null,
-        ageRating: row?.age_rating || null,
-        titleOverride: row?.title_override || null
-      }
-    });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  res.json({
+    settings: {
+      readingDirection: row?.reading_direction || null,
+      ageRating: row?.age_rating || null,
+      titleOverride: row?.title_override || null
+    }
+  });
+}));
 
 // Editing series metadata is a library-management action, so it needs editor rights — the
 // same bar as the per-item metadata editor in routes/metadata.js.

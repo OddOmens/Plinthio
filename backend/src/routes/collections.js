@@ -2,7 +2,7 @@ import express from 'express';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { shapeItems, shapeItem } from '../services/itemView.js';
 import { accessSql } from '../services/visibility.js';
@@ -14,16 +14,15 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // List user's custom collections / folders
-router.get('/', async (req, res) => {
+router.get('/', handle(async (req, res) => {
   const userId = req.user.id;
   const { type, category } = req.query;
-  try {
-    const db = await getDb();
-    const params = [userId];
-    if (type) params.push(type);
-    if (category) params.push(category);
-    // External entries (titles picked from a metadata search) count toward a list's size too.
-    const collections = await db.all(`
+  const db = await getDb();
+  const params = [userId];
+  if (type) params.push(type);
+  if (category) params.push(category);
+  // External entries (titles picked from a metadata search) count toward a list's size too.
+  const collections = await db.all(`
       SELECT
         c.*,
         COUNT(ci.item_id)
@@ -38,13 +37,13 @@ router.get('/', async (req, res) => {
       ORDER BY c.name ASC
     `, params);
 
-    // Lists show the first few entries' artwork on their card, like a shelf. Library items
-    // give an id (and updated_at, which versions the cover URL); external titles a URL.
-    if (type === 'readlist' && collections.length) {
-      const ids = collections.map((c) => c.id);
-      const marks = ids.map(() => '?').join(', ');
-      const [items, externals] = await Promise.all([
-        db.all(`
+  // Lists show the first few entries' artwork on their card, like a shelf. Library items
+  // give an id (and updated_at, which versions the cover URL); external titles a URL.
+  if (type === 'readlist' && collections.length) {
+    const ids = collections.map((c) => c.id);
+    const marks = ids.map(() => '?').join(', ');
+    const [items, externals] = await Promise.all([
+      db.all(`
           SELECT ci.collection_id, ci.position, ci.added_at, i.id, i.updated_at, i.cover_path, i.offloaded_at
           FROM collection_items ci JOIN items i ON i.id = ci.item_id
           WHERE ci.collection_id IN (${marks})
@@ -52,47 +51,43 @@ router.get('/', async (req, res) => {
             SELECT 1 FROM item_visibility v WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
           )${accessSql(req.user, 'i', { includeOffloaded: true })}
         `, [...ids, userId]),
-        db.all(`SELECT collection_id, position, added_at, cover_url FROM list_external_entries WHERE collection_id IN (${marks})`, ids)
-      ]);
-      const byList = new Map(ids.map((id) => [id, []]));
-      for (const it of items) byList.get(it.collection_id).push({ position: it.position, added_at: it.added_at, item: { id: it.id, updated_at: it.updated_at, cover_path: it.cover_path, offloaded: !!it.offloaded_at } });
-      for (const ext of externals) byList.get(ext.collection_id).push({ position: ext.position, added_at: ext.added_at, coverUrl: ext.cover_url || null, external: true });
-      for (const c of collections) {
-        c.previews = byList.get(c.id)
-          .sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || String(a.added_at).localeCompare(String(b.added_at)))
-          .slice(0, 4)
-          .map(({ item, coverUrl, external }) => (item ? { item } : { coverUrl, external }));
-      }
+      db.all(`SELECT collection_id, position, added_at, cover_url FROM list_external_entries WHERE collection_id IN (${marks})`, ids)
+    ]);
+    const byList = new Map(ids.map((id) => [id, []]));
+    for (const it of items) byList.get(it.collection_id).push({ position: it.position, added_at: it.added_at, item: { id: it.id, updated_at: it.updated_at, cover_path: it.cover_path, offloaded: !!it.offloaded_at } });
+    for (const ext of externals) byList.get(ext.collection_id).push({ position: ext.position, added_at: ext.added_at, coverUrl: ext.cover_url || null, external: true });
+    for (const c of collections) {
+      c.previews = byList.get(c.id)
+        .sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || String(a.added_at).localeCompare(String(b.added_at)))
+        .slice(0, 4)
+        .map(({ item, coverUrl, external }) => (item ? { item } : { coverUrl, external }));
     }
-
-    res.json({ collections });
-  } catch (err) {
-    serverError(req, res, err);
   }
-});
+
+  res.json({ collections });
+}));
 
 // Get all collections and their items, plus an "Unorganized" section for remaining items
-router.get('/all-grouped', async (req, res) => {
+router.get('/all-grouped', handle(async (req, res) => {
   const userId = req.user.id;
   const { mediaType } = req.query;
 
-  try {
-    const db = await getDb();
+  const db = await getDb();
 
-    // 1. Fetch user's custom collections. Read lists are excluded — they're an explicit
-    // reading order browsed on their own, not part of the folder/Unorganized split.
-    const collections = await db.all(
-      "SELECT * FROM collections WHERE user_id = ? AND COALESCE(type, 'collection') = 'collection' ORDER BY name ASC",
-      [userId]
-    );
+  // 1. Fetch user's custom collections. Read lists are excluded — they're an explicit
+  // reading order browsed on their own, not part of the folder/Unorganized split.
+  const collections = await db.all(
+    "SELECT * FROM collections WHERE user_id = ? AND COALESCE(type, 'collection') = 'collection' ORDER BY name ASC",
+    [userId]
+  );
 
-    // 2. Fetch the items of every collection in one query and group them here. This used
-    // to run a query per collection, so a user with 40 folders paid 40 round trips (each
-    // re-running the visibility check) every time the shelf switched to folder grouping.
-    const groupedCollections = [];
-    if (collections.length > 0) {
-      const placeholders = collections.map(() => '?').join(', ');
-      let itemsQuery = `
+  // 2. Fetch the items of every collection in one query and group them here. This used
+  // to run a query per collection, so a user with 40 folders paid 40 round trips (each
+  // re-running the visibility check) every time the shelf switched to folder grouping.
+  const groupedCollections = [];
+  if (collections.length > 0) {
+    const placeholders = collections.map(() => '?').join(', ');
+    let itemsQuery = `
         SELECT ci.collection_id, i.*, p.current_time, p.current_page, p.progress_percent, p.is_finished
         FROM collection_items ci
         JOIN items i ON ci.item_id = i.id
@@ -103,34 +98,34 @@ router.get('/all-grouped', async (req, res) => {
           WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
         )${accessSql(req.user, 'i')}
       `;
-      const params = [userId, ...collections.map((c) => c.id), userId];
-      if (mediaType && mediaType !== 'all') {
-        itemsQuery += ' AND i.media_type = ?';
-        params.push(mediaType);
-      }
-      itemsQuery += ' ORDER BY ci.added_at DESC';
+    const params = [userId, ...collections.map((c) => c.id), userId];
+    if (mediaType && mediaType !== 'all') {
+      itemsQuery += ' AND i.media_type = ?';
+      params.push(mediaType);
+    }
+    itemsQuery += ' ORDER BY ci.added_at DESC';
 
-      const rows = await db.all(itemsQuery, params);
-      await shapeItems(db, rows, req.user);
-      const itemsByCollection = new Map(collections.map((c) => [c.id, []]));
-      for (const row of rows) {
-        const { collection_id: collectionId, ...item } = row;
-        itemsByCollection.get(collectionId)?.push(item);
-      }
-
-      for (const col of collections) {
-        groupedCollections.push({
-          id: col.id,
-          name: col.name,
-          description: col.description,
-          isDefault: false,
-          items: itemsByCollection.get(col.id) || []
-        });
-      }
+    const rows = await db.all(itemsQuery, params);
+    await shapeItems(db, rows, req.user);
+    const itemsByCollection = new Map(collections.map((c) => [c.id, []]));
+    for (const row of rows) {
+      const { collection_id: collectionId, ...item } = row;
+      itemsByCollection.get(collectionId)?.push(item);
     }
 
-    // 3. Fetch unorganized items (items visible to user not assigned to ANY collection of this user)
-    let unorgQuery = `
+    for (const col of collections) {
+      groupedCollections.push({
+        id: col.id,
+        name: col.name,
+        description: col.description,
+        isDefault: false,
+        items: itemsByCollection.get(col.id) || []
+      });
+    }
+  }
+
+  // 3. Fetch unorganized items (items visible to user not assigned to ANY collection of this user)
+  let unorgQuery = `
       SELECT i.*, p.current_time, p.current_page, p.progress_percent, p.is_finished
       FROM items i
       LEFT JOIN user_progress p ON i.id = p.item_id AND p.user_id = ?
@@ -145,30 +140,27 @@ router.get('/all-grouped', async (req, res) => {
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )${accessSql(req.user, 'i')}
     `;
-    const unorgParams = [userId, userId, userId];
-    if (mediaType && mediaType !== 'all') {
-      unorgQuery += ' AND i.media_type = ?';
-      unorgParams.push(mediaType);
-    }
-    unorgQuery += ' ORDER BY i.title ASC';
-
-    const unorganizedItems = await db.all(unorgQuery, unorgParams);
-    await shapeItems(db, unorganizedItems, req.user);
-
-    // Append non-deletable "Unorganized" collection
-    groupedCollections.push({
-      id: 'unorganized',
-      name: 'Unorganized',
-      description: 'Media titles not assigned to any custom folder',
-      isDefault: true,
-      items: unorganizedItems
-    });
-
-    res.json({ collections: groupedCollections });
-  } catch (err) {
-    serverError(req, res, err);
+  const unorgParams = [userId, userId, userId];
+  if (mediaType && mediaType !== 'all') {
+    unorgQuery += ' AND i.media_type = ?';
+    unorgParams.push(mediaType);
   }
-});
+  unorgQuery += ' ORDER BY i.title ASC';
+
+  const unorganizedItems = await db.all(unorgQuery, unorgParams);
+  await shapeItems(db, unorganizedItems, req.user);
+
+  // Append non-deletable "Unorganized" collection
+  groupedCollections.push({
+    id: 'unorganized',
+    name: 'Unorganized',
+    description: 'Media titles not assigned to any custom folder',
+    isDefault: true,
+    items: unorganizedItems
+  });
+
+  res.json({ collections: groupedCollections });
+}));
 
 // Create a new custom collection / folder
 router.post('/', async (req, res) => {
@@ -203,18 +195,17 @@ router.post('/', async (req, res) => {
 });
 
 // Get items in a specific custom collection / folder
-router.get('/:id', async (req, res) => {
+router.get('/:id', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
 
-  try {
-    const db = await getDb();
-    const collection = await db.get('SELECT * FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
-    if (!collection) {
-      return sendError(req, res, 'P500', { message: 'Folder or list not found' });
-    }
+  const db = await getDb();
+  const collection = await db.get('SELECT * FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
+  if (!collection) {
+    return sendError(req, res, 'P500', { message: 'Folder or list not found' });
+  }
 
-    const items = await db.all(`
+  const items = await db.all(`
       SELECT
         i.*,
         p.current_time,
@@ -234,57 +225,50 @@ router.get('/:id', async (req, res) => {
       ORDER BY ci.position ASC, ci.added_at ASC
     `, [userId, id, userId]);
 
-    await shapeItems(db, items, req.user);
+  await shapeItems(db, items, req.user);
 
-    // Lists interleave library items with external titles in one order. `items` stays as the
-    // library-only array for existing callers; `entries` is the merged, ordered view.
-    const externals = await db.all(
-      'SELECT * FROM list_external_entries WHERE collection_id = ? ORDER BY position ASC, added_at ASC',
-      [id]
-    );
-    const [matches, requestStatuses] = await Promise.all([
-      matchLibraryTitles(db, req.user, externals),
-      latestRequestStatuses(db, externals)
-    ]);
-    const entries = [
-      ...items.map((item) => ({ kind: 'item', id: item.id, position: item.collection_position, item })),
-      ...externals.map((ext) => ({
-        kind: 'external',
-        id: ext.id,
-        position: ext.position,
-        external: {
-          ...ext,
-          library_item: matches.get(ext.id) || null,
-          request_status: requestStatuses.get(`${ext.source}:${ext.external_id}`) || null
-        }
-      }))
-    ].sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity));
+  // Lists interleave library items with external titles in one order. `items` stays as the
+  // library-only array for existing callers; `entries` is the merged, ordered view.
+  const externals = await db.all(
+    'SELECT * FROM list_external_entries WHERE collection_id = ? ORDER BY position ASC, added_at ASC',
+    [id]
+  );
+  const [matches, requestStatuses] = await Promise.all([
+    matchLibraryTitles(db, req.user, externals),
+    latestRequestStatuses(db, externals)
+  ]);
+  const entries = [
+    ...items.map((item) => ({ kind: 'item', id: item.id, position: item.collection_position, item })),
+    ...externals.map((ext) => ({
+      kind: 'external',
+      id: ext.id,
+      position: ext.position,
+      external: {
+        ...ext,
+        library_item: matches.get(ext.id) || null,
+        request_status: requestStatuses.get(`${ext.source}:${ext.external_id}`) || null
+      }
+    }))
+  ].sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity));
 
-    res.json({ collection, items, entries });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  res.json({ collection, items, entries });
+}));
 
 // Delete a custom collection / folder
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
 
-  try {
-    const db = await getDb();
-    const result = await db.run('DELETE FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
-    if (result.changes === 0) {
-      return sendError(req, res, 'P500', { message: 'Folder or list not found' });
-    }
-    res.json({ message: 'Folder deleted' });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  const result = await db.run('DELETE FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
+  if (result.changes === 0) {
+    return sendError(req, res, 'P500', { message: 'Folder or list not found' });
   }
-});
+  res.json({ message: 'Folder deleted' });
+}));
 
 // Add item to custom collection / folder
-router.post('/:id/items', async (req, res) => {
+router.post('/:id/items', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
   const { itemId } = req.body;
@@ -293,17 +277,16 @@ router.post('/:id/items', async (req, res) => {
     return res.status(400).json({ error: 'Item ID is required' });
   }
 
-  try {
-    const db = await getDb();
-    const collection = await db.get('SELECT id, type, category FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
-    if (!collection) {
-      return sendError(req, res, 'P500', { message: 'Folder or list not found' });
-    }
+  const db = await getDb();
+  const collection = await db.get('SELECT id, type, category FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
+  if (!collection) {
+    return sendError(req, res, 'P500', { message: 'Folder or list not found' });
+  }
 
-    // Reject unknown or hidden-from-this-user item ids up front — otherwise a bogus id
-    // silently sits in collection_items forever (every read query INNER JOINs items, so it
-    // never surfaces, but it also never errors and never gets cleaned up).
-    const item = await db.get(`
+  // Reject unknown or hidden-from-this-user item ids up front — otherwise a bogus id
+  // silently sits in collection_items forever (every read query INNER JOINs items, so it
+  // never surfaces, but it also never errors and never gets cleaned up).
+  const item = await db.get(`
       SELECT i.id, i.media_type FROM items i
       WHERE i.id = ?
       AND NOT EXISTS (
@@ -311,29 +294,26 @@ router.post('/:id/items', async (req, res) => {
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )${accessSql(req.user, 'i', { includeOffloaded: true })}
     `, [itemId, userId]);
-    if (!item) {
-      return res.status(404).json({ error: 'Item not found' });
-    }
+  if (!item) {
+    return res.status(404).json({ error: 'Item not found' });
+  }
 
-    if (collection.category && !LIST_CATEGORIES[collection.category]?.includes(item.media_type)) {
-      return sendError(req, res, 'P501', { message: `This list only holds ${collection.category}` });
-    }
+  if (collection.category && !LIST_CATEGORIES[collection.category]?.includes(item.media_type)) {
+    return sendError(req, res, 'P501', { message: `This list only holds ${collection.category}` });
+  }
 
-    // New items go on the end of the reading order rather than the start.
-    await db.run(`
+  // New items go on the end of the reading order rather than the start.
+  await db.run(`
       INSERT OR IGNORE INTO collection_items (collection_id, item_id, position)
       VALUES (?, ?, ?)
     `, [id, itemId, await nextPosition(db, id)]);
 
-    res.json({ message: 'Item added to folder' });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  res.json({ message: 'Item added to folder' });
+}));
 
 // Set the reading order of a folder/read list. Takes the full ordered list of item ids and
 // renumbers them, so the client can send the list it's showing rather than computing deltas.
-router.put('/:id/reorder', async (req, res) => {
+router.put('/:id/reorder', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
   // `entries` ([{ kind: 'item' | 'external', id }]) orders a list that mixes library items
@@ -346,53 +326,45 @@ router.put('/:id/reorder', async (req, res) => {
     return res.status(400).json({ error: 'entries must be an array of { kind, id }' });
   }
 
-  try {
-    const db = await getDb();
-    const collection = await db.get('SELECT id FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
-    if (!collection) {
-      return sendError(req, res, 'P500', { message: 'Folder or list not found' });
-    }
-
-    await db.run('BEGIN TRANSACTION');
-    try {
-      for (const [position, entry] of entries.entries()) {
-        await db.run(
-          entry?.kind === 'external'
-            ? 'UPDATE list_external_entries SET position = ? WHERE collection_id = ? AND id = ?'
-            : 'UPDATE collection_items SET position = ? WHERE collection_id = ? AND item_id = ?',
-          [position, id, entry?.id]
-        );
-      }
-      await db.run('COMMIT');
-    } catch (err) {
-      await db.run('ROLLBACK');
-      throw err;
-    }
-
-    res.json({ message: 'Reading order saved' });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  const collection = await db.get('SELECT id FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
+  if (!collection) {
+    return sendError(req, res, 'P500', { message: 'Folder or list not found' });
   }
-});
+
+  await db.run('BEGIN TRANSACTION');
+  try {
+    for (const [position, entry] of entries.entries()) {
+      await db.run(
+        entry?.kind === 'external'
+          ? 'UPDATE list_external_entries SET position = ? WHERE collection_id = ? AND id = ?'
+          : 'UPDATE collection_items SET position = ? WHERE collection_id = ? AND item_id = ?',
+        [position, id, entry?.id]
+      );
+    }
+    await db.run('COMMIT');
+  } catch (err) {
+    await db.run('ROLLBACK');
+    throw err;
+  }
+
+  res.json({ message: 'Reading order saved' });
+}));
 
 // Remove item from custom collection / folder
-router.delete('/:id/items/:itemId', async (req, res) => {
+router.delete('/:id/items/:itemId', handle(async (req, res) => {
   const userId = req.user.id;
   const { id, itemId } = req.params;
 
-  try {
-    const db = await getDb();
-    const collection = await db.get('SELECT id FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
-    if (!collection) {
-      return sendError(req, res, 'P500', { message: 'Folder or list not found' });
-    }
-
-    await db.run('DELETE FROM collection_items WHERE collection_id = ? AND item_id = ?', [id, itemId]);
-    res.json({ message: 'Item removed from folder' });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  const collection = await db.get('SELECT id FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
+  if (!collection) {
+    return sendError(req, res, 'P500', { message: 'Folder or list not found' });
   }
-});
+
+  await db.run('DELETE FROM collection_items WHERE collection_id = ? AND item_id = ?', [id, itemId]);
+  res.json({ message: 'Item removed from folder' });
+}));
 
 const EXTERNAL_TEXT_LIMITS = { title: 300, subtitle: 300, author: 300, releaseDate: 40, overview: 4000, coverUrl: 1000 };
 
@@ -403,7 +375,7 @@ function clip(value, max) {
 
 // Add a title from an external metadata search (TMDB, MangaDex, Google Books, Open Library)
 // to a list — for things the library doesn't have yet.
-router.post('/:id/external', async (req, res) => {
+router.post('/:id/external', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
   const { mediaType, source, externalId, title } = req.body;
@@ -416,61 +388,53 @@ router.post('/:id/external', async (req, res) => {
     ? req.body.coverUrl
     : null;
 
-  try {
-    const db = await getDb();
-    const collection = await db.get(
-      "SELECT id, category FROM collections WHERE id = ? AND user_id = ? AND type = 'readlist'",
-      [id, userId]
-    );
-    if (!collection) {
-      return sendError(req, res, 'P500');
-    }
-    if (collection.category && !LIST_CATEGORIES[collection.category]?.includes(mediaType)) {
-      return sendError(req, res, 'P501', { message: `This list only holds ${collection.category}` });
-    }
+  const db = await getDb();
+  const collection = await db.get(
+    "SELECT id, category FROM collections WHERE id = ? AND user_id = ? AND type = 'readlist'",
+    [id, userId]
+  );
+  if (!collection) {
+    return sendError(req, res, 'P500');
+  }
+  if (collection.category && !LIST_CATEGORIES[collection.category]?.includes(mediaType)) {
+    return sendError(req, res, 'P501', { message: `This list only holds ${collection.category}` });
+  }
 
-    const entryId = crypto.randomUUID();
-    const result = await db.run(`
+  const entryId = crypto.randomUUID();
+  const result = await db.run(`
       INSERT OR IGNORE INTO list_external_entries
         (id, collection_id, media_type, source, external_id, title, subtitle, author, release_date, overview, cover_url, position)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-      entryId, id, mediaType, clip(source, 40), clip(externalId, 200),
-      clip(title, EXTERNAL_TEXT_LIMITS.title),
-      clip(req.body.subtitle, EXTERNAL_TEXT_LIMITS.subtitle),
-      clip(req.body.author, EXTERNAL_TEXT_LIMITS.author),
-      clip(req.body.releaseDate, EXTERNAL_TEXT_LIMITS.releaseDate),
-      clip(req.body.overview, EXTERNAL_TEXT_LIMITS.overview),
-      clip(coverUrl, EXTERNAL_TEXT_LIMITS.coverUrl),
-      await nextPosition(db, id)
-    ]);
+    entryId, id, mediaType, clip(source, 40), clip(externalId, 200),
+    clip(title, EXTERNAL_TEXT_LIMITS.title),
+    clip(req.body.subtitle, EXTERNAL_TEXT_LIMITS.subtitle),
+    clip(req.body.author, EXTERNAL_TEXT_LIMITS.author),
+    clip(req.body.releaseDate, EXTERNAL_TEXT_LIMITS.releaseDate),
+    clip(req.body.overview, EXTERNAL_TEXT_LIMITS.overview),
+    clip(coverUrl, EXTERNAL_TEXT_LIMITS.coverUrl),
+    await nextPosition(db, id)
+  ]);
 
-    if (result.changes === 0) {
-      return sendError(req, res, 'P502');
-    }
-    res.status(201).json({ message: 'Added to list', id: entryId });
-  } catch (err) {
-    serverError(req, res, err);
+  if (result.changes === 0) {
+    return sendError(req, res, 'P502');
   }
-});
+  res.status(201).json({ message: 'Added to list', id: entryId });
+}));
 
-router.delete('/:id/external/:entryId', async (req, res) => {
+router.delete('/:id/external/:entryId', handle(async (req, res) => {
   const userId = req.user.id;
   const { id, entryId } = req.params;
 
-  try {
-    const db = await getDb();
-    const collection = await db.get('SELECT id FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
-    if (!collection) {
-      return sendError(req, res, 'P500');
-    }
-
-    await db.run('DELETE FROM list_external_entries WHERE collection_id = ? AND id = ?', [id, entryId]);
-    res.json({ message: 'Removed from list' });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  const collection = await db.get('SELECT id FROM collections WHERE id = ? AND user_id = ?', [id, userId]);
+  if (!collection) {
+    return sendError(req, res, 'P500');
   }
-});
+
+  await db.run('DELETE FROM list_external_entries WHERE collection_id = ? AND id = ?', [id, entryId]);
+  res.json({ message: 'Removed from list' });
+}));
 
 // Library items and external titles share one position space per list.
 async function nextPosition(db, collectionId) {
@@ -485,17 +449,16 @@ async function nextPosition(db, collectionId) {
 }
 
 // Check which folders an item is already inside
-router.get('/for-item/:itemId', async (req, res) => {
+router.get('/for-item/:itemId', handle(async (req, res) => {
   const userId = req.user.id;
   const { itemId } = req.params;
 
-  try {
-    const db = await getDb();
-    // Only offer the lists this kind of item can go in (a movie never shows the "Read" lists);
-    // plain folders take anything.
-    const item = await db.get('SELECT media_type FROM items WHERE id = ?', [itemId]);
-    const category = categoryForMediaType(item?.media_type);
-    const rows = await db.all(`
+  const db = await getDb();
+  // Only offer the lists this kind of item can go in (a movie never shows the "Read" lists);
+  // plain folders take anything.
+  const item = await db.get('SELECT media_type FROM items WHERE id = ?', [itemId]);
+  const category = categoryForMediaType(item?.media_type);
+  const rows = await db.all(`
       SELECT c.id, c.name, COALESCE(c.type, 'collection') as type, c.category,
         CASE WHEN ci.item_id IS NOT NULL THEN 1 ELSE 0 END as in_collection
       FROM collections c
@@ -505,10 +468,7 @@ router.get('/for-item/:itemId', async (req, res) => {
       ORDER BY COALESCE(c.type, 'collection') ASC, c.name ASC
     `, [itemId, userId, category]);
 
-    res.json({ folders: rows });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  res.json({ folders: rows });
+}));
 
 export default router;

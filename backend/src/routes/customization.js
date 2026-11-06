@@ -2,7 +2,7 @@ import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { logger } from '../services/logger.js';
-import { serverError } from '../utils/http.js';
+import { handle } from '../utils/http.js';
 import { getRatingSettings, saveRatingSettings } from '../services/ratings.js';
 import { getShowMissingFilms, saveShowMissingFilms } from '../services/collections.js';
 import { isPartyModeEnabled, savePartyModeEnabled } from './party.js';
@@ -107,7 +107,7 @@ router.get('/', async (req, res) => {
 });
 
 // PATCH /api/customization (Admin only)
-router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
+router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
   const {
     serverName,
     customCss,
@@ -127,171 +127,167 @@ router.patch('/', authenticateToken, requireAdmin, async (req, res) => {
     introShows
   } = req.body;
 
-  try {
-    const db = await getDb();
+  const db = await getDb();
 
-    if (serverName !== undefined) {
-      await db.run(
-        `INSERT INTO settings (key, value, updated_at) VALUES ('server_name', ?, CURRENT_TIMESTAMP)
+  if (serverName !== undefined) {
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('server_name', ?, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-        [String(serverName).trim() || 'Plinthio']
-      );
-    }
+      [String(serverName).trim() || 'Plinthio']
+    );
+  }
 
-    if (customCss !== undefined) {
-      // This is admin-only (requireAdmin above) and the actual safety boundary is on the
-      // frontend, which injects this as `styleTag.textContent = customCss` — plain CSS
-      // text, never parsed as HTML/JS, so no client-side sink here to sanitize against. Do
-      // not add a `v-html` (or similarly HTML-parsing) consumer of this value without
-      // reintroducing real sanitization first.
-      await db.run(
-        `INSERT INTO settings (key, value, updated_at) VALUES ('custom_css', ?, CURRENT_TIMESTAMP)
+  if (customCss !== undefined) {
+    // This is admin-only (requireAdmin above) and the actual safety boundary is on the
+    // frontend, which injects this as `styleTag.textContent = customCss` — plain CSS
+    // text, never parsed as HTML/JS, so no client-side sink here to sanitize against. Do
+    // not add a `v-html` (or similarly HTML-parsing) consumer of this value without
+    // reintroducing real sanitization first.
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('custom_css', ?, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-        [String(customCss)]
-      );
-    }
+      [String(customCss)]
+    );
+  }
 
-    if (accentTheme !== undefined) {
-      const allowedThemes = ['zinc', 'slate', 'red', 'orange', 'amber', 'lime', 'emerald', 'teal', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
-      const theme = allowedThemes.includes(accentTheme) ? accentTheme : 'zinc';
-      await db.run(
-        `INSERT INTO settings (key, value, updated_at) VALUES ('accent_theme', ?, CURRENT_TIMESTAMP)
+  if (accentTheme !== undefined) {
+    const allowedThemes = ['zinc', 'slate', 'red', 'orange', 'amber', 'lime', 'emerald', 'teal', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
+    const theme = allowedThemes.includes(accentTheme) ? accentTheme : 'zinc';
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('accent_theme', ?, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-        [theme]
-      );
-    }
+      [theme]
+    );
+  }
 
-    if (loginMessage !== undefined) {
-      await db.run(
-        `INSERT INTO settings (key, value, updated_at) VALUES ('login_message', ?, CURRENT_TIMESTAMP)
+  if (loginMessage !== undefined) {
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('login_message', ?, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-        [String(loginMessage).trim()]
-      );
-    }
+      [String(loginMessage).trim()]
+    );
+  }
 
-    if (layoutMode !== undefined) {
-      const allowedLayouts = ['topnav', 'sidebar'];
-      const layout = allowedLayouts.includes(layoutMode) ? layoutMode : 'topnav';
-      await db.run(
-        `INSERT INTO settings (key, value, updated_at) VALUES ('layout_mode', ?, CURRENT_TIMESTAMP)
+  if (layoutMode !== undefined) {
+    const allowedLayouts = ['topnav', 'sidebar'];
+    const layout = allowedLayouts.includes(layoutMode) ? layoutMode : 'topnav';
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('layout_mode', ?, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-        [layout]
-      );
-    }
+      [layout]
+    );
+  }
 
-    if (pageWidth !== undefined) {
-      if (!PAGE_WIDTHS.includes(pageWidth)) {
-        return res.status(400).json({ error: `pageWidth must be one of ${PAGE_WIDTHS.join(', ')}` });
-      }
-      await db.run(
-        `INSERT INTO settings (key, value, updated_at) VALUES ('page_width', ?, CURRENT_TIMESTAMP)
+  if (pageWidth !== undefined) {
+    if (!PAGE_WIDTHS.includes(pageWidth)) {
+      return res.status(400).json({ error: `pageWidth must be one of ${PAGE_WIDTHS.join(', ')}` });
+    }
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('page_width', ?, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-        [pageWidth]
-      );
-    }
+      [pageWidth]
+    );
+  }
 
-    if (pauseScreen !== undefined) {
-      if (!PAUSE_SCREENS.includes(pauseScreen)) {
-        return res.status(400).json({ error: `pauseScreen must be one of ${PAUSE_SCREENS.join(', ')}` });
-      }
-      await db.run(
-        `INSERT INTO settings (key, value, updated_at) VALUES ('pause_screen', ?, CURRENT_TIMESTAMP)
+  if (pauseScreen !== undefined) {
+    if (!PAUSE_SCREENS.includes(pauseScreen)) {
+      return res.status(400).json({ error: `pauseScreen must be one of ${PAUSE_SCREENS.join(', ')}` });
+    }
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('pause_screen', ?, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-        [pauseScreen]
-      );
-    }
+      [pauseScreen]
+    );
+  }
 
-    if (defaultLanguage !== undefined) {
-      if (!LANGUAGES.includes(defaultLanguage)) {
-        return res.status(400).json({ error: `defaultLanguage must be one of ${LANGUAGES.join(', ')}` });
-      }
-      await db.run(
-        `INSERT INTO settings (key, value, updated_at) VALUES ('default_language', ?, CURRENT_TIMESTAMP)
+  if (defaultLanguage !== undefined) {
+    if (!LANGUAGES.includes(defaultLanguage)) {
+      return res.status(400).json({ error: `defaultLanguage must be one of ${LANGUAGES.join(', ')}` });
+    }
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('default_language', ?, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-        [defaultLanguage]
-      );
-    }
+      [defaultLanguage]
+    );
+  }
 
-    if (userCustomization !== undefined) {
-      if (!userCustomization || typeof userCustomization !== 'object' || Array.isArray(userCustomization)) {
-        return res.status(400).json({ error: 'userCustomization must be an object' });
-      }
-      const currentRow = await db.get("SELECT value FROM settings WHERE key = 'user_customization'");
-      const current = parseUserCustomization(currentRow?.value);
-      const updated = {
-        enabled: userCustomization.enabled !== undefined ? !!userCustomization.enabled : current.enabled,
-        accentColor: userCustomization.accentColor !== undefined ? !!userCustomization.accentColor : current.accentColor,
-        layoutMode: userCustomization.layoutMode !== undefined ? !!userCustomization.layoutMode : current.layoutMode,
-        pageWidth: userCustomization.pageWidth !== undefined ? !!userCustomization.pageWidth : current.pageWidth,
-        pauseScreen: userCustomization.pauseScreen !== undefined ? !!userCustomization.pauseScreen : current.pauseScreen
-      };
-      await db.run(
-        `INSERT INTO settings (key, value, updated_at) VALUES ('user_customization', ?, CURRENT_TIMESTAMP)
+  if (userCustomization !== undefined) {
+    if (!userCustomization || typeof userCustomization !== 'object' || Array.isArray(userCustomization)) {
+      return res.status(400).json({ error: 'userCustomization must be an object' });
+    }
+    const currentRow = await db.get("SELECT value FROM settings WHERE key = 'user_customization'");
+    const current = parseUserCustomization(currentRow?.value);
+    const updated = {
+      enabled: userCustomization.enabled !== undefined ? !!userCustomization.enabled : current.enabled,
+      accentColor: userCustomization.accentColor !== undefined ? !!userCustomization.accentColor : current.accentColor,
+      layoutMode: userCustomization.layoutMode !== undefined ? !!userCustomization.layoutMode : current.layoutMode,
+      pageWidth: userCustomization.pageWidth !== undefined ? !!userCustomization.pageWidth : current.pageWidth,
+      pauseScreen: userCustomization.pauseScreen !== undefined ? !!userCustomization.pauseScreen : current.pauseScreen
+    };
+    await db.run(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('user_customization', ?, CURRENT_TIMESTAMP)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-        [JSON.stringify(updated)]
-      );
-    }
+      [JSON.stringify(updated)]
+    );
+  }
 
-    if (ratings && typeof ratings === 'object') {
-      await saveRatingSettings(db, ratings);
-    }
+  if (ratings && typeof ratings === 'object') {
+    await saveRatingSettings(db, ratings);
+  }
 
-    if (typeof showMissingFilms === 'boolean') {
-      await saveShowMissingFilms(db, showMissingFilms);
-    }
+  if (typeof showMissingFilms === 'boolean') {
+    await saveShowMissingFilms(db, showMissingFilms);
+  }
 
-    if (typeof partyModeEnabled === 'boolean') {
-      await savePartyModeEnabled(db, partyModeEnabled);
-      if (!partyModeEnabled) endAllParties();
-    }
+  if (typeof partyModeEnabled === 'boolean') {
+    await savePartyModeEnabled(db, partyModeEnabled);
+    if (!partyModeEnabled) endAllParties();
+  }
 
-    if (typeof liveTvEnabled === 'boolean') {
-      await saveLiveTvEnabled(db, liveTvEnabled);
-    }
+  if (typeof liveTvEnabled === 'boolean') {
+    await saveLiveTvEnabled(db, liveTvEnabled);
+  }
 
-    await saveIntroSettings(db, { introEnabled, introMovies, introShows });
+  await saveIntroSettings(db, { introEnabled, introMovies, introShows });
 
-    logger.info('system', `Customization updated by admin ${req.user.username}`);
+  logger.info('system', `Customization updated by admin ${req.user.username}`);
 
-    const rows = await db.all(`
+  const rows = await db.all(`
       SELECT key, value FROM settings
       WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen', 'page_width', 'default_language', 'user_customization')
     `);
 
-    const result = {
-      serverName: 'Plinthio',
-      customCss: '',
-      accentTheme: 'zinc',
-      loginMessage: '',
-      layoutMode: 'topnav',
-      pauseScreen: DEFAULT_PAUSE_SCREEN,
-      pageWidth: DEFAULT_PAGE_WIDTH,
-      defaultLanguage: DEFAULT_LANGUAGE,
-      userCustomization: { ...DEFAULT_USER_CUSTOMIZATION }
-    };
+  const result = {
+    serverName: 'Plinthio',
+    customCss: '',
+    accentTheme: 'zinc',
+    loginMessage: '',
+    layoutMode: 'topnav',
+    pauseScreen: DEFAULT_PAUSE_SCREEN,
+    pageWidth: DEFAULT_PAGE_WIDTH,
+    defaultLanguage: DEFAULT_LANGUAGE,
+    userCustomization: { ...DEFAULT_USER_CUSTOMIZATION }
+  };
 
-    for (const row of rows) {
-      if (row.key === 'server_name') result.serverName = row.value;
-      if (row.key === 'custom_css') result.customCss = row.value;
-      if (row.key === 'accent_theme') result.accentTheme = row.value;
-      if (row.key === 'login_message') result.loginMessage = row.value;
-      if (row.key === 'layout_mode') result.layoutMode = row.value;
-      if (row.key === 'pause_screen' && PAUSE_SCREENS.includes(row.value)) result.pauseScreen = row.value;
-      if (row.key === 'page_width' && PAGE_WIDTHS.includes(row.value)) result.pageWidth = row.value;
-      if (row.key === 'default_language' && LANGUAGES.includes(row.value)) result.defaultLanguage = row.value;
-      if (row.key === 'user_customization') result.userCustomization = parseUserCustomization(row.value);
-    }
-    result.ratings = await getRatingSettings(db);
-    result.showMissingFilms = await getShowMissingFilms(db);
-    result.partyModeEnabled = await isPartyModeEnabled(db);
-    result.liveTvEnabled = await isLiveTvEnabled(db);
-    Object.assign(result, await getIntroSettings(db));
-
-    res.json({ message: 'Customization updated successfully', ...result });
-  } catch (err) {
-    serverError(req, res, err);
+  for (const row of rows) {
+    if (row.key === 'server_name') result.serverName = row.value;
+    if (row.key === 'custom_css') result.customCss = row.value;
+    if (row.key === 'accent_theme') result.accentTheme = row.value;
+    if (row.key === 'login_message') result.loginMessage = row.value;
+    if (row.key === 'layout_mode') result.layoutMode = row.value;
+    if (row.key === 'pause_screen' && PAUSE_SCREENS.includes(row.value)) result.pauseScreen = row.value;
+    if (row.key === 'page_width' && PAGE_WIDTHS.includes(row.value)) result.pageWidth = row.value;
+    if (row.key === 'default_language' && LANGUAGES.includes(row.value)) result.defaultLanguage = row.value;
+    if (row.key === 'user_customization') result.userCustomization = parseUserCustomization(row.value);
   }
-});
+  result.ratings = await getRatingSettings(db);
+  result.showMissingFilms = await getShowMissingFilms(db);
+  result.partyModeEnabled = await isPartyModeEnabled(db);
+  result.liveTvEnabled = await isLiveTvEnabled(db);
+  Object.assign(result, await getIntroSettings(db));
+
+  res.json({ message: 'Customization updated successfully', ...result });
+}));
 
 // ─── Opening sequence ────────────────────────────────────────────────────────
 // POST /api/customization/intro (Admin): upload or replace the clip. multipart, field "intro".
@@ -318,15 +314,11 @@ router.post('/intro', authenticateToken, requireAdmin, (req, res) => {
 });
 
 // DELETE /api/customization/intro (Admin): remove the uploaded clip, back to the built-in one.
-router.delete('/intro', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const db = await getDb();
-    await removeIntro();
-    logger.info('system', `Opening sequence removed by admin ${req.user.username}`);
-    res.json(await getIntroSettings(db));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.delete('/intro', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const db = await getDb();
+  await removeIntro();
+  logger.info('system', `Opening sequence removed by admin ${req.user.username}`);
+  res.json(await getIntroSettings(db));
+}));
 
 export default router;
