@@ -34,13 +34,6 @@ export function invalidateCoverCache(itemId) {
   coverPathCache.delete(itemId);
 }
 
-// Only a fixed, small set of widths are ever actually requested by the frontend — capping
-// to this list (matching the widths the invalidation code elsewhere already assumes) means
-// no amount of requests can make the server cache more than a handful of thumbnail variants
-// per item, instead of trusting an open 100-1200 range that trivially lets a single client
-// force ~1100 distinct sharp() resizes per cover.
-const ALLOWED_THUMB_WIDTHS = THUMB_WIDTHS;
-
 // A still from a video (an episode's thumbnail in a show's episode list). Grabbed on first
 // request and cached; 404 when the file can't be read, and the page falls back to the cover.
 const STILL_TYPES = new Set(['show', 'anime', 'movie']);
@@ -86,7 +79,12 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
   }
   const isRaw = req.query.raw === 'true' || req.query.full === 'true';
   const requestedWidth = parseInt(req.query.w, 10);
-  const width = ALLOWED_THUMB_WIDTHS.includes(requestedWidth) ? requestedWidth : 360;
+  // Only a fixed, small set of widths are ever actually requested by the frontend — capping
+  // to this list (matching the widths the invalidation code elsewhere already assumes) means
+  // no amount of requests can make the server cache more than a handful of thumbnail variants
+  // per item, instead of trusting an open 100-1200 range that trivially lets a single client
+  // force ~1100 distinct sharp() resizes per cover.
+  const width = THUMB_WIDTHS.includes(requestedWidth) ? requestedWidth : 360;
 
   try {
     const db = await getDb();

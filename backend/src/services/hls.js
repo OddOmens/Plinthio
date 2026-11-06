@@ -416,14 +416,3 @@ export function sweepHlsCache(maxAgeMs = 24 * 60 * 60 * 1000) {
     }
   }
 }
-
-export function invalidateItemHls(itemId) {
-  for (const [mapKey, job] of jobs.entries()) {
-    if (mapKey.startsWith(`${itemId}:`)) {
-      killJob(job);
-      jobs.delete(mapKey);
-    }
-  }
-  const dir = path.join(HLS_DIR, itemId);
-  if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
-}

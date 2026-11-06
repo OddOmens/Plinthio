@@ -687,10 +687,6 @@ const refreshing = new Set();
 const lastFailure = new Map();
 let queue = Promise.resolve();
 
-export function isRefreshing(sourceId) {
-  return refreshing.has(sourceId);
-}
-
 export function sourceJson(row) {
   return {
     id: row.id,

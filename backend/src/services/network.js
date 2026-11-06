@@ -166,8 +166,3 @@ export async function tailscaleStatus(db) {
   }
   return { host: savedHost, lastSeen: seen.tailscale?.at || null, funnelLastSeen: seen.funnel?.at || null };
 }
-
-// Test hook: settings are cached in memory.
-export function resetNetworkCache() {
-  cache = null;
-}

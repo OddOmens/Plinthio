@@ -163,17 +163,3 @@ export async function getPlaybackInfo(itemId, filePath, caps = {}) {
   probeCache.set(cacheKey, info);
   return info;
 }
-
-export function invalidatePlaybackInfo(itemId) {
-  probeCache.delete(itemId);
-}
-
-export function isFfmpegAvailable() {
-  return new Promise((resolve) => {
-    const proc = spawn('ffmpeg', ['-version']);
-    proc.on('error', () => resolve(false));
-    proc.on('close', (code) => resolve(code === 0));
-    proc.stdout?.resume();
-    proc.stderr?.resume();
-  });
-}
