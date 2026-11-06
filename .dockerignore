@@ -1,0 +1,30 @@
+# The image is built from the repository root. Only source goes in: a local checkout's
+# dev database, secrets, add-on state and installed modules must never reach an image
+# (`COPY backend/ ./` would otherwise copy backend/data, jwt.secret included).
+.git
+**/node_modules
+**/.env
+**/.env.*
+**/*.secret
+**/*.sqlite
+**/*.sqlite3
+**/*.sqlite-shm
+**/*.sqlite-wal
+backend/data
+backend/test
+data
+config
+cache
+docker/config
+docker/config-test
+docker/tailscale
+docker/tailscale-test
+docker/*.bak-*
+docker/SERVER-NOTES.md*
+docker/docker-compose.override.yml
+frontend/dist
+frontend/e2e
+frontend/test-results
+frontend/playwright-report
+/*.mp4
+*.log

@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { serverError } from '../utils/http.js';
+import { accessSql } from '../services/visibility.js';
 
 const router = express.Router();
 
@@ -19,7 +20,11 @@ router.post('/start', async (req, res) => {
 
   try {
     const db = await getDb();
-    const item = await db.get('SELECT title, media_type FROM items WHERE id = ?', [itemId]);
+    // An item the account isn't allowed to see is recorded like an unknown one, untitled.
+    const item = await db.get(
+      `SELECT title, media_type FROM items i WHERE i.id = ?${accessSql(req.user, 'i', { restrictionsOnly: true })}`,
+      [itemId]
+    );
 
     const id = crypto.randomUUID();
     await db.run(

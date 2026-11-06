@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { getArchiveHandle } from './handleCache.js';
+import { getArchiveHandle, MAX_ENTRY_BYTES } from './handleCache.js';
 
 // node-unrar-js is a WASM build, so there's no system `unrar` binary (or its non-free
 // licensing) to deal with in the Docker image. It's imported lazily by the dispatcher, so a
@@ -54,6 +54,8 @@ export default {
 
   async readEntry(archivePath, name) {
     const extractor = await openArchive(archivePath);
+    const header = [...extractor.getFileList().fileHeaders].find((h) => h.name === name);
+    if (header?.unpSize > MAX_ENTRY_BYTES) throw new Error('This page is too large to open');
     const extracted = extractor.extract({ files: [name] });
     const files = [...extracted.files];
     if (files.length === 0) return null;

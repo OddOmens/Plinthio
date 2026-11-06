@@ -17,11 +17,7 @@ const { matchItemMetadata } = await import('../src/routes/metadata.js');
 
 const json = (body, status = 200) => ({ ok: status < 400, status, json: async () => body });
 let coverJpeg;
-const image = () => ({
-  ok: true,
-  headers: new Headers({ 'content-type': 'image/jpeg', 'content-length': String(coverJpeg.length) }),
-  arrayBuffer: async () => coverJpeg.buffer.slice(coverJpeg.byteOffset, coverJpeg.byteOffset + coverJpeg.byteLength)
-});
+const image = () => new Response(coverJpeg, { headers: { 'content-type': 'image/jpeg', 'content-length': String(coverJpeg.length) } });
 
 const anilistManga = {
   id: 154587, status: 'RELEASING',

@@ -142,7 +142,7 @@ router.param('id', async (req, res, next, id) => {
     if (!CHANNEL_ID_RE.test(id)) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
     const db = await getDb();
     const channel = await db.get(
-      `SELECT c.id, c.http_headers, ${CHANNEL_COLUMNS}, s.kind AS source_kind
+      `SELECT c.id, c.http_headers, ${CHANNEL_COLUMNS}, s.kind AS source_kind, s.playlist_url AS source_playlist_url
        FROM live_channels c JOIN live_sources s ON s.id = c.source_id
        WHERE c.id = ?`,
       [id]

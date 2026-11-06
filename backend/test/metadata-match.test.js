@@ -388,11 +388,7 @@ describe('matchItemMetadata granularity: episodes and manga volumes', () => {
         };
       }
       if (u.includes('image.tmdb.org')) {
-        return {
-          ok: true,
-          headers: new Headers({ 'content-type': 'image/jpeg', 'content-length': String(testJpg.length) }),
-          arrayBuffer: async () => testJpg.buffer.slice(testJpg.byteOffset, testJpg.byteOffset + testJpg.byteLength)
-        };
+        return new Response(testJpg, { headers: { 'content-type': 'image/jpeg', 'content-length': String(testJpg.length) } });
       }
       if (u.includes('/movie/genre/list')) {
         return { ok: true, json: async () => ({ genres: [{ id: 28, name: 'Action' }] }) };

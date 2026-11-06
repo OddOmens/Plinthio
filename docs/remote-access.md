@@ -54,6 +54,11 @@ outside. First-run setup can only ever be done from home.
 > everyone looks like they're at home and these controls can't tell anyone apart. On Docker
 > Desktop, use Tailscale rather than opening Plinthio to the internet.
 
+> **Keep the port mapping as shipped.** The compose file publishes on `0.0.0.0`, which is
+> IPv4 only. A bare `"8088:8080"` also publishes on IPv6, and when Docker's own IPv6 is off
+> it relays IPv6 visitors from its bridge address, a home address, so they'd look like
+> they're at home. If you do want IPv6, turn on IPv6 in Docker so real addresses come through.
+
 ## Tailscale
 
 [Tailscale](https://tailscale.com) connects your devices over an encrypted private network,

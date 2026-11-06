@@ -736,9 +736,20 @@ function sourcePrivateHosts(source) {
     : iptvOrgTestHosts();
 }
 
-/** The private host a channel's stream may use: its own LAN host, and only for an admin's own playlist. */
+/**
+ * The private host a channel's stream may use: its own LAN host, only for an admin's own
+ * playlist, and only when that playlist was itself loaded from the local network. A playlist
+ * from the internet is someone else's list, and mustn't point the server at the LAN (or at
+ * localhost, where the Caddy and Tailscale add-ons listen). Loopback only for a playlist
+ * served from that same host.
+ */
 export function channelPrivateHost(channel) {
-  return channel.source_kind === 'm3u' ? lanHostOf(channel.stream_url) : null;
+  if (channel.source_kind !== 'm3u') return null;
+  const streamHost = lanHostOf(channel.stream_url);
+  const listHost = lanHostOf(channel.source_playlist_url);
+  if (!streamHost || !listHost) return null;
+  const loopback = streamHost === 'localhost' || streamHost === '::1' || streamHost.startsWith('127.');
+  return loopback && streamHost !== listHost ? null : streamHost;
 }
 
 /** The headers a channel's stream is fetched with (its playlist's #EXTVLCOPT User-Agent / Referer). */
@@ -1022,7 +1033,7 @@ const HEALTH_RETRY_MS = 60 * 60 * 1000;
 const HEALTH_OFFLINE_RECHECK_MS = 24 * 60 * 60 * 1000;
 
 const HEALTH_COLUMNS = `c.id, c.stream_url, c.http_headers, c.health, c.health_fails, c.pinned, c.geo_blocked,
-       c.groups, c.languages, c.country, s.kind AS source_kind`;
+       c.groups, c.languages, c.country, s.kind AS source_kind, s.playlist_url AS source_playlist_url`;
 
 /**
  * The channels due a check, the longest unchecked first: playable channels of enabled

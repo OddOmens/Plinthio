@@ -68,7 +68,7 @@ async function komgaAuth(req, res, next) {
       if (!cookie) return challenge(res);
       let payload;
       try {
-        payload = jwt.verify(cookie, config.jwtSecret);
+        payload = jwt.verify(cookie, config.jwtSecret, { algorithms: ['HS256'] });
       } catch (e) {
         return challenge(res);
       }

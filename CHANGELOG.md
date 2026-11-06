@@ -17,6 +17,19 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **A card's ⋮ menu is no longer hidden behind the next row.** On the Home shelf, the menu of a card in Continue Watching was drawn under the Continue row below it.
 - **Quick changes to your stars all save.** Changing a rating again while the first change was still saving was lost, and arrow keys stopped after one step.
 
+### Security
+- **Video conversions are capped.** Each account runs at most two at once (starting a third stops its oldest, as switching quality does), and the server at most four (`TRANSCODE_LIMIT`), so one account can no longer start enough conversions to stall the server for everyone. Watch parties share one conversion and are never cut off by this.
+- **An API key can't be turned into a sign-in.** `POST /api/auth/refresh` and making or listing API keys now need a real sign-in. Before, a key copied out of a reading app could be exchanged for a full session that skipped two-factor and the away-from-home sign-in rules.
+- **Turning on two-factor signs out every other session.** The device that turned it on stays signed in.
+- **Wrong passwords from outside are limited per account,** as well as per address: after 10 in 15 minutes from outside, that account waits. Sign-ins from home are never held back, so nobody on the internet can lock the household out.
+- **Live TV playlists from the internet can't reach your home network.** Only a playlist loaded from your own network may have channels on it, and only one served from the same machine may use localhost.
+- **Cover downloads check every redirect,** so a metadata provider's link can't send the server to an address on your network, and an oversized image is stopped while downloading.
+- **First-run setup can't be done from another website.** Before an admin exists, a page on another site opened at home could have sent the setup request.
+- **Kids Mode and age limits also cover hiding a title.** A restricted account could hide a title above its limit by id and then read its details under Hidden.
+- **Comic archives:** a page that would unpack to more than 256 MB is refused, and a `.cb7` can't point a page at another file with a symlink.
+- **Docker images built from a checkout leave out local data.** A `.dockerignore` keeps a development database, secrets and add-on state out of images built locally. Published images never had them.
+- Sign-in tokens are only accepted when signed with HS256, and an unusual `sort` value no longer causes a server error.
+
 ## [1.8.0] - 2026-10-30
 
 ### Added
