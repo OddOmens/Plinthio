@@ -375,7 +375,7 @@
     "pageNotFound": "Pagina non trovata",
     "thatWouldLockOutTheDevice": "Così bloccheresti il dispositivo che stai usando adesso. Cambialo dalla rete di casa.",
     "itemNotFound": "Elemento non trovato",
-    "ratingMustBeAWholeNumber": "Il voto deve essere un numero intero da 1 a 5",
+    "ratingHalfStarSteps": "Il voto deve essere da 0,5 a 5, a passi di mezza stella",
     "personalRatingsAreTurnedOffOn": "I voti personali sono disattivati su questo server",
     "ratingRemoved": "Voto rimosso",
     "seriesNotFound": "Serie non trovata",

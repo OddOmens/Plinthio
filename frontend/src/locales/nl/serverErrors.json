@@ -375,7 +375,7 @@
     "pageNotFound": "Pagina niet gevonden",
     "thatWouldLockOutTheDevice": "Daarmee sluit je het apparaat dat je nu gebruikt buiten. Wijzig het vanaf je thuisnetwerk.",
     "itemNotFound": "Item niet gevonden",
-    "ratingMustBeAWholeNumber": "Een beoordeling moet een heel getal van 1 tot 5 zijn",
+    "ratingHalfStarSteps": "Een beoordeling moet tussen 0,5 en 5 liggen, in stappen van een halve ster",
     "personalRatingsAreTurnedOffOn": "Persoonlijke beoordelingen staan uit op deze server",
     "ratingRemoved": "Beoordeling verwijderd",
     "seriesNotFound": "Serie niet gevonden",

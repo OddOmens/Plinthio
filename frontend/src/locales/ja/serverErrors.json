@@ -375,7 +375,7 @@
     "pageNotFound": "ページが見つかりません",
     "thatWouldLockOutTheDevice": "今使っているデバイスが締め出されてしまいます。自宅のネットワークから変更してください。",
     "itemNotFound": "項目が見つかりません",
-    "ratingMustBeAWholeNumber": "評価は 1〜5 の整数で指定してください",
+    "ratingHalfStarSteps": "評価は 0.5〜5 の範囲で、0.5 刻みで指定してください",
     "personalRatingsAreTurnedOffOn": "このサーバーでは個人の評価がオフになっています",
     "ratingRemoved": "評価を削除しました",
     "seriesNotFound": "シリーズが見つかりません",

@@ -1,6 +1,7 @@
 <template>
   <div
     class="group relative flex flex-col bg-card border border-border hover:border-muted-foreground/30 rounded-xl p-2.5 transition-colors cursor-pointer"
+    :class="{ 'z-30': showMenu }"
   >
     <!-- Cover Image Container (No Zoom animations) -->
     <div
@@ -38,7 +39,7 @@
       >
         <span v-if="showMyRating" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[12px] font-semibold border border-border/80 shadow-sm">
           <Star class="w-3 h-3 text-amber-400 fill-amber-400" />
-          {{ myRating }}
+          {{ $n(myRating) }}
         </span>
         <span
           v-if="isDownloaded || isDownloading"

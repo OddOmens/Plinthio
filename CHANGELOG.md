@@ -9,6 +9,14 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **Half-star ratings.** Rate anything from ½ to 5 stars in half steps: click the left half of a star for a half star, or use the arrow keys. Ratings you've already given are kept.
+
+### Fixed
+- **Back returns to the shelf you left.** Pressing Back (or the category in the breadcrumb) on a title page now goes back to the category you were browsing, such as Shows, instead of your default shelf or a category from earlier. The shelf's address now includes the category you pick.
+- **A card's ⋮ menu is no longer hidden behind the next row.** On the Home shelf, the menu of a card in Continue Watching was drawn under the Continue row below it.
+- **Quick changes to your stars all save.** Changing a rating again while the first change was still saving was lost, and arrow keys stopped after one step.
+
 ## [1.8.0] - 2026-10-30
 
 ### Added

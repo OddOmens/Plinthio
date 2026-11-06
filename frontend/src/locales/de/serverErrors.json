@@ -375,7 +375,7 @@
     "pageNotFound": "Seite nicht gefunden",
     "thatWouldLockOutTheDevice": "Damit würdest du das Gerät aussperren, das du gerade benutzt. Ändere das aus deinem Heimnetz.",
     "itemNotFound": "Eintrag nicht gefunden",
-    "ratingMustBeAWholeNumber": "Die Bewertung muss eine ganze Zahl von 1 bis 5 sein",
+    "ratingHalfStarSteps": "Die Bewertung muss zwischen 0,5 und 5 liegen, in halben Sternen",
     "personalRatingsAreTurnedOffOn": "Persönliche Bewertungen sind auf diesem Server ausgeschaltet",
     "ratingRemoved": "Bewertung entfernt",
     "seriesNotFound": "Reihe nicht gefunden",

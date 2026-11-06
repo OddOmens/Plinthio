@@ -375,7 +375,7 @@
     "pageNotFound": "Nie znaleziono strony",
     "thatWouldLockOutTheDevice": "To odcięłoby urządzenie, którego teraz używasz. Zmień to z sieci domowej.",
     "itemNotFound": "Nie znaleziono elementu",
-    "ratingMustBeAWholeNumber": "Ocena musi być liczbą całkowitą od 1 do 5",
+    "ratingHalfStarSteps": "Ocena musi wynosić od 0,5 do 5, w krokach co pół gwiazdki",
     "personalRatingsAreTurnedOffOn": "Oceny osobiste są wyłączone na tym serwerze",
     "ratingRemoved": "Usunięto ocenę",
     "seriesNotFound": "Nie znaleziono serii",

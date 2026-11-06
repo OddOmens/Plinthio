@@ -95,8 +95,21 @@ describe('/api/ratings', () => {
     assert.deepEqual(cleared.body.community, { average: 5, count: 1 });
   });
 
-  test('ratings outside 1–5 or non-integers are rejected', async () => {
-    for (const rating of [0.5, 6, -1, 3.5, '4']) {
+  test('half stars are kept and averaged', async () => {
+    const half = await sendJson(server.baseUrl, 'PUT', '/ratings/seed-00001', adminToken, { rating: 0.5 });
+    assert.equal(half.status, 200);
+    assert.equal(half.body.userRating, 0.5);
+
+    const theirs = await sendJson(server.baseUrl, 'PUT', '/ratings/seed-00001', viewerToken, { rating: 3.5 });
+    assert.equal(theirs.body.userRating, 3.5);
+    assert.deepEqual(theirs.body.community, { average: 2, count: 2 });
+
+    await sendJson(server.baseUrl, 'PUT', '/ratings/seed-00001', adminToken, { rating: null });
+    await sendJson(server.baseUrl, 'PUT', '/ratings/seed-00001', viewerToken, { rating: null });
+  });
+
+  test('ratings outside ½–5 or off the half-star steps are rejected', async () => {
+    for (const rating of [0.25, 6, -1, 3.7, 5.5, '4']) {
       const res = await sendJson(server.baseUrl, 'PUT', '/ratings/seed-00001', adminToken, { rating });
       assert.equal(res.status, 400, `rating ${JSON.stringify(rating)} should be rejected`);
     }
@@ -143,5 +156,44 @@ describe('/api/ratings', () => {
     await sendJson(server.baseUrl, 'PATCH', '/customization', adminToken, { ratings: { showPersonal: true, showCommunity: true } });
     const restored = await getJson(server.baseUrl, '/ratings/seed-00000', viewerToken);
     assert.deepEqual(restored.body.community, { average: 5, count: 1 }, 'existing ratings survive being hidden');
+  });
+});
+
+describe('user_ratings upgrade to half stars', () => {
+  test('whole-star ratings from before half stars survive the table rebuild', async () => {
+    const first = await startTestServer({ env: { TMDB_API_KEY: '' } });
+    const { token } = await setupAdmin(first.baseUrl);
+    await seedItems(first.dataDir, 1);
+    await first.stopKeepData();
+
+    // Put back the old schema (whole numbers 1–5) with one rating in it.
+    const db = await open({ filename: path.join(first.dataDir, 'plinthio.sqlite'), driver: sqlite3.Database });
+    const { id: userId } = await db.get('SELECT id FROM users LIMIT 1');
+    await db.exec(`
+      DROP TABLE user_ratings;
+      CREATE TABLE user_ratings (
+        user_id TEXT NOT NULL,
+        item_id TEXT NOT NULL,
+        rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id, item_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      );
+    `);
+    await db.run(`INSERT INTO user_ratings (user_id, item_id, rating) VALUES (?, 'seed-00000', 4)`, [userId]);
+    await db.close();
+
+    const server = await startTestServer({ env: { TMDB_API_KEY: '' }, dataDir: first.dataDir });
+    try {
+      const kept = await getJson(server.baseUrl, '/ratings/seed-00000', token);
+      assert.equal(kept.body.userRating, 4);
+
+      const half = await sendJson(server.baseUrl, 'PUT', '/ratings/seed-00000', token, { rating: 4.5 });
+      assert.equal(half.status, 200);
+      assert.equal(half.body.userRating, 4.5);
+    } finally {
+      await server.stop();
+    }
   });
 });
