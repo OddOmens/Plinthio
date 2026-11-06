@@ -21,6 +21,9 @@ the update check — puts the "new version available" banner in front of every a
 | New features, nothing users must do | minor | 1.2.1 → 1.3.0 |
 | Users must change something (config, volumes, removed feature, an irreversible migration) | major | 1.3.0 → 2.0.0 |
 
+Each number counts on its own, so after 1.9.0 the next minor is **1.10.0**, then 1.11.0, and
+so on. 2.0.0 is only for a release that needs users to change something.
+
 For something you'd like tested first, use a pre-release: `1.3.0-beta.1`. It gets only its
 exact image tag — `latest`, `1` and `1.3` don't move — and is marked pre-release on GitHub,
 so the update banner ignores it.

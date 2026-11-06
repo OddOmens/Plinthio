@@ -9,6 +9,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-11-06
+
 ### Added
 - **Half-star ratings.** Rate anything from ½ to 5 stars in half steps: click the left half of a star for a half star, or use the arrow keys. Ratings you've already given are kept.
 
