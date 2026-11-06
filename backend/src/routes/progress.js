@@ -131,7 +131,6 @@ router.post('/finish', handle(async (req, res) => {
   res.json({ message: finished ? 'Marked as finished' : 'Marked as not started', count: visible.length });
 }));
 
-// Get progress for single item
 router.get('/:itemId', handle(async (req, res) => {
   const userId = req.user.id;
   const db = await getDb();

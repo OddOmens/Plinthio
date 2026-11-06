@@ -128,7 +128,6 @@ router.post('/transcoding/test', authenticateToken, requireAdmin, handle(async (
   res.json(await testHwaccel(method));
 }));
 
-// Admin endpoint to set/clear the TMDB API key used for movie/show/anime metadata search
 // Switch one metadata provider on or off: { provider: 'google-books', enabled: false }.
 router.put('/metadata-providers/enabled', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { provider, enabled } = req.body;
@@ -142,6 +141,8 @@ router.put('/metadata-providers/enabled', authenticateToken, requireAdmin, handl
   await setSetting(db, 'metadata_providers_off', JSON.stringify([...off]));
   res.json(await providerSwitches());
 }));
+
+// Admin endpoint to set/clear the TMDB API key used for movie/show/anime metadata search
 router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { apiKey } = req.body;
 

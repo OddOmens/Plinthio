@@ -7,7 +7,6 @@ const router = express.Router();
 
 router.use(authenticateToken);
 
-// Get current user's reading and listening stats
 router.get('/me', handle(async (req, res) => {
   const userId = req.user.id;
 
@@ -67,7 +66,6 @@ router.get('/me', handle(async (req, res) => {
   });
 }));
 
-// Admin system stats
 router.get('/admin', requireAdmin, handle(async (req, res) => {
   const db = await getDb();
 

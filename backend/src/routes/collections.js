@@ -13,7 +13,6 @@ const router = express.Router();
 
 router.use(authenticateToken);
 
-// List user's custom collections / folders
 router.get('/', handle(async (req, res) => {
   const userId = req.user.id;
   const { type, category } = req.query;
@@ -162,7 +161,6 @@ router.get('/all-grouped', handle(async (req, res) => {
   res.json({ collections: groupedCollections });
 }));
 
-// Create a new custom collection / folder
 router.post('/', async (req, res) => {
   const userId = req.user.id;
   const { name, description, type } = req.body;
@@ -194,7 +192,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get items in a specific custom collection / folder
 router.get('/:id', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
@@ -254,7 +251,6 @@ router.get('/:id', handle(async (req, res) => {
   res.json({ collection, items, entries });
 }));
 
-// Delete a custom collection / folder
 router.delete('/:id', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
@@ -267,7 +263,6 @@ router.delete('/:id', handle(async (req, res) => {
   res.json({ message: 'Folder deleted' });
 }));
 
-// Add item to custom collection / folder
 router.post('/:id/items', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
@@ -351,7 +346,6 @@ router.put('/:id/reorder', handle(async (req, res) => {
   res.json({ message: 'Reading order saved' });
 }));
 
-// Remove item from custom collection / folder
 router.delete('/:id/items/:itemId', handle(async (req, res) => {
   const userId = req.user.id;
   const { id, itemId } = req.params;

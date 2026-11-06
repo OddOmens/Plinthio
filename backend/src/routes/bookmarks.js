@@ -8,7 +8,6 @@ const router = express.Router();
 
 router.use(authenticateToken);
 
-// Get all bookmarks for a specific item
 router.get('/:itemId', handle(async (req, res) => {
   const userId = req.user.id;
   const { itemId } = req.params;
@@ -23,7 +22,6 @@ router.get('/:itemId', handle(async (req, res) => {
   res.json({ bookmarks });
 }));
 
-// Create a new bookmark
 router.post('/', handle(async (req, res) => {
   const userId = req.user.id;
   const { itemId, type = 'audiobook', position = 0, title, notes, cfi } = req.body;
@@ -46,7 +44,6 @@ router.post('/', handle(async (req, res) => {
   res.status(201).json({ message: 'Bookmark created', bookmark });
 }));
 
-// Update a bookmark title/notes
 router.patch('/:id', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
@@ -83,7 +80,6 @@ router.patch('/:id', handle(async (req, res) => {
   res.json({ message: 'Bookmark updated', bookmark });
 }));
 
-// Delete a bookmark
 router.delete('/:id', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;

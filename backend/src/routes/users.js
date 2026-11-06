@@ -64,7 +64,6 @@ router.get('/:id/avatar', async (req, res) => {
 
 router.use(authenticateToken);
 
-// Upload current user's avatar
 router.post('/avatar', (req, res, next) => {
   avatarUpload.single('avatar')(req, res, (err) => {
     if (err instanceof multer.MulterError) {
@@ -118,7 +117,6 @@ router.post('/avatar', (req, res, next) => {
   }
 });
 
-// Remove current user's avatar
 router.delete('/avatar', async (req, res) => {
   const userId = req.user.id;
   try {
@@ -197,7 +195,6 @@ router.patch('/preferences', handle(async (req, res) => {
   res.json({ message: 'Preferences updated', preferences });
 }));
 
-// Change current user's password
 router.patch('/password', handle(async (req, res) => {
   const userId = req.user.id;
   const { currentPassword, newPassword } = req.body;
@@ -259,7 +256,6 @@ export function parseExpiration(durationOrDate, fromDate = new Date()) {
   return null;
 }
 
-// List all users
 router.get('/', requireAdmin, handle(async (req, res) => {
   const db = await getDb();
   const users = await db.all(`SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at,
@@ -272,7 +268,6 @@ router.get('/', requireAdmin, handle(async (req, res) => {
   res.json({ users: parsed });
 }));
 
-// Create a new user (Admin only)
 router.post('/', requireAdmin, async (req, res) => {
   const { username, password, role = 'viewer', preferences = {}, expires_at, duration } = req.body;
 
@@ -430,7 +425,6 @@ router.post('/:id/two-factor/reset', requireAdmin, handle(async (req, res) => {
   res.json({ message: 'Two-factor turned off. They can sign in with their password and set it up again.' });
 }));
 
-// Extend user account access (Admin only)
 router.post('/:id/extend', requireAdmin, handle(async (req, res) => {
   const { duration = '7d' } = req.body;
   const db = await getDb();
@@ -509,7 +503,6 @@ router.patch('/:id/role', requireAdmin, handle(async (req, res) => {
   res.json({ message: 'Role updated successfully', role });
 }));
 
-// Delete user (Admin only)
 router.delete('/:id', requireAdmin, handle(async (req, res) => {
   if (req.user.id === req.params.id) {
     return res.status(400).json({ error: 'Cannot delete your own account' });

@@ -197,7 +197,6 @@ router.get('/stream/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Manga Page List
 router.get('/manga/:id/pages', authenticateToken, async (req, res) => {
   if (!ITEM_ID_RE.test(req.params.id)) {
     return res.status(400).json({ error: 'Invalid item id' });

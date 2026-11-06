@@ -24,7 +24,6 @@ const VALID_ROLES = ['admin', 'editor', 'viewer'];
 // A throwaway hash at the same cost factor as real ones (see the unknown-user login path).
 const DUMMY_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10);
 
-// Check if initial admin account has been set up
 router.get('/setup-status', async (req, res) => {
   try {
     const db = await getDb();
@@ -166,7 +165,6 @@ router.post('/setup', async (req, res) => {
       [userId, adminName, passwordHash, 'admin', adminPrefs]
     );
 
-    // Save Server Name if provided
     if (typeof serverName === 'string' && serverName.trim()) {
       await setSetting(db, 'server_name', serverName.trim());
     }
@@ -464,7 +462,6 @@ async function recordLoginAttempt(db, { userId, username, success, ip, userAgent
   }
 }
 
-// Get current user profile
 router.get('/me', authenticateToken, (req, res) => {
   res.json({ user: req.user });
 });

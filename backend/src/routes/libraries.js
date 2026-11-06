@@ -78,7 +78,6 @@ router.get('/browse', requireAdmin, handle(async (req, res) => {
   res.json(listMediaDirectories(req.query.dir));
 }));
 
-// Create new library (Admin only)
 router.post('/', requireAdmin, async (req, res) => {
   let { name, path: libPath, type } = req.body;
 
@@ -149,7 +148,6 @@ router.patch('/:id', requireEditor, handle(async (req, res) => {
   res.json({ id: req.params.id, ...Object.fromEntries(changes.map(([field]) => [field, req.body[field]])) });
 }));
 
-// Trigger library scan
 router.post('/:id/scan', requireAdmin, handle(async (req, res) => {
   const result = await scanLibrary(req.params.id);
   res.json(result);

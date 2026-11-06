@@ -62,14 +62,12 @@ async function initSchema(db) {
     );
   `);
 
-  // Migrate preferences column if users table existed previously
-  await addColumns(db, 'users', [`preferences TEXT DEFAULT '{"enabledMediaTypes":["audiobook","manga","book","show","movie","anime"],"defaultView":"all"}'`]);
-
-  // Migrate avatar column
-  await addColumns(db, 'users', ['avatar TEXT']);
-
-  // Migrate expires_at column
-  await addColumns(db, 'users', ['expires_at DATETIME']);
+  // For users tables created before these columns existed.
+  await addColumns(db, 'users', [
+    `preferences TEXT DEFAULT '{"enabledMediaTypes":["audiobook","manga","book","show","movie","anime"],"defaultView":"all"}'`,
+    'avatar TEXT',
+    'expires_at DATETIME'
+  ]);
 
   // token_version is embedded in every JWT and checked on every request. Bumping it (on
   // password change) instantly invalidates every previously-issued token for that user,

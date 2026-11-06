@@ -8,7 +8,6 @@ const router = express.Router();
 router.use(authenticateToken);
 router.use(requireAdmin);
 
-// Get server logs
 router.get('/', handle(async (req, res) => {
   const { level, search, limit = 100 } = req.query;
 
@@ -35,7 +34,6 @@ router.get('/', handle(async (req, res) => {
   res.json({ logs });
 }));
 
-// Clear all system logs
 router.delete('/', handle(async (req, res) => {
   const db = await getDb();
   await db.run('DELETE FROM system_logs');

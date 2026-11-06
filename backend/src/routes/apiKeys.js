@@ -8,7 +8,6 @@ const router = express.Router();
 
 router.use(authenticateToken, requireSession);
 
-// List current user's API keys
 router.get('/', handle(async (req, res) => {
   const userId = req.user.id;
   const db = await getDb();
@@ -59,7 +58,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Delete API key
 router.delete('/:id', handle(async (req, res) => {
   const userId = req.user.id;
   const db = await getDb();

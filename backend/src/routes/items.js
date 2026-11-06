@@ -174,7 +174,6 @@ router.get('/genres', handle(async (req, res) => {
   res.json({ genres });
 }));
 
-// Group by Authors
 router.get('/authors', handle(async (req, res) => {
   const { mediaType } = req.query;
   const userId = req.user.id;
@@ -206,7 +205,6 @@ router.get('/authors', handle(async (req, res) => {
   res.json({ authors });
 }));
 
-// Group by Series
 router.get('/series', handle(async (req, res) => {
   const { mediaType } = req.query;
   const userId = req.user.id;
@@ -358,7 +356,6 @@ router.get('/series/:name', handle(async (req, res) => {
   });
 }));
 
-// Mark all volumes in a series as read
 router.post('/series/:name/mark-read', handle(async (req, res) => {
   const userId = req.user.id;
   let seriesName = req.params.name;
@@ -395,7 +392,6 @@ router.post('/series/:name/mark-read', handle(async (req, res) => {
   res.json({ message: 'Marked all volumes as read', count: items.length });
 }));
 
-// Mark all volumes in a series as unread
 router.post('/series/:name/mark-unread', handle(async (req, res) => {
   const userId = req.user.id;
   let seriesName = req.params.name;
@@ -504,7 +500,6 @@ router.post('/:id/hide', handle(async (req, res) => {
   res.json({ message: 'Item hidden from shelf' });
 }));
 
-// Unhide item
 router.post('/:id/unhide', handle(async (req, res) => {
   const userId = req.user.id;
   const itemId = req.params.id;
@@ -598,7 +593,6 @@ router.get('/:id/chapters', handle(async (req, res) => {
   res.json({ chapters });
 }));
 
-// Single item details
 router.get('/:id', handle(async (req, res) => {
   const userId = req.user.id;
   const db = await getDb();
