@@ -27,8 +27,7 @@ export const usePlayerStore = defineStore('player', {
     sleepEndsAt: null,
     sleepRemaining: 0,
     sleepChapterEnd: null,
-    chapters: [],
-    isExpanded: false
+    chapters: []
   }),
 
   getters: {

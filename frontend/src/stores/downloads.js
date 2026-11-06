@@ -249,13 +249,6 @@ export const useDownloadsStore = defineStore('downloads', {
       if (!this.entries[id]) return;
       this.entries[id].item = { ...this.entries[id].item, ...patch };
       saveManifest(this.entries);
-    },
-
-    // Sign-out: the service worker drops the files (see auth logout); this drops the list.
-    forgetAll() {
-      this.entries = {};
-      this.active = {};
-      try { localStorage.removeItem(MANIFEST_KEY); } catch (e) { /* ignore */ }
     }
   }
 });
