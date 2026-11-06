@@ -59,13 +59,34 @@ export function buildLadder(playbackInfo) {
   return rungs.length > 0 ? rungs : [QUALITY_LADDER[QUALITY_LADDER.length - 1]];
 }
 
-// Maximum number of ffmpeg encode processes that can run simultaneously.
-// Software (libx264) is very CPU-heavy — cap at 1 to prevent thermal overload on
-// low-power hosts like the Intel NUC i5-8500T. Hardware (VAAPI/NVENC) is cheap enough
-// to allow 2 concurrent streams (e.g. two users watching different things).
-let activeEncodes = 0;
-const MAX_SW_ENCODES = 1;
-const MAX_HW_ENCODES = 2;
+// Encodes are the one thing an account can make the server do that costs real CPU, so they
+// are capped. One person only ever watches one thing; a second encode of theirs is usually a
+// quality switch, so past PER_USER_ENCODES their oldest one is stopped rather than refused.
+// Past the server-wide cap a new encode gets P305 ("try again shortly"). Remuxes copy the
+// streams and aren't counted.
+const PER_USER_ENCODES = 2;
+const MAX_ENCODES = Math.max(1, parseInt(process.env.TRANSCODE_LIMIT, 10) || 4);
+
+function runningEncodes() {
+  return [...jobs.values()].filter((job) => job.mode === 'transcode' && !job.exited && job.proc);
+}
+
+function makeRoomForEncode(userId) {
+  if (userId) {
+    const now = Date.now();
+    // An encode someone else is also watching (a watch party) is never stopped for this.
+    const mine = runningEncodes()
+      .filter((job) => job.ownerId === userId && !hasOtherActiveViewers(job, userId, now))
+      .sort((a, b) => a.lastRequestedAt - b.lastRequestedAt);
+    while (mine.length >= PER_USER_ENCODES) {
+      const oldest = mine.shift();
+      killJob(oldest);
+      oldest.exited = true;
+      jobs.delete(oldest.mapKey);
+    }
+  }
+  if (runningEncodes().length >= MAX_ENCODES) throw new PlinthioError('P305');
+}
 
 function jobDir(itemId, profile) {
   return path.join(HLS_DIR, itemId, profile);
@@ -203,11 +224,16 @@ export async function getOrStartJob(itemId, filePath, opts = {}) {
     'media.m3u8'
   ];
 
+  // Checked with no await between it and jobs.set below, so a burst of parallel requests
+  // can't all slip past the cap.
+  if (mode === 'transcode') makeRoomForEncode(opts.userId);
   const proc = spawn('ffmpeg', args, { cwd: dir });
   let stderr = '';
   proc.stderr.on('data', (d) => { stderr += d.toString().slice(0, 4000); });
 
   const job = {
+    mapKey,
+    ownerId: opts.userId || null,
     profile,
     quality,
     audioTrack,

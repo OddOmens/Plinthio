@@ -18,7 +18,7 @@ const { parseXmltv, parseXmltvTime } = await import('../src/services/xmltv.js');
 const { rewritePlaylist, sign, verify, decodeUrlParam, looksLikePlaylist, logoPath } = await import('../src/services/liveProxy.js');
 const { addressBlock, openUpstream, readBody, decodedBody } = await import('../src/services/safeFetch.js');
 const {
-  guideTargets, isRefreshDue, iptvOrgDetails, hostGroup, filterReasons, isFilteredOut, cleanFilterList
+  guideTargets, isRefreshDue, iptvOrgDetails, hostGroup, filterReasons, isFilteredOut, cleanFilterList, channelPrivateHost
 } = await import('../src/services/liveTv.js');
 
 after(() => fs.rmSync(dataDir, { recursive: true, force: true }));
@@ -418,5 +418,29 @@ describe('Live TV filters', () => {
     assert.deepEqual(cleanFilterList('hiddenLanguages', ['SPA', 'spa']), ['spa']);
     assert.equal(cleanFilterList('hiddenGroups', [' ']), null);
     assert.equal(cleanFilterList('hiddenGroups', 'News'), null);
+  });
+});
+
+describe('which private host a channel may reach', () => {
+  const ch = (stream, playlist, kind = 'm3u') => channelPrivateHost({ source_kind: kind, stream_url: stream, source_playlist_url: playlist });
+
+  test('a playlist on the LAN may point at LAN streams', () => {
+    assert.equal(ch('http://192.168.1.50:5004/auto/v1', 'http://192.168.1.50:5004/lineup.m3u'), '192.168.1.50');
+    assert.equal(ch('http://tuner.local/ch/2', 'http://nas.lan/iptv.m3u'), 'tuner.local');
+  });
+
+  test('a playlist from the internet never gets the LAN or localhost', () => {
+    assert.equal(ch('http://localhost:2019/config/', 'https://lists.example/iptv.m3u'), null);
+    assert.equal(ch('http://192.168.1.1/admin', 'https://lists.example/iptv.m3u'), null);
+  });
+
+  test('localhost only for a playlist served from that same host', () => {
+    assert.equal(ch('http://localhost:8000/ch1', 'http://localhost:8000/list.m3u'), 'localhost');
+    assert.equal(ch('http://localhost:2019/config/', 'http://192.168.1.50/list.m3u'), null);
+    assert.equal(ch('http://127.0.0.1:2019/', 'http://192.168.1.50/list.m3u'), null);
+  });
+
+  test('public presets never get a private host', () => {
+    assert.equal(ch('http://192.168.1.50/ch', 'http://192.168.1.50/list.m3u', 'iptv-org'), null);
   });
 });

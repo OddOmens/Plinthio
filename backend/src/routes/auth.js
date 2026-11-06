@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
-import { authenticateToken, invalidateUserCache, signMediaToken } from '../middleware/auth.js';
+import { authenticateToken, invalidateUserCache, requireSession, signMediaToken } from '../middleware/auth.js';
 import { scanLibrary } from '../services/scanner.js';
 import { logger } from '../services/logger.js';
 import { LIBRARY_TYPES, resolveLibraryPath, listMediaDirectories } from './libraries.js';
@@ -68,9 +68,26 @@ router.get('/setup/browse', async (req, res) => {
 // bcrypt hashing below and both create an admin account.
 let setupInFlight = false;
 
+// A web page on another site, opened by someone on the home network, could otherwise POST
+// here while no admin exists yet (the API allows any origin by default) and claim the server.
+// The setup wizard is always same-origin; non-browser clients send no Origin at all.
+function crossSiteRequest(req) {
+  if (req.headers['sec-fetch-site'] === 'cross-site') return true;
+  const origin = req.headers.origin;
+  if (!origin) return false;
+  try {
+    return new URL(origin).host !== req.headers.host;
+  } catch {
+    return true;
+  }
+}
+
 router.post('/setup', async (req, res) => {
   const { username, password, theme = 'dark', serverName, enabledMediaTypes, libraries = [], extraUsers = [], access = {} } = req.body;
 
+  if (crossSiteRequest(req)) {
+    return sendError(req, res, 'P003', { message: 'Set Plinthio up from its own page' });
+  }
   if (await setupFromOutside(req)) {
     return sendError(req, res, 'P109', { message: 'Set Plinthio up from your home network' });
   }
@@ -256,6 +273,43 @@ async function issueSession(req, res, db, user, where) {
 //   4. two-factor: an account with it gets a challenge to answer at /login/2fa instead of a
 //      session; one without it, signing in from outside where two-factor is required, is
 //      told to set it up at home (P112)
+// Per-account limit on wrong passwords from outside the home network, on top of the per-
+// address limit in index.js: guessing spread over many addresses still stops after
+// OUTSIDE_FAILS_PER_ACCOUNT tries in the window. Sign-ins from home are never held back, so
+// someone on the internet can't lock the household out of its own accounts.
+const OUTSIDE_FAILS_PER_ACCOUNT = 10;
+const OUTSIDE_FAIL_WINDOW_MS = 15 * 60 * 1000;
+const outsideFails = new Map();
+
+function outsideFailKey(username) {
+  return username.trim().toLowerCase().slice(0, 64);
+}
+
+function outsideLocked(username) {
+  const entry = outsideFails.get(outsideFailKey(username));
+  if (!entry) return false;
+  if (Date.now() - entry.since > OUTSIDE_FAIL_WINDOW_MS) {
+    outsideFails.delete(outsideFailKey(username));
+    return false;
+  }
+  return entry.count >= OUTSIDE_FAILS_PER_ACCOUNT;
+}
+
+function noteOutsideFail(username) {
+  const key = outsideFailKey(username);
+  const now = Date.now();
+  const entry = outsideFails.get(key);
+  if (entry && now - entry.since <= OUTSIDE_FAIL_WINDOW_MS) {
+    entry.count += 1;
+    return;
+  }
+  if (outsideFails.size >= 10000) {
+    for (const [k, e] of outsideFails) if (now - e.since > OUTSIDE_FAIL_WINDOW_MS) outsideFails.delete(k);
+    if (outsideFails.size >= 10000) outsideFails.delete(outsideFails.keys().next().value);
+  }
+  outsideFails.set(key, { count: 1, since: now });
+}
+
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const ip = req.ip;
@@ -273,9 +327,15 @@ router.post('/login', async (req, res) => {
       return sendError(req, res, 'P109');
     }
 
+    if (loc.away && outsideLocked(username)) {
+      logger.warn('auth', `Held back an outside sign-in for "${username.trim().slice(0, 64)}": too many wrong passwords`, { ip });
+      return sendError(req, res, 'P108');
+    }
+
     const user = await db.get('SELECT * FROM users WHERE username = ?', [username.trim()]);
 
     if (!user) {
+      if (loc.away) noteOutsideFail(username);
       // Burn the same bcrypt time a real account would, so response timing doesn't reveal
       // which usernames exist.
       await bcrypt.compare(password, DUMMY_HASH);
@@ -286,6 +346,7 @@ router.post('/login', async (req, res) => {
 
     const isValid = await bcrypt.compare(password, user.password_hash);
     if (!isValid) {
+      if (loc.away) noteOutsideFail(username);
       await recordLoginAttempt(db, { userId: user.id, username: user.username, success: false, ip, userAgent, network: loc.where });
       logger.warn('auth', `Failed sign-in attempt for "${user.username}" (wrong password)`, { ip });
       return sendError(req, res, 'P107');
@@ -419,7 +480,7 @@ router.get('/me', authenticateToken, (req, res) => {
 // makes a shorter token lifetime workable: someone who opens Plinthio regularly is never
 // signed out, while a token copied off a shared machine stops working within the window
 // rather than a month later.
-router.post('/refresh', authenticateToken, (req, res) => {
+router.post('/refresh', authenticateToken, requireSession, (req, res) => {
   const token = jwt.sign(
     {
       userId: req.user.id,
@@ -512,13 +573,22 @@ router.post('/2fa/enable', authenticateToken, sessionOnly, async (req, res) => {
     const step = verifyTotp(secret, req.body?.code);
     if (step === null) return sendError(req, res, 'P111');
     const { codes, stored } = newRecoveryCodes();
+    // Every other session is signed out (one started before two-factor, perhaps by whoever
+    // made it necessary, shouldn't outlive it); this device gets a fresh token in the answer.
     await db.run(
       `UPDATE users SET totp_secret = ?, totp_pending = NULL, totp_enabled_at = CURRENT_TIMESTAMP,
-         totp_last_step = ?, totp_recovery = ? WHERE id = ?`,
+         totp_last_step = ?, totp_recovery = ?, token_version = token_version + 1 WHERE id = ?`,
       [sealSecret(secret), step, stored, req.user.id]
     );
+    invalidateUserCache(req.user.id);
+    const user = { ...req.user, token_version: (req.user.token_version || 0) + 1 };
+    const token = jwt.sign(
+      { userId: user.id, username: user.username, role: user.role, tokenVersion: user.token_version },
+      config.jwtSecret,
+      { expiresIn: config.jwtExpiresIn }
+    );
     logger.info('auth', `"${req.user.username}" turned on two-factor sign-in`);
-    res.json({ ...(await twoFactorStatus(db, req.user.id)), recoveryCodes: codes });
+    res.json({ ...(await twoFactorStatus(db, req.user.id)), recoveryCodes: codes, token, mediaToken: signMediaToken(user) });
   } catch (err) {
     serverError(req, res, err);
   }

@@ -152,6 +152,7 @@ async function resolveHlsJob(req, res, profileParam) {
 
   const audioTranscode = !info.audioOk;
   return getOrStartJob(req.params.id, resolved.filePath, {
+    userId: req.user.id,
     mode,
     quality,
     audioTrack,

@@ -25,10 +25,15 @@ export function ratingRank(rating) {
 // It carries no bind parameters — every interpolated value is an integer or a fixed string
 // computed here, never user input — so it can be dropped into any existing query without
 // disturbing that query's parameter order.
-export function accessSql(user, alias = 'i', { includeOffloaded = false } = {}) {
-  let sql = includeOffloaded
-    ? ` AND (${alias}.offloaded_at IS NOT NULL OR ${alias}.missing_since IS NULL)`
-    : ` AND ${alias}.missing_since IS NULL AND ${alias}.offloaded_at IS NULL`;
+// { restrictionsOnly: true } keeps just what the account isn't allowed to see (Kids Mode, age
+// rating), for lists of things the person has already chosen to hide.
+export function accessSql(user, alias = 'i', { includeOffloaded = false, restrictionsOnly = false } = {}) {
+  let sql = '';
+  if (!restrictionsOnly) {
+    sql = includeOffloaded
+      ? ` AND (${alias}.offloaded_at IS NOT NULL OR ${alias}.missing_since IS NULL)`
+      : ` AND ${alias}.missing_since IS NULL AND ${alias}.offloaded_at IS NULL`;
+  }
 
   if (user && (user.kids_mode === 1 || user.kids_mode === true)) {
     sql += ` AND (
@@ -41,7 +46,7 @@ export function accessSql(user, alias = 'i', { includeOffloaded = false } = {}) 
     )`;
   }
 
-  sql += personalSql(user, alias);
+  if (!restrictionsOnly) sql += personalSql(user, alias);
 
   const maxRank = ratingRank(user?.max_age_rating);
   if (maxRank !== null) {

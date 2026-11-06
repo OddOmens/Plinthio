@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { config } from '../../config/env.js';
+import { MAX_ENTRY_BYTES } from './handleCache.js';
 
 // Unlike the zip and rar backends, 7-Zip only gives us whole-archive extraction to a
 // directory — there's no "read one entry into memory" API. So a .cb7 is unpacked once into
@@ -81,7 +82,10 @@ export default {
     const target = path.join(dir, name);
     // Entry names come from the archive itself, so keep the resolved read inside the cache.
     if (!path.resolve(target).startsWith(path.resolve(dir) + path.sep)) return null;
-    if (!fs.existsSync(target)) return null;
+    // Only a plain file: a symlink the archive unpacked could point anywhere on disk.
+    const stat = fs.lstatSync(target, { throwIfNoEntry: false });
+    if (!stat?.isFile()) return null;
+    if (stat.size > MAX_ENTRY_BYTES) throw new Error('This page is too large to open');
     return fs.readFileSync(target);
   }
 };

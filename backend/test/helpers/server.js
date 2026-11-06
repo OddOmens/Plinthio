@@ -45,6 +45,8 @@ export async function startTestServer({ env = {}, dataDir: existingDataDir = nul
       // Not listening yet.
     }
     if (Date.now() > deadline) {
+      // Kill it, or the still-running child keeps this test file alive forever.
+      child.kill('SIGKILL');
       throw new Error(`Server did not become healthy in time:\n${output}`);
     }
     await new Promise((r) => setTimeout(r, 100));

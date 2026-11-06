@@ -139,8 +139,10 @@ import QRCode from 'qrcode';
 import { ShieldCheck, ShieldOff, Copy, Download, Loader2, RefreshCw } from '@lucide/vue';
 import api from '../api/client';
 import { useCustomizationStore } from '../stores/customization';
+import { useAuthStore } from '../stores/auth';
 import { t } from '../i18n';
 
+const authStore = useAuthStore();
 const emit = defineEmits(['done']);
 const customizationStore = useCustomizationStore();
 
@@ -193,6 +195,8 @@ async function confirm() {
   error.value = '';
   try {
     const res = await api.post('/auth/2fa/enable', { code: code.value.replace(/\s/g, '') });
+    // Turning it on signs out every other session; this one carries on with the new token.
+    if (res.data.token) authStore.storeSession({ token: res.data.token, mediaToken: res.data.mediaToken, user: authStore.user });
     status.value = res.data;
     recoveryCodes.value = res.data.recoveryCodes;
     saved.value = false;

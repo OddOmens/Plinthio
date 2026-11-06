@@ -294,11 +294,7 @@ describe('matching a book online', () => {
       if (u.includes('openlibrary.org/isbn/')) return json({ publishers: ['Orbit'], publish_date: 'September 8, 2015', languages: [{ key: '/languages/eng' }], covers: [7] });
       if (u.includes('openlibrary.org/works/')) return json({ description: { value: 'Superior Glokta has a problem.\n----------\nSee also' } });
       if (u.includes('covers.openlibrary.org')) {
-        return {
-          ok: true, url: u,
-          headers: new Headers({ 'content-type': 'image/jpeg', 'content-length': String(coverJpeg.length) }),
-          arrayBuffer: async () => coverJpeg.buffer.slice(coverJpeg.byteOffset, coverJpeg.byteOffset + coverJpeg.byteLength)
-        };
+        return new Response(coverJpeg, { headers: { 'content-type': 'image/jpeg', 'content-length': String(coverJpeg.length) } });
       }
       throw new Error(`unexpected fetch ${u}`);
     };

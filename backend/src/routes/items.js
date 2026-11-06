@@ -116,7 +116,7 @@ router.get('/', async (req, res) => {
       release: "CASE WHEN i.release_date IS NULL OR i.release_date = '' THEN 1 ELSE 0 END, i.release_date DESC, i.id ASC",
       recent: 'CASE WHEN p.updated_at IS NULL THEN 1 ELSE 0 END, p.updated_at DESC, i.title ASC, i.id ASC'
     };
-    query += ` ORDER BY ${ORDER_BY[sort] || ORDER_BY.title} LIMIT ? OFFSET ?`;
+    query += ` ORDER BY ${Object.hasOwn(ORDER_BY, sort) ? ORDER_BY[sort] : ORDER_BY.title} LIMIT ? OFFSET ?`;
     params.push(safeLimit, safeOffset);
 
     const items = await db.all(query, params);
@@ -511,7 +511,7 @@ router.get('/hidden', async (req, res) => {
       SELECT i.*, v.user_id, v.hidden_by, v.created_at as hidden_at
       FROM item_visibility v
       JOIN items i ON v.item_id = i.id
-      WHERE v.user_id = ? OR (? = 'admin' AND v.user_id IS NULL)
+      WHERE (v.user_id = ? OR (? = 'admin' AND v.user_id IS NULL))${accessSql(req.user, 'i', { restrictionsOnly: true })}
       ORDER BY v.created_at DESC
     `, [userId, req.user.role]);
     await shapeItems(db, hidden, req.user);
@@ -530,6 +530,9 @@ router.post('/:id/hide', async (req, res) => {
 
   try {
     const db = await getDb();
+    // Only something this account may see can be hidden (and so listed back under Hidden).
+    const allowed = await db.get(`SELECT 1 FROM items i WHERE i.id = ?${accessSql(req.user, 'i', { restrictionsOnly: true })}`, [itemId]);
+    if (!allowed) return res.status(404).json({ error: 'Item not found' });
     await db.run(
       `INSERT INTO item_visibility (item_id, user_id, hidden_by, created_at)
        VALUES (?, ?, ?, CURRENT_TIMESTAMP)

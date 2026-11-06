@@ -1,12 +1,12 @@
 import express from 'express';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, requireSession } from '../middleware/auth.js';
 import { serverError } from '../utils/http.js';
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, requireSession);
 
 // List current user's API keys
 router.get('/', async (req, res) => {
