@@ -11,10 +11,10 @@
     "check:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
-    "@lucide/vue": "^1.57.0",
+    "@lucide/vue": "^1.66.0",
     "axios": "^1.7.7",
     "epubjs": "^0.3.93",
-    "hls.js": "^1.5.17",
+    "hls.js": "^1.7.4",
     "pinia": "^4.1.0",
     "qrcode": "^1.5.4",
     "vue": "^3.5.44",
