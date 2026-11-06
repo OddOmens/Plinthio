@@ -350,6 +350,7 @@ import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
 import { t, languageName, locale } from '../i18n';
 import { SOURCE_LABELS } from '../utils/externalTitle';
+import { isVideo } from '../utils/mediaVocab';
 import { X, Search as SearchIcon, ImageOff, Check, ChevronDown, Upload, Loader2 } from '@lucide/vue';
 
 const dialog = useDialogStore();
@@ -441,9 +442,7 @@ const DETAILS_PREFETCH = 5;
 
 const token = getMediaToken() || '';
 
-const isVideoType = computed(() =>
-  ['movie', 'show', 'anime'].includes(props.item?.media_type)
-);
+const isVideoType = computed(() => isVideo(props.item?.media_type));
 const isBook = computed(() => props.item?.media_type === 'book');
 const isAudiobook = computed(() => props.item?.media_type === 'audiobook');
 // Books and audiobooks have a language; it also picks Open Library's edition and Audible's

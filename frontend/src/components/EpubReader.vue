@@ -441,7 +441,7 @@
 </template>
 
 <script setup>
-import { getMediaToken } from '../utils/mediaToken';
+import { bookFileUrl } from '../utils/cover';
 import { ref, shallowRef, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import {
   ArrowLeft, Bookmark, BookMarked, Loader2, Trash2, BookOpen, ScrollText, Search,
@@ -492,7 +492,7 @@ async function persistPrefs() {
   if (!authStore.user) return;
   authStore.user.preferences = { ...(authStore.user.preferences || {}), ebookReader };
   try {
-    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+    authStore.persistUser();
     await api.patch('/users/preferences', { ebookReader });
   } catch (err) {
     console.warn('Could not save reader settings:', err.message);
@@ -717,7 +717,7 @@ async function init() {
     const ePubModule = await import('epubjs');
     const ePub = ePubModule.default;
     EpubCFI.value = ePubModule.EpubCFI;
-    const url = `/api/media/book/${props.item.id}/file?token=${getMediaToken() || ''}`;
+    const url = bookFileUrl(props.item.id);
     // The file route has no .epub extension, and epub.js decides "zipped book or unpacked
     // folder" from the extension — without openAs it looks for /file/META-INF/container.xml.
     book = ePub(url, { openAs: 'epub' });

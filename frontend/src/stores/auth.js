@@ -50,6 +50,27 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
+    // Remembers the signed-in user on this device, so a reload starts with it.
+    persistUser() {
+      localStorage.setItem('plinthio_user', JSON.stringify(this.user));
+    },
+
+    // Changes some of the account's preferences at once and saves them, putting them back
+    // if the save fails. `run` is the section's useSaveStatus().run, so its
+    // "Saving…/Saved" line follows the request.
+    async patchPreferences(patch, run) {
+      if (!this.user) return;
+      const previous = this.user.preferences || {};
+      this.user.preferences = { ...previous, ...patch };
+      const { ok, data } = await run(() => api.patch('/users/preferences', patch));
+      if (!ok) {
+        this.user.preferences = previous;
+        return;
+      }
+      this.user.preferences = data.data.preferences || this.user.preferences;
+      this.persistUser();
+    },
+
     async checkSetupStatus() {
       try {
         const res = await api.get('/auth/setup-status');
@@ -74,7 +95,7 @@ export const useAuthStore = defineStore('auth', {
         setMediaToken(res.data.mediaToken);
         this.isSetup = true;
         localStorage.setItem('plinthio_token', this.token);
-        localStorage.setItem('plinthio_user', JSON.stringify(this.user));
+        this.persistUser();
         return res.data;
       } finally {
         this.loading = false;
@@ -88,7 +109,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = data.user;
       setMediaToken(data.mediaToken);
       localStorage.setItem('plinthio_token', this.token);
-      localStorage.setItem('plinthio_user', JSON.stringify(this.user));
+      this.persistUser();
     },
 
     // Returns the server's answer. With two-factor on, that's { twoFactorRequired, challenge }
@@ -131,7 +152,7 @@ export const useAuthStore = defineStore('auth', {
         if (res.data.mediaToken) setMediaToken(res.data.mediaToken);
         if (res.data.user) {
           this.user = res.data.user;
-          localStorage.setItem('plinthio_user', JSON.stringify(res.data.user));
+          this.persistUser();
         }
       } catch (err) {
         // Nothing to do — either the network is down or the 401 path already took over.
@@ -172,7 +193,7 @@ export const useAuthStore = defineStore('auth', {
       });
       if (res.data.user) {
         this.user = { ...this.user, ...res.data.user };
-        localStorage.setItem('plinthio_user', JSON.stringify(this.user));
+        this.persistUser();
       }
       return res.data;
     },
@@ -181,7 +202,7 @@ export const useAuthStore = defineStore('auth', {
       const res = await api.delete('/users/avatar');
       if (res.data.user) {
         this.user = { ...this.user, ...res.data.user };
-        localStorage.setItem('plinthio_user', JSON.stringify(this.user));
+        this.persistUser();
       }
       return res.data;
     },

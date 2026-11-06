@@ -552,7 +552,7 @@ async function saveLanguage() {
     await customizationStore.updateCustomization({ defaultLanguage: language });
     const res = await api.patch('/users/preferences', { language });
     authStore.user = { ...authStore.user, preferences: res.data.preferences || { ...authStore.user?.preferences, language } };
-    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+    authStore.persistUser();
   } catch (err) {
     console.error('Failed to save the language to the new account:', err);
   }

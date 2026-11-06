@@ -211,7 +211,7 @@
         class="absolute bottom-16 text-[12px] font-mono text-white bg-black/80 px-1.5 py-0.5 rounded pointer-events-none"
         :style="{ left: `${previewLeft}px` }"
       >
-        {{ formatTime(previewTime) }}
+        {{ formatClock(previewTime) }}
       </p>
 
       <div
@@ -253,7 +253,7 @@
           </button>
         </template>
         <span class="text-xs font-mono tabular-nums">
-          {{ formatTime(videoTime) }} / {{ formatTime(totalDuration) }}
+          {{ formatClock(videoTime) }} / {{ formatClock(totalDuration) }}
         </span>
         <div class="flex-1" />
         <button :aria-label="$t('player.video.toggleFullscreen')" @click="toggleFullscreen" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/10 transition">
@@ -282,7 +282,7 @@
         v-if="resumedFrom > 0 && showResumeToast"
         class="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 bg-black/80 backdrop-blur-sm text-white text-sm px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-3 border border-white/10"
       >
-        <span>{{ $t('player.video.resumedFrom', { time: formatTime(resumedFrom) }) }}</span>
+        <span>{{ $t('player.video.resumedFrom', { time: formatClock(resumedFrom) }) }}</span>
         <button
           @click="restartFromBeginning"
           class="text-primary font-semibold hover:underline whitespace-nowrap"
@@ -374,6 +374,8 @@ import PauseScreen from './PauseScreen.vue';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
 import { t } from '../i18n';
+import { formatClock } from '../utils/time';
+import { isVideo } from '../utils/mediaVocab';
 import {
   ArrowLeft, AlertCircle, Loader2, Play, Pause, Maximize,
   Settings, Cast, MonitorSpeaker, RotateCcw, RotateCw
@@ -577,7 +579,7 @@ async function setSkip(dir, seconds) {
     const res = await api.patch('/users/preferences', { videoSkip: skipPrefs.value });
     if (authStore.user && res.data.preferences) {
       authStore.user = { ...authStore.user, preferences: res.data.preferences };
-      localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+      authStore.persistUser();
     }
   } catch (err) {
     // Still applies for this session.
@@ -615,7 +617,7 @@ async function loadPauseData() {
   if (pauseDataLoaded) return;
   pauseDataLoaded = true;
   const isEpisode = ['show', 'anime'].includes(props.item.media_type);
-  if (pauseMode.value !== 'bedtime' && ['movie', 'show', 'anime'].includes(props.item.media_type)) {
+  if (pauseMode.value !== 'bedtime' && isVideo(props.item.media_type)) {
     try {
       pauseCredits.value = (await api.get(`/items/${props.item.id}/credits`)).data.credits || null;
     } catch (err) { /* the file's own details are enough */ }
@@ -814,15 +816,6 @@ const subtitleLine = computed(() => {
   if (props.item.release_date) parts.push(props.item.release_date);
   return parts.join(' · ');
 });
-
-function formatTime(seconds) {
-  if (!seconds || seconds < 0) return '0:00';
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
 
 function revealControls() {
   controlsVisible.value = true;

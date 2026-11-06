@@ -123,7 +123,7 @@
 </template>
 
 <script setup>
-import { getMediaToken } from '../utils/mediaToken';
+import { bookFileUrl } from '../utils/cover';
 import { ref, watch } from 'vue';
 import api from '../api/client';
 import { usePlayerStore } from '../stores/player';
@@ -235,8 +235,7 @@ function jumpToBookmark(bm) {
     emit('select-manga-page', { item: props.item, page: Math.floor(bm.position) });
     emit('close');
   } else {
-    const token = getMediaToken();
-    window.open(`/api/media/book/${props.item.id}/file?token=${token}`, '_blank');
+    window.open(bookFileUrl(props.item.id), '_blank');
   }
 }
 

@@ -335,7 +335,7 @@ async function finish(skipped) {
 
     await api.patch('/users/preferences', preferences);
     authStore.user = { ...authStore.user, preferences };
-    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+    authStore.persistUser();
 
     if (!skipped && authStore.isAdmin && choices.accent !== customizationStore.accentTheme) {
       await customizationStore.updateCustomization({ accentTheme: choices.accent });

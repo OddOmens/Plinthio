@@ -123,8 +123,7 @@ import api from '../api/client';
 import { useDownloadsStore } from '../stores/downloads';
 import { usePlayerStore } from '../stores/player';
 import { useDialogStore } from '../stores/dialog';
-import { coverUrl } from '../utils/cover';
-import { getMediaToken } from '../utils/mediaToken';
+import { coverUrl, bookFileUrl } from '../utils/cover';
 import { ArrowLeft, WifiOff, Download, Trash2, Play, BookOpen, Headphones, FileImage, Book } from '@lucide/vue';
 import { t, n } from '../i18n';
 
@@ -211,7 +210,7 @@ async function openEntry(entry) {
   } else if ((item.format || '').toLowerCase() === 'epub') {
     activeEpub.value = item;
   } else {
-    window.open(`/api/media/book/${item.id}/file?token=${getMediaToken()}`, '_blank');
+    window.open(bookFileUrl(item.id), '_blank');
   }
 }
 
