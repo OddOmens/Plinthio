@@ -58,6 +58,7 @@ import { backfillMovieCredits } from './services/credits.js';
 import { sweepHlsCache } from './services/hls.js';
 import { sweepArchiveCache } from './services/archive/sevenZipBackend.js';
 import { sweepPageCache } from './services/pageImages.js';
+import { sweepTrickplayCache } from './services/trickplay.js';
 import { tlsSettings, loadTlsCredentials, tlsStatus, caCertificate, noteRequestHost } from './services/tls.js';
 import { SEND_OPTS } from './utils/fileStream.js';
 
@@ -363,15 +364,16 @@ async function start() {
     // one "Shrek Collection"). Delayed so it doesn't compete with startup.
     setTimeout(() => backfillMovieCredits().catch(() => {}), 15000);
 
-    // Evict stale on-disk HLS segment caches (see HLS_CACHE_MAX_AGE_HOURS) — run once at
-    // boot and then hourly, mirroring the backup scheduler's own setInterval pattern.
     // Evict stale on-disk media caches (see HLS_CACHE_MAX_AGE_HOURS): HLS segments, and the
-    // 7z archives that have to be unpacked to disk to be read page by page.
+    // 7z archives that have to be unpacked to disk to be read page by page. Run once at boot
+    // and then hourly, mirroring the backup scheduler's own setInterval pattern. Trickplay
+    // sheets are slow to build, so they keep their own 30-day limit.
     const cacheMaxAgeMs = config.hlsCacheMaxAgeHours * 60 * 60 * 1000;
     const sweepCaches = () => {
       sweepHlsCache(cacheMaxAgeMs);
       sweepArchiveCache(cacheMaxAgeMs);
       sweepPageCache(cacheMaxAgeMs);
+      sweepTrickplayCache();
     };
     sweepCaches();
     setInterval(sweepCaches, 60 * 60 * 1000).unref();

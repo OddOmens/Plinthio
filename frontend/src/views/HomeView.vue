@@ -414,7 +414,7 @@ import SeriesCard from '../components/SeriesCard.vue';
 import ShelfEntryGrid from '../components/ShelfEntryGrid.vue';
 import LiveNowRow from '../components/live/LiveNowRow.vue';
 import { buildShelfEntries, entryFolder, groupEntries } from '../utils/shelfEntries';
-import { detailRoute, creatorLabel, realCreator } from '../utils/mediaVocab';
+import { detailRoute, creatorLabel, realCreator, VIDEO_TYPES } from '../utils/mediaVocab';
 import { normalizeShelfModes, userShelfModes } from '../utils/shelfModes';
 import { t } from '../i18n';
 import I18nT from '../i18n/I18nT.vue';
@@ -600,7 +600,6 @@ const displayedContinueItems = computed(() => {
 // "Continue Watching" is its own row: resuming a film is a different intent from picking
 // the next chapter, and mixing them buries one behind the other. On a filtered view the
 // single row above already says which it is, so the split only applies to "All".
-const VIDEO_TYPES = ['movie', 'show', 'anime'];
 const continueWatchingItems = computed(() =>
   activeType.value === 'all'
     ? displayedContinueItems.value.filter(i => VIDEO_TYPES.includes(i.media_type))

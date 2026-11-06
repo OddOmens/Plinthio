@@ -14,8 +14,9 @@ import {
 import { listSubtitleTracks, getSubtitleVtt } from '../services/subtitles.js';
 import { generateTrickplay, getTrickplayIndex, getSheetPath } from '../services/trickplay.js';
 import { sendRangedFile, streamFile } from '../utils/fileStream.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { sendError, codeForFsError } from '../errors.js';
+import { ITEM_ID_RE } from '../utils/ids.js';
 
 // A playback failure's code: ffmpeg/ffprobe errors are tagged by the services (P303 can't
 // start, P304 conversion failed, P302 unreadable file); filesystem errors map to P301/P302.
@@ -26,12 +27,8 @@ function playbackError(req, res, err, message) {
 
 const router = express.Router();
 
-// Item ids are always a 32-char hex md5 of the file path (see scanner.js).
-const ITEM_ID_RE = /^[a-f0-9]{32}$/;
-
-
-// Resolves an item for playback, applying the same existence + visibility + path-containment
-// checks the direct stream route uses. Returns null after responding on any failure.
+// Resolves an item for playback: the existence, visibility and path-containment checks every
+// route that reads the file needs. Returns null after responding on any failure.
 async function resolvePlayableItem(req, res) {
   if (!ITEM_ID_RE.test(req.params.id)) {
     res.status(400).json({ error: 'Invalid item id' });
@@ -306,21 +303,17 @@ router.get('/:id/trickplay/sheet_:sheet.jpg', authenticateToken, async (req, res
 });
 
 // Intro/credits markers, so the player can offer a skip button.
-router.get('/:id/markers', authenticateToken, async (req, res) => {
+router.get('/:id/markers', authenticateToken, handle(async (req, res) => {
   if (!ITEM_ID_RE.test(req.params.id)) {
     return res.status(400).json({ error: 'Invalid item id' });
   }
-  try {
-    const db = await getDb();
-    const markers = await db.all(
-      'SELECT type, start_seconds as startSeconds, end_seconds as endSeconds FROM intro_credit_markers WHERE item_id = ?',
-      [req.params.id]
-    );
-    res.json({ markers });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  const markers = await db.all(
+    'SELECT type, start_seconds as startSeconds, end_seconds as endSeconds FROM intro_credit_markers WHERE item_id = ?',
+    [req.params.id]
+  );
+  res.json({ markers });
+}));
 
 router.put('/:id/markers', authenticateToken, requireEditor, async (req, res) => {
   if (!ITEM_ID_RE.test(req.params.id)) {
@@ -361,42 +354,15 @@ router.put('/:id/markers', authenticateToken, requireEditor, async (req, res) =>
  * Supports token via query string (?token=...) or Authorization header.
  */
 router.get('/:id/stream', authenticateToken, async (req, res) => {
-  if (!ITEM_ID_RE.test(req.params.id)) {
-    return res.status(400).json({ error: 'Invalid item id' });
-  }
   try {
-    const db = await getDb();
-    const item = await db.get(
-      `SELECT i.*, l.path as library_path 
-       FROM items i 
-       JOIN libraries l ON i.library_id = l.id 
-       WHERE i.id = ?`,
-      [req.params.id]
-    );
+    const resolved = await resolvePlayableItem(req, res);
+    if (!resolved) return;
 
-    if (!item) {
-      return sendError(req, res, 'P300');
-    }
-    if (await isItemHiddenForUser(db, req.params.id, req.user)) {
-      return sendError(req, res, 'P300');
-    }
-
-    // Path traversal security check: Canonical path must exist and start with library path
-    const resolvedItemPath = path.resolve(item.path);
-    const resolvedLibPath = path.resolve(item.library_path);
-
-    if (resolvedItemPath !== resolvedLibPath && !resolvedItemPath.startsWith(resolvedLibPath + path.sep)) {
-      return res.status(403).json({ error: 'Access denied: Invalid file path traversal detected' });
-    }
-
-    if (!fs.existsSync(resolvedItemPath)) {
-      return sendError(req, res, 'P301');
-    }
-
-    const stat = fs.statSync(resolvedItemPath);
-    let contentType = mime.lookup(resolvedItemPath) || 'video/mp4';
-    if (resolvedItemPath.endsWith('.mkv')) contentType = 'video/x-matroska';
-    sendRangedFile(req, res, resolvedItemPath, stat.size, contentType);
+    const { filePath } = resolved;
+    const stat = fs.statSync(filePath);
+    let contentType = mime.lookup(filePath) || 'video/mp4';
+    if (filePath.endsWith('.mkv')) contentType = 'video/x-matroska';
+    sendRangedFile(req, res, filePath, stat.size, contentType);
   } catch (err) {
     playbackError(req, res, err, 'Could not stream this video');
   }

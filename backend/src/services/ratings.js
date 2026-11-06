@@ -1,6 +1,7 @@
 import { lookupTmdbRating } from './externalMetadata.js';
 import { cleanSearchTitle, parseMediaTitle } from './titleCleaner.js';
 import { logger } from './logger.js';
+import { setSetting } from './settings.js';
 
 // Admin display switches for the rating UI. Each defaults on; stored as 'true'/'false' in
 // the settings table and served alongside the rest of the server customization.
@@ -26,11 +27,7 @@ export async function getRatingSettings(db) {
 export async function saveRatingSettings(db, updates) {
   for (const [name, key] of Object.entries(RATING_SETTING_KEYS)) {
     if (updates[name] === undefined) continue;
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [key, updates[name] ? 'true' : 'false']
-    );
+    await setSetting(db, key, updates[name] ? 'true' : 'false');
   }
 }
 

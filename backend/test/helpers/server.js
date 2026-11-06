@@ -1,16 +1,30 @@
 import { spawn } from 'child_process';
 import fs from 'fs';
 import os from 'os';
+import net from 'net';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const backendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
+// A port nothing is listening on, from the OS. A random pick could land in the range the
+// kernel hands out for outgoing connections and collide with one.
+export function freePort() {
+  return new Promise((resolve, reject) => {
+    const probe = net.createServer();
+    probe.once('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const { port } = probe.address();
+      probe.close(() => resolve(port));
+    });
+  });
+}
+
 // Each test file gets its own server process on its own port with its own DATA_DIR, so the
 // suite never touches a real install's database and files can run in any order.
 export async function startTestServer({ env = {}, dataDir: existingDataDir = null } = {}) {
   const dataDir = existingDataDir || fs.mkdtempSync(path.join(os.tmpdir(), 'plinthio-test-'));
-  const port = 30000 + Math.floor(Math.random() * 20000);
+  const port = await freePort();
 
   const child = spawn('node', ['src/index.js'], {
     cwd: backendRoot,
@@ -39,7 +53,7 @@ export async function startTestServer({ env = {}, dataDir: existingDataDir = nul
       throw new Error(`Server exited early (code ${child.exitCode}):\n${output}`);
     }
     try {
-      const res = await fetch(`${baseUrl}/api/health`);
+      const res = await fetch(`${baseUrl}/api/health`, { signal: AbortSignal.timeout(1000) });
       if (res.ok) break;
     } catch (e) {
       // Not listening yet.

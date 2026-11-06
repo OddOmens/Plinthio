@@ -56,7 +56,6 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Lock } from '@lucide/vue';
-import api from '../../../api/client';
 import { useAuthStore } from '../../../stores/auth';
 import { useCustomizationStore } from '../../../stores/customization';
 import { useSaveStatus } from '../../../composables/useSaveStatus';
@@ -149,16 +148,7 @@ function hoverAppearance(card, id) {
   if (id !== undefined) previewView.value = card.preview;
 }
 
-async function setPersonal(field, value) {
-  if (!authStore.user) return;
-  const previous = authStore.user.preferences || {};
-  authStore.user.preferences = { ...previous, [field]: value };
-  const { ok, data } = await save.run(() => api.patch('/users/preferences', { [field]: value }));
-  if (!ok) {
-    authStore.user.preferences = previous;
-    return;
-  }
-  authStore.user.preferences = data.data.preferences || authStore.user.preferences;
-  localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+function setPersonal(field, value) {
+  return authStore.patchPreferences({ [field]: value }, save.run);
 }
 </script>

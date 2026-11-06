@@ -350,6 +350,8 @@ import api from '../api/client';
 import { useDialogStore } from '../stores/dialog';
 import { t, languageName, locale } from '../i18n';
 import { SOURCE_LABELS } from '../utils/externalTitle';
+import { isVideo } from '../utils/mediaVocab';
+import { vClickOutside } from '../utils/clickOutside';
 import { X, Search as SearchIcon, ImageOff, Check, ChevronDown, Upload, Loader2 } from '@lucide/vue';
 
 const dialog = useDialogStore();
@@ -441,9 +443,7 @@ const DETAILS_PREFETCH = 5;
 
 const token = getMediaToken() || '';
 
-const isVideoType = computed(() =>
-  ['movie', 'show', 'anime'].includes(props.item?.media_type)
-);
+const isVideoType = computed(() => isVideo(props.item?.media_type));
 const isBook = computed(() => props.item?.media_type === 'book');
 const isAudiobook = computed(() => props.item?.media_type === 'audiobook');
 // Books and audiobooks have a language; it also picks Open Library's edition and Audible's
@@ -732,24 +732,4 @@ async function saveForm() {
 function close() {
   emit('close');
 }
-
-// The listener is attached on a deferred tick so the same click that opens this modal
-// (e.g. a button not wrapped in @click.stop) doesn't immediately bubble into it and
-// close the modal right back up before it's visible.
-const vClickOutside = {
-  mounted(el, binding) {
-    el.clickOutsideEvent = (event) => {
-      if (!(el === event.target || el.contains(event.target))) {
-        binding.value();
-      }
-    };
-    el._clickOutsideTimer = setTimeout(() => {
-      document.addEventListener('click', el.clickOutsideEvent);
-    }, 0);
-  },
-  unmounted(el) {
-    clearTimeout(el._clickOutsideTimer);
-    document.removeEventListener('click', el.clickOutsideEvent);
-  }
-};
 </script>

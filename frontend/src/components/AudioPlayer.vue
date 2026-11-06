@@ -131,7 +131,6 @@
 </template>
 
 <script setup>
-import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
 import { usePlayerStore, PLAYBACK_SPEEDS } from '../stores/player';
 import NowPlayingModal from './NowPlayingModal.vue';
@@ -140,7 +139,6 @@ import { coverUrl as buildCoverUrl } from '../utils/cover';
 import { t, n } from '../i18n';
 
 const player = usePlayerStore();
-const token = getMediaToken() || '';
 const showNowPlaying = ref(false);
 
 const coverUrl = computed(() => {

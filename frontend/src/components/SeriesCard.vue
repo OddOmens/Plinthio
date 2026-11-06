@@ -115,7 +115,6 @@
 
 <script setup>
 import { placeholderCover } from '../utils/placeholder';
-import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed } from 'vue';
 import { BookImage, Layers, BookCheck, Headphones, Book, Tv, Film, Sparkles, FolderMinus } from '@lucide/vue';
 import { vocabFor, realCreator } from '../utils/mediaVocab';
@@ -139,8 +138,6 @@ const countLabel = computed(() => vocab.value.count(props.series.volumes.length)
 defineEmits(['select', 'remove']);
 
 const imgLoaded = ref(false);
-
-const token = getMediaToken() || '';
 
 const coverUrl = computed(() => {
   // Use the first volume's cover (lowest volume number, already sorted)

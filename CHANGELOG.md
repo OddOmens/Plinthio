@@ -16,6 +16,11 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **Back returns to the shelf you left.** Pressing Back (or the category in the breadcrumb) on a title page now goes back to the category you were browsing, such as Shows, instead of your default shelf or a category from earlier. The shelf's address now includes the category you pick.
 - **A card's ⋮ menu is no longer hidden behind the next row.** On the Home shelf, the menu of a card in Continue Watching was drawn under the Continue row below it.
 - **Quick changes to your stars all save.** Changing a rating again while the first change was still saving was lost, and arrow keys stopped after one step.
+- **Bookmark times are shown in your time zone.** The Bookmarks list read the server's times as local time, so they were off by your distance from UTC.
+- **Video preview thumbnails are cleaned up.** The seek-bar preview sheets were never removed from the cache; ones unused for 30 days now are.
+
+### Changed
+- **Leaner code, same behaviour.** About 1,200 lines of repeated code removed: one shared error handler for server routes, one helper each for settings, database upgrades, item ids and ffprobe, one pop-up menu component for cards, and 18 unused translation keys.
 
 ### Security
 - **Video conversions are capped.** Each account runs at most two at once (starting a third stops its oldest, as switching quality does), and the server at most four (`TRANSCODE_LIMIT`), so one account can no longer start enough conversions to stall the server for everyone. Watch parties share one conversion and are never cut off by this.

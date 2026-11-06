@@ -1,5 +1,6 @@
 import net from 'net';
 import { getDb } from '../config/database.js';
+import { getSetting, setSetting } from './settings.js';
 
 // Where a request comes from, for the "away from home" controls (routes/network.js):
 //   home      — this machine or the home network: loopback, RFC 1918, link-local, IPv6 ULA
@@ -89,14 +90,6 @@ export async function getNetworkSettings(db) {
   return cache;
 }
 
-async function setSetting(db, key, value) {
-  await db.run(
-    `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-    [key, value]
-  );
-}
-
 export async function saveNetworkSettings(db, { remoteAccess, tailscaleIsHome, require2faOutside }) {
   if (typeof remoteAccess === 'boolean') await setSetting(db, 'remote_access', remoteAccess ? '1' : '0');
   if (typeof tailscaleIsHome === 'boolean') await setSetting(db, 'tailscale_is_home', tailscaleIsHome ? '1' : '0');
@@ -169,13 +162,7 @@ export function noteTailscale(req) {
 
 export async function tailscaleStatus(db) {
   if (!savedHost) {
-    const row = await db.get("SELECT value FROM settings WHERE key = 'tailscale_host'");
-    savedHost = row?.value || null;
+    savedHost = (await getSetting(db, 'tailscale_host')) || null;
   }
   return { host: savedHost, lastSeen: seen.tailscale?.at || null, funnelLastSeen: seen.funnel?.at || null };
-}
-
-// Test hook: settings are cached in memory.
-export function resetNetworkCache() {
-  cache = null;
 }

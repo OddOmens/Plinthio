@@ -1106,7 +1106,6 @@
       "removeAll": "Usuń wszystkie na dobre"
     },
     "keepAsHistory": "Zachowaj w historii",
-    "removeForGood": "Usuń na dobre",
     "offloaded": {
       "title": "Zarchiwizowane (zachowane w historii)",
       "hint": "Usunięte, aby zwolnić miejsce, i zachowane w historii: ukryte na półkach i w wyszukiwaniu, wyszarzone na stronie tytułu z postępami wszystkich. Jeśli pliki wrócą, zostaną przywrócone automatycznie.",

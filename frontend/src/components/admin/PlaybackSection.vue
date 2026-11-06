@@ -130,7 +130,7 @@ import { useCustomizationStore } from '../../stores/customization';
 import { useDialogStore } from '../../stores/dialog';
 import { useSaveStatus } from '../../composables/useSaveStatus';
 import { useServerSetting } from '../../composables/useServerSetting';
-import { getMediaToken } from '../../utils/mediaToken';
+import { introUrl } from '../../utils/cover';
 import SectionHeader from '../settings/SectionHeader.vue';
 import SettingsCard from '../settings/SettingsCard.vue';
 import ToggleRow from '../settings/ToggleRow.vue';
@@ -176,12 +176,7 @@ const saveIntro = (patch) => introSave.set(patch);
 const introFileInput = ref(null);
 const introBusy = ref(false);
 const introError = ref('');
-const introPreviewUrl = computed(() => {
-  const params = new URLSearchParams({ v: store.introVersion || '1' });
-  const token = getMediaToken();
-  if (token) params.set('token', token);
-  return `/api/media/intro?${params}`;
-});
+const introPreviewUrl = computed(() => introUrl(store.introVersion));
 
 async function uploadIntro(event) {
   const file = event.target.files?.[0];

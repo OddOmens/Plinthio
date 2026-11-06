@@ -85,7 +85,7 @@
 
             <div class="grid grid-cols-4 sm:grid-cols-8 gap-3">
               <button :aria-label="acc.label"
-                v-for="acc in accentOptions"
+                v-for="acc in ACCENT_OPTIONS"
                 :key="acc.id"
                 type="button"
                 @click="selectAccent(acc.id)"
@@ -98,7 +98,7 @@
                 <span :class="['w-7 h-7 rounded-full shadow-inner', acc.swatch]" />
               </button>
             </div>
-            <p class="text-center text-sm text-muted-foreground capitalize">{{ optionLabel(accentOptions, choices.accent) }}</p>
+            <p class="text-center text-sm text-muted-foreground capitalize">{{ optionLabel(ACCENT_OPTIONS, choices.accent) }}</p>
           </section>
 
           <!-- STEP: Interests -->
@@ -265,8 +265,6 @@ const themeOptions = computed(() => [
   }
 ]);
 
-const accentOptions = ACCENT_OPTIONS;
-
 const mediaOptions = computed(() => [
   { id: 'manga', icon: FileImage },
   { id: 'book', icon: Book },
@@ -337,7 +335,7 @@ async function finish(skipped) {
 
     await api.patch('/users/preferences', preferences);
     authStore.user = { ...authStore.user, preferences };
-    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+    authStore.persistUser();
 
     if (!skipped && authStore.isAdmin && choices.accent !== customizationStore.accentTheme) {
       await customizationStore.updateCustomization({ accentTheme: choices.accent });

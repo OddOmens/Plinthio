@@ -9,7 +9,7 @@
 //
 // Hand-rolled rather than vue-i18n: it's a few dozen lines, and the Content-Security-Policy
 // forbids the eval that vue-i18n's runtime message compiler can fall back on.
-import { ref, shallowRef, computed } from 'vue';
+import { ref, shallowRef } from 'vue';
 
 // Matched on the browser's base language, so pt-PT gets Brazilian Portuguese and zh-TW gets
 // Simplified Chinese rather than English. Each name is written in its own language.
@@ -197,10 +197,6 @@ export function languageName(code) {
   } catch {
     return code;
   }
-}
-
-export function useI18n() {
-  return { t, te, n, d, relative, list, languageName, locale, languages: LANGUAGES, setLanguage, applyLanguage, current: computed(() => locale.value) };
 }
 
 export default {

@@ -5,7 +5,7 @@ import path from 'path';
 import http from 'http';
 import https from 'https';
 import { execFileSync } from 'child_process';
-import { startTestServer } from './helpers/server.js';
+import { startTestServer, freePort } from './helpers/server.js';
 
 let hasOpenssl = true;
 try { execFileSync('openssl', ['version'], { stdio: 'ignore' }); } catch { hasOpenssl = false; }
@@ -37,7 +37,7 @@ describe('built-in HTTPS', { skip: !hasOpenssl && 'openssl is not installed' }, 
   let server; let httpsPort; let ca;
 
   before(async () => {
-    httpsPort = 30000 + Math.floor(Math.random() * 20000);
+    httpsPort = await freePort();
     server = await startTestServer({ env: { HTTPS_PORT: String(httpsPort), TLS_HOSTNAMES: 'media.lan,not a name' } });
     // The HTTPS listener starts just after HTTP.
     for (let i = 0; i < 50 && !(await fetch(`${server.baseUrl}/api/tls`).then((r) => r.json())).enabled; i++) {

@@ -323,7 +323,6 @@
 </template>
 
 <script setup>
-import { getMediaToken } from '../utils/mediaToken';
 import { ref, computed, watch, nextTick } from 'vue';
 import api from '../api/client';
 import { usePlayerStore, PLAYBACK_SPEEDS } from '../stores/player';
@@ -354,7 +353,6 @@ const emit = defineEmits(['close']);
 
 const player = usePlayerStore();
 const dialog = useDialogStore();
-const token = getMediaToken() || '';
 
 const showBookmarksDrawer = ref(false);
 const showChapters = ref(false);

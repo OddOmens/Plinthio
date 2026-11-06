@@ -1050,7 +1050,6 @@
       "removeAll": "Alle endgültig entfernen"
     },
     "keepAsHistory": "Als Verlauf behalten",
-    "removeForGood": "Endgültig entfernen",
     "offloaded": {
       "title": "Archiviert (als Verlauf behalten)",
       "hint": "Entfernt, um Platz zu schaffen, und als Verlauf behalten: in Regalen und Suche ausgeblendet, ausgegraut auf ihrer Titelseite mit dem Fortschritt aller. Kommen die Dateien zurück, werden sie von selbst wiederhergestellt.",

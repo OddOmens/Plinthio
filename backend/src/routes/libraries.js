@@ -6,7 +6,7 @@ import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin, requireEditor } from '../middleware/auth.js';
 import { scanLibrary } from '../services/scanner.js';
 import { logger } from '../services/logger.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 
 const router = express.Router();
@@ -38,25 +38,21 @@ export function resolveLibraryPath(inputPath) {
 }
 
 // List libraries with total items count
-router.get('/', async (req, res) => {
-  try {
-    const db = await getDb();
-    const libraries = await db.all(`
+router.get('/', handle(async (req, res) => {
+  const db = await getDb();
+  const libraries = await db.all(`
       SELECT l.*, COUNT(i.id) as item_count
       FROM libraries l
       LEFT JOIN items i ON l.id = i.library_id AND i.missing_since IS NULL AND i.extra_type IS NULL
       GROUP BY l.id
       ORDER BY l.name ASC
     `);
-    // Mount paths are server layout; only admins (who manage libraries) need them.
-    if (req.user.role !== 'admin') {
-      for (const lib of libraries) delete lib.path;
-    }
-    res.json({ libraries });
-  } catch (err) {
-    serverError(req, res, err);
+  // Mount paths are server layout; only admins (who manage libraries) need them.
+  if (req.user.role !== 'admin') {
+    for (const lib of libraries) delete lib.path;
   }
-});
+  res.json({ libraries });
+}));
 
 // Shared by the admin browse route below and the pre-setup browse route in auth.js, so the
 // first-run wizard can offer the same folder picker the Admin panel has.
@@ -78,15 +74,10 @@ export function listMediaDirectories(dir) {
 }
 
 // Browse available media folders in /media
-router.get('/browse', requireAdmin, async (req, res) => {
-  try {
-    res.json(listMediaDirectories(req.query.dir));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/browse', requireAdmin, handle(async (req, res) => {
+  res.json(listMediaDirectories(req.query.dir));
+}));
 
-// Create new library (Admin only)
 router.post('/', requireAdmin, async (req, res) => {
   let { name, path: libPath, type } = req.body;
 
@@ -137,62 +128,49 @@ router.post('/', requireAdmin, async (req, res) => {
 // details are flagged at all (off for home videos; services/metadataGaps.js).
 const LIBRARY_OPTIONS = { kidsAllowed: 'kids_allowed', ignoreMissingMetadata: 'ignore_missing_metadata' };
 
-router.patch('/:id', requireEditor, async (req, res) => {
+router.patch('/:id', requireEditor, handle(async (req, res) => {
   const changes = Object.entries(LIBRARY_OPTIONS).filter(([field]) => req.body?.[field] !== undefined);
   if (!changes.length || changes.some(([field]) => typeof req.body[field] !== 'boolean')) {
     return res.status(400).json({ error: `Send ${Object.keys(LIBRARY_OPTIONS).join(' or ')} as true or false` });
   }
-  try {
-    const db = await getDb();
-    const result = await db.run(
-      `UPDATE libraries SET ${changes.map(([, column]) => `${column} = ?`).join(', ')} WHERE id = ?`,
-      [...changes.map(([field]) => (req.body[field] ? 1 : 0)), req.params.id]
-    );
-    if (!result.changes) return res.status(404).json({ error: 'Library not found' });
-    for (const [field] of changes) {
-      const on = req.body[field];
-      logger.info('library', field === 'kidsAllowed'
-        ? `Library ${req.params.id} ${on ? 'added to' : 'removed from'} Kids Mode by ${req.user.username}`
-        : `Library ${req.params.id}: missing metadata ${on ? 'ignored' : 'flagged again'} by ${req.user.username}`);
-    }
-    res.json({ id: req.params.id, ...Object.fromEntries(changes.map(([field]) => [field, req.body[field]])) });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  const result = await db.run(
+    `UPDATE libraries SET ${changes.map(([, column]) => `${column} = ?`).join(', ')} WHERE id = ?`,
+    [...changes.map(([field]) => (req.body[field] ? 1 : 0)), req.params.id]
+  );
+  if (!result.changes) return res.status(404).json({ error: 'Library not found' });
+  for (const [field] of changes) {
+    const on = req.body[field];
+    logger.info('library', field === 'kidsAllowed'
+      ? `Library ${req.params.id} ${on ? 'added to' : 'removed from'} Kids Mode by ${req.user.username}`
+      : `Library ${req.params.id}: missing metadata ${on ? 'ignored' : 'flagged again'} by ${req.user.username}`);
   }
-});
+  res.json({ id: req.params.id, ...Object.fromEntries(changes.map(([field]) => [field, req.body[field]])) });
+}));
 
-// Trigger library scan
-router.post('/:id/scan', requireAdmin, async (req, res) => {
-  try {
-    const result = await scanLibrary(req.params.id);
-    res.json(result);
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.post('/:id/scan', requireAdmin, handle(async (req, res) => {
+  const result = await scanLibrary(req.params.id);
+  res.json(result);
+}));
 
 // Delete library (Admin only) — cascades to remove every item, progress row, and bookmark
 // tied to it, so log exactly what's about to be lost before it's gone for good.
-router.delete('/:id', requireAdmin, async (req, res) => {
-  try {
-    const db = await getDb();
-    const lib = await db.get('SELECT name, type, path FROM libraries WHERE id = ?', [req.params.id]);
-    if (!lib) {
-      return res.status(404).json({ error: 'Library not found' });
-    }
-    const itemCount = await db.get('SELECT COUNT(*) as count FROM items WHERE library_id = ?', [req.params.id]);
-
-    await db.run('DELETE FROM libraries WHERE id = ?', [req.params.id]);
-    logger.warn(
-      'library',
-      `Library "${lib.name}" (${lib.type}) deleted by admin ${req.user.username} — ${itemCount.count} catalog item(s) removed (reading progress/bookmarks are preserved and will re-attach if the same folder is re-scanned)`,
-      { libraryId: req.params.id, path: lib.path }
-    );
-
-    res.json({ message: 'Library deleted successfully' });
-  } catch (err) {
-    serverError(req, res, err);
+router.delete('/:id', requireAdmin, handle(async (req, res) => {
+  const db = await getDb();
+  const lib = await db.get('SELECT name, type, path FROM libraries WHERE id = ?', [req.params.id]);
+  if (!lib) {
+    return res.status(404).json({ error: 'Library not found' });
   }
-});
+  const itemCount = await db.get('SELECT COUNT(*) as count FROM items WHERE library_id = ?', [req.params.id]);
+
+  await db.run('DELETE FROM libraries WHERE id = ?', [req.params.id]);
+  logger.warn(
+    'library',
+    `Library "${lib.name}" (${lib.type}) deleted by admin ${req.user.username} — ${itemCount.count} catalog item(s) removed (reading progress/bookmarks are preserved and will re-attach if the same folder is re-scanned)`,
+    { libraryId: req.params.id, path: lib.path }
+  );
+
+  res.json({ message: 'Library deleted successfully' });
+}));
 
 export default router;

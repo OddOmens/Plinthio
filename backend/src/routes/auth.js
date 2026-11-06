@@ -9,7 +9,7 @@ import { scanLibrary } from '../services/scanner.js';
 import { logger } from '../services/logger.js';
 import { LIBRARY_TYPES, resolveLibraryPath, listMediaDirectories } from './libraries.js';
 import { ALL_MEDIA_TYPES } from '../config/mediaTypes.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { normalizeUsername, USERNAME_RULE } from '../utils/username.js';
 import { requestLocation, outsideAccessError, saveNetworkSettings } from '../services/network.js';
@@ -17,13 +17,13 @@ import {
   newSecret, otpauthUri, verifyTotp, sealSecret, openSecret, newRecoveryCodes, useRecoveryCode,
   recoveryCodesLeft, createChallenge, takeChallengeAttempt, endChallenge
 } from '../services/twoFactor.js';
+import { getSetting, setSetting } from '../services/settings.js';
 
 const router = express.Router();
 const VALID_ROLES = ['admin', 'editor', 'viewer'];
 // A throwaway hash at the same cost factor as real ones (see the unknown-user login path).
 const DUMMY_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10);
 
-// Check if initial admin account has been set up
 router.get('/setup-status', async (req, res) => {
   try {
     const db = await getDb();
@@ -165,13 +165,8 @@ router.post('/setup', async (req, res) => {
       [userId, adminName, passwordHash, 'admin', adminPrefs]
     );
 
-    // Save Server Name if provided
     if (typeof serverName === 'string' && serverName.trim()) {
-      await db.run(
-        `INSERT INTO settings (key, value, updated_at) VALUES ('server_name', ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-        [serverName.trim()]
-      );
+      await setSetting(db, 'server_name', serverName.trim());
     }
 
     for (const lib of libraryRows) {
@@ -445,19 +440,15 @@ router.post('/login/2fa', async (req, res) => {
 
 // What the sign-in page needs to know before anyone signs in: whether this device is
 // outside the home network, and if so whether that's allowed at all.
-router.get('/access', async (req, res) => {
-  try {
-    const loc = await requestLocation(req);
-    res.json({
-      where: loc.where,
-      away: loc.away,
-      allowed: !loc.away || loc.settings.remoteAccess,
-      twoFactorRequired: loc.away && loc.settings.require2faOutside
-    });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/access', handle(async (req, res) => {
+  const loc = await requestLocation(req);
+  res.json({
+    where: loc.where,
+    away: loc.away,
+    allowed: !loc.away || loc.settings.remoteAccess,
+    twoFactorRequired: loc.away && loc.settings.require2faOutside
+  });
+}));
 
 async function recordLoginAttempt(db, { userId, username, success, ip, userAgent, network = null }) {
   try {
@@ -471,7 +462,6 @@ async function recordLoginAttempt(db, { userId, username, success, ip, userAgent
   }
 }
 
-// Get current user profile
 router.get('/me', authenticateToken, (req, res) => {
   res.json({ user: req.user });
 });
@@ -505,20 +495,16 @@ router.post('/media-token', authenticateToken, (req, res) => {
 // Invalidate every token issued for this account, this one included — the "signed in
 // somewhere I shouldn't be" button. Bumping token_version is the same mechanism a password
 // change uses, so it revokes instantly rather than waiting for expiry.
-router.post('/sign-out-everywhere', authenticateToken, async (req, res) => {
-  try {
-    const db = await getDb();
-    await db.run(
-      'UPDATE users SET token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [req.user.id]
-    );
-    invalidateUserCache(req.user.id);
-    logger.info('auth', `"${req.user.username}" signed out all sessions`);
-    res.json({ message: 'All sessions signed out. Please sign in again.' });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.post('/sign-out-everywhere', authenticateToken, handle(async (req, res) => {
+  const db = await getDb();
+  await db.run(
+    'UPDATE users SET token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    [req.user.id]
+  );
+  invalidateUserCache(req.user.id);
+  logger.info('auth', `"${req.user.username}" signed out all sessions`);
+  res.json({ message: 'All sessions signed out. Please sign in again.' });
+}));
 
 // ─── Two-factor: turning it on and off, for your own account ─────────────────────────────
 // Only with a signed-in session, never an API key: a key handed to a reading app mustn't be
@@ -537,62 +523,50 @@ async function twoFactorStatus(db, userId) {
   };
 }
 
-router.get('/2fa', authenticateToken, sessionOnly, async (req, res) => {
-  try {
-    res.json(await twoFactorStatus(await getDb(), req.user.id));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/2fa', authenticateToken, sessionOnly, handle(async (req, res) => {
+  res.json(await twoFactorStatus(await getDb(), req.user.id));
+}));
 
 // Step 1: a new secret, held as pending until a code from it is confirmed. Returns the
 // otpauth:// link (the app shows it as a QR code) and the secret for typing in by hand.
-router.post('/2fa/setup', authenticateToken, sessionOnly, async (req, res) => {
-  try {
-    const db = await getDb();
-    const row = await db.get('SELECT totp_enabled_at FROM users WHERE id = ?', [req.user.id]);
-    if (row?.totp_enabled_at) return res.status(400).json({ error: 'Two-factor is already on. Turn it off first to set it up again.' });
-    const secret = newSecret();
-    await db.run('UPDATE users SET totp_pending = ? WHERE id = ?', [sealSecret(secret), req.user.id]);
-    const name = (await db.get("SELECT value FROM settings WHERE key = 'server_name'"))?.value?.trim() || 'Plinthio';
-    res.json({ secret, uri: otpauthUri(secret, { issuer: name, account: req.user.username }) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.post('/2fa/setup', authenticateToken, sessionOnly, handle(async (req, res) => {
+  const db = await getDb();
+  const row = await db.get('SELECT totp_enabled_at FROM users WHERE id = ?', [req.user.id]);
+  if (row?.totp_enabled_at) return res.status(400).json({ error: 'Two-factor is already on. Turn it off first to set it up again.' });
+  const secret = newSecret();
+  await db.run('UPDATE users SET totp_pending = ? WHERE id = ?', [sealSecret(secret), req.user.id]);
+  const name = (await getSetting(db, 'server_name'))?.trim() || 'Plinthio';
+  res.json({ secret, uri: otpauthUri(secret, { issuer: name, account: req.user.username }) });
+}));
 
 // Step 2: a code from the app proves it's set up; two-factor goes on and the backup codes
 // are shown, once.
-router.post('/2fa/enable', authenticateToken, sessionOnly, async (req, res) => {
-  try {
-    const db = await getDb();
-    const row = await db.get('SELECT totp_pending, totp_enabled_at FROM users WHERE id = ?', [req.user.id]);
-    if (row?.totp_enabled_at) return res.status(400).json({ error: 'Two-factor is already on' });
-    const secret = openSecret(row?.totp_pending);
-    if (!secret) return res.status(400).json({ error: 'Start setting up two-factor first' });
-    const step = verifyTotp(secret, req.body?.code);
-    if (step === null) return sendError(req, res, 'P111');
-    const { codes, stored } = newRecoveryCodes();
-    // Every other session is signed out (one started before two-factor, perhaps by whoever
-    // made it necessary, shouldn't outlive it); this device gets a fresh token in the answer.
-    await db.run(
-      `UPDATE users SET totp_secret = ?, totp_pending = NULL, totp_enabled_at = CURRENT_TIMESTAMP,
+router.post('/2fa/enable', authenticateToken, sessionOnly, handle(async (req, res) => {
+  const db = await getDb();
+  const row = await db.get('SELECT totp_pending, totp_enabled_at FROM users WHERE id = ?', [req.user.id]);
+  if (row?.totp_enabled_at) return res.status(400).json({ error: 'Two-factor is already on' });
+  const secret = openSecret(row?.totp_pending);
+  if (!secret) return res.status(400).json({ error: 'Start setting up two-factor first' });
+  const step = verifyTotp(secret, req.body?.code);
+  if (step === null) return sendError(req, res, 'P111');
+  const { codes, stored } = newRecoveryCodes();
+  // Every other session is signed out (one started before two-factor, perhaps by whoever
+  // made it necessary, shouldn't outlive it); this device gets a fresh token in the answer.
+  await db.run(
+    `UPDATE users SET totp_secret = ?, totp_pending = NULL, totp_enabled_at = CURRENT_TIMESTAMP,
          totp_last_step = ?, totp_recovery = ?, token_version = token_version + 1 WHERE id = ?`,
-      [sealSecret(secret), step, stored, req.user.id]
-    );
-    invalidateUserCache(req.user.id);
-    const user = { ...req.user, token_version: (req.user.token_version || 0) + 1 };
-    const token = jwt.sign(
-      { userId: user.id, username: user.username, role: user.role, tokenVersion: user.token_version },
-      config.jwtSecret,
-      { expiresIn: config.jwtExpiresIn }
-    );
-    logger.info('auth', `"${req.user.username}" turned on two-factor sign-in`);
-    res.json({ ...(await twoFactorStatus(db, req.user.id)), recoveryCodes: codes, token, mediaToken: signMediaToken(user) });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+    [sealSecret(secret), step, stored, req.user.id]
+  );
+  invalidateUserCache(req.user.id);
+  const user = { ...req.user, token_version: (req.user.token_version || 0) + 1 };
+  const token = jwt.sign(
+    { userId: user.id, username: user.username, role: user.role, tokenVersion: user.token_version },
+    config.jwtSecret,
+    { expiresIn: config.jwtExpiresIn }
+  );
+  logger.info('auth', `"${req.user.username}" turned on two-factor sign-in`);
+  res.json({ ...(await twoFactorStatus(db, req.user.id)), recoveryCodes: codes, token, mediaToken: signMediaToken(user) });
+}));
 
 // Checks the password and a current code (or a backup code), for turning two-factor off or
 // getting new backup codes: someone at an unlocked, signed-in browser can't do either.
@@ -614,36 +588,28 @@ async function confirmIdentity(db, req, { needCode }) {
   return null;
 }
 
-router.post('/2fa/disable', authenticateToken, sessionOnly, async (req, res) => {
-  try {
-    const db = await getDb();
-    const problem = await confirmIdentity(db, req, { needCode: true });
-    if (problem) return sendError(req, res, problem);
-    await db.run(
-      'UPDATE users SET totp_secret = NULL, totp_pending = NULL, totp_enabled_at = NULL, totp_last_step = NULL, totp_recovery = NULL WHERE id = ?',
-      [req.user.id]
-    );
-    logger.warn('auth', `"${req.user.username}" turned off two-factor sign-in`);
-    res.json(await twoFactorStatus(db, req.user.id));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.post('/2fa/disable', authenticateToken, sessionOnly, handle(async (req, res) => {
+  const db = await getDb();
+  const problem = await confirmIdentity(db, req, { needCode: true });
+  if (problem) return sendError(req, res, problem);
+  await db.run(
+    'UPDATE users SET totp_secret = NULL, totp_pending = NULL, totp_enabled_at = NULL, totp_last_step = NULL, totp_recovery = NULL WHERE id = ?',
+    [req.user.id]
+  );
+  logger.warn('auth', `"${req.user.username}" turned off two-factor sign-in`);
+  res.json(await twoFactorStatus(db, req.user.id));
+}));
 
-router.post('/2fa/recovery-codes', authenticateToken, sessionOnly, async (req, res) => {
-  try {
-    const db = await getDb();
-    const row = await db.get('SELECT totp_enabled_at FROM users WHERE id = ?', [req.user.id]);
-    if (!row?.totp_enabled_at) return res.status(400).json({ error: 'Two-factor is off' });
-    const problem = await confirmIdentity(db, req, { needCode: true });
-    if (problem) return sendError(req, res, problem);
-    const { codes, stored } = newRecoveryCodes();
-    await db.run('UPDATE users SET totp_recovery = ? WHERE id = ?', [stored, req.user.id]);
-    logger.info('auth', `"${req.user.username}" made new two-factor backup codes`);
-    res.json({ ...(await twoFactorStatus(db, req.user.id)), recoveryCodes: codes });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.post('/2fa/recovery-codes', authenticateToken, sessionOnly, handle(async (req, res) => {
+  const db = await getDb();
+  const row = await db.get('SELECT totp_enabled_at FROM users WHERE id = ?', [req.user.id]);
+  if (!row?.totp_enabled_at) return res.status(400).json({ error: 'Two-factor is off' });
+  const problem = await confirmIdentity(db, req, { needCode: true });
+  if (problem) return sendError(req, res, problem);
+  const { codes, stored } = newRecoveryCodes();
+  await db.run('UPDATE users SET totp_recovery = ? WHERE id = ?', [stored, req.user.id]);
+  logger.info('auth', `"${req.user.username}" made new two-factor backup codes`);
+  res.json({ ...(await twoFactorStatus(db, req.user.id)), recoveryCodes: codes });
+}));
 
 export default router;

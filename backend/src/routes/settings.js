@@ -19,8 +19,9 @@ import { getAutoScanSettings, saveAutoScanSettings } from '../services/autoScan.
 import { verifyTmdbApiKey, getTmdbKeyInfo, hasBuiltinTmdbKey, verifyGoogleBooksKey, getGoogleBooksKeyInfo, METADATA_PROVIDERS, providersOff } from '../services/externalMetadata.js';
 import { getComicVineKeyInfo, verifyComicVineKey } from '../services/comicvine.js';
 import { SEND_OPTS } from '../utils/fileStream.js';
-import { serverError } from '../utils/http.js';
+import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
+import { getSetting, setSetting } from '../services/settings.js';
 
 const router = express.Router();
 
@@ -38,45 +39,33 @@ export function normalizeShelfModes(stored) {
 }
 
 async function readShelfModes(db) {
-  const row = await db.get("SELECT value FROM settings WHERE key = 'allowed_grouping_modes'");
+  const value = await getSetting(db, 'allowed_grouping_modes');
   let stored = null;
-  try { stored = row?.value ? JSON.parse(row.value) : null; } catch (e) { /* fall back to all */ }
+  try { stored = value ? JSON.parse(value) : null; } catch (e) { /* fall back to all */ }
   return normalizeShelfModes(stored);
 }
 
 // Which shelf views this server offers (every signed-in user needs this to draw the shelf).
-router.get('/filters', authenticateToken, async (req, res) => {
-  try {
-    const db = await getDb();
-    res.json({ allowedGroupingModes: await readShelfModes(db), optionalGroupingModes: OPTIONAL_SHELF_MODES });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/filters', authenticateToken, handle(async (req, res) => {
+  const db = await getDb();
+  res.json({ allowedGroupingModes: await readShelfModes(db), optionalGroupingModes: OPTIONAL_SHELF_MODES });
+}));
 
 // Admin: turn the optional views on or off. Anything else in the list is ignored — Series
 // and Creator can't be disabled.
-router.patch('/filters', authenticateToken, requireAdmin, async (req, res) => {
+router.patch('/filters', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { allowedGroupingModes } = req.body;
 
   if (!Array.isArray(allowedGroupingModes)) {
     return res.status(400).json({ error: 'allowedGroupingModes must be an array' });
   }
 
-  try {
-    const db = await getDb();
-    const modes = normalizeShelfModes(allowedGroupingModes);
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('allowed_grouping_modes', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [JSON.stringify(modes)]
-    );
+  const db = await getDb();
+  const modes = normalizeShelfModes(allowedGroupingModes);
+  await setSetting(db, 'allowed_grouping_modes', JSON.stringify(modes));
 
-    res.json({ message: 'Shelf views updated', allowedGroupingModes: modes });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  res.json({ message: 'Shelf views updated', allowedGroupingModes: modes });
+}));
 
 // Which TMDB key is in use, never the key itself. tmdbSource is "custom", "environment",
 // "builtin" or null; tmdbBuiltIn says whether this build has a key to fall back to.
@@ -102,175 +91,124 @@ async function providerSwitches() {
 }
 
 // Admin endpoint to check which metadata provider keys are configured
-router.get('/metadata-providers', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    res.json({ ...await tmdbStatus(), ...await googleBooksStatus(), ...await comicVineStatus(), ...await providerSwitches() });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/metadata-providers', authenticateToken, requireAdmin, handle(async (req, res) => {
+  res.json({ ...await tmdbStatus(), ...await googleBooksStatus(), ...await comicVineStatus(), ...await providerSwitches() });
+}));
 
 // Hardware transcoding: what this machine can do, and what the admin has chosen.
-router.get('/transcoding', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const db = await getDb();
-    const row = await db.get("SELECT value FROM settings WHERE key = 'transcode_hwaccel'");
-    res.json({
-      preference: row?.value || 'auto',
-      detected: await getDetectedHwaccel(),
-      available: listHwaccels()
-    });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/transcoding', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const db = await getDb();
+  const preference = await getSetting(db, 'transcode_hwaccel');
+  res.json({
+    preference: preference || 'auto',
+    detected: await getDetectedHwaccel(),
+    available: listHwaccels()
+  });
+}));
 
-router.put('/transcoding', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/transcoding', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { preference } = req.body;
   if (!['auto', 'none', ...listHwaccels()].includes(preference)) {
     return res.status(400).json({ error: 'Unknown hardware acceleration preference' });
   }
 
-  try {
-    const db = await getDb();
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('transcode_hwaccel', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [preference]
-    );
-    res.json({ message: 'Transcoding settings saved', preference });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const db = await getDb();
+  await setSetting(db, 'transcode_hwaccel', preference);
+  res.json({ message: 'Transcoding settings saved', preference });
+}));
 
 // Runs a short real encode, because ffmpeg listing an encoder is no guarantee the driver
 // underneath it actually works — that usually only shows up as failed playback otherwise.
-router.post('/transcoding/test', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/transcoding/test', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { method } = req.body;
   if (!listHwaccels().includes(method)) {
     return res.status(400).json({ error: 'Unknown hardware acceleration method' });
   }
 
-  try {
-    res.json(await testHwaccel(method));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  res.json(await testHwaccel(method));
+}));
 
-// Admin endpoint to set/clear the TMDB API key used for movie/show/anime metadata search
 // Switch one metadata provider on or off: { provider: 'google-books', enabled: false }.
-router.put('/metadata-providers/enabled', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/metadata-providers/enabled', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { provider, enabled } = req.body;
   if (!METADATA_PROVIDERS.includes(provider) || typeof enabled !== 'boolean') {
     return res.status(400).json({ error: `provider must be one of ${METADATA_PROVIDERS.join(', ')}, and enabled true or false` });
   }
-  try {
-    const off = await providersOff();
-    if (enabled) off.delete(provider);
-    else off.add(provider);
-    const db = await getDb();
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('metadata_providers_off', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [JSON.stringify([...off])]
-    );
-    res.json(await providerSwitches());
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
-router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, async (req, res) => {
+  const off = await providersOff();
+  if (enabled) off.delete(provider);
+  else off.add(provider);
+  const db = await getDb();
+  await setSetting(db, 'metadata_providers_off', JSON.stringify([...off]));
+  res.json(await providerSwitches());
+}));
+
+// Admin endpoint to set/clear the TMDB API key used for movie/show/anime metadata search
+router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { apiKey } = req.body;
 
-  try {
-    const db = await getDb();
-    if (!apiKey || !apiKey.trim()) {
-      await db.run("DELETE FROM settings WHERE key = 'tmdb_api_key'");
-      const status = await tmdbStatus();
-      return res.json({
-        message: status.tmdbSource === 'builtin' ? 'Your TMDB key was removed. Using the built-in key.' : 'TMDB API key cleared',
-        ...status
-      });
-    }
-
-    // Verify before storing. A key that doesn't work should say so here, not silently do
-    // nothing until someone notices their posters never arrived.
-    const check = await verifyTmdbApiKey(apiKey);
-    if (!check.ok) {
-      return sendError(req, res, 'P401', { message: check.reason, status: 400 });
-    }
-
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('tmdb_api_key', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [apiKey.trim()]
-    );
-
-    res.json({
-      message: check.authStyle === 'read-access-token'
-        ? 'TMDB Read Access Token saved and verified'
-        : 'TMDB API key saved and verified',
-      ...await tmdbStatus()
+  const db = await getDb();
+  if (!apiKey || !apiKey.trim()) {
+    await db.run("DELETE FROM settings WHERE key = 'tmdb_api_key'");
+    const status = await tmdbStatus();
+    return res.json({
+      message: status.tmdbSource === 'builtin' ? 'Your TMDB key was removed. Using the built-in key.' : 'TMDB API key cleared',
+      ...status
     });
-  } catch (err) {
-    serverError(req, res, err);
   }
-});
+
+  // Verify before storing. A key that doesn't work should say so here, not silently do
+  // nothing until someone notices their posters never arrived.
+  const check = await verifyTmdbApiKey(apiKey);
+  if (!check.ok) {
+    return sendError(req, res, 'P401', { message: check.reason, status: 400 });
+  }
+
+  await setSetting(db, 'tmdb_api_key', apiKey.trim());
+
+  res.json({
+    message: check.authStyle === 'read-access-token'
+      ? 'TMDB Read Access Token saved and verified'
+      : 'TMDB API key saved and verified',
+    ...await tmdbStatus()
+  });
+}));
 
 // Admin endpoint to set/clear an optional Google Books API key (book metadata). Without one,
 // Google Books runs on the shared keyless quota and Open Library carries the lookups.
-router.put('/metadata-providers/comicvine-key', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/metadata-providers/comicvine-key', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { apiKey } = req.body;
 
-  try {
-    const db = await getDb();
-    if (!apiKey || !String(apiKey).trim()) {
-      await db.run("DELETE FROM settings WHERE key = 'comicvine_api_key'");
-      return res.json({ message: 'Comic Vine API key cleared', ...await comicVineStatus() });
-    }
-
-    const check = await verifyComicVineKey(apiKey);
-    if (!check.ok) {
-      return sendError(req, res, 'P401', { message: check.reason, status: 400 });
-    }
-
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('comicvine_api_key', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [String(apiKey).trim()]
-    );
-    res.json({ message: 'Comic Vine API key saved and verified', ...await comicVineStatus() });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  if (!apiKey || !String(apiKey).trim()) {
+    await db.run("DELETE FROM settings WHERE key = 'comicvine_api_key'");
+    return res.json({ message: 'Comic Vine API key cleared', ...await comicVineStatus() });
   }
-});
-router.put('/metadata-providers/google-books-key', authenticateToken, requireAdmin, async (req, res) => {
+
+  const check = await verifyComicVineKey(apiKey);
+  if (!check.ok) {
+    return sendError(req, res, 'P401', { message: check.reason, status: 400 });
+  }
+
+  await setSetting(db, 'comicvine_api_key', String(apiKey).trim());
+  res.json({ message: 'Comic Vine API key saved and verified', ...await comicVineStatus() });
+}));
+router.put('/metadata-providers/google-books-key', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { apiKey } = req.body;
 
-  try {
-    const db = await getDb();
-    if (!apiKey || !String(apiKey).trim()) {
-      await db.run("DELETE FROM settings WHERE key = 'google_books_api_key'");
-      return res.json({ message: 'Google Books API key cleared', ...await googleBooksStatus() });
-    }
-
-    const check = await verifyGoogleBooksKey(apiKey);
-    if (!check.ok) {
-      return sendError(req, res, 'P401', { message: check.reason, status: 400 });
-    }
-
-    await db.run(
-      `INSERT INTO settings (key, value, updated_at) VALUES ('google_books_api_key', ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      [String(apiKey).trim()]
-    );
-    res.json({ message: 'Google Books API key saved and verified', ...await googleBooksStatus() });
-  } catch (err) {
-    serverError(req, res, err);
+  const db = await getDb();
+  if (!apiKey || !String(apiKey).trim()) {
+    await db.run("DELETE FROM settings WHERE key = 'google_books_api_key'");
+    return res.json({ message: 'Google Books API key cleared', ...await googleBooksStatus() });
   }
-});
+
+  const check = await verifyGoogleBooksKey(apiKey);
+  if (!check.ok) {
+    return sendError(req, res, 'P401', { message: check.reason, status: 400 });
+  }
+
+  await setSetting(db, 'google_books_api_key', String(apiKey).trim());
+  res.json({ message: 'Google Books API key saved and verified', ...await googleBooksStatus() });
+}));
 
 // Admin endpoint: download a consistent point-in-time snapshot of the database.
 // Uses SQLite's own VACUUM INTO rather than copying the file directly — the live database
@@ -303,14 +241,10 @@ router.get('/backup', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // Admin endpoint: read the automatic backup schedule (enabled, interval, retention)
-router.get('/backup/config', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const settings = await getBackupSettings();
-    res.json(settings);
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/backup/config', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const settings = await getBackupSettings();
+  res.json(settings);
+}));
 
 // Admin endpoint: update the automatic backup schedule
 router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) => {
@@ -363,15 +297,11 @@ router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) =
 });
 
 // Admin endpoints: automatic library scanning (periodic sweep + filesystem watcher)
-router.get('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    res.json(await getAutoScanSettings());
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/auto-scan', authenticateToken, requireAdmin, handle(async (req, res) => {
+  res.json(await getAutoScanSettings());
+}));
 
-router.put('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/auto-scan', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { enabled, intervalMinutes, watchEnabled, mode, times } = req.body;
 
   if (mode !== undefined && mode !== 'interval' && mode !== 'times') {
@@ -388,44 +318,28 @@ router.put('/auto-scan', authenticateToken, requireAdmin, async (req, res) => {
     }
   }
 
-  try {
-    const settings = await saveAutoScanSettings({ enabled, intervalMinutes, watchEnabled, mode, times });
-    res.json({ message: 'Automatic scanning updated', ...settings });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+  const settings = await saveAutoScanSettings({ enabled, intervalMinutes, watchEnabled, mode, times });
+  res.json({ message: 'Automatic scanning updated', ...settings });
+}));
 
 // Admin endpoint: can this folder take backups? (exists or can be made, writable, and
 // whether it's on the same disk as the server's data)
-router.post('/backup/destination/check', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    res.json(await checkDestination(req.body?.path));
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.post('/backup/destination/check', authenticateToken, requireAdmin, handle(async (req, res) => {
+  res.json(await checkDestination(req.body?.path));
+}));
 
 // Admin endpoint: copy backups to the destination now
-router.post('/backup/copy', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const result = await copyToDestination();
-    if (!result) return res.status(400).json({ error: 'No backup destination is set' });
-    if (!result.ok) return res.status(500).json({ error: result.error });
-    res.json(result);
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.post('/backup/copy', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const result = await copyToDestination();
+  if (!result) return res.status(400).json({ error: 'No backup destination is set' });
+  if (!result.ok) return res.status(500).json({ error: result.error });
+  res.json(result);
+}));
 
 // Admin endpoint: list backups currently stored on disk
-router.get('/backup/list', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    res.json({ backups: listBackupFiles() });
-  } catch (err) {
-    serverError(req, res, err);
-  }
-});
+router.get('/backup/list', authenticateToken, requireAdmin, handle(async (req, res) => {
+  res.json({ backups: listBackupFiles() });
+}));
 
 // Admin endpoint: create a backup right now and keep it on disk (unlike GET /backup, which
 // streams a one-off snapshot to the browser and deletes the server-side copy afterward)

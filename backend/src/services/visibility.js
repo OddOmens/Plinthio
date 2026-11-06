@@ -93,9 +93,6 @@ function personalSql(user, alias) {
   return sql;
 }
 
-// Earlier name, kept so existing callers (and work on other branches) keep compiling.
-export const ratingSql = accessSql;
-
 // `user` is the req.user object; a bare id is still accepted (no rating limit applied).
 export async function isItemHiddenForUser(db, itemId, user) {
   const userId = typeof user === 'object' ? user?.id : user;

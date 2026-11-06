@@ -115,7 +115,7 @@ async function dismiss() {
     const res = await api.patch('/users/preferences', { dismissedUpdateVersion: version });
     if (authStore.user && res.data.preferences) {
       authStore.user = { ...authStore.user, preferences: res.data.preferences };
-      localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+      authStore.persistUser();
     }
   } catch (e) {
     // The local copy still keeps it hidden on this device.

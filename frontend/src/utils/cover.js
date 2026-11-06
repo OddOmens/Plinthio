@@ -35,3 +35,16 @@ export function stillUrl(item) {
   params.set('v', coverVersion(item));
   return `/api/media/still/${item.id}?${params.toString()}`;
 }
+
+// A book's own file (EPUB, PDF …): opened in a new tab, or handed to the e-book reader.
+export function bookFileUrl(id) {
+  return `/api/media/book/${id}/file?token=${getMediaToken()}`;
+}
+
+// The server's intro clip; `version` changes whenever an admin uploads a new one.
+export function introUrl(version) {
+  const params = new URLSearchParams({ v: version || '1' });
+  const token = getMediaToken();
+  if (token) params.set('token', token);
+  return `/api/media/intro?${params}`;
+}

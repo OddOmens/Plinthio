@@ -14,6 +14,7 @@ import { sendRangedFile, streamFile, SEND_OPTS } from '../utils/fileStream.js';
 import { sendError, codeForFsError } from '../errors.js';
 import { getOrCreateStill } from '../services/videoFrame.js';
 import { activeIntroFile } from '../services/intro.js';
+import { ITEM_ID_RE } from '../utils/ids.js';
 
 // Reading a book/comic/audiobook file: a disconnected drive or unreadable file is P302/P301,
 // anything else the generic P000.
@@ -32,17 +33,6 @@ const coverPathCache = new Map();
 export function invalidateCoverCache(itemId) {
   coverPathCache.delete(itemId);
 }
-
-// Item ids are always a 32-char hex md5 of the file path (see scanner.js) — reject anything
-// else before it's used to build a filesystem path or hits the DB, closing off any path
-// traversal / injection surface via a malformed :id.
-const ITEM_ID_RE = /^[a-f0-9]{32}$/;
-// Only a fixed, small set of widths are ever actually requested by the frontend — capping
-// to this list (matching the widths the invalidation code elsewhere already assumes) means
-// no amount of requests can make the server cache more than a handful of thumbnail variants
-// per item, instead of trusting an open 100-1200 range that trivially lets a single client
-// force ~1100 distinct sharp() resizes per cover.
-const ALLOWED_THUMB_WIDTHS = THUMB_WIDTHS;
 
 // A still from a video (an episode's thumbnail in a show's episode list). Grabbed on first
 // request and cached; 404 when the file can't be read, and the page falls back to the cover.
@@ -89,7 +79,12 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
   }
   const isRaw = req.query.raw === 'true' || req.query.full === 'true';
   const requestedWidth = parseInt(req.query.w, 10);
-  const width = ALLOWED_THUMB_WIDTHS.includes(requestedWidth) ? requestedWidth : 360;
+  // Only a fixed, small set of widths are ever actually requested by the frontend — capping
+  // to this list (matching the widths the invalidation code elsewhere already assumes) means
+  // no amount of requests can make the server cache more than a handful of thumbnail variants
+  // per item, instead of trusting an open 100-1200 range that trivially lets a single client
+  // force ~1100 distinct sharp() resizes per cover.
+  const width = THUMB_WIDTHS.includes(requestedWidth) ? requestedWidth : 360;
 
   try {
     const db = await getDb();
@@ -202,7 +197,6 @@ router.get('/stream/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Manga Page List
 router.get('/manga/:id/pages', authenticateToken, async (req, res) => {
   if (!ITEM_ID_RE.test(req.params.id)) {
     return res.status(400).json({ error: 'Invalid item id' });

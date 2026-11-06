@@ -8,3 +8,13 @@ export function serverError(req, res, err, message) {
   const code = err?.plinthioCode || codeForFsError(err) || 'P000';
   sendError(req, res, code, { err, message: err?.plinthioCode ? err.message : message });
 }
+
+// Wraps an async route handler so anything it throws ends in serverError, instead of each
+// handler carrying its own try/catch.
+export const handle = (fn) => async (req, res, next) => {
+  try {
+    await fn(req, res, next);
+  } catch (err) {
+    serverError(req, res, err);
+  }
+};

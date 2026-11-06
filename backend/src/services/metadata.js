@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { pdfInfo, extractPdfCover } from './pdf.js';
-import { spawn } from 'child_process';
+import { runProbe } from './probe.js';
 import path from 'path';
 import * as mm from 'music-metadata';
 import { config } from '../config/env.js';
@@ -333,42 +333,16 @@ export async function extractVideoMetadata(filePath, itemId, mediaType = 'movie'
 // than the timeout, duration stays 0 and the scan carries on — playback re-probes anyway.
 const DURATION_PROBE_TIMEOUT_MS = 15000;
 
-function probeVideoDuration(filePath) {
-  return new Promise((resolve) => {
-    let settled = false;
-    const done = (value) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      resolve(value);
-    };
-
-    let proc;
-    const timer = setTimeout(() => {
-      try { proc?.kill('SIGKILL'); } catch (e) { /* already gone */ }
-      done(0);
-    }, DURATION_PROBE_TIMEOUT_MS);
-
-    try {
-      proc = spawn('ffprobe', [
-        '-v', 'error',
-        '-show_entries', 'format=duration',
-        '-of', 'default=noprint_wrappers=1:nokey=1',
-        filePath
-      ]);
-    } catch (e) {
-      return done(0);
-    }
-
-    let stdout = '';
-    proc.stdout.on('data', (d) => { stdout += d; });
-    proc.stderr.on('data', () => { /* ignore */ });
-    proc.on('error', () => done(0));
-    proc.on('close', (code) => {
-      const seconds = parseFloat(stdout.trim());
-      done(code === 0 && Number.isFinite(seconds) ? seconds : 0);
-    });
-  });
+async function probeVideoDuration(filePath) {
+  const result = await runProbe('ffprobe', [
+    '-v', 'error',
+    '-show_entries', 'format=duration',
+    '-of', 'default=noprint_wrappers=1:nokey=1',
+    filePath
+  ], DURATION_PROBE_TIMEOUT_MS);
+  if (!result) return 0;
+  const seconds = parseFloat(result.stdout.trim());
+  return result.code === 0 && Number.isFinite(seconds) ? seconds : 0;
 }
 
 function cleanReleaseTags(str) {

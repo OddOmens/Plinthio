@@ -8,9 +8,6 @@
 // Everything from the first marker onward is release metadata rather than part of the title.
 export const TECH_MARKERS = /\b(?:\d{3,4}p|4k|uhd|hdr\d*|dovi|dv|imax|remux|bluray|blu-ray|brrip|bdrip|webrip|web[- ]?dl|web|hdtv|dvdrip|hdrip|tvrip|x26[45]|h ?26[45]|hevc|avc|xvid|divx|aac\d?(?:\.\d)?|ac3|eac3|dts(?:[- ]?hd)?|truehd|atmos|ddp?\d?(?:\.1)?|\d{1,2}\.\d(?:ch)?|10bit|8bit|proper|repack|extended|remastered|unrated|criterion|directors\.?cut|theatrical|multi|dual|subbed|dubbed|amzn|nf|dsnp|atvp|itunes|hmax|peacock)\b/i;
 
-// Video file extensions
-export const VIDEO_EXTENSIONS = /\.(mkv|mp4|avi|mov|wmv|m4v|webm|flv|ts)$/i;
-
 // All media extensions handled by Plinthio
 export const ALL_MEDIA_EXTENSIONS = /\.(mkv|mp4|avi|mov|wmv|m4v|webm|flv|ts|cbz|cbr|epub|pdf|m4b|mp3)$/i;
 

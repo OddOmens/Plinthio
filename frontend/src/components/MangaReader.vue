@@ -422,7 +422,7 @@ async function saveAccountReaderPrefs(patch) {
   const mangaReader = { ...accountReaderPrefs(), ...patch };
   authStore.user.preferences = { ...(authStore.user.preferences || {}), mangaReader };
   try {
-    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+    authStore.persistUser();
     await api.patch('/users/preferences', { mangaReader });
   } catch (err) {
     console.warn('Could not save reader settings:', err.message);
@@ -467,7 +467,7 @@ async function setPageTurnStyle(s) {
   if (!authStore.user || authStore.user.preferences?.readerPageTurn === s) return;
   authStore.user.preferences = { ...(authStore.user.preferences || {}), readerPageTurn: s };
   try {
-    localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+    authStore.persistUser();
     await api.patch('/users/preferences', { readerPageTurn: s });
   } catch (err) {
     console.warn('Could not save the page-turn style:', err.message);

@@ -96,17 +96,8 @@ onMounted(async () => {
 });
 
 // Shown at once, put back if the save fails.
-async function setPreference(field, value) {
-  if (!authStore.user) return;
-  const previous = authStore.user.preferences || {};
-  authStore.user.preferences = { ...previous, [field]: value };
-  const { ok, data } = await save.run(() => api.patch('/users/preferences', { [field]: value }));
-  if (!ok) {
-    authStore.user.preferences = previous;
-    return;
-  }
-  authStore.user.preferences = data.data.preferences || authStore.user.preferences;
-  localStorage.setItem('plinthio_user', JSON.stringify(authStore.user));
+function setPreference(field, value) {
+  return authStore.patchPreferences({ [field]: value }, save.run);
 }
 
 function setLibraryShown(id, shown) {
