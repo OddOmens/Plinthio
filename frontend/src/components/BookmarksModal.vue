@@ -114,7 +114,7 @@
           </p>
 
           <span class="text-[11px] text-muted-foreground/80 self-end">
-            {{ formatDate(bm.created_at) }}
+            {{ formatDateTime(bm.created_at) }}
           </span>
         </div>
       </div>
@@ -124,12 +124,13 @@
 
 <script setup>
 import { bookFileUrl } from '../utils/cover';
+import { formatDateTime } from '../utils/settingsFormat';
 import { ref, watch } from 'vue';
 import api from '../api/client';
 import { usePlayerStore } from '../stores/player';
 import { useDialogStore } from '../stores/dialog';
 import { Bookmark, X, Plus, Trash2, Play, BookOpen } from '@lucide/vue';
-import { t, d } from '../i18n';
+import { t } from '../i18n';
 
 const props = defineProps({
   isOpen: Boolean,
@@ -173,11 +174,6 @@ function formatPosition(sec) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
   return t('reader.pageN', { page: Math.floor(sec || 1) });
-}
-
-function formatDate(iso) {
-  if (!iso) return '';
-  return d(iso, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 async function loadBookmarks() {
