@@ -112,7 +112,8 @@
     "createFolder": "Nie udało się utworzyć folderu",
     "deleteFolder": "Nie udało się usunąć folderu",
     "removeItem": "Nie udało się usunąć pozycji",
-    "updateFolder": "Nie udało się zaktualizować folderu"
+    "updateFolder": "Nie udało się zaktualizować folderu",
+    "load": "Nie udało się wczytać twojej biblioteki."
   },
   "rootFolder": "Katalog główny",
   "series": {
@@ -151,6 +152,7 @@
   "folderModal": {
     "title": "Dodaj do folderu lub listy",
     "loading": "Wczytywanie folderów...",
+    "loadFailed": "Nie udało się wczytać twoich folderów.",
     "empty": "Nie utworzono jeszcze własnych folderów. Utwórz jeden poniżej, aby uporządkować swoje media!",
     "newFolder": "Nowy własny folder",
     "placeholder": "np. Ulubione, Na dobranoc...",

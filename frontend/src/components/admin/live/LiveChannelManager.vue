@@ -225,7 +225,7 @@
     </template>
   </SettingsCard>
 
-  <LiveChannelEditDialog :channel="editing" @close="editing = null" @saved="onEdited" @checked="onChecked(editing, $event)" />
+  <LiveChannelEditDialog :channel="editing" @close="editing = null" @saved="onEdited" @checked="(result, ch) => onChecked(ch, result)" />
 
   <!-- Which line-up the ticked channels go into -->
   <SettingsDialog :open="pickingLineup" :title="$t('admin.liveTv.channels.addToLineup')" :subtitle="$t('admin.liveTv.channels.selected', { count: selected.size, number: $n(selected.size) })" @close="pickingLineup = false">

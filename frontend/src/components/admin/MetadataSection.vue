@@ -134,13 +134,16 @@ function keyNeed(provider) {
 }
 // { tmdb: true, … }; servers before the switches don't send it, and everything is on.
 const providers = ref({});
+// Switches flipped in quick succession: an older answer mustn't undo a newer switch.
+let providerRequest = 0;
 
 async function setProvider(provider, enabled) {
-  const before = providers.value;
-  providers.value = { ...before, [provider]: enabled };
+  const request = ++providerRequest;
+  const before = providers.value[provider];
+  providers.value = { ...providers.value, [provider]: enabled };
   const { ok, data } = await providerSave.run(() => api.put('/settings/metadata-providers/enabled', { provider, enabled }));
-  if (ok) providers.value = data.data.providers || providers.value;
-  else providers.value = before;
+  if (!ok) providers.value = { ...providers.value, [provider]: before };
+  else if (request === providerRequest) providers.value = data.data.providers || providers.value;
 }
 
 const tmdbConfigured = ref(false);

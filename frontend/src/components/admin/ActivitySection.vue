@@ -11,7 +11,7 @@
   </SectionHeader>
 
   <SettingsCard flush>
-    <ActivityList :entries="activity" :loading="loading" show-user />
+    <ActivityList :entries="activity" :loading="loading" :failed="failed" show-user />
   </SettingsCard>
 </template>
 
@@ -30,18 +30,28 @@ defineProps({
 const activity = ref([]);
 const userFilter = ref('');
 const loading = ref(false);
+const failed = ref(false);
+// Only the newest request's answer is shown, so switching person fast can't leave the wrong list up.
+let requestId = 0;
 
 async function load() {
+  const id = ++requestId;
   loading.value = true;
+  failed.value = false;
   try {
     const params = { limit: 150 };
     if (userFilter.value) params.userId = userFilter.value;
     const res = await api.get('/activity/admin', { params });
+    if (id !== requestId) return;
     activity.value = res.data.activity || [];
   } catch (err) {
+    if (id !== requestId) return;
     console.warn('Could not load activity:', err);
+    // Not the last person's list under this one's name.
+    activity.value = [];
+    failed.value = true;
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 

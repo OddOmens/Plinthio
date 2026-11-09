@@ -94,7 +94,8 @@
       "other": "{count}件"
     },
     "matchesCapped": "{count}件以上",
-    "noMatches": "見つかりませんでした"
+    "noMatches": "見つかりませんでした",
+    "failed": "この本を検索できませんでした"
   },
   "themes": {
     "auto": "自動",
@@ -142,6 +143,7 @@
   "manga": {
     "backToShelf": "本棚に戻る",
     "loadingPages": "ページを読み込んでいます…",
+    "couldNotLoad": "この巻のページを読み込めませんでした。",
     "pageOf": "{page} / {total}ページ",
     "pagesOf": "{from}–{to} / {total}ページ",
     "singlePageView": "単ページ表示",
@@ -187,6 +189,7 @@
     "notesPlaceholder": "メモ、引用、感想など（任意）…",
     "add": "しおりを追加",
     "loading": "しおりを読み込んでいます…",
+    "loadFailed": "しおりを読み込めませんでした。",
     "empty": "保存されたしおりはまだありません。上のフォームで位置やページにしおりを挟めます。",
     "jumpTooltip": "この位置へ移動",
     "jump": "移動",

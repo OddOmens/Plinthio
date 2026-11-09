@@ -96,7 +96,8 @@
       "other": "{count} risultati"
     },
     "matchesCapped": "{count}+ risultati",
-    "noMatches": "Nessun risultato"
+    "noMatches": "Nessun risultato",
+    "failed": "Impossibile cercare in questo libro"
   },
   "themes": {
     "auto": "Auto",
@@ -144,6 +145,7 @@
   "manga": {
     "backToShelf": "Torna allo scaffale",
     "loadingPages": "Caricamento pagine...",
+    "couldNotLoad": "Impossibile caricare le pagine di questo volume.",
     "pageOf": "Pagina {page} di {total}",
     "pagesOf": "Pagine {from}–{to} di {total}",
     "singlePageView": "Vista a pagina singola",
@@ -189,6 +191,7 @@
     "notesPlaceholder": "Aggiungi note, citazioni o pensieri (facoltativo)...",
     "add": "Aggiungi segnalibro",
     "loading": "Caricamento segnalibri...",
+    "loadFailed": "Impossibile caricare i segnalibri.",
     "empty": "Ancora nessun segnalibro salvato. Usa il modulo qui sopra per segnare una posizione o una pagina.",
     "jumpTooltip": "Vai alla posizione",
     "jump": "Vai",

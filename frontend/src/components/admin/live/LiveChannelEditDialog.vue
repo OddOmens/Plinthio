@@ -87,7 +87,8 @@ const props = defineProps({
   // The admin channel item being edited; null when closed.
   channel: { type: Object, default: null }
 });
-// saved: the channel's number, name or logo changed. checked: { health, checkedAt } from "Check now".
+// saved: the channel's number, name or logo changed. checked: { health, checkedAt } from "Check now",
+// and the channel it was for.
 const emit = defineEmits(['close', 'saved', 'checked']);
 const dialog = useDialogStore();
 
@@ -97,8 +98,13 @@ const checking = ref(false);
 const logoBroken = ref(false);
 // How "Check now" went this time: { ok, error }. One failure alone doesn't mark a channel offline.
 const checkResult = ref(null);
+// A check is for the channel it was started on; one still running when another opens is
+// kept off that one.
+let checkId = 0;
 
 watch(() => props.channel, (ch) => {
+  checkId++;
+  checking.value = false;
   if (!ch) return;
   form.value = {
     number: ch.number != null ? String(ch.number) : '',
@@ -143,7 +149,8 @@ async function submit() {
   try {
     const res = await api.patch(`/live/admin/channels/${ch.id}`, body);
     emit('saved', res.data?.channel || null);
-    emit('close');
+    // Closed meanwhile, and maybe another channel opened: leave that one be.
+    if (props.channel === ch) emit('close');
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('admin.liveTv.editChannel.couldNotSave'));
   } finally {
@@ -154,16 +161,19 @@ async function submit() {
 // A check follows the playlist a few hops and waits up to 10 s on each, so longer than
 // the usual request timeout.
 async function check() {
+  const ch = props.channel;
+  const id = ++checkId;
   checking.value = true;
   try {
-    const res = await api.post(`/live/admin/channels/${props.channel.id}/check`, null, { timeout: 60000 });
+    const res = await api.post(`/live/admin/channels/${ch.id}/check`, null, { timeout: 60000 });
     const result = res.data || {};
+    emit('checked', result, ch);
+    if (id !== checkId) return;
     checkResult.value = { ok: result.health === 'ok' && !result.error, error: result.error || '' };
-    emit('checked', result);
   } catch (err) {
-    dialog.alert(err.response?.data?.error || t('admin.liveTv.channels.couldNotCheck'));
+    if (id === checkId) dialog.alert(err.response?.data?.error || t('admin.liveTv.channels.couldNotCheck'));
   } finally {
-    checking.value = false;
+    if (id === checkId) checking.value = false;
   }
 }
 </script>

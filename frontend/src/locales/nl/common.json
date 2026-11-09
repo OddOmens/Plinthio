@@ -11,6 +11,7 @@
   "edit": "Bewerken",
   "search": "Zoeken",
   "loading": "Laden…",
+  "loadFailed": "Kon niet laden. Probeer het later opnieuw.",
   "saving": "Opslaan…",
   "saved": "Opgeslagen",
   "retry": "Opnieuw proberen",

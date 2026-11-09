@@ -151,20 +151,25 @@ const testableMethod = computed(() => transcoding.value.preference === 'auto'
   ? transcoding.value.detected
   : (transcoding.value.preference === 'none' ? null : transcoding.value.preference));
 
+// A test still running when the choice changes was of the old method; its result is dropped.
+let testRequest = 0;
+
 async function saveTranscoding() {
+  testRequest++;
   testResult.value = null;
   await save.run(() => api.put('/settings/transcoding', { preference: transcoding.value.preference }));
 }
 
 async function runHwaccelTest() {
   if (!testableMethod.value) return;
+  const id = ++testRequest;
   testing.value = true;
   testResult.value = null;
   try {
     const res = await api.post('/settings/transcoding/test', { method: testableMethod.value });
-    testResult.value = res.data;
+    if (id === testRequest) testResult.value = res.data;
   } catch (err) {
-    testResult.value = { ok: false, error: err.response?.data?.error || t('admin.playback.hwaccel.testFailed') };
+    if (id === testRequest) testResult.value = { ok: false, error: err.response?.data?.error || t('admin.playback.hwaccel.testFailed') };
   } finally {
     testing.value = false;
   }

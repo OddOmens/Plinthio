@@ -399,10 +399,14 @@ async function tune(id) {
   networkRetries = 0;
   mediaRecoveries = 0;
   tokenRenewed = false;
-  // Show what we already know about it (from the list) straight away.
-  const known = channels.value.find((ch) => ch.id === id);
+  // Show what we already know about it (from the list) straight away — and never the last
+  // channel's name and guide over this one.
+  const known = channels.value.find((ch) => ch.id === id) || everyChannel?.find((ch) => ch.id === id);
   if (known) {
     channel.value = known;
+    programmes.value = [];
+  } else if (channel.value?.id !== id) {
+    channel.value = null;
     programmes.value = [];
   }
   try {
@@ -410,6 +414,7 @@ async function tune(id) {
     if (myLoad !== loadId || !data) return;
     streamPath.value = data.streamPath || `/api/media/live/${encodeURIComponent(id)}/index.m3u8`;
     if (!getMediaToken()) await renewMediaToken();
+    if (myLoad !== loadId) return;
     attach();
   } catch (err) {
     if (myLoad !== loadId) return;
@@ -666,7 +671,8 @@ function typeDigit(digit) {
     const wanted = Number(digits);
     digits = '';
     const found = await findByNumber(wanted);
-    if (found) openChannel(found.channel, found.query);
+    // Left the player while every channel was being fetched: stay where we went.
+    if (found && route.name === 'live-channel') openChannel(found.channel, found.query);
     else osdTimer = setTimeout(() => { osd.value = null; }, 600);
   }, 1200);
 }
@@ -724,9 +730,15 @@ async function diagnose(url) {
 }
 
 async function explainFailure(url) {
+  const myLoad = loadId;
   const found = await diagnose(url || streamUrl());
+  // Moved on to another channel meanwhile: this failure isn't its.
+  if (myLoad !== loadId) return;
   if (!found) return showError('P351', t('live.player.errors.offline'));
-  if (found.status === 401 && await renewMediaToken()) return attach();
+  if (found.status === 401 && await renewMediaToken()) {
+    if (myLoad === loadId) attach();
+    return;
+  }
   if (found.status === 401) return showError('P352', t('live.player.errors.tokenExpired'));
   if (found.code === 'P700') return showOff();
   if (found.code) return showError(found.code, found.message);
@@ -746,8 +758,12 @@ async function handleFatal(data) {
     return showError('P350', t('live.player.errors.decode'));
   }
 
+  const myLoad = loadId;
   const status = data.response?.code;
-  if (status === 401 && await renewMediaToken()) return attach();
+  if (status === 401 && await renewMediaToken()) {
+    if (myLoad === loadId) attach();
+    return;
+  }
 
   // Network trouble is common with live streams: retry a few times, backing off, before
   // asking the server what went wrong. A refusal (4xx) won't change on a retry.

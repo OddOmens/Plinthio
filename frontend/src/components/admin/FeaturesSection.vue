@@ -69,11 +69,15 @@ const folderModes = computed(() => [
   { id: 'custom_folder', label: t('admin.features.folderModes.customFolder.label'), desc: t('admin.features.folderModes.customFolder.desc') }
 ]);
 const allowedFilters = ref(['series', 'creator', 'disk_folder', 'custom_folder']);
+// Each save sends the whole list, so only the newest one's answer (or failure) counts.
+let filterRequest = 0;
 
 async function setFolderMode(id, on) {
+  const request = ++filterRequest;
   const before = allowedFilters.value;
   allowedFilters.value = on ? [...new Set([...before, id])] : before.filter((m) => m !== id);
   const { ok, data } = await filterSave.run(() => api.patch('/settings/filters', { allowedGroupingModes: allowedFilters.value }));
+  if (request !== filterRequest) return;
   if (ok) allowedFilters.value = data.data.allowedGroupingModes || allowedFilters.value;
   else allowedFilters.value = before;
 }

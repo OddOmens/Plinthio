@@ -96,7 +96,8 @@
       "other": "{count} resultados"
     },
     "matchesCapped": "{count}+ resultados",
-    "noMatches": "Sin resultados"
+    "noMatches": "Sin resultados",
+    "failed": "No se pudo buscar en este libro"
   },
   "themes": {
     "auto": "Auto",
@@ -144,6 +145,7 @@
   "manga": {
     "backToShelf": "Volver a la estantería",
     "loadingPages": "Cargando páginas…",
+    "couldNotLoad": "No se pudieron cargar las páginas de este volumen.",
     "pageOf": "Página {page} de {total}",
     "pagesOf": "Páginas {from}–{to} de {total}",
     "singlePageView": "Vista de una página",
@@ -189,6 +191,7 @@
     "notesPlaceholder": "Añade notas, citas o ideas (opcional)…",
     "add": "Añadir marcador",
     "loading": "Cargando marcadores…",
+    "loadFailed": "No se pudieron cargar los marcadores.",
     "empty": "Aún no hay marcadores guardados. Usa el formulario de arriba para marcar una posición o una página.",
     "jumpTooltip": "Ir a esta posición",
     "jump": "Ir",

@@ -33,6 +33,9 @@ function loadStoredUser() {
   }
 }
 
+// Bumped by every preference save, so only the newest answer replaces what's shown.
+let prefsRequest = 0;
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('plinthio_token') || null,
@@ -60,14 +63,24 @@ export const useAuthStore = defineStore('auth', {
     // "Saving…/Saved" line follows the request.
     async patchPreferences(patch, run) {
       if (!this.user) return;
+      const id = ++prefsRequest;
       const previous = this.user.preferences || {};
       this.user.preferences = { ...previous, ...patch };
       const { ok, data } = await run(() => api.patch('/users/preferences', patch));
+      if (!this.user) return;
       if (!ok) {
-        this.user.preferences = previous;
+        // Put back only this patch's fields, and only where nothing newer has changed them.
+        const prefs = { ...this.user.preferences };
+        for (const key of Object.keys(patch)) {
+          if (prefs[key] !== patch[key]) continue;
+          if (key in previous) prefs[key] = previous[key];
+          else delete prefs[key];
+        }
+        this.user.preferences = prefs;
         return;
       }
-      this.user.preferences = data.data.preferences || this.user.preferences;
+      // An older answer would undo a newer change that's still saving.
+      if (id === prefsRequest) this.user.preferences = data.data.preferences || this.user.preferences;
       this.persistUser();
     },
 

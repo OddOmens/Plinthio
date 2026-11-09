@@ -206,16 +206,23 @@ function showOffline() {
   nextTick(() => managerEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 }
 
+// A local change (refresh, switch, rename, remove) makes a poll already on its way stale:
+// its answer would put the old state back.
+let sourcesRequest = 0;
+let unmounted = false;
+
 async function loadSources() {
+  const id = ++sourcesRequest;
   try {
     const res = await api.get('/live/admin/sources');
+    if (id !== sourcesRequest) return;
     const wasRefreshing = sources.value.some((s) => s.refreshing);
     sources.value = res.data.sources || [];
     publicListsAcknowledged.value = !!res.data.publicListsAcknowledged;
     sourcesError.value = '';
     if (wasRefreshing && !sources.value.some((s) => s.refreshing)) channelsVersion.value++;
   } catch (err) {
-    sourcesError.value = err.response?.data?.error || t('admin.liveTv.sources.couldNotLoad');
+    if (id === sourcesRequest) sourcesError.value = err.response?.data?.error || t('admin.liveTv.sources.couldNotLoad');
   } finally {
     loadingSources.value = false;
     schedulePoll();
@@ -226,12 +233,16 @@ async function loadSources() {
 let pollTimer = null;
 function schedulePoll() {
   clearTimeout(pollTimer);
-  if (sources.value.some((s) => s.refreshing)) pollTimer = setTimeout(loadSources, 3000);
+  if (!unmounted && sources.value.some((s) => s.refreshing)) pollTimer = setTimeout(loadSources, 3000);
 }
-onUnmounted(() => clearTimeout(pollTimer));
+onUnmounted(() => {
+  unmounted = true;
+  clearTimeout(pollTimer);
+});
 
 function replaceSource(source) {
   if (!source) return;
+  sourcesRequest++;
   const i = sources.value.findIndex((s) => s.id === source.id);
   if (i === -1) sources.value.push(source);
   else sources.value[i] = source;
@@ -272,6 +283,7 @@ async function removeSource(src) {
   if (!confirmed) return;
   try {
     await api.delete(`/live/admin/sources/${src.id}`);
+    sourcesRequest++;
     sources.value = sources.value.filter((s) => s.id !== src.id);
     channelsVersion.value++;
   } catch (err) {
@@ -283,7 +295,7 @@ function onAdded(added) {
   for (const source of added) replaceSource({ ...source, refreshing: source.refreshing ?? true });
   // Adding starts loading it; look again shortly for the server's own status.
   clearTimeout(pollTimer);
-  pollTimer = setTimeout(loadSources, 1500);
+  if (!unmounted) pollTimer = setTimeout(loadSources, 1500);
 }
 
 // ─── Editing a source ──────────────────────────────────────────────────────
@@ -293,14 +305,16 @@ function openEdit(src) {
   edit.value = { original: src, name: src.name, guideUrl: src.guideUrl || '' };
 }
 async function submitEdit() {
+  const current = edit.value;
   savingEdit.value = true;
   try {
-    const res = await api.patch(`/live/admin/sources/${edit.value.original.id}`, {
-      name: edit.value.name,
-      guideUrl: edit.value.guideUrl || null
+    const res = await api.patch(`/live/admin/sources/${current.original.id}`, {
+      name: current.name,
+      guideUrl: current.guideUrl || null
     });
     replaceSource(res.data.source);
-    edit.value = null;
+    // Closed meanwhile, and maybe another source opened: leave that one be.
+    if (edit.value === current) edit.value = null;
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('admin.liveTv.sources.couldNotSave'));
   } finally {

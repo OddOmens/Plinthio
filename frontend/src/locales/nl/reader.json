@@ -96,7 +96,8 @@
       "other": "{count} resultaten"
     },
     "matchesCapped": "{count}+ resultaten",
-    "noMatches": "Geen resultaten"
+    "noMatches": "Geen resultaten",
+    "failed": "Kon niet zoeken in dit boek"
   },
   "themes": {
     "auto": "Auto",
@@ -144,6 +145,7 @@
   "manga": {
     "backToShelf": "Terug naar plank",
     "loadingPages": "Pagina's laden...",
+    "couldNotLoad": "Kon de pagina's van dit deel niet laden.",
     "pageOf": "Pagina {page} van {total}",
     "pagesOf": "Pagina's {from}–{to} van {total}",
     "singlePageView": "Eén pagina tegelijk",
@@ -189,6 +191,7 @@
     "notesPlaceholder": "Voeg notities, citaten of gedachten toe (optioneel)...",
     "add": "Bladwijzer toevoegen",
     "loading": "Bladwijzers laden...",
+    "loadFailed": "Kon bladwijzers niet laden.",
     "empty": "Nog geen bladwijzers opgeslagen. Gebruik het formulier hierboven om een bladwijzer bij een positie of pagina te zetten.",
     "jumpTooltip": "Naar positie springen",
     "jump": "Ga naar",

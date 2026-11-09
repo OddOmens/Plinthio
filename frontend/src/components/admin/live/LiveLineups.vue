@@ -103,9 +103,14 @@ let dirty = false;
 
 watch(lineups, (list) => emit('update:lineups', list), { deep: true });
 
+// Only the newest load's answer is used.
+let loadId = 0;
 async function load() {
+  const id = ++loadId;
+  loading.value = true;
   try {
     const res = await api.get('/live/admin/lineups');
+    if (id !== loadId) return;
     const list = res.data.lineups || [];
     // Keep the open line-up's object, so the editor stays on it.
     if (editing.value) {
@@ -117,9 +122,9 @@ async function load() {
     }
     loadError.value = '';
   } catch (err) {
-    if (!lineups.value.length) loadError.value = err.response?.data?.error || t('admin.liveTv.lineups.couldNotLoad');
+    if (id === loadId && !lineups.value.length) loadError.value = err.response?.data?.error || t('admin.liveTv.lineups.couldNotLoad');
   } finally {
-    loading.value = false;
+    if (id === loadId) loading.value = false;
   }
 }
 watch(() => props.version, load);
@@ -160,15 +165,18 @@ async function create() {
 }
 
 // ─── Order ─────────────────────────────────────────────────────────────────
+// Each save sends the whole order, so only the newest one's failure puts it back.
+let moveId = 0;
 async function move(index, by) {
   const to = index + by;
   if (to < 0 || to >= lineups.value.length) return;
+  const id = ++moveId;
   const before = lineups.value;
   const next = [...before];
   [next[index], next[to]] = [next[to], next[index]];
   lineups.value = next;
   const { ok } = await save.run(() => api.put('/live/admin/lineups/order', { ids: next.map((l) => l.id) }));
-  if (!ok) lineups.value = before;
+  if (!ok && id === moveId) lineups.value = before;
 }
 
 // ─── The editor's changes ──────────────────────────────────────────────────

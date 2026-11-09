@@ -614,11 +614,15 @@ function prevStep() {
   if (step.value > 1) step.value--;
 }
 
+// Set once the server has accepted the setup: if a later step fails, trying again carries on
+// from there instead of setting the server up a second time (which it refuses).
+let serverCreated = false;
+
 async function completeSetup() {
   error.value = '';
   loading.value = true;
   try {
-    await authStore.setup({
+    if (!serverCreated) await authStore.setup({
       username: form.username.trim(),
       password: form.password,
       theme: form.theme,
@@ -632,6 +636,7 @@ async function completeSetup() {
         require2faOutside: form.access === 'internet' && form.require2faOutside
       }
     });
+    serverCreated = true;
     await saveLanguage();
     await customizationStore.updateCustomization({
       serverName: form.serverName.trim(),

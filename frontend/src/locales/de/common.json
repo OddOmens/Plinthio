@@ -11,6 +11,7 @@
   "edit": "Bearbeiten",
   "search": "Suchen",
   "loading": "Wird geladen…",
+  "loadFailed": "Konnte nicht geladen werden. Versuch es später noch einmal.",
   "saving": "Wird gespeichert…",
   "saved": "Gespeichert",
   "retry": "Erneut versuchen",

@@ -910,10 +910,14 @@ async function offerNextEpisode() {
 
     const current = props.item.volume;
     const next = siblings.find((i) => i.volume > current);
-    if (!next) return;
+    // No next one, or the player was closed while asking (its <video> is gone).
+    if (!next || !videoEl.value) return;
 
     nextEpisode.value = next;
     countdown.value = 10;
+    // Ending again while Up next is showing (seek back, play to the end) restarts the count
+    // rather than running a second one alongside it.
+    stopCountdown();
     countdownTimer = setInterval(() => {
       countdown.value--;
       if (countdown.value <= 0) playNextEpisode();

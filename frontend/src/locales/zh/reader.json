@@ -94,7 +94,8 @@
       "other": "{count}个结果"
     },
     "matchesCapped": "{count}+个结果",
-    "noMatches": "无结果"
+    "noMatches": "无结果",
+    "failed": "无法搜索这本书"
   },
   "themes": {
     "auto": "自动",
@@ -142,6 +143,7 @@
   "manga": {
     "backToShelf": "返回书架",
     "loadingPages": "正在加载页面...",
+    "couldNotLoad": "无法加载本卷的页面。",
     "pageOf": "第{page}/{total}页",
     "pagesOf": "第{from}–{to}/{total}页",
     "singlePageView": "单页视图",
@@ -187,6 +189,7 @@
     "notesPlaceholder": "添加笔记、引文或想法（可选）...",
     "add": "添加书签",
     "loading": "正在加载书签...",
+    "loadFailed": "无法加载书签。",
     "empty": "还没有保存书签。使用上方的表单为某个位置或页面添加书签。",
     "jumpTooltip": "跳转到该位置",
     "jump": "跳转",

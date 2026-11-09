@@ -496,7 +496,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth.js';
 import { useDialogStore } from '../stores/dialog.js';
@@ -581,7 +581,10 @@ function setStatusFilter(filter) {
   fetchItems();
 }
 
+// Typing, filters and actions can each reload the list; only the latest answer is shown.
+let requestId = 0;
 async function fetchItems() {
+  const id = ++requestId;
   loading.value = true;
   cacheBuster.value = Date.now();
   try {
@@ -594,6 +597,7 @@ async function fetchItems() {
         limit: 200
       }
     });
+    if (id !== requestId) return;
 
     items.value = res.data.items || [];
     totalAll.value = res.data.totalAll || 0;
@@ -610,6 +614,7 @@ async function fetchItems() {
       }
     }
   } catch (err) {
+    if (id !== requestId) return;
     console.error('Failed to fetch items for metadata manager:', err);
     dialog.alert({
       title: t('metadata.manager.errors.loadFailed'),
@@ -617,7 +622,7 @@ async function fetchItems() {
       variant: 'error'
     });
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 
@@ -832,6 +837,7 @@ function onItemSaved() {
 onMounted(() => {
   fetchItems();
 });
+onUnmounted(() => clearTimeout(searchDebounceTimer));
 
 // The library switches above (Home videos) change the counts.
 defineExpose({ fetchItems });

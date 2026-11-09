@@ -183,6 +183,17 @@
           <div v-for="i in 12" :key="i" class="aspect-[2/3] bg-muted/40 animate-pulse rounded-xl border border-border"></div>
         </div>
 
+        <!-- Load failed: not "no media", and not the last shelf's cards under this one -->
+        <div v-else-if="loadError" class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border rounded-2xl bg-card/50 p-8">
+          <div class="w-10 h-10 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mb-3">
+            <AlertCircle class="w-5 h-5" />
+          </div>
+          <h3 class="text-sm font-medium text-foreground mb-4">{{ loadError }}</h3>
+          <button type="button" @click="fetchLibraryItems()" class="px-3.5 py-1.5 rounded-md bg-primary hover:bg-primary/90 text-xs font-medium text-primary-foreground transition shadow-sm">
+            {{ $t('common.retry') }}
+          </button>
+        </div>
+
         <!-- Empty State -->
         <div v-else-if="items.length === 0 && groupBy !== 'custom_folder'" class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border rounded-2xl bg-card/50 p-8">
           <div class="w-10 h-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mb-3">
@@ -304,7 +315,7 @@
               />
               <button
                 @click="createQuickFolder"
-                :disabled="!quickFolderInput.trim()"
+                :disabled="!quickFolderInput.trim() || creatingFolder"
                 class="h-9 px-3.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium transition disabled:opacity-50 flex items-center gap-1.5 shadow-sm active:scale-95 flex-shrink-0"
               >
                 <Plus class="w-3.5 h-3.5" />
@@ -437,7 +448,8 @@ import {
   Trash2,
   MonitorPlay,
   X,
-  WifiOff
+  WifiOff,
+  AlertCircle
 } from '@lucide/vue';
 
 const authStore = useAuthStore();
@@ -512,7 +524,7 @@ async function loadGenres() {
     genres.value = res.data.genres || [];
     if (genreFilter.value && !genres.value.some((g) => g.name === genreFilter.value)) genreFilter.value = '';
   } catch (err) {
-    genres.value = [];
+    if (type === activeType.value) genres.value = [];
   }
 }
 
@@ -527,6 +539,8 @@ const items = ref([]);
 const hasMoreServerItems = ref(false);
 const continueItems = ref([]);
 const loading = ref(true);
+// Set when the shelf asked for couldn't be loaded and there's nothing of its own to show.
+const loadError = ref('');
 const activeMangaItem = ref(null);
 
 const customFolders = ref([]);
@@ -785,7 +799,8 @@ function setGrouping(id) {
 // Monotonic request id: a slower earlier request must never overwrite a newer result.
 let fetchSeq = 0;
 let searchDebounce = null;
-let loadingMore = false;
+// The page being fetched, if one is: a second ask waits on it instead of starting another.
+let loadingMore = null;
 
 async function fetchItemPage(offset) {
   const params = { limit: PAGE_SIZE, offset };
@@ -836,6 +851,7 @@ async function fetchLibraryItems() {
   const view = currentView();
   const cached = view !== shownView && shelfCache.get(view);
   clearTimeout(dimTimer);
+  loadError.value = '';
   if (cached) {
     showItems(cached.items, cached.hasMore, view);
   } else if (shownView === null) {
@@ -864,6 +880,7 @@ async function fetchLibraryItems() {
     if (groupBy.value !== 'series') loadAllRemainingItems(seq);
   } catch (err) {
     console.error('Failed to fetch items:', err);
+    if (seq === fetchSeq && view !== shownView) loadError.value = err.response?.data?.error || t('shelf.errors.load');
   } finally {
     if (seq === fetchSeq) {
       clearTimeout(dimTimer);
@@ -873,10 +890,16 @@ async function fetchLibraryItems() {
   }
 }
 
-async function loadMoreItems() {
-  if (loadingMore || !hasMoreServerItems.value) return;
+function loadMoreItems() {
+  if (!loadingMore && hasMoreServerItems.value) {
+    loadingMore = loadNextPage().finally(() => { loadingMore = null; });
+  }
+  return loadingMore;
+}
+
+// Resolves to false when the shelf on screen couldn't get its next page.
+async function loadNextPage() {
   const seq = fetchSeq;
-  loadingMore = true;
   try {
     const page = await fetchItemPage(items.value.length);
     if (seq !== fetchSeq) return; // The shelf changed underneath us — this page is stale.
@@ -888,14 +911,14 @@ async function loadMoreItems() {
     rememberShelf(shownView);
   } catch (err) {
     console.error('Failed to load more items:', err);
-  } finally {
-    loadingMore = false;
+    if (seq === fetchSeq) return false;
   }
 }
 
 async function loadAllRemainingItems(seq) {
   while (hasMoreServerItems.value && seq === fetchSeq) {
-    await loadMoreItems();
+    // A failed page stops here rather than asking again in a tight loop.
+    if (await loadMoreItems() === false) return;
   }
 }
 
@@ -908,11 +931,14 @@ async function fetchContinueItems() {
   }
 }
 
+let foldersRequest = 0;
 async function loadCustomFolders() {
+  const id = ++foldersRequest;
   try {
     const params = {};
     if (activeType.value !== 'all') params.mediaType = activeType.value;
     const res = await api.get('/collections/all-grouped', { params });
+    if (id !== foldersRequest) return;
     customFoldersGrouped.value = res.data.collections || res.data.groups || [];
     customFolders.value = customFoldersGrouped.value;
   } catch (err) {
@@ -931,14 +957,18 @@ async function loadFilterSettings() {
   }
 }
 
+const creatingFolder = ref(false);
 async function createQuickFolder() {
-  if (!quickFolderInput.value.trim()) return;
+  if (!quickFolderInput.value.trim() || creatingFolder.value) return;
+  creatingFolder.value = true;
   try {
     await api.post('/collections', { name: quickFolderInput.value.trim() });
     quickFolderInput.value = '';
     await loadCustomFolders();
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('shelf.errors.createFolder'));
+  } finally {
+    creatingFolder.value = false;
   }
 }
 
@@ -1018,6 +1048,8 @@ watch([activeType, searchQuery], ([type], [prevType]) => {
     clearTimeout(searchDebounce);
     loadGenres();
     fetchLibraryItems();
+    // Folders are filtered by category too.
+    if (groupBy.value === 'custom_folder') loadCustomFolders();
   } else {
     clearTimeout(searchDebounce);
     searchDebounce = setTimeout(fetchLibraryItems, 250);

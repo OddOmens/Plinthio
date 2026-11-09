@@ -100,7 +100,8 @@
       "other": "{count} wyniku"
     },
     "matchesCapped": "{count}+ wyników",
-    "noMatches": "Brak wyników"
+    "noMatches": "Brak wyników",
+    "failed": "Nie udało się przeszukać tej książki"
   },
   "themes": {
     "auto": "Auto",
@@ -148,6 +149,7 @@
   "manga": {
     "backToShelf": "Wróć do półki",
     "loadingPages": "Wczytywanie stron...",
+    "couldNotLoad": "Nie udało się wczytać stron tego tomu.",
     "pageOf": "Strona {page} z {total}",
     "pagesOf": "Strony {from}–{to} z {total}",
     "singlePageView": "Widok pojedynczej strony",
@@ -193,6 +195,7 @@
     "notesPlaceholder": "Dodaj notatki, cytaty lub przemyślenia (opcjonalnie)...",
     "add": "Dodaj zakładkę",
     "loading": "Wczytywanie zakładek...",
+    "loadFailed": "Nie udało się wczytać zakładek.",
     "empty": "Brak zapisanych zakładek. Użyj formularza powyżej, aby dodać zakładkę dla pozycji lub strony.",
     "jumpTooltip": "Przejdź do pozycji",
     "jump": "Przejdź",

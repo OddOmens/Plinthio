@@ -71,18 +71,23 @@ const entries = ref([]);
 const loading = ref(false);
 const error = ref('');
 const newFolder = ref('');
+let requestId = 0;
 
 async function browse(dir) {
+  // Only the folder asked for last is shown (Up pressed twice, or reopened mid-load).
+  const id = ++requestId;
   loading.value = true;
   error.value = '';
   try {
     const res = await api.get('/libraries/browse', { params: { dir } });
+    if (id !== requestId) return;
     current.value = res.data.currentDir || dir;
     entries.value = res.data.directories || [];
   } catch (err) {
+    if (id !== requestId) return;
     error.value = err.response?.data?.error || t('admin.folderPicker.couldNotOpen');
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 

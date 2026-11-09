@@ -201,15 +201,20 @@ function adopt(body) {
   hidden.value = next;
 }
 
+// Only the newest load's answer is used (the counts may have moved on since an older one).
+let loadId = 0;
 async function load() {
   if (pending) return;
+  const id = ++loadId;
+  // A retry shows "Loading…" again rather than the last error.
+  if (!data.value) loadError.value = '';
   try {
     const res = await api.get('/live/admin/filters');
-    if (pending) return;
+    if (pending || id !== loadId) return;
     adopt(res.data);
     loadError.value = '';
   } catch (err) {
-    if (!data.value) loadError.value = err.response?.data?.error || t('admin.liveTv.filters.couldNotLoad');
+    if (id === loadId && !data.value) loadError.value = err.response?.data?.error || t('admin.liveTv.filters.couldNotLoad');
   }
 }
 watch(() => props.version, load);

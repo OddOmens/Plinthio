@@ -11,6 +11,7 @@
   "edit": "Edytuj",
   "search": "Szukaj",
   "loading": "Wczytywanie…",
+  "loadFailed": "Nie udało się wczytać. Spróbuj ponownie później.",
   "saving": "Zapisywanie…",
   "saved": "Zapisano",
   "retry": "Spróbuj ponownie",

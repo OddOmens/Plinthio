@@ -102,7 +102,8 @@
     "createFolder": "Ordner konnte nicht erstellt werden",
     "deleteFolder": "Ordner konnte nicht gelöscht werden",
     "removeItem": "Eintrag konnte nicht entfernt werden",
-    "updateFolder": "Ordner konnte nicht aktualisiert werden"
+    "updateFolder": "Ordner konnte nicht aktualisiert werden",
+    "load": "Deine Bibliothek konnte nicht geladen werden."
   },
   "rootFolder": "Stammordner",
   "series": {
@@ -139,6 +140,7 @@
   "folderModal": {
     "title": "Zu Ordner oder Liste hinzufügen",
     "loading": "Ordner werden geladen…",
+    "loadFailed": "Deine Ordner konnten nicht geladen werden.",
     "empty": "Noch keine eigenen Ordner. Erstelle unten einen, um deine Medien zu ordnen!",
     "newFolder": "Neuer eigener Ordner",
     "placeholder": "z. B. Favoriten, Gute Nacht…",

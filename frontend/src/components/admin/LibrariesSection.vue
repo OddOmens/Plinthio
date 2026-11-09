@@ -23,9 +23,9 @@
           <p class="text-[12px] text-muted-foreground">{{ libraryTypeLabel(lib.type) }} · {{ $t('admin.libraries.items', { count: lib.item_count || 0, number: $n(lib.item_count || 0) }) }}</p>
         </div>
         <div class="flex items-center gap-1.5 ml-auto">
-          <button @click="triggerScan(lib)" :disabled="scanningId === lib.id" class="btn btn-secondary">
-            <RefreshCw :class="['w-3.5 h-3.5', scanningId === lib.id ? 'animate-spin' : '']" />
-            {{ scanningId === lib.id ? $t('admin.libraries.scanning') : $t('admin.libraries.scan') }}
+          <button @click="triggerScan(lib)" :disabled="scanningIds.includes(lib.id)" class="btn btn-secondary">
+            <RefreshCw :class="['w-3.5 h-3.5', scanningIds.includes(lib.id) ? 'animate-spin' : '']" />
+            {{ scanningIds.includes(lib.id) ? $t('admin.libraries.scanning') : $t('admin.libraries.scan') }}
           </button>
           <button @click="deleteLibrary(lib)" class="btn btn-ghost btn-icon hover:text-destructive" :aria-label="$t('admin.libraries.deleteAria', { name: lib.name })" :title="$t('admin.libraries.deleteLibrary')">
             <Trash2 class="w-4 h-4" />
@@ -156,7 +156,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import { Plus, RefreshCw, Trash2, FolderOpen, Baby, Headphones, FileImage, Book, Film, Tv, Sparkles, X, TriangleAlert } from '@lucide/vue';
 import api from '../../api/client';
 import { useDialogStore } from '../../stores/dialog';
@@ -190,9 +190,11 @@ const libraryIcon = (type) => LIBRARY_TYPES.find((x) => x.id === type)?.icon || 
 const libraryTypeLabel = (type) => LIBRARY_TYPES.find((x) => x.id === type)?.label || type;
 
 // ─── Scanning ──────────────────────────────────────────────────────────────
-const scanningId = ref(null);
+// Several libraries can be scanning at once; each button follows its own.
+const scanningIds = ref([]);
 async function triggerScan(lib) {
-  scanningId.value = lib.id;
+  if (scanningIds.value.includes(lib.id)) return;
+  scanningIds.value = [...scanningIds.value, lib.id];
   try {
     const res = await api.post(`/libraries/${lib.id}/scan`);
     emit('changed');
@@ -212,7 +214,7 @@ async function triggerScan(lib) {
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('admin.libraries.scanFailed'));
   } finally {
-    scanningId.value = null;
+    scanningIds.value = scanningIds.value.filter((id) => id !== lib.id);
   }
 }
 
@@ -250,6 +252,8 @@ onMounted(async () => {
   } catch (err) {
     console.warn('Could not load automatic scanning:', err);
   }
+  // After the watcher has seen the loaded settings, so loading them doesn't save them back.
+  await nextTick();
   autoScanLoaded = true;
 });
 watch(autoScan, (value) => {
@@ -268,6 +272,7 @@ const newLib = ref({ name: '', path: '', type: 'movies' });
 
 async function openAddLibrary() {
   newLib.value = { name: '', path: '', type: 'movies' };
+  discoveredFolders.value = [];
   showAdd.value = true;
   try {
     const res = await api.get('/libraries/browse');

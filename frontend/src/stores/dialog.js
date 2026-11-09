@@ -16,10 +16,20 @@ export const useDialogStore = defineStore('dialog', () => {
 
   let resolver = null;
 
+  // A dialog opened over one still waiting for an answer replaces it; the one replaced
+  // counts as cancelled, so whatever awaits it isn't left hanging.
+  function settlePrevious() {
+    if (resolver) {
+      resolver(false);
+      resolver = null;
+    }
+  }
+
   function alert(opts) {
     if (typeof opts === 'string') {
       opts = { message: opts };
     }
+    settlePrevious();
     title.value = opts.title || t('dialog.notification');
     message.value = opts.message || '';
     type.value = opts.type || 'info';
@@ -38,6 +48,7 @@ export const useDialogStore = defineStore('dialog', () => {
     if (typeof opts === 'string') {
       opts = { message: opts };
     }
+    settlePrevious();
     title.value = opts.title || t('dialog.areYouSure');
     message.value = opts.message || '';
     type.value = opts.type || (opts.danger ? 'danger' : 'warning');

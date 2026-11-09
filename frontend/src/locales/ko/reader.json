@@ -94,7 +94,8 @@
       "other": "{count}개 결과"
     },
     "matchesCapped": "{count}개 이상 결과",
-    "noMatches": "결과 없음"
+    "noMatches": "결과 없음",
+    "failed": "이 책을 검색할 수 없어요"
   },
   "themes": {
     "auto": "자동",
@@ -142,6 +143,7 @@
   "manga": {
     "backToShelf": "책장로 돌아가기",
     "loadingPages": "페이지를 불러오는 중…",
+    "couldNotLoad": "이 권의 페이지를 불러오지 못했어요.",
     "pageOf": "{page} / {total}페이지",
     "pagesOf": "{from}–{to} / {total}페이지",
     "singlePageView": "한 페이지 보기",
@@ -187,6 +189,7 @@
     "notesPlaceholder": "메모, 인용구, 생각 (선택)…",
     "add": "책갈피 추가",
     "loading": "책갈피를 불러오는 중…",
+    "loadFailed": "책갈피를 불러오지 못했어요.",
     "empty": "아직 저장된 책갈피가 없어요. 위 양식으로 위치나 페이지에 책갈피를 추가하세요.",
     "jumpTooltip": "이 위치로 이동",
     "jump": "이동",

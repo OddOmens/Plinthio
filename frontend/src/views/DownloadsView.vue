@@ -201,8 +201,13 @@ function withQueuedProgress(item) {
   }
 }
 
+// Only the last one tapped opens: a double tap, or a slow lookup for one title finishing
+// after a tap on another, mustn't open a second reader or the wrong book.
+let openRequest = 0;
 async function openEntry(entry) {
+  const id = ++openRequest;
   const item = await freshItem(entry);
+  if (id !== openRequest) return;
   if (entry.kind === 'audio') {
     player.playItem(item);
   } else if (entry.kind === 'pages') {

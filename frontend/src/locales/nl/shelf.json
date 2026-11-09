@@ -99,7 +99,8 @@
     "createFolder": "Map aanmaken mislukt",
     "deleteFolder": "Map verwijderen mislukt",
     "removeItem": "Item weghalen mislukt",
-    "updateFolder": "Map bijwerken mislukt"
+    "updateFolder": "Map bijwerken mislukt",
+    "load": "Kon je bibliotheek niet laden."
   },
   "rootFolder": "Hoofdmap",
   "series": {
@@ -136,6 +137,7 @@
   "folderModal": {
     "title": "Aan map of lijst toevoegen",
     "loading": "Mappen laden...",
+    "loadFailed": "Kon je mappen niet laden.",
     "empty": "Nog geen eigen mappen aangemaakt. Maak er hieronder een om je media te ordenen!",
     "newFolder": "Nieuwe eigen map",
     "placeholder": "bijv. Favorieten, Voor het slapengaan...",

@@ -52,8 +52,9 @@
       </div>
     </div>
 
-    <p v-if="!apiKeys.length" class="py-8 text-center text-xs text-muted-foreground">{{ $t('settings.apps.keys.empty') }}</p>
-    <ul v-else class="divide-y divide-border">
+    <!-- Not said until the list has loaded: a failed load isn't "no keys". -->
+    <p v-if="!apiKeys.length && keysLoaded" class="py-8 text-center text-xs text-muted-foreground">{{ $t('settings.apps.keys.empty') }}</p>
+    <ul v-else-if="apiKeys.length" class="divide-y divide-border">
       <li v-for="k in apiKeys" :key="k.id" class="px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
         <div class="min-w-0 flex items-center gap-3">
           <KeyRound class="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -124,12 +125,18 @@ const apiKeys = ref([]);
 const newKeyName = ref('');
 const newGeneratedKey = ref('');
 const generating = ref(false);
+const keysLoaded = ref(false);
 
 async function loadKeys() {
-  const res = await api.get('/keys');
-  apiKeys.value = res.data.keys || [];
+  try {
+    const res = await api.get('/keys');
+    apiKeys.value = res.data.keys || [];
+    keysLoaded.value = true;
+  } catch (err) {
+    console.warn('Could not load API keys:', err);
+  }
 }
-onMounted(() => loadKeys().catch((err) => console.warn('Could not load API keys:', err)));
+onMounted(loadKeys);
 
 async function generateKey() {
   generating.value = true;

@@ -2272,8 +2272,8 @@ async function startWatchParty() {
   }
 }
 
+// A new page clears these first (fetchSeriesData); a refresh keeps them up until the answer.
 async function loadFilmCollection(itemId) {
-  filmCollection.value = null;
   try {
     const res = await api.get(`/items/${itemId}/collection`);
     if (series.value?.volumes?.some((v) => v.id === itemId)) filmCollection.value = res.data?.collection || null;
@@ -2283,7 +2283,6 @@ async function loadFilmCollection(itemId) {
 }
 
 async function loadCredits(itemId) {
-  credits.value = null;
   if (!itemId) return;
   try {
     const res = await api.get(`/items/${itemId}/credits`);
@@ -2294,14 +2293,30 @@ async function loadCredits(itemId) {
 }
 
 // ─── Data Fetching ──────────────────────────────────────────────────────────
+// Every load bumps loadId, so a slow answer for the last page never lands on this one.
+let loadId = 0;
+// The page the title on screen belongs to. Loading it again (after marking an episode
+// watched, closing the reader…) refreshes it in place; only a different page, or one that
+// failed, starts from the spinner.
+let shownPage = null;
+function pageKey() {
+  return JSON.stringify([route.params.seriesName, route.params.id, route.query.library, route.query.type]);
+}
+
 async function fetchSeriesData() {
-  loading.value = true;
+  const id = ++loadId;
+  const page = pageKey();
+  if (page !== shownPage || !series.value || error.value) {
+    shownPage = null;
+    loading.value = true;
+    series.value = null;
+    extrasList.value = [];
+    collection.value = null;
+    credits.value = null;
+    filmCollection.value = null;
+    overviewExpanded.value = false;
+  }
   error.value = null;
-  extrasList.value = [];
-  collection.value = null;
-  credits.value = null;
-  filmCollection.value = null;
-  overviewExpanded.value = false;
 
   try {
     const seriesParam = route.params.seriesName;
@@ -2312,7 +2327,9 @@ async function fetchSeriesData() {
       const res = await api.get(`/items/series/${encodeURIComponent(decodedName)}`, {
         params: { library: route.query.library || undefined, type: route.query.type || undefined }
       });
+      if (id !== loadId) return;
       series.value = res.data.series;
+      shownPage = page;
       extrasList.value = res.data.series?.extras || [];
       // A show's episodes share the show's credits. A movie collection has none of its
       // own (each film has its page), unless the library only holds one of its films.
@@ -2320,11 +2337,13 @@ async function fetchSeriesData() {
       const type = res.data.series?.mediaType;
       if (vols.length && (type === 'show' || type === 'anime' || (type === 'movie' && vols.length === 1))) {
         loadCredits(vols[0].id);
-      }
+      } else credits.value = null;
       if (type === 'movie' && vols.length) loadFilmCollection(vols[0].id);
+      else filmCollection.value = null;
     } else if (itemIdParam) {
       // Fetch item first
       const itemRes = await api.get(`/items/${itemIdParam}`);
+      if (id !== loadId) return;
       const item = itemRes.data.item;
 
       if (item) {
@@ -2357,19 +2376,22 @@ async function fetchSeriesData() {
           offloadedCount: item.offloaded_at ? 1 : 0,
           volumes: [item]
         };
+        shownPage = page;
         // Its extras, and the collection it's part of (if any), load alongside.
         if (isVideo(item.media_type)) loadCredits(item.id);
+        else credits.value = null;
         if (item.media_type === 'movie') loadFilmCollection(item.id);
+        else filmCollection.value = null;
         api.get(`/items/${item.id}/extras`)
           .then((r) => { if (series.value?.id === item.id) extrasList.value = r.data.extras || []; })
           .catch(() => {});
         if (item.series) {
           api.get(`/items/series/${encodeURIComponent(item.series)}`, { params: { library: item.library_id, type: item.media_type } })
             .then((r) => {
-              if (series.value?.id === item.id && (r.data.series?.volumeCount || 0) > 1) collection.value = r.data.series;
+              if (series.value?.id === item.id) collection.value = (r.data.series?.volumeCount || 0) > 1 ? r.data.series : null;
             })
             .catch(() => {});
-        }
+        } else collection.value = null;
       } else {
         error.value = t('title.errors.notFound');
       }
@@ -2377,10 +2399,11 @@ async function fetchSeriesData() {
       error.value = t('title.errors.noSeries');
     }
   } catch (err) {
+    if (id !== loadId) return;
     console.error('Failed to load series:', err);
     error.value = err.response?.data?.error || t('title.errors.loadFailed');
   } finally {
-    loading.value = false;
+    if (id === loadId) loading.value = false;
   }
 }
 
@@ -2411,7 +2434,12 @@ async function markAllAsUnread() {
   if (series.value.standalone) {
     const only = series.value.volumes[0];
     if (only.is_finished) return toggleVolumeReadStatus(only);
-    await api.post(`/progress/${only.id}`, { isFinished: 0, progressPercent: 0, currentPage: 0, currentTime: 0, totalPages: only.total_pages || 0 });
+    try {
+      await api.post(`/progress/${only.id}`, { isFinished: 0, progressPercent: 0, currentPage: 0, currentTime: 0, totalPages: only.total_pages || 0 });
+    } catch (err) {
+      dialog.alert(err.response?.data?.error || t('title.errors.resetFailed'));
+      return;
+    }
     return fetchSeriesData();
   }
   const confirmed = await dialog.confirm({
@@ -2741,6 +2769,7 @@ watch(() => [route.params.seriesName, route.params.id], () => {
 // A series is added as a whole; a standalone title on its own.
 const kidsStatus = ref(null);
 const kidsBusy = ref(false);
+let kidsRequest = 0;
 function kidsTarget() {
   const s = series.value;
   if (!s) return null;
@@ -2749,15 +2778,17 @@ function kidsTarget() {
   return libraryId ? { libraryId, series: s.name } : null;
 }
 async function loadKidsStatus() {
+  const id = ++kidsRequest;
   kidsStatus.value = null;
   const target = kidsTarget();
   if (!authStore.isEditor || !target) return;
   try {
     const params = target.itemId ? { itemId: target.itemId } : { library: target.libraryId, series: target.series };
     const res = await api.get('/kids/status', { params });
-    kidsStatus.value = res.data;
+    // The last title's status would point the toggle at its entry.
+    if (id === kidsRequest) kidsStatus.value = res.data;
   } catch (err) {
-    kidsStatus.value = null;
+    if (id === kidsRequest) kidsStatus.value = null;
   }
 }
 const kidsTitle = computed(() => {

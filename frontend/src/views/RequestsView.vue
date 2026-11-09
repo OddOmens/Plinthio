@@ -82,7 +82,7 @@
       <div v-if="loading" class="py-12 text-center text-sm text-muted-foreground">{{ $t('common.loading') }}</div>
 
       <div
-        v-else-if="requests.length === 0"
+        v-else-if="requests.length === 0 && !error"
         class="py-16 text-center border border-dashed border-border rounded-2xl bg-card/50"
       >
         <Inbox class="w-7 h-7 mx-auto text-muted-foreground" />
@@ -234,6 +234,7 @@ const updating = ref(new Set());
 const submitting = ref(new Set());
 // Statuses of titles requested (or found already requested) from the search this visit.
 const sent = ref({});
+let requestId = 0;
 
 function resultKey(result) {
   return `${result.source}:${result.externalId}`;
@@ -257,6 +258,7 @@ function withUpdating(id, on) {
 }
 
 async function loadRequests() {
+  const id = ++requestId;
   loading.value = true;
   error.value = '';
   try {
@@ -264,12 +266,16 @@ async function loadRequests() {
     if (scope.value === 'all') params.scope = 'all';
     if (statusFilter.value) params.status = statusFilter.value;
     const res = await api.get('/requests', { params });
+    if (id !== requestId) return;
     requests.value = res.data.requests || [];
     responseNotes.value = Object.fromEntries(requests.value.map((r) => [r.id, r.response_note || '']));
   } catch (err) {
+    if (id !== requestId) return;
+    // Not the last scope's list under this one's tab.
+    requests.value = [];
     error.value = err.response?.data?.error || t('requests.errors.load');
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 
@@ -312,6 +318,7 @@ async function submitRequest(result, mediaType) {
 
 async function setStatus(req, status) {
   withUpdating(req.id, true);
+  error.value = '';
   try {
     const res = await api.patch(`/requests/${req.id}`, {
       status,
@@ -343,6 +350,7 @@ async function removeRequest(req) {
   if (!ok) return;
 
   withUpdating(req.id, true);
+  error.value = '';
   try {
     await api.delete(`/requests/${req.id}`);
     requests.value = requests.value.filter((r) => r.id !== req.id);

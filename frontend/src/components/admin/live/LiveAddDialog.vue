@@ -175,13 +175,18 @@ async function loadPresets() {
   }
 }
 
+// Bumped each time the dialog opens, so an add still running from an earlier visit doesn't
+// change (or close) this one.
+let visit = 0;
+
 watch(() => props.open, (open) => {
   if (!open) return;
+  visit++;
   mode.value = 'public';
   query.value = '';
   picked.value = new Set();
   own.value = { name: '', playlistUrl: '', guideUrl: '' };
-  if (!presets.value) loadPresets();
+  if (!presets.value && !loadingPresets.value) loadPresets();
 });
 
 const addedPresets = computed(() => new Set(props.sources.map((s) => s.preset).filter(Boolean)));
@@ -210,6 +215,7 @@ function togglePick(key) {
 
 // ─── Adding ────────────────────────────────────────────────────────────────
 async function submit() {
+  const mine = visit;
   adding.value = true;
   const added = [];
   try {
@@ -226,8 +232,9 @@ async function submit() {
           break;
         }
       }
-      picked.value = remaining;
       if (added.length) emit('added', added);
+      if (mine !== visit) return;
+      picked.value = remaining;
       if (!picked.value.size) emit('close');
     } else {
       const body = { kind: 'm3u', name: own.value.name, playlistUrl: own.value.playlistUrl };
@@ -235,7 +242,7 @@ async function submit() {
       try {
         const res = await api.post('/live/admin/sources', body);
         if (res.data.source) emit('added', [res.data.source]);
-        emit('close');
+        if (mine === visit) emit('close');
       } catch (err) {
         dialog.alert(err.response?.data?.error || t('admin.liveTv.addDialog.couldNotAdd'));
       }

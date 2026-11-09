@@ -96,7 +96,8 @@
       "other": "{count} Treffer"
     },
     "matchesCapped": "{count}+ Treffer",
-    "noMatches": "Keine Treffer"
+    "noMatches": "Keine Treffer",
+    "failed": "Dieses Buch konnte nicht durchsucht werden"
   },
   "themes": {
     "auto": "Auto",
@@ -144,6 +145,7 @@
   "manga": {
     "backToShelf": "Zurück zum Regal",
     "loadingPages": "Seiten werden geladen…",
+    "couldNotLoad": "Die Seiten dieses Bandes konnten nicht geladen werden.",
     "pageOf": "Seite {page} von {total}",
     "pagesOf": "Seiten {from}–{to} von {total}",
     "singlePageView": "Einzelseitenansicht",
@@ -189,6 +191,7 @@
     "notesPlaceholder": "Notizen, Zitate oder Gedanken (optional)…",
     "add": "Lesezeichen hinzufügen",
     "loading": "Lesezeichen werden geladen…",
+    "loadFailed": "Lesezeichen konnten nicht geladen werden.",
     "empty": "Noch keine Lesezeichen gespeichert. Markiere mit dem Formular oben eine Position oder Seite.",
     "jumpTooltip": "Zu dieser Position springen",
     "jump": "Springen",

@@ -113,6 +113,14 @@
         <span class="text-xs font-mono">{{ $t('reader.manga.loadingPages') }}</span>
       </div>
 
+      <!-- The page list couldn't be loaded: say so, rather than show a broken page -->
+      <div v-else-if="loadError" class="flex flex-col items-center gap-3 px-6 text-center text-zinc-400">
+        <span class="text-sm">{{ loadError }}</span>
+        <button type="button" @click="loadPages" class="px-3.5 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-xs font-medium text-zinc-100 transition">
+          {{ $t('common.retry') }}
+        </button>
+      </div>
+
       <!-- Paged mode (RTL / LTR) -->
       <template v-else-if="mode === 'rtl' || mode === 'ltr'">
         <!-- Page image (Single or 2-Page Spread) — pinch-zoom / pan target -->
@@ -386,6 +394,7 @@ function goToNextVolume() {
 const readerEl = ref(null);
 const token = getMediaToken() || '';
 const loading = ref(true);
+const loadError = ref('');
 const totalPages = ref(props.item.total_pages || 0);
 // Where a volume opens: an explicit page (a bookmark), else where you left off — except a
 // finished volume, where "Read Again" should start from the beginning, not the last page.
@@ -502,10 +511,14 @@ const flipOldLeftUrl = ref(null);
 const flipOldRightUrl = ref(null);
 const flipOldFullUrl = ref(null);
 let flipTargetIndex = null;
+// Bumped by every flip and every cancel, so a flip cancelled while its pages preload doesn't
+// go on to start its animation.
+let flipRun = 0;
 
 // Abandons an in-progress flip without committing it — used when something else (a mode
 // switch, a scrub, a volume change) invalidates the animation already in flight.
 function cancelFlip() {
+  flipRun++;
   isFlipping.value = false;
   flipAnimating.value = false;
   flipTargetIndex = null;
@@ -812,6 +825,7 @@ function preloadImage(src) {
 }
 
 async function startFlip(target, isForward) {
+  const run = ++flipRun;
   // Pivot rule: forward always hinges on the reading-direction's spine edge (left for
   // LTR, right for RTL); backward hinges on the opposite edge — mirrors how you'd grab
   // a physical page from the side you're turning toward.
@@ -841,13 +855,17 @@ async function startFlip(target, isForward) {
     Promise.all(toPreload.map(preloadImage)),
     new Promise((resolve) => setTimeout(resolve, 300)),
   ]);
+  // Cancelled meanwhile: starting the animation now would leave flipAnimating on, and the
+  // next flip's leaf would mount already turned — no transition, so no transitionend, and
+  // page turns would stop until the next scrub.
+  if (run !== flipRun) return;
 
   // Two rAFs: the first lets the leaf paint at rotateY(0) (matching the old page exactly,
   // so there's no visible jump), the second then flips it to the target angle so the
   // CSS transition on .flip-leaf actually has a "from" state to animate away from.
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      flipAnimating.value = true;
+      if (run === flipRun) flipAnimating.value = true;
     });
   });
 }
@@ -1049,16 +1067,23 @@ function onPageLoad() {
 }
 
 // ─── Backend ──────────────────────────────────────────────────────────────────
+// Volumes can change while a page list is on its way; only the latest one counts.
+let pagesRequest = 0;
 async function loadPages() {
+  const id = ++pagesRequest;
   loading.value = true;
+  loadError.value = '';
   try {
     const res = await api.get(`/media/manga/${props.item.id}/pages`);
+    if (id !== pagesRequest) return;
     totalPages.value = res.data.totalPages || 0;
     if (currentPageIndex.value >= totalPages.value) currentPageIndex.value = 0;
   } catch (err) {
+    if (id !== pagesRequest) return;
     console.error('Failed to load manga pages:', err);
+    loadError.value = err.response?.data?.error || t('reader.manga.couldNotLoad');
   } finally {
-    loading.value = false;
+    if (id === pagesRequest) loading.value = false;
   }
 }
 
@@ -1074,12 +1099,16 @@ async function saveProgress() {
 }
 
 async function loadBookmarks() {
+  const itemId = props.item.id;
   try {
-    const res = await api.get(`/bookmarks/${props.item.id}`);
-    bookmarks.value = res.data.bookmarks || [];
+    const res = await api.get(`/bookmarks/${itemId}`);
+    if (itemId === props.item.id) bookmarks.value = res.data.bookmarks || [];
   } catch (err) { /* silent */ }
 }
+let savingBookmark = false;
 async function createBookmark() {
+  if (savingBookmark) return;
+  savingBookmark = true;
   try {
     await api.post('/bookmarks', {
       itemId: props.item.id, type: 'manga',
@@ -1091,6 +1120,8 @@ async function createBookmark() {
     await loadBookmarks();
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('reader.manga.couldNotSaveBookmark'));
+  } finally {
+    savingBookmark = false;
   }
 }
 async function deleteBookmark(id) {
@@ -1110,10 +1141,13 @@ watch(() => props.item?.id, async (newId) => {
   cancelFlip(); // switching volumes mid-flip would otherwise strand the leaf overlay on screen
   pageRatios.value = {};
   webtoonPageEls.length = 0;
+  bookmarks.value = []; // the last volume's aren't this one's
   currentPageIndex.value = startPageIndex(props.item);
   totalPages.value = props.item.total_pages || 0;
   await loadSeriesSettings();
   await loadPages();
+  // Switched again, or closed, while those loaded: the newer open (or the close) wins.
+  if (unmounted || props.item.id !== newId) return;
   loadBookmarks();
   viewSession.open(newId);
 });
@@ -1174,11 +1208,15 @@ function unlockPageScroll() {
   }
 }
 
+let unmounted = false;
 onMounted(async () => {
   lockPageScroll();
   applyTabletLandscapeDefault();
   await loadSeriesSettings();
   await loadPages();
+  // Closed while the pages were loading: wiring up now would leave the arrow keys turning
+  // (and saving) this volume's pages after the reader is gone.
+  if (unmounted) return;
   loadBookmarks();
   await nextTick();
   readerEl.value?.focus();
@@ -1190,6 +1228,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  unmounted = true;
   unlockPageScroll();
   window.removeEventListener('keydown', onKeyDown);
   window.removeEventListener('resize', onViewportResize);
