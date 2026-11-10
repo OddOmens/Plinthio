@@ -1,6 +1,7 @@
 import { test, before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { startTestServer, setupAdmin, authed, getJson } from './helpers/server.js';
+import { seedItems } from './helpers/seed.js';
 
 async function sendJson(baseUrl, method, path, token, body) {
   const res = await fetch(`${baseUrl}/api${path}`, {
@@ -28,6 +29,8 @@ describe('/api/highlights', () => {
   before(async () => {
     server = await startTestServer();
     ({ token: adminToken } = await setupAdmin(server.baseUrl));
+    // Highlights are only kept for a title that exists: seed-00000, seed-00001, seed-00002.
+    await seedItems(server.dataDir, 3, { mediaType: 'book', libraryType: 'books' });
     await sendJson(server.baseUrl, 'POST', '/users', adminToken, { username: 'reader', password: 'reader-password-1' });
     viewerToken = await login(server.baseUrl, 'reader', 'reader-password-1');
   });
@@ -36,30 +39,30 @@ describe('/api/highlights', () => {
 
   test('saves highlights in book order, each with its colour', async () => {
     const later = await sendJson(server.baseUrl, 'POST', '/highlights', adminToken, {
-      itemId: 'book-1', cfiRange: 'epubcfi(/6/8!/4/2,/1:0,/1:20)', text: 'Later passage', color: 'blue', progress: 60
+      itemId: 'seed-00000', cfiRange: 'epubcfi(/6/8!/4/2,/1:0,/1:20)', text: 'Later passage', color: 'blue', progress: 60
     });
     assert.equal(later.status, 201);
     assert.equal(later.body.highlight.color, 'blue');
     await sendJson(server.baseUrl, 'POST', '/highlights', adminToken, {
-      itemId: 'book-1', cfiRange: 'epubcfi(/6/4!/4/2,/1:0,/1:10)', text: 'Early passage', progress: 5, chapter: 'Chapter 1'
+      itemId: 'seed-00000', cfiRange: 'epubcfi(/6/4!/4/2,/1:0,/1:10)', text: 'Early passage', progress: 5, chapter: 'Chapter 1'
     });
 
-    const { body } = await getJson(server.baseUrl, '/highlights/book-1', adminToken);
+    const { body } = await getJson(server.baseUrl, '/highlights/seed-00000', adminToken);
     assert.deepEqual(body.highlights.map((h) => h.text), ['Early passage', 'Later passage']);
     assert.equal(body.highlights[0].color, 'yellow', 'yellow is the default');
     assert.equal(body.highlights[0].chapter, 'Chapter 1');
   });
 
   test('rejects an unknown colour and a missing range', async () => {
-    const bad = await sendJson(server.baseUrl, 'POST', '/highlights', adminToken, { itemId: 'book-1', cfiRange: 'epubcfi(/6/2)', color: 'purple' });
+    const bad = await sendJson(server.baseUrl, 'POST', '/highlights', adminToken, { itemId: 'seed-00000', cfiRange: 'epubcfi(/6/2)', color: 'purple' });
     assert.equal(bad.status, 400);
-    const noRange = await sendJson(server.baseUrl, 'POST', '/highlights', adminToken, { itemId: 'book-1' });
+    const noRange = await sendJson(server.baseUrl, 'POST', '/highlights', adminToken, { itemId: 'seed-00000' });
     assert.equal(noRange.status, 400);
   });
 
   test('recolours, adds and clears a note, and deletes', async () => {
     const { body: { highlight } } = await sendJson(server.baseUrl, 'POST', '/highlights', adminToken, {
-      itemId: 'book-2', cfiRange: 'epubcfi(/6/2!/4/2,/1:0,/1:5)', text: 'Hello'
+      itemId: 'seed-00001', cfiRange: 'epubcfi(/6/2!/4/2,/1:0,/1:5)', text: 'Hello'
     });
     const recoloured = await sendJson(server.baseUrl, 'PATCH', `/highlights/${highlight.id}`, adminToken, { color: 'pink', note: 'Remember this' });
     assert.equal(recoloured.body.highlight.color, 'pink');
@@ -68,15 +71,15 @@ describe('/api/highlights', () => {
     assert.equal(cleared.body.highlight.note, null);
     const gone = await sendJson(server.baseUrl, 'DELETE', `/highlights/${highlight.id}`, adminToken);
     assert.equal(gone.status, 200);
-    const { body } = await getJson(server.baseUrl, '/highlights/book-2', adminToken);
+    const { body } = await getJson(server.baseUrl, '/highlights/seed-00001', adminToken);
     assert.equal(body.highlights.length, 0);
   });
 
   test("one reader can't see, change or delete another's highlights", async () => {
     const { body: { highlight } } = await sendJson(server.baseUrl, 'POST', '/highlights', adminToken, {
-      itemId: 'book-3', cfiRange: 'epubcfi(/6/2!/4/2,/1:0,/1:5)', text: 'Private'
+      itemId: 'seed-00002', cfiRange: 'epubcfi(/6/2!/4/2,/1:0,/1:5)', text: 'Private'
     });
-    const { body } = await getJson(server.baseUrl, '/highlights/book-3', viewerToken);
+    const { body } = await getJson(server.baseUrl, '/highlights/seed-00002', viewerToken);
     assert.equal(body.highlights.length, 0);
     assert.equal((await sendJson(server.baseUrl, 'PATCH', `/highlights/${highlight.id}`, viewerToken, { color: 'green' })).status, 404);
     assert.equal((await sendJson(server.baseUrl, 'DELETE', `/highlights/${highlight.id}`, viewerToken)).status, 404);

@@ -136,7 +136,10 @@
       "otherDisk": "Ten folder jest na innym dysku niż dane serwera.",
       "hint": "Folder widziany oczami serwera. W Dockerze: dowolne miejsce w {media}, które nie jest tylko do odczytu, albo inny dysk zamontowany w {backups} (Dokumentacja → Kopie zapasowe i bezpieczeństwo danych).",
       "keepThere": "Zachowuj tam",
-      "copyFiles": "Kopiuj też zdjęcia profilowe, okładki, klucz logowania i certyfikaty HTTPS",
+      "copyFiles": "Kopiuj też zdjęcia profilowe, okładki i certyfikaty HTTPS",
+      "copyServerKey": "Kopiuj też klucz logowania",
+      "copyServerKeyWhy": "Wyłączone: po przywróceniu na nowym serwerze wszyscy logują się ponownie i ponownie konfigurują weryfikację dwuetapową. Włączone: to także zostanie przywrócone, ale każdy, kto może otworzyć folder kopii zapasowych, może zalogować się na dowolne konto. Włącz tylko dla folderu, którego nikt inny nie może odczytać.",
+      "serverKeyFound": "W tym folderze jest starsza kopia klucza logowania ({file}). Każdy, kto może otworzyć ten folder, może za jej pomocą zalogować się na dowolne konto. Usuń ten plik albo przenieś go w prywatne miejsce.",
       "couldNotCheck": "Nie udało się sprawdzić tego folderu",
       "pickerTitle": "Kopiuj kopie zapasowe do"
     },

@@ -23,6 +23,20 @@ import AdmZip from 'adm-zip';
 export const BOOK_META_VERSION = 1;
 
 const MAX_DESCRIPTION = 6000;
+
+// A book is a file somebody downloaded, so what it says about itself is read within limits.
+// Sizes are checked against what the zip declares before anything is inflated (a few KB of
+// zip can claim to hold gigabytes), and text is clipped before any pattern is run over it.
+const MAX_CONTAINER_BYTES = 1024 * 1024; // META-INF/container.xml is a few hundred bytes
+const MAX_OPF_BYTES = 2 * 1024 * 1024; // a big anthology's package document is ~200 KB
+const MAX_COVER_BYTES = 15 * 1024 * 1024; // the same limit an uploaded cover gets
+// A blurb is cut to MAX_DESCRIPTION characters of text; this is how much markup is read to
+// find them.
+const MAX_HTML_INPUT = 200 * 1000;
+const MAX_FIELD_TEXT = 2000; // a title, a name, a subject
+// How many of each thing a package document may list before the rest are ignored. Several
+// lookups below compare one list against another, so the lists can't be left open-ended.
+const MAX_LISTED = { titles: 50, creators: 200, identifiers: 50, subjects: 500, metas: 2000, manifest: 20000, guide: 200 };
 const MAX_SUBJECTS = 8;
 // Catalogue filler that says nothing about the book.
 const EMPTY_SUBJECTS = new Set(['general', 'fiction', 'nonfiction', 'non-fiction', 'ebook', 'ebooks', 'book', 'books']);
@@ -41,30 +55,77 @@ function decodeEntities(text) {
   });
 }
 
+// The two functions below do by hand what /<!\[CDATA\[([\s\S]*?)\]\]>/ and
+// /<(script|style)[\s\S]*?<\/\1>/ would. Those patterns search to the end of the text again
+// from every opening that has no closing, so a description made of 40,000 "<script"s took
+// 23 seconds; these read the text once.
+function unwrapCdata(text) {
+  let out = '';
+  let pos = 0;
+  for (;;) {
+    const start = text.indexOf('<![CDATA[', pos);
+    if (start === -1) break;
+    const end = text.indexOf(']]>', start + 9);
+    if (end === -1) break;
+    out += text.slice(pos, start) + text.slice(start + 9, end);
+    pos = end + 3;
+  }
+  return pos ? out + text.slice(pos) : text;
+}
+
+function stripScriptAndStyle(text) {
+  const opening = /<(script|style)/gi;
+  const closing = { script: /<\/script>/gi, style: /<\/style>/gi };
+  const unclosed = new Set(); // tags with no closing anywhere further on
+  let out = '';
+  let pos = 0;
+  let m;
+  while ((m = opening.exec(text))) {
+    const tag = m[1].toLowerCase();
+    if (unclosed.has(tag)) continue;
+    const close = closing[tag];
+    close.lastIndex = opening.lastIndex;
+    const end = close.exec(text);
+    if (!end) {
+      unclosed.add(tag);
+      if (unclosed.size === 2) break;
+      continue;
+    }
+    out += text.slice(pos, m.index);
+    pos = close.lastIndex;
+    opening.lastIndex = pos;
+  }
+  return pos ? out + text.slice(pos) : text;
+}
+
 /**
  * A blurb as plain text with its paragraphs kept. Descriptions arrive as HTML (Calibre and
  * publishers both write it), sometimes escaped a second time, and the title page shows text.
  */
 export function htmlToText(html) {
   if (!html) return null;
-  let text = String(html);
+  let text = String(html).slice(0, MAX_HTML_INPUT);
   // Escaped markup ("&lt;p&gt;") is markup once decoded.
   if (!/<[a-z!/]/i.test(text) && /&lt;\/?[a-z]/i.test(text)) text = decodeEntities(text);
-  text = text
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, '')
+  // A tag runs from "<" to the next ">" with no "<" between: without that, a run of "<"s
+  // with no ">" is searched to the end once per "<".
+  text = stripScriptAndStyle(unwrapCdata(text))
     .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<li[^>]*>/gi, '\n• ')
+    .replace(/<li[^<>]*>/gi, '\n• ')
     .replace(/<\/(p|div|h[1-6]|li|ul|ol|blockquote|tr)>/gi, '\n\n')
-    .replace(/<[^>]+>/g, '');
+    .replace(/<[^<>]+>/g, '');
   text = decodeEntities(text)
     .replace(/\r/g, '')
     .replace(/[ \t ]+/g, ' ')
     .replace(/ *\n */g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
-  // A lone "**" or "* * *" left at the end of a publisher blurb is a scene-break ornament.
-  text = text.replace(/\n+[*\s]+$/, '').trim();
+  // A lone "**" or "* * *" left at the end of a publisher blurb is a scene-break ornament:
+  // everything from the first line break in the trailing run of asterisks and spaces goes.
+  let tail = text.length;
+  while (tail > 0 && (text[tail - 1] === '*' || /\s/.test(text[tail - 1]))) tail--;
+  const ornament = text.indexOf('\n', tail);
+  if (ornament !== -1 && ornament < text.length - 1) text = text.slice(0, ornament).trim();
   if (!text) return null;
   return text.length > MAX_DESCRIPTION ? `${text.slice(0, MAX_DESCRIPTION).replace(/\s+\S*$/, '')}…` : text;
 }
@@ -142,11 +203,11 @@ export function parseOpf(xml) {
     const a = node.attributes;
     if (name === 'metadata' || name === 'manifest' || name === 'guide') { section = name; return; }
     if (section === 'manifest' && name === 'item') {
-      manifest.push({ id: a.id, href: a.href, type: (a['media-type'] || '').toLowerCase(), properties: a.properties || '' });
+      if (manifest.length < MAX_LISTED.manifest) manifest.push({ id: a.id, href: a.href, type: (a['media-type'] || '').toLowerCase(), properties: a.properties || '' });
       return;
     }
     if (section === 'guide' && name === 'reference') {
-      guide.push({ type: (a.type || '').toLowerCase(), href: a.href });
+      if (guide.length < MAX_LISTED.guide) guide.push({ type: (a.type || '').toLowerCase(), href: a.href });
       return;
     }
     // Markup nested in a field (an unescaped <p> in a description) only adds its text.
@@ -158,29 +219,34 @@ export function parseOpf(xml) {
     if (!METADATA_FIELDS.has(name)) return; // e.g. OPF 1's <dc-metadata> wrapper
     open = { name, id: a.id || null, role: attr(a, 'role'), scheme: attr(a, 'scheme'), event: attr(a, 'event'), property: a.property, refines: a.refines, text: '' };
   };
-  parser.ontext = (text) => { if (open) open.text += text; };
-  parser.oncdata = (text) => { if (open) open.text += text; };
+  // Only a description is long; the rest are names, and stop growing once they clearly aren't.
+  const collect = (text) => {
+    if (open && open.text.length < (open.name === 'description' ? MAX_HTML_INPUT : MAX_FIELD_TEXT)) open.text += text;
+  };
+  parser.ontext = collect;
+  parser.oncdata = collect;
   parser.onclosetag = (tagName) => {
     const name = localName(tagName);
     if (name === 'metadata' || name === 'manifest' || name === 'guide') { section = null; return; }
     if (!open || name !== open.name) return;
     const el = open;
     open = null;
-    const text = el.text.trim();
+    const text = (el.name === 'description' ? el.text : el.text.slice(0, MAX_FIELD_TEXT)).trim();
     if (!text && el.name !== 'description') return;
+    const room = (list, key) => list.length < MAX_LISTED[key];
     switch (el.name) {
-      case 'title': titles.push({ id: el.id, text }); break;
-      case 'creator': creators.push({ id: el.id, text, role: el.role ? el.role.toLowerCase() : null }); break;
-      case 'identifier': identifiers.push({ scheme: (el.scheme || '').toLowerCase(), text }); break;
-      case 'subject': subjects.push(text); break;
-      case 'meta': if (el.property) metas.push({ property: el.property, refines: (el.refines || '').replace(/^#/, ''), id: el.id, text }); break;
+      case 'title': if (room(titles, 'titles')) titles.push({ id: el.id, text }); break;
+      case 'creator': if (room(creators, 'creators')) creators.push({ id: el.id, text, role: el.role ? el.role.toLowerCase() : null }); break;
+      case 'identifier': if (room(identifiers, 'identifiers')) identifiers.push({ scheme: (el.scheme || '').toLowerCase(), text }); break;
+      case 'subject': if (room(subjects, 'subjects')) subjects.push(text); break;
+      case 'meta': if (el.property && room(metas, 'metas')) metas.push({ property: el.property, refines: (el.refines || '').replace(/^#/, ''), id: el.id, text }); break;
       case 'date':
         // EPUB 2 can list several (creation, modification…); the publication date is wanted.
         if (/modif|creat/i.test(el.event || '')) break;
         if (!dc.date) dc.date = text;
         break;
       case 'description': case 'publisher': case 'language':
-        if (!dc[el.name] && el.text.trim()) dc[el.name] = el.text.trim();
+        if (!dc[el.name] && text) dc[el.name] = text;
         break;
       default: break;
     }
@@ -300,10 +366,20 @@ export function readSidecarOpf(filePath) {
     .map((n) => path.basename(n, path.extname(n)).toLowerCase()));
   if (books.size > 1) return null;
   try {
-    return parseOpf(fs.readFileSync(path.join(dir, sidecar), 'utf8'));
+    const file = path.join(dir, sidecar);
+    if (fs.statSync(file).size > MAX_OPF_BYTES) return null;
+    return parseOpf(fs.readFileSync(file, 'utf8'));
   } catch {
     return null;
   }
+}
+
+// An entry's bytes, or null when it says it is bigger than `maxBytes`. The size is the one
+// the zip declares, checked before inflating; the zip library stops inflating at that size,
+// so an entry that lies about it comes out as an error rather than as gigabytes.
+function readCapped(entry, maxBytes) {
+  if (!entry || entry.isDirectory || entry.header.size > maxBytes) return null;
+  return entry.getData();
 }
 
 /**
@@ -316,21 +392,25 @@ export function readEpubOpf(filePath) {
 
   let opfPath = null;
   const container = byName.get('META-INF/container.xml');
-  if (container) {
-    const m = container.getData().toString('utf8').match(/full-path\s*=\s*["']([^"']+)["']/i);
+  const containerXml = readCapped(container, MAX_CONTAINER_BYTES);
+  if (containerXml) {
+    const m = containerXml.toString('utf8').match(/full-path\s*=\s*["']([^"']+)["']/i);
     if (m) opfPath = m[1];
   }
   if (!opfPath || !byName.has(opfPath)) opfPath = entries.find((e) => e.entryName.toLowerCase().endsWith('.opf'))?.entryName || null;
   if (!opfPath) return null;
 
-  const opf = parseOpf(byName.get(opfPath).getData().toString('utf8'));
+  const opfXml = readCapped(byName.get(opfPath), MAX_OPF_BYTES);
+  if (!opfXml) throw new Error('its package document (.opf) is too large to read');
+  const opf = parseOpf(opfXml.toString('utf8'));
   let coverData = null;
   if (opf.coverHref) {
     const opfDir = path.posix.dirname(opfPath);
     const target = path.posix.normalize(opfDir === '.' ? opf.coverHref : `${opfDir}/${opf.coverHref}`).toLowerCase();
     const entry = entries.find((e) => e.entryName.toLowerCase() === target)
       || entries.find((e) => path.posix.basename(e.entryName).toLowerCase() === path.posix.basename(target));
-    if (entry) coverData = entry.getData();
+    // A cover too big to read is left out; the rest of what the book says still counts.
+    coverData = readCapped(entry, MAX_COVER_BYTES);
   }
   return { ...opf, coverData };
 }

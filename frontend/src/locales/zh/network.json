@@ -28,7 +28,7 @@
   },
   "proxy": {
     "title": "Plinthio 前面有代理，但没有设置 TRUST_PROXY",
-    "text": "每个访问者看起来都来自代理（{from}），通常是一个家庭网络地址，因此无法区分外部访问。Tailscale 和公网地址插件会为你设置它。如果是其他代理，请参阅 docs/remote-access.md。",
+    "text": "Plinthio 无法判断访问者的真实来源，因此所有通过代理（{from}）到达的访问都会被视为不在家中。Tailscale 和公网地址插件会为你设置它。如果是其他代理，请参阅 docs/remote-access.md。",
     "localAddress": "本地地址"
   },
   "adminsWithout2fa": {

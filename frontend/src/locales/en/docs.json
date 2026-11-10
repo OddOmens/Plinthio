@@ -425,7 +425,7 @@
       "title": "A second place for backups",
       "text": "{path} is on the same disk as the server: it covers mistakes and bad upgrades, not a failed disk. Under **Also copy backups to**, pick a folder on another drive, a NAS share or a synced cloud folder (**Browse**, then **Test** to check the server can write there and whether it's on a different disk). Every backup is then copied there as it's made, and anything missed while it was unreachable is copied when it's back.",
       "keepThere": "**Keep there**: how many to keep in the second place (30 by default), separately from the server's own count.",
-      "alsoCopied": "Also copied, unless you turn it off: profile pictures, covers, the sign-in key (so nobody is signed out after a restore) and the HTTPS certificates (so devices keep trusting the server).",
+      "alsoCopied": "Also copied, unless you turn it off: profile pictures, covers and the HTTPS certificates (so devices keep trusting the server). The sign-in key is copied only if you choose it: with it, nobody is signed out after a restore and two-factor keeps working, but anyone who can open the backup folder can sign in as any account.",
       "layout": "The copy is laid out as {database} and {files}. If a copy fails, the card says why and it's tried again every 15 minutes.",
       "docker": "**In Docker** the folder must be mounted into the container. Any folder under {media} works if your media isn't mounted read-only. For a different drive, uncomment the {backups} line in {compose}, set {variable} in {env}, recreate the container, and choose {backups}."
     },

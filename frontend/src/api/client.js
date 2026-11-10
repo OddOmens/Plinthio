@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { queueProgress, flushProgressQueue } from '../utils/offlineQueue';
 import { translateServerMessage } from '../i18n/serverErrors';
+import { clearAccountDeviceData, tokenHasExpired } from '../utils/accountDeviceData';
 
 const api = axios.create({
   baseURL: '/api',
@@ -63,6 +64,14 @@ api.interceptors.response.use(
     const code = error.response?.data?.code;
     const sessionProblem = !code || ['P100', 'P101', 'P102'].includes(code);
     if (error.response && error.response.status === 401 && sessionProblem) {
+      // The server ended a session that hadn't run out by itself: a password change, "sign
+      // out of all devices", or the account being removed. That's a sign-out someone asked
+      // for, so this device loses what the account left on it (cached covers and pages,
+      // downloads), exactly as the Sign out button does. A session that only expired keeps
+      // its downloads for when the same person signs back in, and a server that can't be
+      // reached at all never gets here (there's no response), so going offline wipes nothing.
+      const stored = localStorage.getItem('plinthio_token');
+      if (stored && code !== 'P102' && !tokenHasExpired(stored)) clearAccountDeviceData();
       localStorage.removeItem('plinthio_token');
       localStorage.removeItem('plinthio_user');
       localStorage.removeItem('plinthio_media_token');

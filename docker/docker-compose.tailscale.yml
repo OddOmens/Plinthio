@@ -21,23 +21,41 @@
 # Admin → Network first (and consider requiring two-factor away from home), and read
 # docs/remote-access.md: Funnel goes through Tailscale's servers, which limit bandwidth.
 #
-# Tailscale runs in Plinthio's network, so http://<server>:8088 on your home network keeps
-# working, and Tailscale reaches Plinthio at 127.0.0.1 and passes each device's real address
-# along. That's why TRUST_PROXY is loopback: only a proxy running right next to Plinthio is
-# believed, and nothing on your network can fake its address. Tailscale devices count as
-# home unless you change that in Admin → Network; Funnel visitors come from the internet
+# Tailscale runs in its own container with its own network, joined to Plinthio by a small
+# private Docker network with fixed addresses. Tailscale's HTTPS front door (`tailscale serve`)
+# hands requests to Plinthio over that network and passes each device's real address along,
+# and Plinthio believes those forwarding headers from exactly one address: this container's
+# (TRUST_PROXY below). Nothing else can pose as it: not a device on your home network, not
+# the Docker host, and not a tailnet device connecting straight to port 8080, which now ends
+# up inside this container where nothing is listening.
+# (Earlier versions of this file had Tailscale share Plinthio's network. That let any
+# tailnet device open http://<name>:8080 behind the front door, where it was taken for a
+# home device and could make up its own address. If yours is one of those, see "Upgrading
+# the add-ons" in docs/remote-access.md: replace this file and run
+# `docker compose up -d --force-recreate`.)
+#
+# http://<server>:8088 on your home network keeps working as before. Tailscale devices count
+# as home unless you change that in Admin → Network; Funnel visitors come from the internet
 # and count as outside.
+#
+# The private network is 10.213.47.0/29. If Docker says it overlaps another network, pick a
+# free one in .env, all four together (the public-address add-on reads the same settings):
+#   PLINTHIO_PROXY_SUBNET=10.213.77.0/29
+#   PLINTHIO_PROXY_APP_IP=10.213.77.2
+#   PLINTHIO_PROXY_TAILSCALE_IP=10.213.77.3
+#   PLINTHIO_PROXY_CADDY_IP=10.213.77.4
+# Don't advertise that network as a Tailscale subnet route (TS_ROUTES): connections routed
+# that way would reach Plinthio from this container's address and be believed.
 services:
   tailscale:
     image: tailscale/tailscale:stable
     container_name: plinthio-tailscale
     restart: unless-stopped
-    network_mode: service:plinthio
-    # Restart this container whenever plinthio restarts, so it never keeps a dead network.
+    networks:
+      plinthio-proxy:
+        ipv4_address: ${PLINTHIO_PROXY_TAILSCALE_IP:-10.213.47.3}
     depends_on:
-      plinthio:
-        condition: service_started
-        restart: true
+      - plinthio
     environment:
       - TS_AUTHKEY=${TS_AUTHKEY:-}
       - TS_HOSTNAME=${TS_HOSTNAME:-plinthio}
@@ -51,11 +69,26 @@ services:
 
   plinthio:
     environment:
-      - TRUST_PROXY=loopback
+      # Exactly the two add-on addresses on the private network, never a whole range: the
+      # network's own gateway (the Docker host) sits in that range and must not be believed.
+      # Both are listed in both add-on files so that using the two together works; with only
+      # this add-on, nothing holds the second address.
+      - TRUST_PROXY=${PLINTHIO_PROXY_TAILSCALE_IP:-10.213.47.3},${PLINTHIO_PROXY_CADDY_IP:-10.213.47.4}
+    networks:
+      # `default` stays, so the published ports and anything else you attached keep working.
+      default: {}
+      plinthio-proxy:
+        ipv4_address: ${PLINTHIO_PROXY_APP_IP:-10.213.47.2}
+
+networks:
+  plinthio-proxy:
+    ipam:
+      config:
+        - subnet: ${PLINTHIO_PROXY_SUBNET:-10.213.47.0/29}
 
 configs:
-  # HTTPS on the tailnet name, handed to Plinthio. Funnel (the same address, open to the
-  # internet) only with TS_FUNNEL=true; it must be exactly true or false.
+  # HTTPS on the tailnet name, handed to Plinthio at its fixed address. Funnel (the same
+  # address, open to the internet) only with TS_FUNNEL=true; it must be exactly true or false.
   # $$ keeps Compose from filling in ${TS_CERT_DOMAIN}; Tailscale fills it in itself.
   tailscale-serve:
     content: |
@@ -63,7 +96,7 @@ configs:
         "TCP": { "443": { "HTTPS": true } },
         "Web": {
           "$${TS_CERT_DOMAIN}:443": {
-            "Handlers": { "/": { "Proxy": "http://127.0.0.1:8080" } }
+            "Handlers": { "/": { "Proxy": "http://${PLINTHIO_PROXY_APP_IP:-10.213.47.2}:8080" } }
           }
         },
         "AllowFunnel": { "$${TS_CERT_DOMAIN}:443": ${TS_FUNNEL:-false} }

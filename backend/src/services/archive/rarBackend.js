@@ -52,10 +52,10 @@ export default {
     });
   },
 
-  async readEntry(archivePath, name) {
+  async readEntry(archivePath, name, { maxBytes = MAX_ENTRY_BYTES } = {}) {
     const extractor = await openArchive(archivePath);
     const header = [...extractor.getFileList().fileHeaders].find((h) => h.name === name);
-    if (header?.unpSize > MAX_ENTRY_BYTES) throw new Error('This page is too large to open');
+    if (header?.unpSize > Math.min(maxBytes, MAX_ENTRY_BYTES)) throw new Error('This page is too large to open');
     const extracted = extractor.extract({ files: [name] });
     const files = [...extracted.files];
     if (files.length === 0) return null;

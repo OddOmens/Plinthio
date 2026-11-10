@@ -15,6 +15,7 @@ import { sendError, codeForFsError } from '../errors.js';
 import { getOrCreateStill } from '../services/videoFrame.js';
 import { activeIntroFile } from '../services/intro.js';
 import { ITEM_ID_RE } from '../utils/ids.js';
+import { requireLibraryFile } from '../utils/libraryPath.js';
 
 // Reading a book/comic/audiobook file: a disconnected drive or unreadable file is P302/P301,
 // anything else the generic P000.
@@ -186,11 +187,12 @@ router.get('/stream/:id', authenticateToken, async (req, res) => {
     if (await isItemHiddenForUser(db, req.params.id, req.user)) {
       return sendError(req, res, 'P300');
     }
-    if (!fs.existsSync(item.path)) return sendError(req, res, 'P301');
-
-    const filePath = item.path;
+    // The real file behind the catalogued path, refused unless it sits inside a library
+    // folder — a symlink in a library must not turn into a way to read any file on the server.
+    const filePath = await requireLibraryFile(req, res, item.path);
+    if (!filePath) return;
     const stat = fs.statSync(filePath);
-    const contentType = mime.lookup(filePath) || 'audio/mpeg';
+    const contentType = mime.lookup(item.path) || 'audio/mpeg';
     sendRangedFile(req, res, filePath, stat.size, contentType);
   } catch (err) {
     mediaFileError(req, res, err);
@@ -209,7 +211,10 @@ router.get('/manga/:id/pages', authenticateToken, async (req, res) => {
       return sendError(req, res, 'P300');
     }
 
-    const pages = await getMangaPagesList(item.path);
+    const filePath = await requireLibraryFile(req, res, item.path);
+    if (!filePath) return;
+
+    const pages = await getMangaPagesList(filePath);
     res.json({
       totalPages: pages.length,
       pages: pages.map((_, index) => ({ pageIndex: index, pageNumber: index + 1 }))
@@ -236,12 +241,14 @@ router.get('/manga/:id/page/:pageIndex', authenticateToken, async (req, res) => 
     if (!Number.isInteger(pageIndex) || pageIndex < 0) {
       return sendError(req, res, 'P306', { message: 'Invalid page index' });
     }
+    const filePath = await requireLibraryFile(req, res, item.path);
+    if (!filePath) return;
     // ?w= asks for a copy sized to the screen (services/pageImages.js); without it, the
     // original page as stored in the archive (downloads, Mihon, OPDS readers).
     const width = pickPageWidth(req.query.w);
     const page = width
-      ? await resizedMangaPage(req.params.id, item.path, pageIndex, width)
-      : await extractMangaPage(item.path, pageIndex);
+      ? await resizedMangaPage(req.params.id, filePath, pageIndex, width)
+      : await extractMangaPage(filePath, pageIndex);
 
     if (!page) {
       return res.status(404).json({ error: 'Page not found' });
@@ -268,14 +275,16 @@ router.get('/book/:id/file', authenticateToken, async (req, res) => {
       return sendError(req, res, 'P300');
     }
 
-    // Without this, a file removed from disk since the last scan made createReadStream emit
-    // an unhandled 'error' and crashed the server for everyone.
-    if (!fs.existsSync(item.path)) return sendError(req, res, 'P301');
+    // Answers P301 for a file removed from disk since the last scan (which used to crash the
+    // server via an unhandled stream 'error'), and refuses one that resolves — through a
+    // symlink — to somewhere outside the library folders.
+    const filePath = await requireLibraryFile(req, res, item.path);
+    if (!filePath) return;
 
     const contentType = mime.lookup(item.path) || 'application/octet-stream';
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(item.title)}.${item.format}"`);
-    streamFile(res, item.path);
+    streamFile(res, filePath);
   } catch (err) {
     mediaFileError(req, res, err);
   }

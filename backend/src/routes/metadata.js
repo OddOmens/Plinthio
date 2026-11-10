@@ -29,7 +29,8 @@ import sharp from 'sharp';
 import { logger } from '../services/logger.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
-import { AGE_RATINGS } from '../services/visibility.js';
+import { AGE_RATINGS, ratingRank, isLimitedAccount } from '../services/visibility.js';
+import rateLimit from 'express-rate-limit';
 import { resetCredits } from '../services/credits.js';
 import { ITEM_ID_RE } from '../utils/ids.js';
 
@@ -164,8 +165,56 @@ router.use((err, req, res, next) => {
   });
 });
 
+// ─── Looking titles up outside the library ───────────────────────────────────────────────
+// Editors search the providers to fix metadata. Everyone else uses the same search to ask
+// for a title the server doesn't have (Requests) or to add one to a list. Each search goes
+// out with the server's own provider keys, and what comes back is the outside world's
+// catalogue, not the library's, so for accounts that aren't editors:
+//   - a Kids Mode account doesn't get it at all: it would be a way to browse everything
+//     Kids Mode exists to keep out of sight
+//   - an age-limited account never gets a result a provider marks as adult, or rates above
+//     the account's limit (the providers are already asked to leave adult titles out)
+//   - searches are limited per account, so one account can't spend the server's allowance
+//     with a provider (they count requests per key) or use it as a relay
+function isEditorAccount(user) {
+  return !!user && (user.role === 'admin' || user.role === 'editor') && !user.kids_mode;
+}
+
+function noKidsAccounts(req, res, next) {
+  if (req.user.kids_mode === 1 || req.user.kids_mode === true) {
+    return sendError(req, res, 'P003', { message: 'Searching outside the library is not available in Kids Mode' });
+  }
+  next();
+}
+
+const perAccount = (max) => rateLimit({
+  windowMs: 60 * 1000,
+  max,
+  keyGenerator: (req) => `metadata:${req.user.id}`,
+  // Matching a library by hand is many searches in a row, and editors are trusted with more.
+  skip: (req) => isEditorAccount(req.user),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many searches. Wait a minute and try again.', code: 'P005' }
+});
+const searchLimiter = perAccount(30);
+const detailsLimiter = perAccount(60);
+
+const ADULT_CONTENT_RATINGS = new Set(['erotica', 'pornographic', 'explicit', 'adult', 'nc-17', 'x', 'xxx']);
+
+// Whether an account with an age limit may be shown this search result.
+function resultAllowedFor(user, result) {
+  if (!isLimitedAccount(user) || !result || typeof result !== 'object') return true;
+  if (result.adult === true || result.isAdult === true || result.is_adult === true) return false;
+  const marked = String(result.contentRating ?? result.content_rating ?? '').trim().toLowerCase();
+  if (ADULT_CONTENT_RATINGS.has(marked)) return false;
+  const rank = ratingRank(result.ageRating ?? result.age_rating);
+  const max = ratingRank(user.max_age_rating);
+  return rank === null || max === null || rank <= max;
+}
+
 // Search external metadata providers (MangaDex, Google Books, Open Library, TMDB)
-router.get('/search', async (req, res) => {
+router.get('/search', noKidsAccounts, searchLimiter, async (req, res) => {
   const { mediaType, query, year, language } = req.query;
 
   if (!mediaType || !query) {
@@ -183,7 +232,9 @@ router.get('/search', async (req, res) => {
 
     // A source that didn't answer is reported (`notices`), so results from the others alone
     // don't read as that source having nothing.
-    const { results, unavailable } = await searchMetadata(mediaType, searchQuery, { year: searchYear, language: normalizeLanguage(language) });
+    const found = await searchMetadata(mediaType, searchQuery, { year: searchYear, language: normalizeLanguage(language) });
+    const unavailable = found.unavailable;
+    const results = (found.results || []).filter((result) => resultAllowedFor(req.user, result));
     res.json({ results, notices: unavailable, searchedAs: searchQuery !== query.trim() ? searchQuery : undefined, year: searchYear });
   } catch (err) {
     if (err.code === 'MISSING_API_KEY') {
@@ -219,7 +270,7 @@ const DETAIL_IDS = {
   audible: /^[A-Z0-9]{10}$/,
   comicvine: /^\d{1,10}$/
 };
-router.get('/details', async (req, res) => {
+router.get('/details', noKidsAccounts, detailsLimiter, async (req, res) => {
   const { source, externalId, region } = req.query;
   if (!DETAIL_IDS[source]?.test(String(externalId || ''))) {
     return res.status(400).json({ error: 'A search result from Open Library, Google Books, Audible or Comic Vine is required' });

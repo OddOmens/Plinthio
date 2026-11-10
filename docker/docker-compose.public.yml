@@ -17,16 +17,30 @@
 # (With the Tailscale add-on too: COMPOSE_FILE=docker-compose.yml:docker-compose.tailscale.yml:docker-compose.public.yml)
 # and run: docker compose up -d
 #
-# Caddy runs in Plinthio's network and reaches it at 127.0.0.1, passing each visitor's real
-# address along, which is why TRUST_PROXY is loopback: Plinthio believes only a proxy right
-# next to it, so outside visitors can't pretend to be at home. HTTP on 8088 keeps working on
-# your home network.
+# Caddy runs in its own container and reaches Plinthio over a small private Docker network
+# with fixed addresses, passing each visitor's real address along. Plinthio believes those
+# forwarding headers from Caddy's address only (TRUST_PROXY below), so outside visitors can't
+# pretend to be at home. HTTP on 8088 keeps working on your home network.
+# (Earlier versions of this file had Caddy share Plinthio's network. If yours is one of
+# those, replace this file and run `docker compose up -d --force-recreate`; the certificates
+# in ./caddy are kept. See "Upgrading the add-ons" in docs/remote-access.md.)
+#
+# The private network is 10.213.47.0/29, shared with the Tailscale add-on. If Docker says
+# it overlaps another network, see the PLINTHIO_PROXY_… settings in docker-compose.tailscale.yml.
 services:
   caddy:
     image: caddy:2
     container_name: plinthio-caddy
     restart: unless-stopped
-    network_mode: service:plinthio
+    networks:
+      plinthio-proxy:
+        ipv4_address: ${PLINTHIO_PROXY_CADDY_IP:-10.213.47.4}
+    depends_on:
+      - plinthio
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:80:80"
+      - "${BIND_ADDRESS:-0.0.0.0}:443:443"
+      - "${BIND_ADDRESS:-0.0.0.0}:443:443/udp"
     environment:
       - PLINTHIO_DOMAIN=${PLINTHIO_DOMAIN:?Set PLINTHIO_DOMAIN in .env to the address guests will use, e.g. media.yourdomain.com}
     configs:
@@ -40,20 +54,35 @@ services:
 
   plinthio:
     environment:
-      - TRUST_PROXY=loopback
-    # Caddy shares Plinthio's network, so its ports are published here.
-    ports:
-      - "${BIND_ADDRESS:-0.0.0.0}:80:80"
-      - "${BIND_ADDRESS:-0.0.0.0}:443:443"
-      - "${BIND_ADDRESS:-0.0.0.0}:443:443/udp"
+      # Exactly the two add-on addresses on the private network, never a whole range: the
+      # network's own gateway (the Docker host) sits in that range and must not be believed.
+      # Both are listed in both add-on files so that using the two together works; with only
+      # this add-on, nothing holds the first address.
+      - TRUST_PROXY=${PLINTHIO_PROXY_TAILSCALE_IP:-10.213.47.3},${PLINTHIO_PROXY_CADDY_IP:-10.213.47.4}
+    networks:
+      # `default` stays, so the published ports and anything else you attached keep working.
+      default: {}
+      plinthio-proxy:
+        ipv4_address: ${PLINTHIO_PROXY_APP_IP:-10.213.47.2}
+
+networks:
+  plinthio-proxy:
+    ipam:
+      config:
+        - subnet: ${PLINTHIO_PROXY_SUBNET:-10.213.47.0/29}
 
 configs:
   caddyfile:
     content: |
+      {
+        # Caddy's control API (127.0.0.1:2019) can rewrite this whole configuration. Nothing
+        # here uses it, so it's switched off rather than left listening.
+        admin off
+      }
       {$$PLINTHIO_DOMAIN} {
         encode zstd gzip
         # Browsers remember to use HTTPS for this name. Only for the public name: Plinthio's
         # own addresses on your network keep working over plain HTTP.
         header Strict-Transport-Security "max-age=31536000"
-        reverse_proxy 127.0.0.1:8080
+        reverse_proxy ${PLINTHIO_PROXY_APP_IP:-10.213.47.2}:8080
       }

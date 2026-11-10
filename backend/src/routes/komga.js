@@ -13,6 +13,7 @@ import { sendError } from '../errors.js';
 import { handle, serverError } from '../utils/http.js';
 import { SEND_OPTS } from '../utils/fileStream.js';
 import { logger } from '../services/logger.js';
+import { requireLibraryFile } from '../utils/libraryPath.js';
 
 // A Komga-compatible slice of the API, so Mihon (and other Tachiyomi forks) can browse and
 // read Plinthio's comics, manga and PDFs with their Komga extension, and sync what's read
@@ -112,14 +113,27 @@ function humanSize(bytes) {
   return `${n.toFixed(u ? 1 : 0)} ${units[u]}`;
 }
 
+// What the `url` field of a book or series says. Komga puts the file's location on the
+// server there; reading apps only show it (they fetch everything by id), and it gives away
+// mount points and host usernames. So, as with `path` on the web API (services/itemView.js),
+// only an admin gets the real path — everyone else gets it relative to the library folder.
+function publicPath(row, user) {
+  if (user?.role === 'admin' || !row.path) return row.path;
+  const relative = row.library_path ? path.relative(row.library_path, row.path) : path.basename(row.path);
+  const safe = relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? relative : path.basename(row.path);
+  return `/${safe.split(path.sep).join('/')}`;
+}
+
 async function loadLibrary(db, user) {
   const rows = await db.all(`
     SELECT i.id, i.library_id, i.title, i.author, i.artists, i.series, i.volume, i.path,
+           l.path AS library_path,
            i.total_pages, i.file_size, i.format, i.media_type, i.description, i.release_date,
            i.genres, i.themes, i.publisher, i.status, i.isbn, i.language, i.created_at, i.updated_at,
            p.is_finished, p.is_skipped, p.progress_percent, p.current_page,
            ss.title_override, ss.reading_direction, ss.age_rating AS series_age_rating
     FROM items i
+    LEFT JOIN libraries l ON l.id = i.library_id
     LEFT JOIN user_progress p ON p.item_id = i.id AND p.user_id = ?
     LEFT JOIN series_settings ss ON ss.library_id = i.library_id AND ss.series_name = i.series
     WHERE i.media_type IN (${BOOK_TYPES.map(() => '?').join(',')})
@@ -133,6 +147,7 @@ async function loadLibrary(db, user) {
 
   const groups = new Map();
   for (const row of rows) {
+    row.url = publicPath(row, user);
     const key = seriesKey(row);
     if (!groups.has(key)) groups.set(key, { key, id: seriesIdFor(key), books: [] });
     groups.get(key).books.push(row);
@@ -189,7 +204,7 @@ function seriesDto(g) {
     id: g.id,
     libraryId: g.libraryId,
     name: g.name,
-    url: first.series ? path.dirname(first.path) : first.path,
+    url: first.series ? path.dirname(first.url) : first.url,
     created,
     lastModified,
     fileLastModified: lastModified,
@@ -250,7 +265,7 @@ function bookDto(g, b) {
     seriesTitle: g.name,
     libraryId: b.library_id,
     name: b.title,
-    url: b.path,
+    url: b.url,
     number: b.numberSort,
     created,
     lastModified,
@@ -471,8 +486,10 @@ komgaV1.get('/books/:id/pages', async (req, res) => {
   try {
     const found = await findBook(req, res);
     if (!found) return;
-    if (!fs.existsSync(found.b.path)) return sendError(req, res, 'P301');
-    const names = await getMangaPagesList(found.b.path);
+    // The real file, and only if it sits inside a library folder (utils/libraryPath.js).
+    const filePath = await requireLibraryFile(req, res, found.b.path);
+    if (!filePath) return;
+    const names = await getMangaPagesList(filePath);
     res.json(names.map((name, i) => ({
       number: i + 1,
       fileName: path.basename(name),
@@ -491,7 +508,9 @@ komgaV1.get('/books/:id/pages/:number', async (req, res) => {
     if (!found) return;
     const n = parseInt(req.params.number, 10);
     if (!Number.isInteger(n) || n < 1) return sendError(req, res, 'P306', { message: 'Invalid page number' });
-    const page = await extractMangaPage(found.b.path, n - 1);
+    const filePath = await requireLibraryFile(req, res, found.b.path);
+    if (!filePath) return;
+    const page = await extractMangaPage(filePath, n - 1);
     if (!page) return res.status(404).json({ error: 'Page not found' });
     res.setHeader('Content-Type', page.mimeType);
     res.setHeader('Cache-Control', 'private, max-age=604800');

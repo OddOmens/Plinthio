@@ -18,13 +18,15 @@ export default {
     }));
   },
 
-  async readEntry(archivePath, name) {
+  // `maxBytes` lets a caller that knows it wants something small (ComicInfo.xml) ask for a
+  // tighter limit than a page gets.
+  async readEntry(archivePath, name, { maxBytes = MAX_ENTRY_BYTES } = {}) {
     const zip = await getArchiveHandle(archivePath, open);
     const entry = zip.getEntry(name);
     if (!entry) return null;
     // A page is never this big; refusing it up front stops a tiny "zip bomb" entry from
     // being inflated into memory.
-    if (entry.header.size > MAX_ENTRY_BYTES) throw new Error('This page is too large to open');
+    if (entry.header.size > Math.min(maxBytes, MAX_ENTRY_BYTES)) throw new Error('This page is too large to open');
     return entry.getData();
   }
 };

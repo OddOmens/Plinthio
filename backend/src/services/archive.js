@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import mime from 'mime-types';
-import { pdfInfo, renderPdfPage } from './pdf.js';
+import { pdfInfo, renderPdfPage, MAX_PDF_PAGES } from './pdf.js';
 
 const isPdf = (p) => path.extname(p).toLowerCase() === '.pdf';
 
@@ -80,9 +80,13 @@ export async function listArchiveEntries(archivePath) {
   return backend.listEntries(archivePath);
 }
 
-export async function readArchiveEntry(archivePath, entryName) {
+/**
+ * One entry's bytes, or null when the archive has no such entry. Throws for an entry larger
+ * than `maxBytes` (default: the per-page limit), before any of it is unpacked into memory.
+ */
+export async function readArchiveEntry(archivePath, entryName, { maxBytes } = {}) {
   const backend = await backendFor(archivePath);
-  return backend.readEntry(archivePath, entryName);
+  return backend.readEntry(archivePath, entryName, maxBytes ? { maxBytes } : undefined);
 }
 
 /**
@@ -91,8 +95,11 @@ export async function readArchiveEntry(archivePath, entryName) {
  */
 export async function getMangaPagesList(archivePath) {
   if (isPdf(archivePath)) {
+    // pdfInfo already clamps the count; it is clamped here too because this line turns a
+    // number a file supplied into an array of that length.
     const { pages } = await pdfInfo(archivePath);
-    return Array.from({ length: pages }, (_, i) => `page-${String(i + 1).padStart(4, '0')}.jpg`);
+    const count = Number.isInteger(pages) && pages > 0 ? Math.min(pages, MAX_PDF_PAGES) : 0;
+    return Array.from({ length: count }, (_, i) => `page-${String(i + 1).padStart(4, '0')}.jpg`);
   }
   const entries = await listArchiveEntries(archivePath);
   return sortedImageEntries(entries).map((entry) => entry.name);

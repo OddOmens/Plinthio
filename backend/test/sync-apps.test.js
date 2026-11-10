@@ -40,7 +40,7 @@ describe('sync apps', () => {
       if (r.status !== 'busy') break;
       await new Promise((res) => setTimeout(res, 100));
     }
-    const key = (await post('/keys', { name: 'Phone' })).key;
+    const key = (await post('/keys', { name: 'Phone', password: 'test-password-123' })).key;
     apiKey = key.key;
     keyId = key.id;
   });
@@ -116,7 +116,7 @@ describe('sync apps', () => {
     });
 
     test('deleting the API key ends the cookie session', async () => {
-      const other = await post('/keys', { name: 'Temp' });
+      const other = await post('/keys', { name: 'Temp', password: 'test-password-123' });
       const res = await komga('/v1/libraries', basic(other.key.key));
       const tempCookie = res.headers.get('set-cookie').split(';')[0];
       assert.equal((await komga('/v1/libraries', { Cookie: tempCookie })).status, 200);

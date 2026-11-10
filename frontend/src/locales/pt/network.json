@@ -28,7 +28,7 @@
   },
   "proxy": {
     "title": "Há um proxy na frente do Plinthio, mas TRUST_PROXY não está definido",
-    "text": "Todo visitante parece vir do proxy ({from}), geralmente um endereço de casa, então não dá para distinguir o acesso de fora. Os complementos do Tailscale e de endereço público definem isso para você. Para outro proxy, veja docs/remote-access.md.",
+    "text": "O Plinthio não consegue saber de onde os visitantes realmente vêm, então todos que chegam pelo proxy ({from}) são tratados como fora de casa. Os complementos do Tailscale e de endereço público definem isso para você. Para outro proxy, veja docs/remote-access.md.",
     "localAddress": "um endereço local"
   },
   "adminsWithout2fa": {

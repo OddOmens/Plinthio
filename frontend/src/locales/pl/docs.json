@@ -425,7 +425,7 @@
       "title": "Drugie miejsce na kopie zapasowe",
       "text": "{path} jest na tym samym dysku co serwer: chroni przed pomyłkami i nieudanymi aktualizacjami, ale nie przed awarią dysku. W **Kopiuj też kopie zapasowe do** wybierz folder na innym dysku, udział NAS lub synchronizowany folder w chmurze (**Przeglądaj**, a potem **Sprawdź**, aby zobaczyć, czy serwer może tam zapisywać i czy to inny dysk). Każda kopia jest wtedy kopiowana tam od razu po utworzeniu, a to, co zostało pominięte, gdy miejsce było niedostępne, jest kopiowane po jego powrocie.",
       "keepThere": "**Zachowuj tam**: ile kopii przechowywać w drugim miejscu (domyślnie 30), niezależnie od liczby na serwerze.",
-      "alsoCopied": "Kopiowane są też, chyba że to wyłączysz: zdjęcia profilowe, okładki, klucz logowania (aby po przywróceniu nikt nie został wylogowany) i certyfikaty HTTPS (aby urządzenia nadal ufały serwerowi).",
+      "alsoCopied": "Kopiowane są też, chyba że to wyłączysz: zdjęcia profilowe, okładki i certyfikaty HTTPS (aby urządzenia nadal ufały serwerowi). Klucz logowania jest kopiowany tylko wtedy, gdy to wybierzesz: z nim po przywróceniu nikt nie zostanie wylogowany, a weryfikacja dwuetapowa działa dalej, ale każdy, kto może otworzyć folder kopii zapasowych, może zalogować się na dowolne konto.",
       "layout": "Kopia ma układ {database} i {files}. Jeśli kopiowanie się nie powiedzie, karta pokazuje przyczynę, a kolejna próba następuje co 15 minut.",
       "docker": "**W Dockerze** folder musi być zamontowany w kontenerze. Każdy folder w {media} się nada, jeśli multimedia nie są zamontowane tylko do odczytu. W przypadku innego dysku odkomentuj wiersz {backups} w {compose}, ustaw {variable} w {env}, utwórz kontener ponownie i wybierz {backups}."
     },

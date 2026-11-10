@@ -34,7 +34,7 @@
       "title": "Za dużo żądań",
       "message": "Za dużo żądań, zwolnij i spróbuj ponownie za chwilę",
       "meaning": "Przekroczono limit żądań.",
-      "fix": "Odczekaj minutę i spróbuj ponownie. Jeśli wiele osób korzysta z jednego adresu IP za reverse proxy, ustaw TRUST_PROXY=1, aby limit liczył się dla każdej osoby osobno."
+      "fix": "Odczekaj minutę i spróbuj ponownie. Jeśli wiele osób korzysta z jednego adresu IP za reverse proxy, ustaw TRUST_PROXY na adres proxy, aby limit liczył się dla każdej osoby osobno."
     },
     "P006": {
       "title": "Chwilowo niedostępne",

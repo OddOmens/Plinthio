@@ -138,7 +138,8 @@
       "change": "Cambia password",
       "changing": "Modifica in corso…",
       "changed": "Password cambiata. Accedi di nuovo con la nuova password.",
-      "changeFailed": "Impossibile cambiare la password"
+      "changeFailed": "Impossibile cambiare la password",
+      "revokeKeys": "Revoca anche le mie chiavi API. Le app che ne usano una avranno bisogno di una nuova chiave."
     },
     "twoFactor": {
       "title": "Verifica in due passaggi",
@@ -146,11 +147,11 @@
     },
     "devices": {
       "title": "Dispositivi collegati",
-      "desc": "Ogni telefono, browser e TV da cui hai effettuato l'accesso resta collegato. Se hai effettuato l'accesso da qualche parte che non controlli più, esci da tutti i dispositivi.",
+      "desc": "Ogni telefono, browser e TV da cui hai effettuato l'accesso resta collegato. Se hai effettuato l'accesso da qualche parte che non controlli più, esci da tutti i dispositivi. Vengono revocate anche le tue chiavi API.",
       "signOutAll": "Esci da tutti i dispositivi",
       "signingOut": "Disconnessione…",
       "confirmTitle": "Esci ovunque",
-      "confirmMessage": "Ogni dispositivo collegato a questo account verrà disconnesso subito, compreso questo.",
+      "confirmMessage": "Ogni dispositivo collegato a questo account verrà disconnesso subito, compreso questo. Anche le tue chiavi API smettono di funzionare: le app che ne usano una avranno bisogno di una nuova chiave.",
       "signOutFailed": "Impossibile uscire da tutti i dispositivi"
     }
   },
@@ -240,6 +241,8 @@
       "namePlaceholder": "A cosa serve, es. Mihon sul mio telefono",
       "make": "Crea una chiave",
       "makeFailed": "Impossibile creare la chiave",
+      "password": "La tua password",
+      "passwordWhy": "Per creare una chiave viene chiesta la tua password, così nessuno può crearne una da uno schermo sbloccato.",
       "copyNow": "Copia subito la nuova chiave. Non verrà mostrata di nuovo.",
       "copyKey": "Copia chiave",
       "empty": "Ancora nessuna chiave.",

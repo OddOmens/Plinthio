@@ -1,27 +1,11 @@
 import { defineStore } from 'pinia';
 import api from '../api/client';
 import { setMediaToken } from '../utils/mediaToken';
-
-// Asks the service worker to drop cached covers and comic pages. Cached art is keyed by
-// path with the token stripped, so it must not outlive the session that fetched it.
-function clearOfflineMediaCache() {
-  try {
-    navigator.serviceWorker?.controller?.postMessage({ type: 'clear-media-cache' });
-  } catch (e) {
-    // No service worker (unsupported browser, or a plain HTTP origin) — nothing cached.
-  }
-}
-
-// What one account leaves on a device: its downloads, its queued offline progress, and the
-// manga reader's per-device memory of series it has read. Cleared on sign-out, and when a
-// different account signs in on the same browser (a session that simply expired never
-// went through sign-out).
-function clearAccountDeviceData() {
-  clearOfflineMediaCache();
-  for (const key of ['plinthio_downloads', 'plinthio_progress_queue', 'plinthio_reader']) {
-    try { localStorage.removeItem(key); } catch (e) { /* storage unavailable */ }
-  }
-}
+// What one account leaves on a device is cleared on sign-out, when the server ends the
+// session (api/client.js), and when a different account signs in on the same browser (a
+// session that simply ran out never went through sign-out, and keeps its downloads for
+// the same person signing back in).
+import { clearAccountDeviceData } from '../utils/accountDeviceData';
 
 function loadStoredUser() {
   try {

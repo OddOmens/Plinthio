@@ -44,6 +44,13 @@ function evictUntilWithinLimits() {
 // a crafted entry that would inflate to gigabytes.
 export const MAX_ENTRY_BYTES = 256 * 1024 * 1024;
 
+// For archives that have to be unpacked whole before a page can be read (7z, see
+// sevenZipBackend.js): the most they may unpack to in total, and how many entries they may
+// hold. A long, high-resolution volume is a few hundred pages and a GB or two; anything past
+// these is a "bomb" meant to fill the cache disk, not a comic.
+export const MAX_ARCHIVE_TOTAL_BYTES = 4 * 1024 * 1024 * 1024;
+export const MAX_ARCHIVE_ENTRIES = 10000;
+
 export async function getArchiveHandle(archivePath, factory) {
   let stat;
   try {

@@ -40,8 +40,19 @@ git push origin main v1.3.0
 ```
 
 Watch the **Release** workflow in the Actions tab (about 15 minutes, mostly the ARM build).
-It refuses to publish if the tag and `package.json` disagree or the changelog has no
-section for the version.
+It refuses to publish if the tag and `package.json` disagree, the changelog has no
+section for the version, or the tagged commit isn't in `main`'s history (so push `main`
+with the tag, as above, and tag pre-releases on `main` too).
+
+Each published image carries a signed record of the workflow run and commit that built it,
+plus a list of its contents (SBOM). To check one:
+
+```bash
+gh attestation verify oci://ghcr.io/oddomens/plinthio:1.3.0 --owner OddOmens
+```
+
+The actions the workflows use are pinned to exact commits (the version is in the comment
+after each); Dependabot proposes the bumps. When adding an action, pin it the same way.
 
 ## One-time setup
 

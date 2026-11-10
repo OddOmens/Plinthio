@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireEditor } from '../middleware/auth.js';
 import { handle, serverError } from '../utils/http.js';
+import { knownSql } from '../services/visibility.js';
 
 const router = express.Router();
 
@@ -13,13 +14,23 @@ router.use(authenticateToken);
 
 // Reader settings for a series. Returns defaults rather than 404 when a series has never
 // been configured, so the reader always has something to open with.
+// A series the account can't see any title of (age limit, Kids Mode, hidden by an admin)
+// answers with the same defaults as one that doesn't exist, so asking by name reveals
+// neither that it's there nor how it's rated. Editors manage these settings and see them all.
 router.get('/:libraryId/:seriesName/settings', handle(async (req, res) => {
-  const { libraryId, seriesName } = req.params;
+  const { libraryId } = req.params;
+  let seriesName = req.params.seriesName;
+  try { seriesName = decodeURIComponent(seriesName); } catch { /* already decoded */ }
   const db = await getDb();
-  const row = await db.get(
-    'SELECT * FROM series_settings WHERE library_id = ? AND series_name = ?',
-    [libraryId, decodeURIComponent(seriesName)]
+  const isEditor = (req.user.role === 'admin' || req.user.role === 'editor') && !req.user.kids_mode;
+  const visible = isEditor || await db.get(
+    `SELECT 1 FROM items i WHERE i.library_id = ? AND i.series = ?${knownSql(req.user, 'i')} LIMIT 1`,
+    [libraryId, seriesName]
   );
+  const row = visible ? await db.get(
+    'SELECT * FROM series_settings WHERE library_id = ? AND series_name = ?',
+    [libraryId, seriesName]
+  ) : null;
 
   res.json({
     settings: {

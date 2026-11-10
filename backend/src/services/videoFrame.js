@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import { config } from '../config/env.js';
+import { localInputArgs } from './probe.js';
+import { resolveLibraryFile } from '../utils/libraryPath.js';
 
 // Last-resort artwork for video: a frame from the film itself. TMDB posters are better, but
 // they need an API key the user may never set, and a still from the movie beats the blank
@@ -72,6 +74,7 @@ export async function extractVideoFrameCover(filePath, itemId, durationSeconds =
     // Seeking before -i is the fast path: ffmpeg jumps to the keyframe instead of decoding
     // everything up to that point.
     '-ss', String(seekTo),
+    ...localInputArgs(),
     '-i', filePath,
     '-frames:v', '1',
     '-vf', scaleTo(FRAME_WIDTH),
@@ -141,7 +144,15 @@ export function stillPath(item) {
 export async function getOrCreateStill(item) {
   const finalPath = stillPath(item);
   if (fs.existsSync(finalPath)) return finalPath;
-  if (!item.path || !fs.existsSync(item.path)) return null;
+  if (!item.path) return null;
+  // Only a file that really sits inside a library folder (utils/libraryPath.js).
+  let source;
+  try {
+    source = await resolveLibraryFile(item.path);
+  } catch (e) {
+    return null;
+  }
+  if (!source.ok) return null;
 
   if (!stillsInFlight.has(finalPath)) {
     stillsInFlight.set(finalPath, runQueued(async () => {
@@ -153,7 +164,8 @@ export async function getOrCreateStill(item) {
       const ok = await runFfmpeg([
         '-v', 'error',
         '-ss', String(seekTo),
-        '-i', item.path,
+        ...localInputArgs(),
+        '-i', source.realPath,
         '-frames:v', '1',
         '-vf', scaleTo(STILL_WIDTH),
         '-q:v', '3',

@@ -1,5 +1,8 @@
 import crypto from 'crypto';
+import dns from 'dns';
+import fs from 'fs';
 import net from 'net';
+import os from 'os';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { getDb } from '../config/database.js';
@@ -7,7 +10,7 @@ import { config } from '../config/env.js';
 import { APP_VERSION } from '../config/version.js';
 import { logger } from './logger.js';
 import { openUpstream, readBody, decodedBody, hostOf, lanHostOf } from './safeFetch.js';
-import { parseM3u, isHlsUrl, isAdultGroup } from './m3u.js';
+import { parseM3uAsync, isHlsUrl, isAdultGroup } from './m3u.js';
 import { parseXmltv } from './xmltv.js';
 import { logoPath } from './liveProxy.js';
 import { checkStream, nextHealth } from './liveHealth.js';
@@ -684,8 +687,42 @@ export async function nowAndNext(db, now = Date.now(), tvgIds = null) {
 // ─── Sources ────────────────────────────────────────────────────────────────
 
 const refreshing = new Set();
+// Source id → when its refresh last started without finishing (it failed, or the server
+// stopped partway through). Such a source is left alone for an hour.
 const lastFailure = new Map();
 let queue = Promise.resolve();
+
+// The same, kept in settings so it outlives a restart. Without it a source that had never
+// refreshed successfully was tried again a minute after every start — and a playlist that
+// brings the server down while being read would do so on every start, for ever.
+const ATTEMPTS_KEY = 'live_tv_refresh_attempts';
+let attemptsLoaded = false;
+
+async function loadRefreshAttempts(db) {
+  if (attemptsLoaded) return;
+  attemptsLoaded = true;
+  try {
+    const saved = JSON.parse(await getSetting(db, ATTEMPTS_KEY) || '{}');
+    for (const [id, at] of Object.entries(saved)) {
+      if (Number.isFinite(at) && !lastFailure.has(id)) lastFailure.set(id, at);
+    }
+  } catch {
+    // Unreadable: nothing is held back, as before this was kept.
+  }
+}
+
+async function saveRefreshAttempts(db) {
+  const now = Date.now();
+  // Old entries no longer hold anything back (and their source may be long gone).
+  for (const [id, at] of lastFailure) {
+    if (now - at >= RETRY_FAILED_AFTER_MS) lastFailure.delete(id);
+  }
+  try {
+    await setSetting(db, ATTEMPTS_KEY, JSON.stringify(Object.fromEntries(lastFailure)));
+  } catch (err) {
+    logger.warn('media', `Live TV: could not note a refresh attempt: ${err.message}`);
+  }
+}
 
 export function sourceJson(row) {
   return {
@@ -720,20 +757,115 @@ function sourcePrivateHosts(source) {
     : iptvOrgTestHosts();
 }
 
+// ─── Which names mean "this machine" ────────────────────────────────────────
+
+const LOOPBACK = new net.BlockList();
+LOOPBACK.addSubnet('127.0.0.0', 8, 'ipv4');
+LOOPBACK.addAddress('::1', 'ipv6');
+LOOPBACK.addSubnet('::ffff:127.0.0.0', 104, 'ipv6'); // 127.x written as an IPv6 address
+
+// The one kind of IPv6 address a home network's own devices have (unique local, fc00::/7).
+const UNIQUE_LOCAL = new net.BlockList();
+UNIQUE_LOCAL.addSubnet('fc00::', 7, 'ipv6');
+
+function isLoopbackAddress(address) {
+  const ip = String(address || '').replace(/^\[|\]$/g, '').replace(/%.*$/, '');
+  const family = net.isIP(ip);
+  return family ? LOOPBACK.check(ip, family === 6 ? 'ipv6' : 'ipv4') : false;
+}
+
+// The names the hosts file gives a loopback address ("localhost", "ip6-localhost", and on
+// Debian the machine's own name on 127.0.1.1). Re-read only when the file changes.
+let hostsFile = { mtimeMs: -1, names: new Set() };
+function hostsFileLoopbackNames() {
+  const file = process.platform === 'win32'
+    ? `${process.env.SystemRoot || 'C:\\Windows'}\\System32\\drivers\\etc\\hosts`
+    : '/etc/hosts';
+  try {
+    const { mtimeMs, size } = fs.statSync(file);
+    if (mtimeMs === hostsFile.mtimeMs) return hostsFile.names;
+    const names = new Set();
+    if (size <= 1024 * 1024) {
+      for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+        const [address, ...aliases] = line.split('#')[0].trim().split(/\s+/);
+        if (isLoopbackAddress(address)) aliases.forEach((name) => names.add(name.toLowerCase()));
+      }
+    }
+    hostsFile = { mtimeMs, names };
+  } catch {
+    // No hosts file to read; the fixed names below still apply.
+  }
+  return hostsFile.names;
+}
+
+// Names found, by actually resolving them while a playlist was being loaded, to lead back to
+// this machine (see noteLoopbackNames). Bounded; a restart starts it empty again.
+const resolvedToLoopback = new Set();
+const MAX_NOTED_NAMES = 1000;
+
+/**
+ * Whether `host` — a private address or home-network name, as lanHostOf returns them — is
+ * this machine by another name. The old
+ * test knew only "localhost", "::1" and "127.…", so "ip6-localhost", the server's own
+ * hostname or "::ffff:127.0.0.1" passed as an ordinary LAN host — and a playlist could point
+ * the stream relay at services that listen only on localhost.
+ */
+export function isLoopbackHost(host) {
+  if (!host) return false;
+  // An IPv6 address counts as private either because it is unique-local or because it wraps
+  // an IPv4 one (::ffff:a.b.c.d, NAT64, 6to4). Nobody writes a tuner's address the second
+  // way; it is a way of spelling 127.0.0.1 differently, and is treated as one.
+  if (net.isIPv6(host)) return !UNIQUE_LOCAL.check(host, 'ipv6');
+  if (net.isIP(host)) return isLoopbackAddress(host);
+  const name = host.replace(/\.$/, '');
+  if (name === 'localhost' || name.endsWith('.localhost') || name === 'localhost.localdomain') return true;
+  if (name === 'ip6-localhost' || name === 'ip6-loopback') return true;
+  // The machine's own name: most systems resolve it to a loopback address.
+  const own = os.hostname().toLowerCase();
+  if (own && (name === own || name === own.split('.')[0])) return true;
+  return hostsFileLoopbackNames().has(name) || resolvedToLoopback.has(name);
+}
+
+/**
+ * Resolves the home-network names a playlist's streams use and remembers the ones that come
+ * back as a loopback address, for names nothing above recognises (one the router's DNS
+ * points at 127.0.0.1, say). Best effort: a name that can't be resolved is left alone.
+ */
+async function noteLoopbackNames(channels) {
+  const names = new Set();
+  for (const channel of channels) {
+    const host = lanHostOf(channel.url);
+    if (host && !net.isIP(host) && !isLoopbackHost(host)) names.add(host);
+    if (names.size >= 200) break;
+  }
+  await Promise.all([...names].map(async (name) => {
+    try {
+      const addresses = await Promise.race([
+        dns.promises.lookup(name, { all: true }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000).unref())
+      ]);
+      if (addresses.some((a) => isLoopbackAddress(a.address)) && resolvedToLoopback.size < MAX_NOTED_NAMES) {
+        resolvedToLoopback.add(name.replace(/\.$/, ''));
+      }
+    } catch {
+      // Unknown or slow to answer: not our concern here.
+    }
+  }));
+}
+
 /**
  * The private host a channel's stream may use: its own LAN host, only for an admin's own
  * playlist, and only when that playlist was itself loaded from the local network. A playlist
  * from the internet is someone else's list, and mustn't point the server at the LAN (or at
- * localhost, where the Caddy and Tailscale add-ons listen). Loopback only for a playlist
- * served from that same host.
+ * localhost, where the Caddy and Tailscale add-ons listen). Loopback — under any of its
+ * names, see isLoopbackHost — only for a playlist served from that same host.
  */
 export function channelPrivateHost(channel) {
   if (channel.source_kind !== 'm3u') return null;
   const streamHost = lanHostOf(channel.stream_url);
   const listHost = lanHostOf(channel.source_playlist_url);
   if (!streamHost || !listHost) return null;
-  const loopback = streamHost === 'localhost' || streamHost === '::1' || streamHost.startsWith('127.');
-  return loopback && streamHost !== listHost ? null : streamHost;
+  return isLoopbackHost(streamHost) && streamHost !== listHost ? null : streamHost;
 }
 
 /** The headers a channel's stream is fetched with (its playlist's #EXTVLCOPT User-Agent / Referer). */
@@ -800,6 +932,12 @@ async function runRefresh(sourceId) {
   const w = await writer();
   const stamp = new Date().toISOString();
 
+  // Noted before any of the work, and taken back only when it succeeds: if reading this
+  // playlist is what stops the server, the next start must not walk straight into it again.
+  await loadRefreshAttempts(db);
+  lastFailure.set(sourceId, Date.now());
+  await saveRefreshAttempts(db);
+
   try {
     const playlist = await loadPlaylist(source);
     // Public lists get their countries and languages from iptv-org's channel data; without
@@ -833,8 +971,10 @@ async function runRefresh(sourceId) {
       [stamp, guideError, count, sourceId]
     );
     lastFailure.delete(sourceId);
+    await saveRefreshAttempts(db);
   } catch (err) {
     lastFailure.set(sourceId, Date.now());
+    await saveRefreshAttempts(db);
     await w.run('UPDATE live_sources SET last_error = ? WHERE id = ?', [err.message, sourceId]).catch(() => {});
     logger.warn('media', `Live TV: could not refresh "${source.name}": ${err.message}`);
   }
@@ -858,8 +998,13 @@ async function loadPlaylist(source) {
     throw new Error(`The playlist could not be downloaded (HTTP ${res.statusCode})`);
   }
   const body = await readBody(res, PLAYLIST_MAX_BYTES);
-  const parsed = parseM3u(body.toString('utf8'));
+  // Read in slices, so a large playlist doesn't hold up everything else the server is doing.
+  const parsed = await parseM3uAsync(body.toString('utf8'));
   if (!parsed) throw new Error('That address did not return an M3U playlist');
+  if (parsed.skippedLines || parsed.truncated) {
+    logger.warn('media', `Live TV: "${source.name}": ${parsed.skippedLines} over-long line(s) skipped`
+      + `${parsed.truncated ? `; only the first ${parsed.channels.length} channels were kept` : ''}`);
+  }
 
   const channels = [];
   for (const channel of parsed.channels) {
@@ -871,6 +1016,7 @@ async function loadPlaylist(source) {
     }
     channels.push(channel);
   }
+  if (source.kind === 'm3u' && lanHostOf(source.playlist_url)) await noteLoopbackNames(channels);
   // A relative guide address is relative to the playlist, like its streams.
   const guideUrls = parsed.guideUrls.map((g) => new URL(g, url).toString());
   return { channels, guideUrls };
@@ -930,7 +1076,13 @@ export async function pruneProgrammes(db, now = Date.now()) {
  * list a channel without the "@feed" suffix playlists use ("News.us" for "News.us@SD"), so a
  * bare id also feeds its suffixed channels, unless the guide lists that exact feed too.
  */
-export function guideTargets(tvgIds, guideHasChannel) {
+// A guide is a download like any other: what is remembered per distinct channel id in it is
+// bounded. A country's guide lists a few thousand channels; past these limits ids are still
+// answered, just not remembered (and, for the list of channels a guide has, not noted).
+export const MAX_GUIDE_IDS = 50000;
+const MAX_GUIDE_ID_LENGTH = 256;
+
+export function guideTargets(tvgIds, guideHasChannel, { maxRemembered = MAX_GUIDE_IDS } = {}) {
   const exact = new Set(tvgIds);
   const byBase = new Map();
   for (const id of tvgIds) {
@@ -951,7 +1103,7 @@ export function guideTargets(tvgIds, guideHasChannel) {
       const base = guideId.split('@')[0];
       if (exact.has(base) && !guideHasChannel(base)) out.push(base);
     }
-    memo.set(guideId, out);
+    if (memo.size < maxRemembered && guideId.length <= MAX_GUIDE_ID_LENGTH) memo.set(guideId, out);
     return out;
   };
 }
@@ -986,7 +1138,9 @@ async function importGuide(w, source, guideUrl) {
     return await parseXmltv(body, {
       from: now - GUIDE_BEHIND_MS,
       to: now + GUIDE_AHEAD_MS,
-      onChannel: (id) => guideChannels.add(id),
+      onChannel: (id) => {
+        if (guideChannels.size < MAX_GUIDE_IDS && id.length <= MAX_GUIDE_ID_LENGTH) guideChannels.add(id);
+      },
       targets,
       onBatch: (programmes) => inTransaction(w, async () => {
         for (const p of programmes) {
@@ -1154,6 +1308,7 @@ async function tick({ checks = true } = {}) {
     const db = await getDb();
     if (!await isLiveTvEnabled(db)) return;
     await pruneProgrammes(db);
+    await loadRefreshAttempts(db);
     const sources = await db.all('SELECT id, last_refreshed_at FROM live_sources WHERE enabled = 1');
     for (const source of sources) {
       if (isRefreshDue(source.last_refreshed_at, lastFailure.get(source.id))) refreshSource(source.id);

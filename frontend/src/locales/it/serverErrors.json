@@ -34,7 +34,7 @@
       "title": "Troppe richieste",
       "message": "Troppe richieste, rallenta e riprova tra poco",
       "meaning": "È stato raggiunto un limite di frequenza.",
-      "fix": "Aspetta un minuto e riprova. Se molte persone condividono lo stesso IP dietro un reverse proxy, imposta TRUST_PROXY=1 così vengono limitate separatamente."
+      "fix": "Aspetta un minuto e riprova. Se molte persone condividono lo stesso IP dietro un reverse proxy, imposta TRUST_PROXY sull'indirizzo del proxy così vengono limitate separatamente."
     },
     "P006": {
       "title": "Temporaneamente non disponibile",

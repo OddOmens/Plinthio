@@ -28,7 +28,7 @@
   },
   "proxy": {
     "title": "Przed Plinthio działa proxy, ale TRUST_PROXY nie jest ustawione",
-    "text": "Każdy odwiedzający wygląda, jakby przychodził z proxy ({from}), zwykle z adresu domowego, więc nie da się odróżnić dostępu z zewnątrz. Dodatki Tailscale i adresu publicznego ustawiają to za ciebie. Dla innego proxy zobacz docs/remote-access.md.",
+    "text": "Plinthio nie potrafi ustalić, skąd naprawdę przychodzą odwiedzający, więc każdy, kto łączy się przez proxy ({from}), jest traktowany jak poza domem. Dodatki Tailscale i adresu publicznego ustawiają to za ciebie. Dla innego proxy zobacz docs/remote-access.md.",
     "localAddress": "adres lokalny"
   },
   "adminsWithout2fa": {

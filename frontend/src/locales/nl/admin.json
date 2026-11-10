@@ -136,7 +136,10 @@
       "otherDisk": "Het staat op een andere schijf dan de gegevens van de server.",
       "hint": "Een map zoals de server die ziet. In Docker: ergens onder {media} dat niet alleen-lezen is, of een andere schijf gekoppeld op {backups} (Documentatie → Back-ups en gegevensveiligheid).",
       "keepThere": "Daar bewaren",
-      "copyFiles": "Ook profielfoto's, covers, de inlogsleutel en HTTPS-certificaten kopiëren",
+      "copyFiles": "Ook profielfoto's, covers en HTTPS-certificaten kopiëren",
+      "copyServerKey": "Ook de inlogsleutel kopiëren",
+      "copyServerKeyWhy": "Uit: na terugzetten op een nieuwe server logt iedereen opnieuw in en stelt iedereen tweestapsverificatie opnieuw in. Aan: ook dat komt terug, maar iedereen die de back-upmap kan openen, kan inloggen als elk account. Zet dit alleen aan voor een map die niemand anders kan lezen.",
+      "serverKeyFound": "In deze map staat een oudere kopie van de inlogsleutel ({file}). Iedereen die de map kan openen, kan daarmee inloggen als elk account. Verwijder dat bestand of zet het op een plek waar alleen jij bij kunt.",
       "couldNotCheck": "Kon die map niet controleren",
       "pickerTitle": "Back-ups kopiëren naar"
     },

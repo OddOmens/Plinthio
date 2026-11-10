@@ -17,6 +17,8 @@ import { findCoverInFolder, looksLikeImage } from '../utils/imageFile.js';
 import { parseMediaTitle } from './titleCleaner.js';
 import { classifyExtras } from './extras.js';
 import { BOOK_META_VERSION } from './bookMetadata.js';
+import { getLibraryRoots, realPathInRoots } from '../utils/libraryPath.js';
+import { probeFormatName, isScriptFormat } from './probe.js';
 
 const VIDEO_MEDIA_TYPES = ['movie', 'show', 'anime'];
 
@@ -66,9 +68,18 @@ export async function scanLibrary(libraryId) {
       );
     }
 
+    // Symlinks are followed only to places inside a library folder (this library's or any
+    // other's) — see utils/libraryPath.js. Read fresh, so a library added a second ago counts.
+    const roots = await getLibraryRoots({ fresh: true });
     const files = [];
-    walkDirectory(library.path, library.type, files);
+    const skippedLinks = { count: 0 };
+    walkDirectory(library.path, library.type, files, new Set(), roots, skippedLinks);
     logger.info('scan', `Discovered ${files.length} candidate media files in "${library.name}"`);
+    if (skippedLinks.count > 0) {
+      logger.warn('scan',
+        `Skipped ${skippedLinks.count} symlink(s) in "${library.name}" that point outside every library folder. ` +
+        'If they lead to media you keep elsewhere on purpose, add that folder as a library or list it in SYMLINK_ALLOWED_ROOTS.');
+    }
 
     // Trailers, featurettes and other extras, worked out from where the files sit. They're
     // catalogued (so a film's page can list them) but kept off the shelf.
@@ -85,7 +96,10 @@ export async function scanLibrary(libraryId) {
       throw new PlinthioError(
         'P201',
         `"${library.name}" folder is empty but the catalog has ${dbItemsBefore.length} item(s) — ` +
-        'is the drive mounted? Scan skipped so nothing was removed.'
+        (skippedLinks.count > 0
+          ? `${skippedLinks.count} symlink(s) in it point outside every library folder and were skipped (see SYMLINK_ALLOWED_ROOTS). `
+          : 'is the drive mounted? ') +
+        'Scan skipped so nothing was removed.'
       );
     }
     const dbItemsById = new Map(dbItemsBefore.map((i) => [i.id, i]));
@@ -169,6 +183,20 @@ export async function scanLibrary(libraryId) {
 
       let meta = null;
       let mediaType = 'book';
+
+      // A new or changed audio/video file that is really a playlist or script (an HLS
+      // playlist renamed to .mkv, a concat list…) isn't media: playing it would have ffmpeg
+      // open whatever it lists. It's left out, and marked missing if it was there before.
+      // Real media is binary, so only a file that starts like text costs an ffprobe here; it
+      // is refused when ffprobe names a script format or can't read it as media at all.
+      if ((AUDIO_EXTS.has(ext) || VIDEO_EXTS.has(ext)) && startsLikeText(filePath)) {
+        const format = await probeFormatName(filePath);
+        if (format === '' || isScriptFormat(format)) {
+          logger.warn('scan', `Skipped "${filePath}": it is a playlist or script, not a media file`);
+          discoveredPathSet.delete(filePath);
+          continue;
+        }
+      }
 
       if (AUDIO_EXTS.has(ext)) {
         mediaType = 'audiobook';
@@ -564,7 +592,9 @@ async function backfillArtwork(db, library) {
     //    be junk (a macOS `._` sidecar, a truncated download), now that the picker validates
     //    what it copies.
     // (Never for an extra: the folder's art is its film's poster.)
-    const folderCover = item.extra_type ? null : findCoverInFolder(path.dirname(item.path));
+    // (And never a link to a file outside the library folders.)
+    let folderCover = item.extra_type ? null : findCoverInFolder(path.dirname(item.path));
+    if (folderCover) folderCover = realPathInRoots(folderCover, await getLibraryRoots(), 'scan');
     if (folderCover) {
       const coverFilename = `${item.id}.jpg`;
       try {
@@ -594,7 +624,10 @@ async function backfillArtwork(db, library) {
     // A frame is only worth grabbing if nothing better exists — and never worth re-grabbing
     // for an item that already has one.
     if (!coverPath && (!provisional || legacyFrame) && VIDEO_MEDIA_TYPES.includes(item.media_type)) {
-      coverPath = await extractVideoFrameCover(item.path, item.id, item.duration);
+      // (Only from a file that really sits inside a library folder — an item catalogued
+      // before links out of the library were refused may still be in the table.)
+      const source = realPathInRoots(item.path, await getLibraryRoots(), 'scan');
+      coverPath = source ? await extractVideoFrameCover(source, item.id, item.duration) : null;
       if (coverPath) coverSource = 'frame';
     }
 
@@ -630,7 +663,23 @@ function dropCachedImages(itemId) {
   invalidateCoverCache(itemId);
 }
 
-function walkDirectory(dir, libraryType, results, visitedRealPaths = new Set()) {
+// Every audio/video container has NUL bytes in its first few hundred bytes (box sizes, EBML
+// lengths, RIFF sizes); playlists and scripts are plain text and have none.
+function startsLikeText(filePath) {
+  let fd;
+  try {
+    fd = fs.openSync(filePath, 'r');
+    const head = Buffer.alloc(512);
+    const read = fs.readSync(fd, head, 0, head.length, 0);
+    return read > 0 && !head.subarray(0, read).includes(0);
+  } catch (e) {
+    return false;
+  } finally {
+    if (fd !== undefined) try { fs.closeSync(fd); } catch (e) { /* already closed */ }
+  }
+}
+
+function walkDirectory(dir, libraryType, results, visitedRealPaths = new Set(), roots = null, skipped = { count: 0 }) {
   let entries;
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -662,16 +711,29 @@ function walkDirectory(dir, libraryType, results, visitedRealPaths = new Set()) 
       isDirectory = stats.isDirectory();
       isFile = stats.isFile();
 
+      // A link is followed only if it lands inside a library folder. Anything else — a
+      // "book" that is really a link to a key file, a folder link to the whole disk — is
+      // skipped and logged (once per path), so the catalog can't be used to read files the
+      // server happens to have access to.
+      let realPath;
+      if (roots) {
+        realPath = realPathInRoots(fullPath, roots, 'scan');
+        if (!realPath) {
+          skipped.count++;
+          continue;
+        }
+      }
+
       if (isDirectory) {
         // Guard against symlink cycles (a symlink pointing back into an ancestor directory)
-        const realPath = fs.realpathSync(fullPath);
+        realPath = realPath || fs.realpathSync(fullPath);
         if (visitedRealPaths.has(realPath)) continue;
         visitedRealPaths.add(realPath);
       }
     }
 
     if (isDirectory) {
-      walkDirectory(fullPath, libraryType, results, visitedRealPaths);
+      walkDirectory(fullPath, libraryType, results, visitedRealPaths, roots, skipped);
     } else if (isFile) {
       const ext = path.extname(entry.name).toLowerCase();
       if (libraryType === 'audiobooks' && AUDIO_EXTS.has(ext)) {

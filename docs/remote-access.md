@@ -39,7 +39,9 @@ it sees Tailscale and Funnel working. The setup wizard offers the same guide.
 - **Tailscale devices count as home.** On by default.
 - **Require two-factor away from home.** Optional. Sign-ins from outside then need a code
   from a phone app; at home a password is enough, so anyone can sign in there and set
-  two-factor up.
+  two-factor up. It's checked on every request, not just at sign-in: a phone that signed in
+  at home on an account without two-factor stops working when it leaves (P112) and works
+  again when it's back. API keys and the reading apps that use them aren't affected.
 
 **Admin → Users**, per person: **Can use Plinthio away from home**. Turn it off for, say, the
 kids' accounts. Every request is checked, not just sign-in, so a phone that signed in at home
@@ -48,7 +50,20 @@ and API keys follow their owner's setting.
 
 "Home" means the addresses a home network uses: `192.168.x.x`, `10.x.x.x`, `172.16–31.x.x`,
 link-local, and their IPv6 equivalents. Tailscale is `100.64–127.x.x`. Everything else is
-outside. First-run setup can only ever be done from home.
+outside. First-run setup can only ever be done from home, and only with Plinthio opened by
+its IP address or a home-network name (`localhost`, `nas`, `nas.local`, `.lan`, `.home`,
+`.home.arpa`, `.internal`, a Tailscale name, or one listed in `TLS_HOSTNAMES`), not a public
+domain name.
+
+`100.64–127.x.x` is also the range some internet providers use for their customers
+("CGNAT"). That only matters if the machine running Plinthio is connected straight to such a
+provider with no router in between: its neighbours on the provider's network would then
+count as Tailscale devices. Behind a home router, as nearly every install is, they can't
+reach it at all. If yours is connected directly, turn off "Tailscale devices count as home".
+
+A request that arrives through a reverse proxy Plinthio hasn't been told about counts as
+outside too, wherever the visitor really is. See
+[Already have a reverse proxy?](#already-have-a-reverse-proxy)
 
 > **Docker Desktop (Mac, Windows):** containers there never see visitors' real addresses, so
 > everyone looks like they're at home and these controls can't tell anyone apart. On Docker
@@ -131,20 +146,22 @@ devices keep working either way.
 
 ```
 friend's browser ──HTTPS──▶ Tailscale's Funnel relays ──encrypted──▶ plinthio-tailscale ──▶ Plinthio
-  (anywhere)                (public DNS: *.ts.net)                    (its own device)      127.0.0.1:8080
+  (anywhere)                (public DNS: *.ts.net)                    (its own device)      private network, port 8080
 ```
 
 - The Tailscale add-on is **its own device** on your tailnet (named by `TS_HOSTNAME`, default
-  `plinthio`). It shares Plinthio's container network and forwards only to Plinthio's port
-  8080. Nothing else on the computer, including other apps and the computer's own Tailscale
-  device, is reachable through the link.
+  `plinthio`). It runs in its own container, joined to Plinthio by a small private Docker
+  network, and forwards only to Plinthio's port 8080. Nothing else on the computer,
+  including other apps and the computer's own Tailscale device, is reachable through the
+  link, and a tailnet device that tries port 8080 on the name directly gets nothing.
 - HTTPS ends inside that container, with a certificate Tailscale gets for you. Tailscale's
   relays pass the encrypted traffic along; they can't read it.
 - Tailscale marks Funnel visits (`Tailscale-Funnel-Request`), so Plinthio always counts them
   as **outside**, even when the friend is on your Wi-Fi. Visits from your own Tailscale devices
   count as Tailscale.
-- Plinthio trusts forwarding headers only from the add-on (`TRUST_PROXY=loopback`, set by the
-  add-on), so nobody can pretend to be at home by sending a fake address.
+- Plinthio trusts forwarding headers only from the add-on's own fixed address on that
+  private network (`TRUST_PROXY`, set by the add-on), so nobody can pretend to be at home by
+  sending a fake address.
 - The settings behind it: `TS_HOSTNAME` and `TS_FUNNEL` in `docker/.env`, and the add-on's
   saved sign-in in `docker/tailscale/` (never share or commit that folder). `TS_AUTHKEY` is
   only needed for the first sign-in; delete it from `.env` afterwards.
@@ -152,6 +169,42 @@ friend's browser ──HTTPS──▶ Tailscale's Funnel relays ──encrypted�
 **Funnel names are public.** Every certificate is published in public logs, so anyone can
 find that `plinthio.<your-tailnet>.ts.net` exists. That's fine: the link only leads to the
 sign-in page. Your passwords and two-factor are what keep people out, not a secret name.
+
+### Upgrading the add-ons
+
+Early versions of `docker-compose.tailscale.yml` and `docker-compose.public.yml` ran
+Tailscale and Caddy inside Plinthio's own container network. With Tailscale that left a way
+round the front door: any device on your tailnet could open `http://plinthio.<tailnet>.ts.net:8080`
+directly, be counted as a **home** device (even with "Tailscale devices count as home"
+switched off), and make up the address shown in logs and used for sign-in limits. The
+current files give each add-on its own container network instead. If your copy of either
+file contains the line `network_mode: service:plinthio`, replace it:
+
+```bash
+cd docker   # wherever your docker-compose.yml is
+curl -fsSLO https://raw.githubusercontent.com/OddOmens/Plinthio/main/docker/docker-compose.yml
+curl -fsSLO https://raw.githubusercontent.com/OddOmens/Plinthio/main/docker/docker-compose.tailscale.yml   # if you use it
+curl -fsSLO https://raw.githubusercontent.com/OddOmens/Plinthio/main/docker/docker-compose.public.yml      # if you use it
+docker compose pull && docker compose up -d --force-recreate
+```
+
+Nothing else changes: `.env` stays as it is, Tailscale stays signed in (`docker/tailscale/`),
+Caddy keeps its certificates (`docker/caddy/`), and the addresses people use are the same.
+Update Plinthio itself at the same time (`docker compose pull` above does): Admin → Network
+needs the matching server version to show Tailscale as connected. Then check, from a
+phone on Tailscale: the `https://….ts.net` address opens, Admin → Network shows the phone's
+`100.x` address as Tailscale, and `http://plinthio.<tailnet>.ts.net:8080` no longer opens.
+
+The add-ons use a small private network, `10.213.47.0/29`. If `docker compose up` says
+"Pool overlaps with other one on this address space", choose another in `.env` (all four
+lines, addresses inside the subnet) and run it again:
+
+```ini
+PLINTHIO_PROXY_SUBNET=10.213.77.0/29
+PLINTHIO_PROXY_APP_IP=10.213.77.2
+PLINTHIO_PROXY_TAILSCALE_IP=10.213.77.3
+PLINTHIO_PROXY_CADDY_IP=10.213.77.4
+```
 
 ### A shorter link
 
@@ -262,9 +315,21 @@ phone's mobile address. If it says "home" instead, see [Troubleshooting](#troubl
 Nginx Proxy Manager, Traefik, SWAG or your own nginx work too. Point it at Plinthio's port
 8088 (or 8080 inside Docker), and set `TRUST_PROXY` to the proxy's address as Plinthio sees it
 (for example `TRUST_PROXY=172.18.0.5`, or a subnet like `172.18.0.0/16`), never to `1` or
-`true` unless Plinthio is reachable **only** through the proxy. Admin → Network warns you if a
-proxy is sending forwarded addresses that Plinthio isn't trusting. Watch parties and the
+`true` unless Plinthio is reachable **only** through the proxy. Watch parties and the
 reading apps need nothing extra.
+
+**Set `TRUST_PROXY`, or everyone behind the proxy is treated as outside.** A proxy connects
+from its own address, which is a home address, and names the real visitor in a header
+(`X-Forwarded-For`). Until Plinthio is told to trust that proxy it can't use the header, so it
+can't tell a visitor from the internet from someone on your sofa. It takes the safe reading:
+every request that carries `X-Forwarded-For`, `Forwarded` or `X-Real-IP` from a proxy it
+doesn't trust counts as outside the home network. On a home-only server that means nobody
+gets in through the proxy ("available at home only", with a note about `TRUST_PROXY`), a new
+server can't be set up through it, and two-factor away from home applies to everyone. Open
+Plinthio directly (`http://<server>:8088`) to get in meanwhile; Admin → Network shows a
+warning with the proxy's address, which is the value to put in `TRUST_PROXY`. The proxy has
+to send `X-Forwarded-For` (nginx: `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`);
+a proxy that sends no forwarding header at all can't be told apart from a home device.
 
 ## Keeping it safe
 
@@ -298,6 +363,9 @@ how to report a problem.
 | Caddy says it can't get a certificate | Port 80 or 443 isn't reaching Caddy, or the DNS record is wrong or new (wait a few minutes). `docker logs plinthio-caddy` says which |
 | Admin → Network says "home" from a phone on mobile data | Plinthio can't see the real address. Docker Desktop never can (use Tailscale); with your own proxy, set `TRUST_PROXY` (above) |
 | "Available at home only" from outside | Outside access is off: Admin → Network |
+| "Available at home only" at home, through your own reverse proxy | Plinthio doesn't trust the proxy, so it treats everyone behind it as outside. Set `TRUST_PROXY` to the proxy's address ([above](#already-have-a-reverse-proxy)) and restart |
+| "Invalid username or password" away from home with the right password | From outside, a home-only account, an expired one, or one without two-factor where it's required all get the same answer as a wrong password, so guessing can't confirm a password. Admin → Logs says which it was |
+| "Open Plinthio by its IP address" during first-time setup | Setup only runs under an IP address or a home-network name. Use `http://<server-ip>:8088` for the wizard; your domain works once it's set up |
 | "This account is for home use only" (P110) | Admin → Users → the account → allow it away from home |
 | "Two-factor needed away from home" (P112) | Sign in at home once and turn on two-factor in Settings → Security |
 | Lost the phone with the authenticator app | Use a backup code. None left? An admin can reset two-factor in Admin → Users |

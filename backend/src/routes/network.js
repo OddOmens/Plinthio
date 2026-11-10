@@ -26,10 +26,13 @@ async function report(req, db) {
     },
     // Where the device looking at this page is connecting from: open it on a phone on mobile
     // data to check outside access does what you expect.
-    thisDevice: { where: loc.where, away: loc.away, ip: loc.ip },
+    // untrustedProxy: this device shows as outside because it came through a reverse proxy
+    // that TRUST_PROXY doesn't cover, not because of its address.
+    thisDevice: { where: loc.where, away: loc.away, ip: loc.ip, untrustedProxy: loc.untrustedProxy },
     trustProxy: config.trustProxy !== false,
-    // Requests arrived with X-Forwarded-For but TRUST_PROXY isn't set: everyone looks like
-    // the proxy, so outside controls can't tell anyone apart.
+    // Requests arrived through a reverse proxy that TRUST_PROXY doesn't cover (it's unset, or
+    // names another address). Plinthio can't tell those visitors apart, so every one of them
+    // counts as outside, whoever they are, until TRUST_PROXY is set to the proxy's address.
     proxyWithoutTrust: proxyWarning(),
     accounts: {
       total: accounts.length,
@@ -60,6 +63,12 @@ router.patch('/', handle(async (req, res) => {
   const wouldBeAway = loc.where === 'outside' || (loc.where === 'tailscale' && !after.tailscaleIsHome);
   if (wouldBeAway && !after.remoteAccess) {
     return res.status(400).json({ error: "That would lock out the device you're using right now. Change it from your home network." });
+  }
+  // The same for two-factor away from home, which applies to sessions already signed in:
+  // switching it on from outside, on an account without two-factor, would end this session
+  // on its next request.
+  if (require2faOutside === true && !loc.settings.require2faOutside && wouldBeAway && !req.user.two_factor && !req.isApiKey) {
+    return res.status(400).json({ error: "You're away from home and your account has no two-factor, so that would lock out the device you're using right now. Turn on two-factor for your account first, or change it from your home network." });
   }
   await saveNetworkSettings(db, { remoteAccess, tailscaleIsHome, require2faOutside });
   logger.info('system', `Network access settings changed by ${req.user.username}`, { remoteAccess, tailscaleIsHome, require2faOutside });

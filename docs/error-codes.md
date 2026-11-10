@@ -48,7 +48,7 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 
 *HTTP 429.* A rate limit was hit.
 
-**What to do:** Wait a minute and try again. If many people share one IP behind a reverse proxy, set TRUST_PROXY=1 so they are limited separately.
+**What to do:** Wait a minute and try again. If many people share one IP behind a reverse proxy, set TRUST_PROXY to the proxy's address so they are limited separately.
 
 ### P006: Temporarily unavailable
 

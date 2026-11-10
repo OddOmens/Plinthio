@@ -4,7 +4,7 @@ import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { handle } from '../utils/http.js';
 import { shapeItems, shapeItem } from '../services/itemView.js';
-import { accessSql, isItemHiddenForUser } from '../services/visibility.js';
+import { accessSql, knownSql, isItemHiddenForUser } from '../services/visibility.js';
 import { probeChapters } from '../services/chapters.js';
 import { ensureCredits } from '../services/credits.js';
 import { getFilmCollection } from '../services/collections.js';
@@ -472,7 +472,7 @@ router.get('/hidden', handle(async (req, res) => {
       SELECT i.*, v.user_id, v.hidden_by, v.created_at as hidden_at
       FROM item_visibility v
       JOIN items i ON v.item_id = i.id
-      WHERE (v.user_id = ? OR (? = 'admin' AND v.user_id IS NULL))${accessSql(req.user, 'i', { restrictionsOnly: true })}
+      WHERE (v.user_id = ? OR (? = 'admin' AND v.user_id IS NULL))${knownSql(req.user, 'i')}
       ORDER BY v.created_at DESC
     `, [userId, req.user.role]);
   await shapeItems(db, hidden, req.user);
@@ -487,8 +487,10 @@ router.post('/:id/hide', handle(async (req, res) => {
   const isGlobal = req.body.global === true && req.user.role === 'admin';
 
   const db = await getDb();
-  // Only something this account may see can be hidden (and so listed back under Hidden).
-  const allowed = await db.get(`SELECT 1 FROM items i WHERE i.id = ?${accessSql(req.user, 'i', { restrictionsOnly: true })}`, [itemId]);
+  // Only something this account may see can be hidden (and so listed back under Hidden):
+  // not a title above its age limit or outside Kids Mode, and not one an admin has hidden
+  // from everyone, or hiding it and reading the list back would show what it is.
+  const allowed = await db.get(`SELECT 1 FROM items i WHERE i.id = ?${knownSql(req.user, 'i')}`, [itemId]);
   if (!allowed) return res.status(404).json({ error: 'Item not found' });
   await db.run(
     `INSERT INTO item_visibility (item_id, user_id, hidden_by, created_at)

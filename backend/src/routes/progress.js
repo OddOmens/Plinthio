@@ -3,7 +3,7 @@ import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { handle } from '../utils/http.js';
 import { shapeItems, shapeItem } from '../services/itemView.js';
-import { accessSql } from '../services/visibility.js';
+import { accessSql, canKnowItem } from '../services/visibility.js';
 import { ITEM_ID_RE } from '../utils/ids.js';
 
 const router = express.Router();
@@ -141,16 +141,32 @@ router.get('/:itemId', handle(async (req, res) => {
   res.json({ progress: progress || null });
 }));
 
-// Save progress (called periodically or on pause/page change)
+// A position is a non-negative number; anything else (text, a negative, NaN) is 0.
+function position(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+const MAX_CFI = 2000;
+
+// Save progress (called periodically or on pause/page change). Only for a title that exists
+// and that the account may know about: a row used to be stored for any id at all, so an
+// account could fill the database with progress for titles that were never there.
 router.post('/:itemId', handle(async (req, res) => {
   const userId = req.user.id;
   const itemId = req.params.itemId;
-  const { currentTime, duration, currentPage, totalPages, cfi } = req.body;
+  const currentTime = position(req.body.currentTime);
+  const duration = position(req.body.duration);
+  const currentPage = position(req.body.currentPage);
+  const totalPages = position(req.body.totalPages);
+  const cfi = typeof req.body.cfi === 'string' && req.body.cfi.length <= MAX_CFI ? req.body.cfi : null;
   // Optional; only the audio player sends it. Clamped to what the player offers.
   const rate = Number(req.body.playbackRate);
   const playbackRate = Number.isFinite(rate) && rate >= 0.5 && rate <= 3 ? rate : null;
 
   const db = await getDb();
+  if (!(await canKnowItem(db, itemId, req.user))) {
+    return res.status(404).json({ error: 'Item not found' });
+  }
 
   let percent = 0;
   let isFinished = 0;

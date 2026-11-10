@@ -7,7 +7,10 @@ import multer from 'multer';
 import sharp from 'sharp';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
-import { authenticateToken, requireAdmin, invalidateUserCache } from '../middleware/auth.js';
+import {
+  authenticateToken, requireAdmin, requireSession, invalidateUserCache, checkOwnPassword, sendConfirmProblem
+} from '../middleware/auth.js';
+import { sendError } from '../errors.js';
 import { handle, serverError } from '../utils/http.js';
 import { normalizeUsername, USERNAME_RULE } from '../utils/username.js';
 import { AGE_RATINGS, LIBRARY_ID_PATTERN, MAX_HIDDEN_LIBRARIES } from '../services/visibility.js';
@@ -16,6 +19,17 @@ import { logger } from '../services/logger.js';
 
 const router = express.Router();
 const VALID_ROLES = ['admin', 'editor', 'viewer'];
+
+// Limits on the preferences an account stores (PATCH /preferences).
+const MAX_PREFERENCE_BYTES = 64 * 1024;
+const MAX_PREFERENCE_KEYS = 500;
+const MAX_PREFERENCE_DEPTH = 8;
+
+function tooDeep(value, levels) {
+  if (!value || typeof value !== 'object') return false;
+  if (levels <= 0) return true;
+  return Object.values(value).some((v) => tooDeep(v, levels - 1));
+}
 
 // Multer in-memory storage for avatar upload
 const avatarUpload = multer({
@@ -29,12 +43,21 @@ const avatarUpload = multer({
   }
 });
 
-// Public avatar read endpoint — placed before router.use(authenticateToken)
-// so <img> tags can render avatars directly without Authorization headers.
+// Avatar read endpoint — placed before router.use(authenticateToken) so <img> tags can
+// render avatars directly without Authorization headers. An avatar is found by the account's
+// id, a random UUID nobody can guess, and an <img> can't say who's asking, so there's no
+// sign-in here. But it does follow the server's away-from-home switch: a home-only server
+// hands out nothing to the internet, pictures of the household included.
 router.get('/:id/avatar', async (req, res) => {
   const { id } = req.params;
-  if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+  if (!/^[a-zA-Z0-9_-]{1,64}$/.test(id)) {
     return res.status(400).json({ error: 'Invalid user id' });
+  }
+  try {
+    const loc = await requestLocation(req);
+    if (loc.away && !loc.settings.remoteAccess) return sendError(req, res, 'P109');
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to read avatar' });
   }
 
   const filename = `${id}.webp`;
@@ -169,6 +192,9 @@ router.patch('/preferences', handle(async (req, res) => {
   if ('hideKids' in patch && typeof patch.hideKids !== 'boolean') {
     return res.status(400).json({ error: 'hideKids must be true or false' });
   }
+  if (tooDeep(patch, MAX_PREFERENCE_DEPTH)) {
+    return res.status(400).json({ error: 'Preferences are nested too deeply' });
+  }
 
   const db = await getDb();
   const row = await db.get('SELECT preferences FROM users WHERE id = ?', [userId]);
@@ -182,10 +208,17 @@ router.patch('/preferences', handle(async (req, res) => {
   }
 
   const preferences = { ...stored, ...patch };
+  // Any key is accepted (the apps add their own as they grow), so the whole thing is capped
+  // instead: it's loaded with the account on every request, and nothing else stops an
+  // account from growing it without end, a few kilobytes of new keys at a time.
+  const serialized = JSON.stringify(preferences);
+  if (Object.keys(preferences).length > MAX_PREFERENCE_KEYS || Buffer.byteLength(serialized) > MAX_PREFERENCE_BYTES) {
+    return res.status(400).json({ error: 'Too many preferences are stored for this account to add more' });
+  }
 
   await db.run(
     'UPDATE users SET preferences = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-    [JSON.stringify(preferences), userId]
+    [serialized, userId]
   );
   // authenticateToken caches the user row (preferences included) for a minute, so without
   // this every request for the next 60s — /auth/me among them — keeps answering with the
@@ -195,24 +228,27 @@ router.patch('/preferences', handle(async (req, res) => {
   res.json({ message: 'Preferences updated', preferences });
 }));
 
-router.patch('/password', handle(async (req, res) => {
+// Changing your own password. Only from a signed-in session: an API key copied out of a
+// reading app must not be able to try passwords, or take the account over with one. Wrong
+// current passwords are counted per account and logged (checkOwnPassword).
+// API keys keep working unless { revokeApiKeys: true } is sent: reading apps sign in with
+// them, and having every one stop on a routine password change would mostly teach people
+// not to change it. The answer says how many keys the account still has (`apiKeys`), so the
+// app can offer to revoke them when the password is being changed because something leaked.
+router.patch('/password', requireSession, handle(async (req, res) => {
   const userId = req.user.id;
-  const { currentPassword, newPassword } = req.body;
+  const { currentPassword, newPassword, revokeApiKeys } = req.body;
 
   if (!currentPassword) {
     return res.status(400).json({ error: 'Current password is required' });
   }
-  if (!newPassword || newPassword.length < 8) {
+  if (typeof newPassword !== 'string' || newPassword.length < 8) {
     return res.status(400).json({ error: 'New password must be at least 8 characters' });
   }
 
   const db = await getDb();
-  const user = await db.get('SELECT password_hash FROM users WHERE id = ?', [userId]);
-
-  const isValid = await bcrypt.compare(currentPassword, user.password_hash);
-  if (!isValid) {
-    return res.status(401).json({ error: 'Current password incorrect' });
-  }
+  const problem = await checkOwnPassword(db, req, currentPassword, 'changing their password');
+  if (problem) return sendConfirmProblem(req, res, problem, 'Current password incorrect');
 
   const newHash = await bcrypt.hash(newPassword, 10);
   // Bump token_version so every previously-issued token (e.g. one that may have leaked)
@@ -221,9 +257,19 @@ router.patch('/password', handle(async (req, res) => {
     'UPDATE users SET password_hash = ?, token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
     [newHash, userId]
   );
+  let revoked = 0;
+  if (revokeApiKeys === true) {
+    revoked = (await db.run('DELETE FROM api_keys WHERE user_id = ?', [userId])).changes || 0;
+  }
+  const left = await db.get('SELECT COUNT(*) AS count FROM api_keys WHERE user_id = ?', [userId]);
   invalidateUserCache(userId);
+  logger.info('auth', `"${req.user.username}" changed their password${revoked ? ` and revoked ${revoked} API key${revoked === 1 ? '' : 's'}` : ''}`, { ip: req.ip });
 
-  res.json({ message: 'Password updated successfully. You will need to log in again.' });
+  res.json({
+    message: 'Password updated successfully. You will need to log in again.',
+    apiKeys: left?.count || 0,
+    apiKeysRevoked: revoked
+  });
 }));
 
 // ==========================================
@@ -310,9 +356,17 @@ router.patch('/:id', requireAdmin, handle(async (req, res) => {
   const { username, role, expires_at, duration, maxAgeRating, allowUnrated, kidsMode, remoteAccess } = req.body;
 
   const db = await getDb();
-  const target = await db.get('SELECT id, role, expires_at FROM users WHERE id = ?', [req.params.id]);
+  const target = await db.get('SELECT id, role, expires_at, kids_mode FROM users WHERE id = ?', [req.params.id]);
   if (!target) {
     return res.status(404).json({ error: 'User not found' });
+  }
+  // A Kids Mode account is always a plain viewer: an editor can mark titles kids-safe and
+  // change age ratings, so a kids account with that role could let itself see anything.
+  // Checked on what the account will be after this change, whichever half is being changed.
+  const willBeKids = kidsMode !== undefined ? !!kidsMode : !!target.kids_mode;
+  const willBeRole = role !== undefined ? role : target.role;
+  if (willBeKids && willBeRole === 'editor' && (kidsMode !== undefined || role !== undefined)) {
+    return res.status(400).json({ error: 'A Kids Mode account can\'t be an editor. Make it a viewer, or turn Kids Mode off first' });
   }
 
   const updates = [];
@@ -492,9 +546,13 @@ router.patch('/:id/role', requireAdmin, handle(async (req, res) => {
   }
 
   const db = await getDb();
-  const target = await db.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
+  const target = await db.get('SELECT id, kids_mode FROM users WHERE id = ?', [req.params.id]);
   if (!target) {
     return res.status(404).json({ error: 'User not found' });
+  }
+  // Same rule as PATCH /:id: a Kids Mode account stays a viewer.
+  if (target.kids_mode && role !== 'viewer') {
+    return res.status(400).json({ error: 'A Kids Mode account can only be a viewer. Turn Kids Mode off first' });
   }
 
   await db.run('UPDATE users SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [role, req.params.id]);

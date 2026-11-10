@@ -81,6 +81,17 @@ Inside `/config`:
 Files in `/config` are owned by user and group `1000:1000` by default. Set `PUID` and `PGID`
 (in `.env`, or the compose `environment:`) to match your host user if needed.
 
+The container starts as root only to hand `/config` to that user, then runs as that user.
+The compose file drops every root capability that step doesn't need and stops anything
+inside from gaining privileges later (`cap_drop`, `cap_add`, `security_opt`). If you wrote
+your own compose file or use `docker run`, copy those lines from
+[`docker-compose.yml`](../docker/docker-compose.yml).
+
+Plinthio only reads your media. To have Docker enforce that, add `:ro` to the media line
+(`- ${MEDIA_DIR:-/media/library}:/media:ro`). Don't if you keep backup copies in a folder
+under `/media` ([a second place for backups](administration.md#a-second-place-for-backups)):
+that folder has to be writable.
+
 To use several media folders, mount each one and add each as a library in the app:
 
 ```yaml
@@ -181,7 +192,7 @@ created. To add one later, delete `/config/ssl` and restart, then install the ne
 includes a Tailscale name (`nas.tail1234.ts.net`): `.ts.net` isn't allowed by default, since
 it covers every Tailscale user's machines. Its 100.x address works without it.
 
-Up to 16 addresses are learned this way. After that nothing more is learned (the log says
+An address is learned the first time someone signs in (or finishes first-time setup) through it, not from anonymous visits. Up to 16 addresses are learned this way. After that nothing more is learned (the log says
 so), which stops anyone on the network from filling the certificate with made-up names. To
 start over, delete `/config/ssl/learned-names.json` and restart.
 
@@ -283,14 +294,16 @@ Supported for development, and it works for installs too. You need:
 - Node.js 24 (22 or newer works)
 - `ffmpeg` and `ffprobe` for all video: probing, remuxing, transcoding, subtitles, trickplay,
   episode stills and video covers. Without them video that needs converting fails with P303.
+- 7-Zip (`7zz`, `7z` or `7za`) for `.cb7`/`.7z` comics. Without it those files don't open;
+  other comic formats don't need it.
 - `pdfinfo` and `pdftoppm` (poppler) for PDFs. Without them PDFs fail with P308.
 - For Intel hardware transcoding: `intel-media-va-driver-non-free` and `vainfo`.
 
 ```bash
 # Debian / Ubuntu
-sudo apt install ffmpeg poppler-utils
+sudo apt install ffmpeg poppler-utils 7zip
 # macOS
-brew install ffmpeg poppler
+brew install ffmpeg poppler sevenzip
 
 cd frontend && npm ci && npm run build && cd ..
 cd backend && npm ci

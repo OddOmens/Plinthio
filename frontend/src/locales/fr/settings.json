@@ -84,7 +84,8 @@
       "change": "Changer le mot de passe",
       "changing": "Modification…",
       "changed": "Mot de passe modifié. Reconnectez-vous avec votre nouveau mot de passe.",
-      "changeFailed": "Impossible de changer votre mot de passe"
+      "changeFailed": "Impossible de changer votre mot de passe",
+      "revokeKeys": "Révoquer aussi mes clés d'API. Les applications qui en utilisent une auront besoin d'une nouvelle clé."
     },
     "twoFactor": {
       "title": "Double authentification",
@@ -92,11 +93,11 @@
     },
     "devices": {
       "title": "Appareils connectés",
-      "desc": "Chaque téléphone, navigateur et téléviseur sur lequel vous vous êtes connecté reste connecté. Si vous vous êtes connecté sur un appareil que vous ne contrôlez plus, déconnectez-vous partout.",
+      "desc": "Chaque téléphone, navigateur et téléviseur sur lequel vous vous êtes connecté reste connecté. Si vous vous êtes connecté sur un appareil que vous ne contrôlez plus, déconnectez-vous partout. Vos clés d'API sont révoquées aussi.",
       "signOutAll": "Se déconnecter de tous les appareils",
       "signingOut": "Déconnexion…",
       "confirmTitle": "Se déconnecter partout",
-      "confirmMessage": "Tous les appareils connectés à ce compte seront déconnectés immédiatement, y compris celui-ci.",
+      "confirmMessage": "Tous les appareils connectés à ce compte seront déconnectés immédiatement, y compris celui-ci. Vos clés d'API cessent aussi de fonctionner : les applications qui en utilisent une auront besoin d'une nouvelle clé.",
       "signOutFailed": "Impossible de se déconnecter de tous les appareils"
     }
   },
@@ -174,6 +175,8 @@
       "namePlaceholder": "À quoi elle sert, par ex. Mihon sur mon téléphone",
       "make": "Créer une clé",
       "makeFailed": "Impossible de créer une clé",
+      "password": "Votre mot de passe",
+      "passwordWhy": "Créer une clé demande votre mot de passe, pour que personne ne puisse en créer une depuis un écran déverrouillé.",
       "copyNow": "Copiez votre nouvelle clé maintenant. Elle ne sera plus affichée.",
       "copyKey": "Copier la clé",
       "empty": "Aucune clé pour le moment.",

@@ -3,7 +3,8 @@ import os from 'os';
 import net from 'net';
 import path from 'path';
 import crypto from 'crypto';
-import { execFileSync } from 'child_process';
+import { execFileSync, execFile } from 'child_process';
+import { promisify } from 'util';
 import { config } from '../config/env.js';
 
 // Built-in HTTPS for installs reached straight over the LAN (no reverse proxy in front).
@@ -98,6 +99,13 @@ function openssl(args) {
   execFileSync('openssl', args, { stdio: ['ignore', 'ignore', 'pipe'] });
 }
 
+// The same, without holding up every other request while a 2048-bit key is generated: used
+// for certificates re-issued while the server is running.
+const execFileAsync = promisify(execFile);
+async function opensslAsync(args) {
+  await execFileAsync('openssl', args);
+}
+
 function isPrivateIp(ip) {
   if (net.isIPv4(ip)) {
     const [a, b] = ip.split('.').map(Number);
@@ -119,6 +127,14 @@ function extraConstraintNames() {
 function withinBuiltInConstraints(name) {
   if (net.isIP(name)) return isPrivateIp(name);
   return PERMITTED_DNS.some((d) => name === d || name.endsWith(`.${d}`));
+}
+
+// A host name only a home network can give out (nas.local, plinthio.lan, localhost): nobody
+// can register one publicly and point it somewhere else. Also used by first-run setup, which
+// refuses to run under any other kind of name (routes/auth.js).
+export function isPrivateHostName(name) {
+  const host = String(name || '').toLowerCase();
+  return !net.isIP(host) && HOST_NAME_RE.test(host) && withinBuiltInConstraints(host);
 }
 
 function caExtraNames() {
@@ -206,7 +222,9 @@ function createCa() {
   console.log(`[tls] Created a local certificate authority (${CA_CERT}).`);
 }
 
-function issueServerCert(names) {
+// The key and certificate are made under temporary names and moved into place together, so
+// nothing ever reads a new key next to the old certificate.
+function serverCertSteps(names) {
   const ext = writeTemp('server.ext', [
     'basicConstraints = critical, CA:FALSE',
     'keyUsage = critical, digitalSignature, keyEncipherment',
@@ -216,19 +234,47 @@ function issueServerCert(names) {
     `subjectAltName = ${sanList(names)}`
   ].join('\n'));
   const csr = path.join(SSL_DIR, 'server.csr');
-  try {
-    openssl(['req', '-new', '-newkey', 'rsa:2048', '-nodes', '-keyout', SERVER_KEY, '-out', csr,
-      '-subj', '/O=Plinthio/CN=Plinthio']);
-    openssl(['x509', '-req', '-in', csr, '-CA', CA_CERT, '-CAkey', CA_KEY,
+  const newKey = `${SERVER_KEY}.new`;
+  const newCert = `${SERVER_CERT}.new`;
+  return {
+    request: ['req', '-new', '-newkey', 'rsa:2048', '-nodes', '-keyout', newKey, '-out', csr,
+      '-subj', '/O=Plinthio/CN=Plinthio'],
+    sign: ['x509', '-req', '-in', csr, '-CA', CA_CERT, '-CAkey', CA_KEY,
       '-set_serial', `0x${crypto.randomBytes(16).toString('hex')}`, '-days', String(SERVER_DAYS),
-      '-sha256', '-extfile', ext, '-out', SERVER_CERT]);
+      '-sha256', '-extfile', ext, '-out', newCert],
+    finish() {
+      fs.chmodSync(newKey, 0o600);
+      fs.renameSync(newKey, SERVER_KEY);
+      fs.renameSync(newCert, SERVER_CERT);
+      fs.writeFileSync(SERVER_NAMES, JSON.stringify(names));
+      console.log(`[tls] Issued a server certificate for: ${names.join(', ')}`);
+    },
+    cleanUp() {
+      for (const file of [ext, csr, newKey, newCert]) fs.rmSync(file, { force: true });
+    }
+  };
+}
+
+function issueServerCert(names) {
+  const steps = serverCertSteps(names);
+  try {
+    openssl(steps.request);
+    openssl(steps.sign);
+    steps.finish();
   } finally {
-    fs.rmSync(ext, { force: true });
-    fs.rmSync(csr, { force: true });
+    steps.cleanUp();
   }
-  fs.chmodSync(SERVER_KEY, 0o600);
-  fs.writeFileSync(SERVER_NAMES, JSON.stringify(names));
-  console.log(`[tls] Issued a server certificate for: ${names.join(', ')}`);
+}
+
+async function issueServerCertAsync(names) {
+  const steps = serverCertSteps(names);
+  try {
+    await opensslAsync(steps.request);
+    await opensslAsync(steps.sign);
+    steps.finish();
+  } finally {
+    steps.cleanUp();
+  }
 }
 
 function serverCertIsCurrent(names) {
@@ -245,20 +291,18 @@ function serverCertIsCurrent(names) {
   }
 }
 
-// Returns { key, cert } for https.createServer / setSecureContext, or null when HTTPS can't
-// be served. Safe to call repeatedly: it only re-issues when the names or expiry require it.
-export function loadTlsCredentials() {
+// What loading the certificate involves right now: someone's own certificate, nothing (no
+// openssl), or Plinthio's own with the names it should carry and whether it needs issuing.
+function certificatePlan() {
   const certFile = process.env.TLS_CERT || (fs.existsSync(CUSTOM_CERT) ? CUSTOM_CERT : null);
   const keyFile = process.env.TLS_KEY || (fs.existsSync(CUSTOM_KEY) ? CUSTOM_KEY : null);
-  if (certFile && keyFile) {
-    state = { enabled: true, mode: 'custom', names: [] };
-    return { cert: fs.readFileSync(certFile), key: fs.readFileSync(keyFile) };
-  }
+  if (certFile && keyFile) return { custom: { certFile, keyFile } };
 
-  if (!hasOpenssl()) {
+  // Once a certificate has been generated openssl is known to be there; don't run it again
+  // just to ask.
+  if (state.mode !== 'generated' && !hasOpenssl()) {
     console.warn('[tls] HTTPS is off: `openssl` was not found to make a certificate. Install it, or put cert.pem and key.pem in ' + SSL_DIR);
-    state = { enabled: false, mode: null, names: [] };
-    return null;
+    return { unavailable: true };
   }
 
   fs.mkdirSync(SSL_DIR, { recursive: true });
@@ -268,28 +312,64 @@ export function loadTlsCredentials() {
   const wanted = certificateNames();
   const names = wanted.filter((n) => coveredByCa(n, extras));
   const skipped = tlsSettings.extraNames.filter((n) => !coveredByCa(n, extras));
-  if (!serverCertIsCurrent(names)) {
-    if (skipped.length) {
-      console.warn(`[tls] Left ${skipped.join(', ')} off the certificate: the local CA was made before ` +
-        `${skipped.length === 1 ? 'it was' : 'they were'} added to TLS_HOSTNAMES and may not sign for ${skipped.length === 1 ? 'it' : 'them'}. ` +
-        `Delete ${SSL_DIR} and restart to make a new CA (devices then need the new one installed).`);
-    }
-    issueServerCert(names);
+  const issue = !serverCertIsCurrent(names);
+  if (issue && skipped.length) {
+    console.warn(`[tls] Left ${skipped.join(', ')} off the certificate: the local CA was made before ` +
+      `${skipped.length === 1 ? 'it was' : 'they were'} added to TLS_HOSTNAMES and may not sign for ${skipped.length === 1 ? 'it' : 'them'}. ` +
+      `Delete ${SSL_DIR} and restart to make a new CA (devices then need the new one installed).`);
   }
+  return { names, extras, issue };
+}
 
-  state = { enabled: true, mode: 'generated', names, caExtras: extras };
+function credentialsFor(plan) {
+  if (plan.custom) {
+    state = { enabled: true, mode: 'custom', names: [] };
+    return { cert: fs.readFileSync(plan.custom.certFile), key: fs.readFileSync(plan.custom.keyFile) };
+  }
+  if (plan.unavailable) {
+    state = { enabled: false, mode: null, names: [] };
+    return null;
+  }
+  state = { enabled: true, mode: 'generated', names: plan.names, caExtras: plan.extras };
   return { cert: fs.readFileSync(SERVER_CERT), key: fs.readFileSync(SERVER_KEY) };
+}
+
+// Returns { key, cert } for https.createServer / setSecureContext, or null when HTTPS can't
+// be served. Safe to call repeatedly: it only re-issues when the names or expiry require it.
+// This one blocks while openssl runs, which is fine at startup.
+export function loadTlsCredentials() {
+  const plan = certificatePlan();
+  if (plan.issue) issueServerCert(plan.names);
+  return credentialsFor(plan);
+}
+
+// The same for a running server (a newly learned address, the daily expiry check): the key
+// is generated without blocking other requests, and calls that overlap share one run.
+let refreshing = null;
+export function refreshTlsCredentials() {
+  refreshing ||= (async () => {
+    try {
+      const plan = certificatePlan();
+      if (plan.issue) await issueServerCertAsync(plan.names);
+      return credentialsFor(plan);
+    } finally {
+      refreshing = null;
+    }
+  })();
+  return refreshing;
 }
 
 // ─── Addresses learned from requests ─────────────────────────────────────────
 // Inside Docker the server can't see the LAN address phones use, and asking every admin to
-// set TLS_HOSTNAMES is exactly the step people miss. But each plain-HTTP visit says which
-// address it used (the Host header), so the certificate simply learns it: the next time that
-// device switches to HTTPS, its address is already covered. Only names the CA may sign for
-// anyway (private IPs, .local-style names) are learned, so a stray or forged Host header can
-// at worst add a harmless private name. Anyone can send a request, so the list is capped and
-// never rotates: once it's full nothing more is learned, which keeps a flood of made-up names
-// from pushing out the addresses real devices use or re-issuing the certificate over and over.
+// set TLS_HOSTNAMES is exactly the step people miss. But each visit says which address it
+// used (the Host header), so the certificate simply learns it: the next time that device
+// switches to HTTPS, its address is already covered. Only names the CA may sign for anyway
+// (private IPs, .local-style names) are learned, so a forged Host header can at worst add a
+// harmless private name. The caller (index.js) only passes on the address of a request from
+// someone signed in, or of first-run setup: anyone can send a request, and a stranger could
+// otherwise use up every slot with made-up names, each one costing a new key. The list is
+// capped and never rotates: once it's full nothing more is learned, which keeps the addresses
+// real devices use from being pushed out.
 const LEARNED_NAMES = path.join(SSL_DIR, 'learned-names.json');
 const MAX_LEARNED = 16;
 let warnedFull = false;

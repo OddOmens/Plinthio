@@ -6,7 +6,7 @@ this page is the map.
 ## Shape
 
 One Node.js process serves the API, the media and the built web app. SQLite holds all state.
-ffmpeg, ffprobe and poppler are called as child processes. No other services are involved:
+ffmpeg, ffprobe, poppler and 7-Zip are called as child processes. No other services are involved:
 no Redis, no queue, no separate transcoder.
 
 ```text
@@ -179,7 +179,7 @@ node --test test/kids-mode.test.js   # one suite
   scan them.
 - Fixtures: `test/fixtures/tiny.mp4` and `three-pages.pdf`. Comic archives are built in the
   test with adm-zip.
-- Tests that need ffmpeg or poppler skip without them. CI installs both.
+- Tests that need ffmpeg, poppler or 7-Zip skip without them. CI installs all three.
 - Library creation starts a background scan, so a test that scans must retry while the
   answer is `status: 'busy'` (see `missing-files.test.js`).
 - The frontend has no unit tests. UI changes are checked in headless Chromium (Playwright)

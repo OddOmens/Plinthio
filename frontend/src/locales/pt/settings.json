@@ -84,7 +84,8 @@
       "change": "Mudar senha",
       "changing": "Mudando…",
       "changed": "Senha alterada. Entre de novo com a nova senha.",
-      "changeFailed": "Não foi possível mudar a sua senha"
+      "changeFailed": "Não foi possível mudar a sua senha",
+      "revokeKeys": "Também revogar minhas chaves de API. Os apps que usam uma vão precisar de uma chave nova."
     },
     "twoFactor": {
       "title": "Verificação em duas etapas",
@@ -92,11 +93,11 @@
     },
     "devices": {
       "title": "Dispositivos conectados",
-      "desc": "Todo celular, navegador e TV em que você entrou continua conectado. Se você entrou em algum lugar que não controla mais, saia de todos.",
+      "desc": "Todo celular, navegador e TV em que você entrou continua conectado. Se você entrou em algum lugar que não controla mais, saia de todos. Suas chaves de API também são revogadas.",
       "signOutAll": "Sair de todos os dispositivos",
       "signingOut": "Saindo…",
       "confirmTitle": "Sair de todos os lugares",
-      "confirmMessage": "Todos os dispositivos conectados a esta conta serão desconectados na hora, incluindo este.",
+      "confirmMessage": "Todos os dispositivos conectados a esta conta serão desconectados na hora, incluindo este. Suas chaves de API também param de funcionar, então os apps que usam uma vão precisar de uma chave nova.",
       "signOutFailed": "Não foi possível sair de todos os dispositivos"
     }
   },
@@ -174,6 +175,8 @@
       "namePlaceholder": "Para que serve, ex.: Mihon no meu celular",
       "make": "Criar chave",
       "makeFailed": "Não foi possível criar uma chave",
+      "password": "Sua senha",
+      "passwordWhy": "Criar uma chave pede sua senha, para que ninguém crie uma em uma tela desbloqueada.",
       "copyNow": "Copie a sua nova chave agora. Ela não será mostrada de novo.",
       "copyKey": "Copiar chave",
       "empty": "Nenhuma chave ainda.",

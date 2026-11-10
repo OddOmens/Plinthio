@@ -34,7 +34,7 @@
       "title": "Zu viele Anfragen",
       "message": "Zu viele Anfragen, mach etwas langsamer und versuch es gleich noch einmal",
       "meaning": "Ein Anfragelimit wurde erreicht.",
-      "fix": "Warte eine Minute und versuch es erneut. Wenn sich viele Personen hinter einem Reverse Proxy eine IP teilen, setze TRUST_PROXY=1, damit sie getrennt begrenzt werden."
+      "fix": "Warte eine Minute und versuch es erneut. Wenn sich viele Personen hinter einem Reverse Proxy eine IP teilen, setze TRUST_PROXY auf die Adresse des Proxys, damit sie getrennt begrenzt werden."
     },
     "P006": {
       "title": "Vorübergehend nicht verfügbar",

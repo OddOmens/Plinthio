@@ -4,7 +4,9 @@ name: Release
 #   1. checks the tag matches package.json and the changelog, runs the tests
 #   2. builds the image for x86-64 and ARM and pushes it to GitHub Container Registry as
 #      :1.1.0, :1.1, :1 and :latest (pre-releases only get their exact tag)
-#   3. creates the GitHub Release with that version's CHANGELOG section as the notes —
+#   3. signs a record of where the image came from (this repository, this workflow, this
+#      commit), which anyone can check with `gh attestation verify` (see SECURITY.md)
+#   4. creates the GitHub Release with that version's CHANGELOG section as the notes —
 #      which is also what running servers read to show admins "update available".
 # See RELEASING.md for the whole routine.
 
@@ -12,9 +14,14 @@ on:
   push:
     tags: ['v*.*.*']
 
-permissions:
-  contents: write
-  packages: write
+# No permissions by default: each job below asks for exactly what it needs, so the job that
+# installs dependencies and runs tests can't publish an image or touch releases.
+permissions: {}
+
+# A tag push delivered twice waits for the first run instead of racing it.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   IMAGE: ghcr.io/oddomens/plinthio
@@ -23,11 +30,26 @@ jobs:
   verify:
     name: Verify & test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.version.outputs.version }}
       prerelease: ${{ steps.version.outputs.prerelease }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The whole history, so the next step can tell whether the tag is on main.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Only code that went through main (review and CI) gets published. A tag on a commit
+      # that isn't in main's history, by mistake or by someone who shouldn't, stops here.
+      - name: Check the tag is on main
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_REF_NAME ($GITHUB_SHA) is not in main's history — merge to main first, then tag that commit"
+            exit 1
+          fi
 
       - name: Check tag matches the code
         id: version
@@ -47,7 +69,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           case "$VERSION" in *-*) echo "prerelease=true" >> "$GITHUB_OUTPUT" ;; *) echo "prerelease=false" >> "$GITHUB_OUTPUT" ;; esac
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -55,8 +77,8 @@ jobs:
             backend/package-lock.json
             frontend/package-lock.json
 
-      - name: Install ffmpeg and poppler
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg poppler-utils
+      - name: Install ffmpeg, poppler and 7-Zip
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg poppler-utils 7zip
 
       - name: Backend tests
         working-directory: backend
@@ -70,13 +92,22 @@ jobs:
     name: Build & publish image
     needs: verify
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # For the signed provenance record below: a short-lived identity for this run, and
+      # permission to store the record.
+      id-token: write
+      attestations: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: docker/setup-qemu-action@v4
-      - uses: docker/setup-buildx-action@v4
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
-      - uses: docker/login-action@v4
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -84,7 +115,7 @@ jobs:
 
       - name: Image tags
         id: meta
-        uses: docker/metadata-action@v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ env.IMAGE }}
           # {{major}}.{{minor}} / {{major}} / latest are skipped automatically for pre-releases.
@@ -95,7 +126,8 @@ jobs:
           flavor: |
             latest=${{ needs.verify.outputs.prerelease == 'false' }}
 
-      - uses: docker/build-push-action@v7
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        id: build
         with:
           context: .
           file: docker/Dockerfile
@@ -108,17 +140,37 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # A list of what's inside the image, and how it was built, stored next to it.
+          sbom: true
+          provenance: mode=min
+
+      # A signed statement that this exact image (by digest) was built by this workflow from
+      # this commit. `gh attestation verify oci://ghcr.io/oddomens/plinthio:<tag> --owner OddOmens`
+      # checks it, so a tampered or look-alike image can be told apart.
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
 
   release:
     name: GitHub Release
     needs: [verify, image]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
+      # Values from the workflow reach the scripts as environment variables, never pasted
+      # into the script text, so nothing in them can be run as a command.
       - name: Release notes from CHANGELOG
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+          REPO: ${{ github.repository }}
         run: |
-          VERSION="${{ needs.verify.outputs.version }}"
           # Everything under "## [VERSION]" up to the next "## [" heading.
           awk -v v="$VERSION" '
             $0 ~ "^## \\[" v "\\]" { on = 1; next }
@@ -128,15 +180,22 @@ jobs:
           cat >> notes.md <<EOF
 
           ---
-          **New install:** download [\`docker-compose.yml\`](https://raw.githubusercontent.com/${{ github.repository }}/$GITHUB_REF_NAME/docker/docker-compose.yml) and run \`MEDIA_DIR=/path/to/your/media docker compose up -d\`, then open \`http://<server>:8088\`. Full steps: [Install](https://github.com/${{ github.repository }}#-install-docker) · [docs/setup.md](https://github.com/${{ github.repository }}/blob/$GITHUB_REF_NAME/docs/setup.md)
+          **New install:** download [\`docker-compose.yml\`](https://raw.githubusercontent.com/$REPO/$GITHUB_REF_NAME/docker/docker-compose.yml) and run \`MEDIA_DIR=/path/to/your/media docker compose up -d\`, then open \`http://<server>:8088\`. Full steps: [Install](https://github.com/$REPO#-install-docker) · [docs/setup.md](https://github.com/$REPO/blob/$GITHUB_REF_NAME/docs/setup.md)
           **Update:** \`docker compose pull && docker compose up -d\` — your database is backed up automatically before the new version starts.
-          **Image:** \`${{ env.IMAGE }}:$VERSION\` (x86-64 and ARM64)
+          **Image:** \`$IMAGE:$VERSION\` (x86-64 and ARM64)
           EOF
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PRERELEASE: ${{ needs.verify.outputs.prerelease }}
         run: |
+          # A tag push is sometimes delivered twice; the second run finds the release made.
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists; nothing to do."
+            exit 0
+          fi
           FLAGS=""
-          [ "${{ needs.verify.outputs.prerelease }}" = "true" ] && FLAGS="--prerelease"
+          [ "$PRERELEASE" = "true" ] && FLAGS="--prerelease"
           gh release create "$GITHUB_REF_NAME" --title "Plinthio $GITHUB_REF_NAME" --notes-file notes.md --verify-tag $FLAGS
