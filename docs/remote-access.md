@@ -195,7 +195,7 @@ needs the matching server version to show Tailscale as connected. Then check, fr
 phone on Tailscale: the `https://….ts.net` address opens, Admin → Network shows the phone's
 `100.x` address as Tailscale, and `http://plinthio.<tailnet>.ts.net:8080` no longer opens.
 
-The add-ons use a small private network, `172.31.250.0/29`. If `docker compose up` says
+The add-ons use a small private network, `10.213.47.0/29`. If `docker compose up` says
 "Pool overlaps with other one on this address space", choose another in `.env` (all four
 lines, addresses inside the subnet) and run it again:
 

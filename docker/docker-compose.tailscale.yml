@@ -38,7 +38,7 @@
 # as home unless you change that in Admin → Network; Funnel visitors come from the internet
 # and count as outside.
 #
-# The private network is 172.31.250.0/29. If Docker says it overlaps another network, pick a
+# The private network is 10.213.47.0/29. If Docker says it overlaps another network, pick a
 # free one in .env, all four together (the public-address add-on reads the same settings):
 #   PLINTHIO_PROXY_SUBNET=10.213.77.0/29
 #   PLINTHIO_PROXY_APP_IP=10.213.77.2
@@ -53,7 +53,7 @@ services:
     restart: unless-stopped
     networks:
       plinthio-proxy:
-        ipv4_address: ${PLINTHIO_PROXY_TAILSCALE_IP:-172.31.250.3}
+        ipv4_address: ${PLINTHIO_PROXY_TAILSCALE_IP:-10.213.47.3}
     depends_on:
       - plinthio
     environment:
@@ -73,18 +73,18 @@ services:
       # network's own gateway (the Docker host) sits in that range and must not be believed.
       # Both are listed in both add-on files so that using the two together works; with only
       # this add-on, nothing holds the second address.
-      - TRUST_PROXY=${PLINTHIO_PROXY_TAILSCALE_IP:-172.31.250.3},${PLINTHIO_PROXY_CADDY_IP:-172.31.250.4}
+      - TRUST_PROXY=${PLINTHIO_PROXY_TAILSCALE_IP:-10.213.47.3},${PLINTHIO_PROXY_CADDY_IP:-10.213.47.4}
     networks:
       # `default` stays, so the published ports and anything else you attached keep working.
       default: {}
       plinthio-proxy:
-        ipv4_address: ${PLINTHIO_PROXY_APP_IP:-172.31.250.2}
+        ipv4_address: ${PLINTHIO_PROXY_APP_IP:-10.213.47.2}
 
 networks:
   plinthio-proxy:
     ipam:
       config:
-        - subnet: ${PLINTHIO_PROXY_SUBNET:-172.31.250.0/29}
+        - subnet: ${PLINTHIO_PROXY_SUBNET:-10.213.47.0/29}
 
 configs:
   # HTTPS on the tailnet name, handed to Plinthio at its fixed address. Funnel (the same
@@ -96,7 +96,7 @@ configs:
         "TCP": { "443": { "HTTPS": true } },
         "Web": {
           "$${TS_CERT_DOMAIN}:443": {
-            "Handlers": { "/": { "Proxy": "http://${PLINTHIO_PROXY_APP_IP:-172.31.250.2}:8080" } }
+            "Handlers": { "/": { "Proxy": "http://${PLINTHIO_PROXY_APP_IP:-10.213.47.2}:8080" } }
           }
         },
         "AllowFunnel": { "$${TS_CERT_DOMAIN}:443": ${TS_FUNNEL:-false} }

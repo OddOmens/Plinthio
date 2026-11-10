@@ -2,7 +2,7 @@
 # tailnet, separate from the real server's, so a test build can be tried over Tailscale and
 # Funnel too. Same design as docker-compose.tailscale.yml; its settings have TEST in the name
 # so they never touch the real server's, and its private network is a different one
-# (172.31.250.8/29; change all three TEST_PROXY settings together if that overlaps).
+# (10.213.47.8/29; change all three TEST_PROXY settings together if that overlaps).
 #
 # In docker/.env:
 #   TS_TEST_AUTHKEY=tskey-auth-…   (a key of its own; only needed for the first sign-in)
@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
     networks:
       plinthio-test-proxy:
-        ipv4_address: ${PLINTHIO_TEST_PROXY_TAILSCALE_IP:-172.31.250.11}
+        ipv4_address: ${PLINTHIO_TEST_PROXY_TAILSCALE_IP:-10.213.47.11}
     depends_on:
       - plinthio-test
     environment:
@@ -34,17 +34,17 @@ services:
   plinthio-test:
     environment:
       # Only the Tailscale container's own address is believed (see docker-compose.tailscale.yml).
-      - TRUST_PROXY=${PLINTHIO_TEST_PROXY_TAILSCALE_IP:-172.31.250.11}
+      - TRUST_PROXY=${PLINTHIO_TEST_PROXY_TAILSCALE_IP:-10.213.47.11}
     networks:
       default: {}
       plinthio-test-proxy:
-        ipv4_address: ${PLINTHIO_TEST_PROXY_APP_IP:-172.31.250.10}
+        ipv4_address: ${PLINTHIO_TEST_PROXY_APP_IP:-10.213.47.10}
 
 networks:
   plinthio-test-proxy:
     ipam:
       config:
-        - subnet: ${PLINTHIO_TEST_PROXY_SUBNET:-172.31.250.8/29}
+        - subnet: ${PLINTHIO_TEST_PROXY_SUBNET:-10.213.47.8/29}
 
 configs:
   # $$ keeps Compose from filling in ${TS_CERT_DOMAIN}; Tailscale fills it in itself.
@@ -54,7 +54,7 @@ configs:
         "TCP": { "443": { "HTTPS": true } },
         "Web": {
           "$${TS_CERT_DOMAIN}:443": {
-            "Handlers": { "/": { "Proxy": "http://${PLINTHIO_TEST_PROXY_APP_IP:-172.31.250.10}:8080" } }
+            "Handlers": { "/": { "Proxy": "http://${PLINTHIO_TEST_PROXY_APP_IP:-10.213.47.10}:8080" } }
           }
         },
         "AllowFunnel": { "$${TS_CERT_DOMAIN}:443": ${TS_TEST_FUNNEL:-false} }
