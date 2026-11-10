@@ -98,7 +98,38 @@ collections, and watch parties.
 
 ## Playback
 
-Hardware acceleration (with **Test**, which runs a real encode) and the opening sequence.
+Hardware acceleration (with **Test**, which runs a real encode), H.264 copies and the
+opening sequence.
+
+### H.264 copies
+
+Most Apple devices can't decode AV1 video (only those with a hardware decoder can: iPhone 15
+Pro, M3 Macs and later), and none decode VP9 or VP8. For those devices the server converts
+the video to H.264 as it streams, which costs a full conversion every time someone presses
+play. An H.264 copy is that conversion done once, in the background, at the video's own size;
+afterwards a device that needs it is sent the copy, and browsers that play the original
+still get the original.
+
+- **Where copies go:** `compat/` in the data folder (`./config/compat`), never a library
+  folder, so a title still appears once on every shelf. Deleting a copy only costs the time
+  to make it again.
+- **Size limit:** no copy is started, and a running one is stopped, once the copies add up
+  to this much. A 1080p film is roughly 4–8 GB in H.264.
+- **Let everyone ask for a copy:** off, only admins can start a conversion from the apps.
+- **Convert a library:** looks through one library, or all of them, and queues every AV1,
+  VP9 and VP8 video. Conversions run one at a time, use the graphics chip chosen above when
+  there is one, and pause while someone is watching something the server has to convert
+  live.
+- **Replace the original with its copy** (off by default): when a copy is finished it is
+  moved into the library in the original's place (`Film.mkv` becomes `Film.mp4`) and the
+  original is deleted. The title keeps its id, so progress, ratings, artwork and lists stay
+  with it. This is the one setting that changes your media files: it can't be undone, H.264
+  files are usually larger than the AV1 they replace, and the media folder must be writable
+  (no `:ro` on the Docker volume). A file that can't be replaced, because the folder is
+  read-only or the file is a symlink, keeps its copy in the data folder and says why in the
+  list. Text subtitles and every audio track are carried over; picture-based subtitles
+  (Blu-ray, DVD) are not, and HDR video is converted without tone mapping, so keep the
+  original of anything where those matter.
 
 ## Live TV
 

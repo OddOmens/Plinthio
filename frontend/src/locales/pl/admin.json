@@ -913,6 +913,44 @@
         }
       }
     },
+    "copies": {
+      "title": "Kopie H.264",
+      "desc": "Większość urządzeń Apple nie dekoduje wideo AV1, VP9 ani VP8, więc serwer konwertuje je przy każdym odtwarzaniu na tych urządzeniach. Kopia to ta sama konwersja wykonana raz, w tle, i odtwarzana zamiast oryginału. Kopie są przechowywane w folderze danych Plinthio, a nie w bibliotece, więc każdy tytuł nadal pojawia się tylko raz.",
+      "limit": "Limit rozmiaru (GB)",
+      "limitHint": "Nowe kopie nie powstają, gdy łącznie zajmą tyle miejsca. Obecnie zajęte: {used}.",
+      "allowUsers": "Pozwól wszystkim prosić o kopię",
+      "allowUsersDesc": "Z odtwarzacza w aplikacjach. Gdy wyłączone, mogą to robić tylko administratorzy.",
+      "replace": "Zastąp oryginał jego kopią",
+      "replaceDesc": "Gotowa kopia zajmuje miejsce oryginału w bibliotece, a plik AV1, VP9 lub VP8 jest usuwany. Tytuł zachowuje postęp i grafiki. Folder z multimediami musi umożliwiać zapis.",
+      "replaceConfirmTitle": "Usuwać oryginały po konwersji?",
+      "replaceConfirmMessage": "Każda gotowa kopia, także już utworzone, zastąpi swój plik oryginalny, a oryginał zostanie trwale usunięty. Pliki H.264 są zwykle większe i mają nieco niższą jakość. Tej operacji nie można cofnąć.",
+      "replaceConfirm": "Usuń oryginały",
+      "convertLabel": "Konwertuj bibliotekę",
+      "allLibraries": "Wszystkie biblioteki wideo",
+      "convert": "Znajdź i konwertuj",
+      "searching": "Sprawdzanie {done} z {total}…",
+      "convertHint": "Dodaje do kolejki każde wideo AV1, VP9 i VP8. Są konwertowane pojedynczo i czekają, gdy ktoś ogląda coś, co serwer musi konwertować.",
+      "empty": "Nie ma jeszcze kopii.",
+      "removeAll": "Usuń wszystkie kopie",
+      "removeAllTitle": "Usunąć wszystkie kopie?",
+      "removeAllMessage": "Wszystkie kopie H.264 zostaną usunięte, a kolejka opróżniona. Oryginalne pliki pozostaną nietknięte.",
+      "status": {
+        "queued": "Oczekuje",
+        "running": "Konwertowanie · {percent}",
+        "done": "Gotowa · {size}",
+        "failed": "Niepowodzenie: {error}"
+      },
+      "errors": {
+        "cap": "Nie skonwertowano: osiągnięto limit rozmiaru",
+        "missing": "Nie skonwertowano: brak pliku"
+      },
+      "replaceErrors": {
+        "readonly": "Gotowa, ale oryginał nie został zastąpiony: folder z multimediami jest tylko do odczytu",
+        "link": "Gotowa, ale oryginał nie został zastąpiony: to dowiązanie do pliku w innym miejscu",
+        "exists": "Gotowa, ale oryginał nie został zastąpiony: inny plik ma już tę nazwę",
+        "other": "Gotowa, ale oryginał nie został zastąpiony: {error}"
+      }
+    },
     "intro": {
       "title": "Czołówka",
       "desc": "Krótki klip odtwarzany na pełnym ekranie, gdy ktoś naciśnie Odtwórz przy filmie lub odcinku. Nigdy przed automatycznie odtwarzanymi odcinkami, zwiastunami ani wspólnymi seansami, i każdy może go pominąć.",

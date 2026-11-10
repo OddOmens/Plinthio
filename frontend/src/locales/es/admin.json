@@ -873,6 +873,44 @@
         }
       }
     },
+    "copies": {
+      "title": "Copias H.264",
+      "desc": "La mayoría de los dispositivos Apple no pueden decodificar vídeo AV1, VP9 ni VP8, así que el servidor lo convierte cada vez que se reproduce en ellos. Una copia es esa conversión hecha una sola vez, en segundo plano, y se reproduce en su lugar. Las copias se guardan en la carpeta de datos de Plinthio, no en tu biblioteca, así que cada título sigue apareciendo una sola vez.",
+      "limit": "Límite de tamaño (GB)",
+      "limitHint": "No se crean copias nuevas cuando suman este tamaño. Ahora ocupan {used}.",
+      "allowUsers": "Permitir que cualquiera pida una copia",
+      "allowUsersDesc": "Desde el reproductor de las apps. Si está desactivado, solo pueden los administradores.",
+      "replace": "Sustituir el original por su copia",
+      "replaceDesc": "Cuando una copia termina, ocupa el lugar del original en tu biblioteca y el archivo AV1, VP9 o VP8 se elimina. El título conserva su progreso y sus imágenes. La carpeta de medios debe permitir escritura.",
+      "replaceConfirmTitle": "¿Eliminar los originales una vez convertidos?",
+      "replaceConfirmMessage": "Cada copia terminada, incluidas las ya hechas, sustituirá a su archivo original, y el original se eliminará para siempre. Los archivos H.264 suelen ser más grandes y de calidad algo inferior. Esto no se puede deshacer.",
+      "replaceConfirm": "Eliminar originales",
+      "convertLabel": "Convertir una biblioteca",
+      "allLibraries": "Todas las bibliotecas de vídeo",
+      "convert": "Buscar y convertir",
+      "searching": "Comprobando {done} de {total}…",
+      "convertHint": "Pone en cola todos los vídeos AV1, VP9 y VP8. Se convierten de uno en uno y esperan mientras alguien ve algo que el servidor tiene que convertir.",
+      "empty": "Aún no hay copias.",
+      "removeAll": "Eliminar todas las copias",
+      "removeAllTitle": "¿Eliminar todas las copias?",
+      "removeAllMessage": "Se eliminan todas las copias H.264 y se vacía la cola. Tus archivos originales no se tocan.",
+      "status": {
+        "queued": "En espera",
+        "running": "Convirtiendo · {percent}",
+        "done": "Lista · {size}",
+        "failed": "Error: {error}"
+      },
+      "errors": {
+        "cap": "No convertido: se alcanzó el límite de tamaño",
+        "missing": "No convertido: falta el archivo"
+      },
+      "replaceErrors": {
+        "readonly": "Lista, pero no se sustituyó el original: la carpeta de medios es de solo lectura",
+        "link": "Lista, pero no se sustituyó el original: es un enlace a un archivo de otro lugar",
+        "exists": "Lista, pero no se sustituyó el original: ya hay otro archivo con ese nombre",
+        "other": "Lista, pero no se sustituyó el original: {error}"
+      }
+    },
     "intro": {
       "title": "Secuencia de apertura",
       "desc": "Un clip corto que se reproduce a pantalla completa cuando alguien pulsa Reproducir en una película o un episodio. Nunca antes de episodios en reproducción automática, tráileres o watch parties, y cualquiera puede saltarlo.",

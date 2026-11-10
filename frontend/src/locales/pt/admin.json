@@ -873,6 +873,44 @@
         }
       }
     },
+    "copies": {
+      "title": "Cópias H.264",
+      "desc": "A maioria dos dispositivos Apple não consegue decodificar vídeo AV1, VP9 ou VP8, então o servidor o converte toda vez que ele é reproduzido neles. Uma cópia é essa conversão feita uma única vez, em segundo plano, e reproduzida no lugar. As cópias ficam na pasta de dados do Plinthio, não na sua biblioteca, então cada título continua aparecendo uma só vez.",
+      "limit": "Limite de tamanho (GB)",
+      "limitHint": "Nenhuma cópia nova é criada quando elas somam esse total. Em uso agora: {used}.",
+      "allowUsers": "Permitir que todos peçam uma cópia",
+      "allowUsersDesc": "Pelo player dos apps. Desativado, só administradores podem.",
+      "replace": "Substituir o original pela cópia",
+      "replaceDesc": "Quando uma cópia fica pronta, ela ocupa o lugar do original na sua biblioteca e o arquivo AV1, VP9 ou VP8 é excluído. O título mantém o progresso e as imagens. A pasta de mídia precisa permitir gravação.",
+      "replaceConfirmTitle": "Excluir os originais depois de convertidos?",
+      "replaceConfirmMessage": "Cada cópia concluída, incluindo as já feitas, substituirá o arquivo original, e o original será excluído permanentemente. Arquivos H.264 costumam ser maiores e ter qualidade um pouco inferior. Isso não pode ser desfeito.",
+      "replaceConfirm": "Excluir originais",
+      "convertLabel": "Converter uma biblioteca",
+      "allLibraries": "Todas as bibliotecas de vídeo",
+      "convert": "Localizar e converter",
+      "searching": "Verificando {done} de {total}…",
+      "convertHint": "Coloca na fila todos os vídeos AV1, VP9 e VP8. Eles são convertidos um por vez e aguardam enquanto alguém assiste a algo que o servidor precisa converter.",
+      "empty": "Nenhuma cópia ainda.",
+      "removeAll": "Excluir todas as cópias",
+      "removeAllTitle": "Excluir todas as cópias?",
+      "removeAllMessage": "Todas as cópias H.264 são excluídas e a fila é esvaziada. Seus arquivos originais não são alterados.",
+      "status": {
+        "queued": "Aguardando",
+        "running": "Convertendo · {percent}",
+        "done": "Pronta · {size}",
+        "failed": "Falhou: {error}"
+      },
+      "errors": {
+        "cap": "Não convertido: o limite de tamanho foi atingido",
+        "missing": "Não convertido: o arquivo não foi encontrado"
+      },
+      "replaceErrors": {
+        "readonly": "Pronta, mas o original não foi substituído: a pasta de mídia é somente leitura",
+        "link": "Pronta, mas o original não foi substituído: ele é um link para um arquivo em outro lugar",
+        "exists": "Pronta, mas o original não foi substituído: outro arquivo já tem esse nome",
+        "other": "Pronta, mas o original não foi substituído: {error}"
+      }
+    },
     "intro": {
       "title": "Vinheta de abertura",
       "desc": "Um clipe curto exibido em tela cheia quando alguém clica em Reproduzir em um filme ou episódio. Nunca antes de episódios em reprodução automática, trailers ou sessões conjuntas, e qualquer pessoa pode pular.",

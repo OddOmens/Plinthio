@@ -5,8 +5,11 @@ import mime from 'mime-types';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
-import { requireEditor } from '../middleware/auth.js';
-import { getPlaybackInfo } from '../services/transcode.js';
+import { requireEditor, requireAdmin } from '../middleware/auth.js';
+import { getPlaybackInfo, parseClientVideoCodecs } from '../services/transcode.js';
+import {
+  CONVERTIBLE_CODECS, CompatError, compatProbeId, copyState, readyCopy, requestCopy, removeCopy, getCompatSettings
+} from '../services/compat.js';
 import {
   getOrStartJob, waitForPlaylist, waitForSegment, touchJob,
   buildLadder, parseProfile, formatProfile, stopItemJobs
@@ -97,6 +100,33 @@ function refuseUnprobed(req, res, info) {
   return true;
 }
 
+// What the client says it can play: ?clientHevc=1 from browsers that decode HEVC, and
+// ?videoCodecs=h264,hevc from apps that aren't browsers (the full list of video codecs the
+// device decodes — see parseClientVideoCodecs).
+function clientCaps(req, { hevc = false } = {}) {
+  return {
+    clientHevc: hevc || req.query.clientHevc === '1',
+    videoCodecs: parseClientVideoCodecs(req.query.videoCodecs)
+  };
+}
+
+// The query the playlists hand on to the URLs inside them, so every later request for the
+// same stream is judged the same way (and can sign itself in).
+function carriedQuery(req) {
+  const params = [];
+  for (const name of ['token', 'clientHevc', 'videoCodecs', 'copy']) {
+    if (typeof req.query[name] === 'string' && req.query[name]) params.push(`${name}=${encodeURIComponent(req.query[name])}`);
+  }
+  return params.length ? `?${params.join('&')}` : '';
+}
+
+// ?copy=1 plays a title's H.264 copy (services/compat.js) instead of its file; playback-info
+// says when to ask for it. Without a finished copy the file itself is played.
+async function copyFor(req, resolved) {
+  if (req.query.copy !== '1') return null;
+  return readyCopy(await getDb(), req.params.id, resolved.filePath);
+}
+
 // Tells the client whether this file can be played directly or has to go through ffmpeg,
 // so the player can pick the right URL up front instead of failing first and retrying.
 // ?clientHevc=1 is sent by browsers (Chrome ≥107, Edge, Safari) that can decode HEVC
@@ -106,18 +136,80 @@ router.get('/:id/playback-info', authenticateToken, async (req, res) => {
     const resolved = await resolvePlayableItem(req, res);
     if (!resolved) return;
 
-    const caps = { clientHevc: req.query.clientHevc === '1' };
-    const info = await getPlaybackInfo(req.params.id, resolved.filePath, caps);
+    const caps = clientCaps(req);
+    const fileInfo = await getPlaybackInfo(req.params.id, resolved.filePath, caps);
+    const db = await getDb();
+
+    // Video this client can't decode has to be converted as it plays — unless an H.264
+    // copy of it has been made, in which case that is played instead (the client adds
+    // ?copy=1 to the stream URLs when compatCopy is set). Subtitles still come from the file.
+    let info = fileInfo;
+    if (fileInfo.mode === 'transcode' && !fileInfo.probeFailed) {
+      const copy = await readyCopy(db, req.params.id, resolved.filePath);
+      const copyInfo = copy ? await getPlaybackInfo(compatProbeId(req.params.id), copy.path, caps) : null;
+      if (copyInfo && !copyInfo.probeFailed && copyInfo.mode !== 'transcode') {
+        info = { ...copyInfo, subtitleTracks: fileInfo.subtitleTracks, compatCopy: true };
+      }
+    }
+
     res.json({
       ...info,
       itemDuration: resolved.item.duration || info.duration || 0,
       qualities: buildLadder(info).map((rung) => ({ name: rung.name, height: rung.height })),
-      subtitles: await listSubtitleTracks(info, resolved.namePath)
+      subtitles: await listSubtitleTracks(fileInfo, resolved.namePath),
+      compat: await compatFor(db, req, fileInfo)
     });
   } catch (err) {
     playbackError(req, res, err, 'Could not inspect this video');
   }
 });
+
+// Where this title's H.264 copy stands, and whether this account may ask for one.
+async function compatFor(db, req, fileInfo) {
+  const settings = await getCompatSettings(db);
+  return {
+    ...await copyState(db, req.params.id),
+    eligible: !fileInfo.probeFailed && CONVERTIBLE_CODECS.has(fileInfo.videoCodec),
+    canRequest: req.user.role === 'admin' || settings.allowUsers
+  };
+}
+
+router.get('/:id/compat', authenticateToken, async (req, res) => {
+  try {
+    const resolved = await resolvePlayableItem(req, res);
+    if (!resolved) return;
+    const info = await getPlaybackInfo(req.params.id, resolved.filePath);
+    res.json(await compatFor(await getDb(), req, info));
+  } catch (err) {
+    playbackError(req, res, err, 'Could not check this video');
+  }
+});
+
+// Asks the server to make an H.264 copy of this title in the background. Admins always
+// can; everyone else only when the admin has allowed it (Admin → Playback).
+router.post('/:id/compat', authenticateToken, async (req, res) => {
+  try {
+    const resolved = await resolvePlayableItem(req, res);
+    if (!resolved) return;
+    const db = await getDb();
+    if (req.user.role !== 'admin' && !(await getCompatSettings(db)).allowUsers) {
+      return res.status(403).json({ error: 'Only an admin can convert videos on this server' });
+    }
+    await requestCopy(db, req.params.id, resolved.filePath, req.user.id);
+    const info = await getPlaybackInfo(req.params.id, resolved.filePath);
+    res.status(202).json(await compatFor(db, req, info));
+  } catch (err) {
+    if (err instanceof CompatError) return res.status(err.status).json({ error: err.message });
+    playbackError(req, res, err, 'Could not start converting this video');
+  }
+});
+
+// Cancels a conversion, or deletes the finished copy.
+router.delete('/:id/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
+  if (!ITEM_ID_RE.test(req.params.id)) return res.status(400).json({ error: 'Invalid item id' });
+  await removeCopy(await getDb(), req.params.id);
+  res.json({ ok: true });
+}));
 
 // One subtitle track as WebVTT, which is what a <track> element needs. ?token= is accepted
 // (see authenticateToken) because a <track> tag can't send an Authorization header.
@@ -161,8 +253,11 @@ async function resolveHlsJob(req, res, profileParam) {
 
   // If this is a remux profile ('source-aN') or client explicitly passed clientHevc=1,
   // evaluate probe info with HEVC support enabled.
-  const caps = { clientHevc: req.query.clientHevc === '1' || isSourceRemux };
-  const info = await getPlaybackInfo(req.params.id, resolved.filePath, caps);
+  const caps = clientCaps(req, { hevc: isSourceRemux });
+  // The title's H.264 copy when the client was told to play that (?copy=1).
+  const copy = await copyFor(req, resolved);
+  const filePath = copy ? copy.path : resolved.filePath;
+  const info = await getPlaybackInfo(copy ? compatProbeId(req.params.id) : req.params.id, filePath, caps);
   if (refuseUnprobed(req, res, info)) return null;
   const mode = (isSourceRemux || info.mode === 'remux') ? 'remux' : 'transcode';
   const ladder = buildLadder({ ...info, mode });
@@ -189,13 +284,14 @@ async function resolveHlsJob(req, res, profileParam) {
   }
 
   const audioTranscode = !info.audioOk;
-  return getOrStartJob(req.params.id, resolved.filePath, {
+  return getOrStartJob(req.params.id, filePath, {
     userId: req.user.id,
     mode,
     quality,
     audioTrack,
     audioTranscode,
-    videoCodec: info.videoCodec
+    videoCodec: info.videoCodec,
+    variant: copy && mode === 'remux' ? 'copy' : null
   });
 }
 
@@ -204,15 +300,15 @@ router.get('/:id/hls/master.m3u8', authenticateToken, async (req, res) => {
     const resolved = await resolvePlayableItem(req, res);
     if (!resolved) return;
 
-    const caps = { clientHevc: req.query.clientHevc === '1' };
-    const info = await getPlaybackInfo(req.params.id, resolved.filePath, caps);
+    const caps = clientCaps(req);
+    const copy = await copyFor(req, resolved);
+    const info = copy
+      ? await getPlaybackInfo(compatProbeId(req.params.id), copy.path, caps)
+      : await getPlaybackInfo(req.params.id, resolved.filePath, caps);
     const ladder = buildLadder(info);
     const audioTrack = Math.max(0, parseInt(req.query.audio, 10) || 0);
 
-    const hevcParam = req.query.clientHevc ? `&clientHevc=${req.query.clientHevc}` : '';
-    const tokenQuery = req.query.token
-      ? `?token=${encodeURIComponent(req.query.token)}${hevcParam}`
-      : (hevcParam ? `?${hevcParam.slice(1)}` : '');
+    const tokenQuery = carriedQuery(req);
 
     // Advertised widths follow the source's own aspect ratio, so a 4:3 or ultrawide file
     // isn't described to the client as if it were 16:9.
@@ -255,13 +351,8 @@ router.get('/:id/hls/:profile/media.m3u8', authenticateToken, async (req, res) =
     // Rewrite segment URIs to include token and client capabilities if present,
     // so segment requests do not fail with 401/404 in native players / hls.js.
     let playlist = fs.readFileSync(job.playlistPath, 'utf8');
-    const params = [];
-    if (req.query.token) params.push(`token=${encodeURIComponent(req.query.token)}`);
-    if (req.query.clientHevc) params.push(`clientHevc=${encodeURIComponent(req.query.clientHevc)}`);
-    if (params.length > 0) {
-      const q = `?${params.join('&')}`;
-      playlist = playlist.replace(/(init\.mp4|seg_\d{5}\.m4s)/g, `$1${q}`);
-    }
+    const q = carriedQuery(req);
+    if (q) playlist = playlist.replace(/(init\.mp4|seg_\d{5}\.m4s)/g, `$1${q}`);
     res.send(playlist);
   } catch (err) {
     playbackError(req, res, err, 'Could not load playlist');
@@ -400,6 +491,8 @@ router.get('/:id/stream', authenticateToken, async (req, res) => {
     if (!resolved) return;
 
     const { filePath, namePath } = resolved;
+    const copy = await copyFor(req, resolved);
+    if (copy) return sendRangedFile(req, res, copy.path, copy.size, 'video/mp4');
     const stat = fs.statSync(filePath);
     let contentType = mime.lookup(namePath) || 'video/mp4';
     if (namePath.endsWith('.mkv')) contentType = 'video/x-matroska';

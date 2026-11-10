@@ -215,7 +215,9 @@ export function getOrStartJob(itemId, filePath, opts = {}) {
   const mode = opts.mode === 'remux' ? 'remux' : 'transcode';
   const quality = mode === 'remux' ? SOURCE_QUALITY : (opts.quality || '720p');
   const audioTrack = Number.isInteger(opts.audioTrack) ? opts.audioTrack : 0;
-  const profile = formatProfile(quality, audioTrack);
+  // A remux of a title's H.264 copy (services/compat.js) holds different video from a remux
+  // of the file itself, so it's kept apart: its own job and its own folder.
+  const profile = formatProfile(quality, audioTrack) + (opts.variant ? `-${opts.variant}` : '');
   const mapKey = `${itemId}:${profile}`;
   const dir = jobDir(itemId, profile);
   const now = Date.now();
@@ -448,6 +450,25 @@ export function stopItemJobs(itemId, viewerId = null) {
     if (viewerId && start.ownerId && start.ownerId !== viewerId) continue;
     start.cancelled = true;
   }
+}
+
+// Conversions running or about to: the background H.264 copies (services/compat.js) wait
+// while anyone is watching one of these.
+export function activeEncodeCount() {
+  return activeSlots('transcode').length;
+}
+
+/**
+ * Stops an item's jobs and deletes everything cached for it — for when its file has been
+ * replaced, and segments cut from the old one would otherwise still be served.
+ */
+export function dropItemHlsCache(itemId) {
+  stopItemJobs(itemId);
+  const itemDir = path.join(HLS_DIR, itemId);
+  for (const dir of dirLastUsed.keys()) {
+    if (dir.startsWith(itemDir + path.sep)) dirLastUsed.delete(dir);
+  }
+  fs.rmSync(itemDir, { recursive: true, force: true });
 }
 
 // Server shutdown: no ffmpeg outlives the process that started it.

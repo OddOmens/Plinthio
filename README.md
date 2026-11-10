@@ -141,7 +141,8 @@ PLINTHIO_TAG=1
 ```
 
 The database, covers and caches go in `./config`. Plinthio only reads your media folders; it
-never writes to them.
+never writes to them unless you switch on replacing AV1 originals with their H.264 copies
+(Admin → Playback, off by default).
 
 <details>
 <summary><b>Without Compose</b> (<code>docker run</code>)</summary>

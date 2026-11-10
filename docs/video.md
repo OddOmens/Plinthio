@@ -38,6 +38,11 @@ including HEVC/H.265, which Chrome, Edge and Safari can play.
 - **Caching:** converted segments are kept on disk and reused until unused for
   `HLS_CACHE_MAX_AGE_HOURS` (24 h), within a size budget (`HLS_CACHE_MAX_GB`, 40 GB): past
   it the copies unused for longest go first. Closing the player stops its conversion.
+- **Devices that aren't browsers:** the apps send the video codecs their device decodes
+  (`?videoCodecs=h264,hevc`), so AV1, VP9 or VP8 is converted for an iPhone or Apple TV that
+  can't play it rather than sent untouched. An
+  [H.264 copy](administration.md#h264-copies) made ahead of time is played instead when
+  there is one.
 - **Fallback:** if the browser rejects a file it was expected to play, the player switches
   to transcoding by itself.
 - **Errors:** a failed playback shows the real reason with a code (P3xx), not a generic

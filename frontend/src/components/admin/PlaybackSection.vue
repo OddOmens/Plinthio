@@ -59,6 +59,67 @@
     </div>
   </SettingsCard>
 
+  <SettingsCard :title="$t('admin.playback.copies.title')" :description="$t('admin.playback.copies.desc')">
+    <template #actions><SaveStatus :status="copiesSave.status.value" :message="copiesSave.message.value" /></template>
+    <div class="flex flex-col gap-4">
+      <div>
+        <label for="copies-limit" class="field-label">{{ $t('admin.playback.copies.limit') }}</label>
+        <input id="copies-limit" v-model.number="copiesLimit" @change="saveCopiesLimit" type="number" min="0" step="1" inputmode="numeric" class="field w-32" />
+        <p class="field-hint">{{ $t('admin.playback.copies.limitHint', { used: formatBytes(copies.usedBytes) }) }}</p>
+      </div>
+
+      <div class="divide-y divide-border border-t border-border pt-3">
+        <ToggleRow
+          :label="$t('admin.playback.copies.allowUsers')"
+          :description="$t('admin.playback.copies.allowUsersDesc')"
+          :model-value="copies.allowUsers"
+          @update:model-value="saveCopies({ allowUsers: $event })"
+        />
+        <ToggleRow
+          :label="$t('admin.playback.copies.replace')"
+          :description="$t('admin.playback.copies.replaceDesc')"
+          :model-value="copies.replaceOriginal"
+          @update:model-value="setReplaceOriginal"
+        />
+      </div>
+
+      <div class="border-t border-border pt-3">
+        <label for="copies-library" class="field-label">{{ $t('admin.playback.copies.convertLabel') }}</label>
+        <div class="flex gap-2">
+          <select id="copies-library" v-model="copiesLibrary" class="field flex-1 min-w-0">
+            <option value="">{{ $t('admin.playback.copies.allLibraries') }}</option>
+            <option v-for="lib in videoLibraries" :key="lib.id" :value="lib.id">{{ lib.name }}</option>
+          </select>
+          <button @click="queueCopies" :disabled="!!copies.discovery || queueing" class="btn btn-secondary flex-shrink-0">
+            <Loader2 v-if="copies.discovery || queueing" class="w-3.5 h-3.5 animate-spin" />
+            {{ copies.discovery
+              ? $t('admin.playback.copies.searching', { done: $n(copies.discovery.done), total: $n(copies.discovery.total) })
+              : $t('admin.playback.copies.convert') }}
+          </button>
+        </div>
+        <p class="field-hint">{{ $t('admin.playback.copies.convertHint') }}</p>
+      </div>
+
+      <div class="border-t border-border pt-3">
+        <p v-if="!copies.copies.length" class="text-xs text-muted-foreground">{{ $t('admin.playback.copies.empty') }}</p>
+        <template v-else>
+          <ul class="divide-y divide-border max-h-72 overflow-y-auto">
+            <li v-for="copy in copies.copies" :key="copy.itemId" class="flex items-center justify-between gap-3 py-2 first:pt-0">
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-foreground truncate">{{ copyName(copy) }}</p>
+                <p :class="['text-[12px]', copy.status === 'failed' || copy.replaceError ? 'text-destructive' : 'text-muted-foreground']">{{ copyStatus(copy) }}</p>
+              </div>
+              <button @click="removeCopy(copy)" class="btn btn-ghost flex-shrink-0">
+                {{ copy.status === 'queued' || copy.status === 'running' ? $t('common.cancel') : $t('common.remove') }}
+              </button>
+            </li>
+          </ul>
+          <button @click="removeAllCopies" class="btn btn-secondary mt-3">{{ $t('admin.playback.copies.removeAll') }}</button>
+        </template>
+      </div>
+    </div>
+  </SettingsCard>
+
   <SettingsCard :title="$t('admin.playback.intro.title')" :description="$t('admin.playback.intro.desc')">
     <template #actions><SaveStatus :status="introSave.status.value" :message="introSave.message.value" /></template>
     <div class="flex flex-col sm:flex-row gap-4">
@@ -123,7 +184,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { CheckCircle, AlertTriangle, ChevronRight, Loader2, Film, Upload } from '@lucide/vue';
 import api from '../../api/client';
 import { useCustomizationStore } from '../../stores/customization';
@@ -131,12 +192,13 @@ import { useDialogStore } from '../../stores/dialog';
 import { useSaveStatus } from '../../composables/useSaveStatus';
 import { useServerSetting } from '../../composables/useServerSetting';
 import { introUrl } from '../../utils/cover';
+import { formatBytes } from '../../utils/settingsFormat';
 import SectionHeader from '../settings/SectionHeader.vue';
 import SettingsCard from '../settings/SettingsCard.vue';
 import ToggleRow from '../settings/ToggleRow.vue';
 import SaveStatus from '../settings/SaveStatus.vue';
 import I18nT from '../../i18n/I18nT.vue';
-import { t } from '../../i18n';
+import { t, n } from '../../i18n';
 
 const store = useCustomizationStore();
 const dialog = useDialogStore();
@@ -173,6 +235,105 @@ async function runHwaccelTest() {
   } finally {
     testing.value = false;
   }
+}
+
+// ─── H.264 copies ─────────────────────────────────────────────────────────
+const copiesSave = useSaveStatus();
+const copies = ref({ maxGb: 50, allowUsers: false, replaceOriginal: false, usedBytes: 0, discovery: null, copies: [] });
+const copiesLimit = ref(50);
+const copiesLibrary = ref('');
+const videoLibraries = ref([]);
+const queueing = ref(false);
+let copiesTimer = null;
+
+function applyCopies(data) {
+  copies.value = data;
+  // Not while it's being typed in.
+  if (document.activeElement?.id !== 'copies-limit') copiesLimit.value = data.maxGb;
+}
+
+async function loadCopies() {
+  try {
+    applyCopies((await api.get('/settings/compat')).data);
+  } catch (err) {
+    console.warn('Could not load the H.264 copies:', err);
+  }
+}
+
+async function saveCopies(patch) {
+  const { ok, data } = await copiesSave.run(() => api.put('/settings/compat', patch));
+  if (ok) applyCopies(data.data);
+  else loadCopies();
+}
+
+function saveCopiesLimit() {
+  const value = Number(copiesLimit.value);
+  if (!Number.isFinite(value) || value < 0) {
+    copiesLimit.value = copies.value.maxGb;
+    return;
+  }
+  saveCopies({ maxGb: value });
+}
+
+// Deleting people's files is the one thing here that can't be taken back, so it's asked.
+async function setReplaceOriginal(on) {
+  if (on) {
+    const confirmed = await dialog.confirm({
+      title: t('admin.playback.copies.replaceConfirmTitle'),
+      message: t('admin.playback.copies.replaceConfirmMessage'),
+      confirmText: t('admin.playback.copies.replaceConfirm'),
+      danger: true
+    });
+    if (!confirmed) return;
+  }
+  saveCopies({ replaceOriginal: on });
+}
+
+async function queueCopies() {
+  queueing.value = true;
+  await copiesSave.run(() => api.post('/settings/compat/queue', { libraryId: copiesLibrary.value || null }));
+  queueing.value = false;
+  loadCopies();
+}
+
+async function removeCopy(copy) {
+  await copiesSave.run(() => api.delete(`/media/video/${copy.itemId}/compat`));
+  loadCopies();
+}
+
+async function removeAllCopies() {
+  const confirmed = await dialog.confirm({
+    title: t('admin.playback.copies.removeAllTitle'),
+    message: t('admin.playback.copies.removeAllMessage'),
+    confirmText: t('common.remove'),
+    danger: true
+  });
+  if (!confirmed) return;
+  const { ok, data } = await copiesSave.run(() => api.delete('/settings/compat/copies'));
+  if (ok) applyCopies(data.data);
+}
+
+function copyName(copy) {
+  if (!copy.title) return copy.itemId;
+  return copy.series && copy.series !== copy.title ? `${copy.series} · ${copy.title}` : copy.title;
+}
+
+const COPY_ERRORS = ['cap', 'missing'];
+const REPLACE_ERRORS = ['readonly', 'link', 'exists'];
+function copyStatus(copy) {
+  if (copy.status === 'queued') return t('admin.playback.copies.status.queued');
+  if (copy.status === 'running') return t('admin.playback.copies.status.running', { percent: n(copy.progress, { style: 'percent' }) });
+  if (copy.status === 'failed') {
+    return COPY_ERRORS.includes(copy.error)
+      ? t(`admin.playback.copies.errors.${copy.error}`)
+      : t('admin.playback.copies.status.failed', { error: copy.error || '' });
+  }
+  if (copy.replaceError) {
+    return REPLACE_ERRORS.includes(copy.replaceError)
+      ? t(`admin.playback.copies.replaceErrors.${copy.replaceError}`)
+      : t('admin.playback.copies.replaceErrors.other', { error: copy.replaceError });
+  }
+  return t('admin.playback.copies.status.done', { size: formatBytes(copy.size) });
 }
 
 // ─── Opening sequence ─────────────────────────────────────────────────────
@@ -233,5 +394,20 @@ onMounted(async () => {
   } catch (err) {
     console.warn('Could not load transcoding settings:', err);
   }
+  loadCopies();
+  // Conversions move on their own, so the list is kept current while it's on screen.
+  copiesTimer = setInterval(() => {
+    const { discovery, replaceOriginal, copies: list } = copies.value;
+    const moving = list.some((copy) => copy.status === 'queued' || copy.status === 'running' || (replaceOriginal && copy.status === 'done' && !copy.replaceError));
+    if (discovery || moving) loadCopies();
+  }, 4000);
+  try {
+    const res = await api.get('/libraries');
+    videoLibraries.value = (res.data.libraries || res.data || []).filter((lib) => ['movies', 'shows', 'anime'].includes(lib.type));
+  } catch (err) {
+    console.warn('Could not load libraries:', err);
+  }
 });
+
+onUnmounted(() => clearInterval(copiesTimer));
 </script>

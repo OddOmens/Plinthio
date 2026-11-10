@@ -18,6 +18,29 @@ const WEBM_AUDIO_CODECS = new Set(['opus', 'vorbis']);
 const probeCache = new Map();
 const PROBE_CACHE_MAX = 500;
 
+// Video codecs a client may say it decodes (?videoCodecs=h264,hevc). Apps that aren't
+// browsers send the list: Apple's players, for one, only decode AV1 on devices with a
+// hardware decoder and never VP8/VP9, so "what browsers play" is the wrong test for them.
+const CLIENT_VIDEO_CODECS = ['h264', 'hevc', 'av1', 'vp9', 'vp8'];
+
+/**
+ * Reads a ?videoCodecs= value into a sorted list of known codec names, or null when the
+ * client didn't send one (then the browser defaults above apply).
+ */
+export function parseClientVideoCodecs(raw) {
+  if (typeof raw !== 'string' || !raw) return null;
+  const asked = new Set(raw.toLowerCase().split(',').map((c) => c.trim()));
+  const known = CLIENT_VIDEO_CODECS.filter((codec) => asked.has(codec));
+  return known.length ? known : null;
+}
+
+// Drops what's remembered about an item's file, for when the file itself has been replaced.
+export function forgetPlaybackInfo(itemId) {
+  for (const key of probeCache.keys()) {
+    if (key.startsWith(`${itemId}:`)) probeCache.delete(key);
+  }
+}
+
 function runFfprobe(filePath) {
   return new Promise((resolve, reject) => {
     const proc = spawn('ffprobe', [
@@ -59,15 +82,19 @@ function runFfprobe(filePath) {
  *
  * @param {string} itemId
  * @param {string} filePath
- * @param {{ clientHevc?: boolean }} [caps] - client capability flags sent by the player
+ * @param {{ clientHevc?: boolean, videoCodecs?: string[] | null }} [caps] - client capability
+ *   flags sent by the player. videoCodecs (see parseClientVideoCodecs) is the full list of
+ *   video codecs the client decodes and replaces the browser defaults.
  */
 export async function getPlaybackInfo(itemId, filePath, caps = {}) {
-  const cacheKey = `${itemId}:${caps.clientHevc ? 'hevc' : 'base'}`;
+  const cacheKey = `${itemId}:${caps.videoCodecs ? caps.videoCodecs.join('+') : (caps.clientHevc ? 'hevc' : 'base')}`;
   if (probeCache.has(cacheKey)) return probeCache.get(cacheKey);
 
-  const BROWSER_VIDEO_CODECS = caps.clientHevc
-    ? new Set([...BASE_BROWSER_VIDEO_CODECS, 'hevc'])
-    : BASE_BROWSER_VIDEO_CODECS;
+  const BROWSER_VIDEO_CODECS = caps.videoCodecs
+    ? new Set(caps.videoCodecs)
+    : caps.clientHevc
+      ? new Set([...BASE_BROWSER_VIDEO_CODECS, 'hevc'])
+      : BASE_BROWSER_VIDEO_CODECS;
 
   let info;
   try {
@@ -142,7 +169,7 @@ export async function getPlaybackInfo(itemId, filePath, caps = {}) {
       })),
       duration: parseFloat(probe.format?.duration) || 0,
       reason: mode === 'transcode'
-        ? `${tenBitH264 ? 'h264 (10-bit)' : videoStream?.codec_name || 'unknown video'}${audioOk ? '' : ` / ${audioStream?.codec_name}`} can't be decoded by browsers`
+        ? `${tenBitH264 ? 'h264 (10-bit)' : videoStream?.codec_name || 'unknown video'}${audioOk ? '' : ` / ${audioStream?.codec_name}`} can't be decoded by ${caps.videoCodecs ? 'this device' : 'browsers'}`
         : mode === 'remux'
           ? `${container} isn't a browser-playable container`
           : null

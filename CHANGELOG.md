@@ -9,6 +9,13 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Added
+- **AV1, VP9 and VP8 video plays on devices that can't decode it.** Most Apple devices can't decode AV1 (only iPhone 15 Pro, M3 Macs and later can), and none decode VP9 or VP8. Apps can now tell the server which video codecs their device plays (`?videoCodecs=h264,hevc`), and the server converts anything else to H.264 as it streams instead of sending it untouched. The web app does the same in browsers that can't play AV1.
+- **H.264 copies** (Admin → Playback). The server can convert an AV1, VP9 or VP8 video once, in the background, and play that copy on devices that need it, so nothing has to be converted while you watch. Queue a whole library from Admin → Playback, or one title from the apps. Copies are kept in the data folder (`compat/`), never in a library, so each title still appears once. Conversions run one at a time and pause while someone is watching something the server is converting live.
+  - **Size limit:** copies stop being made once they add up to the limit you set (50 GB by default).
+  - **Who can ask:** admins, or everyone if you allow it.
+  - **Replace the original (off by default):** a finished copy can take the original's place in your library, and the AV1, VP9 or VP8 file is deleted. The title keeps its progress, ratings and artwork. This is the only thing in Plinthio that changes your media files, and it needs the media folder to be writable.
+
 ## [1.10.0] - 2026-11-10
 
 ### Fixed

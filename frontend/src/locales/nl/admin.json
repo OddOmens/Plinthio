@@ -873,6 +873,44 @@
         }
       }
     },
+    "copies": {
+      "title": "H.264-kopieën",
+      "desc": "De meeste Apple-apparaten kunnen AV1-, VP9- en VP8-video niet decoderen, dus de server zet die om bij elke keer dat ze daar worden afgespeeld. Een kopie is die omzetting, één keer op de achtergrond gedaan, en wordt in plaats daarvan afgespeeld. Kopieën staan in de gegevensmap van Plinthio, niet in je bibliotheek, dus elke titel verschijnt nog steeds maar één keer.",
+      "limit": "Groottelimiet (GB)",
+      "limitHint": "Er worden geen nieuwe kopieën gemaakt zodra ze samen zo groot zijn. Nu in gebruik: {used}.",
+      "allowUsers": "Iedereen mag een kopie aanvragen",
+      "allowUsersDesc": "Vanuit de speler in de apps. Uitgeschakeld kunnen alleen beheerders dat.",
+      "replace": "Origineel vervangen door de kopie",
+      "replaceDesc": "Zodra een kopie klaar is, neemt die de plaats van het origineel in je bibliotheek in en wordt het AV1-, VP9- of VP8-bestand verwijderd. De titel behoudt voortgang en artwork. De mediamap moet beschrijfbaar zijn.",
+      "replaceConfirmTitle": "Originelen verwijderen na het omzetten?",
+      "replaceConfirmMessage": "Elke voltooide kopie, ook de al gemaakte, vervangt het oorspronkelijke bestand, en het origineel wordt definitief verwijderd. H.264-bestanden zijn meestal groter en iets lager van kwaliteit. Dit kan niet ongedaan worden gemaakt.",
+      "replaceConfirm": "Originelen verwijderen",
+      "convertLabel": "Een bibliotheek omzetten",
+      "allLibraries": "Alle videobibliotheken",
+      "convert": "Zoeken en omzetten",
+      "searching": "{done} van {total} gecontroleerd…",
+      "convertHint": "Zet elke AV1-, VP9- en VP8-video in de wachtrij. Ze worden één voor één omgezet en wachten zolang iemand iets kijkt dat de server moet omzetten.",
+      "empty": "Nog geen kopieën.",
+      "removeAll": "Alle kopieën verwijderen",
+      "removeAllTitle": "Alle kopieën verwijderen?",
+      "removeAllMessage": "Elke H.264-kopie wordt verwijderd en de wachtrij wordt geleegd. Je originele bestanden blijven onaangeroerd.",
+      "status": {
+        "queued": "Wacht",
+        "running": "Omzetten · {percent}",
+        "done": "Klaar · {size}",
+        "failed": "Mislukt: {error}"
+      },
+      "errors": {
+        "cap": "Niet omgezet: de groottelimiet is bereikt",
+        "missing": "Niet omgezet: het bestand ontbreekt"
+      },
+      "replaceErrors": {
+        "readonly": "Klaar, maar het origineel is niet vervangen: de mediamap is alleen-lezen",
+        "link": "Klaar, maar het origineel is niet vervangen: het is een koppeling naar een bestand elders",
+        "exists": "Klaar, maar het origineel is niet vervangen: een ander bestand heeft die naam al",
+        "other": "Klaar, maar het origineel is niet vervangen: {error}"
+      }
+    },
     "intro": {
       "title": "Openingsclip",
       "desc": "Een korte clip die schermvullend wordt afgespeeld als iemand bij een film of aflevering op Afspelen drukt. Nooit vóór automatisch afgespeelde afleveringen, trailers of watchparty's, en iedereen kan hem overslaan.",

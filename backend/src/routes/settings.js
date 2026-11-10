@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
+import { compatOverview, saveCompatSettings, queueLibrary, removeAllCopies, CompatError } from '../services/compat.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { getDetectedHwaccel, listHwaccels, testHwaccel } from '../services/hwaccel.js';
 import {
@@ -127,6 +128,51 @@ router.post('/transcoding/test', authenticateToken, requireAdmin, handle(async (
   }
 
   res.json(await testHwaccel(method));
+}));
+
+// H.264 copies (services/compat.js): the size limit, who may ask for one, whether a finished
+// copy replaces the original, and the copies themselves.
+router.get('/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
+  res.json(await compatOverview(await getDb()));
+}));
+
+router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const { maxGb, allowUsers, replaceOriginal } = req.body || {};
+  const patch = {};
+  if (maxGb !== undefined) {
+    const value = Number(maxGb);
+    if (!Number.isFinite(value) || value < 0 || value > 100000) {
+      return res.status(400).json({ error: 'The size limit must be a number of gigabytes' });
+    }
+    patch.maxGb = value;
+  }
+  if (allowUsers !== undefined) patch.allowUsers = allowUsers === true;
+  if (replaceOriginal !== undefined) patch.replaceOriginal = replaceOriginal === true;
+  const db = await getDb();
+  await saveCompatSettings(db, patch);
+  res.json(await compatOverview(db));
+}));
+
+// Queues every video in one library (or all of them) that needs a copy.
+router.post('/compat/queue', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const libraryId = req.body?.libraryId || null;
+  const db = await getDb();
+  if (libraryId && !await db.get('SELECT id FROM libraries WHERE id = ?', [libraryId])) {
+    return res.status(404).json({ error: 'Library not found' });
+  }
+  try {
+    res.status(202).json(await queueLibrary(db, libraryId, req.user.id));
+  } catch (err) {
+    if (err instanceof CompatError) return res.status(err.status).json({ error: err.message });
+    throw err;
+  }
+}));
+
+// Deletes every copy and empties the queue. Originals are never touched by this.
+router.delete('/compat/copies', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const db = await getDb();
+  await removeAllCopies(db);
+  res.json(await compatOverview(db));
 }));
 
 // Switch one metadata provider on or off: { provider: 'google-books', enabled: false }.

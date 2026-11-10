@@ -873,6 +873,44 @@
         }
       }
     },
+    "copies": {
+      "title": "H.264-Kopien",
+      "desc": "Die meisten Apple-Geräte können AV1-, VP9- und VP8-Video nicht dekodieren, deshalb wandelt der Server es dort bei jeder Wiedergabe um. Eine Kopie ist diese Umwandlung, einmal im Hintergrund erledigt, und wird stattdessen abgespielt. Kopien liegen im Datenordner von Plinthio, nicht in deiner Bibliothek, sodass jeder Titel weiterhin nur einmal erscheint.",
+      "limit": "Größenlimit (GB)",
+      "limitHint": "Sobald die Kopien zusammen so groß sind, werden keine neuen mehr erstellt. Derzeit belegt: {used}.",
+      "allowUsers": "Alle dürfen eine Kopie anfordern",
+      "allowUsersDesc": "Über den Player in den Apps. Ausgeschaltet können das nur Admins.",
+      "replace": "Original durch die Kopie ersetzen",
+      "replaceDesc": "Sobald eine Kopie fertig ist, nimmt sie den Platz des Originals in deiner Bibliothek ein, und die AV1-, VP9- oder VP8-Datei wird gelöscht. Der Titel behält Fortschritt und Artwork. Der Medienordner muss beschreibbar sein.",
+      "replaceConfirmTitle": "Originale nach der Umwandlung löschen?",
+      "replaceConfirmMessage": "Jede fertige Kopie, auch bereits erstellte, ersetzt ihre Originaldatei, und das Original wird endgültig gelöscht. H.264-Dateien sind meist größer und von etwas geringerer Qualität. Das lässt sich nicht rückgängig machen.",
+      "replaceConfirm": "Originale löschen",
+      "convertLabel": "Bibliothek umwandeln",
+      "allLibraries": "Alle Videobibliotheken",
+      "convert": "Suchen und umwandeln",
+      "searching": "Prüfe {done} von {total}…",
+      "convertHint": "Reiht jedes AV1-, VP9- und VP8-Video ein. Sie werden nacheinander umgewandelt und warten, solange jemand etwas ansieht, das der Server umwandeln muss.",
+      "empty": "Noch keine Kopien.",
+      "removeAll": "Alle Kopien löschen",
+      "removeAllTitle": "Alle Kopien löschen?",
+      "removeAllMessage": "Jede H.264-Kopie wird gelöscht und die Warteschlange geleert. Deine Originaldateien bleiben unberührt.",
+      "status": {
+        "queued": "Wartet",
+        "running": "Wird umgewandelt · {percent}",
+        "done": "Fertig · {size}",
+        "failed": "Fehlgeschlagen: {error}"
+      },
+      "errors": {
+        "cap": "Nicht umgewandelt: Das Größenlimit ist erreicht",
+        "missing": "Nicht umgewandelt: Die Datei fehlt"
+      },
+      "replaceErrors": {
+        "readonly": "Fertig, aber das Original wurde nicht ersetzt: Der Medienordner ist schreibgeschützt",
+        "link": "Fertig, aber das Original wurde nicht ersetzt: Es ist ein Link auf eine Datei an anderer Stelle",
+        "exists": "Fertig, aber das Original wurde nicht ersetzt: Eine andere Datei hat bereits diesen Namen",
+        "other": "Fertig, aber das Original wurde nicht ersetzt: {error}"
+      }
+    },
     "intro": {
       "title": "Intro",
       "desc": "Ein kurzer Clip, der im Vollbild läuft, wenn jemand bei einem Film oder einer Folge auf Abspielen drückt. Nie vor automatisch abgespielten Folgen, Trailern oder Watch-Partys, und jede Person kann ihn überspringen.",

@@ -873,6 +873,44 @@
         }
       }
     },
+    "copies": {
+      "title": "H.264 copies",
+      "desc": "Most Apple devices can't decode AV1, VP9 or VP8 video, so the server converts it every time it's played there. A copy is that conversion done once, in the background, and played instead. Copies are kept in Plinthio's data folder, not in your library, so each title still appears once.",
+      "limit": "Size limit (GB)",
+      "limitHint": "No new copies are made once they add up to this much. Using {used} now.",
+      "allowUsers": "Let everyone ask for a copy",
+      "allowUsersDesc": "From the player in the apps. When off, only admins can.",
+      "replace": "Replace the original with its copy",
+      "replaceDesc": "When a copy is finished it takes the original's place in your library, and the AV1, VP9 or VP8 file is deleted. The title keeps its progress and artwork. The media folder must be writable.",
+      "replaceConfirmTitle": "Delete originals once converted?",
+      "replaceConfirmMessage": "Every finished copy, including any already made, will replace its original file, and the original is deleted for good. H.264 files are usually larger and slightly lower in quality. This can't be undone.",
+      "replaceConfirm": "Delete originals",
+      "convertLabel": "Convert a library",
+      "allLibraries": "All video libraries",
+      "convert": "Find and convert",
+      "searching": "Checking {done} of {total}…",
+      "convertHint": "Queues every AV1, VP9 and VP8 video. They're converted one at a time, and wait while someone is watching something the server has to convert.",
+      "empty": "No copies yet.",
+      "removeAll": "Delete all copies",
+      "removeAllTitle": "Delete all copies?",
+      "removeAllMessage": "Every H.264 copy is deleted and the queue is emptied. Your original files aren't touched.",
+      "status": {
+        "queued": "Waiting",
+        "running": "Converting · {percent}",
+        "done": "Ready · {size}",
+        "failed": "Failed: {error}"
+      },
+      "errors": {
+        "cap": "Not converted: the size limit was reached",
+        "missing": "Not converted: the file is missing"
+      },
+      "replaceErrors": {
+        "readonly": "Ready, but the original wasn't replaced: the media folder is read-only",
+        "link": "Ready, but the original wasn't replaced: it's a link to a file elsewhere",
+        "exists": "Ready, but the original wasn't replaced: another file already has that name",
+        "other": "Ready, but the original wasn't replaced: {error}"
+      }
+    },
     "intro": {
       "title": "Opening sequence",
       "desc": "A short clip played full-screen when someone presses Play on a movie or episode. Never before autoplayed episodes, trailers or watch parties, and anyone can skip it.",
