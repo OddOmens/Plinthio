@@ -68,6 +68,28 @@
         <p class="field-hint">{{ $t('admin.playback.copies.limitHint', { used: formatBytes(copies.usedBytes) }) }}</p>
       </div>
 
+      <div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="flex-1 min-w-0">
+            <label for="copies-quality" class="field-label">{{ $t('admin.playback.copies.quality') }}</label>
+            <select id="copies-quality" :value="copies.quality" @change="saveCopies({ quality: $event.target.value })" class="field w-full">
+              <option value="smaller">{{ $t('admin.playback.copies.qualitySmaller') }}</option>
+              <option value="balanced">{{ $t('admin.playback.copies.qualityBalanced') }}</option>
+              <option value="high">{{ $t('admin.playback.copies.qualityHigh') }}</option>
+            </select>
+          </div>
+          <div class="flex-1 min-w-0">
+            <label for="copies-size" class="field-label">{{ $t('admin.playback.copies.maxSize') }}</label>
+            <select id="copies-size" :value="copies.maxHeight" @change="saveCopies({ maxHeight: Number($event.target.value) })" class="field w-full">
+              <option :value="0">{{ $t('admin.playback.copies.maxSizeOriginal') }}</option>
+              <option :value="1080">1080p</option>
+              <option :value="720">720p</option>
+            </select>
+          </div>
+        </div>
+        <p class="field-hint">{{ $t('admin.playback.copies.qualityHint') }}</p>
+      </div>
+
       <div class="divide-y divide-border border-t border-border pt-3">
         <ToggleRow
           :label="$t('admin.playback.copies.allowUsers')"
@@ -242,7 +264,7 @@ async function runHwaccelTest() {
 
 // ─── Converted copies ─────────────────────────────────────────────────────────
 const copiesSave = useSaveStatus();
-const copies = ref({ maxGb: 50, allowUsers: false, replaceOriginal: false, usedBytes: 0, discovery: null, copies: [] });
+const copies = ref({ maxGb: 50, quality: 'balanced', maxHeight: 0, allowUsers: false, replaceOriginal: false, usedBytes: 0, discovery: null, copies: [] });
 const copiesLimit = ref(50);
 const copiesLibrary = ref('');
 const videoLibraries = ref([]);

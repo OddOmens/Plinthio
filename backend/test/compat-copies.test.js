@@ -117,6 +117,10 @@ describe('AV1 on devices that cannot decode it', { skip: haveAv1 ? false : 'ffmp
     assert.equal((await refused.json()).code, 'P311');
     const saved = await (await send('PUT', '/settings/compat', { maxGb: 5 })).json();
     assert.equal(saved.maxGb, 5);
+    assert.equal(saved.quality, 'balanced', 'balanced, at the original size, until the admin says otherwise');
+    assert.equal(saved.maxHeight, 0);
+    assert.equal((await send('PUT', '/settings/compat', { quality: 'lossless' })).status, 400);
+    assert.equal((await send('PUT', '/settings/compat', { maxHeight: 144 })).status, 400);
     assert.equal(saved.replaceOriginal, false);
   });
 
@@ -252,5 +256,69 @@ describe('converted copies of older formats', () => {
     assert.equal(played.videoCodec, 'h264');
 
     assert.equal((await send('POST', '/settings/compat/retry')).status, 200);
+  });
+});
+
+// Quality and size: a high-quality copy is bigger than a smaller one, and a copy is scaled
+// down to the admin's limit but never up.
+describe('converted copies: quality and largest size', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'plinthio-compat-quality-'));
+  const folder = path.join(dir, 'Movies');
+  fs.mkdirSync(folder);
+  let server; let admin; let film;
+  const api = (url, init = {}) => fetch(`${server.baseUrl}/api${url}`, {
+    ...init,
+    headers: { ...authed(admin.token), ...(init.body ? { 'content-type': 'application/json' } : {}) }
+  });
+  const send = (method, url, body) => api(url, { method, body: JSON.stringify(body || {}) });
+  const copyFile = () => path.join(server.dataDir, 'compat', `${film.id}.mp4`);
+  const makeCopy = async (settings) => {
+    await send('DELETE', `/media/video/${film.id}/compat`);
+    assert.equal((await send('PUT', '/settings/compat', settings)).status, 200);
+    assert.equal((await send('POST', `/media/video/${film.id}/compat`)).status, 202);
+    const deadline = Date.now() + 90000;
+    let state;
+    do {
+      await new Promise((res) => setTimeout(res, 200));
+      state = await (await api(`/media/video/${film.id}/compat`)).json();
+    } while (state.status !== 'done' && state.status !== 'failed' && Date.now() < deadline);
+    assert.equal(state.status, 'done', state.error || 'the copy was made');
+    const height = Number(execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=height', '-of', 'csv=p=0', copyFile()], { encoding: 'utf8' }).trim());
+    return { height, size: fs.statSync(copyFile()).size };
+  };
+
+  before(async () => {
+    // Moving noise at 1440x1080, so quality settings show in the size.
+    execFileSync('ffmpeg', [
+      '-hide_banner', '-loglevel', 'error', '-y',
+      '-f', 'lavfi', '-i', 'testsrc2=size=1440x1080:rate=10:duration=2,noise=alls=20:allf=t',
+      '-c:v', 'mpeg4', '-q:v', '3', '-pix_fmt', 'yuv420p', path.join(folder, 'Tall Film (2001).mkv')
+    ], { stdio: 'pipe' });
+    server = await startTestServer({ env: { COMPAT_TICK_MS: '200' } });
+    admin = await setupAdmin(server.baseUrl);
+    await send('PUT', '/settings/transcoding', { preference: 'none' });
+    const libraryId = (await (await send('POST', '/libraries', { name: 'Movies', path: folder, type: 'movies' })).json()).library.id;
+    for (let i = 0; i < 100; i++) {
+      if ((await (await send('POST', `/libraries/${libraryId}/scan`)).json()).status !== 'busy') break;
+      await new Promise((res) => setTimeout(res, 100));
+    }
+    [film] = (await (await api('/items?limit=100')).json()).items;
+    assert.ok(film, 'the film was scanned');
+  });
+
+  after(async () => {
+    await server?.stop();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  test('high quality is bigger than smaller; 720p scales down; a limit above the source changes nothing', async () => {
+    const high = await makeCopy({ quality: 'high', maxHeight: 0 });
+    assert.equal(high.height, 1080);
+    const smaller = await makeCopy({ quality: 'smaller', maxHeight: 0 });
+    assert.equal(smaller.height, 1080);
+    assert.ok(high.size > smaller.size * 1.2, `high (${high.size}) should be clearly bigger than smaller (${smaller.size})`);
+
+    const capped = await makeCopy({ quality: 'balanced', maxHeight: 720 });
+    assert.equal(capped.height, 720);
   });
 });

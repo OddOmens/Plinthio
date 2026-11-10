@@ -126,7 +126,28 @@ Every audio track is carried over (AAC and MP3 as they are, anything else as AAC
 **The settings:**
 
 - **Size limit:** no copy is started, and a running one is stopped, once the copies add up
-  to this much. A 1080p film is roughly 4–8 GB in H.264.
+  to this much.
+- **Quality:** how hard a copy is compressed. Uncompressed video isn't an option anyone
+  wants (hundreds of gigabytes a film); these keep the picture and drop what the eye doesn't
+  see.
+
+  | Quality | Looks like | A two-hour 1080p film |
+  | --- | --- | --- |
+  | **Smaller files** | Fine on a phone, tablet or laptop; soft in dark or busy scenes on a large TV | about 3–5 GB |
+  | **Balanced** (default, recommended) | Good on any screen | about 4–8 GB |
+  | **High quality** | Hard to tell from the original | about 7–12 GB, and slower to make on the CPU |
+
+  The sizes are a guide: quiet films come out smaller, grainy or fast ones larger.
+- **Largest size:** **Original size** (the default) keeps each video's own resolution, up
+  to 4K. **1080p** or **720p** scales anything taller down, which is the biggest saving
+  there is for 4K video (a 4K copy is three to four times the size of a 1080p one) and all
+  a phone or tablet can show. Smaller videos are never enlarged. Leave it on Original size
+  if copies replace your originals and you watch on a 4K TV.
+
+  For the best picture without large files: **Balanced** at **Original size**, or
+  **Balanced** at **1080p** if you have 4K films and mostly watch on phones, tablets and
+  laptops. Quality and largest size apply to copies made from then on; copies already made
+  are kept, so delete one and convert it again to change it.
 - **Let everyone ask for a copy:** off, only admins see **Convert** on a title's page and
   can start a conversion from the apps.
 - **Convert a library:** looks through one library, or all of them, and queues every video

@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
-import { compatOverview, saveCompatSettings, queueLibrary, removeAllCopies, retryFailed } from '../services/compat.js';
+import { compatOverview, saveCompatSettings, queueLibrary, removeAllCopies, retryFailed, QUALITIES, MAX_HEIGHTS } from '../services/compat.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { getDetectedHwaccel, listHwaccels, testHwaccel } from '../services/hwaccel.js';
 import {
@@ -138,8 +138,16 @@ router.get('/compat', authenticateToken, requireAdmin, handle(async (req, res) =
 }));
 
 router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
-  const { maxGb, allowUsers, replaceOriginal } = req.body || {};
+  const { maxGb, quality, maxHeight, allowUsers, replaceOriginal } = req.body || {};
   const patch = {};
+  if (quality !== undefined) {
+    if (typeof quality !== 'string' || !Object.hasOwn(QUALITIES, quality)) return res.status(400).json({ error: 'The quality must be smaller, balanced or high' });
+    patch.quality = quality;
+  }
+  if (maxHeight !== undefined) {
+    if (!MAX_HEIGHTS.includes(maxHeight)) return res.status(400).json({ error: 'The largest size must be 0 (the original), 1080 or 720' });
+    patch.maxHeight = maxHeight;
+  }
   if (maxGb !== undefined) {
     const value = Number(maxGb);
     if (!Number.isFinite(value) || value < 0 || value > 100000) {
@@ -156,6 +164,9 @@ router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) =
   // Deleting originals is the one thing here that can't be taken back: the log says who.
   if (before.replaceOriginal !== after.replaceOriginal) {
     logger.warn('media', `Converted copies: replacing originals was switched ${after.replaceOriginal ? 'ON' : 'off'} by ${req.user.username}`);
+  }
+  if (before.quality !== after.quality || before.maxHeight !== after.maxHeight) {
+    logger.info('media', `Converted copies: new copies will be ${after.quality} quality, ${after.maxHeight ? `at most ${after.maxHeight}p` : 'at their original size'} (set by ${req.user.username})`);
   }
   res.json(after);
 }));

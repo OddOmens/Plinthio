@@ -41,6 +41,18 @@ export function needsCopy(info) {
 }
 
 const DEFAULT_MAX_GB = 50;
+
+// How hard a copy is compressed. crf is libx264's quality target (lower is better and
+// bigger; 18 is hard to tell from the source, 21 is good on any screen, 24 shows on a big
+// one); bitrate scales the hardware encoders, which take a bitrate instead; preset is how
+// much time the CPU spends making the file smaller for the same picture.
+export const QUALITIES = {
+  smaller: { crf: 24, bitrate: 0.65, preset: 'veryfast' },
+  balanced: { crf: 21, bitrate: 1, preset: 'veryfast' },
+  high: { crf: 18, bitrate: 1.6, preset: 'fast' }
+};
+// The tallest a copy may be: 0 keeps the source's own size (up to 2160p).
+export const MAX_HEIGHTS = [0, 1080, 720];
 const TICK_MS = Math.max(50, parseInt(process.env.COMPAT_TICK_MS, 10) || 3000);
 
 // The conversion running now: { itemId, proc, progress, paused, cancelled, capped, tmpPath, budget }.
@@ -61,8 +73,12 @@ export const compatProbeId = (itemId) => `${itemId}.compat`;
 
 export async function getCompatSettings(db) {
   const maxGb = parseFloat(await getSetting(db, 'compat_max_gb'));
+  const quality = await getSetting(db, 'compat_quality');
+  const maxHeight = parseInt(await getSetting(db, 'compat_max_height'), 10);
   return {
     maxGb: Number.isFinite(maxGb) && maxGb >= 0 ? maxGb : DEFAULT_MAX_GB,
+    quality: QUALITIES[quality] ? quality : 'balanced',
+    maxHeight: MAX_HEIGHTS.includes(maxHeight) ? maxHeight : 0,
     allowUsers: (await getSetting(db, 'compat_allow_users')) === '1',
     replaceOriginal: (await getSetting(db, 'compat_replace_original')) === '1'
   };
@@ -70,6 +86,9 @@ export async function getCompatSettings(db) {
 
 export async function saveCompatSettings(db, patch) {
   if (patch.maxGb !== undefined) await setSetting(db, 'compat_max_gb', String(patch.maxGb));
+  // Both apply to copies made from now on; the ones already made are kept as they are.
+  if (patch.quality !== undefined) await setSetting(db, 'compat_quality', patch.quality);
+  if (patch.maxHeight !== undefined) await setSetting(db, 'compat_max_height', String(patch.maxHeight));
   if (patch.allowUsers !== undefined) await setSetting(db, 'compat_allow_users', patch.allowUsers ? '1' : '0');
   if (patch.replaceOriginal !== undefined) {
     await setSetting(db, 'compat_replace_original', patch.replaceOriginal ? '1' : '0');
@@ -281,8 +300,8 @@ function bitrateFor(height) {
 
 // The video half of the command, on one encoder: a graphics chip's, or the CPU's when accel
 // is null.
-function videoArgs(info, accel, height) {
-  const bitrate = bitrateFor(height);
+function videoArgs(info, accel, height, quality) {
+  const bitrate = Math.round(bitrateFor(height) * quality.bitrate);
   const rate = ['-maxrate', `${Math.round(bitrate * 1.5)}k`, '-bufsize', `${bitrate * 3}k`];
   // Interlaced video (DVDs, broadcast recordings) would otherwise keep its comb lines for good.
   const deinterlace = info.interlaced ? 'yadif,' : '';
@@ -291,14 +310,15 @@ function videoArgs(info, accel, height) {
   }
   // Half the cores: this runs for a long time beside a server people are using.
   return [
-    '-vf', `${deinterlace}scale=-2:${height}`, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '21', ...rate,
+    '-vf', `${deinterlace}scale=-2:${height}`, '-c:v', 'libx264', '-preset', quality.preset, '-crf', String(quality.crf), ...rate,
     '-pix_fmt', 'yuv420p', '-threads', String(Math.max(1, Math.floor(os.cpus().length / 2)))
   ];
 }
 
-function buildArgs(info, sourcePath, outPath, { accel, subtitles }) {
-  // The source's own size (H.264 past 2160p plays almost nowhere), with even dimensions.
-  const height = Math.min(info.height || 1080, 2160) & ~1;
+function buildArgs(info, sourcePath, outPath, { accel, subtitles, quality, maxHeight }) {
+  // The source's own size, or the admin's limit if it is taller (H.264 past 2160p plays
+  // almost nowhere), with even dimensions. A copy is never made bigger than its source.
+  const height = Math.min(info.height || 1080, maxHeight || 2160) & ~1;
 
   const args = [
     '-hide_banner', '-loglevel', 'error', '-nostdin', '-y',
@@ -310,7 +330,7 @@ function buildArgs(info, sourcePath, outPath, { accel, subtitles }) {
   const textSubs = subtitles ? (info.subtitleTracks || []).filter((track) => track.isTextBased) : [];
   for (const track of textSubs) args.push('-map', `0:s:${track.index}`);
 
-  args.push(...videoArgs(info, accel, height));
+  args.push(...videoArgs(info, accel, height, QUALITIES[quality] || QUALITIES.balanced));
 
   // Audio every browser and Apple device plays in an MP4: AAC and MP3 are kept as they
   // are, anything else (Opus, AC-3, DTS…) becomes AAC with up to 5.1 channels.
@@ -438,7 +458,7 @@ async function convert(db, row) {
   const out = tmpPath(itemId);
   const accelName = await getActiveHwaccel();
   const accel = accelName ? hwaccelConfig(accelName) : null;
-  logger.info('media', `Converting "${item.title}" (${row.source_codec || info.videoCodec}) to H.264 with ${accelName || 'the CPU'}`);
+  logger.info('media', `Converting "${item.title}" (${row.source_codec || info.videoCodec}) to H.264 with ${accelName || 'the CPU'} (${settings.quality} quality${settings.maxHeight && info.height > settings.maxHeight ? `, scaled down to ${settings.maxHeight}p` : ''})`);
 
   // The graphics chip first, then the CPU if it fails; and
   // each of those without the subtitles if it fails with them, since a track ffmpeg can't
@@ -446,7 +466,7 @@ async function convert(db, row) {
   const hasSubs = (info.subtitleTracks || []).some((track) => track.isTextBased);
   const plans = [];
   for (const encoder of accel ? [accel, null] : [null]) {
-    for (const subtitles of hasSubs ? [true, false] : [false]) plans.push({ accel: encoder, subtitles });
+    for (const subtitles of hasSubs ? [true, false] : [false]) plans.push({ accel: encoder, subtitles, quality: settings.quality, maxHeight: settings.maxHeight });
   }
   let result;
   for (const [index, plan] of plans.entries()) {
