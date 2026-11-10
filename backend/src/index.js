@@ -59,7 +59,7 @@ import { sweepHlsCache } from './services/hls.js';
 import { sweepArchiveCache } from './services/archive/sevenZipBackend.js';
 import { sweepPageCache } from './services/pageImages.js';
 import { sweepTrickplayCache } from './services/trickplay.js';
-import { tlsSettings, loadTlsCredentials, tlsStatus, caCertificate, noteRequestHost } from './services/tls.js';
+import { tlsSettings, loadTlsCredentials, refreshTlsCredentials, tlsStatus, caCertificate, noteRequestHost } from './services/tls.js';
 import { SEND_OPTS } from './utils/fileStream.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -72,8 +72,8 @@ const app = express();
 if (config.trustProxy !== false) {
   app.set('trust proxy', config.trustProxy);
 }
-// Admin → Network warns when a proxy is in front but TRUST_PROXY isn't set (services/network.js).
-app.use((req, res, next) => { noteProxyHeaders(req, config.trustProxy); noteTailscale(req); next(); });
+// Admin → Network warns when a proxy is in front that TRUST_PROXY doesn't cover (services/network.js).
+app.use((req, res, next) => { noteProxyHeaders(req); noteTailscale(req); next(); });
 
 // Security and utility middleware
 // Content-Security-Policy. The session token lives in localStorage, so any injected script
@@ -81,18 +81,28 @@ app.use((req, res, next) => { noteProxyHeaders(req, config.trustProxy); noteTail
 // Cast SDK (loaded on demand, Chromium only), and images only from ourselves plus the
 // metadata providers whose cover art the editor previews (COVER_CSP_SOURCES: the same hosts
 // the server will save a cover from, redirect hops included).
+//   - script www.gstatic.com: only the folders the Cast SDK loads from (CAST_SCRIPT_SOURCES),
+//     not the whole host, which also serves old libraries an injected page could misuse to
+//     run script despite the policy. The trailing slash matters: it makes each a folder.
 //   - style 'unsafe-inline': Vue style bindings, the admin's custom CSS and EPUB styling
 //   - blob:/data: — hls.js MediaSource URLs, epub.js resource URLs, placeholder covers
 //   - no upgrade-insecure-requests: most installs are reached over plain HTTP on a LAN,
 //     where it would rewrite every same-origin request to https and break the app
 // Set CSP=off to disable (e.g. while diagnosing a blocked resource), or CSP=report-only.
+// utils/cast.js loads /cv/js/sender/v1/cast_sender.js, which then pulls in the framework
+// (/cast/sdk/libs/sender/…/cast_framework.js) and Chrome's own sender (/eureka/clank/…).
+const CAST_SCRIPT_SOURCES = [
+  'https://www.gstatic.com/cv/js/sender/',
+  'https://www.gstatic.com/cast/sdk/libs/',
+  'https://www.gstatic.com/eureka/clank/'
+];
 const cspMode = (process.env.CSP || 'on').toLowerCase();
 const contentSecurityPolicy = cspMode === 'off' ? false : {
   useDefaults: false,
   reportOnly: cspMode === 'report-only',
   directives: {
     defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", 'https://www.gstatic.com'],
+    scriptSrc: ["'self'", ...CAST_SCRIPT_SOURCES],
     styleSrc: ["'self'", "'unsafe-inline'"],
     imgSrc: ["'self'", 'data:', 'blob:', ...COVER_CSP_SOURCES],
     mediaSrc: ["'self'", 'blob:'],
@@ -117,13 +127,22 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
   strictTransportSecurity: tlsSettings.port ? false : undefined
 }));
-// `credentials: true` only matters for cookie-based auth; Plinthio authenticates via a
-// Bearer JWT (header or query param) that the app puts in localStorage itself. The one
-// cookie, Mihon's Komga session (routes/komga.js), is only honoured by /api/v1 and /api/v2
-// and is SameSite=Lax, so there's nothing for a browser to attach automatically. Combined with a
-// wildcard origin, `credentials: true` is also something browsers just reject outright for
-// an actual cross-origin credentialed request — it was a no-op, not a real permission.
-app.use(cors({ origin: config.corsOrigin }));
+// Cross-origin access. The web app is served from this same server and the phone, TV and
+// reading apps aren't browsers, so none of them need it: by default no page on another site
+// may read the API. CORS_ORIGIN opens it for someone who hosts their own page elsewhere (one
+// origin, a comma-separated list, or * for any).
+// `credentials` stays off: Plinthio authenticates with a Bearer token the app keeps itself,
+// and the one cookie, Mihon's Komga session (routes/komga.js), is only honoured by /api/v1
+// and /api/v2 and is SameSite=Lax, so there's nothing for a browser to attach automatically.
+if (config.corsOrigin) {
+  app.use(cors({ origin: config.corsOrigin }));
+} else {
+  // The one cross-origin reader Plinthio itself sets up: a Chromecast fetches the stream it
+  // was handed (playlists, segments, subtitles) from Google's receiver page, and refuses to
+  // play one it may not read. Those URLs each carry a media token, so being readable from
+  // another origin gives nothing to anyone who doesn't already hold the link.
+  app.use('/api/media/video', cors({ origin: '*', methods: ['GET', 'HEAD'] }));
+}
 
 // JSON responses compress extremely well (a 1000-item shelf page measured 386KB raw vs
 // 29KB gzipped) and that ratio is what a phone or a remote connection actually feels.
@@ -145,14 +164,22 @@ app.use((req, res, next) => {
   next();
 });
 
-// Built-in HTTPS learns the addresses devices use (see noteRequestHost in services/tls.js);
-// the re-issue is debounced so a burst of requests produces one new certificate.
+// Built-in HTTPS learns the addresses devices use (see noteRequestHost in services/tls.js),
+// but only from someone who turned out to be signed in, or who just finished first-run setup
+// (which is home-only): looked at once the response is done, when that's known. A stranger's
+// requests teach it nothing. The re-issue is debounced so a burst of requests produces one
+// new certificate.
 let httpsServer = null;
 let reissueTimer = null;
 app.use((req, res, next) => {
-  if (httpsServer && noteRequestHost(req.hostname)) {
-    clearTimeout(reissueTimer);
-    reissueTimer = setTimeout(refreshHttpsCertificate, 2000);
+  if (httpsServer) {
+    res.on('finish', () => {
+      const setupDone = req.method === 'POST' && req.originalUrl.split('?')[0] === '/api/auth/setup' && res.statusCode === 200;
+      if ((req.user || setupDone) && noteRequestHost(req.hostname)) {
+        clearTimeout(reissueTimer);
+        reissueTimer = setTimeout(refreshHttpsCertificate, 2000);
+      }
+    });
   }
   next();
 });
@@ -210,7 +237,9 @@ const apiLimiter = rateLimit({
 // Tighter limit specifically on password guessing, on top of the general auth limiter. It
 // covers /login and the two-factor step (/login/2fa). Only failures count: a two-factor
 // sign-in is two requests, and a household behind one IP signing in shouldn't lock itself
-// out, while guessing a password or a code still stops after ten tries.
+// out, while guessing a password or a code still stops after ten tries. This one is per
+// address; wrong passwords from outside and wrong two-factor codes are also counted per
+// account (routes/auth.js), which guessing from many addresses doesn't get round.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // 10 failed login attempts per 15 min per IP
@@ -426,10 +455,12 @@ function startHttps() {
   return server;
 }
 
-function refreshHttpsCertificate() {
+// Re-issuing means generating a key, so this goes through the non-blocking path: requests
+// keep being served while openssl runs.
+async function refreshHttpsCertificate() {
   if (!httpsServer) return;
   try {
-    const fresh = loadTlsCredentials();
+    const fresh = await refreshTlsCredentials();
     if (fresh) httpsServer.setSecureContext(fresh);
   } catch (err) {
     console.error('[tls] Certificate refresh failed:', err.message);

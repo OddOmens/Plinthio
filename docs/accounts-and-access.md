@@ -52,7 +52,11 @@ disappears, as if it weren't on the server.
 
 Rules:
 
-- Admin accounts can't be kids accounts, and you can't make your own account one.
+- Admin and editor accounts can't be kids accounts (an editor could add titles to Kids Mode
+  for itself), and you can't make your own account one.
+- A kids account sees only the libraries it can see something in, can't search for titles
+  outside the library (requests, lists), and gets no answer about series it can't see. The
+  same goes for libraries and series wholly above an account's content limit.
 - A content limit still applies on top, so a Teen-rated series added to Kids Mode is still
   hidden from a kids account limited to Everyone.
 - Like content limits, it applies everywhere: shelves, search, direct links, files, watch
@@ -91,10 +95,25 @@ extends it.
   regular use never signs you out, while a token on a lost device stops working within the
   week.
 - **Changing your password**, or **Settings → Security → Sign out of all devices**, ends
-  every other session immediately.
+  every other session immediately. Sign out of all devices also deletes the account's API
+  keys, so reading apps have to be connected again with a new key. Changing the password
+  keeps them unless you choose to revoke them at the same time. Both need a signed-in
+  session; an API key can't do either.
 - Failed sign-in attempts are rate limited: 10 per 15 minutes per address (see
   `TRUST_PROXY` in [Configuration](configuration.md)). Successful ones don't count, so a
   household behind one address never locks itself out.
+- Wrong two-factor codes are also counted per account: ten in 15 minutes hold code entry for
+  that account for 15 minutes, longer each time it happens again. Home and away are counted
+  separately, so someone outside can't keep you from signing in at home.
+- Where Plinthio asks for your password again (changing it, making an API key, turning
+  two-factor on or off), ten wrong answers in 15 minutes hold those back for a while (P108).
+  Signing in isn't affected.
+- From outside the home network, a sign-in that's refused because the account is home-only,
+  expired, or has no two-factor where that's required gets the same "Invalid username or
+  password" as a wrong password, so guessing can't confirm a password. The real reason is in
+  Admin → Logs. At home each keeps its own message.
+- A username that matches no account is recorded in the sign-in history and logs as its
+  first two characters and its length only: it's often a password typed into the wrong box.
 - Image, audio and video URLs carry a separate **media token**. It's valid for 24 hours,
   only opens media, and is never the sign-in token itself, so a copied media link can't be
   used to drive the account.
@@ -108,8 +127,8 @@ app as well as the password: Google Authenticator, Microsoft Authenticator, 1Pas
 Bitwarden, Aegis, or any other app that does "TOTP".
 
 - **Turning it on:** Settings → Security → Two-factor sign-in (it's also offered at the end
-  of onboarding and the setup wizard). Scan the QR code, or copy the key into the app, then
-  type the code it shows to confirm.
+  of onboarding and the setup wizard). Enter your password, scan the QR code or copy the key
+  into the app, then type the code it shows to confirm.
 - **Backup codes:** ten one-time codes for a lost phone, shown once when you turn it on.
   Download or copy them somewhere safe. Each one signs you in instead of a code, once. Make
   new ones any time (Settings → Security → New backup codes).
@@ -138,7 +157,8 @@ Whether an account can be used outside the home network. See
   Off, that account only works at home, including its sessions, its reading apps and its API
   keys. Admins can't switch it off for themselves while away.
 - **Admin → Network → Require two-factor away from home**: accounts without two-factor can
-  then only sign in at home, where they can set it up.
+  then only sign in at home, where they can set it up. A session started at home on such an
+  account stops working away from home too (P112). API keys aren't affected.
 - Admin → Users shows who has two-factor, who's home-only, and where each person last signed
   in from (home, Tailscale or outside). Admin → Network lists recent sign-ins from outside.
 
@@ -146,6 +166,11 @@ Whether an account can be used outside the home network. See
 
 Made in **Settings → Apps & API keys**. A key acts as its owner, with their role and limits.
 
+- Making a key asks for your password: a key outlives the session it was made in and isn't
+  asked for two-factor, so a browser left signed in isn't enough to make one. Each key made
+  or revoked is noted in Admin → Logs (who and the key's name, never the key).
+- A key can't change the password, make or list keys, change two-factor, or sign the
+  account out everywhere.
 - Shown once, when made. The server stores only a SHA-256 hash, plus an MD5 used by
   KOReader, so a leaked database can't be turned back into working keys.
 - Used as `X-API-Key: <key>`, or as the **password** with your username in HTTP Basic sign-in.

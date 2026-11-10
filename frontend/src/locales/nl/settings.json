@@ -138,7 +138,8 @@
       "change": "Wachtwoord wijzigen",
       "changing": "Wijzigen…",
       "changed": "Wachtwoord gewijzigd. Log opnieuw in met je nieuwe wachtwoord.",
-      "changeFailed": "Kon je wachtwoord niet wijzigen"
+      "changeFailed": "Kon je wachtwoord niet wijzigen",
+      "revokeKeys": "Ook mijn API-sleutels intrekken. Apps die er een gebruiken, hebben dan een nieuwe sleutel nodig."
     },
     "twoFactor": {
       "title": "Tweestapsverificatie",
@@ -146,11 +147,11 @@
     },
     "devices": {
       "title": "Ingelogde apparaten",
-      "desc": "Op elke telefoon, browser en tv waarop je inlogt, blijf je ingelogd. Ben je ingelogd op een apparaat dat je niet meer in handen hebt, log dan overal uit.",
+      "desc": "Op elke telefoon, browser en tv waarop je inlogt, blijf je ingelogd. Ben je ingelogd op een apparaat dat je niet meer in handen hebt, log dan overal uit. Je API-sleutels worden dan ook ingetrokken.",
       "signOutAll": "Uitloggen op alle apparaten",
       "signingOut": "Uitloggen…",
       "confirmTitle": "Overal uitloggen",
-      "confirmMessage": "Elk apparaat dat bij dit account is ingelogd, wordt meteen uitgelogd, ook dit apparaat.",
+      "confirmMessage": "Elk apparaat dat bij dit account is ingelogd, wordt meteen uitgelogd, ook dit apparaat. Ook je API-sleutels werken dan niet meer; apps die er een gebruiken, hebben een nieuwe sleutel nodig.",
       "signOutFailed": "Kon niet uitloggen op alle apparaten"
     }
   },
@@ -240,6 +241,8 @@
       "namePlaceholder": "Waarvoor hij is, bijv. Mihon op mijn telefoon",
       "make": "Sleutel maken",
       "makeFailed": "Kon geen sleutel maken",
+      "password": "Je wachtwoord",
+      "passwordWhy": "Voor het maken van een sleutel is je wachtwoord nodig, zodat niemand er een kan maken op een ontgrendeld scherm.",
       "copyNow": "Kopieer je nieuwe sleutel nu. Hij wordt niet opnieuw getoond.",
       "copyKey": "Sleutel kopiëren",
       "empty": "Nog geen sleutels.",

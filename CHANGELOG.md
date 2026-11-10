@@ -22,6 +22,47 @@ the admin update banner. Add entries under **Unreleased** as you go.
   - **Leaving a reader ends its session.** Closing a reader or player quickly could leave it showing as "viewing" in Admin → Activity forever, and leaving a book with the browser's Back kept it working in the background.
   - Smaller fixes to stale errors and "Saved" messages, spinners stopping early, and timers left running.
 
+### Changed
+- **Subtitles inside a video load instantly the second time.** They are extracted once and kept, at most two extractions run at a time, and one stops if you leave. Subtitle files over 8 MB are not read.
+- **Direct streams have limits too:** three per account and eight across the server (`REMUX_LIMIT`). The converted-video cache now has a size budget (`HLS_CACHE_MAX_GB`, 40 GB); the longest-unused copies go first.
+- **"Sign out of all devices" also revokes your API keys,** and changing your password offers to. Reading apps signed in with a key need a new one afterwards.
+
+### Security
+A full review of the server, the web app, the Docker files and the release pipeline. **Three things may need action when you upgrade:**
+- **Tailscale and public-address add-ons: re-download the add-on files and recreate the containers** (Away from home → Upgrading the add-ons in the docs). With the old Tailscale add-on file, any device on your tailnet could reach Plinthio around the HTTPS front door, where it was counted as a home device and could fake its address. Both add-ons now run in their own container network, Plinthio believes only their exact addresses, and the public-address proxy's control API is off. Your Tailscale sign-in and certificates are kept.
+- **Behind your own reverse proxy, set `TRUST_PROXY` to the proxy's address.** Without it every visitor used to look like a home device, so home-only access and two-factor away from home did nothing, and a new server could be set up by a stranger. Visitors arriving through a proxy Plinthio wasn't told to trust are now treated as away from home.
+- **Symlinks in a library are followed only into a library folder.** A link such as `book.epub -> /config/jwt.secret` used to be catalogued and served. Links that lead elsewhere are now skipped and logged; if you link to a separate media folder on purpose, name it in `SYMLINK_ALLOWED_ROOTS`.
+
+Sign-in and accounts:
+- **Making an API key and turning on two-factor ask for your password.** API keys can no longer change the password or sign the account out everywhere, and wrong passwords on those forms are limited per account.
+- **Wrong two-factor codes are limited per account,** not only per address, and repeated failures show in Admin → Logs.
+- **"Require two-factor away from home" also applies to sessions started at home.**
+- **From outside, a refused sign-in no longer reveals whether the password was right.** The real reason is in the sign-in history.
+- **Other websites can't call the API from a browser** unless `CORS_ORIGIN` names them (it used to default to any site), and can't attempt sign-ins from a page opened on your home network.
+- **First-time setup only runs when the server is opened by its IP address or a home-network name.**
+- **Backups copied to a second folder no longer include the server's sign-in key** unless you turn that on in Admin → Backups. Anyone who could read that folder could have signed in as an admin. The page warns if an older copy is still there; without the key, a restore asks everyone to sign in and set up two-factor again.
+- **Mistyped usernames (often a password in the wrong box) are no longer kept in full** in the sign-in history.
+
+What accounts can see:
+- **Titles hidden from everyone no longer leak through their ids,** and intro/credits markers of a hidden title aren't readable.
+- **Kids Mode and content-limited accounts** see only libraries that have something for them, can't read settings of series they can't see, and never get adult results from outside searches. Kids Mode accounts can't be editors or search outside the library; outside searches are rate limited per account.
+- **Reading apps no longer see the server's full file paths** unless the account is an admin.
+- **Avatars aren't served to the internet from a home-only server.**
+- **Media links are read-only,** and the script policy for casting is narrowed to the files it needs.
+
+Files and media:
+- **`.cb7`/`.7z` comics are opened with the system's current 7-Zip** instead of a bundled 2016 build, and are checked before unpacking: oversized archives, archives containing links, and files that aren't really 7z are refused. Installs without Docker need the `7zip` package.
+- **Many requests for the same video at once can no longer slip past the conversion limit** and leave conversions running.
+- **Video tools only read local files,** and files that are really playlists or scripts are no longer added to a library or converted.
+- **Crafted files can no longer stall or crash the server:** a malformed Live TV playlist (which is also retried after an hour instead of at every restart), oversized EPUB metadata, hostile book descriptions and ComicInfo files, PDFs claiming absurd page counts, and very large programme guides are all bounded.
+- **A Live TV playlist on your network can't point the relay at the server itself** under another name for localhost.
+- **Progress, bookmarks, highlights and preferences have size limits** and are only kept for titles that exist.
+- **The HTTPS certificate learns new addresses only from signed-in visits,** and re-issuing it no longer pauses the server.
+
+Packaging:
+- **The container drops every root capability it doesn't need** and can't gain privileges after start.
+- **Release images carry a signed build record and a contents list.** Check one with `gh attestation verify oci://ghcr.io/oddomens/plinthio:<tag> --owner OddOmens`. The release pipeline's jobs each get only the permissions they need, every build step is pinned to an exact commit, and only commits on `main` can be released.
+
 ## [1.9.0] - 2026-11-06
 
 ### Added

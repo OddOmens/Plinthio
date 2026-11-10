@@ -9,6 +9,9 @@ if [ "$(id -u)" != "0" ]; then
   exec "$@"
 fi
 
+# Everything from here to `gosu` is the only part that runs as root. docker-compose.yml
+# drops every capability except the ones these lines use (CHOWN, DAC_OVERRIDE, FOWNER,
+# SETUID, SETGID); a new step here that needs another one has to add it there too.
 mkdir -p /config/cache /config/covers
 
 # Only files not already owned by PUID:PGID — a blanket `chown -R` walked every cached

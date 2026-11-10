@@ -128,6 +128,9 @@ async function searchMangaDex(query) {
     return {
       source: 'mangadex',
       externalId: manga.id,
+      // MangaDex's own rating (safe, suggestive, erotica, pornographic). The search route
+      // uses it to keep adult titles away from content-limited accounts.
+      contentRating: attrs.contentRating || null,
       title,
       subtitle: altTitle || null,
       author: authorNames.join(', ') || null,

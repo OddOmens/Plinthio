@@ -12,6 +12,42 @@ import { readBookMetadata } from './bookMetadata.js';
 
 const COMIC_EXTENSIONS = new Set(['.cbz', '.zip', '.cbr', '.rar', '.cb7', '.7z']);
 
+const MAX_COMICINFO_BYTES = 1024 * 1024;
+const MAX_COMICINFO_VALUE = 500;
+
+/**
+ * The text of the first <Tag>…</Tag> in a ComicInfo.xml that opens and closes on one line, in
+ * the shape `String.match` gives (the value at [1]), or null.
+ *
+ * This used to be /<Tag>(.*?)<\/Tag>/i. For a file with many openings and no closing, that
+ * pattern searches on to the end of the line from each opening in turn: 300 KB of "<Title>"
+ * held the scanner for 16 seconds. Here the closing tag and the line break are each looked
+ * for once and remembered, so the text is read through a single time.
+ */
+export function comicInfoField(xml, tag) {
+  const opening = new RegExp(`<${tag}>`, 'gi');
+  const closing = new RegExp(`</${tag}>`, 'gi');
+  let close = -1; // where the next closing tag starts, once known to be past the opening
+  let lineEnd = -1;
+  let m;
+  while ((m = opening.exec(xml))) {
+    const start = opening.lastIndex;
+    if (close < start) {
+      closing.lastIndex = start;
+      const found = closing.exec(xml);
+      if (!found) return null; // nothing further on can close either
+      close = found.index;
+    }
+    if (lineEnd < start) {
+      lineEnd = xml.indexOf('\n', start);
+      if (lineEnd === -1) lineEnd = xml.length;
+    }
+    if (close <= lineEnd) return [xml.slice(m.index, close), xml.slice(start, close).slice(0, MAX_COMICINFO_VALUE)];
+    opening.lastIndex = lineEnd; // this line has no closing; the next candidate is after it
+  }
+  return null;
+}
+
 /**
  * Extract metadata and cover for an audiobook file
  */
@@ -159,15 +195,16 @@ export async function extractMangaMetadata(filePath, itemId) {
     // Check if ComicInfo.xml exists — this overrides our filename-derived values
     const comicInfoEntry = entries.find(entry => path.basename(entry.name).toLowerCase() === 'comicinfo.xml');
     if (comicInfoEntry) {
-      const xmlText = (await readArchiveEntry(filePath, comicInfoEntry.name))?.toString('utf8') || '';
-      const titleMatch = xmlText.match(/<Title>(.*?)<\/Title>/i);
-      const seriesMatch = xmlText.match(/<Series>(.*?)<\/Series>/i);
-      const writerMatch = xmlText.match(/<Writer>(.*?)<\/Writer>/i);
-      const numberMatch = xmlText.match(/<Number>(.*?)<\/Number>/i);
+      // ComicInfo.xml is a page of text; one that claims to be bigger isn't read at all.
+      const xmlText = (await readArchiveEntry(filePath, comicInfoEntry.name, { maxBytes: MAX_COMICINFO_BYTES }))?.toString('utf8') || '';
+      const titleMatch = comicInfoField(xmlText, 'Title');
+      const seriesMatch = comicInfoField(xmlText, 'Series');
+      const writerMatch = comicInfoField(xmlText, 'Writer');
+      const numberMatch = comicInfoField(xmlText, 'Number');
       // ComicInfo's own reading-direction and age-rating fields seed the per-series settings
       // (see routes/series.js) so a tagged library comes in correctly configured.
-      const mangaMatch = xmlText.match(/<Manga>(.*?)<\/Manga>/i);
-      const ageRatingMatch = xmlText.match(/<AgeRating>(.*?)<\/AgeRating>/i);
+      const mangaMatch = comicInfoField(xmlText, 'Manga');
+      const ageRatingMatch = comicInfoField(xmlText, 'AgeRating');
 
       if (titleMatch) result.title = titleMatch[1];
       if (seriesMatch) result.series = seriesMatch[1]; // ComicInfo always wins

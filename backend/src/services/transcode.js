@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import { PlinthioError } from '../errors.js';
 import { logger } from './logger.js';
+import { localInputArgs, isScriptFormat } from './probe.js';
 
 // Codecs a mainstream browser can play from a plain <video> tag. HEVC/H.265 is absent from
 // the base set: Chrome ≥107/Edge/Safari support it, but Firefox does not, and capability
@@ -20,6 +21,8 @@ const PROBE_CACHE_MAX = 500;
 function runFfprobe(filePath) {
   return new Promise((resolve, reject) => {
     const proc = spawn('ffprobe', [
+      // Local files only: see localInputArgs in probe.js.
+      ...localInputArgs(),
       '-v', 'error',
       '-print_format', 'json',
       '-show_format',
@@ -75,6 +78,12 @@ export async function getPlaybackInfo(itemId, filePath, caps = {}) {
     const audioStream = audioStreams[0];
     const subtitleStreams = streams.filter((s) => s.codec_type === 'subtitle');
     const container = probe.format?.format_name || '';
+    // A "video" that is really a playlist or script must never reach ffmpeg (see probe.js).
+    if (isScriptFormat(container)) {
+      const err = new PlinthioError('P304', undefined, { cause: new Error(`"${container}" is a playlist or script, not a media file`) });
+      err.unsafeFormat = true;
+      throw err;
+    }
 
     const videoOk = videoStream ? BROWSER_VIDEO_CODECS.has(videoStream.codec_name) : true;
     const audioOk = audioStream ? BROWSER_AUDIO_CODECS.has(audioStream.codec_name) : true;
@@ -144,6 +153,10 @@ export async function getPlaybackInfo(itemId, filePath, caps = {}) {
     logger.warn('media', `ffprobe failed for item ${itemId}: ${err.message}`);
     info = {
       mode: 'direct',
+      // Nothing is known about this file, so the routes won't hand it to ffmpeg (a remux can
+      // be asked for by URL whatever this says); unsafeFormat marks a refused playlist/script.
+      probeFailed: true,
+      unsafeFormat: err.unsafeFormat === true,
       container: null,
       videoCodec: null,
       audioCodec: null,

@@ -33,11 +33,15 @@ services:
       # (run `id` on the host to see your uid and gid).
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
-      # Set TRUST_PROXY=1 ONLY when Plinthio sits behind a reverse proxy (nginx, Caddy,
-      # Cloudflare tunnel). The Tailscale add-on sets its own, so leave this alone for that. Without it, per-IP rate limits see the proxy's IP for every
-      # request and collapse into one shared bucket; with it set but no proxy in front,
-      # clients can forge X-Forwarded-For and bypass rate limiting entirely.
-      # - TRUST_PROXY=1
+      # Set TRUST_PROXY ONLY when Plinthio sits behind a reverse proxy (nginx, Caddy, a
+      # Cloudflare tunnel), and set it to that proxy's address as Plinthio sees it, or its
+      # subnet (e.g. 172.18.0.5 or 172.18.0.0/16). Not to 1 or true: those believe whatever
+      # connects, including devices that reach port 8088 directly. The Tailscale and
+      # public-address add-ons set their own, so leave this alone for those. Without it,
+      # per-IP rate limits see the proxy's IP for every request and collapse into one shared
+      # bucket; with it set but no proxy in front, clients can forge X-Forwarded-For and
+      # bypass rate limiting entirely.
+      # - TRUST_PROXY=172.18.0.5
       # Optional. The HTTPS certificate picks up the address your devices use on its own
       # (the first time each one opens Plinthio over http://). Set this only to cover an
       # address before anyone visits it, or a public domain, which only counts if it's set
@@ -53,8 +57,27 @@ services:
       # Admins see a banner when a new release is out. The check is a single anonymous
       # request to GitHub every 12 hours; set UPDATE_CHECK=false to turn it off.
       # - UPDATE_CHECK=false
+    # The container starts as root only long enough to hand ./config to PUID:PGID, then
+    # drops to that user for good. These are the only root powers that step uses: change
+    # file owners (CHOWN), get past the permissions of a ./config owned by someone else
+    # (DAC_OVERRIDE, FOWNER), and switch user (SETUID, SETGID). Everything else Docker
+    # grants by default is taken away, and nothing inside can gain privileges later.
+    # Hardware transcoding isn't affected: /dev/dri access comes from group_add below.
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETUID
+      - SETGID
     volumes:
       - ./config:/config
+      # Plinthio never changes your media files. Add :ro to the end of this line to have
+      # Docker enforce that, unless you keep backup copies in a folder under /media
+      # (Admin → Backups → "Also copy backups to"), which needs it writable.
       - ${MEDIA_DIR:-/media/library}:/media
       # Optional: a second place for backups, on another drive, a NAS share or a synced cloud
       # folder. Set BACKUP_DIR in .env, uncomment, `docker compose up -d`, then choose /backups

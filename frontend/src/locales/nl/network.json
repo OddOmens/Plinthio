@@ -28,7 +28,7 @@
   },
   "proxy": {
     "title": "Er staat een proxy voor Plinthio, maar TRUST_PROXY is niet ingesteld",
-    "text": "Elke bezoeker lijkt van de proxy te komen ({from}), meestal een thuisadres, dus toegang van buitenaf is niet te onderscheiden. De add-ons voor Tailscale en een openbaar adres stellen dit voor je in. Zie docs/remote-access.md voor een andere proxy.",
+    "text": "Plinthio kan niet zien waar bezoekers echt vandaan komen, dus iedereen die via de proxy ({from}) binnenkomt, wordt behandeld als buitenshuis. De add-ons voor Tailscale en een openbaar adres stellen dit voor je in. Zie docs/remote-access.md voor een andere proxy.",
     "localAddress": "een lokaal adres"
   },
   "adminsWithout2fa": {

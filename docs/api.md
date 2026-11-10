@@ -38,13 +38,23 @@ catalog (no sign-in needed). See [Error codes](error-codes.md).
 | Scope | Limit |
 | --- | --- |
 | `/api/auth/login`, `/api/auth/login/2fa` | 10 failed attempts per 15 min per address |
+| two-factor codes at `/api/auth/login/2fa` | 10 wrong per 15 min per account (home and away counted separately), then held for 15 min, doubling each time |
+| password confirmations (`PATCH /users/password`, `POST /keys`, `/auth/2fa/*`) | 10 wrong per 15 min per account, then held the same way |
+| `/api/metadata/search`, `/api/metadata/details` | 30 and 60 per minute per account (editors and admins unlimited) |
 | rest of `/api/auth` | 60 per 15 min |
 | general API | 600 per minute |
 | `/api/media`, `/api/opds`, `/api/v1`, `/api/v2`, `/api/kosync` | 1200 per minute |
 | backups | 6 per 15 min |
 
-A limited request gets HTTP 429 with P005 (or P108 for sign-in). Behind a reverse proxy, set
-`TRUST_PROXY` so limits are per client rather than shared.
+A limited request gets HTTP 429 with P005 (or P108 for sign-in and password confirmations).
+Behind a reverse proxy, set `TRUST_PROXY` so limits are per client rather than shared.
+
+## Calling the API from another website
+
+Browsers only let a page on another site read the API if `CORS_ORIGIN` names it (see
+[Configuration](configuration.md)); by default none may. Scripts and apps aren't browsers and
+are unaffected. Session tokens go in the `Authorization` header and say `"typ": "session"`;
+a media token (`?token=` on `/api/media` URLs) can only `GET`.
 
 ## Routes
 
@@ -55,22 +65,23 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 
 | Route | Who | |
 | --- | --- | --- |
-| `GET /auth/setup-status` · `POST /auth/setup` | public | First-run wizard (only while no users exist, and only from the home network). `access: { remoteAccess, tailscaleIsHome, require2faOutside }` sets Admin → Network |
-| `POST /auth/login` · `GET /auth/me` · `POST /auth/refresh` | public / V | Sign in, who am I, renew |
+| `GET /auth/setup-status` · `POST /auth/setup` | public | First-run wizard (only while no users exist, only from the home network, and only when the server is addressed by IP or a home-network name). `access: { remoteAccess, tailscaleIsHome, require2faOutside }` sets Admin → Network |
+| `POST /auth/login` · `GET /auth/me` · `POST /auth/refresh` | public / V | Sign in, who am I, renew. From outside the home network every refused sign-in is P107, whatever the reason |
 | `POST /auth/media-token` | V | Media token for URLs |
-| `POST /auth/sign-out-everywhere` | V | Revoke every token for your account |
-| `POST /auth/login/2fa` | public | Second step of a two-factor sign-in: `{ challenge, code }` or `{ challenge, recoveryCode }`. Five tries per challenge (P111, then P113) |
+| `POST /auth/sign-out-everywhere` | V (session only, not API keys) | Revoke every token for your account and delete its API keys. Returns `apiKeysRevoked` |
+| `POST /auth/login/2fa` | public | Second step of a two-factor sign-in: `{ challenge, code }` or `{ challenge, recoveryCode }`. Five tries per challenge (P111, then P113); ten wrong codes for one account hold it (P108) |
 | `GET /auth/access` | public | Whether this device is home, Tailscale or outside, and whether it may sign in from there |
-| `GET /auth/2fa` · `POST /auth/2fa/setup` · `/2fa/enable` · `/2fa/disable` · `/2fa/recovery-codes` | V (session only, not API keys) | Two-factor for your own account: status, start (returns the `otpauth://` link and key), confirm with `{ code }` (this signs out every other session and returns a fresh `token` and `mediaToken` for this one), turn off or make new backup codes with `{ password, code }` (or `recoveryCode`) |
-| `PATCH /users/preferences` · `PATCH /users/password` | V | Your preferences (merged, not replaced) and password. `hiddenLibraries` (library ids) and `hideKids` (true/false) hide whole libraries and kids content from you |
-| `POST /users/avatar` · `DELETE /users/avatar` · `GET /users/:id/avatar` | V | Profile picture |
-| `GET /keys` · `POST /keys` · `DELETE /keys/:id` | V (session only, not API keys) | Your API keys (a new key is returned once) |
+| `GET /auth/2fa` · `POST /auth/2fa/setup` · `/2fa/enable` · `/2fa/disable` · `/2fa/recovery-codes` | V (session only, not API keys) | Two-factor for your own account: status, start with `{ password }` (returns the `otpauth://` link and key; P107 for a wrong password), confirm with `{ code }` (this signs out every other session and returns a fresh `token` and `mediaToken` for this one), turn off or make new backup codes with `{ password, code }` (or `recoveryCode`) |
+| `PATCH /users/preferences` | V | Your preferences (merged, not replaced; any keys, up to 64 KB in all). `hiddenLibraries` (library ids) and `hideKids` (true/false) hide whole libraries and kids content from you |
+| `PATCH /users/password` | V (session only, not API keys) | `{ currentPassword, newPassword, revokeApiKeys? }`. Signs out every session. API keys are kept unless `revokeApiKeys` is `true`; the answer has `apiKeys` (how many remain) and `apiKeysRevoked`. A wrong current password is P107 |
+| `POST /users/avatar` · `DELETE /users/avatar` · `GET /users/:id/avatar` | V | Profile picture. Reading one needs no sign-in (an `<img>` can't send one), but a home-only server refuses it from outside |
+| `GET /keys` · `POST /keys` · `DELETE /keys/:id` | V (session only, not API keys) | Your API keys. Making one takes `{ name, password }` (your account password; P107 if it's wrong or missing) and returns the key once |
 
 ### Library and titles
 
 | Route | Who | |
 | --- | --- | --- |
-| `GET /libraries` | V | Libraries with visible item counts |
+| `GET /libraries` | V | Libraries with item counts. A Kids Mode or content-limited account gets only the libraries it can see something in, counted by what it can see |
 | `POST /libraries` · `DELETE /libraries/:id` · `POST /libraries/:id/scan` · `GET /libraries/browse` | A | Manage libraries and scans |
 | `PATCH /libraries/:id` `{ kidsAllowed, ignoreMissingMetadata }` | E | Kids Mode for a whole library; stop flagging its missing posters and details |
 | `GET /items` | V | Visible titles. Filters: `libraryId`, `mediaType`, `author`, `series`, `search`, `progress` (`unread`, `in_progress`, `finished`, `skipped`), `genre`, `addedWithinDays`, `sort`, `limit`, `offset` |
@@ -79,8 +90,8 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `POST /items/series/:name/mark-read` · `/mark-unread` | V | Whole series |
 | `GET /items/genres` · `/items/authors` · `/items/folders` | V | Filter data and disk folders |
 | `POST /items/:id/hide` · `/unhide` (`{ global: true }` for admins) | V / A | Hide for yourself, or for everyone |
-| `GET /items/hidden` | V | What you've hidden |
-| `GET /series/:libraryId/:name/settings` · `PUT` | V / E | Series name, reading direction, age rating |
+| `GET /items/hidden` | V | What you've hidden (never a title an admin has hidden from everyone, unless you're an admin) |
+| `GET /series/:libraryId/:name/settings` · `PUT` | V / E | Series name, reading direction, age rating. A series the account can see no title of answers with the defaults, like one that doesn't exist |
 | `GET /kids` · `GET /kids/status` · `POST /kids/titles` · `DELETE /kids/titles/:id` | E | Kids Mode series and titles |
 
 ### Progress, bookmarks, ratings
@@ -88,13 +99,13 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | Route | Who | |
 | --- | --- | --- |
 | `GET /progress/continue` | V | Continue row |
-| `GET /progress/:itemId` · `POST /progress/:itemId` | V | Read or save a position (`currentTime`/`duration`, or `currentPage`/`totalPages`, or `isFinished`; `cfi` for EPUB; `playbackRate` for audio) |
+| `GET /progress/:itemId` · `POST /progress/:itemId` | V | Read or save a position (`currentTime`/`duration`, or `currentPage`/`totalPages`, or `isFinished`; `cfi` for EPUB; `playbackRate` for audio). Saving needs a title that exists and that the account may see (404 otherwise) |
 | `POST /progress/finish` `{ itemIds, finished }` | V | Mark several finished or not started (mark read up to here) |
 | `POST /progress/skip` `{ itemIds, skipped }` | V | Skip or unskip volumes |
-| `GET /bookmarks/:itemId` · `POST /bookmarks` · `PATCH`/`DELETE /bookmarks/:id` | V | Bookmarks and notes |
+| `GET /bookmarks/:itemId` · `POST /bookmarks` · `PATCH`/`DELETE /bookmarks/:id` | V | Bookmarks and notes, on titles that exist and that the account may see. Up to 500 per title; title 300 characters, note 5000 |
 | `GET /highlights/:itemId` · `POST /highlights` · `PATCH`/`DELETE /highlights/:id` | V | EPUB highlights: `cfiRange`, `text`, `color` (yellow, green, blue, pink, orange), optional `note`. Each person sees only their own |
 | `GET /ratings/:itemId` · `PUT` `{ rating }` · `DELETE` | V | Your stars, the community average and TMDB's score (as enabled) |
-| `POST /activity/start` · `/end` · `GET /activity/me` · `GET /activity/admin` | V / A | Reading and watching sessions, sign-in history |
+| `POST /activity/start` · `/end` · `GET /activity/me` · `GET /activity/admin` | V / A | Reading and watching sessions (`start` answers 404 for a title that doesn't exist or that the account may not see), sign-in history |
 | `GET /stats/me` · `GET /stats/admin` | V / A | Statistics |
 
 ### Media (accept `?token=` media tokens)
@@ -133,7 +144,7 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 
 | Route | Who | |
 | --- | --- | --- |
-| `GET /metadata/search?mediaType=&query=&year=&language=` | V | Search providers. For books, `language` picks Open Library's edition, and `notices` lists a provider that didn't answer and why (`quota`, `rejected`, `unreachable`) |
+| `GET /metadata/search?mediaType=&query=&year=&language=` | V (not Kids Mode) | Search providers; 30 a minute per account unless you're an editor. Results a provider marks as adult are never returned to a content-limited account. For books, `language` picks Open Library's edition, and `notices` lists a provider that didn't answer and why (`quota`, `rejected`, `unreachable`) |
 | `GET /metadata/details?source=&externalId=&isbn=&region=` | V | The rest of one search result: Open Library's description, Audnexus's ISBN and genres for Audible, a Comic Vine series' creators |
 | `POST /metadata/apply/:itemId` · `/metadata/cover/:itemId` · `/metadata/series-cover` | E | Apply a match, upload covers |
 | `GET /metadata/admin/items` · `POST /metadata/admin/match-single/:itemId` · `/batch-match` · `/batch-clean-titles` · `/ignore-missing` `{ itemIds, ignored }` | E | Bulk tools |

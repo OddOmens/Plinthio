@@ -6,8 +6,20 @@
 //   #EXTVLCOPT:http-referrer=https://example.com/
 //   https://example.com/news/index.m3u8
 
+// A playlist is whatever the address returned, so it is read within limits. A line longer
+// than this is not a channel (real ones are a few hundred characters, with the odd 2 KB
+// stream address) and is dropped unread; a playlist with more channels than this is cut off.
+export const MAX_LINE_LENGTH = 8192;
+export const MAX_CHANNELS = 100000;
+// The parser hands the event loop back after this many lines, so the server keeps answering
+// requests while a 20 MB playlist is read (see parseM3uAsync).
+const LINES_PER_SLICE = 2000;
+
 // Attributes as `key="value"`; some playlists leave values unquoted, which is tolerated.
-const ATTRIBUTE_RE = /([A-Za-z][\w-]*)=(?:"([^"]*)"|([^\s,"]+))/g;
+// A key starts where a word starts (the lookbehind): without that, a long run of letters with
+// no "=" is scanned to its end again from every letter in it, which on one hostile 80 KB
+// line held the whole server for 15 seconds.
+const ATTRIBUTE_RE = /(?<![\w-])([A-Za-z][\w-]*)=(?:"([^"]*)"|([^\s,"]+))/g;
 
 function parseAttributes(text) {
   const attrs = {};
@@ -44,7 +56,10 @@ const TAG_DROP = /^(geo-?blocked|not 24\/7)$/i;
 export function cleanChannelName(raw) {
   let geoBlocked = false;
   const name = String(raw || '')
-    .replace(/\s*\[([^\]]*)\]/g, (whole, inner) => {
+    // "[" up to the next "]" with no "[" between, and no leading-space match: either would
+    // make a run of "[" (or of spaces) cost its length squared. The space a rewritten tag is
+    // given back is squeezed with the rest just below.
+    .replace(/\[([^[\]]*)\]/g, (whole, inner) => {
       const parts = inner.split(';').map((p) => p.trim()).filter(Boolean);
       if (parts.some((p) => TAG_GEO.test(p))) geoBlocked = true;
       const kept = parts.filter((p) => !TAG_DROP.test(p));
@@ -88,36 +103,61 @@ function playlistLanguages(value) {
   return [...new Set(codes)].slice(0, 20);
 }
 
-/**
- * Parses an M3U playlist. Returns null when `text` isn't one, else
- *   { guideUrls: [string], channels: [{ stableKey, tvgId, name, logo, groups, url, geoBlocked, headers,
- *     country, languages }] }
- * `stableKey` (the tvg-id, else the name) is unique within the playlist, so a channel keeps
- * its identity — and the admin's hide / kids choices — across refreshes.
- */
-export function parseM3u(text) {
-  const lines = String(text || '').replace(/^﻿/, '').split(/\r?\n/);
-  const firstLine = lines.find((l) => l.trim());
-  if (!firstLine || !firstLine.trim().startsWith('#EXTM3U')) return null;
+// Lines one at a time, without first cutting a 20 MB text into an array of them.
+function* linesOf(text) {
+  let pos = 0;
+  while (pos <= text.length) {
+    let end = text.indexOf('\n', pos);
+    if (end === -1) end = text.length;
+    const stop = end > pos && text[end - 1] === '\r' ? end - 1 : end;
+    // An over-long line is passed on as null: counted, never copied or looked into.
+    yield stop - pos > MAX_LINE_LENGTH ? null : text.slice(pos, stop);
+    pos = end + 1;
+  }
+}
 
-  const header = parseAttributes(firstLine.trim().slice('#EXTM3U'.length));
-  const guideUrls = (header['x-tvg-url'] || header['url-tvg'] || header['tvg-url'] || '')
-    .split(',')
-    .map((u) => u.trim())
-    .filter((u) => /^https?:\/\//i.test(u));
-
+// The reading itself, one line at a time, so it can be run straight through (parseM3u) or
+// in slices (parseM3uAsync).
+function playlistReader() {
   const channels = [];
   const usedKeys = new Map();
+  let guideUrls = [];
+  let started = false; // seen the first non-blank line
+  let isPlaylist = false;
   let pending = null;
+  let skippedLines = 0;
+  let truncated = false;
 
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line) continue;
-    if (line.startsWith('#EXTINF')) {
-      const { attrs, name } = parseExtinf(line);
+  // Returns false once there is no point reading further.
+  function line(rawLine) {
+    if (rawLine === null) {
+      skippedLines++;
+      if (!started) {
+        started = true; // a playlist doesn't open with a line like that
+        return false;
+      }
+      // Whatever it was, the address after it mustn't be given to the wrong channel.
+      pending = null;
+      return true;
+    }
+    const text = rawLine.trim();
+    if (!text) return true;
+    if (!started) {
+      started = true;
+      if (!text.startsWith('#EXTM3U')) return false;
+      isPlaylist = true;
+      const header = parseAttributes(text.slice('#EXTM3U'.length));
+      guideUrls = (header['x-tvg-url'] || header['url-tvg'] || header['tvg-url'] || '')
+        .split(',')
+        .map((u) => u.trim())
+        .filter((u) => /^https?:\/\//i.test(u));
+      return true;
+    }
+    if (text.startsWith('#EXTINF')) {
+      const { attrs, name } = parseExtinf(text);
       pending = { attrs, name, group: null, headers: {} };
-    } else if (line.startsWith('#EXTVLCOPT:') && pending) {
-      const opt = line.slice('#EXTVLCOPT:'.length);
+    } else if (text.startsWith('#EXTVLCOPT:') && pending) {
+      const opt = text.slice('#EXTVLCOPT:'.length);
       const eq = opt.indexOf('=');
       if (eq > 0) {
         const key = opt.slice(0, eq).trim().toLowerCase();
@@ -125,11 +165,15 @@ export function parseM3u(text) {
         if (key === 'http-user-agent' && value) pending.headers.userAgent = value;
         if ((key === 'http-referrer' || key === 'http-referer') && value) pending.headers.referrer = value;
       }
-    } else if (line.startsWith('#EXTGRP:') && pending) {
-      pending.group = line.slice('#EXTGRP:'.length).trim();
-    } else if (line.startsWith('#')) {
-      continue;
+    } else if (text.startsWith('#EXTGRP:') && pending) {
+      pending.group = text.slice('#EXTGRP:'.length).trim();
+    } else if (text.startsWith('#')) {
+      return true;
     } else if (pending) {
+      if (channels.length >= MAX_CHANNELS) {
+        truncated = true;
+        return false;
+      }
       const { attrs } = pending;
       const { name, geoBlocked } = cleanChannelName(pending.name || attrs['tvg-name'] || '');
       const displayName = name || attrs['tvg-name'] || attrs['tvg-id'] || 'Channel';
@@ -151,7 +195,7 @@ export function parseM3u(text) {
         name: displayName,
         logo: /^https?:\/\//i.test(attrs['tvg-logo'] || '') ? attrs['tvg-logo'] : null,
         groups,
-        url: line,
+        url: text,
         geoBlocked,
         headers: pending.headers,
         country: playlistCountry(attrs['tvg-country']),
@@ -159,7 +203,43 @@ export function parseM3u(text) {
       });
       pending = null;
     }
+    return true;
   }
 
-  return { guideUrls, channels };
+  return {
+    line,
+    result: () => (isPlaylist ? { guideUrls, channels, skippedLines, truncated } : null)
+  };
+}
+
+const withoutBom = (text) => String(text || '').replace(/^﻿/, '');
+
+/**
+ * Parses an M3U playlist. Returns null when `text` isn't one, else
+ *   { guideUrls: [string], channels: [{ stableKey, tvgId, name, logo, groups, url, geoBlocked, headers,
+ *     country, languages }], skippedLines, truncated }
+ * `stableKey` (the tvg-id, else the name) is unique within the playlist, so a channel keeps
+ * its identity — and the admin's hide / kids choices — across refreshes. `skippedLines` counts
+ * lines over MAX_LINE_LENGTH; `truncated` says the playlist had more than MAX_CHANNELS.
+ */
+export function parseM3u(text) {
+  const reader = playlistReader();
+  for (const line of linesOf(withoutBom(text))) {
+    if (!reader.line(line)) break;
+  }
+  return reader.result();
+}
+
+/**
+ * parseM3u for a playlist that may be large: the same result, read a slice at a time with
+ * the event loop given a turn between slices.
+ */
+export async function parseM3uAsync(text) {
+  const reader = playlistReader();
+  let count = 0;
+  for (const line of linesOf(withoutBom(text))) {
+    if (!reader.line(line)) break;
+    if (++count % LINES_PER_SLICE === 0) await new Promise((resolve) => setImmediate(resolve));
+  }
+  return reader.result();
 }

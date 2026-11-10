@@ -11,7 +11,9 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: '0.0.0.0',
+    // Only this computer by default: the dev server has no sign-in of its own and serves the
+    // source tree. To try a build from a phone on your network: VITE_HOST=0.0.0.0 npm run dev
+    host: process.env.VITE_HOST || '127.0.0.1',
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

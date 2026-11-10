@@ -5,6 +5,7 @@ import path from 'path';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { startTestServer, setupAdmin, authed, getJson } from './helpers/server.js';
+import { seedItems } from './helpers/seed.js';
 
 async function sendJson(baseUrl, method, p, token, body) {
   const res = await fetch(`${baseUrl}/api${p}`, {
@@ -34,6 +35,8 @@ describe('reading notes are private, and backups keep them', () => {
   before(async () => {
     server = await startTestServer();
     ({ token: adminToken } = await setupAdmin(server.baseUrl));
+    // Bookmarks and highlights are only kept for a title that exists: seed-00000.
+    await seedItems(server.dataDir, 1, { mediaType: 'book', libraryType: 'books' });
     const alice = await sendJson(server.baseUrl, 'POST', '/users', adminToken, { username: 'alice', password: 'alice-password-1' });
     aliceId = alice.body.user?.id || alice.body.id;
     await sendJson(server.baseUrl, 'POST', '/users', adminToken, { username: 'bob', password: 'bob-password-1' });
@@ -45,26 +48,26 @@ describe('reading notes are private, and backups keep them', () => {
 
   test("bookmarks: another reader can't list, edit or delete them", async () => {
     const { body: { bookmark } } = await sendJson(server.baseUrl, 'POST', '/bookmarks', aliceToken, {
-      itemId: 'shared-book', type: 'book', position: 10, title: 'Chapter 2', cfi: 'epubcfi(/6/4!/4/2/1:0)'
+      itemId: 'seed-00000', type: 'book', position: 10, title: 'Chapter 2', cfi: 'epubcfi(/6/4!/4/2/1:0)'
     });
-    const mine = await getJson(server.baseUrl, '/bookmarks/shared-book', aliceToken);
+    const mine = await getJson(server.baseUrl, '/bookmarks/seed-00000', aliceToken);
     assert.equal(mine.body.bookmarks.length, 1);
 
-    const theirs = await getJson(server.baseUrl, '/bookmarks/shared-book', bobToken);
+    const theirs = await getJson(server.baseUrl, '/bookmarks/seed-00000', bobToken);
     assert.equal(theirs.body.bookmarks.length, 0);
-    const adminView = await getJson(server.baseUrl, '/bookmarks/shared-book', adminToken);
+    const adminView = await getJson(server.baseUrl, '/bookmarks/seed-00000', adminToken);
     assert.equal(adminView.body.bookmarks.length, 0, 'not even an admin sees them');
     assert.equal((await sendJson(server.baseUrl, 'PATCH', `/bookmarks/${bookmark.id}`, bobToken, { title: 'mine now' })).status, 404);
     assert.equal((await sendJson(server.baseUrl, 'DELETE', `/bookmarks/${bookmark.id}`, bobToken)).status, 404);
-    assert.equal((await getJson(server.baseUrl, '/bookmarks/shared-book', aliceToken)).body.bookmarks[0].title, 'Chapter 2');
+    assert.equal((await getJson(server.baseUrl, '/bookmarks/seed-00000', aliceToken)).body.bookmarks[0].title, 'Chapter 2');
   });
 
   test("highlights: an admin can't see a reader's highlights either", async () => {
     await sendJson(server.baseUrl, 'POST', '/highlights', aliceToken, {
-      itemId: 'shared-book', cfiRange: 'epubcfi(/6/4!/4/2,/1:0,/1:9)', text: 'Private passage', note: 'my note'
+      itemId: 'seed-00000', cfiRange: 'epubcfi(/6/4!/4/2,/1:0,/1:9)', text: 'Private passage', note: 'my note'
     });
-    assert.equal((await getJson(server.baseUrl, '/highlights/shared-book', adminToken)).body.highlights.length, 0);
-    assert.equal((await getJson(server.baseUrl, '/highlights/shared-book', bobToken)).body.highlights.length, 0);
+    assert.equal((await getJson(server.baseUrl, '/highlights/seed-00000', adminToken)).body.highlights.length, 0);
+    assert.equal((await getJson(server.baseUrl, '/highlights/seed-00000', bobToken)).body.highlights.length, 0);
   });
 
   test('backups are on by default, and a backup holds bookmarks, highlights and reader settings', async () => {
@@ -77,7 +80,7 @@ describe('reading notes are private, and backups keep them', () => {
 
     const snapshot = await open({ filename: path.join(server.dataDir, 'backups', created.body.backup.filename), driver: sqlite3.Database, mode: sqlite3.OPEN_READONLY });
     try {
-      assert.equal((await snapshot.get("SELECT COUNT(*) AS n FROM bookmarks WHERE item_id = 'shared-book'")).n, 1);
+      assert.equal((await snapshot.get("SELECT COUNT(*) AS n FROM bookmarks WHERE item_id = 'seed-00000'")).n, 1);
       assert.equal((await snapshot.get("SELECT note FROM highlights WHERE text = 'Private passage'")).note, 'my note');
       const prefs = JSON.parse((await snapshot.get("SELECT preferences FROM users WHERE username = 'alice'")).preferences);
       assert.deepEqual(prefs.ebookReader, { theme: 'sepia', fontSize: 22 });
@@ -132,13 +135,50 @@ describe('reading notes are private, and backups keep them', () => {
     const copies = fs.readdirSync(path.join(dest, 'database'));
     assert.equal(copies.filter((f) => !f.includes('-before-')).length, 2, 'the destination keeps its own count');
     assert.equal(copies.filter((f) => f.includes('-before-')).length, 3, 'pre-upgrade snapshots go too');
-    const secret = path.join(dest, 'files', 'jwt.secret');
-    assert.equal(fs.readFileSync(secret, 'utf8'), 'secret-for-the-copy-test');
-    assert.equal(fs.statSync(secret).mode & 0o777, 0o600);
     assert.equal(fs.readFileSync(path.join(dest, 'files', 'avatars', 'someone.webp'), 'utf8'), 'img');
     const { body: cfg } = await getJson(server.baseUrl, '/settings/backup/config', adminToken);
     assert.ok(cfg.lastCopyAt);
     assert.equal(cfg.lastCopyError, null);
+
+    // The server key signs every sign-in, so it stays out of the backup folder unless asked for.
+    const secret = path.join(dest, 'files', 'jwt.secret');
+    assert.equal(saved.body.copyServerKey, false, 'off by default');
+    assert.equal(fs.existsSync(secret), false, 'the server key is not copied by default');
+    assert.equal(cfg.serverKeyAtDestination, false);
+  });
+
+  test('the server key is copied only when asked for, and a copy left behind is reported, not deleted', async () => {
+    const { body: cfg } = await getJson(server.baseUrl, '/settings/backup/config', adminToken);
+    const secret = path.join(cfg.destination, 'files', 'jwt.secret');
+    const put = (extra) => sendJson(server.baseUrl, 'PUT', '/settings/backup/config', adminToken, {
+      enabled: true, intervalHours: 24, retentionCount: 7, copyRetentionCount: 2, copyFiles: true, ...extra
+    });
+    const copy = () => sendJson(server.baseUrl, 'POST', '/settings/backup/copy', adminToken);
+
+    assert.equal((await put({ copyServerKey: 'yes' })).body.copyServerKey, false, 'only a real true turns it on');
+
+    const on = await put({ copyServerKey: true });
+    assert.equal(on.body.copyServerKey, true);
+    assert.equal((await copy()).status, 200);
+    assert.equal(fs.readFileSync(secret, 'utf8'), 'secret-for-the-copy-test');
+    assert.equal(fs.statSync(secret).mode & 0o777, 0o600);
+
+    // Turned off again: the copy already there (as one from an older version would be) is
+    // left alone and no longer refreshed, and the settings and the folder check both say so.
+    fs.writeFileSync(secret, 'an-older-copy', { mode: 0o600 });
+    const off = await put({ copyServerKey: false });
+    assert.equal(off.body.copyServerKey, false);
+    assert.equal(off.body.serverKeyAtDestination, true);
+    assert.equal((await copy()).status, 200);
+    assert.equal(fs.readFileSync(secret, 'utf8'), 'an-older-copy', 'not refreshed, not deleted');
+    const check = await sendJson(server.baseUrl, 'POST', '/settings/backup/destination/check', adminToken, { path: cfg.destination });
+    assert.equal(check.body.serverKeyPresent, true);
+
+    // Leaving the field out keeps the setting as it is.
+    assert.equal((await put({})).body.copyServerKey, false);
+
+    fs.unlinkSync(secret);
+    assert.equal((await getJson(server.baseUrl, '/settings/backup/config', adminToken)).body.serverKeyAtDestination, false);
   });
 
   test("an unreachable destination doesn't stop the backup, and says why", async () => {

@@ -58,7 +58,7 @@ export const ERROR_CODES = {
     title: 'Too many requests',
     message: 'Too many requests, slow down and try again shortly',
     meaning: 'A rate limit was hit.',
-    fix: 'Wait a minute and try again. If many people share one IP behind a reverse proxy, set TRUST_PROXY=1 so they are limited separately.'
+    fix: 'Wait a minute and try again. If many people share one IP behind a reverse proxy, set TRUST_PROXY to the proxy\'s address so they are limited separately.'
   },
   P006: {
     status: 503,

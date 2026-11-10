@@ -49,6 +49,13 @@ test('two-factor: turn it on in Settings, then sign in with a code and with a ba
   // Settings → Security → Turn on two-factor.
   await page.goto('/settings?tab=account');
   await page.getByRole('button', { name: 'Turn on two-factor' }).click();
+  // It asks for the password first, and a wrong one goes no further.
+  await page.getByLabel('Password', { exact: true }).fill('not-the-password');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByLabel('Password', { exact: true })).toHaveValue(''); // answered, and cleared
+  await expect(page.getByAltText('QR code for your authenticator app')).toHaveCount(0);
+  await page.getByLabel('Password', { exact: true }).fill(USER.password);
+  await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByAltText('QR code for your authenticator app')).toBeVisible();
   const secret = (await page.locator('code').filter({ hasText: /^[A-Z2-7 ]{20,}$/ }).first().textContent()).trim();
 

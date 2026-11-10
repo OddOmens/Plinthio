@@ -136,7 +136,10 @@
       "otherDisk": "Está en un disco distinto al de los datos del servidor.",
       "hint": "Una carpeta tal como la ve el servidor. En Docker: cualquier lugar bajo {media} que no sea de solo lectura, u otra unidad montada en {backups} (Documentos → Backups & Data Safety).",
       "keepThere": "Conservar allí",
-      "copyFiles": "Copiar también las fotos de perfil, las portadas, la clave de inicio de sesión y los certificados HTTPS",
+      "copyFiles": "Copiar también las fotos de perfil, las portadas y los certificados HTTPS",
+      "copyServerKey": "Copiar también la clave de inicio de sesión",
+      "copyServerKeyWhy": "Desactivado: tras restaurar en un servidor nuevo, todos vuelven a iniciar sesión y a configurar la verificación en dos pasos. Activado: la restauración también recupera eso, pero cualquiera que pueda abrir la carpeta de copias puede iniciar sesión con cualquier cuenta. Actívalo solo para una carpeta que nadie más pueda leer.",
+      "serverKeyFound": "Hay una copia antigua de la clave de inicio de sesión en esta carpeta ({file}). Cualquiera que pueda abrir la carpeta puede usarla para iniciar sesión con cualquier cuenta. Elimina ese archivo o muévelo a un lugar privado.",
       "couldNotCheck": "No se pudo comprobar esa carpeta",
       "pickerTitle": "Copiar las copias en"
     },

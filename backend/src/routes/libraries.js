@@ -8,6 +8,7 @@ import { scanLibrary } from '../services/scanner.js';
 import { logger } from '../services/logger.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
+import { knownSql, isLimitedAccount } from '../services/visibility.js';
 
 const router = express.Router();
 
@@ -37,16 +38,20 @@ export function resolveLibraryPath(inputPath) {
   return p;
 }
 
-// List libraries with total items count
+// List libraries with total items count. A Kids Mode or age-limited account gets only the
+// libraries it can see something in, counted by what it can see: the name of a library
+// ("Horror", "Dad's films") and how much is in it say plenty about what's being kept from it.
 router.get('/', handle(async (req, res) => {
   const db = await getDb();
-  const libraries = await db.all(`
+  const limited = isLimitedAccount(req.user);
+  let libraries = await db.all(`
       SELECT l.*, COUNT(i.id) as item_count
       FROM libraries l
-      LEFT JOIN items i ON l.id = i.library_id AND i.missing_since IS NULL AND i.extra_type IS NULL
+      LEFT JOIN items i ON l.id = i.library_id AND i.missing_since IS NULL AND i.extra_type IS NULL${limited ? knownSql(req.user, 'i') : ''}
       GROUP BY l.id
       ORDER BY l.name ASC
     `);
+  if (limited) libraries = libraries.filter((lib) => lib.item_count > 0);
   // Mount paths are server layout; only admins (who manage libraries) need them.
   if (req.user.role !== 'admin') {
     for (const lib of libraries) delete lib.path;

@@ -15,9 +15,22 @@
           <p>{{ $t('auth.twoFactor.off.text') }}</p>
         </div>
       </div>
-      <button type="button" @click="start" :disabled="busy" class="self-start h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50 flex items-center gap-2">
-        <Loader2 v-if="busy" class="w-4 h-4 animate-spin" />
-        <ShieldCheck v-else class="w-4 h-4" />
+      <!-- Turning it on asks for the password first, as turning it off does: someone at an
+           unlocked browser can't tie the account to their own phone. -->
+      <form v-if="asking" @submit.prevent="start" class="flex flex-col gap-2 p-3 rounded-xl border border-border bg-muted/20">
+        <p class="text-sm text-foreground font-medium">{{ $t('auth.twoFactor.turnOn') }}</p>
+        <p class="text-xs text-muted-foreground">{{ $t('auth.twoFactor.off.confirmIt') }}</p>
+        <input v-model="confirmPassword" type="password" autocomplete="current-password" :placeholder="$t('common.password')" :aria-label="$t('common.password')" class="h-10 px-3 rounded-lg bg-background border border-border text-sm text-foreground" />
+        <div class="flex gap-2">
+          <button type="submit" :disabled="busy || !confirmPassword" class="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50 flex items-center gap-2">
+            <Loader2 v-if="busy" class="w-4 h-4 animate-spin" />
+            {{ $t('common.continue') }}
+          </button>
+          <button type="button" @click="asking = false; error = ''" class="h-9 px-3 rounded-lg text-sm text-muted-foreground hover:text-foreground">{{ $t('common.cancel') }}</button>
+        </div>
+      </form>
+      <button v-else type="button" @click="asking = true; confirmPassword = ''; error = ''" class="self-start h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-2">
+        <ShieldCheck class="w-4 h-4" />
         {{ $t('auth.twoFactor.turnOn') }}
       </button>
     </template>
@@ -159,6 +172,8 @@ const saved = ref(false);
 const copied = ref('');
 const action = ref(null); // disable | codes
 const confirmPassword = ref('');
+// Off, and the password is being asked for before setup starts.
+const asking = ref(false);
 
 const groupedSecret = computed(() => (setup.value.secret.match(/.{1,4}/g) || []).join(' '));
 
@@ -178,15 +193,18 @@ async function start() {
   busy.value = true;
   error.value = '';
   try {
-    setup.value = (await api.post('/auth/2fa/setup')).data;
+    setup.value = (await api.post('/auth/2fa/setup', { password: confirmPassword.value })).data;
     // Drawn here, from the otpauth link: the secret never goes to a QR service.
     qr.value = await QRCode.toDataURL(setup.value.uri, { margin: 1, width: 352, errorCorrectionLevel: 'M' });
     code.value = '';
+    asking.value = false;
     stage.value = 'scan';
   } catch (err) {
+    // A wrong password lands here too, and is shown under the form.
     error.value = err.response?.data?.error || t('auth.twoFactor.errors.start');
   } finally {
     busy.value = false;
+    confirmPassword.value = '';
   }
 }
 

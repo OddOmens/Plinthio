@@ -13,6 +13,7 @@ import {
   checkDestination,
   copyToDestination,
   getBackupFilePath,
+  serverKeyAtDestination,
   deleteBackupFile
 } from '../services/backup.js';
 import { getAutoScanSettings, saveAutoScanSettings } from '../services/autoScan.js';
@@ -243,12 +244,18 @@ router.get('/backup', authenticateToken, requireAdmin, async (req, res) => {
 // Admin endpoint: read the automatic backup schedule (enabled, interval, retention)
 router.get('/backup/config', authenticateToken, requireAdmin, handle(async (req, res) => {
   const settings = await getBackupSettings();
-  res.json(settings);
+  res.json(withServerKeyStatus(settings));
 }));
+
+// Adds whether a copy of the server key (jwt.secret) is in the backup folder, so the page can
+// warn about one left there by an earlier version or by a setting since turned off.
+function withServerKeyStatus(settings) {
+  return { ...settings, serverKeyAtDestination: serverKeyAtDestination(settings.destination) };
+}
 
 // Admin endpoint: update the automatic backup schedule
 router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) => {
-  const { enabled, intervalHours, retentionCount, destination, copyRetentionCount, copyFiles } = req.body;
+  const { enabled, intervalHours, retentionCount, destination, copyRetentionCount, copyFiles, copyServerKey } = req.body;
 
   const parsedInterval = parseInt(intervalHours, 10);
   const parsedRetention = parseInt(retentionCount, 10);
@@ -284,13 +291,16 @@ router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) =
       retentionCount: parsedRetention,
       destination: cleanDestination,
       copyRetentionCount: parsedCopyRetention,
-      copyFiles: copyFiles === undefined ? undefined : !!copyFiles
+      copyFiles: copyFiles === undefined ? undefined : !!copyFiles,
+      // Only a real `true` turns this on: it puts the key that signs every sign-in into the
+      // backup folder, so nothing loosely truthy should.
+      copyServerKey: copyServerKey === undefined ? undefined : copyServerKey === true
     });
     // A new destination gets the existing backups straight away, not at the next backup.
     if (settings.destination && settings.destination !== before.destination) {
       copyToDestination().catch(() => {});
     }
-    res.json({ message: 'Backup schedule updated', ...settings });
+    res.json({ message: 'Backup schedule updated', ...withServerKeyStatus(settings) });
   } catch (err) {
     serverError(req, res, err);
   }

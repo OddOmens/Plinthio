@@ -84,7 +84,8 @@
       "change": "Cambiar contraseña",
       "changing": "Cambiando…",
       "changed": "Contraseña cambiada. Vuelve a iniciar sesión con tu nueva contraseña.",
-      "changeFailed": "No se pudo cambiar tu contraseña"
+      "changeFailed": "No se pudo cambiar tu contraseña",
+      "revokeKeys": "Revocar también mis claves de API. Las apps que usen una necesitarán una clave nueva."
     },
     "twoFactor": {
       "title": "Verificación en dos pasos",
@@ -92,11 +93,11 @@
     },
     "devices": {
       "title": "Dispositivos con sesión iniciada",
-      "desc": "Cada teléfono, navegador y TV en el que has iniciado sesión la mantiene abierta. Si iniciaste sesión en algún sitio que ya no controlas, cierra sesión en todas partes.",
+      "desc": "Cada teléfono, navegador y TV en el que has iniciado sesión la mantiene abierta. Si iniciaste sesión en algún sitio que ya no controlas, cierra sesión en todas partes. También se revocan tus claves de API.",
       "signOutAll": "Cerrar sesión en todos los dispositivos",
       "signingOut": "Cerrando sesión…",
       "confirmTitle": "Cerrar sesión en todas partes",
-      "confirmMessage": "Se cerrará la sesión de inmediato en todos los dispositivos conectados a esta cuenta, incluido este.",
+      "confirmMessage": "Se cerrará la sesión de inmediato en todos los dispositivos conectados a esta cuenta, incluido este. Tus claves de API también dejan de funcionar, así que las apps que usen una necesitarán una clave nueva.",
       "signOutFailed": "No se pudo cerrar la sesión en todos los dispositivos"
     }
   },
@@ -174,6 +175,8 @@
       "namePlaceholder": "Para qué es, p. ej. Mihon en mi teléfono",
       "make": "Crear una clave",
       "makeFailed": "No se pudo crear la clave",
+      "password": "Tu contraseña",
+      "passwordWhy": "Para crear una clave se pide tu contraseña, así nadie puede crear una desde una pantalla desbloqueada.",
       "copyNow": "Copia tu nueva clave ahora. No se volverá a mostrar.",
       "copyKey": "Copiar clave",
       "empty": "Todavía no hay claves.",

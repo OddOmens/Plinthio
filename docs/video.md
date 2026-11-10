@@ -36,7 +36,8 @@ including HEVC/H.265, which Chrome, Edge and Safari can play.
 - **Limits:** one software transcode at a time, or two with hardware encoding, so a small
   server isn't overwhelmed.
 - **Caching:** converted segments are kept on disk and reused until unused for
-  `HLS_CACHE_MAX_AGE_HOURS` (24 h). Closing the player stops its conversion.
+  `HLS_CACHE_MAX_AGE_HOURS` (24 h), within a size budget (`HLS_CACHE_MAX_GB`, 40 GB): past
+  it the copies unused for longest go first. Closing the player stops its conversion.
 - **Fallback:** if the browser rejects a file it was expected to play, the player switches
   to transcoding by itself.
 - **Errors:** a failed playback shows the real reason with a code (P3xx), not a generic
@@ -46,12 +47,12 @@ including HEVC/H.265, which Chrome, Edge and Safari can play.
 
 - **Audio:** every track is listed by language, title and channel count, and can be switched
   mid-film, keeping your position. Useful for dual-audio anime and commentary tracks.
-- **Subtitles from inside the file:** text subtitles are extracted on demand and converted
-  to WebVTT. Picture-based ones (PGS, VobSub from discs) can't be shown, so they aren't
-  listed.
+- **Subtitles from inside the file:** text subtitles are extracted the first time a track is
+  picked, converted to WebVTT and kept, so later plays load at once. Picture-based ones
+  (PGS, VobSub from discs) can't be shown, so they aren't listed.
 - **Subtitles from files next to the video:** `Movie.en.srt`, `Movie.en.forced.srt`,
   `.vtt`, `.ass` and `.ssa`. Language and "forced" are read from the name, and a new file is
-  picked up without a rescan.
+  picked up without a rescan. Files over 8 MB aren't read.
 - A **forced** track, used for foreign-language signs, is turned on automatically.
 
 ## The player

@@ -34,7 +34,7 @@
       "title": "Demasiadas solicitudes",
       "message": "Demasiadas solicitudes; espera un poco y vuelve a intentarlo",
       "meaning": "Se alcanzó un límite de solicitudes.",
-      "fix": "Espera un minuto y vuelve a intentarlo. Si muchas personas comparten una IP detrás de un proxy inverso, configura TRUST_PROXY=1 para que se limiten por separado."
+      "fix": "Espera un minuto y vuelve a intentarlo. Si muchas personas comparten una IP detrás de un proxy inverso, configura TRUST_PROXY con la dirección del proxy para que se limiten por separado."
     },
     "P006": {
       "title": "No disponible temporalmente",

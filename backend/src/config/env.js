@@ -38,14 +38,24 @@ if (!jwtSecret) {
 // left off, every request looks like it came from the proxy's IP, so the per-IP login
 // limiter becomes one shared bucket for everyone (one person fat-fingering a password
 // locks out the whole household). Turned on when NOT behind a proxy, anyone can forge
-// X-Forwarded-For and bypass rate limiting entirely — so it stays opt-in, off by default.
-// Set TRUST_PROXY=1 for a single proxy hop, or a subnet/IP list per Express's docs.
+// X-Forwarded-For and bypass rate limiting entirely (and pass for a home device) — so it
+// stays opt-in, off by default. Set it to the proxy's own address or subnet; a hop count
+// like 1 is only safe when the proxy is the only way to reach Plinthio (Express's docs list
+// the forms). Left off behind a proxy, forwarded requests are treated as coming from outside
+// the home network: see forwardedUntrusted in services/network.js.
 function parseTrustProxy(raw) {
   if (raw === undefined || raw === '') return false;
   if (raw === 'true') return true;
   if (raw === 'false') return false;
   const asNumber = Number(raw);
   return Number.isInteger(asNumber) && asNumber >= 0 ? asNumber : raw;
+}
+
+function parseCorsOrigin(raw) {
+  const list = String(raw || '').split(',').map((s) => s.trim().replace(/\/+$/, '')).filter(Boolean);
+  if (!list.length) return null;
+  if (list.includes('*')) return '*';
+  return list.length === 1 ? list[0] : list;
 }
 
 export const config = {
@@ -62,7 +72,9 @@ export const config = {
   // leaks off a shared or lost device stops working in days rather than a month. Override
   // with JWT_EXPIRES_IN if a different trade-off suits your setup.
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  corsOrigin: process.env.CORS_ORIGIN || '*',
+  // Which other websites' pages may call the API from a browser. Unset: none (the web app is
+  // same-origin and the apps aren't browsers). One origin, a comma-separated list, or `*`.
+  corsOrigin: parseCorsOrigin(process.env.CORS_ORIGIN),
   trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
   // How long an idle on-disk HLS segment cache entry survives before the periodic sweep
   // deletes it (see services/hls.js sweepHlsCache).

@@ -81,14 +81,15 @@ A factual summary; details in [docs/accounts-and-access.md](docs/accounts-and-ac
 * **Away from home:** home-only by default for new servers. Admins choose whether the server can be used from outside the home network, and per person who may; checked on every request, including the reading apps.
 * **Sessions:** JWTs signed with a per-install secret generated on first boot (`/config/jwt.secret`). 7-day lifetime, renewed on use; a password change or **Sign out of all devices** revokes every token at once.
 * **Media URLs** carry a separate 24-hour media-only token, never the session token.
-* **API keys:** shown once; stored as SHA-256 (plus an MD5 for KOReader's protocol). Apps sign in with a key, never your password.
+* **API keys:** shown once; stored as SHA-256 (plus an MD5 for KOReader's protocol). Apps sign in with a key, never your password. Making one needs your password, and a key can't change the password, two-factor or other keys.
 * **Roles, content limits and Kids Mode** are enforced on every request, including direct file and page URLs, watch parties and the sync APIs.
 * **Path checks:** file-serving routes verify the resolved path is inside its library.
-* **Rate limits:** 10 failed sign-ins / 15 min per address, 600 API requests / min, 1200 media requests / min, 6 backups / 15 min.
+* **Rate limits:** 10 failed sign-ins / 15 min per address, 10 wrong two-factor codes / 15 min per account, 600 API requests / min, 1200 media requests / min, 6 backups / 15 min.
 * **Headers:** Helmet, with a Content-Security-Policy on by default (`CSP=report-only` or `off` to diagnose).
+* **Other websites:** no cross-origin access to the API unless `CORS_ORIGIN` names a site.
 * **Cookies:** none for the web app. Mihon's Komga tracker uses a session cookie honoured only on `/api/v1` and `/api/v2`, SameSite=Lax, ended by deleting its API key.
 * **Logs** strip `?token=` from URLs.
-* **Proxies:** `TRUST_PROXY` is opt-in, for use behind a reverse proxy only. The Tailscale and public-address add-ons set it to `loopback`, so only a proxy running right next to Plinthio is believed.
+* **Proxies:** `TRUST_PROXY` is opt-in, for use behind a reverse proxy only. Requests forwarded by a proxy it doesn't cover are treated as coming from outside the home network. The Tailscale and public-address add-ons run in their own container networks and set it to exactly their own address, so nothing else is believed.
 * **TLS:** optional add-ons: Tailscale (a trusted `https://….ts.net` address, private) or a public web address with Caddy and Let's Encrypt, for guests. Without either, HTTPS on port 8443 with a local certificate authority you install on your devices (name-constrained to private addresses and local names).
 * **Network calls:** only metadata lookups you trigger (MangaDex, Google Books, Open Library, TMDB, with the built-in key or your own), a twice-daily anonymous release check (`UPDATE_CHECK=false` turns it off) and, only if an admin turns Live TV on, the channel lists and guides they add plus the streams and logos people watch, fetched by the server. No telemetry.
 
@@ -213,11 +214,11 @@ A build from source has no built-in TMDB key: add your own under Admin → Metad
 
 ## 🛠️ Development
 
-You need Node.js 24 (22 or newer works), **ffmpeg/ffprobe** (video) and **poppler** (`pdfinfo`/`pdftoppm`, PDFs):
+You need Node.js 24 (22 or newer works), **ffmpeg/ffprobe** (video), **poppler** (`pdfinfo`/`pdftoppm`, PDFs) and **7-Zip** (`.cb7` comics):
 
 ```bash
-sudo apt install ffmpeg poppler-utils     # Debian/Ubuntu
-brew install ffmpeg poppler               # macOS
+sudo apt install ffmpeg poppler-utils 7zip   # Debian/Ubuntu
+brew install ffmpeg poppler sevenzip        # macOS
 
 cd backend && npm install && npm run dev   # API on http://localhost:8080
 cd frontend && npm install && npm run dev  # app on http://localhost:5173, proxying /api

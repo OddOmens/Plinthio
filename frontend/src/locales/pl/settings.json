@@ -138,7 +138,8 @@
       "change": "Zmień hasło",
       "changing": "Zmienianie…",
       "changed": "Hasło zmienione. Zaloguj się ponownie nowym hasłem.",
-      "changeFailed": "Nie udało się zmienić hasła"
+      "changeFailed": "Nie udało się zmienić hasła",
+      "revokeKeys": "Unieważnij też moje klucze API. Aplikacje, które z nich korzystają, będą potrzebować nowego klucza."
     },
     "twoFactor": {
       "title": "Weryfikacja dwuetapowa",
@@ -146,11 +147,11 @@
     },
     "devices": {
       "title": "Zalogowane urządzenia",
-      "desc": "Każdy telefon, przeglądarka i telewizor, na którym się logujesz, pozostaje zalogowany. Jeśli zalogowano cię gdzieś, nad czym nie masz już kontroli, wyloguj się wszędzie.",
+      "desc": "Każdy telefon, przeglądarka i telewizor, na którym się logujesz, pozostaje zalogowany. Jeśli zalogowano cię gdzieś, nad czym nie masz już kontroli, wyloguj się wszędzie. Unieważnia to także twoje klucze API.",
       "signOutAll": "Wyloguj ze wszystkich urządzeń",
       "signingOut": "Wylogowywanie…",
       "confirmTitle": "Wyloguj wszędzie",
-      "confirmMessage": "Każde urządzenie zalogowane na to konto zostanie od razu wylogowane, także to.",
+      "confirmMessage": "Każde urządzenie zalogowane na to konto zostanie od razu wylogowane, także to. Twoje klucze API też przestaną działać, więc aplikacje, które z nich korzystają, będą potrzebować nowego klucza.",
       "signOutFailed": "Nie udało się wylogować ze wszystkich urządzeń"
     }
   },
@@ -240,6 +241,8 @@
       "namePlaceholder": "Do czego służy, np. Mihon na telefonie",
       "make": "Utwórz klucz",
       "makeFailed": "Nie udało się utworzyć klucza",
+      "password": "Twoje hasło",
+      "passwordWhy": "Utworzenie klucza wymaga podania hasła, żeby nikt nie mógł go utworzyć na odblokowanym ekranie.",
       "copyNow": "Skopiuj teraz nowy klucz. Nie zostanie pokazany ponownie.",
       "copyKey": "Kopiuj klucz",
       "empty": "Brak kluczy.",

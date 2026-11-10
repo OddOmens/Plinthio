@@ -36,10 +36,14 @@
       <form @submit.prevent="generateKey" class="flex flex-col sm:flex-row gap-2 max-w-lg">
         <label for="new-key-name" class="sr-only">{{ $t('settings.apps.keys.name') }}</label>
         <input id="new-key-name" v-model="newKeyName" :placeholder="$t('settings.apps.keys.namePlaceholder')" required class="field flex-1" />
+        <label for="new-key-password" class="sr-only">{{ $t('settings.apps.keys.password') }}</label>
+        <input id="new-key-password" v-model="newKeyPassword" type="password" autocomplete="current-password" :placeholder="$t('settings.apps.keys.password')" required class="field sm:w-44" @input="keyError = ''" />
         <button type="submit" :disabled="generating" class="btn btn-primary">
           <Plus class="w-3.5 h-3.5" /> {{ $t('settings.apps.keys.make') }}
         </button>
       </form>
+      <p v-if="keyError" class="text-xs text-destructive" role="alert">{{ keyError }}</p>
+      <p v-else class="text-[12px] text-muted-foreground">{{ $t('settings.apps.keys.passwordWhy') }}</p>
 
       <div v-if="newGeneratedKey" class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col gap-2">
         <div class="flex flex-wrap items-center justify-between gap-2">
@@ -123,6 +127,10 @@ async function copy(text, id) {
 
 const apiKeys = ref([]);
 const newKeyName = ref('');
+// A key acts as the account, so making one asks for the password again: someone at an
+// unlocked, signed-in browser can't quietly make themselves a way back in.
+const newKeyPassword = ref('');
+const keyError = ref('');
 const newGeneratedKey = ref('');
 const generating = ref(false);
 const keysLoaded = ref(false);
@@ -140,15 +148,18 @@ onMounted(loadKeys);
 
 async function generateKey() {
   generating.value = true;
+  keyError.value = '';
   try {
-    const res = await api.post('/keys', { name: newKeyName.value });
+    const res = await api.post('/keys', { name: newKeyName.value, password: newKeyPassword.value });
     newGeneratedKey.value = res.data.key.key;
     newKeyName.value = '';
     await loadKeys();
   } catch (err) {
-    dialog.alert(err.response?.data?.error || t('settings.apps.keys.makeFailed'));
+    // Shown under the form, not in a dialog: a mistyped password is fixed right there.
+    keyError.value = err.response?.data?.error || t('settings.apps.keys.makeFailed');
   } finally {
     generating.value = false;
+    newKeyPassword.value = '';
   }
 }
 

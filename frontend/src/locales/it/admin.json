@@ -136,7 +136,10 @@
       "otherDisk": "È su un disco diverso da quello dei dati del server.",
       "hint": "Una cartella come la vede il server. In Docker: ovunque sotto {media} che non sia in sola lettura, oppure un'altra unità montata su {backups} (Documentazione → Backup e sicurezza dei dati).",
       "keepThere": "Conserva lì",
-      "copyFiles": "Copia anche immagini del profilo, copertine, la chiave di accesso e i certificati HTTPS",
+      "copyFiles": "Copia anche immagini del profilo, copertine e certificati HTTPS",
+      "copyServerKey": "Copia anche la chiave di accesso",
+      "copyServerKeyWhy": "Disattivato: dopo un ripristino su un nuovo server, tutti accedono di nuovo e configurano di nuovo la verifica in due passaggi. Attivato: il ripristino recupera anche questo, ma chiunque possa aprire la cartella dei backup può accedere con qualsiasi account. Attivalo solo per una cartella che nessun altro può leggere.",
+      "serverKeyFound": "In questa cartella c'è una vecchia copia della chiave di accesso ({file}). Chiunque possa aprire la cartella può usarla per accedere con qualsiasi account. Elimina quel file o spostalo in un posto privato.",
       "couldNotCheck": "Impossibile verificare quella cartella",
       "pickerTitle": "Copia i backup in"
     },

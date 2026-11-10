@@ -146,6 +146,13 @@ A folder holding several full-length films isn't collapsed. They stay films.
 - **Safety:** if a library's folder is missing (P200), or is suddenly empty while the catalog
   has titles in it (P201, usually an unmounted drive), the scan stops rather than treating
   everything as gone.
+- **Symlinks** are followed when they lead into a library folder (the same library or another
+  one). A link to anywhere else on the server is skipped and noted in **Admin → Logs**, and
+  is refused if it's already in the catalog. If you keep media in a separate folder and link
+  to it on purpose, add that folder as a library or name it in `SYMLINK_ALLOWED_ROOTS`
+  (see [Configuration](configuration.md)).
+- **Not really media:** a file with a video or audio extension that is actually a playlist
+  or script is left out.
 
 ## Missing files
 

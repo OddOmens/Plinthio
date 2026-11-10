@@ -8,8 +8,10 @@ import { getSetting, setSetting } from './settings.js';
 //   outside   — anything else: the internet
 //
 // It's only as good as req.ip. Behind a reverse proxy or tunnel, TRUST_PROXY must be set
-// or every request looks like it came from the proxy (see proxyWarning below); the Tailscale
-// and public add-ons set it. On Docker Desktop (Mac, Windows) the container never sees real
+// or every request looks like it came from the proxy; the Tailscale and public add-ons set
+// it. A request that says it was forwarded by a proxy Plinthio hasn't been told to trust
+// counts as outside (see forwardedUntrusted below), so a missing TRUST_PROXY can only ever
+// make the rules stricter. On Docker Desktop (Mac, Windows) the container never sees real
 // addresses at all, so everything looks like home — docs/remote-access.md says so.
 
 function v4ToInt(ip) {
@@ -97,6 +99,31 @@ export async function saveNetworkSettings(db, { remoteAccess, tailscaleIsHome, r
   cache = null;
 }
 
+// ─── A proxy in front that isn't trusted ────────────────────────────────────
+// A reverse proxy connects from its own address, usually a home or loopback one, and says
+// who the visitor really is in a header. Express only reads that header from proxies
+// TRUST_PROXY names. If it's unset (or names a different address), everyone coming through
+// the proxy would look like the proxy, and so like someone at home: the whole internet could
+// set up a fresh server, and home-only, two-factor-outside and the outside sign-in lock
+// would stop applying. So a request carrying a forwarding header that Plinthio can't use
+// counts as outside. Anyone can send these headers direct, but they can only ever demote a
+// request from home to outside, never the other way, so there's nothing to gain by faking one.
+function peerIsTrustedProxy(req) {
+  const trust = req.app?.get?.('trust proxy fn');
+  return typeof trust === 'function' && !!trust(req.socket?.remoteAddress, 0);
+}
+
+export function forwardedUntrusted(req) {
+  const h = req.headers || {};
+  const xff = h['x-forwarded-for'];
+  const other = h.forwarded || h['x-real-ip'];
+  if (!xff && !other) return false;
+  if (!peerIsTrustedProxy(req)) return true;
+  // A trusted proxy that only sends Forwarded or X-Real-IP: Express reads neither, so the
+  // address in hand is still the proxy's.
+  return !xff;
+}
+
 // "home" or "outside" once the Tailscale setting is applied — the only distinction access
 // rules care about. `where` keeps the three-way answer for display.
 export async function requestLocation(req) {
@@ -105,33 +132,52 @@ export async function requestLocation(req) {
   // if that ever changed. Anyone can send it direct, but it only ever makes a request count
   // as outside, never as home, so there's nothing to gain by faking it.
   const funnel = req.headers?.['tailscale-funnel-request'] === '?1';
-  const where = funnel ? 'outside' : classifyAddress(req.ip);
+  const untrustedProxy = forwardedUntrusted(req);
+  const where = funnel || untrustedProxy ? 'outside' : classifyAddress(req.ip);
   const settings = await getNetworkSettings();
   const away = where === 'outside' || (where === 'tailscale' && !settings.tailscaleIsHome);
-  return { where, away, ip: normalizeIp(req.ip), settings };
+  return { where, away, ip: normalizeIp(req.ip), settings, untrustedProxy };
+}
+
+// For the "can only be used from home" answers: when the reason is a proxy without
+// TRUST_PROXY, say so, or an admin behind their own proxy would have nothing to go on.
+export const UNTRUSTED_PROXY_HINT = 'Plinthio is behind a reverse proxy it has not been told to trust, so it cannot tell '
+  + 'where you are and treats you as away from home. Set TRUST_PROXY to the proxy\'s address and restart.';
+
+function hasTwoFactor(user) {
+  return !!(user && (user.two_factor || user.totp_enabled_at));
 }
 
 // Whether `user` may use the server from where this request comes from. Returns null when
-// allowed, or the error code to send: P109 (server closed to outside), P110 (this account is
-// home-only). Two-factor-from-outside is checked at sign-in, not here: an account without
-// two-factor simply can't get a session from outside when that's required.
-export async function outsideAccessError(req, user) {
+// allowed, or { code, message? }: P109 (server closed to outside), P110 (this account is
+// home-only) and, for a signed-in session ({ session: true }), P112 (two-factor is required
+// away from home and this account has none). That last one is checked on every request, not
+// only at sign-in: a session started at home otherwise kept working from anywhere. API keys
+// are left out of it: a key is made inside a signed-in session, is a long random secret
+// rather than a password someone could guess or be tricked out of, and never went through
+// two-factor in the first place.
+export async function outsideAccessProblem(req, user, { session = false } = {}) {
   const loc = await requestLocation(req);
   if (!loc.away) return null;
-  if (!loc.settings.remoteAccess) return 'P109';
-  if (user && (user.remote_access === 0 || user.remote_access === false)) return 'P110';
+  if (!loc.settings.remoteAccess) {
+    return { code: 'P109', message: loc.untrustedProxy ? `This server can only be used from its home network. ${UNTRUSTED_PROXY_HINT}` : undefined };
+  }
+  if (user && (user.remote_access === 0 || user.remote_access === false)) return { code: 'P110' };
+  if (session && user && loc.settings.require2faOutside && !hasTwoFactor(user)) return { code: 'P112' };
   return null;
 }
 
-// ─── A proxy in front without TRUST_PROXY ───────────────────────────────────
-// If requests carry X-Forwarded-For but Express isn't trusting it, every visitor looks like
-// the proxy (usually a home address), so outside controls would wave everyone through.
-// Remembered here and shown to admins in Admin → Network.
+// Just the code (or null), for callers that send their own kind of answer.
+export async function outsideAccessError(req, user, options) {
+  return (await outsideAccessProblem(req, user, options))?.code || null;
+}
+
+// Remembered for Admin → Network, which tells the admin to set TRUST_PROXY: the first request
+// that arrived through a proxy Plinthio doesn't trust.
 let proxySeen = null;
-export function noteProxyHeaders(req, trustProxy) {
-  if (trustProxy !== false) return;
-  const fwd = req.headers['x-forwarded-for'];
-  if (fwd && !proxySeen) proxySeen = { at: new Date().toISOString(), from: normalizeIp(req.socket?.remoteAddress) };
+export function noteProxyHeaders(req) {
+  if (proxySeen || !forwardedUntrusted(req)) return;
+  proxySeen = { at: new Date().toISOString(), from: normalizeIp(req.socket?.remoteAddress) };
 }
 export function proxyWarning() {
   return proxySeen;
@@ -147,8 +193,9 @@ const seen = { tailscale: null, funnel: null };
 let savedHost = null;
 
 export function noteTailscale(req) {
-  const peer = normalizeIp(req.socket?.remoteAddress);
-  if (peer !== '127.0.0.1' && peer !== '::1') return;
+  // Only a proxy Plinthio was told to trust (the Tailscale add-on's own container) is
+  // believed about the name it was reached by; anyone else could send the header themselves.
+  if (!peerIsTrustedProxy(req)) return;
   const host = String(req.headers['x-forwarded-host'] || '').toLowerCase().replace(/:\d+$/, '');
   if (!/^[a-z0-9-]+(\.[a-z0-9-]+)*\.ts\.net$/.test(host)) return;
   const now = new Date().toISOString();

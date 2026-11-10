@@ -32,7 +32,7 @@ export function listBackupFiles() {
 
 const SETTING_KEYS = [
   'backup_enabled', 'backup_interval_hours', 'backup_retention',
-  'backup_destination', 'backup_copy_retention', 'backup_copy_files',
+  'backup_destination', 'backup_copy_retention', 'backup_copy_files', 'backup_copy_server_key',
   'backup_last_copy_at', 'backup_last_copy_error'
 ];
 
@@ -49,8 +49,14 @@ export async function getBackupSettings() {
     destination: map.backup_destination || '',
     copyRetentionCount: map.backup_copy_retention ? parseInt(map.backup_copy_retention, 10) : 30,
     // Also copy what a database restore can't bring back (avatars, uploaded covers, the
-    // sign-in secret, the HTTPS certificates).
+    // HTTPS certificates).
     copyFiles: map.backup_copy_files === undefined ? true : map.backup_copy_files === 'true',
+    // Whether the server key (jwt.secret) goes with those files. Off unless an admin turns
+    // it on, for new and existing servers alike: the key signs every sign-in and unlocks the
+    // stored two-factor secrets, so whoever can read the backup folder (a NAS share, a
+    // synced cloud folder) could sign in as anyone with it. The cost of leaving it out is
+    // only paid on a full restore: everyone signs in again and sets two-factor up again.
+    copyServerKey: map.backup_copy_server_key === 'true',
     lastCopyAt: map.backup_last_copy_at || null,
     lastCopyError: map.backup_last_copy_error || null,
     // On unless an admin turned it off: a server nobody configured still keeps a week of
@@ -68,7 +74,7 @@ async function writeSettings(entries) {
   }
 }
 
-export async function saveBackupSettings({ enabled, intervalHours, retentionCount, destination, copyRetentionCount, copyFiles }) {
+export async function saveBackupSettings({ enabled, intervalHours, retentionCount, destination, copyRetentionCount, copyFiles, copyServerKey }) {
   const entries = [
     ['backup_enabled', enabled ? 'true' : 'false'],
     ['backup_interval_hours', String(intervalHours)],
@@ -77,6 +83,7 @@ export async function saveBackupSettings({ enabled, intervalHours, retentionCoun
   if (destination !== undefined) entries.push(['backup_destination', destination]);
   if (copyRetentionCount !== undefined) entries.push(['backup_copy_retention', String(copyRetentionCount)]);
   if (copyFiles !== undefined) entries.push(['backup_copy_files', copyFiles ? 'true' : 'false']);
+  if (copyServerKey !== undefined) entries.push(['backup_copy_server_key', copyServerKey ? 'true' : 'false']);
   await writeSettings(entries);
   return getBackupSettings();
 }
@@ -179,9 +186,24 @@ export async function runManualBackupAndPrune() {
 // Snapshots in /config/backups protect against mistakes and bad upgrades, not against the
 // disk under /config failing. So each backup can also be copied somewhere else, laid out as
 //   <destination>/database/plinthio-backup-*.sqlite
-//   <destination>/files/{avatars,covers,ssl,jwt.secret,.version}
+//   <destination>/files/{avatars,covers,ssl,.version}
+//   <destination>/files/jwt.secret   only when the admin chose to include the server key
 
-const COPIED_FILES = ['avatars', 'covers', 'ssl', 'jwt.secret', '.version'];
+const COPIED_FILES = ['avatars', 'covers', 'ssl', '.version'];
+const SERVER_KEY_FILE = 'jwt.secret';
+
+// Whether a copy of the server key is sitting in a backup folder. Versions before this
+// setting existed always put one there, and turning the setting off leaves it alone too:
+// deleting it might destroy the only copy someone is relying on for a restore. Admin → Backups
+// says it's there instead, so the admin can remove it or move it somewhere private.
+export function serverKeyAtDestination(destination) {
+  if (!destination) return false;
+  try {
+    return fs.existsSync(path.join(destination, 'files', SERVER_KEY_FILE));
+  } catch {
+    return false;
+  }
+}
 
 function isInside(child, parent) {
   const rel = path.relative(parent, child);
@@ -228,7 +250,7 @@ export async function checkDestination(input) {
   // Same device as the data folder: it still guards against deleting files by mistake, but
   // not against that disk failing.
   const sameDisk = fs.statSync(dest).dev === fs.statSync(dataDir).dev;
-  return { ok: true, path: dest, sameDisk, freeBytes };
+  return { ok: true, path: dest, sameDisk, freeBytes, serverKeyPresent: serverKeyAtDestination(dest) };
 }
 
 function copyIfChanged(from, to) {
@@ -280,7 +302,10 @@ export async function copyToDestination() {
         const filesDir = path.join(check.path, 'files');
         fs.mkdirSync(filesDir, { recursive: true });
         for (const name of COPIED_FILES) copyTree(path.join(config.dataDir, name), path.join(filesDir, name));
-        try { fs.chmodSync(path.join(filesDir, 'jwt.secret'), 0o600); } catch { /* not copied */ }
+        if (settings.copyServerKey) {
+          copyTree(path.join(config.dataDir, SERVER_KEY_FILE), path.join(filesDir, SERVER_KEY_FILE));
+          try { fs.chmodSync(path.join(filesDir, SERVER_KEY_FILE), 0o600); } catch { /* no key file (JWT_SECRET is set in the environment) */ }
+        }
       }
 
       const atDestination = fs.readdirSync(dbDir)

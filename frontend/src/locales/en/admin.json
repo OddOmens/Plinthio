@@ -136,7 +136,10 @@
       "otherDisk": "It's on a different disk from the server's data.",
       "hint": "A folder as the server sees it. In Docker: anywhere under {media} that isn't read-only, or another drive mounted at {backups} (Docs → Backups & Data Safety).",
       "keepThere": "Keep there",
-      "copyFiles": "Also copy profile pictures, covers, the sign-in key and HTTPS certificates",
+      "copyFiles": "Also copy profile pictures, covers and HTTPS certificates",
+      "copyServerKey": "Also copy the sign-in key",
+      "copyServerKeyWhy": "Off: after restoring onto a new server, everyone signs in again and sets two-factor up again. On: a restore brings that back too, but anyone who can open the backup folder can sign in as any account. Only turn it on for a folder nobody else can read.",
+      "serverKeyFound": "An older copy of the sign-in key is in this folder ({file}). Anyone who can open the folder can use it to sign in as any account. Delete that file, or move it somewhere private.",
       "couldNotCheck": "Couldn't check that folder",
       "pickerTitle": "Copy backups to"
     },

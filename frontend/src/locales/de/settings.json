@@ -84,7 +84,8 @@
       "change": "Passwort ändern",
       "changing": "Wird geändert…",
       "changed": "Passwort geändert. Melde dich mit deinem neuen Passwort wieder an.",
-      "changeFailed": "Dein Passwort konnte nicht geändert werden"
+      "changeFailed": "Dein Passwort konnte nicht geändert werden",
+      "revokeKeys": "Auch meine API-Schlüssel widerrufen. Apps, die einen nutzen, brauchen dann einen neuen."
     },
     "twoFactor": {
       "title": "Zwei-Faktor-Anmeldung",
@@ -92,11 +93,11 @@
     },
     "devices": {
       "title": "Angemeldete Geräte",
-      "desc": "Auf jedem Handy, Browser und Fernseher, auf dem du dich angemeldet hast, bleibst du angemeldet. Wenn du dich irgendwo angemeldet hast, wo du keinen Zugriff mehr hast, melde dich überall ab.",
+      "desc": "Auf jedem Handy, Browser und Fernseher, auf dem du dich angemeldet hast, bleibst du angemeldet. Wenn du dich irgendwo angemeldet hast, wo du keinen Zugriff mehr hast, melde dich überall ab. Dabei werden auch deine API-Schlüssel widerrufen.",
       "signOutAll": "Von allen Geräten abmelden",
       "signingOut": "Wird abgemeldet…",
       "confirmTitle": "Überall abmelden",
-      "confirmMessage": "Alle Geräte, die mit diesem Konto angemeldet sind, werden sofort abgemeldet – auch dieses.",
+      "confirmMessage": "Alle Geräte, die mit diesem Konto angemeldet sind, werden sofort abgemeldet – auch dieses. Auch deine API-Schlüssel funktionieren dann nicht mehr; Apps, die einen nutzen, brauchen einen neuen.",
       "signOutFailed": "Abmelden von allen Geräten fehlgeschlagen"
     }
   },
@@ -174,6 +175,8 @@
       "namePlaceholder": "Wofür er ist, z. B. Mihon auf meinem Handy",
       "make": "Schlüssel erstellen",
       "makeFailed": "Der Schlüssel konnte nicht erstellt werden",
+      "password": "Dein Passwort",
+      "passwordWhy": "Zum Erstellen eines Schlüssels wird dein Passwort abgefragt, damit niemand an einem entsperrten Bildschirm einen erstellen kann.",
       "copyNow": "Kopiere deinen neuen Schlüssel jetzt. Er wird nicht noch einmal angezeigt.",
       "copyKey": "Schlüssel kopieren",
       "empty": "Noch keine Schlüssel.",

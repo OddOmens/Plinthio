@@ -136,7 +136,10 @@
       "otherDisk": "Er liegt auf einer anderen Festplatte als die Serverdaten.",
       "hint": "Ein Ordner, wie der Server ihn sieht. In Docker: irgendwo unter {media}, das nicht schreibgeschützt ist, oder ein anderes Laufwerk, eingebunden unter {backups} (Doku → Backups & Data Safety).",
       "keepThere": "Dort behalten",
-      "copyFiles": "Auch Profilbilder, Cover, den Anmeldeschlüssel und HTTPS-Zertifikate kopieren",
+      "copyFiles": "Auch Profilbilder, Cover und HTTPS-Zertifikate kopieren",
+      "copyServerKey": "Auch den Anmeldeschlüssel kopieren",
+      "copyServerKeyWhy": "Aus: Nach dem Wiederherstellen auf einem neuen Server melden sich alle neu an und richten die Zwei-Faktor-Anmeldung neu ein. An: Auch das wird wiederhergestellt, aber wer den Backup-Ordner öffnen kann, kann sich als jedes Konto anmelden. Schalte es nur für einen Ordner ein, den sonst niemand lesen kann.",
+      "serverKeyFound": "In diesem Ordner liegt eine ältere Kopie des Anmeldeschlüssels ({file}). Wer den Ordner öffnen kann, kann sich damit als jedes Konto anmelden. Lösche die Datei oder verschiebe sie an einen privaten Ort.",
       "couldNotCheck": "Der Ordner konnte nicht geprüft werden",
       "pickerTitle": "Backups kopieren nach"
     },

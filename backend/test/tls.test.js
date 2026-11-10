@@ -5,7 +5,7 @@ import path from 'path';
 import http from 'http';
 import https from 'https';
 import { execFileSync } from 'child_process';
-import { startTestServer, freePort } from './helpers/server.js';
+import { startTestServer, freePort, setupAdmin } from './helpers/server.js';
 
 let hasOpenssl = true;
 try { execFileSync('openssl', ['version'], { stdio: 'ignore' }); } catch { hasOpenssl = false; }
@@ -22,11 +22,13 @@ function httpsGet(port, ca, servername) {
   });
 }
 
-// A plain-HTTP request as if the server were reached at `host` (fetch won't set Host).
-function httpVisitAs(baseUrl, host) {
+// A plain-HTTP request as if the server were reached at `host` (fetch won't set Host), signed
+// in when a session token is given.
+function httpVisitAs(baseUrl, host, token) {
   const { port } = new URL(baseUrl);
+  const headers = token ? { host, authorization: `Bearer ${token}` } : { host };
   return new Promise((resolve, reject) => {
-    http.get({ host: '127.0.0.1', port, path: '/api/health', headers: { host } }, (res) => {
+    http.get({ host: '127.0.0.1', port, path: token ? '/api/auth/me' : '/api/health', headers }, (res) => {
       res.resume();
       res.on('end', resolve);
     }).on('error', reject);
@@ -34,7 +36,7 @@ function httpVisitAs(baseUrl, host) {
 }
 
 describe('built-in HTTPS', { skip: !hasOpenssl && 'openssl is not installed' }, () => {
-  let server; let httpsPort; let ca;
+  let server; let httpsPort; let ca; let token;
 
   before(async () => {
     httpsPort = await freePort();
@@ -44,6 +46,7 @@ describe('built-in HTTPS', { skip: !hasOpenssl && 'openssl is not installed' }, 
       await new Promise((r) => setTimeout(r, 100));
     }
     ca = await (await fetch(`${server.baseUrl}/api/tls/ca.crt`)).text();
+    ({ token } = await setupAdmin(server.baseUrl));
   });
   after(async () => { await server.stop(); });
 
@@ -67,10 +70,20 @@ describe('built-in HTTPS', { skip: !hasOpenssl && 'openssl is not installed' }, 
     assert.equal(res.headers.get('strict-transport-security'), null);
   });
 
-  test('learns a local address from a plain-HTTP visit, but never a public name', async () => {
+  test('a visit from someone who isn\'t signed in teaches the certificate nothing', async () => {
+    const file = path.join(server.dataDir, 'ssl', 'learned-names.json');
+    for (let i = 0; i < 20; i++) await httpVisitAs(server.baseUrl, `stranger${i}.local`);
+    // A token that isn't a real session doesn't count either.
+    await httpVisitAs(server.baseUrl, 'forged.local', 'not-a-token');
+    await new Promise((r) => setTimeout(r, 300));
+    assert.ok(!fs.existsSync(file) || JSON.parse(fs.readFileSync(file, 'utf8')).length === 0, 'no slots used up');
+    assert.doesNotMatch(server.output(), /Adding stranger\d+\.local/);
+  });
+
+  test('learns a local address from a signed-in visit, but never a public name', async () => {
     await assert.rejects(httpsGet(httpsPort, ca, 'nas.local'));
-    await httpVisitAs(server.baseUrl, 'nas.local:8088');
-    await httpVisitAs(server.baseUrl, 'example.com');
+    await httpVisitAs(server.baseUrl, 'nas.local:8088', token);
+    await httpVisitAs(server.baseUrl, 'example.com', token);
     let ok = false;
     for (let i = 0; i < 50 && !ok; i++) {
       await new Promise((r) => setTimeout(r, 200));
@@ -81,18 +94,33 @@ describe('built-in HTTPS', { skip: !hasOpenssl && 'openssl is not installed' }, 
   });
 
   test('never learns a ts.net name: that domain belongs to every Tailscale user', async () => {
-    await httpVisitAs(server.baseUrl, 'box.tail1234.ts.net');
+    await httpVisitAs(server.baseUrl, 'box.tail1234.ts.net', token);
     await new Promise((r) => setTimeout(r, 2500));
     await assert.rejects(httpsGet(httpsPort, ca, 'box.tail1234.ts.net'));
   });
 
   test('stops learning at the cap instead of pushing out addresses devices already use', async () => {
     const file = path.join(server.dataDir, 'ssl', 'learned-names.json');
-    for (let i = 0; i < 20; i++) await httpVisitAs(server.baseUrl, `flood${i}.local`);
+    for (let i = 0; i < 20; i++) await httpVisitAs(server.baseUrl, `flood${i}.local`, token);
+    await new Promise((r) => setTimeout(r, 300));
     const learned = JSON.parse(fs.readFileSync(file, 'utf8'));
     assert.equal(learned.length, 16);
     assert.ok(learned.includes('nas.local'), 'the address a real device used is kept');
     assert.ok(!learned.includes('flood19.local'), 'nothing past the cap is learned');
     assert.match(server.output(), /addresses are already learned/);
+  });
+
+  test('re-issuing for learned addresses doesn\'t stop the server answering', async () => {
+    // The flood above set off a re-issue (a new 2048-bit key). It runs outside the server's
+    // own thread, so requests made meanwhile are answered straight away.
+    const started = Date.now();
+    for (let i = 0; i < 20; i++) assert.equal((await fetch(`${server.baseUrl}/api/health`)).status, 200);
+    assert.ok(Date.now() - started < 5000);
+    let ok = false;
+    for (let i = 0; i < 50 && !ok; i++) {
+      await new Promise((r) => setTimeout(r, 200));
+      ok = await httpsGet(httpsPort, ca, 'flood0.local').then(() => true, () => false);
+    }
+    assert.ok(ok, 'the new certificate is in use');
   });
 });

@@ -3,6 +3,11 @@ dist/
 dist.old/
 build/
 .env
+.env.*
+!.env.example
+# Private keys and certificates never belong in the repository
+*.pem
+*.key
 *.log
 .DS_Store
 /data/
@@ -19,8 +24,12 @@ cache/
 .idea/
 .vscode/
 
-# Per-machine compose settings (e.g. GPU passthrough)
+# Per-machine compose settings (e.g. GPU passthrough), and dated copies of local files
 docker/docker-compose.override.yml
+docker/*.bak-*
+
+# Launch videos and other large media kept next to the checkout, not in it
+/*.mp4
 
 # Browser test output
 frontend/test-results/

@@ -152,8 +152,10 @@ to**, choose a folder on another drive, a NAS share or a synced cloud folder (**
 **Test**: it checks the server can write there and warns if it's on the same disk). Then:
 
 - every backup is copied there as it's made, laid out as `database/plinthio-backup-*.sqlite`
-  plus `files/` (avatars, covers, `ssl/`, `jwt.secret`, `.version` — turn this off with the
+  plus `files/` (avatars, covers, `ssl/`, `.version` — turn this off with the
   checkbox if you only want the database);
+- the server key (`jwt.secret`) is **not** copied unless you tick **Also copy the sign-in
+  key** (see below);
 - **Keep there** sets how many regular backups stay (30 by default); the newest five
   pre-upgrade ones always stay;
 - a failed copy shows in Admin → Backups with the reason and is retried every 15 minutes, and
@@ -167,6 +169,31 @@ choose `/backups`.
 **To restore from the second place:** use a file from `database/` as the backup in the
 steps below, and copy the contents of `files/` back into `config/` while the server is
 stopped.
+
+#### The server key
+
+`config/jwt.secret` signs every sign-in and locks the stored two-factor secrets. Anyone
+who has it, together with a database backup, can sign in as any account, admins included.
+A backup folder is often readable by more people or services than the server itself (a NAS
+share, a synced cloud folder), so the key stays out of it by default.
+
+- **Restoring without the key** (the default): the server makes a new key on its first
+  start. Everything in the database is back, but everyone signs in again, API keys keep
+  working, and accounts with two-factor have to set it up again: their authenticator codes
+  and backup codes no longer match. An admin turns it off for each of them in Admin →
+  Users → the account → Two-factor → Reset. If the only admin uses two-factor, keep a copy
+  of the key (next point), or that account can't get back in.
+- **Keeping the key yourself:** copy `config/jwt.secret` once to somewhere only you can
+  read, such as a password manager. It never changes, so one copy is enough; put it back
+  into `config/` before starting a restored server and nobody notices the restore.
+- **Also copy the sign-in key** in Admin → Backups puts it in `files/` with the rest. Only
+  do that for a folder nobody else can read.
+
+Versions up to 1.9 always copied the key. Updating stops that, but doesn't delete the copy
+already in your backup folder: Admin → Backups says so when it finds `files/jwt.secret`
+there. Delete that file, or move it somewhere private. If the folder was ever readable by
+someone you wouldn't give an admin account to, also make a new key: stop the server, delete
+`config/jwt.secret`, start it again (everyone signs in again and sets two-factor up again).
 
 **To restore:**
 

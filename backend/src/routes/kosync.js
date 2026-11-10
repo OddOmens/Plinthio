@@ -7,6 +7,7 @@ import { userForApiKeyMd5 } from '../middleware/auth.js';
 import { outsideAccessError } from '../services/network.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
 import { logger } from '../services/logger.js';
+import { resolveLibraryFile } from '../utils/libraryPath.js';
 
 // KOReader's progress sync ("Progress sync" plugin), mounted at /api/kosync — the address
 // KOReader is given as its custom sync server. It speaks the kosync protocol:
@@ -95,7 +96,10 @@ function ensureHashes(db) {
       for (const row of rows) {
         let binary = null;
         try {
-          binary = koreaderPartialMd5(row.path);
+          // Only a file that really sits inside a library folder is opened.
+          const file = await resolveLibraryFile(row.path);
+          if (!file.ok) continue;
+          binary = koreaderPartialMd5(file.realPath);
         } catch (e) {
           continue; // unreadable right now; tried again next time
         }

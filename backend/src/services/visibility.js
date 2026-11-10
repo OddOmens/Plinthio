@@ -93,6 +93,30 @@ function personalSql(user, alias) {
   return sql;
 }
 
+// SQL fragment (starting with AND) for "may this account know this title exists at all": the
+// account's restrictions (Kids Mode, age rating) and, for everyone but an admin, titles an
+// admin has hidden from everyone. Unlike accessSql it keeps what the person hid themselves,
+// missing files and offloaded titles: those are theirs to know about. For routes that take an
+// item id and say something back about it, or store something against it. No bind parameters.
+export function knownSql(user, alias = 'i') {
+  let sql = accessSql(user, alias, { restrictionsOnly: true });
+  if (user?.role !== 'admin') {
+    sql += ` AND NOT EXISTS (SELECT 1 FROM item_visibility gv WHERE gv.item_id = ${alias}.id AND gv.user_id IS NULL)`;
+  }
+  return sql;
+}
+
+// Whether item `itemId` exists and `user` may know about it (see knownSql).
+export async function canKnowItem(db, itemId, user) {
+  if (typeof itemId !== 'string' || !itemId || itemId.length > 64) return false;
+  return !!(await db.get(`SELECT 1 FROM items i WHERE i.id = ?${knownSql(user, 'i')}`, [itemId]));
+}
+
+// An account whose view of the library is cut down: Kids Mode, or an age rating limit.
+export function isLimitedAccount(user) {
+  return !!user && (user.kids_mode === 1 || user.kids_mode === true || ratingRank(user.max_age_rating) !== null);
+}
+
 // `user` is the req.user object; a bare id is still accepted (no rating limit applied).
 export async function isItemHiddenForUser(db, itemId, user) {
   const userId = typeof user === 'object' ? user?.id : user;

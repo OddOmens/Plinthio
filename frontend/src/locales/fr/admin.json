@@ -136,7 +136,10 @@
       "otherDisk": "Il est sur un autre disque que les données du serveur.",
       "hint": "Un dossier tel que le serveur le voit. Avec Docker : n'importe où sous {media} qui n'est pas en lecture seule, ou un autre disque monté sur {backups} (Documents → Backups & Data Safety).",
       "keepThere": "Y conserver",
-      "copyFiles": "Copier aussi les photos de profil, les couvertures, la clé de connexion et les certificats HTTPS",
+      "copyFiles": "Copier aussi les photos de profil, les couvertures et les certificats HTTPS",
+      "copyServerKey": "Copier aussi la clé de connexion",
+      "copyServerKeyWhy": "Désactivé : après une restauration sur un nouveau serveur, tout le monde se reconnecte et configure à nouveau la double authentification. Activé : la restauration rétablit cela aussi, mais toute personne pouvant ouvrir le dossier de sauvegarde peut se connecter à n'importe quel compte. Ne l'activez que pour un dossier que personne d'autre ne peut lire.",
+      "serverKeyFound": "Une ancienne copie de la clé de connexion se trouve dans ce dossier ({file}). Toute personne pouvant ouvrir le dossier peut s'en servir pour se connecter à n'importe quel compte. Supprimez ce fichier ou déplacez-le dans un endroit privé.",
       "couldNotCheck": "Impossible de vérifier ce dossier",
       "pickerTitle": "Copier les sauvegardes dans"
     },

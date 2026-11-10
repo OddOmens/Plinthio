@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { handle } from '../utils/http.js';
-import { accessSql } from '../services/visibility.js';
+import { knownSql } from '../services/visibility.js';
 
 const router = express.Router();
 
@@ -14,16 +14,20 @@ router.use(authenticateToken);
 // sensibly even if the item is later deleted or its library re-scanned.
 router.post('/start', handle(async (req, res) => {
   const { itemId } = req.body;
-  if (!itemId) {
+  if (typeof itemId !== 'string' || !itemId || itemId.length > 64) {
     return res.status(400).json({ error: 'itemId is required' });
   }
 
   const db = await getDb();
-  // An item the account isn't allowed to see is recorded like an unknown one, untitled.
+  // Only for a title that exists and that this account may know about (not above its age
+  // limit, not outside Kids Mode, not hidden from everyone by an admin). Anything else is
+  // "not found": the session used to be recorded anyway, which let any id, real or made
+  // up, be written into the activity log without end.
   const item = await db.get(
-    `SELECT title, media_type FROM items i WHERE i.id = ?${accessSql(req.user, 'i', { restrictionsOnly: true })}`,
+    `SELECT title, media_type FROM items i WHERE i.id = ?${knownSql(req.user, 'i')}`,
     [itemId]
   );
+  if (!item) return res.status(404).json({ error: 'Item not found' });
 
   const id = crypto.randomUUID();
   await db.run(

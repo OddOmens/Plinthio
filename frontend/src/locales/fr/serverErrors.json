@@ -34,7 +34,7 @@
       "title": "Trop de requêtes",
       "message": "Trop de requêtes, ralentissez et réessayez dans un instant",
       "meaning": "Une limite de fréquence a été atteinte.",
-      "fix": "Patientez une minute et réessayez. Si plusieurs personnes partagent une même IP derrière un proxy inverse, définissez TRUST_PROXY=1 pour qu'elles soient limitées séparément."
+      "fix": "Patientez une minute et réessayez. Si plusieurs personnes partagent une même IP derrière un proxy inverse, définissez TRUST_PROXY sur l'adresse du proxy pour qu'elles soient limitées séparément."
     },
     "P006": {
       "title": "Temporairement indisponible",

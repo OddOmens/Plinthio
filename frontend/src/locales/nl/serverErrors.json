@@ -34,7 +34,7 @@
       "title": "Te veel verzoeken",
       "message": "Te veel verzoeken, doe het even rustiger aan en probeer het zo opnieuw",
       "meaning": "Er is een limiet bereikt.",
-      "fix": "Wacht een minuut en probeer het opnieuw. Delen veel mensen één IP achter een reverse proxy, stel dan TRUST_PROXY=1 in zodat ze elk een eigen limiet krijgen."
+      "fix": "Wacht een minuut en probeer het opnieuw. Delen veel mensen één IP achter een reverse proxy, stel dan TRUST_PROXY in op het adres van de proxy zodat ze elk een eigen limiet krijgen."
     },
     "P006": {
       "title": "Tijdelijk niet beschikbaar",

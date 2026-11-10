@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { handle } from '../utils/http.js';
+import { canKnowItem } from '../services/visibility.js';
 
 // Highlighted passages in the EPUB reader. Each one is the reader's own: every query is
 // scoped to the signed-in user.
@@ -13,6 +14,8 @@ export const HIGHLIGHT_COLORS = ['yellow', 'green', 'blue', 'pink', 'orange'];
 const MAX_TEXT = 10000;
 const MAX_NOTE = 5000;
 const MAX_CFI = 2000;
+// More than anyone marks in one book, and a ceiling on what one account can store.
+const MAX_HIGHLIGHTS_PER_ITEM = 5000;
 
 function cleanText(value, max) {
   if (value === null || value === undefined) return null;
@@ -46,6 +49,14 @@ router.post('/', handle(async (req, res) => {
   }
 
   const db = await getDb();
+  // Only in a book that exists and that the account may know about.
+  if (!(await canKnowItem(db, itemId, req.user))) {
+    return res.status(404).json({ error: 'Item not found' });
+  }
+  const existing = await db.get('SELECT COUNT(*) AS count FROM highlights WHERE user_id = ? AND item_id = ?', [req.user.id, String(itemId)]);
+  if (existing.count >= MAX_HIGHLIGHTS_PER_ITEM) {
+    return res.status(400).json({ error: `A book can have ${MAX_HIGHLIGHTS_PER_ITEM} highlights. Delete some first` });
+  }
   const id = crypto.randomUUID();
   await db.run(
     `INSERT INTO highlights (id, user_id, item_id, cfi_range, text, color, note, chapter, progress)

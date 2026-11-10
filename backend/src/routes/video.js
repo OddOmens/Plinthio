@@ -17,6 +17,7 @@ import { sendRangedFile, streamFile } from '../utils/fileStream.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError, codeForFsError } from '../errors.js';
 import { ITEM_ID_RE } from '../utils/ids.js';
+import { requireLibraryFile } from '../utils/libraryPath.js';
 
 // A playback failure's code: ffmpeg/ffprobe errors are tagged by the services (P303 can't
 // start, P304 conversion failed, P302 unreadable file); filesystem errors map to P301/P302.
@@ -29,6 +30,11 @@ const router = express.Router();
 
 // Resolves an item for playback: the existence, visibility and path-containment checks every
 // route that reads the file needs. Returns null after responding on any failure.
+//
+// `filePath` is the file's real location with symlinks resolved, checked to be inside a
+// library folder (a link out to some other file on the server is refused) — that's what gets
+// opened. `namePath` is the path as catalogued, for anything that goes by the name: the
+// extension, and the subtitle files sitting next to it.
 async function resolvePlayableItem(req, res) {
   if (!ITEM_ID_RE.test(req.params.id)) {
     res.status(400).json({ error: 'Invalid item id' });
@@ -59,12 +65,36 @@ async function resolvePlayableItem(req, res) {
     res.status(403).json({ error: 'Access denied: Invalid file path traversal detected' });
     return null;
   }
-  if (!fs.existsSync(resolvedItemPath)) {
-    sendError(req, res, 'P301');
-    return null;
-  }
+  const realPath = await requireLibraryFile(req, res, resolvedItemPath);
+  if (!realPath) return null;
 
-  return { item, filePath: resolvedItemPath };
+  return { item, filePath: realPath, namePath: resolvedItemPath };
+}
+
+// An item id that exists and that this account may see — for the routes that don't read the
+// file. Answers 400/P300 itself and returns false otherwise.
+async function requireVisibleItem(req, res) {
+  if (!ITEM_ID_RE.test(req.params.id)) {
+    res.status(400).json({ error: 'Invalid item id' });
+    return false;
+  }
+  const db = await getDb();
+  const item = await db.get('SELECT id FROM items WHERE id = ?', [req.params.id]);
+  if (!item || await isItemHiddenForUser(db, req.params.id, req.user)) {
+    sendError(req, res, 'P300');
+    return false;
+  }
+  return true;
+}
+
+// A file ffprobe couldn't make sense of — or one it recognised as a playlist/script rather
+// than media (services/probe.js) — is never handed to ffmpeg, whatever the URL asks for.
+function refuseUnprobed(req, res, info) {
+  if (!info.probeFailed) return false;
+  sendError(req, res, 'P304', {
+    message: info.unsafeFormat ? 'This file is not a media file and cannot be converted' : undefined
+  });
+  return true;
 }
 
 // Tells the client whether this file can be played directly or has to go through ffmpeg,
@@ -82,7 +112,7 @@ router.get('/:id/playback-info', authenticateToken, async (req, res) => {
       ...info,
       itemDuration: resolved.item.duration || info.duration || 0,
       qualities: buildLadder(info).map((rung) => ({ name: rung.name, height: rung.height })),
-      subtitles: listSubtitleTracks(info, resolved.filePath)
+      subtitles: await listSubtitleTracks(info, resolved.namePath)
     });
   } catch (err) {
     playbackError(req, res, err, 'Could not inspect this video');
@@ -97,7 +127,17 @@ router.get('/:id/subtitles/:trackId.vtt', authenticateToken, async (req, res) =>
     if (!resolved) return;
 
     const info = await getPlaybackInfo(req.params.id, resolved.filePath);
-    const vtt = await getSubtitleVtt(info, resolved.filePath, req.params.trackId);
+    const isEmbedded = String(req.params.trackId).startsWith('embedded-');
+    if (isEmbedded && refuseUnprobed(req, res, info)) return;
+
+    // Extraction is shared and cached (services/subtitles.js); when this request goes away
+    // before it's done, it stops waiting — and the ffmpeg run stops if nobody else is.
+    const gone = new AbortController();
+    res.on('close', () => { if (!res.writableEnded) gone.abort(); });
+    const vtt = await getSubtitleVtt(info, resolved.filePath, req.params.trackId, {
+      signal: gone.signal,
+      sidecarsOf: resolved.namePath
+    });
     if (!vtt) return sendError(req, res, 'P307');
 
     res.setHeader('Content-Type', 'text/vtt; charset=utf-8');
@@ -123,6 +163,7 @@ async function resolveHlsJob(req, res, profileParam) {
   // evaluate probe info with HEVC support enabled.
   const caps = { clientHevc: req.query.clientHevc === '1' || isSourceRemux };
   const info = await getPlaybackInfo(req.params.id, resolved.filePath, caps);
+  if (refuseUnprobed(req, res, info)) return null;
   const mode = (isSourceRemux || info.mode === 'remux') ? 'remux' : 'transcode';
   const ladder = buildLadder({ ...info, mode });
 
@@ -254,13 +295,11 @@ router.get('/:id/hls/:profile/:segmentFile', authenticateToken, async (req, res)
 
 // Explicitly stops any active ffmpeg encode/remux processes for this item when the user
 // closes the player, navigates away, or switches episodes/movies.
-router.post('/:id/hls/stop', authenticateToken, async (req, res) => {
-  if (!ITEM_ID_RE.test(req.params.id)) {
-    return res.status(400).json({ error: 'Invalid item id' });
-  }
+router.post('/:id/hls/stop', authenticateToken, handle(async (req, res) => {
+  if (!await requireVisibleItem(req, res)) return;
   stopItemJobs(req.params.id, req.user.id);
   res.json({ ok: true });
-});
+}));
 
 // Scrub-preview sprite sheets. Pre-generated sheets are served if available.
 // On-the-fly generation during playback is disabled to prevent massive CPU spikes on 4K/heavy files.
@@ -304,9 +343,9 @@ router.get('/:id/trickplay/sheet_:sheet.jpg', authenticateToken, async (req, res
 
 // Intro/credits markers, so the player can offer a skip button.
 router.get('/:id/markers', authenticateToken, handle(async (req, res) => {
-  if (!ITEM_ID_RE.test(req.params.id)) {
-    return res.status(400).json({ error: 'Invalid item id' });
-  }
+  // Markers say how long a title's intro and credits are — still something about a title
+  // this account may not be allowed to know exists.
+  if (!await requireVisibleItem(req, res)) return;
   const db = await getDb();
   const markers = await db.all(
     'SELECT type, start_seconds as startSeconds, end_seconds as endSeconds FROM intro_credit_markers WHERE item_id = ?',
@@ -316,11 +355,13 @@ router.get('/:id/markers', authenticateToken, handle(async (req, res) => {
 }));
 
 router.put('/:id/markers', authenticateToken, requireEditor, async (req, res) => {
-  if (!ITEM_ID_RE.test(req.params.id)) {
-    return res.status(400).json({ error: 'Invalid item id' });
+  try {
+    if (!await requireVisibleItem(req, res)) return;
+  } catch (err) {
+    return serverError(req, res, err);
   }
 
-  const { markers } = req.body;
+  const { markers } = req.body || {};
   if (!Array.isArray(markers)) {
     return res.status(400).json({ error: 'markers must be an array' });
   }
@@ -358,10 +399,10 @@ router.get('/:id/stream', authenticateToken, async (req, res) => {
     const resolved = await resolvePlayableItem(req, res);
     if (!resolved) return;
 
-    const { filePath } = resolved;
+    const { filePath, namePath } = resolved;
     const stat = fs.statSync(filePath);
-    let contentType = mime.lookup(filePath) || 'video/mp4';
-    if (filePath.endsWith('.mkv')) contentType = 'video/x-matroska';
+    let contentType = mime.lookup(namePath) || 'video/mp4';
+    if (namePath.endsWith('.mkv')) contentType = 'video/x-matroska';
     sendRangedFile(req, res, filePath, stat.size, contentType);
   } catch (err) {
     playbackError(req, res, err, 'Could not stream this video');

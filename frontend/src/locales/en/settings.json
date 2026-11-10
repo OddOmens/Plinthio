@@ -84,7 +84,8 @@
       "change": "Change password",
       "changing": "Changing…",
       "changed": "Password changed. Sign in again with your new password.",
-      "changeFailed": "Could not change your password"
+      "changeFailed": "Could not change your password",
+      "revokeKeys": "Also revoke my API keys. Apps that use one will need a new key."
     },
     "twoFactor": {
       "title": "Two-factor sign-in",
@@ -92,11 +93,11 @@
     },
     "devices": {
       "title": "Signed-in devices",
-      "desc": "Every phone, browser and TV you've signed in on keeps you signed in. If you've signed in somewhere you no longer control, sign out everywhere.",
+      "desc": "Every phone, browser and TV you've signed in on keeps you signed in. If you've signed in somewhere you no longer control, sign out everywhere. This also revokes your API keys.",
       "signOutAll": "Sign out of all devices",
       "signingOut": "Signing out…",
       "confirmTitle": "Sign out everywhere",
-      "confirmMessage": "Every device signed in to this account will be signed out straight away, including this one.",
+      "confirmMessage": "Every device signed in to this account will be signed out straight away, including this one. Your API keys stop working too, so apps that use one will need a new key.",
       "signOutFailed": "Could not sign out of all devices"
     }
   },
@@ -174,6 +175,8 @@
       "namePlaceholder": "What it's for, e.g. Mihon on my phone",
       "make": "Make a key",
       "makeFailed": "Could not make a key",
+      "password": "Your password",
+      "passwordWhy": "Making a key asks for your password, so nobody at an unlocked screen can make one.",
       "copyNow": "Copy your new key now. It won't be shown again.",
       "copyKey": "Copy key",
       "empty": "No keys yet.",

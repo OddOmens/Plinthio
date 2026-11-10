@@ -59,7 +59,7 @@ describe('PDF pages', { skip: !hasPoppler && 'poppler (pdfinfo/pdftoppm) is not 
   });
 
   test('OPDS readers get page streaming for PDFs', async () => {
-    const key = (await post('/keys', { name: 'Reader' })).key.key;
+    const key = (await post('/keys', { name: 'Reader', password: 'test-password-123' })).key.key;
     const res = await fetch(`${server.baseUrl}/api/opds/library/${libId}`, {
       headers: { Authorization: `Basic ${Buffer.from(`admin:${key}`).toString('base64')}` }
     });

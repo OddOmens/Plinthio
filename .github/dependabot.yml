@@ -43,6 +43,14 @@ updates:
       - dependency-name: node
         update-types: [version-update:semver-major]
 
+  # The images the compose files name (the Tailscale and Caddy add-ons). Their tags follow a
+  # channel (`stable`, `2`), which Dependabot leaves alone; this starts proposing updates
+  # the day one is pinned to an exact version or digest.
+  - package-ecosystem: docker-compose
+    directory: /docker
+    schedule:
+      interval: weekly
+
   - package-ecosystem: github-actions
     directory: /
     schedule:

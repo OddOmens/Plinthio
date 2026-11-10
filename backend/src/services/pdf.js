@@ -40,6 +40,17 @@ function fileKey(filePath) {
 
 const infoCache = new Map();
 
+// The page count comes from the file (pdfinfo prints whatever the PDF's page tree claims), and
+// the reader builds a list that long. No real book is near this; a crafted "Pages: 2000000000"
+// would otherwise ask for a two-billion-element array.
+export const MAX_PDF_PAGES = 20000;
+
+export function clampPageCount(value) {
+  const pages = parseInt(value, 10);
+  if (!Number.isFinite(pages) || pages <= 0) return 0;
+  return Math.min(pages, MAX_PDF_PAGES);
+}
+
 /**
  * Page count, title and author from the PDF's own metadata.
  */
@@ -52,7 +63,7 @@ export async function pdfInfo(filePath) {
     return m && m[1].trim() ? m[1].trim() : null;
   };
   const info = {
-    pages: parseInt(field('Pages'), 10) || 0,
+    pages: clampPageCount(field('Pages')),
     title: field('Title'),
     author: field('Author')
   };

@@ -34,7 +34,7 @@
       "title": "Requisições demais",
       "message": "Requisições demais; aguarde um pouco e tente de novo",
       "meaning": "Um limite de requisições foi atingido.",
-      "fix": "Espere um minuto e tente de novo. Se muitas pessoas compartilham um IP atrás de um proxy reverso, defina TRUST_PROXY=1 para que elas sejam limitadas separadamente."
+      "fix": "Espere um minuto e tente de novo. Se muitas pessoas compartilham um IP atrás de um proxy reverso, defina TRUST_PROXY com o endereço do proxy para que elas sejam limitadas separadamente."
     },
     "P006": {
       "title": "Indisponível no momento",

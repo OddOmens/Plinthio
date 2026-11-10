@@ -136,7 +136,10 @@
       "otherDisk": "Ela fica em um disco diferente dos dados do servidor.",
       "hint": "Uma pasta como o servidor a vê. No Docker: qualquer lugar dentro de {media} que não seja somente leitura, ou outro disco montado em {backups} (Documentação → Backups e segurança dos dados).",
       "keepThere": "Manter lá",
-      "copyFiles": "Também copiar fotos de perfil, capas, a chave de login e os certificados HTTPS",
+      "copyFiles": "Também copiar fotos de perfil, capas e os certificados HTTPS",
+      "copyServerKey": "Também copiar a chave de login",
+      "copyServerKeyWhy": "Desativado: depois de restaurar em um novo servidor, todos entram de novo e configuram a verificação em duas etapas de novo. Ativado: a restauração traz isso de volta também, mas quem conseguir abrir a pasta de backups pode entrar em qualquer conta. Ative só para uma pasta que mais ninguém consegue ler.",
+      "serverKeyFound": "Há uma cópia antiga da chave de login nesta pasta ({file}). Quem conseguir abrir a pasta pode usá-la para entrar em qualquer conta. Apague esse arquivo ou mova-o para um lugar privado.",
       "couldNotCheck": "Não foi possível verificar essa pasta",
       "pickerTitle": "Copiar backups para"
     },

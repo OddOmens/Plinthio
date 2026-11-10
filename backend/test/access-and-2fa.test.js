@@ -111,13 +111,18 @@ describe('away from home, and two-factor', () => {
     assert.equal((await login(GUEST.username, GUEST.password, outside())).status, 200);
 
     await req('PATCH', `/users/${guestId}`, { token: adminToken, body: { remoteAccess: false } });
+    // From outside the right password gets the same answer as a wrong one: saying "this
+    // account is home-only" would confirm the password to whoever is guessing.
     const blocked = await login(GUEST.username, GUEST.password, outside());
-    assert.equal(blocked.body.code, 'P110');
+    assert.equal(blocked.status, 401);
+    assert.equal(blocked.body.code, 'P107');
+    const wrong = await login(GUEST.username, 'not-the-password', outside());
+    assert.deepEqual(wrong.body, blocked.body, 'indistinguishable from a wrong password');
     const home = await login(GUEST.username, GUEST.password, HOME);
     assert.equal(home.status, 200);
     // Their session, and an API key of theirs, stop at the door outside.
     assert.equal((await req('GET', '/items', { from: outside(), token: home.body.token })).body.code, 'P110');
-    const key = await req('POST', '/keys', { token: home.body.token, body: { name: 'reader' } });
+    const key = await req('POST', '/keys', { token: home.body.token, body: { name: 'reader', password: GUEST.password } });
     assert.equal((await req('GET', '/items', { from: outside(), apiKey: key.body.key.key })).body.code, 'P110');
     assert.equal((await req('GET', '/items', { apiKey: key.body.key.key })).status, 200);
 
@@ -127,14 +132,24 @@ describe('away from home, and two-factor', () => {
   test('two-factor required away from home: without it, outside sign-in waits until it is set up', async () => {
     await req('PATCH', '/admin/network', { token: adminToken, body: { require2faOutside: true } });
     assert.equal((await req('GET', '/auth/access', { from: outside() })).body.twoFactorRequired, true);
-    assert.equal((await login(GUEST.username, GUEST.password, outside())).body.code, 'P112');
-    assert.equal((await login(GUEST.username, GUEST.password, HOME)).status, 200, 'at home, a password is enough');
+    // Again answered like a wrong password from outside; the log has the real reason.
+    assert.equal((await login(GUEST.username, GUEST.password, outside())).body.code, 'P107');
+    const home = await login(GUEST.username, GUEST.password, HOME);
+    assert.equal(home.status, 200, 'at home, a password is enough');
+    // And a session started at home doesn't get round it by walking out of the door.
+    assert.equal((await req('GET', '/items', { from: outside(), token: home.body.token })).body.code, 'P112');
+    assert.equal((await req('GET', '/items', { token: home.body.token })).status, 200);
+    const logs = await req('GET', '/admin/logs?limit=50', { token: adminToken });
+    assert.match(JSON.stringify(logs.body), /two-factor is required away from home and isn't set up/);
   });
 
   let secret;
   let recovery;
   test('turning on two-factor: a code from the app confirms it, and backup codes come once', async () => {
-    const start = await req('POST', '/auth/2fa/setup', { token: adminToken });
+    // Starting needs the account's password, not just a signed-in browser.
+    assert.equal((await req('POST', '/auth/2fa/setup', { token: adminToken })).body.code, 'P107');
+    assert.equal((await req('POST', '/auth/2fa/setup', { token: adminToken, body: { password: 'nope' } })).body.code, 'P107');
+    const start = await req('POST', '/auth/2fa/setup', { token: adminToken, body: { password: ADMIN.password } });
     assert.match(start.body.uri, /^otpauth:\/\/totp\//);
     secret = start.body.secret;
     assert.equal((await req('POST', '/auth/2fa/enable', { token: adminToken, body: { code: '000000' } })).body.code, 'P111');
@@ -190,7 +205,7 @@ describe('away from home, and two-factor', () => {
   });
 
   test('turning it off needs the password and a code; API keys can’t touch it', async () => {
-    const key = await req('POST', '/keys', { token: adminToken, body: { name: 'script' } });
+    const key = await req('POST', '/keys', { token: adminToken, body: { name: 'script', password: ADMIN.password } });
     assert.equal((await req('GET', '/auth/2fa', { apiKey: key.body.key.key })).status, 403);
     // Nor can a key be swapped for a session (which would skip two-factor), or make more keys.
     assert.equal((await req('POST', '/auth/refresh', { apiKey: key.body.key.key })).status, 403);
@@ -208,7 +223,7 @@ describe('away from home, and two-factor', () => {
 
   test('an admin can reset someone’s two-factor, which signs them out', async () => {
     const guestLogin = await login(GUEST.username, GUEST.password, HOME);
-    const gStart = await req('POST', '/auth/2fa/setup', { token: guestLogin.body.token });
+    const gStart = await req('POST', '/auth/2fa/setup', { token: guestLogin.body.token, body: { password: GUEST.password } });
     const gOn = await req('POST', '/auth/2fa/enable', { token: guestLogin.body.token, body: { code: codeFor(gStart.body.secret) } });
     const gToken = gOn.body.token;
     assert.equal((await login(GUEST.username, GUEST.password, HOME)).body.twoFactorRequired, true);
@@ -231,10 +246,13 @@ describe('away from home, and two-factor', () => {
   });
 
   test('wrong passwords from outside hold that account back, but never at home', async () => {
+    // A fresh account: the guest's refused outside sign-ins above already count against it.
+    const VISITOR = { username: 'visitor', password: 'visitor-password-1' };
+    await req('POST', '/users', { token: adminToken, body: { ...VISITOR } });
     for (let i = 0; i < 10; i++) {
-      assert.equal((await login(GUEST.username, 'not-the-password', outside())).body.code, 'P107');
+      assert.equal((await login(VISITOR.username, 'not-the-password', outside())).body.code, 'P107');
     }
-    assert.equal((await login(GUEST.username, GUEST.password, outside())).body.code, 'P108', 'even the right password waits');
-    assert.equal((await login(GUEST.username, GUEST.password, HOME)).status, 200, 'home is never locked out');
+    assert.equal((await login(VISITOR.username, VISITOR.password, outside())).body.code, 'P108', 'even the right password waits');
+    assert.equal((await login(VISITOR.username, VISITOR.password, HOME)).status, 200, 'home is never locked out');
   });
 });

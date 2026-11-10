@@ -64,6 +64,7 @@ This page starts from what you see instead.
 | P309 on a PDF | The PDF is damaged or password-protected. Check it in another reader, and remove the password |
 | PDF pages slow the first time | Each page is rendered once, then cached. Later reads are instant |
 | An archive won't open | It may be corrupt, or an unusual RAR version. Repack it as CBZ |
+| A `.cb7` or `.7z` won't open | On a bare-metal install, 7-Zip isn't installed: install the `7zip` package (or point `PLINTHIO_7Z_BIN` at a 7-Zip program). Otherwise the server log says why it was refused: it isn't really a 7z archive, it is password-protected, it contains links, or it would unpack to more than 4 GB or 10,000 files. Repack it as CBZ |
 | A manga opens left-to-right | Set the direction in the reader. It's saved for the series. `ComicInfo.xml` `<Manga>YesAndRightToLeft</Manga>` sets it on scan |
 | Audiobook lock-screen controls missing | Install the app to the home screen (iOS), and start playback from a tap |
 | A download disappeared (iPhone) | Safari may clear storage for sites that aren't installed. Install the app to the home screen |

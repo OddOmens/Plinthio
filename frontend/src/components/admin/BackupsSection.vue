@@ -72,6 +72,19 @@
             <span class="text-xs text-foreground">{{ $t('admin.backups.destination.copyFiles') }}</span>
           </label>
         </div>
+        <!-- The sign-in key is its own choice: it's what lets a full restore keep everyone
+             signed in and two-factor working, and also what lets a stranger with the folder in. -->
+        <label v-if="config.destination && config.copyFiles" class="flex items-start gap-2.5 cursor-pointer select-none pt-1">
+          <input type="checkbox" v-model="config.copyServerKey" class="mt-0.5 rounded border-border accent-primary focus:ring-ring" />
+          <span class="text-xs text-foreground">
+            {{ $t('admin.backups.destination.copyServerKey') }}
+            <span class="block text-[12px] text-muted-foreground leading-relaxed mt-0.5">{{ $t('admin.backups.destination.copyServerKeyWhy') }}</span>
+          </span>
+        </label>
+        <p v-if="staleServerKey" class="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-1.5">
+          <AlertTriangle class="w-3.5 h-3.5 mt-px flex-shrink-0" />
+          <span>{{ $t('admin.backups.destination.serverKeyFound', { file: 'files/jwt.secret' }) }}</span>
+        </p>
       </div>
     </div>
 
@@ -158,7 +171,7 @@ import { t } from '../../i18n';
 const dialog = useDialogStore();
 const save = useSaveStatus();
 
-const config = ref({ enabled: true, intervalHours: 24, retentionCount: 7, destination: '', copyRetentionCount: 30, copyFiles: true });
+const config = ref({ enabled: true, intervalHours: 24, retentionCount: 7, destination: '', copyRetentionCount: 30, copyFiles: true, copyServerKey: false });
 const savedConfig = ref('');
 // Nothing to save until the server's settings have loaded: Save would send these defaults.
 const dirty = computed(() => !!savedConfig.value && JSON.stringify(config.value) !== savedConfig.value);
@@ -167,6 +180,15 @@ const dirty = computed(() => !!savedConfig.value && JSON.stringify(config.value)
 const savedDestination = ref('');
 const lastCopyAt = ref(null);
 const copyError = ref('');
+// A copy of the sign-in key (jwt.secret) is in the saved folder. Earlier versions always put
+// one there; the server never deletes it, so say so while the admin has chosen not to keep one.
+const serverKeyAtSaved = ref(false);
+const staleServerKey = computed(() => {
+  if (!config.value.destination || (config.value.copyFiles && config.value.copyServerKey)) return false;
+  // A folder just tested answers for itself; otherwise go by what the server said of the saved one.
+  if (destinationCheck.value?.ok) return !!destinationCheck.value.serverKeyPresent;
+  return config.value.destination === savedDestination.value && serverKeyAtSaved.value;
+});
 
 function applyConfig(data) {
   config.value = {
@@ -175,10 +197,12 @@ function applyConfig(data) {
     retentionCount: data.retentionCount || 7,
     destination: data.destination || '',
     copyRetentionCount: data.copyRetentionCount || 30,
-    copyFiles: data.copyFiles !== false
+    copyFiles: data.copyFiles !== false,
+    copyServerKey: data.copyServerKey === true
   };
   savedConfig.value = JSON.stringify(config.value);
   savedDestination.value = data.destination || '';
+  serverKeyAtSaved.value = !!data.serverKeyAtDestination;
   lastCopyAt.value = data.lastCopyAt || null;
   // Stored as "<time> <message>".
   copyError.value = (data.lastCopyError || '').replace(/^\S+\s/, '');

@@ -12,6 +12,12 @@
         <input id="new-password" v-model="passwords.new" type="password" autocomplete="new-password" required minlength="8" class="field" />
         <p class="field-hint">{{ $t('settings.security.password.hint') }}</p>
       </div>
+      <!-- Only offered to accounts that have keys: a key keeps working after a password
+           change unless it's revoked too. -->
+      <label v-if="hasApiKeys" class="flex items-start gap-2.5 cursor-pointer select-none">
+        <input type="checkbox" v-model="revokeApiKeys" class="mt-0.5 rounded border-border accent-primary focus:ring-ring" />
+        <span class="text-xs text-foreground">{{ $t('settings.security.password.revokeKeys') }}</span>
+      </label>
       <button type="submit" :disabled="changing" class="btn btn-primary self-start">
         {{ changing ? $t('settings.security.password.changing') : $t('settings.security.password.change') }}
       </button>
@@ -31,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { LogOut } from '@lucide/vue';
 import api from '../../../api/client';
 import { useAuthStore } from '../../../stores/auth';
@@ -46,13 +52,23 @@ const dialog = useDialogStore();
 
 const passwords = ref({ current: '', new: '' });
 const changing = ref(false);
+const revokeApiKeys = ref(false);
+const hasApiKeys = ref(false);
+onMounted(async () => {
+  try {
+    hasApiKeys.value = ((await api.get('/keys')).data.keys || []).length > 0;
+  } catch (err) {
+    // The list couldn't be read: the checkbox just isn't offered.
+  }
+});
 
 async function changePassword() {
   changing.value = true;
   try {
     await api.patch('/users/password', {
       currentPassword: passwords.value.current,
-      newPassword: passwords.value.new
+      newPassword: passwords.value.new,
+      ...(hasApiKeys.value && revokeApiKeys.value ? { revokeApiKeys: true } : {})
     });
     passwords.value = { current: '', new: '' };
     // Changing the password invalidates every token, this tab's too: sign out now rather

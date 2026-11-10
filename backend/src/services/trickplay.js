@@ -4,6 +4,7 @@ import path from 'path';
 import sharp from 'sharp';
 import { config } from '../config/env.js';
 import { logger } from './logger.js';
+import { localInputArgs } from './probe.js';
 
 const TRICKPLAY_DIR = path.join(config.cacheDir, 'trickplay');
 if (!fs.existsSync(TRICKPLAY_DIR)) fs.mkdirSync(TRICKPLAY_DIR, { recursive: true });
@@ -41,6 +42,7 @@ function extractFrames(videoPath, framesDir) {
   return new Promise((resolve, reject) => {
     const proc = spawn('ffmpeg', [
       '-hide_banner', '-loglevel', 'error',
+      ...localInputArgs(),
       '-i', videoPath,
       '-vf', `fps=1/${INTERVAL_SECONDS},scale=${TILE_WIDTH}:-2`,
       '-q:v', '5',

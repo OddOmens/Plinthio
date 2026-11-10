@@ -5,6 +5,7 @@ import { config } from '../config/env.js';
 import { PlinthioError } from '../errors.js';
 import { logger } from './logger.js';
 import { getActiveHwaccel, hwaccelConfig } from './hwaccel.js';
+import { localInputArgs } from './probe.js';
 
 const HLS_DIR = path.join(config.cacheDir, 'hls');
 if (!fs.existsSync(HLS_DIR)) fs.mkdirSync(HLS_DIR, { recursive: true });
@@ -34,6 +35,9 @@ const SOURCE_QUALITY = 'source';
 const PROFILE_RE = /^(source|1080p|720p|480p)-a(\d{1,2})$/;
 
 const jobs = new Map();
+// When each job directory was last asked for, so the size sweep below can tell a film
+// someone is in the middle of from one nobody has touched in a while.
+const dirLastUsed = new Map();
 
 export function parseProfile(profile) {
   const match = PROFILE_RE.exec(profile || '');
@@ -62,30 +66,59 @@ export function buildLadder(playbackInfo) {
 // Encodes are the one thing an account can make the server do that costs real CPU, so they
 // are capped. One person only ever watches one thing; a second encode of theirs is usually a
 // quality switch, so past PER_USER_ENCODES their oldest one is stopped rather than refused.
-// Past the server-wide cap a new encode gets P305 ("try again shortly"). Remuxes copy the
-// streams and aren't counted.
+// Past the server-wide cap a new encode gets P305 ("try again shortly").
+//
+// Remuxes copy the streams, so they cost next to no CPU — but each one writes a second copy
+// of the file into the HLS cache, and a remux can be asked for by URL for any title. They
+// get the same two limits with more headroom: a household streaming to every screen in the
+// house stays well under them, a script walking the library doesn't.
 const PER_USER_ENCODES = 2;
 const MAX_ENCODES = Math.max(1, parseInt(process.env.TRANSCODE_LIMIT, 10) || 4);
+const PER_USER_REMUXES = 3;
+const MAX_REMUXES = Math.max(1, parseInt(process.env.REMUX_LIMIT, 10) || Math.max(8, MAX_ENCODES * 2));
 
-function runningEncodes() {
-  return [...jobs.values()].filter((job) => job.mode === 'transcode' && !job.exited && job.proc);
+const LIMITS = {
+  transcode: { perUser: PER_USER_ENCODES, max: MAX_ENCODES },
+  remux: { perUser: PER_USER_REMUXES, max: MAX_REMUXES }
+};
+
+// Starts that have been let through the caps but haven't spawned ffmpeg yet (working out
+// the encoder arguments takes an await). Keyed like `jobs`. A second request for the same
+// item + profile waits on the same promise instead of starting its own ffmpeg, and the caps
+// count these alongside running jobs — otherwise a burst of parallel requests all pass the
+// check before any of them is on the books.
+const pendingStarts = new Map();
+
+// Everything holding (or about to hold) an ffmpeg process of this kind, oldest first.
+function activeSlots(mode) {
+  const running = [...jobs.values()].filter((job) => job.mode === mode && !job.exited && job.proc);
+  const pending = [...pendingStarts.values()].filter((start) => start.mode === mode && !start.cancelled);
+  return [...running, ...pending].sort((a, b) => a.lastRequestedAt - b.lastRequestedAt);
 }
 
-function makeRoomForEncode(userId) {
+function stopSlot(slot) {
+  if (slot.pending) {
+    // No process yet: startJob sees the flag once its await returns and never spawns.
+    slot.cancelled = true;
+    return;
+  }
+  killJob(slot);
+  slot.exited = true;
+  if (jobs.get(slot.mapKey) === slot) jobs.delete(slot.mapKey);
+}
+
+// Synchronous on purpose: the caller registers its pending start in the same tick, so no
+// other request can be counted in between.
+function makeRoom(mode, userId) {
+  const limit = LIMITS[mode];
   if (userId) {
     const now = Date.now();
-    // An encode someone else is also watching (a watch party) is never stopped for this.
-    const mine = runningEncodes()
-      .filter((job) => job.ownerId === userId && !hasOtherActiveViewers(job, userId, now))
-      .sort((a, b) => a.lastRequestedAt - b.lastRequestedAt);
-    while (mine.length >= PER_USER_ENCODES) {
-      const oldest = mine.shift();
-      killJob(oldest);
-      oldest.exited = true;
-      jobs.delete(oldest.mapKey);
-    }
+    // A job someone else is also watching (a watch party) is never stopped for this.
+    const mine = activeSlots(mode)
+      .filter((slot) => slot.ownerId === userId && !hasOtherActiveViewers(slot, userId, now));
+    while (mine.length >= limit.perUser) stopSlot(mine.shift());
   }
-  if (runningEncodes().length >= MAX_ENCODES) throw new PlinthioError('P305');
+  if (activeSlots(mode).length >= limit.max) throw new PlinthioError('P305');
 }
 
 function jobDir(itemId, profile) {
@@ -174,34 +207,73 @@ async function buildEncodeArgs(mode, quality, audioTrack, opts = {}) {
  * Starts (or reuses) a progressive HLS encode for one playback profile of an item. The
  * playlist and segments land on disk as ffmpeg produces them — callers don't wait for the
  * whole file to finish, just for the pieces they need (see waitForStableFile below).
+ *
+ * Nothing between the "is one already running?" checks and registering the pending start
+ * may await: that gap is what used to let parallel requests each start their own ffmpeg.
  */
-export async function getOrStartJob(itemId, filePath, opts = {}) {
+export function getOrStartJob(itemId, filePath, opts = {}) {
   const mode = opts.mode === 'remux' ? 'remux' : 'transcode';
   const quality = mode === 'remux' ? SOURCE_QUALITY : (opts.quality || '720p');
   const audioTrack = Number.isInteger(opts.audioTrack) ? opts.audioTrack : 0;
   const profile = formatProfile(quality, audioTrack);
   const mapKey = `${itemId}:${profile}`;
-
-  const existing = jobs.get(mapKey);
-  if (existing && !existing.exited) {
-    existing.lastRequestedAt = Date.now();
-    return existing;
-  }
-
   const dir = jobDir(itemId, profile);
-  fs.mkdirSync(dir, { recursive: true });
+  const now = Date.now();
+  dirLastUsed.set(dir, now);
 
-  const playlistPath = path.join(dir, 'media.m3u8');
+  try {
+    const existing = jobs.get(mapKey);
+    if (existing && !existing.exited) {
+      existing.lastRequestedAt = now;
+      return Promise.resolve(existing);
+    }
 
-  // If a previous run already finished this profile, serve it straight from disk rather than
-  // re-encoding the same thing.
-  if (fs.existsSync(playlistPath) && fs.readFileSync(playlistPath, 'utf8').includes('#EXT-X-ENDLIST')) {
-    const finished = { profile, quality, audioTrack, mode, dir, playlistPath, proc: null, exited: true, error: null, lastRequestedAt: Date.now() };
-    jobs.set(mapKey, finished);
-    return finished;
+    const starting = pendingStarts.get(mapKey);
+    if (starting && !starting.cancelled) {
+      starting.lastRequestedAt = now;
+      return starting.promise;
+    }
+
+    fs.mkdirSync(dir, { recursive: true });
+    const playlistPath = path.join(dir, 'media.m3u8');
+
+    // If a previous run already finished this profile, serve it straight from disk rather
+    // than re-encoding the same thing.
+    if (fs.existsSync(playlistPath) && fs.readFileSync(playlistPath, 'utf8').includes('#EXT-X-ENDLIST')) {
+      const finished = { mapKey, profile, quality, audioTrack, mode, dir, playlistPath, proc: null, exited: true, error: null, lastRequestedAt: now };
+      jobs.set(mapKey, finished);
+      return Promise.resolve(finished);
+    }
+
+    makeRoom(mode, opts.userId);
+
+    const start = {
+      pending: true,
+      mapKey,
+      mode,
+      ownerId: opts.userId || null,
+      cancelled: false,
+      lastRequestedAt: now,
+      promise: null
+    };
+    start.promise = startJob(start, { itemId, filePath, profile, quality, audioTrack, dir, playlistPath, opts })
+      .finally(() => {
+        if (pendingStarts.get(mapKey) === start) pendingStarts.delete(mapKey);
+      });
+    pendingStarts.set(mapKey, start);
+    return start.promise;
+  } catch (err) {
+    return Promise.reject(err);
   }
+}
 
+async function startJob(start, { itemId, filePath, profile, quality, audioTrack, dir, playlistPath, opts }) {
+  const { mapKey, mode } = start;
   const { inputArgs, outputArgs } = await buildEncodeArgs(mode, quality, audioTrack, opts);
+
+  // Stopped while it was still getting ready (the viewer closed the player, or this account
+  // started something newer): there's no process yet, so simply don't make one.
+  if (start.cancelled) throw new PlinthioError('P305');
 
   // Relative filenames throughout, with cwd set to the job dir: keeps the playlist's segment
   // URIs relative ("seg_00000.m4s") so they match exactly what the segment route serves,
@@ -209,6 +281,7 @@ export async function getOrStartJob(itemId, filePath, opts = {}) {
   const args = [
     '-hide_banner', '-loglevel', 'error', '-y',
     ...inputArgs,
+    ...localInputArgs(),
     '-i', filePath,
     ...outputArgs,
     '-f', 'hls',
@@ -224,16 +297,21 @@ export async function getOrStartJob(itemId, filePath, opts = {}) {
     'media.m3u8'
   ];
 
-  // Checked with no await between it and jobs.set below, so a burst of parallel requests
-  // can't all slip past the cap.
-  if (mode === 'transcode') makeRoomForEncode(opts.userId);
+  // The directory may have been swept while the arguments were being worked out.
+  fs.mkdirSync(dir, { recursive: true });
+
+  // From here to jobs.set there is no await, so the process is on the books (and so can be
+  // stopped, reaped and killed at shutdown) from the moment it exists.
+  const stale = jobs.get(mapKey);
+  if (stale && !stale.exited) killJob(stale);
+
   const proc = spawn('ffmpeg', args, { cwd: dir });
   let stderr = '';
   proc.stderr.on('data', (d) => { stderr += d.toString().slice(0, 4000); });
 
   const job = {
     mapKey,
-    ownerId: opts.userId || null,
+    ownerId: start.ownerId,
     profile,
     quality,
     audioTrack,
@@ -265,7 +343,9 @@ export async function getOrStartJob(itemId, filePath, opts = {}) {
         undefined,
         { cause: new Error(stderr.trim().slice(0, 300)) }
       );
-      fs.rmSync(job.dir, { recursive: true, force: true });
+      // Only if nothing newer has taken over this directory since.
+      const current = jobs.get(mapKey);
+      if (!current || current === job) fs.rmSync(job.dir, { recursive: true, force: true });
     }
   });
 
@@ -324,6 +404,7 @@ export async function waitForSegment(job, filename) {
 export function touchJob(job, viewerId) {
   const now = Date.now();
   job.lastRequestedAt = now;
+  if (job.dir) dirLastUsed.set(job.dir, now);
   if (viewerId) {
     if (!job.viewers) job.viewers = new Map();
     job.viewers.set(viewerId, now);
@@ -361,7 +442,20 @@ export function stopItemJobs(itemId, viewerId = null) {
       jobs.delete(mapKey);
     }
   }
+  // A start that hasn't spawned yet is called off too, unless it's another account's.
+  for (const [mapKey, start] of pendingStarts.entries()) {
+    if (!mapKey.startsWith(`${itemId}:`)) continue;
+    if (viewerId && start.ownerId && start.ownerId !== viewerId) continue;
+    start.cancelled = true;
+  }
 }
+
+// Server shutdown: no ffmpeg outlives the process that started it.
+export function stopAllJobs() {
+  for (const start of pendingStarts.values()) start.cancelled = true;
+  for (const job of jobs.values()) killJob(job);
+}
+process.on('exit', stopAllJobs);
 
 // Reaps ffmpeg processes nobody has asked for output from recently. Segment directories are
 // left on disk for the cache sweep (sweepHlsCache) to age out separately, so a client that
@@ -382,6 +476,92 @@ function reapIdleJobs() {
 }
 
 setInterval(reapIdleJobs, REAP_SWEEP_MS).unref();
+
+// The age sweep alone lets the cache grow as fast as someone can start remuxes (each is a
+// full copy of its film), so it also has a size budget: past it, the job directories that
+// have gone longest without a request are deleted until it fits. A directory with a running
+// ffmpeg, or one requested in the last EVICT_IDLE_MS, is never touched — a returning viewer
+// whose copy was evicted just gets it made again.
+const HLS_CACHE_MAX_BYTES = Math.max(1, parseFloat(process.env.HLS_CACHE_MAX_GB) || 40) * 1024 ** 3;
+const EVICT_IDLE_MS = 10 * 60 * 1000;
+const SIZE_SWEEP_MS = 5 * 60 * 1000;
+
+function dirSize(dir) {
+  let total = 0;
+  try {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (!entry.isFile()) continue;
+      try { total += fs.statSync(path.join(dir, entry.name)).size; } catch { /* just removed */ }
+    }
+  } catch {
+    // Directory went away mid-sweep.
+  }
+  return total;
+}
+
+function listJobDirs() {
+  const dirs = [];
+  let itemIds;
+  try {
+    itemIds = fs.readdirSync(HLS_DIR);
+  } catch {
+    return dirs;
+  }
+  for (const itemId of itemIds) {
+    const itemDir = path.join(HLS_DIR, itemId);
+    let profiles;
+    try {
+      profiles = fs.readdirSync(itemDir);
+    } catch {
+      continue;
+    }
+    for (const profile of profiles) dirs.push(path.join(itemDir, profile));
+  }
+  return dirs;
+}
+
+export function enforceHlsCacheBudget(maxBytes = HLS_CACHE_MAX_BYTES, idleMs = EVICT_IDLE_MS) {
+  const now = Date.now();
+  for (const [dir, usedAt] of dirLastUsed) {
+    if (now - usedAt > 24 * 60 * 60 * 1000) dirLastUsed.delete(dir);
+  }
+
+  const running = new Set([...jobs.values()].filter((job) => !job.exited && job.proc).map((job) => job.dir));
+  let total = 0;
+  const entries = [];
+  for (const dir of listJobDirs()) {
+    const size = dirSize(dir);
+    total += size;
+    let lastUsed = dirLastUsed.get(dir);
+    if (lastUsed === undefined) {
+      try { lastUsed = fs.statSync(dir).mtimeMs; } catch { continue; }
+    }
+    entries.push({ dir, size, lastUsed });
+  }
+  if (total <= maxBytes) return 0;
+
+  let freed = 0;
+  entries.sort((a, b) => a.lastUsed - b.lastUsed);
+  for (const entry of entries) {
+    if (total <= maxBytes) break;
+    if (running.has(entry.dir) || now - entry.lastUsed < idleMs) continue;
+    const mapKey = [...jobs.entries()].find(([, job]) => job.dir === entry.dir)?.[0];
+    if (mapKey) jobs.delete(mapKey);
+    fs.rmSync(entry.dir, { recursive: true, force: true });
+    try { fs.rmdirSync(path.dirname(entry.dir)); } catch { /* other profiles still there */ }
+    dirLastUsed.delete(entry.dir);
+    total -= entry.size;
+    freed += entry.size;
+  }
+  if (freed > 0) {
+    logger.info('media', `HLS cache over its ${Math.round(maxBytes / 1024 ** 3)} GB budget: removed ${Math.round(freed / 1024 ** 2)} MB of idle segments`);
+  }
+  return freed;
+}
+
+setInterval(() => {
+  try { enforceHlsCacheBudget(); } catch (err) { logger.warn('media', `HLS cache size sweep failed: ${err.message}`); }
+}, SIZE_SWEEP_MS).unref();
 
 /**
  * Deletes on-disk HLS job directories untouched for longer than maxAgeMs. Call periodically
@@ -415,4 +595,5 @@ export function sweepHlsCache(maxAgeMs = 24 * 60 * 60 * 1000) {
       // ignore
     }
   }
+  enforceHlsCacheBudget();
 }

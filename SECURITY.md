@@ -10,6 +10,18 @@ Security fixes go into the latest release. Stay on `latest` (or on the major ver
 | 1.x (latest) | ✅ |
 | older | ❌ |
 
+## Checking an image is genuine
+
+Release images are built by this repository's Release workflow and signed with a record of
+the commit and workflow run that produced them. With the [GitHub CLI](https://cli.github.com):
+
+```bash
+gh attestation verify oci://ghcr.io/oddomens/plinthio:latest --owner OddOmens
+```
+
+It passes only for an image built here, unchanged since. Images published before
+attestations were added (1.9.0 and earlier) have none.
+
 ## Reporting a vulnerability
 
 Please **don't open a public issue** for a security problem. Report it privately through
