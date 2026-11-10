@@ -91,8 +91,8 @@ Plinthio only reads your media. To have Docker enforce that, add `:ro` to the me
 (`- ${MEDIA_DIR:-/media/library}:/media:ro`). Don't if you keep backup copies in a folder
 under `/media` ([a second place for backups](administration.md#a-second-place-for-backups)):
 that folder has to be writable. The one thing that changes media files is opt-in: letting
-[H.264 copies](administration.md#h264-copies) replace their AV1 originals, which also needs
-the folder writable.
+[converted copies](administration.md#converted-copies) replace their originals, which also
+needs the folder writable.
 
 To use several media folders, mount each one and add each as a library in the app:
 

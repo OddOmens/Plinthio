@@ -276,6 +276,27 @@ export const ERROR_CODES = {
     meaning: 'poppler started but failed on this file. Usually a damaged or password-protected PDF.',
     fix: 'Open the file in another PDF reader to check it. A password-protected PDF has to be unlocked first. Admin → Logs has the error.'
   },
+  P310: {
+    status: 409,
+    title: 'Nothing to convert',
+    message: 'This video already plays on every device, so it needs no converted copy',
+    meaning: 'A converted copy was asked for, but the video is already 8-bit H.264 or HEVC, which browsers and Apple devices play as it is.',
+    fix: 'Nothing to do. If it still will not play on one device, the cause is something else: look for the code the player shows.'
+  },
+  P311: {
+    status: 409,
+    title: 'Converted copies are at their size limit',
+    message: 'The size limit for converted copies has been reached',
+    meaning: 'The converted copies already add up to the limit set in Admin → Playback, so no more are made. A conversion that would go past the limit is stopped and listed as failed with this code.',
+    fix: 'Raise the size limit in Admin → Playback → Converted copies, or delete copies you no longer need there. Then press Try again on the ones that failed.'
+  },
+  P312: {
+    status: 403,
+    title: 'Only admins can convert videos',
+    message: 'Only an admin can convert videos on this server',
+    meaning: 'This account asked for a converted copy, but the server only lets admins start conversions.',
+    fix: 'Ask an admin, or have them switch on "Let everyone ask for a copy" in Admin → Playback → Converted copies.'
+  },
   P350: {
     status: null,
     side: 'client',

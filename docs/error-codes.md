@@ -236,6 +236,24 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 
 **What to do:** Open the file in another PDF reader to check it. A password-protected PDF has to be unlocked first. Admin → Logs has the error.
 
+### P310: Nothing to convert
+
+*HTTP 409.* A converted copy was asked for, but the video is already 8-bit H.264 or HEVC, which browsers and Apple devices play as it is.
+
+**What to do:** Nothing to do. If it still will not play on one device, the cause is something else: look for the code the player shows.
+
+### P311: Converted copies are at their size limit
+
+*HTTP 409.* The converted copies already add up to the limit set in Admin → Playback, so no more are made. A conversion that would go past the limit is stopped and listed as failed with this code.
+
+**What to do:** Raise the size limit in Admin → Playback → Converted copies, or delete copies you no longer need there. Then press Try again on the ones that failed.
+
+### P312: Only admins can convert videos
+
+*HTTP 403.* This account asked for a converted copy, but the server only lets admins start conversions.
+
+**What to do:** Ask an admin, or have them switch on "Let everyone ask for a copy" in Admin → Playback → Converted copies.
+
 ### P350: Browser cannot play this format
 
 *app.* The browser rejected the stream even after the server converted it.

@@ -141,7 +141,7 @@ PLINTHIO_TAG=1
 ```
 
 The database, covers and caches go in `./config`. Plinthio only reads your media folders; it
-never writes to them unless you switch on replacing AV1 originals with their H.264 copies
+never writes to them unless you switch on replacing originals with their converted copies
 (Admin → Playback, off by default).
 
 <details>

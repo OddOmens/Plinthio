@@ -533,8 +533,8 @@ async function initSchema(db) {
     );
   `);
 
-  // H.264 copies of video Apple devices and some browsers can't decode (AV1, VP9, VP8), made
-  // in the background and kept under DATA_DIR/compat. One row per title: queued, running,
+  // H.264 or HEVC copies of video Apple devices and some browsers can't decode (AV1, VP9,
+  // MPEG-2, 10-bit H.264…), made in the background and kept under DATA_DIR/compat. One row per title: queued, running,
   // done or failed. source_size/source_mtime are the file the copy was made from, so a
   // replaced file's copy isn't played. See services/compat.js.
   await db.exec(`
@@ -543,15 +543,18 @@ async function initSchema(db) {
       status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'done', 'failed')),
       size INTEGER DEFAULT 0,
       source_codec TEXT,
+      target_codec TEXT,
       source_size INTEGER,
       source_mtime INTEGER,
       error TEXT,
+      error_code TEXT,
       replace_error TEXT,
       requested_by TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       finished_at DATETIME
     );
   `);
+  await addColumns(db, 'compat_copies', ['target_codec TEXT', 'error_code TEXT']);
 
   // Missing posters and details that don't matter (home videos, recordings nobody has
   // catalogued): an admin can stop them being flagged per title, or for a whole library.

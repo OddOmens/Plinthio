@@ -468,7 +468,7 @@ const clientVideoCodecs = () => {
   return ['h264', 'vp8', 'vp9', ...(isClientHevcSupported() ? ['hevc'] : [])].join(',');
 };
 
-// Set when the server has an H.264 copy of this title for this browser (see playback-info).
+// Set when the server has a converted copy of this title that this browser plays (see playback-info).
 const useCompatCopy = ref(false);
 
 const streamUrl = computed(() => {

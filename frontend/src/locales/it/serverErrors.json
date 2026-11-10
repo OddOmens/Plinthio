@@ -216,6 +216,24 @@
       "meaning": "poppler è partito ma non è riuscito a gestire questo file. Di solito è un PDF danneggiato o protetto da password.",
       "fix": "Apri il file in un altro lettore PDF per controllarlo. Un PDF protetto da password va prima sbloccato. L'errore è in Amministrazione → Log."
     },
+    "P310": {
+      "title": "Niente da convertire",
+      "message": "Questo video si riproduce già su ogni dispositivo, quindi non serve una copia convertita",
+      "meaning": "È stata chiesta una copia convertita, ma il video è già H.264 a 8 bit o HEVC, che browser e dispositivi Apple riproducono così com'è.",
+      "fix": "Non c'è nulla da fare. Se su un dispositivo continua a non riprodursi, la causa è un'altra: guarda il codice mostrato dal player."
+    },
+    "P311": {
+      "title": "Le copie convertite hanno raggiunto il limite di dimensione",
+      "message": "È stato raggiunto il limite di dimensione delle copie convertite",
+      "meaning": "Le copie convertite raggiungono già il limite impostato in Amministrazione → Riproduzione, quindi non ne vengono fatte altre. Una conversione che supererebbe il limite viene interrotta e indicata come non riuscita con questo codice.",
+      "fix": "Aumenta il limite di dimensione in Amministrazione → Riproduzione → Copie convertite, oppure elimina lì le copie che non ti servono più. Poi riprova quelle non riuscite."
+    },
+    "P312": {
+      "title": "Solo gli amministratori possono convertire i video",
+      "message": "Su questo server solo un amministratore può convertire i video",
+      "meaning": "Questo account ha chiesto una copia convertita, ma il server permette solo agli amministratori di avviare le conversioni.",
+      "fix": "Chiedi a un amministratore, oppure fagli attivare «Consenti a tutti di chiedere una copia» in Amministrazione → Riproduzione → Copie convertite."
+    },
     "P350": {
       "title": "Il browser non supporta questo formato",
       "message": "Questo browser non può riprodurre questo video",

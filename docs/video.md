@@ -40,9 +40,12 @@ including HEVC/H.265, which Chrome, Edge and Safari can play.
   it the copies unused for longest go first. Closing the player stops its conversion.
 - **Devices that aren't browsers:** the apps send the video codecs their device decodes
   (`?videoCodecs=h264,hevc`), so AV1, VP9 or VP8 is converted for an iPhone or Apple TV that
-  can't play it rather than sent untouched. An
-  [H.264 copy](administration.md#h264-copies) made ahead of time is played instead when
-  there is one.
+  can't play it rather than sent untouched.
+- **Converted copies:** the server can do a conversion once, ahead of time, instead of every
+  time someone presses play: AV1, VP9, VP8, 10-bit H.264 and older formats (MPEG-2, Xvid,
+  WMV), to H.264 or the smaller HEVC. A device that can't play the original is sent the copy
+  as a direct play. An admin queues one title or a whole library; see
+  [Converted copies](administration.md#converted-copies).
 - **Fallback:** if the browser rejects a file it was expected to play, the player switches
   to transcoding by itself.
 - **Errors:** a failed playback shows the real reason with a code (P3xx), not a generic

@@ -46,6 +46,7 @@ docs/               This documentation
 | `credits.js`, `collections.js`, `ratings.js` | TMDB credits, facts and collections (cached on the item), rating settings and world scores |
 | `artwork.js`, `thumbnails.js`, `videoFrame.js` | Covers from folders, TMDB or frames; WebP thumbnails; episode stills |
 | `hls.js`, `transcode.js`, `hwaccel.js` | Playback decisions, HLS remux and transcode jobs, hardware detection and testing, encode caps |
+| `compat.js` | Converted copies: the background queue (`compat_copies` table) that turns video some devices can't decode into H.264 or HEVC MP4s under `compat/`, the size limit, and replacing originals |
 | `subtitles.js`, `chapters.js`, `trickplay.js` | Subtitle tracks and VTT, chapter probing, scrub preview sheets |
 | `party.js` | In-memory watch parties and their server-sent event streams |
 | `visibility.js` | **Access control** (see below) |
@@ -134,13 +135,25 @@ raised by the app, not the server.
 ## Playback pipeline
 
 1. `GET playback-info` probes the file (ffprobe, cached) and, given the browser's HEVC
-   support, picks **direct**, **remux** or **transcode**.
+   support or an app's own list of codecs (`?videoCodecs=`), picks **direct**, **remux** or
+   **transcode**. When the answer is transcode and the title has a converted copy this
+   client can decode, the copy is judged instead and the client is told to ask for it
+   (`compatCopy`, then `?copy=1` on every stream URL).
 2. Direct play streams the file with byte ranges.
 3. Remux and transcode run ffmpeg into HLS (fMP4 segments) under `cache/hls/<item>/<profile>`.
    Jobs are shared per item and profile, capped at 1 software or 2 hardware encodes, stopped
    when the player closes, and swept after `HLS_CACHE_MAX_AGE_HOURS`.
 4. The player (`VideoPlayer.vue`) uses hls.js, or native HLS on Safari. When a request
    fails, it asks the server why and shows the P-code.
+
+Converted copies (`services/compat.js`) are made outside this pipeline: one ffmpeg at a
+time, at low priority, working through the `compat_copies` rows in the order they were
+queued. `tick()` stops the process (SIGSTOP) while a live transcode is running and ends it
+if the copies would pass their size limit. Each file is tried on the hardware encoder,
+then on the CPU, and each of those again without subtitles, before it is marked failed with
+a P-code (P301 missing, P302 unreadable, P303 no ffmpeg, P304 ffmpeg failed, P311 the
+limit). Rows left `running` by a shutdown are queued again at startup, and files in
+`compat/` that no row refers to are deleted.
 
 ## Frontend notes
 

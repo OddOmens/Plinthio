@@ -216,6 +216,24 @@
       "meaning": "O poppler iniciou, mas falhou neste arquivo. Geralmente é um PDF danificado ou protegido por senha.",
       "fix": "Abra o arquivo em outro leitor de PDF para conferir. Um PDF protegido por senha precisa ser desbloqueado primeiro. O erro está em Administração → Logs."
     },
+    "P310": {
+      "title": "Nada para converter",
+      "message": "Este vídeo já é reproduzido em todos os dispositivos, então não precisa de uma cópia convertida",
+      "meaning": "Uma cópia convertida foi pedida, mas o vídeo já está em H.264 de 8 bits ou HEVC, que navegadores e dispositivos Apple reproduzem como está.",
+      "fix": "Não há nada a fazer. Se ainda assim ele não for reproduzido em um dispositivo, a causa é outra: veja o código que o player mostra."
+    },
+    "P311": {
+      "title": "As cópias convertidas chegaram ao limite de tamanho",
+      "message": "O limite de tamanho das cópias convertidas foi atingido",
+      "meaning": "As cópias convertidas já somam o limite definido em Administração → Reprodução, então nenhuma outra é feita. Uma conversão que passaria do limite é interrompida e listada como falha com este código.",
+      "fix": "Aumente o limite de tamanho em Administração → Reprodução → Cópias convertidas ou exclua ali as cópias de que não precisa mais. Depois, tente de novo as que falharam."
+    },
+    "P312": {
+      "title": "Só administradores podem converter vídeos",
+      "message": "Neste servidor, só um administrador pode converter vídeos",
+      "meaning": "Esta conta pediu uma cópia convertida, mas o servidor só deixa administradores iniciarem conversões.",
+      "fix": "Peça a um administrador, ou peça que ele ative \"Permitir que todos peçam uma cópia\" em Administração → Reprodução → Cópias convertidas."
+    },
     "P350": {
       "title": "O navegador não reproduz este formato",
       "message": "Este navegador não consegue reproduzir este vídeo",

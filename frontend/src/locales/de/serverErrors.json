@@ -216,6 +216,24 @@
       "meaning": "poppler wurde gestartet, ist an dieser Datei aber gescheitert. Meist ein beschädigtes oder passwortgeschütztes PDF.",
       "fix": "Öffne die Datei zur Prüfung in einem anderen PDF-Reader. Ein passwortgeschütztes PDF muss zuerst entsperrt werden. Den Fehler findest du unter Verwaltung → Protokolle."
     },
+    "P310": {
+      "title": "Nichts umzuwandeln",
+      "message": "Dieses Video läuft bereits auf jedem Gerät und braucht keine umgewandelte Kopie",
+      "meaning": "Es wurde eine umgewandelte Kopie angefordert, aber das Video ist bereits 8-Bit-H.264 oder HEVC, was Browser und Apple-Geräte unverändert abspielen.",
+      "fix": "Nichts zu tun. Läuft es auf einem Gerät trotzdem nicht, liegt es an etwas anderem: Achte auf den Code, den der Player anzeigt."
+    },
+    "P311": {
+      "title": "Größenlimit der umgewandelten Kopien erreicht",
+      "message": "Das Größenlimit für umgewandelte Kopien ist erreicht",
+      "meaning": "Die umgewandelten Kopien erreichen zusammen bereits das unter Verwaltung → Wiedergabe gesetzte Limit, deshalb werden keine weiteren erstellt. Eine Umwandlung, die das Limit überschreiten würde, wird abgebrochen und mit diesem Code als fehlgeschlagen aufgeführt.",
+      "fix": "Erhöhe das Größenlimit unter Verwaltung → Wiedergabe → Umgewandelte Kopien oder lösche dort Kopien, die du nicht mehr brauchst. Versuche die fehlgeschlagenen danach erneut."
+    },
+    "P312": {
+      "title": "Nur Admins können Videos umwandeln",
+      "message": "Auf diesem Server kann nur ein Admin Videos umwandeln",
+      "meaning": "Dieses Konto hat eine umgewandelte Kopie angefordert, aber der Server lässt nur Admins Umwandlungen starten.",
+      "fix": "Bitte einen Admin darum, oder lass ihn „Alle dürfen eine Kopie anfordern“ unter Verwaltung → Wiedergabe → Umgewandelte Kopien einschalten."
+    },
     "P350": {
       "title": "Browser kann dieses Format nicht abspielen",
       "message": "Dieser Browser kann dieses Video nicht abspielen",

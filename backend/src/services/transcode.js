@@ -143,6 +143,10 @@ export async function getPlaybackInfo(itemId, filePath, caps = {}) {
       audioOk,
       container,
       videoCodec: videoStream?.codec_name || null,
+      // 10-bit H.264 and interlaced video: both matter to the converted copies
+      // (services/compat.js), which treat the first as undecodable and deinterlace the second.
+      tenBitH264,
+      interlaced: ['tt', 'bb', 'tb', 'bt'].includes(videoStream?.field_order),
       audioCodec: audioStream?.codec_name || null,
       width: videoStream?.width || 0,
       height: videoStream?.height || 0,

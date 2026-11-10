@@ -68,6 +68,15 @@
         <p class="field-hint">{{ $t('admin.playback.copies.limitHint', { used: formatBytes(copies.usedBytes) }) }}</p>
       </div>
 
+      <div>
+        <label for="copies-codec" class="field-label">{{ $t('admin.playback.copies.codec') }}</label>
+        <select id="copies-codec" :value="copies.codec" @change="saveCopies({ codec: $event.target.value })" class="field w-full sm:w-80">
+          <option value="h264">{{ $t('admin.playback.copies.codecH264') }}</option>
+          <option value="hevc">{{ $t('admin.playback.copies.codecHevc') }}</option>
+        </select>
+        <p class="field-hint">{{ $t('admin.playback.copies.codecHint') }}</p>
+      </div>
+
       <div class="divide-y divide-border border-t border-border pt-3">
         <ToggleRow
           :label="$t('admin.playback.copies.allowUsers')"
@@ -114,7 +123,10 @@
               </button>
             </li>
           </ul>
-          <button @click="removeAllCopies" class="btn btn-secondary mt-3">{{ $t('admin.playback.copies.removeAll') }}</button>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <button v-if="copies.copies.some((copy) => copy.status === 'failed')" @click="retryFailedCopies" class="btn btn-secondary">{{ $t('admin.playback.copies.retryFailed') }}</button>
+            <button @click="removeAllCopies" class="btn btn-secondary">{{ $t('admin.playback.copies.removeAll') }}</button>
+          </div>
         </template>
       </div>
     </div>
@@ -237,9 +249,9 @@ async function runHwaccelTest() {
   }
 }
 
-// ─── H.264 copies ─────────────────────────────────────────────────────────
+// ─── Converted copies ─────────────────────────────────────────────────────────
 const copiesSave = useSaveStatus();
-const copies = ref({ maxGb: 50, allowUsers: false, replaceOriginal: false, usedBytes: 0, discovery: null, copies: [] });
+const copies = ref({ maxGb: 50, codec: 'h264', allowUsers: false, replaceOriginal: false, usedBytes: 0, discovery: null, copies: [] });
 const copiesLimit = ref(50);
 const copiesLibrary = ref('');
 const videoLibraries = ref([]);
@@ -256,7 +268,7 @@ async function loadCopies() {
   try {
     applyCopies((await api.get('/settings/compat')).data);
   } catch (err) {
-    console.warn('Could not load the H.264 copies:', err);
+    console.warn('Could not load the converted copies:', err);
   }
 }
 
@@ -313,6 +325,11 @@ async function removeAllCopies() {
   if (ok) applyCopies(data.data);
 }
 
+async function retryFailedCopies() {
+  const { ok, data } = await copiesSave.run(() => api.post('/settings/compat/retry'));
+  if (ok) applyCopies(data.data);
+}
+
 function copyName(copy) {
   if (!copy.title) return copy.itemId;
   return copy.series && copy.series !== copy.title ? `${copy.series} · ${copy.title}` : copy.title;
@@ -322,18 +339,23 @@ const COPY_ERRORS = ['cap', 'missing'];
 const REPLACE_ERRORS = ['readonly', 'link', 'exists'];
 function copyStatus(copy) {
   if (copy.status === 'queued') return t('admin.playback.copies.status.queued');
-  if (copy.status === 'running') return t('admin.playback.copies.status.running', { percent: n(copy.progress, { style: 'percent' }) });
+  if (copy.status === 'running') {
+    return t(`admin.playback.copies.status.${copy.paused ? 'paused' : 'running'}`, { percent: n(copy.progress, { style: 'percent' }) });
+  }
   if (copy.status === 'failed') {
-    return COPY_ERRORS.includes(copy.error)
+    const text = COPY_ERRORS.includes(copy.error)
       ? t(`admin.playback.copies.errors.${copy.error}`)
       : t('admin.playback.copies.status.failed', { error: copy.error || '' });
+    // The code is the one to look up in Docs → Error codes; the server log has the same line.
+    return copy.errorCode ? `${text} (${copy.errorCode})` : text;
   }
   if (copy.replaceError) {
     return REPLACE_ERRORS.includes(copy.replaceError)
       ? t(`admin.playback.copies.replaceErrors.${copy.replaceError}`)
       : t('admin.playback.copies.replaceErrors.other', { error: copy.replaceError });
   }
-  return t('admin.playback.copies.status.done', { size: formatBytes(copy.size) });
+  const size = formatBytes(copy.size);
+  return t('admin.playback.copies.status.done', { size: copy.codec === 'hevc' ? `HEVC · ${size}` : copy.codec === 'h264' ? `H.264 · ${size}` : size });
 }
 
 // ─── Opening sequence ─────────────────────────────────────────────────────

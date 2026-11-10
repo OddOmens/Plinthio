@@ -215,7 +215,7 @@ export function getOrStartJob(itemId, filePath, opts = {}) {
   const mode = opts.mode === 'remux' ? 'remux' : 'transcode';
   const quality = mode === 'remux' ? SOURCE_QUALITY : (opts.quality || '720p');
   const audioTrack = Number.isInteger(opts.audioTrack) ? opts.audioTrack : 0;
-  // A remux of a title's H.264 copy (services/compat.js) holds different video from a remux
+  // A remux of a title's converted copy (services/compat.js) holds different video from a remux
   // of the file itself, so it's kept apart: its own job and its own folder.
   const profile = formatProfile(quality, audioTrack) + (opts.variant ? `-${opts.variant}` : '');
   const mapKey = `${itemId}:${profile}`;
@@ -452,7 +452,7 @@ export function stopItemJobs(itemId, viewerId = null) {
   }
 }
 
-// Conversions running or about to: the background H.264 copies (services/compat.js) wait
+// Conversions running or about to: the background converted copies (services/compat.js) wait
 // while anyone is watching one of these.
 export function activeEncodeCount() {
   return activeSlots('transcode').length;

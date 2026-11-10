@@ -394,7 +394,7 @@ async function start() {
     // one "Shrek Collection"). Delayed so it doesn't compete with startup.
     setTimeout(() => backfillMovieCredits().catch(() => {}), 15000);
 
-    // H.264 copies of video some devices can't decode: pick the queue back up.
+    // Converted copies of video some devices can't decode: pick the queue back up.
     initCompat().catch((err) => console.error('[compat] could not start the conversion queue:', err.message));
 
     // Evict stale on-disk media caches (see HLS_CACHE_MAX_AGE_HOURS): HLS segments, and the

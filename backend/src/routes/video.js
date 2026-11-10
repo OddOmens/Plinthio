@@ -8,7 +8,7 @@ import { isItemHiddenForUser } from '../services/visibility.js';
 import { requireEditor, requireAdmin } from '../middleware/auth.js';
 import { getPlaybackInfo, parseClientVideoCodecs } from '../services/transcode.js';
 import {
-  CONVERTIBLE_CODECS, CompatError, compatProbeId, copyState, readyCopy, requestCopy, removeCopy, getCompatSettings
+  needsCopy, compatProbeId, copyState, readyCopy, requestCopy, removeCopy, getCompatSettings
 } from '../services/compat.js';
 import {
   getOrStartJob, waitForPlaylist, waitForSegment, touchJob,
@@ -120,7 +120,7 @@ function carriedQuery(req) {
   return params.length ? `?${params.join('&')}` : '';
 }
 
-// ?copy=1 plays a title's H.264 copy (services/compat.js) instead of its file; playback-info
+// ?copy=1 plays a title's converted copy (services/compat.js) instead of its file; playback-info
 // says when to ask for it. Without a finished copy the file itself is played.
 async function copyFor(req, resolved) {
   if (req.query.copy !== '1') return null;
@@ -140,9 +140,10 @@ router.get('/:id/playback-info', authenticateToken, async (req, res) => {
     const fileInfo = await getPlaybackInfo(req.params.id, resolved.filePath, caps);
     const db = await getDb();
 
-    // Video this client can't decode has to be converted as it plays — unless an H.264
-    // copy of it has been made, in which case that is played instead (the client adds
-    // ?copy=1 to the stream URLs when compatCopy is set). Subtitles still come from the file.
+    // Video this client can't decode has to be converted as it plays — unless a converted
+    // copy of it has been made that this client does decode (an HEVC copy is no use to a
+    // browser without HEVC), in which case that is played instead (the client adds ?copy=1
+    // to the stream URLs when compatCopy is set). Subtitles still come from the file.
     let info = fileInfo;
     if (fileInfo.mode === 'transcode' && !fileInfo.probeFailed) {
       const copy = await readyCopy(db, req.params.id, resolved.filePath);
@@ -164,12 +165,12 @@ router.get('/:id/playback-info', authenticateToken, async (req, res) => {
   }
 });
 
-// Where this title's H.264 copy stands, and whether this account may ask for one.
+// Where this title's converted copy stands, and whether this account may ask for one.
 async function compatFor(db, req, fileInfo) {
   const settings = await getCompatSettings(db);
   return {
     ...await copyState(db, req.params.id),
-    eligible: !fileInfo.probeFailed && CONVERTIBLE_CODECS.has(fileInfo.videoCodec),
+    eligible: needsCopy(fileInfo),
     canRequest: req.user.role === 'admin' || settings.allowUsers
   };
 }
@@ -185,21 +186,22 @@ router.get('/:id/compat', authenticateToken, async (req, res) => {
   }
 });
 
-// Asks the server to make an H.264 copy of this title in the background. Admins always
-// can; everyone else only when the admin has allowed it (Admin → Playback).
+// Asks the server to make a converted copy of this title in the background (H.264 or HEVC,
+// as set in Admin → Playback). Admins always can; everyone else only when the admin has
+// allowed it. Asking again for one that failed tries it again. Refusals carry P310 (nothing
+// to convert), P311 (the size limit) or P312 (admins only).
 router.post('/:id/compat', authenticateToken, async (req, res) => {
   try {
     const resolved = await resolvePlayableItem(req, res);
     if (!resolved) return;
     const db = await getDb();
     if (req.user.role !== 'admin' && !(await getCompatSettings(db)).allowUsers) {
-      return res.status(403).json({ error: 'Only an admin can convert videos on this server' });
+      return sendError(req, res, 'P312');
     }
     await requestCopy(db, req.params.id, resolved.filePath, req.user.id);
     const info = await getPlaybackInfo(req.params.id, resolved.filePath);
     res.status(202).json(await compatFor(db, req, info));
   } catch (err) {
-    if (err instanceof CompatError) return res.status(err.status).json({ error: err.message });
     playbackError(req, res, err, 'Could not start converting this video');
   }
 });
@@ -254,7 +256,7 @@ async function resolveHlsJob(req, res, profileParam) {
   // If this is a remux profile ('source-aN') or client explicitly passed clientHevc=1,
   // evaluate probe info with HEVC support enabled.
   const caps = clientCaps(req, { hevc: isSourceRemux });
-  // The title's H.264 copy when the client was told to play that (?copy=1).
+  // The title's converted copy when the client was told to play that (?copy=1).
   const copy = await copyFor(req, resolved);
   const filePath = copy ? copy.path : resolved.filePath;
   const info = await getPlaybackInfo(copy ? compatProbeId(req.params.id) : req.params.id, filePath, caps);

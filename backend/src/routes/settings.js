@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
-import { compatOverview, saveCompatSettings, queueLibrary, removeAllCopies, CompatError } from '../services/compat.js';
+import { compatOverview, saveCompatSettings, queueLibrary, removeAllCopies, retryFailed, TARGET_CODECS } from '../services/compat.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { getDetectedHwaccel, listHwaccels, testHwaccel } from '../services/hwaccel.js';
 import {
@@ -23,6 +23,7 @@ import { getComicVineKeyInfo, verifyComicVineKey } from '../services/comicvine.j
 import { SEND_OPTS } from '../utils/fileStream.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
+import { logger } from '../services/logger.js';
 import { getSetting, setSetting } from '../services/settings.js';
 
 const router = express.Router();
@@ -130,15 +131,19 @@ router.post('/transcoding/test', authenticateToken, requireAdmin, handle(async (
   res.json(await testHwaccel(method));
 }));
 
-// H.264 copies (services/compat.js): the size limit, who may ask for one, whether a finished
-// copy replaces the original, and the copies themselves.
+// Converted copies (services/compat.js): H.264 or HEVC, the size limit, who may ask for one,
+// whether a finished copy replaces the original, and the copies themselves.
 router.get('/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
   res.json(await compatOverview(await getDb()));
 }));
 
 router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
-  const { maxGb, allowUsers, replaceOriginal } = req.body || {};
+  const { maxGb, codec, allowUsers, replaceOriginal } = req.body || {};
   const patch = {};
+  if (codec !== undefined) {
+    if (!TARGET_CODECS.includes(codec)) return res.status(400).json({ error: 'The codec must be h264 or hevc' });
+    patch.codec = codec;
+  }
   if (maxGb !== undefined) {
     const value = Number(maxGb);
     if (!Number.isFinite(value) || value < 0 || value > 100000) {
@@ -149,8 +154,17 @@ router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) =
   if (allowUsers !== undefined) patch.allowUsers = allowUsers === true;
   if (replaceOriginal !== undefined) patch.replaceOriginal = replaceOriginal === true;
   const db = await getDb();
+  const before = await compatOverview(db);
   await saveCompatSettings(db, patch);
-  res.json(await compatOverview(db));
+  const after = await compatOverview(db);
+  // Deleting originals is the one thing here that can't be taken back: the log says who.
+  if (before.replaceOriginal !== after.replaceOriginal) {
+    logger.warn('media', `Converted copies: replacing originals was switched ${after.replaceOriginal ? 'ON' : 'off'} by ${req.user.username}`);
+  }
+  if (before.codec !== after.codec) {
+    logger.info('media', `Converted copies: new copies will be ${after.codec === 'hevc' ? 'HEVC' : 'H.264'} (set by ${req.user.username})`);
+  }
+  res.json(after);
 }));
 
 // Queues every video in one library (or all of them) that needs a copy.
@@ -163,9 +177,16 @@ router.post('/compat/queue', authenticateToken, requireAdmin, handle(async (req,
   try {
     res.status(202).json(await queueLibrary(db, libraryId, req.user.id));
   } catch (err) {
-    if (err instanceof CompatError) return res.status(err.status).json({ error: err.message });
+    if (err?.plinthioCode) return sendError(req, res, err.plinthioCode, { message: err.message });
     throw err;
   }
+}));
+
+// Puts every failed conversion back in the queue.
+router.post('/compat/retry', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const db = await getDb();
+  await retryFailed(db);
+  res.json(await compatOverview(db));
 }));
 
 // Deletes every copy and empties the queue. Originals are never touched by this.

@@ -216,6 +216,24 @@
       "meaning": "poppler wystartował, ale nie poradził sobie z tym plikiem. Zwykle to uszkodzony PDF albo PDF chroniony hasłem.",
       "fix": "Otwórz plik w innym czytniku PDF, aby go sprawdzić. PDF chroniony hasłem trzeba najpierw odblokować. Błąd znajdziesz w Administracja → Logi."
     },
+    "P310": {
+      "title": "Nie ma czego konwertować",
+      "message": "To wideo odtwarza się już na każdym urządzeniu, więc nie potrzebuje przekonwertowanej kopii",
+      "meaning": "Poproszono o przekonwertowaną kopię, ale wideo jest już w 8-bitowym H.264 lub HEVC, które przeglądarki i urządzenia Apple odtwarzają bez zmian.",
+      "fix": "Nie trzeba nic robić. Jeśli na którymś urządzeniu nadal się nie odtwarza, przyczyna jest inna: sprawdź kod pokazywany przez odtwarzacz."
+    },
+    "P311": {
+      "title": "Przekonwertowane kopie osiągnęły limit rozmiaru",
+      "message": "Osiągnięto limit rozmiaru przekonwertowanych kopii",
+      "meaning": "Przekonwertowane kopie zajmują już łącznie tyle, ile wynosi limit ustawiony w Administracja → Odtwarzanie, więc kolejne nie są tworzone. Konwersja, która przekroczyłaby limit, jest zatrzymywana i oznaczana jako nieudana z tym kodem.",
+      "fix": "Zwiększ limit rozmiaru w Administracja → Odtwarzanie → Przekonwertowane kopie albo usuń tam niepotrzebne kopie. Następnie ponów nieudane."
+    },
+    "P312": {
+      "title": "Tylko administratorzy mogą konwertować wideo",
+      "message": "Na tym serwerze wideo może konwertować tylko administrator",
+      "meaning": "To konto poprosiło o przekonwertowaną kopię, ale serwer pozwala uruchamiać konwersje tylko administratorom.",
+      "fix": "Poproś administratora albo niech włączy „Pozwól wszystkim prosić o kopię” w Administracja → Odtwarzanie → Przekonwertowane kopie."
+    },
     "P350": {
       "title": "Przeglądarka nie obsługuje tego formatu",
       "message": "Ta przeglądarka nie może odtworzyć tego wideo",

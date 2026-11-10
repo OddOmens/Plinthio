@@ -216,6 +216,24 @@
       "meaning": "poppler a démarré mais a échoué sur ce fichier. En général un PDF endommagé ou protégé par mot de passe.",
       "fix": "Ouvrez le fichier dans un autre lecteur PDF pour le vérifier. Un PDF protégé par mot de passe doit d'abord être déverrouillé. Administration → Journaux contient l'erreur."
     },
+    "P310": {
+      "title": "Rien à convertir",
+      "message": "Cette vidéo se lit déjà sur tous les appareils et n'a pas besoin de copie convertie",
+      "meaning": "Une copie convertie a été demandée, mais la vidéo est déjà en H.264 8 bits ou en HEVC, que les navigateurs et les appareils Apple lisent tels quels.",
+      "fix": "Rien à faire. Si elle ne se lit toujours pas sur un appareil, la cause est ailleurs : regardez le code affiché par le lecteur."
+    },
+    "P311": {
+      "title": "Les copies converties ont atteint leur limite de taille",
+      "message": "La limite de taille des copies converties est atteinte",
+      "meaning": "Les copies converties atteignent déjà la limite fixée dans Administration → Lecture, donc plus aucune n'est créée. Une conversion qui dépasserait la limite est arrêtée et indiquée comme échouée avec ce code.",
+      "fix": "Augmentez la limite de taille dans Administration → Lecture → Copies converties, ou supprimez-y les copies dont vous n'avez plus besoin. Réessayez ensuite celles qui ont échoué."
+    },
+    "P312": {
+      "title": "Seuls les administrateurs peuvent convertir des vidéos",
+      "message": "Sur ce serveur, seul un administrateur peut convertir des vidéos",
+      "meaning": "Ce compte a demandé une copie convertie, mais le serveur ne laisse que les administrateurs lancer des conversions.",
+      "fix": "Demandez à un administrateur, ou faites-lui activer « Autoriser tout le monde à demander une copie » dans Administration → Lecture → Copies converties."
+    },
     "P350": {
       "title": "Le navigateur ne peut pas lire ce format",
       "message": "Ce navigateur ne peut pas lire cette vidéo",

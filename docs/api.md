@@ -116,9 +116,10 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `GET /media/stream/:id` | Audio, with byte ranges |
 | `GET /media/manga/:id/pages` · `/media/manga/:id/page/:index` | Page list and page images (0-based) for comics, manga and PDFs |
 | `GET /media/book/:id/file` | The EPUB or PDF file itself |
-| `GET /media/video/:id/playback-info?clientHevc=` | Mode (direct, remux, transcode), tracks, qualities |
-| `GET /media/video/:id/stream` | Direct play, with byte ranges |
-| `GET /media/video/:id/hls/master.m3u8?audio=` (+ variant playlists and segments) · `POST …/hls/stop` | HLS |
+| `GET /media/video/:id/playback-info?clientHevc=&videoCodecs=` | Mode (direct, remux, transcode), tracks, qualities. Apps that aren't browsers send `videoCodecs`, the full list of video codecs the device decodes (`h264`, `hevc`, `av1`, `vp9`, `vp8`, comma-separated); anything else is converted. `compatCopy: true` means a converted copy will be played: add `copy=1` to the stream and HLS URLs. `compat` is the copy's state (below) |
+| `GET /media/video/:id/stream?copy=` | Direct play, with byte ranges |
+| `GET /media/video/:id/hls/master.m3u8?audio=&clientHevc=&videoCodecs=&copy=` (+ variant playlists and segments, which carry the same query) · `POST …/hls/stop` | HLS |
+| `GET /media/video/:id/compat` · `POST` · `DELETE` (A) | A title's [converted copy](administration.md#converted-copies): `{ status: none\|queued\|running\|done\|failed, progress, error, errorCode, codec, eligible, canRequest }`. `POST` queues one (202), or tries a failed one again; admins, or everyone when the admin allows it (P312 otherwise). P310 when the video needs no copy, P311 at the size limit. `DELETE` cancels a conversion or deletes the copy |
 | `GET /media/video/:id/subtitles/:track.vtt` | Subtitles as WebVTT |
 | `GET /media/video/:id/trickplay/index.json` · `sheet_N.jpg` | Scrub previews (index is 204 when the file has none) |
 | `GET /media/video/:id/markers` · `PUT` (E) | Intro and credits ranges |
@@ -157,6 +158,7 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `POST /customization/intro` · `DELETE` | A | Upload (multipart field `intro`) or remove the opening sequence clip |
 | `GET /media/intro` | V | The opening sequence clip (range requests; `?v=` is the upload version) |
 | `GET /settings/filters` · `PATCH` | V / A | Which shelf views are offered |
+| `GET /settings/compat` · `PUT` `{ codec: h264\|hevc, maxGb, allowUsers, replaceOriginal }` · `POST /settings/compat/queue` `{ libraryId }` · `POST /settings/compat/retry` · `DELETE /settings/compat/copies` | A | Converted copies: the settings, the space used, the queue and every copy (`status`, `progress`, `paused`, `codec`, `sourceCodec`, `size`, `error`, `errorCode`, `replaceError`); queue every video in one library or all that needs a copy (202; `discovery` in the overview reports progress); put the failed ones back in the queue; delete every copy and empty the queue |
 | `/settings/transcoding` · `/transcoding/test` · `/metadata-providers` · `/metadata-providers/enabled` · `/metadata-providers/tmdb-key` · `/metadata-providers/google-books-key` · `/metadata-providers/comicvine-key` · `/auto-scan` · `/backup/*` | A | Server settings and backups |
 | `GET /admin/health` · `POST /admin/health/remove-missing` | A | Library Health (with missing and offloaded titles grouped by film, series or season), removing missing titles |
 | `POST /admin/health/offload` · `/unoffload` | A | Keep titles as history (`{ itemIds }`), or undo that |
