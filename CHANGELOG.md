@@ -9,6 +9,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-11-10
+
 ### Fixed
 - **Pages no longer get stuck, show the wrong thing, or say "empty" when something failed.** A pass over every loading, saving and error state in the web app:
   - **Failed loads say so.** The shelf, list pages, requests, folder and bookmark pop-ups, Live TV guide and search, Logs, Activity, Kids Mode and Hidden titles used to show "nothing here" when they couldn't load. They now say they couldn't load; the shelf, Live TV and manga reader also get a Try again button. A manga volume whose pages can't be loaded says so instead of showing a broken page. Book search skips a chapter it can't read instead of reporting "No matches".
