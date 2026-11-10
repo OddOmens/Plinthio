@@ -113,7 +113,12 @@ const placeholder = computed(() => {
     : t('requests.search.placeholder.titles');
 });
 
+let requestId = 0;
+
 watch(() => props.searchTypes, (types) => {
+  // A search still running for the old types is dropped.
+  requestId++;
+  searching.value = false;
   activeType.value = types[0]?.id;
   results.value = [];
   searched.value = false;
@@ -133,21 +138,27 @@ async function search() {
   if (!q) return;
 
   const type = props.searchTypes.find((s) => s.id === activeType.value);
+  // Switching type mid-search starts another; only the latest one's results are shown.
+  const id = ++requestId;
   searching.value = true;
   error.value = '';
   try {
     const res = await api.get('/metadata/search', {
       params: { mediaType: type?.provider || type?.id, query: q }
     });
+    if (id !== requestId) return;
     results.value = res.data.results || [];
     lastType.value = type?.id;
   } catch (err) {
+    if (id !== requestId) return;
     results.value = [];
     error.value = err.response?.data?.error || t('requests.search.failed');
   } finally {
-    searching.value = false;
-    searched.value = true;
-    lastQuery.value = q;
+    if (id === requestId) {
+      searching.value = false;
+      searched.value = true;
+      lastQuery.value = q;
+    }
   }
 }
 

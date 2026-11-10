@@ -104,13 +104,20 @@ function adopt(body) {
   data.value = { ...data.value, ...body, enabled: body.enabled ?? data.value?.enabled ?? true, hideOffline: body.hideOffline ?? data.value?.hideOffline ?? true };
 }
 
+// Loads and switches share one counter: only the newest answer is used, so a load that left
+// before a switch can't flip it back.
+let requestId = 0;
 async function load() {
+  const id = ++requestId;
+  // A retry shows "Loading…" again rather than the last error.
+  if (!data.value) loadError.value = '';
   try {
     const res = await api.get('/live/admin/health');
+    if (id !== requestId) return;
     adopt(res.data);
     loadError.value = '';
   } catch (err) {
-    if (!data.value) loadError.value = err.response?.data?.error || t('admin.liveTv.health.couldNotLoad');
+    if (id === requestId && !data.value) loadError.value = err.response?.data?.error || t('admin.liveTv.health.couldNotLoad');
   }
 }
 watch(() => props.version, load);
@@ -118,14 +125,16 @@ onMounted(load);
 
 // Switched at once, put back if the save fails.
 async function set(patch) {
-  const before = { enabled: data.value.enabled, hideOffline: data.value.hideOffline };
+  const id = ++requestId;
+  // Only the switch this was, so a failure doesn't also undo the other one.
+  const before = Object.fromEntries(Object.keys(patch).map((key) => [key, data.value[key]]));
   Object.assign(data.value, patch);
   const { ok, data: res } = await save.run(() => api.patch('/live/admin/health', patch));
   if (!ok) {
     Object.assign(data.value, before);
     return;
   }
-  if (res?.data && typeof res.data === 'object' && 'counts' in res.data) adopt(res.data);
+  if (id === requestId && res?.data && typeof res.data === 'object' && 'counts' in res.data) adopt(res.data);
   if ('hideOffline' in patch) emit('changed');
 }
 </script>

@@ -2,7 +2,7 @@
   <!-- Sign-ins and viewing sessions, newest first: Settings → Activity (yours) and
        Admin → Activity (everyone's, with names and addresses). -->
   <div v-if="!entries.length" class="py-12 text-center text-xs text-muted-foreground">
-    {{ loading ? $t('common.loading') : $t('settings.activityList.empty') }}
+    {{ loading ? $t('common.loading') : failed ? $t('common.loadFailed') : $t('settings.activityList.empty') }}
   </div>
   <ul v-else class="divide-y divide-border">
     <li v-for="entry in entries" :key="`${entry.type}-${entry.id}`" class="px-4 sm:px-5 py-3 flex items-center gap-3">
@@ -37,6 +37,8 @@ import { mediaTypeIcon, formatDateTime, formatDurationShort } from '../../utils/
 defineProps({
   entries: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
+  // The list couldn't be loaded: not the same as no activity.
+  failed: { type: Boolean, default: false },
   showUser: { type: Boolean, default: false }
 });
 

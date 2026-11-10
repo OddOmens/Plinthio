@@ -8,6 +8,9 @@ import { t } from '../i18n';
 let audio = null;
 let saveInterval = null;
 let sleepTicker = null;
+// The resume seek waiting on the current file's metadata. Until it runs, the element reports
+// the 0 of a fresh load, not where the listener is.
+let onMetadata = null;
 // Last stretch of a timed sleep fades the volume down instead of cutting off mid-sentence.
 const SLEEP_FADE_SECONDS = 10;
 export const PLAYBACK_SPEEDS = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5];
@@ -106,14 +109,17 @@ export const usePlayerStore = defineStore('player', {
         audio.src = streamUrl;
         audio.playbackRate = this.playbackRate;
 
-        const onLoadedMetadata = () => {
+        // Switching again before the last file's metadata arrived must not leave its seek
+        // behind, or the new book would start at the old one's position.
+        if (onMetadata) audio.removeEventListener('loadedmetadata', onMetadata);
+        onMetadata = () => {
+          onMetadata = null;
           if (resumeTime > 0) {
             audio.currentTime = resumeTime;
             this.currentTime = resumeTime;
           }
-          audio.removeEventListener('loadedmetadata', onLoadedMetadata);
         };
-        audio.addEventListener('loadedmetadata', onLoadedMetadata);
+        audio.addEventListener('loadedmetadata', onMetadata, { once: true });
       } else if (resumeTime > 0) {
         audio.currentTime = resumeTime;
         this.currentTime = resumeTime;
@@ -202,6 +208,8 @@ export const usePlayerStore = defineStore('player', {
     stop() {
       if (audio) {
         audio.pause();
+        if (onMetadata) audio.removeEventListener('loadedmetadata', onMetadata);
+        onMetadata = null;
         audio.removeAttribute('src');
         audio.load();
       }
@@ -261,7 +269,8 @@ export const usePlayerStore = defineStore('player', {
     },
 
     async saveProgress(isFinished = false) {
-      if (!this.currentItem) return;
+      // Not before the resume seek: that would save this book's position as 0.
+      if (!this.currentItem || onMetadata) return;
       try {
         await api.post(`/progress/${this.currentItem.id}`, {
           currentTime: this.currentTime,

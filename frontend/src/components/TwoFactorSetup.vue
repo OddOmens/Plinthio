@@ -57,7 +57,7 @@
         <button type="submit" :disabled="busy || code.replace(/\s/g, '').length !== 6" class="h-11 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50">
           {{ $t('common.confirm') }}
         </button>
-        <button type="button" @click="stage = 'off'" class="h-11 px-3 rounded-xl text-sm text-muted-foreground hover:text-foreground">{{ $t('common.cancel') }}</button>
+        <button type="button" @click="stage = 'off'; error = ''" class="h-11 px-3 rounded-xl text-sm text-muted-foreground hover:text-foreground">{{ $t('common.cancel') }}</button>
       </form>
     </template>
 
@@ -116,7 +116,7 @@
           <button type="submit" :disabled="busy || !confirmPassword || !code.trim()" class="h-9 px-3 rounded-lg text-sm font-semibold disabled:opacity-50" :class="action === 'disable' ? 'bg-destructive text-destructive-foreground' : 'bg-primary text-primary-foreground'">
             {{ action === 'disable' ? $t('auth.twoFactor.on.turnOff') : $t('auth.twoFactor.on.makeNewCodes') }}
           </button>
-          <button type="button" @click="action = null" class="h-9 px-3 rounded-lg text-sm text-muted-foreground hover:text-foreground">{{ $t('common.cancel') }}</button>
+          <button type="button" @click="action = null; error = ''" class="h-9 px-3 rounded-lg text-sm text-muted-foreground hover:text-foreground">{{ $t('common.cancel') }}</button>
         </div>
       </form>
       <div v-else class="flex flex-wrap gap-2">

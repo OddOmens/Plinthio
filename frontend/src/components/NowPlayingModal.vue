@@ -387,10 +387,13 @@ const remainingSeconds = computed(() => {
   return Math.max(0, dur - cur);
 });
 
+let requestId = 0;
 async function loadBookmarks() {
   if (!player.currentItem?.id) return;
+  const id = ++requestId;
   try {
     const res = await api.get(`/bookmarks/${player.currentItem.id}`);
+    if (id !== requestId) return;
     bookmarks.value = res.data.bookmarks || [];
   } catch (err) {
     console.warn('Failed to load bookmarks:', err);
@@ -399,7 +402,9 @@ async function loadBookmarks() {
 
 watch(
   () => [props.isOpen, player.currentItem?.id],
-  ([open, id]) => {
+  ([open, id], old) => {
+    // Another book: its bookmarks, never the last one's while they load (or if they can't).
+    if (id !== old?.[1]) bookmarks.value = [];
     if (open && id) {
       loadBookmarks();
     }
@@ -407,8 +412,10 @@ watch(
   { immediate: true }
 );
 
+let savingBookmark = false;
 async function createBookmark() {
-  if (!player.currentItem?.id) return;
+  if (!player.currentItem?.id || savingBookmark) return;
+  savingBookmark = true;
   try {
     await api.post('/bookmarks', {
       itemId: player.currentItem.id,
@@ -421,6 +428,8 @@ async function createBookmark() {
     await loadBookmarks();
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('player.nowPlaying.saveFailed'));
+  } finally {
+    savingBookmark = false;
   }
 }
 

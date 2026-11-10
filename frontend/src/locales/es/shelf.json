@@ -102,7 +102,8 @@
     "createFolder": "No se pudo crear la carpeta",
     "deleteFolder": "No se pudo eliminar la carpeta",
     "removeItem": "No se pudo quitar el elemento",
-    "updateFolder": "No se pudo actualizar la carpeta"
+    "updateFolder": "No se pudo actualizar la carpeta",
+    "load": "No se pudo cargar tu biblioteca."
   },
   "rootFolder": "Raíz",
   "series": {
@@ -145,6 +146,7 @@
   "folderModal": {
     "title": "Añadir a carpeta o lista",
     "loading": "Cargando carpetas…",
+    "loadFailed": "No se pudieron cargar tus carpetas.",
     "empty": "Aún no has creado carpetas propias. ¡Crea una abajo para organizar tu contenido!",
     "newFolder": "Nueva carpeta propia",
     "placeholder": "p. ej. Favoritos, Para dormir…",

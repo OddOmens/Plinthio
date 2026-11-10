@@ -325,7 +325,8 @@ async function submitEditUser() {
     if (e.duration !== 'unchanged') updates.duration = e.duration === 'custom' ? e.customExpiry : e.duration;
     if (Object.keys(updates).length) await api.patch(`/users/${u.id}`, updates);
     if (e.newPassword) await api.patch(`/users/${u.id}/password`, { newPassword: e.newPassword });
-    edit.value = null;
+    // Closed meanwhile, and maybe someone else opened: leave that one be.
+    if (edit.value === e) edit.value = null;
     emit('changed');
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('admin.users.couldNotSave'));
@@ -365,7 +366,7 @@ async function deleteUser() {
   if (!confirmed) return;
   try {
     await api.delete(`/users/${u.id}`);
-    edit.value = null;
+    if (edit.value?.original === u) edit.value = null;
     emit('changed');
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('admin.users.couldNotDelete'));

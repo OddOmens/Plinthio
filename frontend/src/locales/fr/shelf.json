@@ -102,7 +102,8 @@
     "createFolder": "Impossible de créer le dossier",
     "deleteFolder": "Impossible de supprimer le dossier",
     "removeItem": "Impossible de retirer l'élément",
-    "updateFolder": "Impossible de mettre à jour le dossier"
+    "updateFolder": "Impossible de mettre à jour le dossier",
+    "load": "Impossible de charger votre bibliothèque."
   },
   "rootFolder": "Racine",
   "series": {
@@ -145,6 +146,7 @@
   "folderModal": {
     "title": "Ajouter à un dossier ou une liste",
     "loading": "Chargement des dossiers…",
+    "loadFailed": "Impossible de charger vos dossiers.",
     "empty": "Aucun dossier personnalisé pour l'instant. Créez-en un ci-dessous pour organiser vos médias !",
     "newFolder": "Nouveau dossier personnalisé",
     "placeholder": "ex. Favoris, Avant de dormir…",

@@ -104,7 +104,7 @@
               <Plus class="w-6 h-6" />
               <span class="text-sm font-medium">{{ $t('lists.newList') }}</span>
             </button>
-            <p v-if="!lists.length && !creatingOpen" class="mt-2 text-xs text-muted-foreground">
+            <p v-if="!lists.length && !creatingOpen && !error" class="mt-2 text-xs text-muted-foreground">
               {{ $t(`lists.noLists.${currentCategory.id}`) }}
             </p>
           </div>
@@ -175,7 +175,7 @@
         <div v-if="loadingEntries" class="poster-grid gap-3 sm:gap-4">
           <div v-for="n in 6" :key="n" class="aspect-[2/3] rounded-xl bg-muted/50 animate-pulse" />
         </div>
-        <div v-else-if="entries.length === 0" class="py-16 text-center border border-dashed border-border rounded-2xl bg-card/50">
+        <div v-else-if="openListInfo && entries.length === 0" class="py-16 text-center border border-dashed border-border rounded-2xl bg-card/50">
           <ListOrdered class="w-7 h-7 mx-auto text-muted-foreground" />
           <p class="text-sm font-medium text-foreground mt-3">{{ $t('lists.empty.title') }}</p>
           <I18nT keypath="lists.empty.hint" tag="p" class="text-xs text-muted-foreground mt-1">
@@ -219,7 +219,7 @@
                   <button type="button" :aria-label="$t('lists.moveEarlier')" :title="$t('lists.moveEarlier')" @click.prevent.stop="move(index, -1)" :disabled="index === 0 || reordering" class="entry-btn"><ChevronLeft class="w-4 h-4" /></button>
                   <button type="button" :aria-label="$t('lists.moveLater')" :title="$t('lists.moveLater')" @click.prevent.stop="move(index, 1)" :disabled="index === entries.length - 1 || reordering" class="entry-btn"><ChevronRight class="w-4 h-4" /></button>
                 </div>
-                <button type="button" :aria-label="$t('lists.removeFromList')" :title="$t('lists.removeFromList')" @click.prevent.stop="removeEntry(entry)" class="entry-btn hover:!bg-destructive"><X class="w-4 h-4" /></button>
+                <button type="button" :aria-label="$t('lists.removeFromList')" :title="$t('lists.removeFromList')" @click.prevent.stop="removeEntry(entry)" :disabled="removing.has(entryKey(entry))" class="entry-btn hover:!bg-destructive"><X class="w-4 h-4" /></button>
               </div>
             </component>
 
@@ -300,6 +300,9 @@ const showSearch = ref(false);
 const reordering = ref(false);
 const adding = ref(new Set());
 const requesting = ref(new Set());
+const removing = ref(new Set());
+// Bumped by every load of either page, so a slow answer for the one left behind is dropped.
+let requestId = 0;
 
 function setCategory(id) {
   if (id === category.value) return;
@@ -316,22 +319,26 @@ function closeList() {
 
 watch(category, () => { if (!openListId.value) loadLists(); });
 watch(openListId, (id) => {
-  error.value = '';
   showSearch.value = false;
   if (id) loadEntries(id);
   else loadLists();
 });
 
 async function loadLists() {
+  const id = ++requestId;
   loading.value = true;
   error.value = '';
   try {
     const res = await api.get('/collections', { params: { type: 'readlist', category: category.value } });
+    if (id !== requestId) return;
     lists.value = res.data.collections || [];
   } catch (err) {
+    if (id !== requestId) return;
+    // Not the last category's lists under this one's tab.
+    lists.value = [];
     error.value = t('lists.errors.loadLists');
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 
@@ -357,7 +364,7 @@ async function startCreating() {
 
 async function createList() {
   const name = newListName.value.trim();
-  if (!name) return;
+  if (!name || creating.value) return;
   creating.value = true;
   error.value = '';
   try {
@@ -373,18 +380,24 @@ async function createList() {
 }
 
 // ─── One list ───────────────────────────────────────────────────────────────
-async function loadEntries(id) {
+async function loadEntries(listId) {
+  const id = ++requestId;
   loadingEntries.value = true;
+  error.value = '';
+  // Not the last list's name over this one while it loads.
+  openListInfo.value = null;
   entries.value = [];
   try {
-    const res = await api.get(`/collections/${id}`);
+    const res = await api.get(`/collections/${listId}`);
+    if (id !== requestId) return;
     openListInfo.value = res.data.collection;
     entries.value = res.data.entries || [];
     if (res.data.collection?.category && validCategory(res.data.collection.category)) category.value = res.data.collection.category;
   } catch (err) {
+    if (id !== requestId) return;
     error.value = err.response?.status === 404 ? t('lists.errors.gone') : t('lists.errors.loadList');
   } finally {
-    loadingEntries.value = false;
+    if (id === requestId) loadingEntries.value = false;
   }
 }
 
@@ -402,6 +415,7 @@ async function deleteList() {
     danger: true
   });
   if (!ok) return;
+  error.value = '';
   try {
     await api.delete(`/collections/${openListId.value}`);
     closeList();
@@ -443,6 +457,7 @@ function inList(result) {
 async function addExternal(result, mediaType) {
   const key = resultKey(result);
   adding.value = new Set(adding.value).add(key);
+  error.value = '';
   try {
     await api.post(`/collections/${openListId.value}/external`, externalTitlePayload(result, mediaType));
     await refreshEntries();
@@ -466,6 +481,7 @@ function canRequest(entry) {
 async function requestEntry(entry) {
   const ext = entry.external;
   requesting.value = new Set(requesting.value).add(entry.id);
+  error.value = '';
   try {
     await api.post('/requests', {
       mediaType: ext.media_type,
@@ -497,23 +513,35 @@ async function requestEntry(entry) {
 // persisted as the full ordering (which is what the reorder endpoint expects).
 async function move(index, delta) {
   const target = index + delta;
-  if (target < 0 || target >= entries.value.length) return;
-  const reordered = [...entries.value];
+  if (reordering.value || target < 0 || target >= entries.value.length) return;
+  const before = entries.value;
+  const reordered = [...before];
   [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
   entries.value = reordered;
   reordering.value = true;
+  error.value = '';
   try {
     await api.put(`/collections/${openListId.value}/reorder`, {
       entries: reordered.map((e) => ({ kind: e.kind, id: e.id }))
     });
   } catch (err) {
+    // Put the grid back to the order the server still has.
+    if (entries.value === reordered) entries.value = before;
     error.value = t('lists.errors.reorder');
   } finally {
     reordering.value = false;
   }
 }
 
+function entryKey(entry) {
+  return `${entry.kind}:${entry.id}`;
+}
+
 async function removeEntry(entry) {
+  const key = entryKey(entry);
+  if (removing.value.has(key)) return;
+  removing.value = new Set(removing.value).add(key);
+  error.value = '';
   try {
     await api.delete(
       entry.kind === 'item'
@@ -523,6 +551,10 @@ async function removeEntry(entry) {
     entries.value = entries.value.filter((e) => !(e.kind === entry.kind && e.id === entry.id));
   } catch (err) {
     error.value = t('lists.errors.remove');
+  } finally {
+    const next = new Set(removing.value);
+    next.delete(key);
+    removing.value = next;
   }
 }
 

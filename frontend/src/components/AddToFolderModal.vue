@@ -25,6 +25,10 @@
           {{ $t('shelf.folderModal.loading') }}
         </div>
 
+        <div v-else-if="loadError" class="py-6 text-center text-xs text-destructive">
+          {{ loadError }}
+        </div>
+
         <div v-else-if="folders.length === 0" class="py-6 text-center text-xs text-muted-foreground">
           {{ $t('shelf.folderModal.empty') }}
         </div>
@@ -108,17 +112,28 @@ const folders = ref([]);
 const loading = ref(false);
 const newFolderName = ref('');
 const creating = ref(false);
+// Why the folders couldn't be loaded, so that doesn't read as "no folders yet".
+const loadError = ref('');
+let requestId = 0;
 
 async function loadItemFolders() {
   if (!props.item?.id) return;
+  // Reopened for another title mid-load: only the latest title's folders are shown.
+  const id = ++requestId;
   loading.value = true;
+  loadError.value = '';
   try {
     const res = await api.get(`/collections/for-item/${props.item.id}`);
+    if (id !== requestId) return;
     folders.value = res.data.folders || [];
   } catch (err) {
+    if (id !== requestId) return;
     console.warn('Failed to load item folders:', err);
+    // The ticks from the last title opened would be wrong for this one.
+    folders.value = [];
+    loadError.value = err.response?.data?.error || t('shelf.folderModal.loadFailed');
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 

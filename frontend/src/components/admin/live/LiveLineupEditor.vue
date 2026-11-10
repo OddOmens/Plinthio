@@ -137,6 +137,7 @@
           <template v-if="addKind === 'search'">
             <p v-if="!addQuery.trim()" class="py-6 text-center text-xs text-muted-foreground">{{ $t('admin.liveTv.lineups.editor.searchHint') }}</p>
             <p v-else-if="searching && !results.length" class="py-6 text-center text-xs text-muted-foreground">{{ $t('common.loading') }}</p>
+            <p v-else-if="searchError" class="py-6 text-center text-xs text-destructive">{{ searchError }}</p>
             <p v-else-if="!results.length" class="py-6 text-center text-xs text-muted-foreground">{{ $t('admin.liveTv.channels.noMatches') }}</p>
             <template v-else>
               <button v-if="addableResults.length > 1" type="button" @click="addIds(addableResults.map((c) => c.id))" :disabled="adding" class="btn btn-secondary h-9 self-start">
@@ -253,12 +254,16 @@ let orderTimer = null;
 let pendingOrder = null;
 let orderChain = Promise.resolve();
 const loadError = ref('');
+// Only the newest load's answer is used, so one for a line-up closed since can't land in
+// (or stop the spinner of) the one open now.
+let loadId = 0;
 const brokenLogos = reactive(new Set());
 const inLineup = computed(() => new Set(channels.value.map((c) => c.id)));
 // Search results for adding (see search()).
 const results = ref([]);
 const resultsTotal = ref(0);
 const searching = ref(false);
+const searchError = ref('');
 
 const displayName = (ch) => ch.customName || ch.name;
 
@@ -282,23 +287,27 @@ watch(() => props.lineup?.id, (id) => {
   addMessage.value = '';
   limit.value = PAGE_SIZE;
   channels.value = [];
+  loadError.value = '';
   results.value = [];
+  searchError.value = '';
   loadChannels();
 }, { immediate: true });
 
 async function loadChannels() {
   const id = props.lineup?.id;
   if (!id) return;
+  const mine = ++loadId;
   loading.value = true;
   try {
     const res = await api.get(`/live/admin/lineups/${id}/channels`);
-    if (props.lineup?.id !== id) return;
+    if (mine !== loadId || props.lineup?.id !== id) return;
     channels.value = res.data.channels || [];
     loadError.value = '';
   } catch (err) {
+    if (mine !== loadId || props.lineup?.id !== id) return;
     loadError.value = err.response?.data?.error || t('admin.liveTv.lineups.couldNotLoadChannels');
   } finally {
-    loading.value = false;
+    if (mine === loadId) loading.value = false;
   }
 }
 
@@ -314,7 +323,7 @@ async function rename() {
   if (next === lineup.name) return;
   const { ok } = await save.run(() => api.patch(`/live/admin/lineups/${lineup.id}`, { name: next }));
   if (ok) emit('changed', { id: lineup.id, name: next });
-  else name.value = lineup.name;
+  else if (props.lineup?.id === lineup.id) name.value = lineup.name;
 }
 
 async function setKids(value) {
@@ -380,8 +389,11 @@ async function remove(ch) {
   const before = channels.value;
   channels.value = channels.value.filter((c) => c.id !== ch.id);
   const { ok } = await save.run(() => api.delete(`/live/admin/lineups/${id}/channels`, { data: { ids: [ch.id] } }));
-  if (!ok) channels.value = before;
-  else emit('changed', { id, channelCount: channels.value.length });
+  // Another line-up may be open by now: its list isn't this one's.
+  const stillOpen = props.lineup?.id === id;
+  if (!ok) {
+    if (stillOpen) channels.value = before;
+  } else emit('changed', { id, channelCount: stillOpen ? channels.value.length : before.length - 1 });
 }
 
 // ─── Adding by search ──────────────────────────────────────────────────────
@@ -404,9 +416,11 @@ onUnmounted(() => clearTimeout(searchTimer));
 async function search() {
   const q = addQuery.value.trim();
   const mine = ++searchId;
+  searchError.value = '';
   if (!q) {
     results.value = [];
     resultsTotal.value = 0;
+    searching.value = false;
     return;
   }
   searching.value = true;
@@ -416,7 +430,10 @@ async function search() {
     results.value = res.data.channels || [];
     resultsTotal.value = res.data.total || 0;
   } catch (err) {
-    if (mine === searchId) results.value = [];
+    if (mine !== searchId) return;
+    results.value = [];
+    // Not "No matches": the search didn't happen.
+    searchError.value = err.response?.data?.error || t('admin.liveTv.channels.couldNotLoad');
   } finally {
     if (mine === searchId) searching.value = false;
   }
@@ -459,10 +476,12 @@ async function categoryChannelIds(group) {
 }
 
 async function addCategory(group) {
+  const lineupId = props.lineup.id;
   adding.value = group;
   addMessage.value = '';
   try {
     const ids = (await categoryChannelIds(group)).filter((id) => !inLineup.value.has(id));
+    if (props.lineup?.id !== lineupId) return;
     if (!ids.length) {
       addMessage.value = t('admin.liveTv.lineups.editor.nothingNew');
       return;
@@ -480,7 +499,8 @@ async function addCategory(group) {
 const adding = ref(false);
 
 async function addIds(ids, { busy = true } = {}) {
-  const id = props.lineup.id;
+  const lineup = props.lineup;
+  const id = lineup.id;
   const fresh = ids.filter((x) => !inLineup.value.has(x));
   if (!fresh.length) return;
   await flushOrder();
@@ -498,9 +518,14 @@ async function addIds(ids, { busy = true } = {}) {
     if (busy) adding.value = false;
   }
   if (!added) return;
+  // Closed (or another line-up opened) while adding: its count, without touching this screen.
+  if (props.lineup?.id !== id) {
+    emit('changed', { id, channelCount: (lineup.channelCount || 0) + added });
+    return;
+  }
   addMessage.value = t('admin.liveTv.lineups.editor.added', { count: added, number: n(added) });
   await loadChannels();
-  emit('changed', { id, channelCount: channels.value.length });
+  emit('changed', { id, channelCount: props.lineup?.id === id ? channels.value.length : (lineup.channelCount || 0) + added });
 }
 
 // ─── Deleting ──────────────────────────────────────────────────────────────

@@ -325,6 +325,7 @@ async function toggleBackup() {
 
 function cancelChallenge() {
   challenge.value = '';
+  error.value = '';
   password.value = '';
   code.value = '';
   backupCode.value = '';

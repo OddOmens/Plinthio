@@ -95,7 +95,8 @@
     "createFolder": "创建文件夹失败",
     "deleteFolder": "删除文件夹失败",
     "removeItem": "移除项目失败",
-    "updateFolder": "更新文件夹失败"
+    "updateFolder": "更新文件夹失败",
+    "load": "无法加载你的媒体库。"
   },
   "rootFolder": "根目录",
   "series": {
@@ -131,6 +132,7 @@
   "folderModal": {
     "title": "添加到文件夹或清单",
     "loading": "正在加载文件夹...",
+    "loadFailed": "无法加载你的文件夹。",
     "empty": "还没有创建自定义文件夹。在下方创建一个来整理你的媒体吧！",
     "newFolder": "新建自定义文件夹",
     "placeholder": "例如：收藏、睡前...",

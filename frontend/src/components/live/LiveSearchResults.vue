@@ -1,7 +1,7 @@
 <template>
   <!-- Search across channel names and what's on (now to a day and a half ahead). -->
   <section class="flex flex-col gap-6" :aria-busy="String(loading)">
-    <div v-if="loading && !loaded" class="channel-grid">
+    <div v-if="loading && !channels.length && !programmes.length" class="channel-grid">
       <div v-for="i in 6" :key="i" class="h-[92px] rounded-xl bg-muted/40 animate-pulse border border-border" />
     </div>
 
@@ -106,6 +106,8 @@ let requestId = 0;
 async function load() {
   const id = ++requestId;
   loading.value = true;
+  // A retry or a new search shows the results (or skeleton) again, not the last error.
+  loadError.value = '';
   try {
     const res = await api.get('/live/search', { params: { q: props.q, limit: 30 } });
     if (id !== requestId) return;

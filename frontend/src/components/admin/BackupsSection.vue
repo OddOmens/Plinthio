@@ -33,7 +33,7 @@
           <input
             id="backup-destination"
             v-model.trim="config.destination"
-            @input="destinationCheck = null"
+            @input="resetCheck"
             :placeholder="$t('admin.backups.destination.placeholder')"
             class="field font-mono flex-1 min-w-0 basis-full sm:basis-auto"
           />
@@ -43,7 +43,7 @@
           <button type="button" :aria-label="$t('admin.backups.destination.testAria')" @click="testDestination" :disabled="!config.destination || checkingDestination" class="btn btn-secondary">
             {{ checkingDestination ? $t('admin.backups.destination.checking') : $t('admin.backups.destination.test') }}
           </button>
-          <button v-if="config.destination" type="button" @click="config.destination = ''; destinationCheck = null" class="btn btn-ghost">{{ $t('common.clear') }}</button>
+          <button v-if="config.destination" type="button" @click="config.destination = ''; resetCheck()" class="btn btn-ghost">{{ $t('common.clear') }}</button>
         </div>
         <p v-if="destinationCheck && !destinationCheck.ok" class="text-xs text-destructive flex items-start gap-1.5">
           <AlertTriangle class="w-3.5 h-3.5 mt-px flex-shrink-0" />{{ destinationCheck.error }}
@@ -111,8 +111,7 @@
         <Download class="w-3.5 h-3.5" /> {{ downloading ? $t('admin.backups.preparing') : $t('admin.backups.downloadSnapshot') }}
       </button>
     </template>
-    <p v-if="!stored.length" class="py-8 text-center text-xs text-muted-foreground">{{ $t('admin.backups.empty') }}</p>
-    <ul v-else class="divide-y divide-border">
+    <ul v-if="stored.length" class="divide-y divide-border">
       <li v-for="b in stored" :key="b.filename" class="flex items-center justify-between gap-3 px-4 sm:px-5 py-2.5">
         <div class="min-w-0">
           <p class="text-xs font-medium text-foreground truncate">{{ formatFullDateTime(b.createdAt) }}</p>
@@ -128,6 +127,8 @@
         </div>
       </li>
     </ul>
+    <!-- Not said until the list has loaded: a failed load isn't "no backups". -->
+    <p v-else-if="storedLoaded" class="py-8 text-center text-xs text-muted-foreground">{{ $t('admin.backups.empty') }}</p>
   </SettingsCard>
 
   <FolderPicker
@@ -135,12 +136,12 @@
     :start="config.destination || '/media'"
     :title="$t('admin.backups.destination.pickerTitle')"
     @close="showPicker = false"
-    @select="(p) => { config.destination = p; showPicker = false; testDestination(); }"
+    @select="(p) => { config.destination = p; showPicker = false; resetCheck(); testDestination(); }"
   />
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { FolderOpen, AlertTriangle, CheckCircle, Copy, Save, Download, Trash2 } from '@lucide/vue';
 import api from '../../api/client';
 import { useDialogStore } from '../../stores/dialog';
@@ -159,7 +160,8 @@ const save = useSaveStatus();
 
 const config = ref({ enabled: true, intervalHours: 24, retentionCount: 7, destination: '', copyRetentionCount: 30, copyFiles: true });
 const savedConfig = ref('');
-const dirty = computed(() => JSON.stringify(config.value) !== savedConfig.value);
+// Nothing to save until the server's settings have loaded: Save would send these defaults.
+const dirty = computed(() => !!savedConfig.value && JSON.stringify(config.value) !== savedConfig.value);
 
 // What the server has for the second place, and how the last copy went.
 const savedDestination = ref('');
@@ -191,6 +193,19 @@ async function loadConfig() {
   }
 }
 
+// How a copy went, looked up again a moment later without losing edits not yet saved.
+async function refreshCopyStatus() {
+  const unsaved = dirty.value ? config.value : null;
+  await loadConfig();
+  if (unsaved) config.value = unsaved;
+}
+let refreshTimer = null;
+function refreshCopyStatusIn(ms) {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(refreshCopyStatus, ms);
+}
+onUnmounted(() => clearTimeout(refreshTimer));
+
 async function saveConfig() {
   const newPlace = config.value.destination && config.value.destination !== savedDestination.value;
   const { ok, data } = await save.run(
@@ -200,7 +215,7 @@ async function saveConfig() {
   if (!ok) return;
   applyConfig(data.data);
   // The first copy runs in the background; pick up how it went.
-  if (newPlace) setTimeout(loadConfig, 4000);
+  if (newPlace) refreshCopyStatusIn(4000);
 }
 
 // ─── The second place ─────────────────────────────────────────────────────
@@ -208,17 +223,26 @@ const destinationCheck = ref(null);
 const checkingDestination = ref(false);
 const showPicker = ref(false);
 const copying = ref(false);
+// A check answers for the path it was asked about; one still out when the path changes is dropped.
+let checkId = 0;
+
+function resetCheck() {
+  checkId++;
+  destinationCheck.value = null;
+  checkingDestination.value = false;
+}
 
 async function testDestination() {
   if (!config.value.destination) return;
+  const id = ++checkId;
   checkingDestination.value = true;
   try {
     const res = await api.post('/settings/backup/destination/check', { path: config.value.destination });
-    destinationCheck.value = res.data;
+    if (id === checkId) destinationCheck.value = res.data;
   } catch (err) {
-    destinationCheck.value = { ok: false, error: err.response?.data?.error || t('admin.backups.destination.couldNotCheck') };
+    if (id === checkId) destinationCheck.value = { ok: false, error: err.response?.data?.error || t('admin.backups.destination.couldNotCheck') };
   } finally {
-    checkingDestination.value = false;
+    if (id === checkId) checkingDestination.value = false;
   }
 }
 
@@ -229,9 +253,7 @@ async function copyNow() {
   } catch (err) {
     // The failure is recorded on the server; loadConfig shows it.
   } finally {
-    const unsaved = dirty.value ? config.value : null;
-    await loadConfig();
-    if (unsaved) config.value = unsaved;
+    await refreshCopyStatus();
     copying.value = false;
   }
 }
@@ -239,12 +261,14 @@ async function copyNow() {
 // ─── Stored backups ───────────────────────────────────────────────────────
 const stored = ref([]);
 const creating = ref(false);
+const storedLoaded = ref(false);
 const downloading = ref(false);
 
 async function loadStored() {
   try {
     const res = await api.get('/settings/backup/list');
     stored.value = res.data.backups || [];
+    storedLoaded.value = true;
   } catch (err) {
     console.warn('Could not list backups:', err);
   }
@@ -255,7 +279,8 @@ async function createNow() {
   try {
     const res = await api.post('/settings/backup/create');
     stored.value = res.data.backups || [];
-    if (savedDestination.value) setTimeout(loadConfig, 1500);
+    storedLoaded.value = true;
+    if (savedDestination.value) refreshCopyStatusIn(1500);
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('admin.backups.couldNotBackUp'));
   } finally {
@@ -309,6 +334,7 @@ async function deleteStored(backup) {
   try {
     const res = await api.delete(`/settings/backup/${encodeURIComponent(backup.filename)}`);
     stored.value = res.data.backups || [];
+    storedLoaded.value = true;
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('admin.backups.couldNotDelete'));
   }

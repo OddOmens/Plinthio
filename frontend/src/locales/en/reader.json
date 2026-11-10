@@ -96,7 +96,8 @@
       "other": "{count} matches"
     },
     "matchesCapped": "{count}+ matches",
-    "noMatches": "No matches"
+    "noMatches": "No matches",
+    "failed": "Couldn't search this book"
   },
   "themes": {
     "auto": "Auto",
@@ -144,6 +145,7 @@
   "manga": {
     "backToShelf": "Back to shelf",
     "loadingPages": "Loading pages...",
+    "couldNotLoad": "Could not load this volume's pages.",
     "pageOf": "Page {page} of {total}",
     "pagesOf": "Pages {from}–{to} of {total}",
     "singlePageView": "Single Page view",
@@ -180,6 +182,7 @@
     "notesPlaceholder": "Add notes, quotes, or thoughts (optional)...",
     "add": "Add Bookmark",
     "loading": "Loading bookmarks...",
+    "loadFailed": "Could not load bookmarks.",
     "empty": "No bookmarks saved yet. Use the form above to bookmark a position or page.",
     "jumpTooltip": "Jump to position",
     "jump": "Jump",

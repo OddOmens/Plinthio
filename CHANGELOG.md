@@ -9,6 +9,19 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+### Fixed
+- **Pages no longer get stuck, show the wrong thing, or say "empty" when something failed.** A pass over every loading, saving and error state in the web app:
+  - **Failed loads say so.** The shelf, list pages, requests, folder and bookmark pop-ups, Live TV guide and search, Logs, Activity, Kids Mode and Hidden titles used to show "nothing here" when they couldn't load. They now say they couldn't load; the shelf, Live TV and manga reader also get a Try again button. A manga volume whose pages can't be loaded says so instead of showing a broken page. Book search skips a chapter it can't read instead of reporting "No matches".
+  - **Quick clicks land on the right thing.** Switching titles, channels, lists, filters or tabs quickly could show the previous one's answer: another title's details, another channel's name or error, the wrong list, or the last person's activity. Only the newest answer is shown now.
+  - **No more doubles.** Double-clicking or pressing Enter twice no longer creates two folders, lists, bookmarks or highlights, removes an entry twice, or scans a library twice.
+  - **The title page no longer goes blank after every action.** Marking an episode watched, closing the reader or applying metadata used to reload the whole page and lose your place; it now updates in place.
+  - **Grouped shelves can't freeze the tab.** Switching to Creator or Disk folder view while another page was loading could hang the browser.
+  - **Audiobooks resume where you left them.** Starting another book before the first had loaded could start it at the first one's position, or save it as position 0.
+  - **Saves that overlap keep both changes.** Changing two settings quickly, where one save failed, no longer undoes the other. The admin Backups page no longer saves default settings if it couldn't load the real ones. Opening Libraries no longer saves the automatic-scan settings and flashes "Saved".
+  - **Setup can be finished after a hiccup.** If a step after creating the account failed, trying again was refused with "already set up".
+  - **Leaving a reader ends its session.** Closing a reader or player quickly could leave it showing as "viewing" in Admin → Activity forever, and leaving a book with the browser's Back kept it working in the background.
+  - Smaller fixes to stale errors and "Saved" messages, spinners stopping early, and timers left running.
+
 ## [1.9.0] - 2026-11-06
 
 ### Added

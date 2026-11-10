@@ -95,20 +95,26 @@ const loadError = ref('');
 const saveError = ref('');
 const busy = ref(false);
 const savingHome = ref(false);
+// Only the newest load's answer is used; a "Show" pressed meanwhile makes it stale too, or
+// it would bring back what was just shown.
+let requestId = 0;
 
 // Hidden channels no longer come back in any list, so their current names come from here.
 async function load() {
+  const id = ++requestId;
   loading.value = true;
+  loadError.value = '';
   try {
     const res = await api.get('/live/me/hidden');
+    if (id !== requestId) return;
     channels.value = res.data?.channels || [];
     groups.value = res.data?.groups || [];
     loadError.value = '';
     loaded.value = true;
   } catch (err) {
-    loadError.value = err.response?.data?.error || t('live.errors.unreachable');
+    if (id === requestId) loadError.value = err.response?.data?.error || t('live.errors.unreachable');
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 
@@ -119,6 +125,8 @@ watch(() => props.open, (open) => {
 }, { immediate: true });
 
 async function run(action, undo) {
+  requestId++;
+  loading.value = false;
   busy.value = true;
   saveError.value = '';
   try {
@@ -155,6 +163,7 @@ function showEverything() {
 
 async function setShowOnHome(value) {
   savingHome.value = true;
+  saveError.value = '';
   try {
     await liveStore.setShowOnHome(value);
   } catch (err) {

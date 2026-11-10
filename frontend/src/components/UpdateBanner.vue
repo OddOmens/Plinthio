@@ -122,11 +122,13 @@ async function dismiss() {
   }
 }
 
+let copiedTimer = null;
 async function copyCommand() {
   try {
     await navigator.clipboard.writeText(UPDATE_COMMAND);
     copied.value = true;
-    setTimeout(() => { copied.value = false; }, 2000);
+    clearTimeout(copiedTimer);
+    copiedTimer = setTimeout(() => { copied.value = false; }, 2000);
   } catch (e) {
     // Clipboard blocked (plain-HTTP origin) — the command is selectable text anyway.
   }
@@ -135,7 +137,10 @@ async function copyCommand() {
 // Re-check when an admin signs in, and every few hours for tabs left open.
 watch(() => authStore.isAdmin, (isAdmin) => { if (isAdmin) load(); }, { immediate: true });
 const timer = setInterval(load, 6 * 60 * 60 * 1000);
-onUnmounted(() => clearInterval(timer));
+onUnmounted(() => {
+  clearInterval(timer);
+  clearTimeout(copiedTimer);
+});
 
 defineExpose({ load });
 </script>

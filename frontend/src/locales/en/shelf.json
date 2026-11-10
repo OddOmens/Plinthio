@@ -99,7 +99,8 @@
     "createFolder": "Failed to create folder",
     "deleteFolder": "Failed to delete folder",
     "removeItem": "Failed to remove item",
-    "updateFolder": "Failed to update folder"
+    "updateFolder": "Failed to update folder",
+    "load": "Could not load your library."
   },
   "rootFolder": "Root",
   "series": {
@@ -136,6 +137,7 @@
   "folderModal": {
     "title": "Add to Folder or List",
     "loading": "Loading folders...",
+    "loadFailed": "Could not load your folders.",
     "empty": "No custom folders created yet. Create one below to organize your media!",
     "newFolder": "New Custom Folder",
     "placeholder": "e.g. Favorites, Bedtime...",

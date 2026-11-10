@@ -431,7 +431,8 @@ const list = computed(() => {
 
 const listLoading = computed(() => {
   const id = activeTab.value;
-  if (id === 'all' || id === 'recent' || !allLoaded.value) return allLoading.value || !allLoaded.value;
+  // A first load that failed shows its error, not the skeleton for good.
+  if (id === 'all' || id === 'recent' || !allLoaded.value) return allLoading.value || (!allLoaded.value && !loadError.value);
   const state = listState[id];
   return !!state?.loading || (!(id in lists) && !state?.error);
 });

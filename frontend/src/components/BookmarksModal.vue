@@ -66,6 +66,10 @@
           {{ $t('reader.bookmarksModal.loading') }}
         </div>
 
+        <div v-else-if="loadError" class="text-center py-8 text-xs text-destructive">
+          {{ loadError }}
+        </div>
+
         <div
           v-else-if="bookmarks.length === 0"
           class="text-center py-8 text-xs text-muted-foreground border border-dashed border-border rounded-xl"
@@ -176,16 +180,28 @@ function formatPosition(sec) {
   return t('reader.pageN', { page: Math.floor(sec || 1) });
 }
 
+// Why the bookmarks couldn't be loaded, so that doesn't read as "no bookmarks saved yet".
+const loadError = ref('');
+let requestId = 0;
+
 async function loadBookmarks() {
   if (!props.item?.id) return;
+  // Reopened for another title mid-load: only the latest title's bookmarks are shown.
+  const id = ++requestId;
   loading.value = true;
+  loadError.value = '';
   try {
     const res = await api.get(`/bookmarks/${props.item.id}`);
+    if (id !== requestId) return;
     bookmarks.value = res.data.bookmarks || [];
   } catch (err) {
+    if (id !== requestId) return;
     console.warn('Failed to load bookmarks:', err);
+    // Never the last title's bookmarks under this one's name.
+    bookmarks.value = [];
+    loadError.value = err.response?.data?.error || t('reader.bookmarksModal.loadFailed');
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 

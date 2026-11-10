@@ -576,18 +576,23 @@ watch(
       // Shelf cards carry a trimmed row (no description, themes, publisher, status, rating),
       // and saving sends every field — so without the full row, saving from the shelf
       // silently blanked all of those. Load it before the user can save.
+      const fullId = ++fullRequestId;
+      loadingFull.value = false;
       if (!isBulk.value && props.item.id) {
         const id = props.item.id;
         loadingFull.value = true;
         api.get(`/items/${id}`)
-          .then((res) => { if (props.item?.id === id && res.data.item) fillForm(res.data.item); })
+          .then((res) => { if (fullId === fullRequestId && res.data.item) fillForm(res.data.item); })
           .catch(() => {})
-          .finally(() => { loadingFull.value = false; });
+          // An earlier opening's load finishing mustn't re-enable Save before this one's.
+          .finally(() => { if (fullId === fullRequestId) loadingFull.value = false; });
       }
       pickedCoverUrl.value = null;
       pickedCoverFrom.value = null;
       pickedRating.value = null;
       pickedTmdbId.value = null;
+      searchRequestId++; // a search from the last opening doesn't land in this one
+      searching.value = false;
       query.value = defaultQuery(props.item);
       yearQuery.value = (props.item.release_date ? props.item.release_date.slice(0, 4) : props.item.detectedYear) || '';
       results.value = [];
@@ -601,6 +606,8 @@ watch(
 );
 
 const loadingFull = ref(false);
+let fullRequestId = 0;
+let searchRequestId = 0;
 
 // A book is found by title and author: a title alone brings up every summary and study
 // guide of it first.
@@ -631,10 +638,13 @@ function fillForm(item) {
 
 async function search() {
   if (!query.value.trim() || !props.item) return;
+  // Enter can start another search mid-search; only the latest one's results are shown.
+  const id = ++searchRequestId;
   searching.value = true;
   errorMessage.value = '';
   searchedAs.value = '';
   notices.value = [];
+  results.value = [];
   detailRequests = new Map();
   loadingDetails.clear();
   try {
@@ -647,6 +657,7 @@ async function search() {
         language: hasLanguage.value ? (props.item.language || locale.value) : undefined
       }
     });
+    if (id !== searchRequestId) return;
     results.value = res.data.results || [];
     searchedAs.value = res.data.searchedAs || '';
     notices.value = res.data.notices || [];
@@ -655,12 +666,15 @@ async function search() {
       .slice(0, DETAILS_PREFETCH)
       .forEach(loadDetails);
   } catch (err) {
+    if (id !== searchRequestId) return;
     console.error('Metadata search failed:', err);
     results.value = [];
     errorMessage.value = err.response?.data?.error || t('metadata.edit.searchFailed');
   } finally {
-    searching.value = false;
-    hasSearched.value = true;
+    if (id === searchRequestId) {
+      searching.value = false;
+      hasSearched.value = true;
+    }
   }
 }
 

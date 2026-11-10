@@ -154,11 +154,13 @@ export const useDownloadsStore = defineStore('downloads', {
       // grants it to installed PWAs, Safari decides for itself).
       navigator.storage?.persist?.().catch(() => {});
 
-      const cache = await caches.open(OFFLINE_CACHE);
       const { signal } = controller;
       const id = item.id;
 
       try {
+        // Inside the try: a browser that refuses the cache (private mode) must end in the
+        // error state, not a download stuck at "in progress" that can't be started again.
+        const cache = await caches.open(OFFLINE_CACHE);
         for (const width of COVER_WIDTHS) {
           const url = new URL(coverUrl(item, { width }), window.location.origin);
           await this.putMedia(cache, id, url.pathname, { w: width, v: url.searchParams.get('v') }, signal).catch(() => {});
@@ -206,6 +208,8 @@ export const useDownloadsStore = defineStore('downloads', {
         notifyWorker();
         this.refreshUsage();
       } catch (err) {
+        // Stops the other page workers too, so nothing is written back after the purge.
+        controller.abort();
         await this.purge(id);
         if (err.name === 'AbortError') {
           delete this.active[id];

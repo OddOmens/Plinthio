@@ -35,7 +35,7 @@
 
   <div class="bg-zinc-950 text-zinc-100 border border-border rounded-xl p-2 sm:p-3 font-mono text-[12px] leading-relaxed max-h-[65vh] overflow-y-auto shadow-inner flex flex-col gap-0.5 select-text">
     <div v-if="!logs.length" class="py-12 text-center text-zinc-500 font-sans text-xs">
-      {{ loading ? $t('common.loading') : $t('admin.logs.nothingMatches') }}
+      {{ loading ? $t('common.loading') : failed ? $t('common.loadFailed') : $t('admin.logs.nothingMatches') }}
     </div>
     <div v-for="log in logs" :key="log.id" class="flex flex-wrap sm:flex-nowrap items-start gap-x-2 gap-y-0.5 hover:bg-white/5 px-2 py-1 rounded transition-colors">
       <span class="text-zinc-500 whitespace-nowrap select-none text-[11px]">{{ formatLogTime(log.timestamp) }}</span>
@@ -67,20 +67,29 @@ const logs = ref([]);
 const search = ref('');
 const level = ref('all');
 const loading = ref(false);
+// The last load failed; shown only when there are no lines to keep showing.
+const failed = ref(false);
 const autoRefresh = ref(true);
+// Only the newest request's answer is shown: a poll that left before a new level or search
+// (or a clear) mustn't put the old lines back.
+let requestId = 0;
 
 async function load() {
+  const id = ++requestId;
   loading.value = true;
   try {
     const params = { limit: 100 };
     if (level.value !== 'all') params.level = level.value;
     if (search.value.trim()) params.search = search.value.trim();
     const res = await api.get('/admin/logs', { params });
+    if (id !== requestId) return;
     logs.value = res.data.logs || [];
+    failed.value = false;
   } catch (err) {
     console.warn('Could not load logs:', err);
+    if (id === requestId) failed.value = true;
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 
@@ -117,6 +126,8 @@ async function clearLogs() {
   if (!confirmed) return;
   try {
     await api.delete('/admin/logs');
+    requestId++;
+    loading.value = false;
     logs.value = [];
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('admin.logs.couldNotClear'));

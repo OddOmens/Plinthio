@@ -29,6 +29,7 @@
 
   <SettingsCard flush :title="$t('settings.hidden.titles.title')" :description="$t('settings.hidden.titles.desc')">
     <p v-if="loading" class="py-10 text-center text-xs text-muted-foreground">{{ $t('common.loading') }}</p>
+    <p v-else-if="failed" class="py-10 text-center text-xs text-muted-foreground">{{ $t('common.loadFailed') }}</p>
     <div v-else-if="hiddenItems.length === 0" class="py-12 px-6 text-center flex flex-col items-center gap-2">
       <EyeOff class="w-6 h-6 text-muted-foreground/60" />
       <p class="text-xs text-muted-foreground">{{ $t('settings.hidden.empty') }}</p>
@@ -65,6 +66,7 @@ const dialog = useDialogStore();
 const save = useSaveStatus();
 const hiddenItems = ref([]);
 const loading = ref(true);
+const failed = ref(false);
 const libraries = ref([]);
 const librariesLoaded = ref(false);
 
@@ -82,14 +84,18 @@ function libraryKind(lib) {
 
 onMounted(async () => {
   api.get('/libraries')
-    .then((res) => { libraries.value = res.data.libraries || []; })
-    .catch((err) => console.warn('Could not load libraries:', err))
-    .finally(() => { librariesLoaded.value = true; });
+    .then((res) => {
+      libraries.value = res.data.libraries || [];
+      // Only once they've loaded: a failed load isn't "no libraries".
+      librariesLoaded.value = true;
+    })
+    .catch((err) => console.warn('Could not load libraries:', err));
   try {
     const res = await api.get('/items/hidden');
     hiddenItems.value = res.data.hiddenItems || [];
   } catch (err) {
     console.warn('Could not load hidden titles:', err);
+    failed.value = true;
   } finally {
     loading.value = false;
   }

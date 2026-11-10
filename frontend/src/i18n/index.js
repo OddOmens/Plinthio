@@ -92,15 +92,20 @@ export async function setLanguage(choice) {
   await applyLanguage(choice);
 }
 
+let applyId = 0;
+
 // Switches the whole UI without remembering anything (for the account's or server's choice).
+// Only the latest choice wins, so a slow earlier language can't land after a newer pick.
 export async function applyLanguage(choice) {
   const code = resolveLanguage(choice);
+  const id = ++applyId;
   try {
     await load(code);
   } catch (err) {
     console.error(`Couldn't load the ${code} translation:`, err);
     return;
   }
+  if (id !== applyId) return;
   locale.value = code;
   if (typeof document !== 'undefined') document.documentElement.lang = code;
 }

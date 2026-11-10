@@ -99,7 +99,8 @@
     "createFolder": "Falha ao criar a pasta",
     "deleteFolder": "Falha ao excluir a pasta",
     "removeItem": "Falha ao remover o item",
-    "updateFolder": "Falha ao atualizar a pasta"
+    "updateFolder": "Falha ao atualizar a pasta",
+    "load": "Não foi possível carregar sua biblioteca."
   },
   "rootFolder": "Raiz",
   "series": {
@@ -136,6 +137,7 @@
   "folderModal": {
     "title": "Adicionar a pasta ou lista",
     "loading": "Carregando pastas...",
+    "loadFailed": "Não foi possível carregar suas pastas.",
     "empty": "Nenhuma pasta personalizada criada ainda. Crie uma abaixo para organizar sua mídia!",
     "newFolder": "Nova pasta personalizada",
     "placeholder": "ex.: Favoritos, Hora de dormir...",

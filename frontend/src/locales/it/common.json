@@ -11,6 +11,7 @@
   "edit": "Modifica",
   "search": "Cerca",
   "loading": "Caricamento…",
+  "loadFailed": "Impossibile caricare. Riprova più tardi.",
   "saving": "Salvataggio…",
   "saved": "Salvato",
   "retry": "Riprova",

@@ -99,7 +99,8 @@
     "createFolder": "Impossibile creare la cartella",
     "deleteFolder": "Impossibile eliminare la cartella",
     "removeItem": "Impossibile rimuovere l'elemento",
-    "updateFolder": "Impossibile aggiornare la cartella"
+    "updateFolder": "Impossibile aggiornare la cartella",
+    "load": "Impossibile caricare la tua libreria."
   },
   "rootFolder": "Radice",
   "series": {
@@ -139,6 +140,7 @@
   "folderModal": {
     "title": "Aggiungi a cartella o lista",
     "loading": "Caricamento cartelle...",
+    "loadFailed": "Impossibile caricare le tue cartelle.",
     "empty": "Non hai ancora creato cartelle personali. Creane una qui sotto per organizzare i tuoi contenuti!",
     "newFolder": "Nuova cartella personale",
     "placeholder": "es. Preferiti, Prima di dormire...",

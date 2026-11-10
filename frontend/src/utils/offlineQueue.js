@@ -46,9 +46,13 @@ export async function flushProgressQueue(api) {
         }
       } catch (err) {
         if (!err.response) break; // Still offline — try again on the next 'online'.
+        // The server rejected it (e.g. item gone) — don't retry forever, but keep a newer
+        // save queued for the same item meanwhile.
         const latest = read();
-        delete latest[url]; // The server rejected it (e.g. item gone) — don't retry forever.
-        write(latest);
+        if (latest[url]?.queuedAt === queue[url].queuedAt) {
+          delete latest[url];
+          write(latest);
+        }
       }
     }
   } finally {

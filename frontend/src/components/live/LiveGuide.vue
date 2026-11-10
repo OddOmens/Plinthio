@@ -65,7 +65,7 @@
       </button>
     </div>
 
-    <LiveEmpty v-else-if="loaded && !channels.length" :filtered="!!(group || q || lineup)" @clear="$emit('clear-filters')" />
+    <LiveEmpty v-else-if="loaded && !loading && !channels.length" :filtered="!!(group || q || lineup)" @clear="$emit('clear-filters')" />
 
     <template v-else>
       <!-- Channels but no schedule: the guide hasn't been fetched yet, or the source has none. -->
@@ -302,6 +302,8 @@ async function fetchPage(offset) {
 async function reload(scrollTo = 'now') {
   const id = ++requestId;
   loading.value = true;
+  // A retry shows the skeleton again rather than the last error.
+  loadError.value = '';
   try {
     const data = await fetchPage(0);
     if (id !== requestId) return;
@@ -321,6 +323,9 @@ async function reload(scrollTo = 'now') {
   } catch (err) {
     if (id !== requestId) return;
     if (err.response?.data?.code === 'P700') emit('off');
+    // What's still up is for the old filters or times: show the error, not it.
+    channels.value = [];
+    total.value = 0;
     loadError.value = err.response?.data?.error || t('live.errors.unreachable');
   } finally {
     if (id === requestId) loading.value = false;
@@ -479,8 +484,8 @@ const scheduleCache = new Map();
 async function openProgramme(channel, programme) {
   selected.value = { channel, programme };
   description.value = programme.description || '';
+  descriptionLoading.value = !description.value;
   if (description.value) return;
-  descriptionLoading.value = true;
   try {
     if (!scheduleCache.has(channel.id)) {
       const res = await api.get(`/live/channels/${channel.id}`);
@@ -491,7 +496,8 @@ async function openProgramme(channel, programme) {
   } catch (err) {
     // The details we have are enough.
   } finally {
-    descriptionLoading.value = false;
+    // Not if another programme has been opened since and is still looking.
+    if (selected.value?.programme === programme) descriptionLoading.value = false;
   }
 }
 

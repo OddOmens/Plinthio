@@ -1171,12 +1171,16 @@ const errorGroups = computed(() => {
 
 async function loadErrorCodes() {
   if (errorCodes.value.length) return;
+  // Coming back to the section tries again; opening on #P301 asks twice at once, so a
+  // failure only counts while nothing has loaded.
+  errorCodesError.value = false;
   try {
     const res = await fetch('/api/errors');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     errorCodes.value = (await res.json()).codes || [];
+    errorCodesError.value = false;
   } catch (err) {
-    errorCodesError.value = true;
+    if (!errorCodes.value.length) errorCodesError.value = true;
   }
 }
 

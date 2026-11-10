@@ -46,6 +46,7 @@ export class PartyConnection {
         if (!res.ok) {
           // Not a dropped connection — the party's gone, full, or off-limits. Stop.
           const body = await res.json().catch(() => ({}));
+          if (this.closed) return;
           this.onEvent({ type: 'error', status: res.status, code: body.code, message: translateServerMessage(body.error, body.code) });
           return;
         }

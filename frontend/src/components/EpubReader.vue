@@ -895,7 +895,19 @@ async function loadBookmarks() {
   } catch { /* offline: no bookmarks shown */ }
 }
 
+// A second tap while the first is still saving would add the same page twice.
+let bookmarkBusy = false;
 async function togglePageBookmark() {
+  if (bookmarkBusy) return;
+  bookmarkBusy = true;
+  try {
+    await toggleBookmarkHere();
+  } finally {
+    bookmarkBusy = false;
+  }
+}
+
+async function toggleBookmarkHere() {
   if (pageBookmark.value) {
     await deleteBookmark(pageBookmark.value);
     return;
@@ -1023,9 +1035,11 @@ function clearSelection() {
   selection.value = null;
 }
 
+let savingHighlight = false;
 async function createHighlight(color, withNote = false) {
   const sel = selection.value;
-  if (!sel) return;
+  if (!sel || savingHighlight) return;
+  savingHighlight = true;
   const progress = locationsReady.value
     ? (book.locations.percentageFromCfi(sel.cfiRange) || 0) * 100
     : percent.value;
@@ -1045,6 +1059,8 @@ async function createHighlight(color, withNote = false) {
     if (withNote) openNoteEditor(hl);
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('reader.highlight.couldNotSave'));
+  } finally {
+    savingHighlight = false;
   }
 }
 
@@ -1116,9 +1132,11 @@ const bookSearch = ref('');
 const searchResults = ref([]);
 const searching = ref(false);
 const searchDone = ref(false);
+// Some chapters couldn't be searched: no hits then isn't "no matches".
+const searchFailed = ref(false);
 const searchSummary = computed(() => {
   const count = searchResults.value.length;
-  if (!count) return t('reader.search.noMatches');
+  if (!count) return searchFailed.value ? t('reader.search.failed') : t('reader.search.noMatches');
   return count >= SEARCH_LIMIT ? t('reader.search.matchesCapped', { count }) : t('reader.search.matches', { count });
 });
 let searchHitCfi = null;
@@ -1130,11 +1148,13 @@ async function runSearch() {
   if (!book || query.length < 2) return;
   searching.value = true;
   searchDone.value = false;
+  searchFailed.value = false;
   searchResults.value = [];
   try {
     const results = [];
     for (const section of book.spine.spineItems) {
       if (results.length >= SEARCH_LIMIT) break;
+      // One unreadable chapter skips that chapter, not the rest of the book.
       try {
         await section.load(book.load.bind(book));
         const found = section.find(query) || [];
@@ -1143,6 +1163,9 @@ async function runSearch() {
           results.push({ cfi: hit.cfi, excerpt: hit.excerpt.trim(), chapter });
           if (results.length >= SEARCH_LIMIT) break;
         }
+      } catch (err) {
+        console.warn('Book search failed in', section.href, err);
+        searchFailed.value = true;
       } finally {
         section.unload();
       }
@@ -1150,6 +1173,7 @@ async function runSearch() {
     searchResults.value = results;
   } catch (err) {
     console.warn('Book search failed:', err);
+    searchFailed.value = true;
   } finally {
     searching.value = false;
     searchDone.value = true;
@@ -1226,6 +1250,15 @@ onUnmounted(() => {
   clearTimeout(toastTimer);
   clearTimeout(reanchorTimer);
   if (prefsDirty) persistPrefs(); // a change made just before closing
+  // Left some other way than closeReader (the browser's Back): keep the last page turn and
+  // let go of the book, or epub.js keeps measuring it in the background.
+  if (book) {
+    saveProgress();
+    rendition?.destroy();
+    book.destroy();
+    rendition = null;
+    book = null;
+  }
   viewSession.close();
 });
 </script>

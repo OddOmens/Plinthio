@@ -3,7 +3,7 @@
        device is seen, so an admin can confirm it from a phone on mobile data. -->
   <div class="flex flex-col gap-5">
     <SectionHeader :title="$t('network.title')" :description="$t('network.description')">
-      <button type="button" @click="load" :disabled="loading" class="btn btn-secondary">
+      <button type="button" @click="load" :disabled="loading || saving" class="btn btn-secondary">
         <RefreshCw class="w-3.5 h-3.5" :class="loading ? 'animate-spin' : ''" />
         {{ $t('network.checkAgain') }}
       </button>
@@ -174,15 +174,21 @@ const whereLabel = computed(() => {
 const whereIcon = computed(() => ({ home: House, tailscale: Waypoints, outside: Earth }[report.value?.thisDevice.where] || Globe));
 const whereTone = computed(() => (report.value?.thisDevice.away ? 'border-sky-500/40 bg-sky-500/5 text-sky-500' : 'border-emerald-500/40 bg-emerald-500/5 text-emerald-500'));
 
+let requestId = 0;
+
 async function load() {
+  const id = ++requestId;
   loading.value = true;
   error.value = '';
   try {
-    report.value = (await api.get('/admin/network')).data;
+    const data = (await api.get('/admin/network')).data;
+    if (id !== requestId) return;
+    report.value = data;
   } catch (err) {
+    if (id !== requestId) return;
     error.value = err.response?.data?.error || t('network.errors.load');
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 
@@ -198,6 +204,10 @@ async function save(patch) {
       return;
     }
   }
+  // A check still running would land with the setting as it was; the save's answer is the
+  // newer report.
+  requestId++;
+  loading.value = false;
   saving.value = true;
   error.value = '';
   try {

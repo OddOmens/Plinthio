@@ -119,32 +119,40 @@ async function load() {
 
 // The stars stay usable while a rating saves (disabling them dropped keyboard focus, so arrow
 // keys stepping by half stars stopped after one press); a change made mid-save is sent once
-// the first save is done, so only the latest value sticks.
+// the first save is done, so only the latest value sticks. Each value remembers its item: the
+// bar can move on (next episode) mid-save, and a save for the old one mustn't show here.
 let pending;
 async function rate(value) {
-  if (!props.item) return;
+  const itemId = props.item?.id;
+  if (!itemId) return;
   userRating.value = value;
   saveError.value = '';
-  if (saving.value) { pending = value; return; }
-  const previous = summary.value?.userRating ?? props.item?.user_rating ?? null;
+  if (saving.value) { pending = { itemId, value }; return; }
   saving.value = true;
-  let next = value;
+  let next = { itemId, value };
   try {
     for (;;) {
-      const res = await api.put(`/ratings/${props.item.id}`, { rating: next });
-      if (pending === undefined) {
-        summary.value = res.data;
-        userRating.value = res.data.userRating ?? null;
-        emit('rated', { itemId: props.item.id, rating: userRating.value });
-        break;
+      const res = await api.put(`/ratings/${next.itemId}`, { rating: next.value });
+      // The last value for this item: it's saved, so report it.
+      if (pending === undefined || pending.itemId !== next.itemId) {
+        const rating = res.data.userRating ?? null;
+        if (props.item?.id === next.itemId) {
+          summary.value = res.data;
+          userRating.value = rating;
+        }
+        emit('rated', { itemId: next.itemId, rating });
       }
+      if (pending === undefined) break;
       next = pending;
       pending = undefined;
     }
   } catch (err) {
     pending = undefined;
-    userRating.value = previous;
-    saveError.value = err.response?.data?.error || t('title.rating.saveFailed');
+    if (props.item?.id === next.itemId) {
+      // Back to the last saved rating.
+      userRating.value = summary.value?.userRating ?? props.item?.user_rating ?? null;
+      saveError.value = err.response?.data?.error || t('title.rating.saveFailed');
+    }
   } finally {
     saving.value = false;
   }

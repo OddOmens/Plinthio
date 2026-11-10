@@ -11,7 +11,7 @@
   </div>
 
   <SettingsCard :title="$t('settings.activity.recent')" flush>
-    <ActivityList :entries="activity" :loading="loading" />
+    <ActivityList :entries="activity" :loading="loading" :failed="failed" />
   </SettingsCard>
 </template>
 
@@ -28,6 +28,7 @@ import ActivityList from '../ActivityList.vue';
 const stats = ref({});
 const activity = ref([]);
 const loading = ref(true);
+const failed = ref(false);
 
 const tiles = computed(() => [
   { label: t('settings.activity.tiles.listened'), icon: Headphones, value: formatHours(stats.value.totalSecondsListened) },
@@ -46,6 +47,7 @@ onMounted(async () => {
     activity.value = activityRes.data.activity || [];
   } catch (err) {
     console.warn('Could not load your activity:', err);
+    failed.value = true;
   } finally {
     loading.value = false;
   }

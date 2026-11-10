@@ -11,6 +11,7 @@
   "edit": "编辑",
   "search": "搜索",
   "loading": "正在加载…",
+  "loadFailed": "无法加载，请稍后重试。",
   "saving": "正在保存…",
   "saved": "已保存",
   "retry": "重试",

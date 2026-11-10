@@ -120,6 +120,8 @@ onMounted(async () => {
 
 // Saves a moment after each change.
 let timer = null;
+// Saves can overlap; only the newest one's answer is kept as what the server has.
+let saveId = 0;
 watch(prefs, (value) => {
   if (!value.enabledMediaTypes?.length) {
     // Keep at least one type: undo the last untick.
@@ -136,19 +138,21 @@ watch(prefs, (value) => {
 }, { deep: true });
 
 async function savePreferences() {
+  const id = ++saveId;
+  const sent = JSON.stringify(prefs.value);
   // Alphabetical can't be switched off, so there's always a view.
   const body = {
     ...prefs.value,
     enabledGroupingModes: [...new Set(['series', ...(prefs.value.enabledGroupingModes || [])])]
   };
   const { ok, data } = await save.run(() => api.patch('/users/preferences', body));
-  if (!ok) return;
+  if (!ok || id !== saveId) return;
   // Keep what the server stored (these keys merged into the rest), not just this screen's
   // keys: dropping `onboardingComplete` would pop the onboarding flow open on the spot.
   if (authStore.user) {
     authStore.user.preferences = data.data.preferences || { ...authStore.user.preferences, ...body };
     authStore.persistUser();
   }
-  savedPrefs = JSON.stringify(prefs.value);
+  savedPrefs = sent;
 }
 </script>

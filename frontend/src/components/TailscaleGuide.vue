@@ -183,11 +183,13 @@ const CopyBlock = {
   props: { text: String },
   setup(p) {
     const copied = ref(false);
+    let timer = null;
     async function copy() {
       try {
         await navigator.clipboard.writeText(p.text);
         copied.value = true;
-        setTimeout(() => { copied.value = false; }, 1800);
+        clearTimeout(timer);
+        timer = setTimeout(() => { copied.value = false; }, 1800);
       } catch {
         // Clipboard blocked (plain http): the text is selectable anyway.
       }

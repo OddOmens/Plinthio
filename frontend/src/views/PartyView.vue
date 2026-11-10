@@ -270,9 +270,14 @@ async function loadItem(id) {
   itemId.value = id;
   try {
     const res = await api.get(`/items/${id}`);
-    if (itemId.value === id) item.value = res.data.item;
+    if (itemId.value !== id) return;
+    item.value = res.data.item;
+    problem.value = null;
   } catch (err) {
+    if (itemId.value !== id) return;
     problem.value = partyProblem('couldntLoad', { message: err.response?.data?.error });
+    // The problem only shows in place of the player; leaving the last title up would hide it.
+    item.value = null;
   }
 }
 

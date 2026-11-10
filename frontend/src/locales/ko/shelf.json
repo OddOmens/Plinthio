@@ -95,7 +95,8 @@
     "createFolder": "폴더를 만들지 못했어요",
     "deleteFolder": "폴더를 삭제하지 못했어요",
     "removeItem": "항목을 제거하지 못했어요",
-    "updateFolder": "폴더를 업데이트하지 못했어요"
+    "updateFolder": "폴더를 업데이트하지 못했어요",
+    "load": "라이브러리를 불러오지 못했어요."
   },
   "rootFolder": "루트",
   "series": {
@@ -131,6 +132,7 @@
   "folderModal": {
     "title": "폴더 또는 목록에 추가",
     "loading": "폴더 불러오는 중...",
+    "loadFailed": "폴더를 불러오지 못했어요.",
     "empty": "아직 사용자 폴더가 없어요. 아래에서 만들어 미디어를 정리해 보세요!",
     "newFolder": "새 사용자 폴더",
     "placeholder": "예: 즐겨찾기, 잠자기 전...",

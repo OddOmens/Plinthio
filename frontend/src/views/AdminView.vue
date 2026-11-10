@@ -86,10 +86,15 @@ const aliases = { stats: 'overview', settings: 'appearance', config: 'appearance
 
 const libraries = ref([]);
 const users = ref([]);
+// Two quick changes reload twice; only the later answer is kept.
+let librariesRequest = 0;
+let usersRequest = 0;
 
 async function loadLibraries() {
+  const id = ++librariesRequest;
   try {
     const res = await api.get('/libraries');
+    if (id !== librariesRequest) return;
     libraries.value = res.data.libraries || [];
   } catch (err) {
     console.error('Could not load libraries:', err);
@@ -97,8 +102,10 @@ async function loadLibraries() {
 }
 
 async function loadUsers() {
+  const id = ++usersRequest;
   try {
     const res = await api.get('/users');
+    if (id !== usersRequest) return;
     users.value = res.data.users || [];
   } catch (err) {
     console.error('Could not load users:', err);

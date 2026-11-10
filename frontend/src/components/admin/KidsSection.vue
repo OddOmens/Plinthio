@@ -23,7 +23,7 @@
         <template #button><strong class="text-foreground">{{ $t('admin.kids.titles.button') }}</strong></template>
       </I18nT>
     </template>
-    <p v-if="!kidsTitles.length" class="py-8 text-center text-xs text-muted-foreground">{{ loading ? $t('common.loading') : $t('admin.kids.noneYet') }}</p>
+    <p v-if="!kidsTitles.length" class="py-8 text-center text-xs text-muted-foreground">{{ loading ? $t('common.loading') : failed ? $t('common.loadFailed') : $t('admin.kids.noneYet') }}</p>
     <ul v-else class="divide-y divide-border">
       <li v-for="t in kidsTitles" :key="t.id" class="px-4 sm:px-5 py-2.5 flex items-center gap-3 text-xs">
         <Baby class="w-4 h-4 text-sky-500 flex-shrink-0" />
@@ -60,12 +60,14 @@ const save = useSaveStatus();
 
 const kidsTitles = ref([]);
 const loading = ref(true);
+const failed = ref(false);
 onMounted(async () => {
   try {
     const res = await api.get('/kids');
     kidsTitles.value = res.data.titles || [];
   } catch (err) {
     kidsTitles.value = [];
+    failed.value = true;
   } finally {
     loading.value = false;
   }

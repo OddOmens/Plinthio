@@ -60,10 +60,10 @@
               v-else
               type="button"
               @click="rescan(lib)"
-              :disabled="scanningId === lib.id"
+              :disabled="scanningIds.has(lib.id)"
               class="h-8 px-3 rounded-lg border border-border text-xs font-medium hover:bg-muted transition active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
             >
-              <RefreshCw class="w-3.5 h-3.5" :class="scanningId === lib.id ? 'animate-spin' : ''" />
+              <RefreshCw class="w-3.5 h-3.5" :class="scanningIds.has(lib.id) ? 'animate-spin' : ''" />
               {{ $t('admin.health.rescan') }}
             </button>
           </li>
@@ -207,7 +207,8 @@ const dialog = useDialogStore();
 const report = ref(null);
 const loading = ref(false);
 const error = ref('');
-const scanningId = ref(null);
+// Libraries being rescanned: several can run at once, each with its own spinner.
+const scanningIds = ref(new Set());
 
 const tiles = computed(() => {
   const s = report.value?.summary || {};
@@ -230,16 +231,22 @@ function formatTime(value) {
   return d(value, { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }) || String(value);
 }
 
+let requestId = 0;
+
 async function load() {
+  // An action reloads the report even while a check runs; only the latest one is shown.
+  const id = ++requestId;
   loading.value = true;
   error.value = '';
   try {
     const res = await api.get('/admin/health', { timeout: 120000 });
+    if (id !== requestId) return;
     report.value = res.data;
   } catch (err) {
+    if (id !== requestId) return;
     error.value = err.response?.data?.error || t('admin.health.couldNotRun');
   } finally {
-    loading.value = false;
+    if (id === requestId) loading.value = false;
   }
 }
 
@@ -329,7 +336,7 @@ async function removeMissing() {
 }
 
 async function rescan(lib) {
-  scanningId.value = lib.id;
+  scanningIds.value = new Set(scanningIds.value).add(lib.id);
   try {
     const res = await api.post(`/libraries/${lib.id}/scan`, null, { timeout: 600000 });
     const { added = 0, updated = 0, removed = 0 } = res.data || {};
@@ -338,7 +345,9 @@ async function rescan(lib) {
   } catch (err) {
     dialog.alert(err.response?.data?.error || t('admin.health.scanFailed'));
   } finally {
-    scanningId.value = null;
+    const rest = new Set(scanningIds.value);
+    rest.delete(lib.id);
+    scanningIds.value = rest;
   }
 }
 

@@ -11,6 +11,7 @@
   "edit": "Modifier",
   "search": "Rechercher",
   "loading": "Chargement…",
+  "loadFailed": "Chargement impossible. Réessayez plus tard.",
   "saving": "Enregistrement…",
   "saved": "Enregistré",
   "retry": "Réessayer",
