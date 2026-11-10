@@ -43,8 +43,8 @@ including HEVC/H.265, which Chrome, Edge and Safari can play.
   can't play it rather than sent untouched.
 - **Converted copies:** the server can do a conversion once, ahead of time, instead of every
   time someone presses play: AV1, VP9, VP8, 10-bit H.264 and older formats (MPEG-2, Xvid,
-  WMV), to H.264 or the smaller HEVC. A device that can't play the original is sent the copy
-  as a direct play. An admin queues one title or a whole library; see
+  WMV), to H.264. A device that can't play the original is sent the copy as a direct play.
+  **Convert** on a title's page queues that title, and Admin → Playback a whole library; see
   [Converted copies](administration.md#converted-copies).
 - **Fallback:** if the browser rejects a file it was expected to play, the player switches
   to transcoding by itself.

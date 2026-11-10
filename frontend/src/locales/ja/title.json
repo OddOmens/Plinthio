@@ -17,7 +17,8 @@
     "resetFailed": "履歴をリセットできませんでした",
     "skipFailed": "スキップの状態を更新できませんでした",
     "markEarlierFailed": "完了にできませんでした",
-    "kidsFailed": "キッズモードを変更できませんでした"
+    "kidsFailed": "キッズモードを変更できませんでした",
+    "convertFailed": "変換を開始できませんでした"
   },
   "meta": {
     "pages": {
@@ -212,7 +213,17 @@
     "keepAsHistory": "履歴として残す",
     "keepAsHistoryTitle": "{target}をアーカイブ: ファイルを削除した後も履歴を残します",
     "inKidsMode": "キッズモード中",
-    "kids": "キッズ"
+    "kids": "キッズ",
+    "convert": "変換",
+    "convertTitle": "どのデバイスでも再生できるコピーを作成します。変換はバックグラウンドで行われます",
+    "convertRetryTitle": "前回の変換は失敗しました。もう一度お試しください",
+    "convertWaiting": "変換待ち",
+    "converting": "変換中 · {percent}",
+    "converted": "変換済み",
+    "convertedTitle": "どのデバイスでも再生できるコピーが用意されています",
+    "convertAll": "すべて変換",
+    "convertAllTitle": "ここにある動画のうち、再生できないデバイスがあるものをすべて変換します",
+    "convertAllStarted": "ここにある動画（{count} 本）を確認しています。再生できないデバイスがあるものは、バックグラウンドで 1 本ずつ変換されます。キューは「管理 → 再生」で確認できます。"
   },
   "offload": {
     "targetTitle": "「{title}」",

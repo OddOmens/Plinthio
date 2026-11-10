@@ -17,7 +17,8 @@
     "resetFailed": "Verlauf konnte nicht zurückgesetzt werden",
     "skipFailed": "Übersprungene Einträge konnten nicht aktualisiert werden",
     "markEarlierFailed": "Diese konnten nicht als beendet markiert werden",
-    "kidsFailed": "Kindermodus konnte nicht geändert werden"
+    "kidsFailed": "Kindermodus konnte nicht geändert werden",
+    "convertFailed": "Umwandlung konnte nicht gestartet werden"
   },
   "meta": {
     "pages": {
@@ -220,7 +221,17 @@
     "keepAsHistory": "Als Verlauf behalten",
     "keepAsHistoryTitle": "{target} archivieren: den Verlauf behalten, nachdem du die Dateien gelöscht hast",
     "inKidsMode": "Im Kindermodus",
-    "kids": "Kinder"
+    "kids": "Kinder",
+    "convert": "Umwandeln",
+    "convertTitle": "Eine Kopie dieses Videos erstellen, die auf jedem Gerät läuft. Sie wird im Hintergrund umgewandelt",
+    "convertRetryTitle": "Die letzte Umwandlung ist fehlgeschlagen. Erneut versuchen",
+    "convertWaiting": "Wartet auf Umwandlung",
+    "converting": "Wird umgewandelt · {percent}",
+    "converted": "Umgewandelt",
+    "convertedTitle": "Eine Kopie, die auf jedem Gerät läuft, ist fertig",
+    "convertAll": "Alle umwandeln",
+    "convertAllTitle": "Jedes Video hier umwandeln, das nicht auf jedem Gerät läuft",
+    "convertAllStarted": "Die Videos hier werden geprüft ({count}). Alle, die nicht auf jedem Gerät laufen, werden nacheinander im Hintergrund umgewandelt. Verwaltung → Wiedergabe zeigt die Warteschlange."
   },
   "offload": {
     "targetTitle": "„{title}“",

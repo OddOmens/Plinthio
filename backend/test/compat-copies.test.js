@@ -8,7 +8,7 @@ import { startTestServer, setupAdmin, authed } from './helpers/server.js';
 
 // Video a device can't decode (AV1 on most Apple hardware, older formats everywhere):
 // converted as it streams when the client says which codecs it plays, and converted once
-// into an H.264 or HEVC copy on request.
+// into an H.264 copy on request.
 // Real files, real ffmpeg: skipped where this machine's ffmpeg can't make an AV1 file.
 function makeAv1(file) {
   for (const encoder of [['libsvtav1', '-preset', '12'], ['libaom-av1', '-cpu-used', '8'], ['librav1e', '-speed', '10']]) {
@@ -32,13 +32,6 @@ const movies = path.join(root, 'Movies');
 fs.mkdirSync(movies);
 const original = path.join(movies, 'Big Test Film (2020).mkv');
 const haveAv1 = makeAv1(original);
-const haveX265 = (() => {
-  try {
-    return /libx265/.test(execFileSync('ffmpeg', ['-hide_banner', '-encoders'], { encoding: 'utf8', stdio: 'pipe' }));
-  } catch {
-    return false;
-  }
-})();
 
 describe('AV1 on devices that cannot decode it', { skip: haveAv1 ? false : 'ffmpeg here cannot encode AV1' }, () => {
   let server; let admin; let libraryId; let film;
@@ -154,36 +147,10 @@ describe('AV1 on devices that cannot decode it', { skip: haveAv1 ? false : 'ffmp
     const overview = await json('/settings/compat');
     assert.equal(overview.copies.length, 1);
     assert.equal(overview.copies[0].status, 'done');
-    assert.equal(overview.copies[0].codec, 'h264');
-    assert.equal(overview.codec, 'h264', 'H.264 unless the admin chooses otherwise');
     assert.ok(overview.usedBytes > 0);
 
     const logs = await json('/admin/logs');
     assert.match(JSON.stringify(logs), /The H\.264 copy of \\"Big Test Film\\" is ready/, 'the server log says what was made');
-  });
-
-  test('set to HEVC, copies are HEVC that Apple devices play, and other devices keep the live conversion', { skip: haveX265 ? false : 'ffmpeg here has no libx265' }, async () => {
-    assert.equal((await send('PUT', '/settings/compat', { codec: 'av1' })).status, 400);
-    assert.equal((await (await send('PUT', '/settings/compat', { codec: 'hevc' })).json()).codec, 'hevc');
-    assert.equal((await json(`/media/video/${film.id}/compat`)).codec, 'h264', 'the copy already made is kept');
-
-    await send('DELETE', `/media/video/${film.id}/compat`);
-    assert.equal((await send('POST', `/media/video/${film.id}/compat`)).status, 202);
-    await until('the HEVC copy', async () => (await json(`/media/video/${film.id}/compat`)).status === 'done');
-
-    const device = await json(`/media/video/${film.id}/playback-info?${apple}`);
-    assert.equal(device.compatCopy, true);
-    assert.equal(device.videoCodec, 'hevc');
-    assert.equal(device.mode, 'direct');
-    const tag = execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=codec_tag_string', '-of', 'csv=p=0',
-      path.join(server.dataDir, 'compat', `${film.id}.mp4`)], { encoding: 'utf8' }).trim();
-    assert.equal(tag, 'hvc1', 'tagged the way Apple players need');
-
-    const h264Only = await json(`/media/video/${film.id}/playback-info?videoCodecs=h264`);
-    assert.equal(h264Only.compatCopy, undefined, 'an HEVC copy is no use to a device without HEVC');
-    assert.equal(h264Only.mode, 'transcode');
-
-    await send('PUT', '/settings/compat', { codec: 'h264' });
   });
 
   test('a copy can be deleted, and a whole library queued', async () => {
@@ -266,7 +233,9 @@ describe('converted copies of older formats', () => {
     assert.equal(info.videoCodec, 'mpeg4');
     assert.equal(info.compat.eligible, true);
 
-    assert.equal((await send('POST', '/settings/compat/queue', {})).status, 202);
+    // The way the title page asks, for a series' episodes: by id, the ones that need it.
+    assert.equal((await send('POST', '/settings/compat/queue', { itemIds: 'all' })).status, 400);
+    assert.equal((await send('POST', '/settings/compat/queue', { itemIds: [old.id, modern.id] })).status, 202);
     const deadline = Date.now() + 60000;
     let overview;
     do {

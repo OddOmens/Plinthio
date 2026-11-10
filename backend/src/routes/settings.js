@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
-import { compatOverview, saveCompatSettings, queueLibrary, removeAllCopies, retryFailed, TARGET_CODECS } from '../services/compat.js';
+import { compatOverview, saveCompatSettings, queueLibrary, removeAllCopies, retryFailed } from '../services/compat.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { getDetectedHwaccel, listHwaccels, testHwaccel } from '../services/hwaccel.js';
 import {
@@ -131,19 +131,15 @@ router.post('/transcoding/test', authenticateToken, requireAdmin, handle(async (
   res.json(await testHwaccel(method));
 }));
 
-// Converted copies (services/compat.js): H.264 or HEVC, the size limit, who may ask for one,
+// Converted copies (services/compat.js): the size limit, who may ask for one,
 // whether a finished copy replaces the original, and the copies themselves.
 router.get('/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
   res.json(await compatOverview(await getDb()));
 }));
 
 router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
-  const { maxGb, codec, allowUsers, replaceOriginal } = req.body || {};
+  const { maxGb, allowUsers, replaceOriginal } = req.body || {};
   const patch = {};
-  if (codec !== undefined) {
-    if (!TARGET_CODECS.includes(codec)) return res.status(400).json({ error: 'The codec must be h264 or hevc' });
-    patch.codec = codec;
-  }
   if (maxGb !== undefined) {
     const value = Number(maxGb);
     if (!Number.isFinite(value) || value < 0 || value > 100000) {
@@ -161,21 +157,26 @@ router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) =
   if (before.replaceOriginal !== after.replaceOriginal) {
     logger.warn('media', `Converted copies: replacing originals was switched ${after.replaceOriginal ? 'ON' : 'off'} by ${req.user.username}`);
   }
-  if (before.codec !== after.codec) {
-    logger.info('media', `Converted copies: new copies will be ${after.codec === 'hevc' ? 'HEVC' : 'H.264'} (set by ${req.user.username})`);
-  }
   res.json(after);
 }));
 
-// Queues every video in one library (or all of them) that needs a copy.
+// Queues every video that needs a copy: in one library, in all of them, or among the titles
+// in itemIds (the web app sends a series' episodes).
 router.post('/compat/queue', authenticateToken, requireAdmin, handle(async (req, res) => {
   const libraryId = req.body?.libraryId || null;
+  let itemIds = null;
+  if (req.body?.itemIds !== undefined) {
+    itemIds = req.body.itemIds;
+    if (!Array.isArray(itemIds) || !itemIds.length || itemIds.length > 2000 || !itemIds.every((id) => typeof id === 'string' && /^[a-f0-9]{8,64}$/i.test(id))) {
+      return res.status(400).json({ error: 'itemIds must be a list of up to 2000 item ids' });
+    }
+  }
   const db = await getDb();
   if (libraryId && !await db.get('SELECT id FROM libraries WHERE id = ?', [libraryId])) {
     return res.status(404).json({ error: 'Library not found' });
   }
   try {
-    res.status(202).json(await queueLibrary(db, libraryId, req.user.id));
+    res.status(202).json(await queueLibrary(db, libraryId, req.user.id, itemIds));
   } catch (err) {
     if (err?.plinthioCode) return sendError(req, res, err.plinthioCode, { message: err.message });
     throw err;

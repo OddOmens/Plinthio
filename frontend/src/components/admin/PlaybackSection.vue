@@ -68,15 +68,6 @@
         <p class="field-hint">{{ $t('admin.playback.copies.limitHint', { used: formatBytes(copies.usedBytes) }) }}</p>
       </div>
 
-      <div>
-        <label for="copies-codec" class="field-label">{{ $t('admin.playback.copies.codec') }}</label>
-        <select id="copies-codec" :value="copies.codec" @change="saveCopies({ codec: $event.target.value })" class="field w-full sm:w-80">
-          <option value="h264">{{ $t('admin.playback.copies.codecH264') }}</option>
-          <option value="hevc">{{ $t('admin.playback.copies.codecHevc') }}</option>
-        </select>
-        <p class="field-hint">{{ $t('admin.playback.copies.codecHint') }}</p>
-      </div>
-
       <div class="divide-y divide-border border-t border-border pt-3">
         <ToggleRow
           :label="$t('admin.playback.copies.allowUsers')"
@@ -251,7 +242,7 @@ async function runHwaccelTest() {
 
 // ─── Converted copies ─────────────────────────────────────────────────────────
 const copiesSave = useSaveStatus();
-const copies = ref({ maxGb: 50, codec: 'h264', allowUsers: false, replaceOriginal: false, usedBytes: 0, discovery: null, copies: [] });
+const copies = ref({ maxGb: 50, allowUsers: false, replaceOriginal: false, usedBytes: 0, discovery: null, copies: [] });
 const copiesLimit = ref(50);
 const copiesLibrary = ref('');
 const videoLibraries = ref([]);
@@ -354,8 +345,7 @@ function copyStatus(copy) {
       ? t(`admin.playback.copies.replaceErrors.${copy.replaceError}`)
       : t('admin.playback.copies.replaceErrors.other', { error: copy.replaceError });
   }
-  const size = formatBytes(copy.size);
-  return t('admin.playback.copies.status.done', { size: copy.codec === 'hevc' ? `HEVC · ${size}` : copy.codec === 'h264' ? `H.264 · ${size}` : size });
+  return t('admin.playback.copies.status.done', { size: formatBytes(copy.size) });
 }
 
 // ─── Opening sequence ─────────────────────────────────────────────────────

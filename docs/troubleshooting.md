@@ -48,10 +48,9 @@ This page starts from what you see instead.
 | "Starting playback…" forever | Check Admin → Logs for ffmpeg errors. On a slow CPU, a transcode may not keep up. Pick a lower quality, or enable hardware transcoding |
 | P303 | ffmpeg is missing (bare-metal install). Install ffmpeg |
 | P304 "Conversion failed" | ffmpeg failed on this file. The log has its error. If it mentions VAAPI, QSV or NVENC, set Video Transcoding to software and test again |
-| AV1 (or VP9) video stutters or won't play on an iPhone, iPad, Apple TV or older Mac | The device can't decode it, so the server converts it as it plays. Make a [converted copy](administration.md#converted-copies) in Admin → Playback so it is converted once instead |
+| AV1 (or VP9) video stutters or won't play on an iPhone, iPad, Apple TV or older Mac | The device can't decode it, so the server converts it as it plays. Press **Convert** on the title's page, or queue the library in Admin → Playback, to make a [converted copy](administration.md#converted-copies) so it is converted once instead |
 | A converted copy says "Failed" | The list shows a code and Admin → Logs has ffmpeg's error on the same line. P311: raise the size limit or delete copies. P301: the original is missing. P304: ffmpeg couldn't convert the file even on the CPU, so it may be damaged. Then press **Try the failed ones again** |
 | Conversions sit at "Waiting" or "Paused" | They run one at a time and wait while anyone is watching something the server converts live. They carry on by themselves |
-| HEVC copies take very long | Without a graphics chip that encodes HEVC they are made on the CPU. Choose H.264 in Admin → Playback, or pass a graphics chip through. See [Setup → Hardware transcoding](setup.md#hardware-transcoding) |
 | "Ready, but the original wasn't replaced" | The media folder is read-only (`:ro` on the Docker volume, or the server's user can't write there), the file is a symlink, or a file with the new name already exists. The copy is still played from the data folder |
 | P310 when asking for a copy | The video is already 8-bit H.264 or HEVC and plays everywhere as it is |
 | P350 "This browser cannot play this video" | Even the converted stream was rejected. Try Chrome, Edge or Safari. If every browser fails, the file may be damaged |

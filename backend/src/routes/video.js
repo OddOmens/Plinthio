@@ -140,10 +140,9 @@ router.get('/:id/playback-info', authenticateToken, async (req, res) => {
     const fileInfo = await getPlaybackInfo(req.params.id, resolved.filePath, caps);
     const db = await getDb();
 
-    // Video this client can't decode has to be converted as it plays — unless a converted
-    // copy of it has been made that this client does decode (an HEVC copy is no use to a
-    // browser without HEVC), in which case that is played instead (the client adds ?copy=1
-    // to the stream URLs when compatCopy is set). Subtitles still come from the file.
+    // Video this client can't decode has to be converted as it plays — unless an H.264
+    // copy of it has been made, in which case that is played instead (the client adds
+    // ?copy=1 to the stream URLs when compatCopy is set). Subtitles still come from the file.
     let info = fileInfo;
     if (fileInfo.mode === 'transcode' && !fileInfo.probeFailed) {
       const copy = await readyCopy(db, req.params.id, resolved.filePath);
@@ -186,9 +185,8 @@ router.get('/:id/compat', authenticateToken, async (req, res) => {
   }
 });
 
-// Asks the server to make a converted copy of this title in the background (H.264 or HEVC,
-// as set in Admin → Playback). Admins always can; everyone else only when the admin has
-// allowed it. Asking again for one that failed tries it again. Refusals carry P310 (nothing
+// Asks the server to make an H.264 copy of this title in the background. Admins always
+// can; everyone else only when the admin has allowed it (Admin → Playback). Asking again for one that failed tries it again. Refusals carry P310 (nothing
 // to convert), P311 (the size limit) or P312 (admins only).
 router.post('/:id/compat', authenticateToken, async (req, res) => {
   try {

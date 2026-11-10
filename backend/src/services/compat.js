@@ -8,7 +8,7 @@ import { PlinthioError } from '../errors.js';
 import { logger } from './logger.js';
 import { getSetting, setSetting } from './settings.js';
 import { getPlaybackInfo, forgetPlaybackInfo } from './transcode.js';
-import { getActiveHwaccel, hwaccelConfig, hevcEncoder, testHwaccel } from './hwaccel.js';
+import { getActiveHwaccel, hwaccelConfig } from './hwaccel.js';
 import { activeEncodeCount, dropItemHlsCache } from './hls.js';
 import { localInputArgs } from './probe.js';
 import { isLibraryScanning } from './scanner.js';
@@ -19,7 +19,7 @@ import { resolveLibraryFile } from '../utils/libraryPath.js';
 // MPEG-4/Xvid, VC-1, WMV, 10-bit H.264) play nowhere without help; for those the server
 // converts as it streams (routes/video.js), which costs a full encode every time someone
 // presses play. A copy is that conversion done once, in the background, at full size, to
-// H.264 or (smaller, the admin's choice) HEVC: afterwards the device is simply sent the copy.
+// H.264, which everything plays: afterwards the device is simply sent the copy.
 //
 // Copies live under DATA_DIR/compat, never in a library folder, so a title is still one
 // file as far as the scanner and the shelves are concerned. The original is left alone
@@ -28,10 +28,6 @@ import { resolveLibraryFile } from '../utils/libraryPath.js';
 
 const COMPAT_DIR = path.join(config.dataDir, 'compat');
 fs.mkdirSync(COMPAT_DIR, { recursive: true });
-
-// What a copy is made in. H.264 plays on everything; HEVC is about half the size and plays
-// on every Apple device and most browsers (not Firefox), but takes longer to make.
-export const TARGET_CODECS = ['h264', 'hevc'];
 
 /**
  * Whether a file's video needs a copy: anything but 8-bit H.264 (plays everywhere) and
@@ -58,21 +54,6 @@ let discovery = null;
 // size limit, P302 a file that can't be read; routes answer with them like any PlinthioError.
 export class CompatError extends PlinthioError {}
 
-const codecName = (codec) => (codec === 'hevc' ? 'HEVC' : 'H.264');
-
-// Whether each acceleration method can encode HEVC here, found out once with a real test
-// encode: plenty of graphics chips that encode H.264 only decode HEVC.
-const hevcHardware = new Map();
-function hardwareEncodesHevc(accelName) {
-  if (!hevcHardware.has(accelName)) {
-    hevcHardware.set(accelName, testHwaccel(accelName, 'hevc').then((result) => {
-      if (!result.ok) logger.info('media', `Converted copies: ${accelName} can't encode HEVC on this server, so HEVC copies are made on the CPU, which is slower`);
-      return result.ok;
-    }));
-  }
-  return hevcHardware.get(accelName);
-}
-
 const copyPath = (itemId) => path.join(COMPAT_DIR, `${itemId}.mp4`);
 const tmpPath = (itemId) => path.join(COMPAT_DIR, `${itemId}.part.mp4`);
 // The probe cache key for a title's copy (see getPlaybackInfo).
@@ -80,10 +61,8 @@ export const compatProbeId = (itemId) => `${itemId}.compat`;
 
 export async function getCompatSettings(db) {
   const maxGb = parseFloat(await getSetting(db, 'compat_max_gb'));
-  const codec = await getSetting(db, 'compat_codec');
   return {
     maxGb: Number.isFinite(maxGb) && maxGb >= 0 ? maxGb : DEFAULT_MAX_GB,
-    codec: TARGET_CODECS.includes(codec) ? codec : 'h264',
     allowUsers: (await getSetting(db, 'compat_allow_users')) === '1',
     replaceOriginal: (await getSetting(db, 'compat_replace_original')) === '1'
   };
@@ -91,8 +70,6 @@ export async function getCompatSettings(db) {
 
 export async function saveCompatSettings(db, patch) {
   if (patch.maxGb !== undefined) await setSetting(db, 'compat_max_gb', String(patch.maxGb));
-  // Copies already made stay as they are; the choice applies to the ones made from now on.
-  if (patch.codec !== undefined) await setSetting(db, 'compat_codec', patch.codec);
   if (patch.allowUsers !== undefined) await setSetting(db, 'compat_allow_users', patch.allowUsers ? '1' : '0');
   if (patch.replaceOriginal !== undefined) {
     await setSetting(db, 'compat_replace_original', patch.replaceOriginal ? '1' : '0');
@@ -122,17 +99,16 @@ function progressOf(row) {
 
 /**
  * Where a title's copy stands, for the apps: { status: 'none' | 'queued' | 'running' |
- * 'done' | 'failed', progress: 0–1, error, errorCode, codec }.
+ * 'done' | 'failed', progress: 0–1, error, errorCode }.
  */
 export async function copyState(db, itemId) {
   const row = await db.get('SELECT * FROM compat_copies WHERE item_id = ?', [itemId]);
-  if (!row) return { status: 'none', progress: 0, error: null, errorCode: null, codec: null };
+  if (!row) return { status: 'none', progress: 0, error: null, errorCode: null };
   return {
     status: row.status,
     progress: progressOf(row),
     error: row.error || null,
-    errorCode: row.error_code || null,
-    codec: row.target_codec || null
+    errorCode: row.error_code || null
   };
 }
 
@@ -176,11 +152,11 @@ export async function requestCopy(db, itemId, filePath, userId) {
 
   removeFiles(itemId);
   await db.run(
-    `INSERT INTO compat_copies (item_id, status, source_codec, target_codec, requested_by) VALUES (?, 'queued', ?, ?, ?)
+    `INSERT INTO compat_copies (item_id, status, source_codec, requested_by) VALUES (?, 'queued', ?, ?)
      ON CONFLICT(item_id) DO UPDATE SET status = 'queued', size = 0, error = NULL, error_code = NULL,
-       replace_error = NULL, source_codec = excluded.source_codec, target_codec = excluded.target_codec,
+       replace_error = NULL, source_codec = excluded.source_codec,
        requested_by = excluded.requested_by, created_at = CURRENT_TIMESTAMP, finished_at = NULL`,
-    [itemId, info.tenBitH264 ? 'h264 10-bit' : info.videoCodec, settings.codec, userId || null]
+    [itemId, info.tenBitH264 ? 'h264 10-bit' : info.videoCodec, userId || null]
   );
   kick();
   return copyState(db, itemId);
@@ -216,7 +192,7 @@ export async function retryFailed(db) {
 /** Everything the admin page shows: the settings, the space used and each copy. */
 export async function compatOverview(db) {
   const rows = await db.all(
-    `SELECT c.item_id, c.status, c.size, c.source_codec, c.target_codec, c.error, c.error_code, c.replace_error, c.created_at,
+    `SELECT c.item_id, c.status, c.size, c.source_codec, c.error, c.error_code, c.replace_error, c.created_at,
             i.title, i.series, i.volume, i.media_type
      FROM compat_copies c LEFT JOIN items i ON i.id = c.item_id
      ORDER BY CASE c.status WHEN 'running' THEN 0 WHEN 'queued' THEN 1 WHEN 'failed' THEN 2 ELSE 3 END, c.created_at`
@@ -237,7 +213,6 @@ export async function compatOverview(db) {
       paused: row.status === 'running' && current?.itemId === row.item_id && current.paused,
       size: row.size || 0,
       sourceCodec: row.source_codec || null,
-      codec: row.target_codec || null,
       error: row.error || null,
       errorCode: row.error_code || null,
       replaceError: row.replace_error || null
@@ -246,17 +221,21 @@ export async function compatOverview(db) {
 }
 
 /**
- * Looks through one library (or all of them) for video that needs a copy and queues it.
- * Returns straight away; compatOverview().discovery reports how far it has got.
+ * Looks through one library (or all of them), or through the titles named in itemIds (a
+ * series' episodes, say), for video that needs a copy and queues it. Returns straight away;
+ * compatOverview().discovery reports how far it has got.
  */
-export async function queueLibrary(db, libraryId, userId) {
+export async function queueLibrary(db, libraryId, userId, itemIds = null) {
   if (discovery) throw new PlinthioError('P004', 'A search for videos to convert is already running');
+  const filter = itemIds
+    ? `AND i.id IN (${itemIds.map(() => '?').join(',')})`
+    : (libraryId ? 'AND i.library_id = ?' : '');
   const items = await db.all(
     `SELECT i.id, i.path FROM items i
      WHERE i.media_type IN ('movie', 'show', 'anime') AND i.missing_since IS NULL
        AND i.id NOT IN (SELECT item_id FROM compat_copies WHERE status != 'failed')
-       ${libraryId ? 'AND i.library_id = ?' : ''}`,
-    libraryId ? [libraryId] : []
+       ${filter}`,
+    itemIds || (libraryId ? [libraryId] : [])
   );
   discovery = { total: items.length, done: 0, queued: 0 };
   (async () => {
@@ -300,36 +279,24 @@ function bitrateFor(height) {
   return 2000;
 }
 
-// The video half of the command, for one target codec on one encoder (a graphics chip's,
-// or the CPU's when accel is null). HEVC needs about 60% of H.264's bits for the same
-// picture, and the hvc1 tag, without which Apple's players refuse it.
-function videoArgs(info, codec, accel, height) {
-  const bitrate = Math.round(bitrateFor(height) * (codec === 'hevc' ? 0.6 : 1));
+// The video half of the command, on one encoder: a graphics chip's, or the CPU's when accel
+// is null.
+function videoArgs(info, accel, height) {
+  const bitrate = bitrateFor(height);
   const rate = ['-maxrate', `${Math.round(bitrate * 1.5)}k`, '-bufsize', `${bitrate * 3}k`];
-  const tag = codec === 'hevc' ? ['-tag:v', 'hvc1'] : [];
   // Interlaced video (DVDs, broadcast recordings) would otherwise keep its comb lines for good.
   const deinterlace = info.interlaced ? 'yadif,' : '';
-
   if (accel) {
-    const encoder = codec === 'hevc' ? hevcEncoder(accel) : accel.encoder;
-    return ['-vf', deinterlace + accel.filter(height), '-c:v', encoder, '-b:v', `${bitrate}k`, ...rate, ...tag];
+    return ['-vf', deinterlace + accel.filter(height), '-c:v', accel.encoder, '-b:v', `${bitrate}k`, ...rate];
   }
   // Half the cores: this runs for a long time beside a server people are using.
-  const threads = Math.max(1, Math.floor(os.cpus().length / 2));
-  const filter = ['-vf', `${deinterlace}scale=-2:${height}`];
-  if (codec === 'hevc') {
-    return [
-      ...filter, '-c:v', 'libx265', '-preset', 'faster', '-crf', '24',
-      '-x265-params', `log-level=error:pools=${threads}`, ...rate, '-pix_fmt', 'yuv420p', ...tag
-    ];
-  }
   return [
-    ...filter, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '21', ...rate,
-    '-pix_fmt', 'yuv420p', '-threads', String(threads)
+    '-vf', `${deinterlace}scale=-2:${height}`, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '21', ...rate,
+    '-pix_fmt', 'yuv420p', '-threads', String(Math.max(1, Math.floor(os.cpus().length / 2)))
   ];
 }
 
-function buildArgs(info, sourcePath, outPath, { codec, accel, subtitles }) {
+function buildArgs(info, sourcePath, outPath, { accel, subtitles }) {
   // The source's own size (H.264 past 2160p plays almost nowhere), with even dimensions.
   const height = Math.min(info.height || 1080, 2160) & ~1;
 
@@ -343,7 +310,7 @@ function buildArgs(info, sourcePath, outPath, { codec, accel, subtitles }) {
   const textSubs = subtitles ? (info.subtitleTracks || []).filter((track) => track.isTextBased) : [];
   for (const track of textSubs) args.push('-map', `0:s:${track.index}`);
 
-  args.push(...videoArgs(info, codec, accel, height));
+  args.push(...videoArgs(info, accel, height));
 
   // Audio every browser and Apple device plays in an MP4: AAC and MP3 are kept as they
   // are, anything else (Opus, AC-3, DTS…) becomes AAC with up to 5.1 channels.
@@ -469,20 +436,17 @@ async function convert(db, row) {
   if (info.probeFailed) return failed('This file could not be read as a video', 'P302');
   const source = fs.statSync(file.realPath);
   const out = tmpPath(itemId);
-  // The codec chosen when it was queued; rows from before there was a choice are H.264.
-  const codec = TARGET_CODECS.includes(row.target_codec) ? row.target_codec : 'h264';
-  let accelName = await getActiveHwaccel();
-  if (accelName && codec === 'hevc' && !await hardwareEncodesHevc(accelName)) accelName = null;
+  const accelName = await getActiveHwaccel();
   const accel = accelName ? hwaccelConfig(accelName) : null;
-  logger.info('media', `Converting "${item.title}" (${row.source_codec || info.videoCodec}) to ${codecName(codec)} with ${accelName || 'the CPU'}`);
+  logger.info('media', `Converting "${item.title}" (${row.source_codec || info.videoCodec}) to H.264 with ${accelName || 'the CPU'}`);
 
-  // The graphics chip first, then the CPU if it fails (not every chip encodes HEVC); and
+  // The graphics chip first, then the CPU if it fails; and
   // each of those without the subtitles if it fails with them, since a track ffmpeg can't
   // turn into MP4 text shouldn't cost the whole copy.
   const hasSubs = (info.subtitleTracks || []).some((track) => track.isTextBased);
   const plans = [];
   for (const encoder of accel ? [accel, null] : [null]) {
-    for (const subtitles of hasSubs ? [true, false] : [false]) plans.push({ codec, accel: encoder, subtitles });
+    for (const subtitles of hasSubs ? [true, false] : [false]) plans.push({ accel: encoder, subtitles });
   }
   let result;
   for (const [index, plan] of plans.entries()) {
@@ -500,11 +464,11 @@ async function convert(db, row) {
   }
   if (!result.ok) return result.error === 'cap' ? failed('cap', 'P311') : failed(result.error, result.code || 'P304');
 
-  // Only a copy that really is the whole film in the codec asked for is kept.
+  // Only a copy that really is the whole film in H.264 is kept.
   forgetPlaybackInfo(compatProbeId(itemId));
   const made = await getPlaybackInfo(compatProbeId(itemId), out);
   forgetPlaybackInfo(compatProbeId(itemId));
-  if (made.probeFailed || made.videoCodec !== codec || (info.duration > 0 && made.duration < info.duration * 0.95 - 2)) {
+  if (made.probeFailed || made.videoCodec !== 'h264' || (info.duration > 0 && made.duration < info.duration * 0.95 - 2)) {
     return failed('The converted file came out incomplete', 'P304');
   }
   const size = fs.statSync(out).size;
@@ -513,11 +477,11 @@ async function convert(db, row) {
   fs.renameSync(out, copyPath(itemId));
   const saved = await db.run(
     `UPDATE compat_copies SET status = 'done', size = ?, source_size = ?, source_mtime = ?, error = NULL,
-       error_code = NULL, target_codec = ?, finished_at = CURRENT_TIMESTAMP WHERE item_id = ? AND status = 'running'`,
-    [size, source.size, Math.floor(source.mtimeMs), codec, itemId]
+       error_code = NULL, finished_at = CURRENT_TIMESTAMP WHERE item_id = ? AND status = 'running'`,
+    [size, source.size, Math.floor(source.mtimeMs), itemId]
   );
   if (!saved.changes) return removeFiles(itemId); // removed while it was being checked
-  logger.info('media', `The ${codecName(codec)} copy of "${item.title}" is ready (${Math.round(size / 1024 ** 2)} MB, the original is ${Math.round(source.size / 1024 ** 2)} MB)`);
+  logger.info('media', `The H.264 copy of "${item.title}" is ready (${Math.round(size / 1024 ** 2)} MB, the original is ${Math.round(source.size / 1024 ** 2)} MB)`);
 }
 
 // ─── Replacing the original ─────────────────────────────────────────────────
@@ -547,7 +511,7 @@ async function replaceOriginal(db, row) {
   const dir = path.dirname(original);
   const base = path.basename(original, path.extname(original));
   let target = path.join(dir, `${base}.mp4`);
-  if (target !== original && fs.existsSync(target)) target = path.join(dir, `${base}.${row.target_codec === 'hevc' ? 'hevc' : 'h264'}.mp4`);
+  if (target !== original && fs.existsSync(target)) target = path.join(dir, `${base}.h264.mp4`);
   if (target !== original && fs.existsSync(target)) return giveUp('exists');
   const staging = path.join(dir, `.${base}.plinthio-part`);
 

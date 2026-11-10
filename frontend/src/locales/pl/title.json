@@ -17,7 +17,8 @@
     "resetFailed": "Nie udało się wyczyścić historii",
     "skipFailed": "Nie udało się zmienić pominiętych pozycji",
     "markEarlierFailed": "Nie udało się oznaczyć ich jako ukończone",
-    "kidsFailed": "Nie udało się zmienić trybu dziecięcego"
+    "kidsFailed": "Nie udało się zmienić trybu dziecięcego",
+    "convertFailed": "Nie udało się rozpocząć konwersji"
   },
   "meta": {
     "pages": {
@@ -236,7 +237,17 @@
     "keepAsHistory": "Zachowaj w historii",
     "keepAsHistoryTitle": "Zarchiwizuj: {target} — historia zostanie po usunięciu plików",
     "inKidsMode": "W trybie dziecięcym",
-    "kids": "Dzieci"
+    "kids": "Dzieci",
+    "convert": "Konwertuj",
+    "convertTitle": "Utwórz kopię tego wideo, która odtwarza się na każdym urządzeniu. Konwersja odbywa się w tle",
+    "convertRetryTitle": "Ostatnia konwersja się nie powiodła. Spróbuj ponownie",
+    "convertWaiting": "Czeka na konwersję",
+    "converting": "Konwertowanie · {percent}",
+    "converted": "Przekonwertowano",
+    "convertedTitle": "Kopia, która odtwarza się na każdym urządzeniu, jest gotowa",
+    "convertAll": "Konwertuj wszystko",
+    "convertAllTitle": "Konwertuj każde wideo tutaj, które nie odtwarza się na każdym urządzeniu",
+    "convertAllStarted": "Sprawdzanie wideo tutaj ({count}). Te, które nie odtwarzają się na każdym urządzeniu, są konwertowane w tle, pojedynczo. Kolejkę pokazuje Administracja → Odtwarzanie."
   },
   "offload": {
     "targetTitle": "„{title}”",

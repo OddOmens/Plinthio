@@ -48,21 +48,17 @@ function runFfmpeg(args) {
  * trustworthy check: distro ffmpeg builds advertise h264_nvenc/h264_qsv/h264_vaapi whether
  * or not any matching hardware is present or passed into the container, so going by the
  * encoder list alone picks an encoder that fails on every real playback.
- *
- * codec 'hevc' tests the method's HEVC encoder instead (h264_vaapi → hevc_vaapi), which
- * plenty of chips that encode H.264 don't have; the converted copies ask (services/compat.js).
  */
-export async function testHwaccel(name, codec = 'h264') {
+export async function testHwaccel(name) {
   const cfg = HWACCELS[name];
   if (!cfg) return { ok: false, error: `Unknown acceleration method: ${name}` };
-  const encoder = codec === 'hevc' ? hevcEncoder(cfg) : cfg.encoder;
 
   const { code, output } = await runFfmpeg([
     '-hide_banner', '-loglevel', 'error',
     ...cfg.deviceArgs,
     '-f', 'lavfi', '-i', 'testsrc=duration=2:size=640x360:rate=25',
     '-vf', cfg.filter(360),
-    '-c:v', encoder,
+    '-c:v', cfg.encoder,
     '-f', 'null', '-'
   ]);
 
@@ -114,11 +110,6 @@ export async function getActiveHwaccel() {
   if (preference === 'none') return null;
   if (preference !== 'auto') return HWACCELS[preference] ? preference : null;
   return getDetectedHwaccel();
-}
-
-// Each method's HEVC encoder is named like its H.264 one.
-export function hevcEncoder(cfg) {
-  return cfg.encoder.replace('h264_', 'hevc_');
 }
 
 export function hwaccelConfig(name) {

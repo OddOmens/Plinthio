@@ -17,7 +17,8 @@
     "resetFailed": "重置阅读记录失败",
     "skipFailed": "无法更新跳过的内容",
     "markEarlierFailed": "无法将它们标记为已完成",
-    "kidsFailed": "无法更改儿童模式"
+    "kidsFailed": "无法更改儿童模式",
+    "convertFailed": "无法开始转换"
   },
   "meta": {
     "pages": {
@@ -212,7 +213,17 @@
     "keepAsHistory": "保留为记录",
     "keepAsHistoryTitle": "归档{target}：删除文件后仍保留其记录",
     "inKidsMode": "已在儿童模式中",
-    "kids": "儿童"
+    "kids": "儿童",
+    "convert": "转换",
+    "convertTitle": "生成一个可在所有设备上播放的副本。转换在后台进行",
+    "convertRetryTitle": "上次转换失败。请重试",
+    "convertWaiting": "等待转换",
+    "converting": "正在转换 · {percent}",
+    "converted": "已转换",
+    "convertedTitle": "可在所有设备上播放的副本已就绪",
+    "convertAll": "全部转换",
+    "convertAllTitle": "转换这里所有无法在全部设备上播放的视频",
+    "convertAllStarted": "正在检查这里的视频（{count} 个）。无法在所有设备上播放的视频会在后台逐个转换。队列可在“管理 → 播放”中查看。"
   },
   "offload": {
     "targetTitle": "“{title}”",

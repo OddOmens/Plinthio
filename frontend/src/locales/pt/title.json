@@ -17,7 +17,8 @@
     "resetFailed": "Falha ao redefinir o histórico de leitura",
     "skipFailed": "Não foi possível atualizar o que foi pulado",
     "markEarlierFailed": "Não foi possível marcar esses como concluídos",
-    "kidsFailed": "Não foi possível alterar o modo infantil"
+    "kidsFailed": "Não foi possível alterar o modo infantil",
+    "convertFailed": "Não foi possível iniciar a conversão"
   },
   "meta": {
     "pages": {
@@ -220,7 +221,17 @@
     "keepAsHistory": "Manter no histórico",
     "keepAsHistoryTitle": "Arquivar {target}: manter o histórico depois que você excluir os arquivos",
     "inKidsMode": "No modo infantil",
-    "kids": "Infantil"
+    "kids": "Infantil",
+    "convert": "Converter",
+    "convertTitle": "Criar uma cópia deste vídeo que é reproduzida em todos os dispositivos. A conversão é feita em segundo plano",
+    "convertRetryTitle": "A última conversão falhou. Tente de novo",
+    "convertWaiting": "Aguardando conversão",
+    "converting": "Convertendo · {percent}",
+    "converted": "Convertido",
+    "convertedTitle": "Uma cópia que é reproduzida em todos os dispositivos está pronta",
+    "convertAll": "Converter tudo",
+    "convertAllTitle": "Converter todos os vídeos daqui que não são reproduzidos em todos os dispositivos",
+    "convertAllStarted": "Verificando os vídeos daqui ({count}). Os que não são reproduzidos em todos os dispositivos são convertidos em segundo plano, um por vez. Administração → Reprodução mostra a fila."
   },
   "offload": {
     "targetTitle": "\"{title}\"",

@@ -17,7 +17,8 @@
     "resetFailed": "Leesgeschiedenis wissen mislukt",
     "skipFailed": "Kon niet bijwerken wat er wordt overgeslagen",
     "markEarlierFailed": "Kon die niet als uit markeren",
-    "kidsFailed": "Kon de kindermodus niet wijzigen"
+    "kidsFailed": "Kon de kindermodus niet wijzigen",
+    "convertFailed": "Kon het omzetten niet starten"
   },
   "meta": {
     "pages": {
@@ -220,7 +221,17 @@
     "keepAsHistory": "Bewaren als geschiedenis",
     "keepAsHistoryTitle": "{target} archiveren: de geschiedenis bewaren nadat je de bestanden hebt verwijderd",
     "inKidsMode": "In kindermodus",
-    "kids": "Kinderen"
+    "kids": "Kinderen",
+    "convert": "Omzetten",
+    "convertTitle": "Maak een kopie van deze video die op elk apparaat afspeelt. Het omzetten gebeurt op de achtergrond",
+    "convertRetryTitle": "De vorige omzetting is mislukt. Probeer het opnieuw",
+    "convertWaiting": "Wacht op omzetten",
+    "converting": "Omzetten · {percent}",
+    "converted": "Omgezet",
+    "convertedTitle": "Er staat een kopie klaar die op elk apparaat afspeelt",
+    "convertAll": "Alles omzetten",
+    "convertAllTitle": "Zet elke video hier om die niet op elk apparaat afspeelt",
+    "convertAllStarted": "De video's hier worden gecontroleerd ({count}). Wat niet op elk apparaat afspeelt, wordt één voor één op de achtergrond omgezet. Admin → Afspelen toont de wachtrij."
   },
   "offload": {
     "targetTitle": "‘{title}’",

@@ -17,7 +17,8 @@
     "resetFailed": "Impossible de réinitialiser l'historique",
     "skipFailed": "Impossible de mettre à jour les éléments passés",
     "markEarlierFailed": "Impossible de les marquer comme terminés",
-    "kidsFailed": "Impossible de modifier le mode enfants"
+    "kidsFailed": "Impossible de modifier le mode enfants",
+    "convertFailed": "Impossible de lancer la conversion"
   },
   "meta": {
     "pages": {
@@ -223,7 +224,17 @@
     "keepAsHistory": "Garder dans l'historique",
     "keepAsHistoryTitle": "Archiver {target} : garder son historique une fois les fichiers supprimés",
     "inKidsMode": "En mode enfants",
-    "kids": "Enfants"
+    "kids": "Enfants",
+    "convert": "Convertir",
+    "convertTitle": "Créer une copie de cette vidéo lisible sur tous les appareils. Elle est convertie en arrière-plan",
+    "convertRetryTitle": "La dernière conversion a échoué. Réessayer",
+    "convertWaiting": "En attente de conversion",
+    "converting": "Conversion · {percent}",
+    "converted": "Convertie",
+    "convertedTitle": "Une copie lisible sur tous les appareils est prête",
+    "convertAll": "Tout convertir",
+    "convertAllTitle": "Convertir toutes les vidéos d'ici qui ne se lisent pas sur tous les appareils",
+    "convertAllStarted": "Vérification des vidéos d'ici ({count}). Celles qui ne se lisent pas sur tous les appareils sont converties en arrière-plan, une par une. Administration → Lecture affiche la file d'attente."
   },
   "offload": {
     "targetTitle": "« {title} »",

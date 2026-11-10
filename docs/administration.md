@@ -107,7 +107,8 @@ Some video doesn't play everywhere. Most Apple devices can't decode AV1 (only th
 hardware decoder can: iPhone 15 Pro, M3 Macs and later), and none decode VP9 or VP8. Older
 formats play in no browser at all. For those the server converts the video as it streams,
 which costs a full conversion every time someone presses play. A converted copy is that
-conversion done once, in the background, at the video's own size; afterwards a device that
+conversion done once, in the background, at the video's own size, to H.264, which
+everything plays; afterwards a device that
 needs it is sent the copy, and devices that play the original still get the original.
 
 **What gets a copy.** Any video that isn't already 8-bit H.264 or HEVC:
@@ -124,16 +125,15 @@ Every audio track is carried over (AAC and MP3 as they are, anything else as AAC
 
 **The settings:**
 
-- **Convert to:** **H.264** plays on everything. **HEVC (H.265)** is about half the size
-  and plays on every Apple device and in Chrome, Edge and Safari, but takes longer to make,
-  much longer without a graphics chip. A browser that can't play HEVC (Firefox) isn't sent
-  an HEVC copy; it keeps getting the live conversion. The choice applies to copies made
-  from then on, and copies already made are kept.
 - **Size limit:** no copy is started, and a running one is stopped, once the copies add up
-  to this much. A 1080p film is roughly 4–8 GB in H.264 and 2–5 GB in HEVC.
-- **Let everyone ask for a copy:** off, only admins can start a conversion from the apps.
+  to this much. A 1080p film is roughly 4–8 GB in H.264.
+- **Let everyone ask for a copy:** off, only admins see **Convert** on a title's page and
+  can start a conversion from the apps.
 - **Convert a library:** looks through one library, or all of them, and queues every video
-  that needs a copy.
+  that needs a copy. To convert one title instead, open its page: a film that needs a copy
+  has a **Convert** button, which then shows the conversion's progress and **Converted**
+  when the copy is ready; a series has **Convert all** (admins), which queues the episodes
+  that need one.
 - **Replace the original with its copy** (off by default): when a copy is finished it is
   moved into the library in the original's place (`Film.mkv` becomes `Film.mp4`) and the
   original is deleted. The title keeps its id, so progress, ratings, artwork and lists stay
@@ -142,16 +142,14 @@ Every audio track is carried over (AAC and MP3 as they are, anything else as AAC
   (no `:ro` on the Docker volume). A file that can't be replaced, because the folder is
   read-only or the file is a symlink, keeps its copy in the data folder and says why in the
   list. Picture-based subtitles (Blu-ray, DVD) are not carried over, and HDR video is
-  converted without tone mapping, so keep the original of anything where those matter. With
-  HEVC copies, a replaced title has to be converted live for browsers without HEVC.
+  converted without tone mapping, so keep the original of anything where those matter.
 
 **The queue.** Conversions run one at a time, oldest request first, on the graphics chip
 chosen above when there is one. The queue is kept in the database, so it carries on after a
 restart, and a conversion that was cut short starts again. It pauses while someone is
 watching something the server has to convert live (the list says so) and carries on when
-they stop. Many graphics chips that encode H.264 can't encode HEVC: the server tests for
-that once and makes HEVC copies on the CPU there (the log says so). If the graphics chip
-fails on one file, that file is converted on the CPU instead. **Cancel** stops a waiting or running
+they stop. If the graphics chip fails on a file, that file is converted on the CPU
+instead. **Cancel** stops a waiting or running
 conversion; **Remove** deletes a finished copy, which only costs the time to make it again.
 
 **Where copies go:** `compat/` in the data folder (`./config/compat`), never a library

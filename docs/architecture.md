@@ -46,7 +46,7 @@ docs/               This documentation
 | `credits.js`, `collections.js`, `ratings.js` | TMDB credits, facts and collections (cached on the item), rating settings and world scores |
 | `artwork.js`, `thumbnails.js`, `videoFrame.js` | Covers from folders, TMDB or frames; WebP thumbnails; episode stills |
 | `hls.js`, `transcode.js`, `hwaccel.js` | Playback decisions, HLS remux and transcode jobs, hardware detection and testing, encode caps |
-| `compat.js` | Converted copies: the background queue (`compat_copies` table) that turns video some devices can't decode into H.264 or HEVC MP4s under `compat/`, the size limit, and replacing originals |
+| `compat.js` | Converted copies: the background queue (`compat_copies` table) that turns video some devices can't decode into H.264 MP4s under `compat/`, the size limit, and replacing originals |
 | `subtitles.js`, `chapters.js`, `trickplay.js` | Subtitle tracks and VTT, chapter probing, scrub preview sheets |
 | `party.js` | In-memory watch parties and their server-sent event streams |
 | `visibility.js` | **Access control** (see below) |
