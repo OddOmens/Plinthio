@@ -887,6 +887,8 @@
       "qualityHint": "Bilanciata si vede bene su qualsiasi schermo: un film a 1080p occupa circa 4–8 GB. Alta qualità è difficile da distinguere dall'originale e occupa circa la metà in più. File più piccoli risparmia circa un terzo, e su un grande televisore può notarsi. Una dimensione massima rende molto più piccoli i video 4K e gli altri video grandi; nulla viene mai ingrandito. Entrambe valgono per le copie fatte da ora in poi.",
       "allowUsers": "Consenti a tutti di chiedere una copia",
       "allowUsersDesc": "Dal player delle app. Se disattivato, possono farlo solo gli amministratori.",
+      "autoConvert": "Converti automaticamente i nuovi video",
+      "autoConvertDesc": "Dopo ogni scansione della libreria, i nuovi video che richiedono una copia entrano in coda da soli. I video già presenti non vengono toccati: per quelli usa «Converti una libreria».",
       "replace": "Sostituisci l'originale con la copia",
       "replaceDesc": "Quando una copia è pronta prende il posto dell'originale nella tua libreria e il file originale viene eliminato. Il titolo mantiene avanzamento e immagini. La cartella dei media deve essere scrivibile.",
       "replaceConfirmTitle": "Eliminare gli originali dopo la conversione?",

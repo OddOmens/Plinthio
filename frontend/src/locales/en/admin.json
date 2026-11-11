@@ -887,6 +887,8 @@
       "qualityHint": "Balanced looks good on any screen: a 1080p film comes to roughly 4–8 GB. High quality is hard to tell from the original and about half as big again. Smaller saves about a third, which can show on a large TV. A largest size makes 4K and other big videos much smaller; nothing is ever enlarged. Both apply to copies made from now on.",
       "allowUsers": "Let everyone ask for a copy",
       "allowUsersDesc": "From the player in the apps. When off, only admins can.",
+      "autoConvert": "Convert new videos automatically",
+      "autoConvertDesc": "After each library scan, new videos that need a copy join the queue by themselves. Videos already in the library are left alone: use \"Convert a library\" for those.",
       "replace": "Replace the original with its copy",
       "replaceDesc": "When a copy is finished it takes the original's place in your library, and the original file is deleted. The title keeps its progress and artwork. The media folder must be writable.",
       "replaceConfirmTitle": "Delete originals once converted?",

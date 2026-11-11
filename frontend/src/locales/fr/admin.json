@@ -887,6 +887,8 @@
       "qualityHint": "Équilibrée rend bien sur tous les écrans : un film en 1080p pèse environ 4 à 8 Go. Haute qualité se distingue à peine de l'original et pèse environ moitié plus. Fichiers plus légers économise environ un tiers, ce qui peut se voir sur un grand téléviseur. Une taille maximale réduit nettement les vidéos 4K et autres grandes vidéos ; rien n'est jamais agrandi. Les deux s'appliquent aux copies faites à partir de maintenant.",
       "allowUsers": "Autoriser tout le monde à demander une copie",
       "allowUsersDesc": "Depuis le lecteur des apps. Désactivé, seuls les administrateurs le peuvent.",
+      "autoConvert": "Convertir automatiquement les nouvelles vidéos",
+      "autoConvertDesc": "Après chaque analyse de bibliothèque, les nouvelles vidéos qui ont besoin d'une copie rejoignent la file d'elles-mêmes. Les vidéos déjà présentes ne sont pas touchées : utilisez « Convertir une bibliothèque » pour celles-ci.",
       "replace": "Remplacer l'original par sa copie",
       "replaceDesc": "Une fois la copie terminée, elle prend la place de l'original dans votre bibliothèque et le fichier d'origine est supprimé. Le titre conserve sa progression et ses illustrations. Le dossier des médias doit être accessible en écriture.",
       "replaceConfirmTitle": "Supprimer les originaux une fois convertis ?",

@@ -138,7 +138,7 @@ router.get('/compat', authenticateToken, requireAdmin, handle(async (req, res) =
 }));
 
 router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
-  const { maxGb, quality, maxHeight, allowUsers, replaceOriginal } = req.body || {};
+  const { maxGb, quality, maxHeight, allowUsers, autoConvert, replaceOriginal } = req.body || {};
   const patch = {};
   if (quality !== undefined) {
     if (typeof quality !== 'string' || !Object.hasOwn(QUALITIES, quality)) return res.status(400).json({ error: 'The quality must be smaller, balanced or high' });
@@ -156,6 +156,7 @@ router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) =
     patch.maxGb = value;
   }
   if (allowUsers !== undefined) patch.allowUsers = allowUsers === true;
+  if (autoConvert !== undefined) patch.autoConvert = autoConvert === true;
   if (replaceOriginal !== undefined) patch.replaceOriginal = replaceOriginal === true;
   const db = await getDb();
   const before = await compatOverview(db);
@@ -164,6 +165,9 @@ router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) =
   // Deleting originals is the one thing here that can't be taken back: the log says who.
   if (before.replaceOriginal !== after.replaceOriginal) {
     logger.warn('media', `Converted copies: replacing originals was switched ${after.replaceOriginal ? 'ON' : 'off'} by ${req.user.username}`);
+  }
+  if (before.autoConvert !== after.autoConvert) {
+    logger.info('media', `Converted copies: converting new videos automatically was switched ${after.autoConvert ? 'on' : 'off'} by ${req.user.username}`);
   }
   if (before.quality !== after.quality || before.maxHeight !== after.maxHeight) {
     logger.info('media', `Converted copies: new copies will be ${after.quality} quality, ${after.maxHeight ? `at most ${after.maxHeight}p` : 'at their original size'} (set by ${req.user.username})`);

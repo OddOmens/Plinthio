@@ -927,6 +927,8 @@
       "qualityHint": "Zrównoważona dobrze wygląda na każdym ekranie: film 1080p zajmuje około 4–8 GB. Wysoka jakość jest trudna do odróżnienia od oryginału i zajmuje około połowy więcej. Mniejsze pliki oszczędzają około jednej trzeciej, co może być widać na dużym telewizorze. Maksymalny rozmiar znacznie zmniejsza wideo 4K i inne duże wideo; nic nie jest nigdy powiększane. Oba ustawienia dotyczą kopii tworzonych od teraz.",
       "allowUsers": "Pozwól wszystkim prosić o kopię",
       "allowUsersDesc": "Z odtwarzacza w aplikacjach. Gdy wyłączone, mogą to robić tylko administratorzy.",
+      "autoConvert": "Automatycznie konwertuj nowe wideo",
+      "autoConvertDesc": "Po każdym skanowaniu biblioteki nowe wideo, które wymagają kopii, same trafiają do kolejki. Wideo, które już są w bibliotece, pozostają bez zmian: dla nich użyj „Konwertuj bibliotekę”.",
       "replace": "Zastąp oryginał jego kopią",
       "replaceDesc": "Gotowa kopia zajmuje miejsce oryginału w bibliotece, a oryginalny plik jest usuwany. Tytuł zachowuje postęp i grafiki. Folder z multimediami musi umożliwiać zapis.",
       "replaceConfirmTitle": "Usuwać oryginały po konwersji?",

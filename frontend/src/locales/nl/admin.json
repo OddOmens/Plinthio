@@ -887,6 +887,8 @@
       "qualityHint": "Gebalanceerd ziet er op elk scherm goed uit: een 1080p-film komt op ongeveer 4–8 GB. Hoge kwaliteit is nauwelijks van het origineel te onderscheiden en ongeveer de helft groter. Kleinere bestanden bespaart ongeveer een derde, wat op een grote tv te zien kan zijn. Een maximale grootte maakt 4K- en andere grote video's veel kleiner; er wordt nooit iets vergroot. Beide gelden voor kopieën die vanaf nu worden gemaakt.",
       "allowUsers": "Iedereen mag een kopie aanvragen",
       "allowUsersDesc": "Vanuit de speler in de apps. Uitgeschakeld kunnen alleen beheerders dat.",
+      "autoConvert": "Nieuwe video's automatisch omzetten",
+      "autoConvertDesc": "Na elke bibliotheekscan komen nieuwe video's die een kopie nodig hebben vanzelf in de wachtrij. Video's die al in de bibliotheek staan blijven ongemoeid: gebruik daarvoor 'Een bibliotheek omzetten'.",
       "replace": "Origineel vervangen door de kopie",
       "replaceDesc": "Zodra een kopie klaar is, neemt die de plaats van het origineel in je bibliotheek in en wordt het originele bestand verwijderd. De titel behoudt voortgang en artwork. De mediamap moet beschrijfbaar zijn.",
       "replaceConfirmTitle": "Originelen verwijderen na het omzetten?",

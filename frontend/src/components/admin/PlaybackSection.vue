@@ -98,6 +98,12 @@
           @update:model-value="saveCopies({ allowUsers: $event })"
         />
         <ToggleRow
+          :label="$t('admin.playback.copies.autoConvert')"
+          :description="$t('admin.playback.copies.autoConvertDesc')"
+          :model-value="copies.autoConvert"
+          @update:model-value="saveCopies({ autoConvert: $event })"
+        />
+        <ToggleRow
           :label="$t('admin.playback.copies.replace')"
           :description="$t('admin.playback.copies.replaceDesc')"
           :model-value="copies.replaceOriginal"
@@ -264,7 +270,7 @@ async function runHwaccelTest() {
 
 // ─── Converted copies ─────────────────────────────────────────────────────────
 const copiesSave = useSaveStatus();
-const copies = ref({ maxGb: 50, quality: 'balanced', maxHeight: 0, allowUsers: false, replaceOriginal: false, usedBytes: 0, discovery: null, copies: [] });
+const copies = ref({ maxGb: 50, quality: 'balanced', maxHeight: 0, allowUsers: false, autoConvert: false, replaceOriginal: false, usedBytes: 0, discovery: null, copies: [] });
 const copiesLimit = ref(50);
 const copiesLibrary = ref('');
 const videoLibraries = ref([]);
