@@ -98,7 +98,102 @@ collections, and watch parties.
 
 ## Playback
 
-Hardware acceleration (with **Test**, which runs a real encode) and the opening sequence.
+Hardware acceleration (with **Test**, which runs a real encode), converted copies and the
+opening sequence.
+
+### Converted copies
+
+Some video doesn't play everywhere. Most Apple devices can't decode AV1 (only those with a
+hardware decoder can: iPhone 15 Pro, M3 Macs and later), and none decode VP9 or VP8. Older
+formats play in no browser at all. For those the server converts the video as it streams,
+which costs a full conversion every time someone presses play. A converted copy is that
+conversion done once, in the background, at the video's own size, to H.264, which
+everything plays; afterwards a device that
+needs it is sent the copy, and devices that play the original still get the original.
+
+**What gets a copy.** Any video that isn't already 8-bit H.264 or HEVC:
+
+| Video | Why it needs one |
+| --- | --- |
+| AV1, VP9, VP8 | Most Apple devices can't decode them |
+| 10-bit H.264 | Browsers and Apple devices only decode 8-bit H.264 |
+| MPEG-2, MPEG-4 (Xvid, DivX), VC-1, WMV and other older formats | No browser or Apple device plays them |
+
+HEVC (H.265) and ordinary H.264 are left alone: asking for a copy of one answers P310.
+Every audio track is carried over (AAC and MP3 as they are, anything else as AAC, up to
+5.1), with text subtitles and chapters. Interlaced video is deinterlaced.
+
+**The settings:**
+
+- **Size limit:** no copy is started, and a running one is stopped, once the copies add up
+  to this much.
+- **Quality:** how hard a copy is compressed. Uncompressed video isn't an option anyone
+  wants (hundreds of gigabytes a film); these keep the picture and drop what the eye doesn't
+  see.
+
+  | Quality | Looks like | A two-hour 1080p film |
+  | --- | --- | --- |
+  | **Smaller files** | Fine on a phone, tablet or laptop; soft in dark or busy scenes on a large TV | about 3–5 GB |
+  | **Balanced** (default, recommended) | Good on any screen | about 4–8 GB |
+  | **High quality** | Hard to tell from the original | about 7–12 GB, and slower to make on the CPU |
+
+  The sizes are a guide: quiet films come out smaller, grainy or fast ones larger.
+- **Largest size:** **Original size** (the default) keeps each video's own resolution, up
+  to 4K. **1080p** or **720p** scales anything taller down, which is the biggest saving
+  there is for 4K video (a 4K copy is three to four times the size of a 1080p one) and all
+  a phone or tablet can show. Smaller videos are never enlarged. Leave it on Original size
+  if copies replace your originals and you watch on a 4K TV.
+
+  For the best picture without large files: **Balanced** at **Original size**, or
+  **Balanced** at **1080p** if you have 4K films and mostly watch on phones, tablets and
+  laptops. Quality and largest size apply to copies made from then on; copies already made
+  are kept, so delete one and convert it again to change it.
+- **Let everyone ask for a copy:** off, only admins see **Convert** on a title's page and
+  can start a conversion from the apps.
+- **Convert a library:** looks through one library, or all of them, and queues every video
+  that needs a copy. To convert one title instead, open its page: a film that needs a copy
+  has a **Convert** button, which then shows the conversion's progress and **Converted**
+  when the copy is ready; a series has **Convert all** (admins), which queues the episodes
+  that need one.
+- **Replace the original with its copy** (off by default): when a copy is finished it is
+  moved into the library in the original's place (`Film.mkv` becomes `Film.mp4`) and the
+  original is deleted. The title keeps its id, so progress, ratings, artwork and lists stay
+  with it. This is the one setting that changes your media files: it can't be undone, H.264
+  files are usually larger than the AV1 they replace, and the media folder must be writable
+  (no `:ro` on the Docker volume). A file that can't be replaced, because the folder is
+  read-only or the file is a symlink, keeps its copy in the data folder and says why in the
+  list. Picture-based subtitles (Blu-ray, DVD) are not carried over, and HDR video is
+  converted without tone mapping, so keep the original of anything where those matter.
+
+**The queue.** Conversions run one at a time, oldest request first, on the graphics chip
+chosen above when there is one. The queue is kept in the database, so it carries on after a
+restart, and a conversion that was cut short starts again. It pauses while someone is
+watching something the server has to convert live (the list says so) and carries on when
+they stop. If the graphics chip fails on a file, that file is converted on the CPU
+instead. **Cancel** stops a waiting or running
+conversion; **Remove** deletes a finished copy, which only costs the time to make it again.
+
+**Where copies go:** `compat/` in the data folder (`./config/compat`), never a library
+folder, so a title still appears once on every shelf. A copy of a file that has since been
+changed or replaced is thrown away.
+
+**When a conversion fails** the list shows why, with a code to look up in
+[Error codes](error-codes.md), and Admin → Logs has the same line with ffmpeg's own words:
+
+| In the list | Meaning |
+| --- | --- |
+| Not converted: the size limit was reached (P311) | Raise the limit or delete copies, then **Try the failed ones again** |
+| Not converted: the file is missing (P301) | The original has gone from disk. Check the drive, then rescan |
+| Failed: … (P304) | ffmpeg couldn't convert this file, even on the CPU. The file may be damaged; the log has the full error |
+| Failed: … (P303) | ffmpeg couldn't be started at all (bare-metal installs) |
+| Failed: … (P302) | The file couldn't be read as a video |
+| Ready, but the original wasn't replaced: … | Only with **Replace the original** on. The copy is still used from the data folder |
+
+**In the log** (Admin → Logs, category `media`): each conversion starting (what it is
+converting from and to, and on which encoder) and finishing (with the size of the copy and
+of the original), every pause and failure, a fallback from the graphics chip to the CPU,
+each original that was replaced (both file names), how many videos a library search queued,
+and who switched replacing originals on or off.
 
 ## Live TV
 

@@ -460,12 +460,25 @@ const isClientHevcSupported = () => {
      MediaSource.isTypeSupported('video/mp4; codecs="hev1.1.6.L93.B0"'));
 };
 
+// A browser that says it can't play AV1 (Safari on Apple devices without a hardware decoder)
+// tells the server which video codecs it does play, so the server converts AV1 for it
+// instead of sending it untouched. Browsers that play AV1 send nothing and are treated as before.
+const clientVideoCodecs = () => {
+  if (document.createElement('video').canPlayType('video/mp4; codecs="av01.0.05M.08"')) return null;
+  return ['h264', 'vp8', 'vp9', ...(isClientHevcSupported() ? ['hevc'] : [])].join(',');
+};
+
+// Set when the server has a converted copy of this title that this browser plays (see playback-info).
+const useCompatCopy = ref(false);
+
 const streamUrl = computed(() => {
   const base = `/api/media/video/${props.item.id}`;
   const hevc = isClientHevcSupported() ? '&clientHevc=1' : '';
+  const codecs = clientVideoCodecs();
+  const extra = `${codecs ? `&videoCodecs=${codecs}` : ''}${useCompatCopy.value ? '&copy=1' : ''}`;
   return isTranscoding.value
-    ? `${base}/hls/master.m3u8?audio=${selectedAudioTrack.value}&token=${mediaToken.value}${hevc}`
-    : `${base}/stream?token=${mediaToken.value}`;
+    ? `${base}/hls/master.m3u8?audio=${selectedAudioTrack.value}&token=${mediaToken.value}${hevc}${extra}`
+    : `${base}/stream?token=${mediaToken.value}${useCompatCopy.value ? '&copy=1' : ''}`;
 });
 
 const activeSubtitleUrl = computed(() => selectedSubtitle.value
@@ -1080,10 +1093,12 @@ async function start() {
        MediaSource.isTypeSupported('video/mp4; codecs="hev1.1.6.L93.B0"'))
     ) ? '1' : '0';
 
+    const videoCodecs = clientVideoCodecs();
     const res = await api.get(`/media/video/${props.item.id}/playback-info`, {
-      params: { clientHevc }
+      params: { clientHevc, ...(videoCodecs ? { videoCodecs } : {}) }
     });
     const info = res.data || {};
+    useCompatCopy.value = info.compatCopy === true;
     totalDuration.value = info.itemDuration || info.duration || props.item.duration || 0;
     if (info.mode && info.mode !== 'direct') playbackMode.value = info.mode;
 

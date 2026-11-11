@@ -17,7 +17,8 @@
     "resetFailed": "Failed to reset reading history",
     "skipFailed": "Could not update what's skipped",
     "markEarlierFailed": "Could not mark those as finished",
-    "kidsFailed": "Could not change Kids Mode"
+    "kidsFailed": "Could not change Kids Mode",
+    "convertFailed": "Could not start converting"
   },
   "meta": {
     "pages": {
@@ -220,7 +221,17 @@
     "keepAsHistory": "Keep as History",
     "keepAsHistoryTitle": "Offload {target}: keep its history after you delete the files",
     "inKidsMode": "In Kids Mode",
-    "kids": "Kids"
+    "kids": "Kids",
+    "convert": "Convert",
+    "convertTitle": "Make a copy of this video that plays on every device. It's converted in the background",
+    "convertRetryTitle": "The last conversion failed. Try again",
+    "convertWaiting": "Waiting to convert",
+    "converting": "Converting · {percent}",
+    "converted": "Converted",
+    "convertedTitle": "A copy that plays on every device is ready",
+    "convertAll": "Convert all",
+    "convertAllTitle": "Convert every video here that doesn't play on every device",
+    "convertAllStarted": "Checking the videos here ({count}). Any that don't play on every device are converted in the background, one at a time. Admin → Playback shows the queue."
   },
   "offload": {
     "targetTitle": "\"{title}\"",

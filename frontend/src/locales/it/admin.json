@@ -873,6 +873,53 @@
         }
       }
     },
+    "copies": {
+      "title": "Copie convertite",
+      "desc": "Alcuni video non si riproducono ovunque: la maggior parte dei dispositivi Apple non riesce a decodificare AV1, VP9 o VP8, e i formati più vecchi come MPEG-2, Xvid, WMV e H.264 a 10 bit non si riproducono quasi da nessuna parte, quindi il server li converte a ogni riproduzione. Una copia è quella conversione fatta una volta sola, in background, e riprodotta al suo posto. Le copie stanno nella cartella dati di Plinthio, non nella tua libreria, quindi ogni titolo continua a comparire una volta sola.",
+      "limit": "Limite di dimensione (GB)",
+      "limitHint": "Non vengono create nuove copie quando raggiungono questo totale. Ora occupano {used}.",
+      "quality": "Qualità",
+      "qualitySmaller": "File più piccoli",
+      "qualityBalanced": "Bilanciata (consigliata)",
+      "qualityHigh": "Alta qualità (file più grandi)",
+      "maxSize": "Dimensione massima",
+      "maxSizeOriginal": "Dimensione originale",
+      "qualityHint": "Bilanciata si vede bene su qualsiasi schermo: un film a 1080p occupa circa 4–8 GB. Alta qualità è difficile da distinguere dall'originale e occupa circa la metà in più. File più piccoli risparmia circa un terzo, e su un grande televisore può notarsi. Una dimensione massima rende molto più piccoli i video 4K e gli altri video grandi; nulla viene mai ingrandito. Entrambe valgono per le copie fatte da ora in poi.",
+      "allowUsers": "Consenti a tutti di chiedere una copia",
+      "allowUsersDesc": "Dal player delle app. Se disattivato, possono farlo solo gli amministratori.",
+      "replace": "Sostituisci l'originale con la copia",
+      "replaceDesc": "Quando una copia è pronta prende il posto dell'originale nella tua libreria e il file originale viene eliminato. Il titolo mantiene avanzamento e immagini. La cartella dei media deve essere scrivibile.",
+      "replaceConfirmTitle": "Eliminare gli originali dopo la conversione?",
+      "replaceConfirmMessage": "Ogni copia completata, comprese quelle già fatte, sostituirà il file originale, che verrà eliminato definitivamente. Una copia è di qualità leggermente inferiore, e una copia H.264 è di solito più grande di un originale AV1. L'operazione non si può annullare.",
+      "replaceConfirm": "Elimina originali",
+      "convertLabel": "Converti una libreria",
+      "allLibraries": "Tutte le librerie video",
+      "convert": "Trova e converti",
+      "searching": "Controllo {done} di {total}…",
+      "convertHint": "Mette in coda tutti i video da convertire: AV1, VP9, VP8, H.264 a 10 bit e formati più vecchi. Vengono convertiti uno alla volta e aspettano finché qualcuno guarda qualcosa che il server deve convertire.",
+      "empty": "Ancora nessuna copia.",
+      "removeAll": "Elimina tutte le copie",
+      "removeAllTitle": "Eliminare tutte le copie?",
+      "removeAllMessage": "Tutte le copie convertite vengono eliminate e la coda viene svuotata. I tuoi file originali non vengono toccati.",
+      "retryFailed": "Riprova quelle non riuscite",
+      "status": {
+        "queued": "In attesa",
+        "running": "Conversione · {percent}",
+        "paused": "In pausa mentre qualcuno sta guardando · {percent}",
+        "done": "Pronta · {size}",
+        "failed": "Non riuscita: {error}"
+      },
+      "errors": {
+        "cap": "Non convertito: è stato raggiunto il limite di dimensione",
+        "missing": "Non convertito: il file non c'è più"
+      },
+      "replaceErrors": {
+        "readonly": "Pronta, ma l'originale non è stato sostituito: la cartella dei media è in sola lettura",
+        "link": "Pronta, ma l'originale non è stato sostituito: è un collegamento a un file che si trova altrove",
+        "exists": "Pronta, ma l'originale non è stato sostituito: esiste già un altro file con quel nome",
+        "other": "Pronta, ma l'originale non è stato sostituito: {error}"
+      }
+    },
     "intro": {
       "title": "Sequenza di apertura",
       "desc": "Una breve clip a schermo intero quando qualcuno preme Riproduci su un film o un episodio. Mai prima di episodi in riproduzione automatica, trailer o watch party, e chiunque può saltarla.",

@@ -17,7 +17,8 @@
     "resetFailed": "Impossibile azzerare la cronologia di lettura",
     "skipFailed": "Impossibile aggiornare gli elementi saltati",
     "markEarlierFailed": "Impossibile segnarli come completati",
-    "kidsFailed": "Impossibile modificare la Modalità bambini"
+    "kidsFailed": "Impossibile modificare la Modalità bambini",
+    "convertFailed": "Impossibile avviare la conversione"
   },
   "meta": {
     "pages": {
@@ -220,7 +221,17 @@
     "keepAsHistory": "Tieni come cronologia",
     "keepAsHistoryTitle": "Archivia {target}: mantieni la cronologia dopo aver eliminato i file",
     "inKidsMode": "In Modalità bambini",
-    "kids": "Bambini"
+    "kids": "Bambini",
+    "convert": "Converti",
+    "convertTitle": "Crea una copia di questo video che si riproduce su ogni dispositivo. Viene convertita in background",
+    "convertRetryTitle": "L'ultima conversione non è riuscita. Riprova",
+    "convertWaiting": "In attesa di conversione",
+    "converting": "Conversione · {percent}",
+    "converted": "Convertito",
+    "convertedTitle": "È pronta una copia che si riproduce su ogni dispositivo",
+    "convertAll": "Converti tutto",
+    "convertAllTitle": "Converti tutti i video qui che non si riproducono su ogni dispositivo",
+    "convertAllStarted": "Controllo dei video qui ({count}). Quelli che non si riproducono su ogni dispositivo vengono convertiti in background, uno alla volta. Amministrazione → Riproduzione mostra la coda."
   },
   "offload": {
     "targetTitle": "«{title}»",

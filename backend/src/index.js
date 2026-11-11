@@ -56,6 +56,7 @@ import { initBackupScheduler } from './services/backup.js';
 import { initAutoScan } from './services/autoScan.js';
 import { backfillMovieCredits } from './services/credits.js';
 import { sweepHlsCache } from './services/hls.js';
+import { initCompat } from './services/compat.js';
 import { sweepArchiveCache } from './services/archive/sevenZipBackend.js';
 import { sweepPageCache } from './services/pageImages.js';
 import { sweepTrickplayCache } from './services/trickplay.js';
@@ -392,6 +393,9 @@ async function start() {
     // Films not yet looked up on TMDB: fill in their credits and collections (Shrek 1–4 as
     // one "Shrek Collection"). Delayed so it doesn't compete with startup.
     setTimeout(() => backfillMovieCredits().catch(() => {}), 15000);
+
+    // Converted copies of video some devices can't decode: pick the queue back up.
+    initCompat().catch((err) => console.error('[compat] could not start the conversion queue:', err.message));
 
     // Evict stale on-disk media caches (see HLS_CACHE_MAX_AGE_HOURS): HLS segments, and the
     // 7z archives that have to be unpacked to disk to be read page by page. Run once at boot

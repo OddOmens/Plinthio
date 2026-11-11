@@ -77,7 +77,8 @@ services:
       - ./config:/config
       # Plinthio never changes your media files. Add :ro to the end of this line to have
       # Docker enforce that, unless you keep backup copies in a folder under /media
-      # (Admin → Backups → "Also copy backups to"), which needs it writable.
+      # (Admin → Backups → "Also copy backups to") or have converted copies replace their
+      # originals (Admin → Playback), which both need it writable.
       - ${MEDIA_DIR:-/media/library}:/media
       # Optional: a second place for backups, on another drive, a NAS share or a synced cloud
       # folder. Set BACKUP_DIR in .env, uncomment, `docker compose up -d`, then choose /backups

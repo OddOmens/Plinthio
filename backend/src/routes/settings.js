@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
+import { compatOverview, saveCompatSettings, queueLibrary, removeAllCopies, retryFailed, QUALITIES, MAX_HEIGHTS } from '../services/compat.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { getDetectedHwaccel, listHwaccels, testHwaccel } from '../services/hwaccel.js';
 import {
@@ -22,6 +23,7 @@ import { getComicVineKeyInfo, verifyComicVineKey } from '../services/comicvine.j
 import { SEND_OPTS } from '../utils/fileStream.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
+import { logger } from '../services/logger.js';
 import { getSetting, setSetting } from '../services/settings.js';
 
 const router = express.Router();
@@ -127,6 +129,83 @@ router.post('/transcoding/test', authenticateToken, requireAdmin, handle(async (
   }
 
   res.json(await testHwaccel(method));
+}));
+
+// Converted copies (services/compat.js): the size limit, who may ask for one,
+// whether a finished copy replaces the original, and the copies themselves.
+router.get('/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
+  res.json(await compatOverview(await getDb()));
+}));
+
+router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const { maxGb, quality, maxHeight, allowUsers, replaceOriginal } = req.body || {};
+  const patch = {};
+  if (quality !== undefined) {
+    if (typeof quality !== 'string' || !Object.hasOwn(QUALITIES, quality)) return res.status(400).json({ error: 'The quality must be smaller, balanced or high' });
+    patch.quality = quality;
+  }
+  if (maxHeight !== undefined) {
+    if (!MAX_HEIGHTS.includes(maxHeight)) return res.status(400).json({ error: 'The largest size must be 0 (the original), 1080 or 720' });
+    patch.maxHeight = maxHeight;
+  }
+  if (maxGb !== undefined) {
+    const value = Number(maxGb);
+    if (!Number.isFinite(value) || value < 0 || value > 100000) {
+      return res.status(400).json({ error: 'The size limit must be a number of gigabytes' });
+    }
+    patch.maxGb = value;
+  }
+  if (allowUsers !== undefined) patch.allowUsers = allowUsers === true;
+  if (replaceOriginal !== undefined) patch.replaceOriginal = replaceOriginal === true;
+  const db = await getDb();
+  const before = await compatOverview(db);
+  await saveCompatSettings(db, patch);
+  const after = await compatOverview(db);
+  // Deleting originals is the one thing here that can't be taken back: the log says who.
+  if (before.replaceOriginal !== after.replaceOriginal) {
+    logger.warn('media', `Converted copies: replacing originals was switched ${after.replaceOriginal ? 'ON' : 'off'} by ${req.user.username}`);
+  }
+  if (before.quality !== after.quality || before.maxHeight !== after.maxHeight) {
+    logger.info('media', `Converted copies: new copies will be ${after.quality} quality, ${after.maxHeight ? `at most ${after.maxHeight}p` : 'at their original size'} (set by ${req.user.username})`);
+  }
+  res.json(after);
+}));
+
+// Queues every video that needs a copy: in one library, in all of them, or among the titles
+// in itemIds (the web app sends a series' episodes).
+router.post('/compat/queue', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const libraryId = req.body?.libraryId || null;
+  let itemIds = null;
+  if (req.body?.itemIds !== undefined) {
+    itemIds = req.body.itemIds;
+    if (!Array.isArray(itemIds) || !itemIds.length || itemIds.length > 2000 || !itemIds.every((id) => typeof id === 'string' && /^[a-f0-9]{8,64}$/i.test(id))) {
+      return res.status(400).json({ error: 'itemIds must be a list of up to 2000 item ids' });
+    }
+  }
+  const db = await getDb();
+  if (libraryId && !await db.get('SELECT id FROM libraries WHERE id = ?', [libraryId])) {
+    return res.status(404).json({ error: 'Library not found' });
+  }
+  try {
+    res.status(202).json(await queueLibrary(db, libraryId, req.user.id, itemIds));
+  } catch (err) {
+    if (err?.plinthioCode) return sendError(req, res, err.plinthioCode, { message: err.message });
+    throw err;
+  }
+}));
+
+// Puts every failed conversion back in the queue.
+router.post('/compat/retry', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const db = await getDb();
+  await retryFailed(db);
+  res.json(await compatOverview(db));
+}));
+
+// Deletes every copy and empties the queue. Originals are never touched by this.
+router.delete('/compat/copies', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const db = await getDb();
+  await removeAllCopies(db);
+  res.json(await compatOverview(db));
 }));
 
 // Switch one metadata provider on or off: { provider: 'google-books', enabled: false }.

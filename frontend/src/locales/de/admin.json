@@ -873,6 +873,53 @@
         }
       }
     },
+    "copies": {
+      "title": "Umgewandelte Kopien",
+      "desc": "Manche Videos laufen nicht überall: Die meisten Apple-Geräte können AV1, VP9 und VP8 nicht dekodieren, und ältere Formate wie MPEG-2, Xvid, WMV und 10-Bit-H.264 laufen fast nirgends, deshalb wandelt der Server sie bei jeder Wiedergabe um. Eine Kopie ist diese Umwandlung, einmal im Hintergrund erledigt, und wird stattdessen abgespielt. Kopien liegen im Datenordner von Plinthio, nicht in deiner Bibliothek, sodass jeder Titel weiterhin nur einmal erscheint.",
+      "limit": "Größenlimit (GB)",
+      "limitHint": "Sobald die Kopien zusammen so groß sind, werden keine neuen mehr erstellt. Derzeit belegt: {used}.",
+      "quality": "Qualität",
+      "qualitySmaller": "Kleinere Dateien",
+      "qualityBalanced": "Ausgewogen (empfohlen)",
+      "qualityHigh": "Hohe Qualität (größere Dateien)",
+      "maxSize": "Maximale Größe",
+      "maxSizeOriginal": "Originalgröße",
+      "qualityHint": "Ausgewogen sieht auf jedem Bildschirm gut aus: Ein 1080p-Film kommt auf etwa 4–8 GB. Hohe Qualität ist vom Original kaum zu unterscheiden und etwa um die Hälfte größer. Kleinere Dateien sparen rund ein Drittel, was auf einem großen Fernseher auffallen kann. Eine maximale Größe macht 4K- und andere große Videos deutlich kleiner; nichts wird je vergrößert. Beides gilt für Kopien, die ab jetzt erstellt werden.",
+      "allowUsers": "Alle dürfen eine Kopie anfordern",
+      "allowUsersDesc": "Über den Player in den Apps. Ausgeschaltet können das nur Admins.",
+      "replace": "Original durch die Kopie ersetzen",
+      "replaceDesc": "Sobald eine Kopie fertig ist, nimmt sie den Platz des Originals in deiner Bibliothek ein, und die Originaldatei wird gelöscht. Der Titel behält Fortschritt und Artwork. Der Medienordner muss beschreibbar sein.",
+      "replaceConfirmTitle": "Originale nach der Umwandlung löschen?",
+      "replaceConfirmMessage": "Jede fertige Kopie, auch bereits erstellte, ersetzt ihre Originaldatei, und das Original wird endgültig gelöscht. Eine Kopie ist von etwas geringerer Qualität, und eine H.264-Kopie ist meist größer als ein AV1-Original. Das lässt sich nicht rückgängig machen.",
+      "replaceConfirm": "Originale löschen",
+      "convertLabel": "Bibliothek umwandeln",
+      "allLibraries": "Alle Videobibliotheken",
+      "convert": "Suchen und umwandeln",
+      "searching": "Prüfe {done} von {total}…",
+      "convertHint": "Reiht jedes Video ein, das umgewandelt werden muss: AV1, VP9, VP8, 10-Bit-H.264 und ältere Formate. Sie werden nacheinander umgewandelt und warten, solange jemand etwas ansieht, das der Server umwandeln muss.",
+      "empty": "Noch keine Kopien.",
+      "removeAll": "Alle Kopien löschen",
+      "removeAllTitle": "Alle Kopien löschen?",
+      "removeAllMessage": "Jede umgewandelte Kopie wird gelöscht und die Warteschlange geleert. Deine Originaldateien bleiben unberührt.",
+      "retryFailed": "Fehlgeschlagene erneut versuchen",
+      "status": {
+        "queued": "Wartet",
+        "running": "Wird umgewandelt · {percent}",
+        "paused": "Pausiert, solange jemand zusieht · {percent}",
+        "done": "Fertig · {size}",
+        "failed": "Fehlgeschlagen: {error}"
+      },
+      "errors": {
+        "cap": "Nicht umgewandelt: Das Größenlimit ist erreicht",
+        "missing": "Nicht umgewandelt: Die Datei fehlt"
+      },
+      "replaceErrors": {
+        "readonly": "Fertig, aber das Original wurde nicht ersetzt: Der Medienordner ist schreibgeschützt",
+        "link": "Fertig, aber das Original wurde nicht ersetzt: Es ist ein Link auf eine Datei an anderer Stelle",
+        "exists": "Fertig, aber das Original wurde nicht ersetzt: Eine andere Datei hat bereits diesen Namen",
+        "other": "Fertig, aber das Original wurde nicht ersetzt: {error}"
+      }
+    },
     "intro": {
       "title": "Intro",
       "desc": "Ein kurzer Clip, der im Vollbild läuft, wenn jemand bei einem Film oder einer Folge auf Abspielen drückt. Nie vor automatisch abgespielten Folgen, Trailern oder Watch-Partys, und jede Person kann ihn überspringen.",

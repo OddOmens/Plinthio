@@ -1335,7 +1335,7 @@
 
 <script setup>
 import { placeholderCover } from '../utils/placeholder';
-import { ref, reactive, computed, onMounted, watch, nextTick, defineAsyncComponent } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick, defineAsyncComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../api/client';
 import { useThemeStore } from '../stores/theme';
@@ -1721,6 +1721,25 @@ const heroActions = computed(() => {
       icon: Search, iconClass: 'text-muted-foreground', run: openSeriesMetadataSearch
     });
   }
+  // A video that doesn't play on every device (AV1 on most Apple devices, older formats
+  // anywhere): have the server convert it once, in the background, instead of every time
+  // someone presses play. One film shows where its copy stands; a series queues its episodes.
+  const copy = compat.value;
+  if (copy?.eligible && (copy.canRequest || copy.status !== 'none')) {
+    const state = copy.status;
+    actions.push(state === 'done'
+      ? { key: 'convert', label: t('title.actions.converted'), title: t('title.actions.convertedTitle'), icon: CheckCircle2, iconClass: 'text-emerald-500', disabled: true }
+      : state === 'running'
+        ? { key: 'convert', label: t('title.actions.converting', { percent: n(copy.progress, { style: 'percent' }) }), title: t('title.actions.convertTitle'), icon: Loader2, spin: true, iconClass: 'text-muted-foreground', disabled: true }
+        : state === 'queued'
+          ? { key: 'convert', label: t('title.actions.convertWaiting'), title: t('title.actions.convertTitle'), icon: Clock, iconClass: 'text-muted-foreground', disabled: true }
+          : { key: 'convert', label: t('title.actions.convert'), title: state === 'failed' ? t('title.actions.convertRetryTitle') : t('title.actions.convertTitle'), icon: Clapperboard, iconClass: 'text-muted-foreground', disabled: converting.value || !copy.canRequest, run: convertSingle });
+  } else if (authStore.isAdmin && !isSingle.value && isVideoType.value) {
+    actions.push({
+      key: 'convert-all', label: t('title.actions.convertAll'), title: t('title.actions.convertAllTitle'),
+      icon: Clapperboard, iconClass: 'text-muted-foreground', disabled: converting.value, run: convertAll
+    });
+  }
   // Admins: keep a film, or the season on screen, as history ahead of deleting its files
   // (or undo that). Library Health does the same for files already gone.
   if (authStore.isAdmin) {
@@ -1744,6 +1763,61 @@ const heroActions = computed(() => {
   return actions;
 });
 const phoneMenuActions = computed(() => heroActions.value.filter((a) => !a.onPhone));
+
+// ─── Converted copy ──────────────────────────────────────────────────────────
+// Where a single video's converted copy stands (GET /media/video/:id/compat): whether it
+// needs one, whether this account may ask, and how far a conversion has got. Kept current
+// while one is waiting or running.
+const compat = ref(null);
+const converting = ref(false);
+let compatTimer = null;
+
+async function loadCompat() {
+  clearTimeout(compatTimer);
+  const item = single.value;
+  if (!item || !isVideoType.value) {
+    compat.value = null;
+    return;
+  }
+  try {
+    const { data } = await api.get(`/media/video/${item.id}/compat`);
+    if (single.value?.id !== item.id) return; // the page moved on meanwhile
+    compat.value = data;
+    if (data.status === 'queued' || data.status === 'running') compatTimer = setTimeout(loadCompat, 4000);
+  } catch {
+    // The button is an extra: a file that can't be checked simply doesn't get one.
+    compat.value = null;
+  }
+}
+
+async function convertSingle() {
+  converting.value = true;
+  try {
+    compat.value = (await api.post(`/media/video/${single.value.id}/compat`)).data;
+    compatTimer = setTimeout(loadCompat, 4000);
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || t('title.errors.convertFailed'));
+  } finally {
+    converting.value = false;
+  }
+}
+
+// A series: the server looks through its videos and queues the ones that need a copy.
+async function convertAll() {
+  const itemIds = (series.value?.volumes || []).map((v) => v.id);
+  if (!itemIds.length) return;
+  converting.value = true;
+  try {
+    const { data } = await api.post('/settings/compat/queue', { itemIds });
+    dialog.alert(t('title.actions.convertAllStarted', { count: n(data.total) }));
+  } catch (err) {
+    dialog.alert(err.response?.data?.error || t('title.errors.convertFailed'));
+  } finally {
+    converting.value = false;
+  }
+}
+
+onUnmounted(() => clearTimeout(compatTimer));
 
 // What the admin "Keep as History" action applies to: this film or book, the season on
 // screen, or (a series without seasons) every volume.
@@ -2814,6 +2888,7 @@ async function toggleKids() {
   }
 }
 watch(() => [series.value?.id, series.value?.name, series.value?.libraryId], loadKidsStatus);
+watch(() => single.value?.id, loadCompat, { immediate: true });
 
 onMounted(() => {
   fetchSeriesData();

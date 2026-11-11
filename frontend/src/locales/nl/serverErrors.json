@@ -216,6 +216,24 @@
       "meaning": "poppler is gestart, maar liep vast op dit bestand. Meestal een beschadigde of met een wachtwoord beveiligde PDF.",
       "fix": "Open het bestand in een andere PDF-lezer om het te controleren. Een met een wachtwoord beveiligde PDF moet eerst worden ontgrendeld. De fout staat in Admin → Logboek."
     },
+    "P310": {
+      "title": "Niets om om te zetten",
+      "message": "Deze video speelt al op elk apparaat af en heeft dus geen omgezette kopie nodig",
+      "meaning": "Er is om een omgezette kopie gevraagd, maar de video is al 8-bits H.264 of HEVC, wat browsers en Apple-apparaten ongewijzigd afspelen.",
+      "fix": "Niets aan te doen. Speelt de video op één apparaat toch niet af, dan ligt het aan iets anders: kijk naar de code die de speler toont."
+    },
+    "P311": {
+      "title": "Omgezette kopieën zitten aan hun groottelimiet",
+      "message": "De groottelimiet voor omgezette kopieën is bereikt",
+      "meaning": "De omgezette kopieën komen samen al aan de limiet die bij Admin → Afspelen is ingesteld, dus er worden er geen meer gemaakt. Een omzetting die over de limiet zou gaan, wordt gestopt en met deze code als mislukt vermeld.",
+      "fix": "Verhoog de groottelimiet bij Admin → Afspelen → Omgezette kopieën, of verwijder daar kopieën die je niet meer nodig hebt. Probeer daarna de mislukte opnieuw."
+    },
+    "P312": {
+      "title": "Alleen admins kunnen video's omzetten",
+      "message": "Op deze server kan alleen een admin video's omzetten",
+      "meaning": "Dit account vroeg om een omgezette kopie, maar de server laat alleen admins omzettingen starten.",
+      "fix": "Vraag het een admin, of laat die 'Iedereen mag een kopie aanvragen' aanzetten bij Admin → Afspelen → Omgezette kopieën."
+    },
     "P350": {
       "title": "Browser kan dit formaat niet afspelen",
       "message": "Deze browser kan deze video niet afspelen",

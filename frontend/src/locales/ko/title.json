@@ -17,7 +17,8 @@
     "resetFailed": "기록을 초기화하지 못했어요",
     "skipFailed": "건너뛰기 상태를 업데이트하지 못했어요",
     "markEarlierFailed": "완료로 표시하지 못했어요",
-    "kidsFailed": "키즈 모드를 변경하지 못했어요"
+    "kidsFailed": "키즈 모드를 변경하지 못했어요",
+    "convertFailed": "변환을 시작하지 못했어요"
   },
   "meta": {
     "pages": {
@@ -212,7 +213,17 @@
     "keepAsHistory": "기록으로 보관",
     "keepAsHistoryTitle": "{target} 보관: 파일을 삭제한 뒤에도 기록을 남겨요",
     "inKidsMode": "키즈 모드 포함",
-    "kids": "키즈"
+    "kids": "키즈",
+    "convert": "변환",
+    "convertTitle": "모든 기기에서 재생되는 사본을 만듭니다. 백그라운드에서 변환됩니다",
+    "convertRetryTitle": "지난 변환이 실패했어요. 다시 시도하세요",
+    "convertWaiting": "변환 대기 중",
+    "converting": "변환 중 · {percent}",
+    "converted": "변환됨",
+    "convertedTitle": "모든 기기에서 재생되는 사본이 준비되었습니다",
+    "convertAll": "모두 변환",
+    "convertAllTitle": "여기 있는 동영상 중 모든 기기에서 재생되지 않는 것을 전부 변환합니다",
+    "convertAllStarted": "여기 있는 동영상({count}개)을 확인하고 있어요. 모든 기기에서 재생되지 않는 것은 백그라운드에서 하나씩 변환됩니다. 대기열은 관리 → 재생에서 볼 수 있어요."
   },
   "offload": {
     "targetTitle": "'{title}'",
