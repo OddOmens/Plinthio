@@ -199,7 +199,7 @@ describe('converted copies of older formats', () => {
     '-c:v', codec, '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', path.join(folder, name)
   ], { stdio: 'pipe' });
 
-  let server; let admin; let old; let modern;
+  let server; let admin; let old; let modern; let libraryId;
   const api = (url, init = {}) => fetch(`${server.baseUrl}/api${url}`, {
     ...init,
     headers: { ...authed(admin.token), ...(init.body ? { 'content-type': 'application/json' } : {}) }
@@ -212,7 +212,7 @@ describe('converted copies of older formats', () => {
     server = await startTestServer({ env: { COMPAT_TICK_MS: '200' } });
     admin = await setupAdmin(server.baseUrl);
     await send('PUT', '/settings/transcoding', { preference: 'none' });
-    const libraryId = (await (await send('POST', '/libraries', { name: 'Movies', path: folder, type: 'movies' })).json()).library.id;
+    libraryId = (await (await send('POST', '/libraries', { name: 'Movies', path: folder, type: 'movies' })).json()).library.id;
     for (let i = 0; i < 100; i++) {
       if ((await (await send('POST', `/libraries/${libraryId}/scan`)).json()).status !== 'busy') break;
       await new Promise((res) => setTimeout(res, 100));
@@ -256,6 +256,39 @@ describe('converted copies of older formats', () => {
     assert.equal(played.videoCodec, 'h264');
 
     assert.equal((await send('POST', '/settings/compat/retry')).status, 200);
+  });
+
+  test('"Convert new videos automatically": a scan queues the new files that need a copy', async () => {
+    const rescan = async () => {
+      for (let i = 0; i < 100; i++) {
+        if ((await (await send('POST', `/libraries/${libraryId}/scan`)).json()).status !== 'busy') break;
+        await new Promise((res) => setTimeout(res, 100));
+      }
+    };
+    const copies = async () => (await (await api('/settings/compat')).json()).copies;
+
+    // Off (the default): a new file that needs converting is left alone.
+    assert.equal((await (await api('/settings/compat')).json()).autoConvert, false);
+    make('Ignored Film (1998).mkv', 'mpeg4');
+    await rescan();
+    await new Promise((res) => setTimeout(res, 1000));
+    assert.equal((await copies()).length, 1, 'nothing new was queued while the setting is off');
+
+    assert.equal((await send('PUT', '/settings/compat', { autoConvert: true })).status, 200);
+    make('Late Film (2001).mkv', 'mpeg2video');
+    make('Fine Film (2022).mp4', 'libx264');
+    await rescan();
+    const deadline = Date.now() + 60000;
+    let list;
+    do {
+      await new Promise((res) => setTimeout(res, 200));
+      list = await copies();
+    } while (!(list.length === 2 && list.every((c) => c.status === 'done')) && Date.now() < deadline);
+    assert.equal(list.length, 2, 'only the new MPEG-2 film was added to the queue');
+    const late = list.find((c) => c.itemId !== old.id);
+    assert.equal(late.title, 'Late Film');
+    assert.equal(late.sourceCodec, 'mpeg2video');
+    assert.equal(late.status, 'done');
   });
 });
 

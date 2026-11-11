@@ -16,6 +16,7 @@ the admin update banner. Add entries under **Unreleased** as you go.
   - **Quality and largest size:** Balanced (the default) looks good on any screen at about 4–8 GB for a 1080p film; High quality is hard to tell from the original and about half as big again; Smaller files saves about a third. Copies keep the video's own size unless you set a largest size of 1080p or 720p, which makes 4K videos far smaller. Nothing is ever enlarged.
   - **Size limit:** copies stop being made once they add up to the limit you set (50 GB by default).
   - **Who can ask:** admins, or everyone if you allow it.
+  - **New videos, automatically (off by default):** with **Convert new videos automatically** on, each library scan queues the new files that need a copy, so anything added later is ready for every device without you doing anything.
   - **Replace the original (off by default):** a finished copy can take the original's place in your library, and the original file is deleted. The title keeps its progress, ratings and artwork. This is the only thing in Plinthio that changes your media files, and it needs the media folder to be writable.
   - **When one fails:** the list says why, with an error code, and **Try the failed ones again** puts them back in the queue. If the graphics chip can't do a conversion, the server does it on the CPU instead of failing.
   - **In the log:** Admin → Logs records each conversion starting and finishing (with both file sizes), every failure with its code, each original that was replaced, and who switched replacing originals on or off.

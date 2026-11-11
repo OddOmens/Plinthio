@@ -150,6 +150,10 @@ Every audio track is carried over (AAC and MP3 as they are, anything else as AAC
   are kept, so delete one and convert it again to change it.
 - **Let everyone ask for a copy:** off, only admins see **Convert** on a title's page and
   can start a conversion from the apps.
+- **Convert new videos automatically** (off by default): after each library scan, the new
+  or changed files that need a copy join the queue by themselves, within the size limit.
+  Videos that were already in the library are left alone; use **Convert a library** for
+  those. Handy when films and episodes arrive on their own, from a download tool say.
 - **Convert a library:** looks through one library, or all of them, and queues every video
   that needs a copy. To convert one title instead, open its page: a film that needs a copy
   has a **Convert** button, which then shows the conversion's progress and **Converted**

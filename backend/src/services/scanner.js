@@ -19,6 +19,7 @@ import { classifyExtras } from './extras.js';
 import { BOOK_META_VERSION } from './bookMetadata.js';
 import { getLibraryRoots, realPathInRoots } from '../utils/libraryPath.js';
 import { probeFormatName, isScriptFormat } from './probe.js';
+import { queueNewVideos } from './compat.js';
 
 const VIDEO_MEDIA_TYPES = ['movie', 'show', 'anime'];
 
@@ -135,6 +136,8 @@ export async function scanLibrary(libraryId) {
     };
 
     let added = 0;
+    // Added or changed files, for "Convert new videos automatically".
+    const changedIds = [];
     let updated = 0;
     let renamed = 0;
 
@@ -279,6 +282,7 @@ export async function scanLibrary(libraryId) {
         );
         if (mediaType === 'book') await saveBookFields(db, itemId, meta);
         updated++;
+        changedIds.push(itemId);
         if (isRename) renamed++;
 
         // The file changed (that's why we're here — see the size-unchanged skip above),
@@ -314,6 +318,7 @@ export async function scanLibrary(libraryId) {
         );
         if (mediaType === 'book') await saveBookFields(db, itemId, meta);
         added++;
+        changedIds.push(itemId);
       }
     }
 
@@ -355,6 +360,8 @@ export async function scanLibrary(libraryId) {
     logger.info('scan', `Scan completed for "${library.name}"`, { added, updated, renamed, missing: removed, restored, artwork, total: files.length });
     // New films: look up their credits and collection in the background.
     if (library.type === 'movies' && added) backfillMovieCredits().catch(() => {});
+    // New video that Apple devices can't decode: queue a converted copy, if the admin asked for that.
+    queueNewVideos(db, changedIds);
     // `removed` counts titles newly marked missing (kept for recovery, not deleted).
     return { status: 'completed', added, updated, renamed, removed, restored, artwork, total: files.length };
   } finally {

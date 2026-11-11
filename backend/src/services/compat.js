@@ -80,6 +80,7 @@ export async function getCompatSettings(db) {
     quality: QUALITIES[quality] ? quality : 'balanced',
     maxHeight: MAX_HEIGHTS.includes(maxHeight) ? maxHeight : 0,
     allowUsers: (await getSetting(db, 'compat_allow_users')) === '1',
+    autoConvert: (await getSetting(db, 'compat_auto')) === '1',
     replaceOriginal: (await getSetting(db, 'compat_replace_original')) === '1'
   };
 }
@@ -90,6 +91,7 @@ export async function saveCompatSettings(db, patch) {
   if (patch.quality !== undefined) await setSetting(db, 'compat_quality', patch.quality);
   if (patch.maxHeight !== undefined) await setSetting(db, 'compat_max_height', String(patch.maxHeight));
   if (patch.allowUsers !== undefined) await setSetting(db, 'compat_allow_users', patch.allowUsers ? '1' : '0');
+  if (patch.autoConvert !== undefined) await setSetting(db, 'compat_auto', patch.autoConvert ? '1' : '0');
   if (patch.replaceOriginal !== undefined) {
     await setSetting(db, 'compat_replace_original', patch.replaceOriginal ? '1' : '0');
     // Saving the switch is also "try again" for originals that couldn't be replaced.
@@ -281,9 +283,41 @@ export async function queueLibrary(db, libraryId, userId, itemIds = null) {
       logger.info('media', `Converted copies: ${discovery.queued} of ${items.length} video(s) need converting and were queued`);
     } finally {
       discovery = null;
+      drainNewVideos(db);
     }
   })();
   return { total: items.length };
+}
+
+// Videos a library scan has just added or seen change, waiting to be looked at.
+const newVideoIds = new Set();
+let drainingNewVideos = false;
+const NEW_VIDEO_BATCH = 500;
+
+/**
+ * Called by the scanner with the titles it added or saw change. With "Convert new videos
+ * automatically" on, the ones that need a copy are queued, exactly as if an admin had asked
+ * for them; with it off this does nothing. Never throws: a scan must not fail over this.
+ */
+export async function queueNewVideos(db, itemIds) {
+  try {
+    if (!itemIds?.length || !(await getCompatSettings(db)).autoConvert) return;
+    for (const id of itemIds) newVideoIds.add(id);
+    drainNewVideos(db);
+  } catch (err) {
+    logger.warn('media', `Converted copies: new videos could not be checked: ${err.message}`);
+  }
+}
+
+// One search runs at a time, so scans that finish close together wait their turn here.
+function drainNewVideos(db) {
+  if (discovery || drainingNewVideos || !newVideoIds.size) return;
+  const ids = [...newVideoIds].slice(0, NEW_VIDEO_BATCH);
+  for (const id of ids) newVideoIds.delete(id);
+  drainingNewVideos = true;
+  queueLibrary(db, null, null, ids)
+    .catch((err) => logger.warn('media', `Converted copies: new videos could not be checked: ${err.message}`))
+    .finally(() => { drainingNewVideos = false; });
 }
 
 // ─── The conversion itself ──────────────────────────────────────────────────

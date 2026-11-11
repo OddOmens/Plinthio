@@ -887,6 +887,8 @@
       "qualityHint": "Ausgewogen sieht auf jedem Bildschirm gut aus: Ein 1080p-Film kommt auf etwa 4–8 GB. Hohe Qualität ist vom Original kaum zu unterscheiden und etwa um die Hälfte größer. Kleinere Dateien sparen rund ein Drittel, was auf einem großen Fernseher auffallen kann. Eine maximale Größe macht 4K- und andere große Videos deutlich kleiner; nichts wird je vergrößert. Beides gilt für Kopien, die ab jetzt erstellt werden.",
       "allowUsers": "Alle dürfen eine Kopie anfordern",
       "allowUsersDesc": "Über den Player in den Apps. Ausgeschaltet können das nur Admins.",
+      "autoConvert": "Neue Videos automatisch umwandeln",
+      "autoConvertDesc": "Nach jedem Bibliotheksscan kommen neue Videos, die eine Kopie brauchen, von selbst in die Warteschlange. Bereits vorhandene Videos bleiben unberührt: Nutze dafür „Bibliothek umwandeln“.",
       "replace": "Original durch die Kopie ersetzen",
       "replaceDesc": "Sobald eine Kopie fertig ist, nimmt sie den Platz des Originals in deiner Bibliothek ein, und die Originaldatei wird gelöscht. Der Titel behält Fortschritt und Artwork. Der Medienordner muss beschreibbar sein.",
       "replaceConfirmTitle": "Originale nach der Umwandlung löschen?",
