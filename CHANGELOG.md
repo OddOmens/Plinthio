@@ -22,6 +22,12 @@ the admin update banner. Add entries under **Unreleased** as you go.
   - **In the log:** Admin → Logs records each conversion starting and finishing (with both file sizes), every failure with its code, each original that was replaced, and who switched replacing originals on or off.
 - **Error codes for converting:** P310 (the video needs no copy), P311 (the size limit for copies was reached) and P312 (only admins can convert on this server).
 
+### Changed
+- **The server's output says who made each request.** Each request line in `docker logs plinthio` now starts with the visitor's address and ends with their browser or app, for example `203.0.113.7 GET /api/items 200 4.1 ms - 512 "Mozilla/5.0 …"`. Before, the line had no address, so a scan or a run of wrong passwords from the internet couldn't be traced, and a log watcher such as fail2ban or CrowdSec had nothing to act on. Behind a reverse proxy this is the visitor's own address when `TRUST_PROXY` covers the proxy (the Tailscale and public add-ons set it for you). The lines are no longer coloured.
+
+### Security
+- **Scanner requests get "not found" instead of the app.** Bots ask every public server for files such as `/.env`, `/.git/config`, `/wp-login.php` and `/info.php`. Plinthio has none of these and never exposed anything, but it answered with the app's own page and a success code, which made the server look like a hit and hid the scan among normal traffic. These now return 404.
+
 ## [1.10.0] - 2026-11-10
 
 ### Fixed
