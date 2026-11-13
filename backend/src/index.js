@@ -62,6 +62,7 @@ import { sweepPageCache } from './services/pageImages.js';
 import { sweepTrickplayCache } from './services/trickplay.js';
 import { tlsSettings, loadTlsCredentials, refreshTlsCredentials, tlsStatus, caCertificate, noteRequestHost } from './services/tls.js';
 import { SEND_OPTS } from './utils/fileStream.js';
+import { ACCESS_LOG_FORMAT, clientAddress, isScannerPath } from './utils/accessLog.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -193,7 +194,8 @@ app.use('/api', attachErrorCodes);
 // which can't send an Authorization header) — redact it so a live session token never
 // ends up sitting in plaintext in the access log.
 morgan.token('url', (req) => (req.originalUrl || req.url).replace(/([?&]token=)[^&]+/i, '$1[REDACTED]'));
-app.use(morgan('dev'));
+morgan.token('client', clientAddress);
+app.use(morgan(ACCESS_LOG_FORMAT));
 
 // High-throughput media streaming and thumbnail routes are exempt from the strict JSON API
 // rate limit below (a reader/player firing off many small range/page requests per second is
@@ -338,6 +340,9 @@ if (fs.existsSync(frontendDist)) {
   }));
   app.get('/{*splat}', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
+    // /.env, /wp-login.php and the like are never a page of the app: say so, rather than
+    // answering a scanner with the app (see isScannerPath).
+    if (isScannerPath(req.path)) return res.status(404).type('text/plain').send('Not found');
     res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.join(frontendDist, 'index.html'), SEND_OPTS);
   });
