@@ -2,7 +2,7 @@ import { normalizeIp } from '../services/network.js';
 
 // One line per request in the container's output: who asked, for what, and how it ended.
 // The address comes first so a scan or a run of wrong passwords can be traced to its source,
-// and so a log watcher (fail2ban, CrowdSec) has something to act on. It is the visitor's own
+// and so a log watcher that blocks repeat offenders has something to act on. It is the visitor's own
 // address when TRUST_PROXY covers the proxy in front, and the proxy's address otherwise.
 export const ACCESS_LOG_FORMAT = ':client :method :url :status :response-time ms - :res[content-length] ":user-agent"';
 
