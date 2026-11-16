@@ -637,11 +637,8 @@ router.post('/2fa/setup', authenticateToken, sessionOnly, handle(async (req, res
   res.json({ secret, uri: otpauthUri(secret, { issuer: name, account: req.user.username }) });
 }));
 
-// Wrong two-factor answers in a signed-in confirmation (turning two-factor on or off, new
-// backup codes), per account. Kept apart from confirmLock (wrong passwords): a right password,
-// here or when making an API key, clears that one and must not also forget the wrong codes.
-// Only a right code or backup code clears this one. Signing in has its own lock (codeLock),
-// so a stolen session can't use this to hold the owner out of signing in.
+// Wrong two-factor codes in signed-in confirmations, per account. Separate from confirmLock,
+// which a right password clears; only a right code clears this one.
 const confirmCodeLock = new FailureLock();
 
 function confirmHeld(userId) {
@@ -655,8 +652,7 @@ function noteConfirmCodeFailure(req, did) {
     : `"${req.user.username}" ${did}`, { ip: req.ip });
 }
 
-// A secret being set up has to be confirmed within this long, so a pending one doesn't sit
-// there for ever waiting to be guessed.
+// How long a new secret waits to be confirmed.
 const PENDING_SECRET_MS = 15 * 60 * 1000;
 
 // Step 2: a code from the app proves it's set up; two-factor goes on and the backup codes
@@ -672,9 +668,8 @@ router.post('/2fa/enable', authenticateToken, sessionOnly, handle(async (req, re
     await db.run('UPDATE users SET totp_pending = NULL, totp_pending_at = NULL WHERE id = ?', [req.user.id]);
     return res.status(400).json({ error: 'Setting up two-factor took too long. Start again' });
   }
-  // Held after too many wrong answers: right or wrong, this one waits. Checked before the
-  // code, with nothing awaited between here and counting a wrong one, so requests sent side
-  // by side can't all get past the hold.
+  // Checked before the code, with no await before a wrong one is counted, so parallel
+  // requests can't slip past the hold.
   if (confirmHeld(req.user.id)) return sendConfirmProblem(req, res, 'P108');
   const step = verifyTotp(secret, req.body?.code);
   if (step === null) {
@@ -709,8 +704,7 @@ async function confirmIdentity(db, req, { needCode, what }) {
   // Read after the password check, so the code is judged against the current row.
   const user = await db.get('SELECT * FROM users WHERE id = ?', [req.user.id]);
   if (!needCode || !user.totp_enabled_at) return null;
-  // Nothing is awaited from here until a wrong answer is counted, so requests sent side by
-  // side can't all get past the hold.
+  // No await before a wrong answer is counted (see /2fa/enable).
   if (confirmCodeLock.heldFor(req.user.id)) return 'P108';
   if (recoveryCode) {
     const updated = useRecoveryCode(user.totp_recovery, recoveryCode);

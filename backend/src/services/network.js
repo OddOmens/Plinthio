@@ -172,12 +172,8 @@ export async function outsideAccessError(req, user, options) {
   return (await outsideAccessProblem(req, user, options))?.code || null;
 }
 
-// Remembered for Admin → Network: the most recent request that carried a forwarding header
-// from a peer TRUST_PROXY doesn't cover, and only when that peer is on this machine or the
-// home network, where a reverse proxy of the admin's own would connect from. Any device can
-// send these headers without signing in, so the address is a hint to cross-check against the
-// proxy the admin knows they run, never a value to copy into TRUST_PROXY as is. It expires so
-// a one-off request doesn't stay on the page for good.
+// Hint for Admin → Network: the latest home or loopback peer that sent forwarding headers
+// TRUST_PROXY doesn't cover. Any device can send them, so it's only shown as something to check.
 export const PROXY_HINT_TTL_MS = 24 * 60 * 60 * 1000;
 let proxySeen = null;
 export function noteProxyHeaders(req) {

@@ -261,11 +261,8 @@ function closeConnection(party, userId, clientId) {
   return true;
 }
 
-// Ends every party connection an account has, in every party. Called when the account is
-// deleted, signed out, has its password or two-factor reset, or has what it may see or where
-// it may sign in from changed. If the app connects again it goes through the full sign-in
-// and visibility checks, so a revoked account stays out and a restricted one is re-checked.
-// Returns how many connections were closed.
+// Ends all of an account's party connections when it's revoked or restricted. Reconnecting
+// goes through the normal sign-in and visibility checks.
 export function dropUser(userId) {
   let closed = 0;
   for (const party of [...parties.values()]) {

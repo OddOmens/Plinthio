@@ -168,11 +168,8 @@ async function initSchema(db) {
   await addColumns(db, 'api_keys', ['key_md5 TEXT']);
   await db.exec(`CREATE INDEX IF NOT EXISTS idx_api_keys_md5 ON api_keys(key_md5)`);
 
-  // Keys used to store the MD5 itself, which is exactly what KOReader sends, so a copy of
-  // the database could sign in to kosync as any key owner. Each stored MD5 (32 hex
-  // characters) becomes the SHA-256 of itself (64), matching middleware/auth.js
-  // kosyncKeyHash. Rows already done are skipped, so this is safe on every start and also
-  // covers an older database put back by hand.
+  // A stored MD5 is exactly what KOReader sends, so hash it (kosyncKeyHash). Rows already
+  // hashed (64 characters) are skipped, so this is safe on every start.
   const md5Rows = await db.all('SELECT id, key_md5 FROM api_keys WHERE length(key_md5) = 32');
   if (md5Rows.length > 0) {
     const { createHash } = await import('crypto');

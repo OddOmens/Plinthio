@@ -177,7 +177,6 @@ router.use((err, req, res, next) => {
 //     the account's limit (the providers are already asked to leave adult titles out)
 //   - searches are limited per account, so one account can't spend the server's allowance
 //     with a provider (they count requests per key) or use it as a relay
-// Same rule as requireEditor: a Kids Mode or content-limited account isn't an editor here.
 function isEditorAccount(user) {
   return canEditLibrary(user);
 }

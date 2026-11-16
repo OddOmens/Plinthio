@@ -76,7 +76,7 @@ function ageRatingSql(user, alias) {
 // An extra (trailer, featurette) belongs to its film, and the scanner copies neither the
 // film's rating nor its hide onto it, so the extra is held to the film's rules here: no
 // extra of a film this account may not see. One primary-key lookup, and only for rows that
-// are extras. An extra whose film row is gone is judged on its own, as before.
+// are extras. An extra whose film row is gone is judged on its own.
 function extraFilmSql(user, alias, hiddenFilms) {
   const film = `${alias}_film`;
   let rules = kidsModeSql(user, film) + ageRatingSql(user, film);

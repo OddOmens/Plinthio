@@ -22,7 +22,6 @@ router.get('/:libraryId/:seriesName/settings', handle(async (req, res) => {
   let seriesName = req.params.seriesName;
   try { seriesName = decodeURIComponent(seriesName); } catch { /* already decoded */ }
   const db = await getDb();
-  // Same rule as requireEditor: a Kids Mode or content-limited account isn't an editor.
   const isEditor = canEditLibrary(req.user);
   const visible = isEditor || await db.get(
     `SELECT 1 FROM items i WHERE i.library_id = ? AND i.series = ?${knownSql(req.user, 'i')} LIMIT 1`,

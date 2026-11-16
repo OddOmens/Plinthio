@@ -255,11 +255,8 @@ export function requireAdmin(req, res, next) {
   next();
 }
 
-// Whether an account may edit the library. Admins implicitly have every Editor right too.
-// A restricted account never does, whatever its role says: an editor can mark titles
-// kids-safe and change age ratings, so a Kids Mode account or one with a content limit could
-// let itself see anything. Admins are trusted with the whole library. Shared by every place
-// that works out editor rights (requireEditor, routes/metadata.js, routes/series.js).
+// Whether an account may edit the library: admins, and editors without Kids Mode or a
+// content limit (editors can change age ratings, so a restricted one could lift its own).
 export function canEditLibrary(user) {
   if (!user) return false;
   if (user.role === 'admin') return true;

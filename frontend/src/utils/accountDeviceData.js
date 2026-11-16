@@ -20,10 +20,8 @@ export function setDeviceDataOwner(userId) {
 
 const MEDIA_CACHES = (name) => name === 'plinthio-offline' || name.startsWith('plinthio-images-');
 
-// Drops cached covers and comic pages, and the downloads. Cached art is keyed by path with
-// the token stripped, so it must not outlive the session that fetched it. The service worker
-// is asked to do it, and the page deletes the same caches itself too, so it still happens
-// when no worker controls the page (the first load after a hard reload, say).
+// Drops cached art and downloads. Done by the page as well as the service worker, in case no
+// worker controls the page.
 async function clearOfflineMediaCache() {
   try {
     navigator.serviceWorker?.controller?.postMessage({ type: 'clear-media-cache' });
