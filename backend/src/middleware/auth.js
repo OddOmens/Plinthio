@@ -5,7 +5,7 @@ import { config } from '../config/env.js';
 import { getDb } from '../config/database.js';
 import { sendError } from '../errors.js';
 import { outsideAccessProblem } from '../services/network.js';
-import { logger } from '../services/logger.js';
+import { logger, oneLineError } from '../services/logger.js';
 
 const userAuthCache = new Map();
 const AUTH_CACHE_TTL = 60 * 1000; // 60 seconds
@@ -107,10 +107,15 @@ export function userForApiKeyId(keyId) {
   return apiKeyUser('k.id = ?', [keyId]);
 }
 
-// KOReader's sync plugin sends the MD5 of the password rather than the password, so keys
-// also store their MD5 (routes/apiKeys.js). The username has to match as well.
+// KOReader's sync plugin sends the MD5 of the password rather than the password. Keys store
+// the SHA-256 of that MD5 (routes/apiKeys.js), so the stored value is not itself a sign-in:
+// a copy of the database can't be replayed as the header. The username has to match as well.
+export function kosyncKeyHash(md5) {
+  return crypto.createHash('sha256').update(String(md5).trim().toLowerCase()).digest('hex');
+}
+
 export function userForApiKeyMd5(username, md5) {
-  return apiKeyUser('k.key_md5 = ? AND lower(u.username) = lower(?)', [String(md5).toLowerCase(), String(username)]);
+  return apiKeyUser('k.key_md5 = ? AND lower(u.username) = lower(?)', [kosyncKeyHash(md5), String(username)]);
 }
 
 export { basicAuthApiKey };
@@ -144,7 +149,7 @@ export async function authenticateToken(req, res, next) {
         return next();
       }
     } catch (err) {
-      console.error('API key auth error:', err);
+      console.error('API key auth error:', oneLineError(err));
     }
     return sendError(req, res, 'P104');
   }
@@ -250,15 +255,25 @@ export function requireAdmin(req, res, next) {
   next();
 }
 
-// Admins implicitly have every Editor right too. A Kids Mode account never does, whatever its
-// role says: an editor can mark titles kids-safe and change age ratings, so a kids account
-// with the role could let itself see anything.
+// Whether an account may edit the library: admins, and editors without Kids Mode or a
+// content limit (editors can change age ratings, so a restricted one could lift its own).
+export function canEditLibrary(user) {
+  if (!user) return false;
+  if (user.role === 'admin') return true;
+  if (user.role !== 'editor') return false;
+  if (user.kids_mode === 1 || user.kids_mode === true) return false;
+  return !user.max_age_rating;
+}
+
 export function requireEditor(req, res, next) {
   if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'editor')) {
     return sendError(req, res, 'P106');
   }
   if (req.user.kids_mode === 1 || req.user.kids_mode === true) {
     return sendError(req, res, 'P106', { message: 'A Kids Mode account cannot edit the library' });
+  }
+  if (!canEditLibrary(req.user)) {
+    return sendError(req, res, 'P106', { message: 'An account with a content limit cannot edit the library' });
   }
   next();
 }
@@ -336,7 +351,8 @@ export async function checkOwnPassword(db, req, password, what) {
   return 'P107';
 }
 
-// Also used for a wrong two-factor code in the same kind of confirmation (routes/auth.js).
+// Wrong two-factor codes in the same kind of confirmation have a lock of their own
+// (confirmCodeLock in routes/auth.js): a right password clears this one.
 export function noteConfirmFailure(req, did) {
   const result = confirmLock.fail(req.user.id);
   logger.warn('auth', result.held

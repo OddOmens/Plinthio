@@ -59,6 +59,8 @@ import { sweepHlsCache } from './services/hls.js';
 import { initCompat } from './services/compat.js';
 import { sweepArchiveCache } from './services/archive/sevenZipBackend.js';
 import { sweepPageCache } from './services/pageImages.js';
+import { sweepPdfPageCache } from './services/pdf.js';
+import { oneLineError } from './services/logger.js';
 import { sweepTrickplayCache } from './services/trickplay.js';
 import { tlsSettings, loadTlsCredentials, refreshTlsCredentials, tlsStatus, caCertificate, noteRequestHost } from './services/tls.js';
 import { SEND_OPTS } from './utils/fileStream.js';
@@ -345,7 +347,8 @@ if (fs.existsSync(frontendDist)) {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
+  // The message can quote the request (a JSON parse error includes part of the body).
+  console.error('Unhandled error:', oneLineError(err));
   // Body-parser rejects (malformed JSON, oversized body) are the client's fault and safe to
   // describe; anything else stays in the server log.
   if (err.type === 'entity.parse.failed') {
@@ -406,6 +409,7 @@ async function start() {
       sweepHlsCache(cacheMaxAgeMs);
       sweepArchiveCache(cacheMaxAgeMs);
       sweepPageCache(cacheMaxAgeMs);
+      sweepPdfPageCache(cacheMaxAgeMs);
       sweepTrickplayCache();
     };
     sweepCaches();
@@ -498,7 +502,7 @@ function handleShutdown(servers) {
 // One stray rejected promise (a background job, a fire-and-forget log write) would
 // otherwise take the whole server down for everyone; log it and keep serving.
 process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled promise rejection:', reason);
+  console.error('Unhandled promise rejection:', oneLineError(reason));
 });
 
 start();

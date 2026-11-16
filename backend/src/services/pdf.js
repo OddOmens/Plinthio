@@ -90,6 +90,13 @@ function limited(task) {
 }
 
 const inFlight = new Map();
+// Volume folders with a render running, so the cache sweep leaves them alone.
+const busyDirs = new Map();
+function markBusy(dir, delta) {
+  const n = (busyDirs.get(dir) || 0) + delta;
+  if (n > 0) busyDirs.set(dir, n);
+  else busyDirs.delete(dir);
+}
 
 /**
  * Path of a rendered JPEG of page `pageIndex` (0-based), rendering it first if needed.
@@ -101,9 +108,16 @@ export async function renderPdfPage(filePath, pageIndex, { longSide = PAGE_LONG_
 
   const dir = path.join(pagesDir, fileKey(filePath));
   const finalPath = path.join(dir, `${pageIndex}-${longSide}.jpg`);
-  if (fs.existsSync(finalPath)) return finalPath;
+  if (fs.existsSync(finalPath)) {
+    // A volume being read keeps its folder fresh, so the age sweep takes only books nobody
+    // has opened for a while.
+    const now = new Date();
+    fs.promises.utimes(dir, now, now).catch(() => {});
+    return finalPath;
+  }
 
   if (!inFlight.has(finalPath)) {
+    markBusy(dir, 1);
     inFlight.set(finalPath, limited(async () => {
       fs.mkdirSync(dir, { recursive: true });
       const prefix = path.join(dir, `tmp-${process.pid}-${pageIndex}-${longSide}`);
@@ -117,9 +131,36 @@ export async function renderPdfPage(filePath, pageIndex, { longSide = PAGE_LONG_
       ]);
       fs.renameSync(`${prefix}.jpg`, finalPath);
       return finalPath;
-    }).finally(() => inFlight.delete(finalPath)));
+    }).finally(() => {
+      inFlight.delete(finalPath);
+      markBusy(dir, -1);
+    }));
   }
   return inFlight.get(finalPath);
+}
+
+/**
+ * Drops the rendered pages of PDFs nobody has read for `maxAgeMs` (the same age limit as the
+ * other media caches). A folder with a render in progress is skipped; a cache hit touches its
+ * folder (renderPdfPage), so a book being read stays.
+ */
+export function sweepPdfPageCache(maxAgeMs) {
+  let entries;
+  try {
+    entries = fs.readdirSync(pagesDir);
+  } catch {
+    return; // Nothing rendered yet.
+  }
+  const now = Date.now();
+  for (const entry of entries) {
+    const dir = path.join(pagesDir, entry);
+    if (busyDirs.has(dir)) continue;
+    try {
+      if (now - fs.statSync(dir).mtimeMs >= maxAgeMs) fs.rmSync(dir, { recursive: true, force: true });
+    } catch {
+      // Already gone.
+    }
+  }
 }
 
 /**

@@ -2,7 +2,7 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { getDb } from '../config/database.js';
-import { authenticateToken, requireEditor } from '../middleware/auth.js';
+import { authenticateToken, requireEditor, canEditLibrary } from '../middleware/auth.js';
 import { config } from '../config/env.js';
 import {
   searchExternalMetadata,
@@ -26,7 +26,8 @@ import { parseMediaTitle, suggestCleanTitle } from '../services/titleCleaner.js'
 import { isMetadataIgnored } from '../services/metadataGaps.js';
 import multer from 'multer';
 import sharp from 'sharp';
-import { logger } from '../services/logger.js';
+import { logger, oneLine, oneLineError } from '../services/logger.js';
+import { shapeItems, shapeItem } from '../services/itemView.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { AGE_RATINGS, ratingRank, isLimitedAccount } from '../services/visibility.js';
@@ -112,7 +113,7 @@ router.post('/cover/:itemId', requireEditor, coverUpload.single('cover'), async 
     logger.info('media', `Cover art replaced for item ${itemId} by ${req.user.username}`);
     res.json({ message: 'Cover art updated' });
   } catch (err) {
-    console.error('[metadata] cover upload failed:', err);
+    console.error('[metadata] cover upload failed:', oneLineError(err));
     res.status(500).json({ error: 'Could not process that image' });
   }
 });
@@ -149,7 +150,7 @@ router.post('/series-cover', requireEditor, coverUpload.single('cover'), async (
     logger.info('media', `Cover art replaced for series "${seriesName}" (${items.length} items) by ${req.user.username}`);
     res.json({ message: `Cover art updated for ${items.length} item(s)`, count: items.length });
   } catch (err) {
-    console.error('[metadata] series cover upload failed:', err);
+    console.error('[metadata] series cover upload failed:', oneLineError(err));
     res.status(500).json({ error: 'Could not process that image' });
   }
 });
@@ -177,7 +178,7 @@ router.use((err, req, res, next) => {
 //   - searches are limited per account, so one account can't spend the server's allowance
 //     with a provider (they count requests per key) or use it as a relay
 function isEditorAccount(user) {
-  return !!user && (user.role === 'admin' || user.role === 'editor') && !user.kids_mode;
+  return canEditLibrary(user);
 }
 
 function noKidsAccounts(req, res, next) {
@@ -243,7 +244,8 @@ router.get('/search', noKidsAccounts, searchLimiter, async (req, res) => {
     if (err.code === 'PROVIDER_OFF') {
       return sendError(req, res, 'P404');
     }
-    console.error(`[metadata] Search failed for mediaType="${mediaType}" query="${query}":`, err);
+    // Request text printed on one line, so a line break in it can't fake a log line.
+    console.error(`[metadata] Search failed for mediaType="${oneLine(mediaType)}" query="${oneLine(query)}":`, oneLineError(err));
 
     if (err.status === 401 || err.status === 403) {
       return sendError(req, res, 'P401', {
@@ -301,9 +303,13 @@ router.get('/admin/items', requireEditor, async (req, res) => {
       conditions.push('i.media_type = ?');
       params.push(mediaType);
     }
-    if (search && search.trim()) {
+    // Only admins may search the full path: for anyone else it would be a way to probe the
+    // server's folder names. Their search matches the title and file name (below).
+    const isAdmin = req.user.role === 'admin';
+    const searchText = typeof search === 'string' ? search.trim() : '';
+    if (searchText && isAdmin) {
       conditions.push('(i.title LIKE ? OR i.path LIKE ?)');
-      params.push(`%${search.trim()}%`, `%${search.trim()}%`);
+      params.push(`%${searchText}%`, `%${searchText}%`);
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -320,7 +326,13 @@ router.get('/admin/items', requireEditor, async (req, res) => {
       ORDER BY i.title ASC
     `;
 
-    const allRows = await db.all(sql, params);
+    let allRows = await db.all(sql, params);
+    if (searchText && !isAdmin) {
+      // Case-insensitive, as LIKE is for plain letters.
+      const needle = searchText.toLowerCase();
+      allRows = allRows.filter((row) => String(row.title || '').toLowerCase().includes(needle)
+        || path.basename(row.path || '').toLowerCase().includes(needle));
+    }
 
     let totalDirty = 0;
     let totalMissingCover = 0;
@@ -382,6 +394,8 @@ router.get('/admin/items', requireEditor, async (req, res) => {
 
     const total = filtered.length;
     const paginated = filtered.slice(Number(offset), Number(offset) + Number(limit));
+    // Absolute paths are for admins; everyone else gets `folder` (relative to the library).
+    await shapeItems(db, paginated, req.user);
 
     res.json({
       items: paginated,
@@ -393,7 +407,7 @@ router.get('/admin/items', requireEditor, async (req, res) => {
       totalIgnored
     });
   } catch (err) {
-    console.error('[metadata] admin/items error:', err);
+    console.error('[metadata] admin/items error:', oneLineError(err));
     serverError(req, res, err);
   }
 });
@@ -460,7 +474,7 @@ router.post('/admin/batch-clean-titles', requireEditor, async (req, res) => {
     logger.info('metadata', `Batch cleaned titles for ${updatedCount} item(s) by ${req.user.username}`);
     res.json({ message: `Cleaned ${updatedCount} title(s)`, updatedCount, results });
   } catch (err) {
-    console.error('[metadata] batch-clean-titles error:', err);
+    console.error('[metadata] batch-clean-titles error:', oneLineError(err));
     serverError(req, res, err);
   }
 });
@@ -901,6 +915,7 @@ router.post('/admin/batch-match', requireEditor, async (req, res) => {
       }
     }
 
+    await shapeItems(db, results.map((r) => r.item).filter(Boolean), req.user);
     logger.info('metadata', `Batch metadata match finished: ${matchedCount} matched, ${skippedCount} skipped by ${req.user.username}`);
     res.json({
       message: `Matched ${matchedCount} of ${itemIds.length} item(s)`,
@@ -910,7 +925,7 @@ router.post('/admin/batch-match', requireEditor, async (req, res) => {
       results
     });
   } catch (err) {
-    console.error('[metadata] batch-match error:', err);
+    console.error('[metadata] batch-match error:', oneLineError(err));
     serverError(req, res, err);
   }
 });
@@ -931,7 +946,7 @@ router.post('/admin/match-single/:itemId', requireEditor, handle(async (req, res
       overwriteCover,
       useCanonicalTitle
     });
-    res.json({ message: 'Item matched and updated', item: result.item, matched: result.matched });
+    res.json({ message: 'Item matched and updated', item: await shapeItem(db, result.item, req.user), matched: result.matched });
   } catch (err) {
     if (err.code === 'MISSING_API_KEY') {
       return sendError(req, res, 'P400', err.provider ? { message: err.message } : {});
@@ -980,7 +995,7 @@ router.post('/apply/:itemId', requireEditor, handle(async (req, res) => {
         : null;
       coverPath = await downloadCover(full?.coverUrl || coverUrl, itemId);
     } catch (err) {
-      console.warn(`Failed to download cover for item ${itemId}: ${err.message}`);
+      console.warn(`Failed to download cover for item ${itemId}: ${oneLine(err.message)}`);
     }
   }
 
@@ -1032,7 +1047,7 @@ router.post('/apply/:itemId', requireEditor, handle(async (req, res) => {
   const updated = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
   // A TMDB pick: the title page's cast and crew follow the title that was chosen.
   if (source === 'tmdb' && externalId) await resetCredits(db, updated, externalId);
-  res.json({ message: 'Metadata updated', item: updated });
+  res.json({ message: 'Metadata updated', item: await shapeItem(db, updated, req.user) });
 }));
 
 // Apply a chosen external metadata result or edited fields across a series (all volumes/episodes)

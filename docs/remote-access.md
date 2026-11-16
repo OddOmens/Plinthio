@@ -326,8 +326,16 @@ every request that carries `X-Forwarded-For`, `Forwarded` or `X-Real-IP` from a 
 doesn't trust counts as outside the home network. On a home-only server that means nobody
 gets in through the proxy ("available at home only", with a note about `TRUST_PROXY`), a new
 server can't be set up through it, and two-factor away from home applies to everyone. Open
-Plinthio directly (`http://<server>:8088`) to get in meanwhile; Admin → Network shows a
-warning with the proxy's address, which is the value to put in `TRUST_PROXY`. The proxy has
+Plinthio directly (`http://<server>:8088`) to get in meanwhile. Set `TRUST_PROXY` to the
+address you know your proxy uses (its container's address, or the Docker network it is on),
+never to an address you haven't checked is the proxy's.
+
+Admin → Network shows a warning when requests with forwarding headers arrive from this machine
+or your home network without `TRUST_PROXY` covering them, with the address the latest one came
+from (it clears after a day without any). Treat that address only as a cross-check: any device
+on your network can send these headers itself, so it may not be your proxy at all, and
+`TRUST_PROXY` must only ever name a proxy you run. Requests from other addresses (the internet,
+Tailscale) aren't shown there; they still count as outside. The proxy has
 to send `X-Forwarded-For` (nginx: `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`);
 a proxy that sends no forwarding header at all can't be told apart from a home device.
 

@@ -107,7 +107,7 @@
       "allMediaTypes": "Todos os tipos de mídia",
       "tvShows": "Séries de TV",
       "needsCleanup": "Precisa de limpeza",
-      "searchPlaceholder": "Filtrar por título ou caminho...",
+      "searchPlaceholder": "Filtrar por título ou nome do arquivo...",
       "ignored": "Ignorados ({count})"
     },
     "batch": {

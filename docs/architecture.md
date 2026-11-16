@@ -48,7 +48,7 @@ docs/               This documentation
 | `hls.js`, `transcode.js`, `hwaccel.js` | Playback decisions, HLS remux and transcode jobs, hardware detection and testing, encode caps |
 | `compat.js` | Converted copies: the background queue (`compat_copies` table) that turns video some devices can't decode into H.264 MP4s under `compat/`, the size limit, and replacing originals |
 | `subtitles.js`, `chapters.js`, `trickplay.js` | Subtitle tracks and VTT, chapter probing, scrub preview sheets |
-| `party.js` | In-memory watch parties and their server-sent event streams |
+| `party.js` | In-memory watch parties and their server-sent event streams; `dropUser` and a periodic re-check end the streams of revoked or restricted accounts |
 | `visibility.js` | **Access control** (see below) |
 | `network.js` | Home / Tailscale / outside, by request address; the away-from-home settings and checks (sign-in, `authenticateToken`, Komga, KOReader) |
 | `twoFactor.js` | TOTP (RFC 6238), sealed secrets, backup codes, and the sign-in challenge between password and code |
@@ -68,7 +68,7 @@ items table is created.
 | Table | Holds |
 | --- | --- |
 | `users` | Accounts: role, preferences JSON, `max_age_rating`, `allow_unrated`, `kids_mode`, `expires_at`, `token_version` |
-| `api_keys` | SHA-256 of each key (`key`), `key_md5` for KOReader, last 4 characters |
+| `api_keys` | SHA-256 of each key (`key`), `key_md5` = SHA-256 of the key's MD5, for KOReader (it sends the MD5, which is hashed before the lookup), last 4 characters |
 | `libraries` | Folder, type, `kids_allowed` |
 | `items` | One row per file: title, series, volume (episodes encode season + episode/1000), format, pages or duration, metadata, cover, `extra_type`/`extra_of`, `missing_since`, TMDB id and cached `credits_json`, KOReader hashes |
 | `series_settings` | Per library + series: display name, reading direction, age rating |
@@ -114,11 +114,15 @@ Roles are checked with `requireAdmin` or `requireEditor` after `authenticateToke
 - **Session JWT** (`Authorization: Bearer`) carries `userId` and `tokenVersion`. Bumping
   `users.token_version` (password change, sign out everywhere) revokes all of them. User
   rows are cached for 60 s; call `invalidateUserCache(id)` after changing anything
-  auth-relevant.
+  auth-relevant, and `dropUser(id)` (`services/party.js`) when the change revokes or narrows
+  the account, so its open watch-party streams end. The party service also re-checks every
+  open stream's account every 30 s (expiry, `token_version`, the API key, network rules, the
+  title), for changes that raise no event.
 - **Media JWT** (`typ: 'media'`) is only accepted as `?token=` on `/api/media/*`, and a
   session JWT is never accepted in a URL.
 - **API keys**: `userForApiKey`, `userForApiKeyId` (the Komga cookie), and
-  `userForApiKeyMd5` (KOReader) all resolve to the same user shape.
+  `userForApiKeyMd5` (KOReader, matched on `kosyncKeyHash` of the MD5 it sends) all
+  resolve to the same user shape.
 
 ## Errors
 

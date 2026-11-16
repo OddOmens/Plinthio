@@ -22,6 +22,14 @@ function clip(value, max) {
   return String(value).slice(0, max);
 }
 
+// Short one-line fields (title, author...) have no use for control characters; a line
+// break in a title would otherwise reach the server log and the review queue as is.
+function clipLine(value, max) {
+  const text = clip(value, max);
+  if (text === null) return null;
+  return text.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]+/g, ' ').trim() || null;
+}
+
 // Requests are listed newest-first. Everyone sees their own; admins and editors can pass
 // scope=all to see every user's requests (the review queue).
 router.get('/', handle(async (req, res) => {
@@ -67,7 +75,8 @@ router.get('/pending-count', requireEditor, handle(async (req, res) => {
 }));
 
 router.post('/', handle(async (req, res) => {
-  const { mediaType, source, externalId, title } = req.body;
+  const { mediaType, source, externalId } = req.body;
+  const title = clipLine(req.body.title, 300);
 
   if (!mediaType || !source || !externalId || !title) {
     return res.status(400).json({ error: 'mediaType, source, externalId and title are required' });
@@ -103,12 +112,12 @@ router.post('/', handle(async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
     id, req.user.id, mediaType, clip(source, 40), clip(externalId, 200),
-    clip(title, 300), clip(req.body.subtitle, 300), clip(req.body.author, 300),
-    clip(req.body.releaseDate, 40), clip(req.body.overview, 4000), clip(coverUrl, 1000),
+    title, clipLine(req.body.subtitle, 300), clipLine(req.body.author, 300),
+    clipLine(req.body.releaseDate, 40), clip(req.body.overview, 4000), clip(coverUrl, 1000),
     clip(req.body.note?.trim(), 1000)
   ]);
 
-  logger.info('media', `${req.user.username} requested "${clip(title, 300)}" (${mediaType})`);
+  logger.info('media', `${req.user.username} requested "${title}" (${mediaType})`);
   const request = await db.get('SELECT * FROM media_requests WHERE id = ?', [id]);
   res.status(201).json({ message: 'Request sent', request });
 }));

@@ -27,8 +27,9 @@
     "allowOutside": "Allow outside access"
   },
   "proxy": {
-    "title": "A proxy is in front of Plinthio, but TRUST_PROXY isn't set",
-    "text": "Plinthio can't tell where visitors really come from, so everyone arriving through the proxy ({from}) is treated as away from home. The Tailscale and public-address add-ons set it for you. For another proxy, see docs/remote-access.md.",
+    "title": "Requests with proxy headers arrived, but TRUST_PROXY isn't set",
+    "titleNotCovered": "Requests with proxy headers came from an address TRUST_PROXY doesn't cover",
+    "text": "Requests with forwarding headers (X-Forwarded-For, Forwarded or X-Real-IP) arrived from {from}, so Plinthio treats them as away from home. Any device on your network can send these headers, so don't copy this address: TRUST_PROXY must only ever name a reverse proxy you run, at the address you know it uses. Use the one shown here only to cross-check. The Tailscale and public-address add-ons set it for you. For another proxy, see docs/remote-access.md.",
     "localAddress": "a local address"
   },
   "adminsWithout2fa": {

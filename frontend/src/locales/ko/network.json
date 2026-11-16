@@ -27,8 +27,9 @@
     "allowOutside": "외부 접속 허용"
   },
   "proxy": {
-    "title": "Plinthio 앞에 프록시가 있지만 TRUST_PROXY가 설정되지 않았어요",
-    "text": "Plinthio가 방문자가 실제로 어디에서 오는지 알 수 없어서, 프록시({from})를 거쳐 오는 모든 접속을 집 밖에서 온 것으로 처리해요. Tailscale 애드온과 공개 주소 애드온은 이 값을 자동으로 설정해요. 다른 프록시는 docs/remote-access.md를 참고하세요.",
+    "title": "프록시 헤더가 있는 요청이 들어왔지만 TRUST_PROXY가 설정되지 않았어요",
+    "titleNotCovered": "TRUST_PROXY에 포함되지 않은 주소에서 프록시 헤더가 있는 요청이 들어왔어요",
+    "text": "전달 헤더(X-Forwarded-For, Forwarded 또는 X-Real-IP)가 있는 요청이 {from}에서 들어와서, Plinthio가 이 요청들을 집 밖에서 온 것으로 처리해요. 네트워크의 어떤 기기든 이 헤더를 보낼 수 있으니 이 주소를 그대로 쓰지 마세요. TRUST_PROXY에는 직접 운영하는 리버스 프록시만, 그 프록시가 쓰는 것으로 알고 있는 주소로 지정해야 해요. 여기 표시된 주소는 확인용으로만 쓰세요. Tailscale 애드온과 공개 주소 애드온은 이 값을 자동으로 설정해요. 다른 프록시는 docs/remote-access.md를 참고하세요.",
     "localAddress": "로컬 주소"
   },
   "adminsWithout2fa": {

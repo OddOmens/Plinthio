@@ -3,6 +3,7 @@ import path from 'path';
 import sharp from 'sharp';
 import { config } from '../config/env.js';
 import { getDb } from '../config/database.js';
+import { oneLine } from './logger.js';
 
 // The widths /api/media/cover will build (anything else snaps to 360), so a client can't make
 // the server cache a new variant per request. 1280 is for big cards and banners (a 900px-wide
@@ -66,7 +67,7 @@ export async function getOrCreateThumbnail(itemId, coverFilename, width = 360, q
     if (fs.existsSync(tempPath)) {
       try { fs.unlinkSync(tempPath); } catch (e) {}
     }
-    console.warn(`[Thumbnails] Failed to generate thumbnail for ${itemId}: ${err.message}`);
+    console.warn(`[Thumbnails] Failed to generate thumbnail for ${itemId}: ${oneLine(err.message)}`);
     // Fall back to original cover path
     return coverFullPath;
   }
@@ -113,6 +114,6 @@ export async function warmThumbnailCache(concurrency = 3) {
 
     console.log(`[Thumbnails] Cache warmed successfully! Generated ${completed} thumbnails.`);
   } catch (err) {
-    console.warn(`[Thumbnails] Cache warming failed: ${err.message}`);
+    console.warn(`[Thumbnails] Cache warming failed: ${oneLine(err.message)}`);
   }
 }

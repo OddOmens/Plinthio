@@ -95,7 +95,9 @@
       <div class="flex flex-col divide-y divide-border border-y border-border">
         <div class="py-3"><ToggleRow v-model="edit.remoteAccess" :label="$t('admin.users.remote.label')" :icon="Globe" :description="$t('admin.users.remote.desc')" /></div>
         <div v-if="!edit.isSelf && edit.role !== 'admin'" class="py-3"><ToggleRow v-model="edit.kidsMode" :label="$t('admin.users.kidsAccount.label')" :icon="Baby" :description="$t('admin.users.kidsAccount.desc')" /></div>
-        <div v-if="edit.twoFactor" class="py-3 flex items-start justify-between gap-3">
+        <!-- Your own two-factor and password change in Settings, which ask for the password
+             and a code; the server refuses these resets for your own account. -->
+        <div v-if="edit.twoFactor && !edit.isSelf" class="py-3 flex items-start justify-between gap-3">
           <span>
             <span class="text-xs font-semibold text-foreground flex items-center gap-1.5"><ShieldCheck class="w-3.5 h-3.5 text-emerald-500" /> {{ $t('admin.users.twoFactorOn') }}</span>
             <span class="block text-[12px] text-muted-foreground mt-0.5">{{ $t('admin.users.twoFactorHelp') }}</span>
@@ -119,7 +121,7 @@
         <p class="field-hint">{{ $t('admin.users.ratingsHint') }}</p>
       </div>
 
-      <div>
+      <div v-if="!edit.isSelf">
         <label for="edit-password" class="field-label flex items-center gap-1.5"><KeyRound class="w-3.5 h-3.5 text-muted-foreground" /> {{ $t('admin.users.newPassword') }}</label>
         <input id="edit-password" v-model="edit.newPassword" type="password" autocomplete="new-password" minlength="8" :placeholder="$t('admin.users.newPasswordPlaceholder')" class="field" />
         <p class="field-hint">{{ $t('admin.users.newPasswordHint') }}</p>
@@ -311,7 +313,10 @@ async function submitEditUser() {
   }
   saving.value = true;
   try {
-    if (!e.isSelf && e.role !== u.role) {
+    // Becoming an editor goes last, after Kids Mode or a content limit is lifted (the server
+    // refuses an editor with either); any other role change goes first, before one is set.
+    const roleChange = !e.isSelf && e.role !== u.role;
+    if (roleChange && e.role !== 'editor') {
       await api.patch(`/users/${u.id}/role`, { role: e.role });
     }
     const updates = {};
@@ -324,7 +329,10 @@ async function submitEditUser() {
     if (e.remoteAccess !== (u.remote_access !== 0)) updates.remoteAccess = e.remoteAccess;
     if (e.duration !== 'unchanged') updates.duration = e.duration === 'custom' ? e.customExpiry : e.duration;
     if (Object.keys(updates).length) await api.patch(`/users/${u.id}`, updates);
-    if (e.newPassword) await api.patch(`/users/${u.id}/password`, { newPassword: e.newPassword });
+    if (roleChange && e.role === 'editor') {
+      await api.patch(`/users/${u.id}/role`, { role: e.role });
+    }
+    if (e.newPassword && !e.isSelf) await api.patch(`/users/${u.id}/password`, { newPassword: e.newPassword });
     // Closed meanwhile, and maybe someone else opened: leave that one be.
     if (edit.value === e) edit.value = null;
     emit('changed');

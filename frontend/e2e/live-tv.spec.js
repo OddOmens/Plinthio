@@ -113,7 +113,11 @@ test('Live TV for viewers: a line-up tab, a favourite, and the Live now row on H
     await expect(page.getByText('Fixture Shop')).toHaveCount(0);
 
     // Star it: a Favourites tab appears, and Home shows it under Live now.
+    // The tab appears before the save finishes; wait for the save so leaving the page
+    // doesn't cancel it.
+    const saved = page.waitForResponse((r) => r.request().method() === 'POST' && r.url().includes('/api/live/favourites/') && r.ok());
     await page.getByRole('button', { name: 'Add Fixture News to favourites' }).first().click();
+    await saved;
     await expect(page.getByRole('tab', { name: 'Favourites' })).toBeVisible();
     await page.goto('/');
     const row = page.getByRole('region', { name: 'Live now' });

@@ -5,7 +5,7 @@ import path from 'path';
 import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin, requireEditor } from '../middleware/auth.js';
 import { scanLibrary } from '../services/scanner.js';
-import { logger } from '../services/logger.js';
+import { logger, oneLine, oneLineError } from '../services/logger.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { knownSql, isLimitedAccount } from '../services/visibility.js';
@@ -117,7 +117,7 @@ router.post('/', requireAdmin, async (req, res) => {
     logger.info('library', `Library "${name.trim()}" (${type}) created by admin ${req.user.username}`, { libraryId: id, path: resolvedPath });
 
     // Auto-trigger initial scan in background
-    scanLibrary(id).catch(err => console.error(`Error in initial scan for ${name}:`, err));
+    scanLibrary(id).catch(err => console.error(`Error in initial scan for ${oneLine(name)}:`, oneLineError(err)));
 
     res.json({
       message: 'Library created and scanning started',
