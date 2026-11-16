@@ -6,10 +6,10 @@ import { getDb } from '../config/database.js';
 import { config } from '../config/env.js';
 import {
   authenticateToken, invalidateUserCache, requireSession, signMediaToken, signSessionToken,
-  FailureLock, confirmLock, checkOwnPassword, noteConfirmFailure, sendConfirmProblem
+  FailureLock, confirmLock, checkOwnPassword, sendConfirmProblem
 } from '../middleware/auth.js';
 import { scanLibrary } from '../services/scanner.js';
-import { logger } from '../services/logger.js';
+import { logger, oneLineError } from '../services/logger.js';
 import { LIBRARY_TYPES, resolveLibraryPath, listMediaDirectories } from './libraries.js';
 import { ALL_MEDIA_TYPES } from '../config/mediaTypes.js';
 import { handle, serverError } from '../utils/http.js';
@@ -22,6 +22,7 @@ import {
   recoveryCodesLeft, createChallenge, takeChallengeAttempt, endChallenge
 } from '../services/twoFactor.js';
 import { getSetting, setSetting } from '../services/settings.js';
+import { dropUser as dropPartyMember } from '../services/party.js';
 
 const router = express.Router();
 const VALID_ROLES = ['admin', 'editor', 'viewer'];
@@ -36,7 +37,7 @@ router.get('/setup-status', async (req, res) => {
   } catch (err) {
     // These auth routes are reachable without a token, so the raw error (SQL text, file
     // paths) must stay server-side — it's in the container logs, not the HTTP response.
-    console.error('[auth] setup-status failed:', err);
+    console.error('[auth] setup-status failed:', oneLineError(err));
     res.status(500).json({ error: 'Could not read server setup status' });
   }
 });
@@ -254,7 +255,7 @@ router.post('/setup', async (req, res) => {
     if (inTransaction) {
       await db.run('ROLLBACK').catch(() => {});
     }
-    console.error('[auth] setup failed:', err);
+    console.error('[auth] setup failed:', oneLineError(err));
     res.status(500).json({ error: 'Server setup failed. Check the server logs for details.' });
   } finally {
     setupInFlight = false;
@@ -449,7 +450,7 @@ router.post('/login', async (req, res) => {
 
     await issueSession(req, res, db, user, loc.where);
   } catch (err) {
-    console.error('[auth] login failed:', err);
+    console.error('[auth] login failed:', oneLineError(err));
     res.status(500).json({ error: 'Login failed. Check the server logs for details.' });
   }
 });
@@ -528,7 +529,7 @@ router.post('/login/2fa', async (req, res) => {
     endChallenge(challenge);
     await issueSession(req, res, db, user, loc.where);
   } catch (err) {
-    console.error('[auth] two-factor sign-in failed:', err);
+    console.error('[auth] two-factor sign-in failed:', oneLineError(err));
     res.status(500).json({ error: 'Sign-in failed. Check the server logs for details.' });
   }
 });
@@ -553,7 +554,7 @@ async function recordLoginAttempt(db, { userId, username, success, ip, userAgent
     );
   } catch (err) {
     // Never let sign-in tracking break the actual login flow
-    console.error('[auth] failed to record login history:', err);
+    console.error('[auth] failed to record login history:', oneLineError(err));
   }
 }
 
@@ -592,6 +593,7 @@ router.post('/sign-out-everywhere', authenticateToken, requireSession, handle(as
   );
   const keys = await db.run('DELETE FROM api_keys WHERE user_id = ?', [req.user.id]);
   invalidateUserCache(req.user.id);
+  dropPartyMember(req.user.id);
   logger.info('auth', `"${req.user.username}" signed out all sessions${keys.changes ? ` and revoked ${keys.changes} API key${keys.changes === 1 ? '' : 's'}` : ''}`, { ip: req.ip });
   res.json({ message: 'All sessions signed out. Please sign in again.', apiKeysRevoked: keys.changes || 0 });
 }));
@@ -629,31 +631,62 @@ router.post('/2fa/setup', authenticateToken, sessionOnly, handle(async (req, res
   const problem = await checkOwnPassword(db, req, req.body?.password, 'turning on two-factor');
   if (problem) return sendConfirmProblem(req, res, problem);
   const secret = newSecret();
-  await db.run('UPDATE users SET totp_pending = ? WHERE id = ?', [sealSecret(secret), req.user.id]);
+  await db.run('UPDATE users SET totp_pending = ?, totp_pending_at = ? WHERE id = ?',
+    [sealSecret(secret), new Date().toISOString(), req.user.id]);
   const name = (await getSetting(db, 'server_name'))?.trim() || 'Plinthio';
   res.json({ secret, uri: otpauthUri(secret, { issuer: name, account: req.user.username }) });
 }));
+
+// Wrong two-factor answers in a signed-in confirmation (turning two-factor on or off, new
+// backup codes), per account. Kept apart from confirmLock (wrong passwords): a right password,
+// here or when making an API key, clears that one and must not also forget the wrong codes.
+// Only a right code or backup code clears this one. Signing in has its own lock (codeLock),
+// so a stolen session can't use this to hold the owner out of signing in.
+const confirmCodeLock = new FailureLock();
+
+function confirmHeld(userId) {
+  return confirmLock.heldFor(userId) || confirmCodeLock.heldFor(userId);
+}
+
+function noteConfirmCodeFailure(req, did) {
+  const result = confirmCodeLock.fail(req.user.id);
+  logger.warn('auth', result.held
+    ? `"${req.user.username}" ${did}, ${result.count} times running: two-factor confirmations for this account are held for ${result.minutes} minutes`
+    : `"${req.user.username}" ${did}`, { ip: req.ip });
+}
+
+// A secret being set up has to be confirmed within this long, so a pending one doesn't sit
+// there for ever waiting to be guessed.
+const PENDING_SECRET_MS = 15 * 60 * 1000;
 
 // Step 2: a code from the app proves it's set up; two-factor goes on and the backup codes
 // are shown, once.
 router.post('/2fa/enable', authenticateToken, sessionOnly, handle(async (req, res) => {
   const db = await getDb();
-  const row = await db.get('SELECT totp_pending, totp_enabled_at FROM users WHERE id = ?', [req.user.id]);
+  const row = await db.get('SELECT totp_pending, totp_pending_at, totp_enabled_at FROM users WHERE id = ?', [req.user.id]);
   if (row?.totp_enabled_at) return res.status(400).json({ error: 'Two-factor is already on' });
   const secret = openSecret(row?.totp_pending);
   if (!secret) return res.status(400).json({ error: 'Start setting up two-factor first' });
+  const startedAt = row.totp_pending_at ? new Date(row.totp_pending_at).getTime() : NaN;
+  if (!(Date.now() - startedAt < PENDING_SECRET_MS)) {
+    await db.run('UPDATE users SET totp_pending = NULL, totp_pending_at = NULL WHERE id = ?', [req.user.id]);
+    return res.status(400).json({ error: 'Setting up two-factor took too long. Start again' });
+  }
+  // Held after too many wrong answers: right or wrong, this one waits. Checked before the
+  // code, with nothing awaited between here and counting a wrong one, so requests sent side
+  // by side can't all get past the hold.
+  if (confirmHeld(req.user.id)) return sendConfirmProblem(req, res, 'P108');
   const step = verifyTotp(secret, req.body?.code);
   if (step === null) {
-    // Counted like a wrong password in a confirmation, so the code can't be guessed either.
-    if (confirmLock.heldFor(req.user.id)) return sendConfirmProblem(req, res, 'P108');
-    noteConfirmFailure(req, 'gave a wrong code while turning on two-factor');
+    noteConfirmCodeFailure(req, 'gave a wrong code while turning on two-factor');
     return sendError(req, res, 'P111');
   }
+  confirmCodeLock.succeed(req.user.id);
   const { codes, stored } = newRecoveryCodes();
   // Every other session is signed out (one started before two-factor, perhaps by whoever
   // made it necessary, shouldn't outlive it); this device gets a fresh token in the answer.
   await db.run(
-    `UPDATE users SET totp_secret = ?, totp_pending = NULL, totp_enabled_at = CURRENT_TIMESTAMP,
+    `UPDATE users SET totp_secret = ?, totp_pending = NULL, totp_pending_at = NULL, totp_enabled_at = CURRENT_TIMESTAMP,
          totp_last_step = ?, totp_recovery = ?, token_version = token_version + 1 WHERE id = ?`,
     [sealSecret(secret), step, stored, req.user.id]
   );
@@ -666,29 +699,36 @@ router.post('/2fa/enable', authenticateToken, sessionOnly, handle(async (req, re
 
 // Checks the password and a current code (or a backup code), for turning two-factor off or
 // getting new backup codes: someone at an unlocked, signed-in browser can't do either. Wrong
-// answers are counted per account (checkOwnPassword in middleware/auth.js), codes included:
-// after ten in 15 minutes it answers P108 until the hold runs out.
+// answers are counted per account: passwords by checkOwnPassword (middleware/auth.js), codes
+// by confirmCodeLock above. After ten of either in 15 minutes it answers P108 until the hold
+// runs out.
 async function confirmIdentity(db, req, { needCode, what }) {
-  const user = await db.get('SELECT * FROM users WHERE id = ?', [req.user.id]);
   const { password, code, recoveryCode } = req.body || {};
   const problem = await checkOwnPassword(db, req, password, what);
   if (problem) return problem;
+  // Read after the password check, so the code is judged against the current row.
+  const user = await db.get('SELECT * FROM users WHERE id = ?', [req.user.id]);
   if (!needCode || !user.totp_enabled_at) return null;
+  // Nothing is awaited from here until a wrong answer is counted, so requests sent side by
+  // side can't all get past the hold.
+  if (confirmCodeLock.heldFor(req.user.id)) return 'P108';
   if (recoveryCode) {
     const updated = useRecoveryCode(user.totp_recovery, recoveryCode);
     if (!updated) {
-      noteConfirmFailure(req, `gave a wrong backup code while ${what}`);
+      noteConfirmCodeFailure(req, `gave a wrong backup code while ${what}`);
       return 'P111';
     }
+    confirmCodeLock.succeed(req.user.id);
     await db.run('UPDATE users SET totp_recovery = ? WHERE id = ?', [updated, user.id]);
     return null;
   }
   const secret = openSecret(user.totp_secret);
   const step = secret ? verifyTotp(secret, code, { lastStep: user.totp_last_step }) : null;
   if (step === null) {
-    noteConfirmFailure(req, `gave a wrong two-factor code while ${what}`);
+    noteConfirmCodeFailure(req, `gave a wrong two-factor code while ${what}`);
     return 'P111';
   }
+  confirmCodeLock.succeed(req.user.id);
   await db.run('UPDATE users SET totp_last_step = ? WHERE id = ?', [step, user.id]);
   return null;
 }
@@ -698,7 +738,7 @@ router.post('/2fa/disable', authenticateToken, sessionOnly, handle(async (req, r
   const problem = await confirmIdentity(db, req, { needCode: true, what: 'turning off two-factor' });
   if (problem) return sendConfirmProblem(req, res, problem);
   await db.run(
-    'UPDATE users SET totp_secret = NULL, totp_pending = NULL, totp_enabled_at = NULL, totp_last_step = NULL, totp_recovery = NULL WHERE id = ?',
+    'UPDATE users SET totp_secret = NULL, totp_pending = NULL, totp_pending_at = NULL, totp_enabled_at = NULL, totp_last_step = NULL, totp_recovery = NULL WHERE id = ?',
     [req.user.id]
   );
   // The signed-in account is remembered for a minute, including whether it has two-factor.

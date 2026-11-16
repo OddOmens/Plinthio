@@ -16,6 +16,8 @@ export const MAX_PARTIES = 20;
 export const MAX_MEMBERS = 20;
 // Someone stuck buffering longer than this stops holding everyone else up.
 const BUFFER_HOLD_LIMIT_MS = 15000;
+// How often each live connection's account is checked again (see recheckConnections).
+const RECHECK_MS = 30000;
 // A party everyone has left is kept this long, so a refresh or a dropped connection can
 // rejoin the same party.
 const EMPTY_PARTY_GRACE_MS = 60000;
@@ -68,14 +70,18 @@ export function createParty({ host, item }) {
 // ─── Membership and live connections ─────────────────────────────────────────
 // A member can have more than one connection (two tabs); they're in the party while any
 // connection is open.
-export function addConnection(party, user, clientId, send) {
+// `check` (optional) is an async (party) => boolean the route supplies for each connection:
+// whether the sign-in it opened with is still good and the account may still watch. The
+// account is only checked as the stream opens, so recheckConnections asks again now and then.
+export function addConnection(party, user, clientId, send, check = null) {
   let member = party.members.get(user.id);
   if (!member) {
-    // `user` is kept for content-limit checks when the party changes what it's watching.
-    member = { userId: user.id, name: user.username, user, joinedAt: Date.now(), connections: new Map(), bufferingSince: null };
+    member = { userId: user.id, name: user.username, user, joinedAt: Date.now(), connections: new Map(), checks: new Map(), bufferingSince: null };
     party.members.set(user.id, member);
   }
   member.connections.set(clientId, send);
+  if (check) member.checks.set(clientId, check);
+  else member.checks.delete(clientId);
   party.emptySince = null;
   broadcastPresence(party);
 }
@@ -84,6 +90,7 @@ export function removeConnection(party, userId, clientId) {
   const member = party.members.get(userId);
   if (!member) return;
   member.connections.delete(clientId);
+  member.checks.delete(clientId);
   if (member.connections.size > 0) return;
 
   party.members.delete(userId);
@@ -244,6 +251,61 @@ export function endParty(party, reason = 'ended') {
   parties.delete(party.code);
 }
 
+// Ends one connection from the server's side: out of the party first (so host hand-over and
+// presence happen at once), then the stream is closed.
+function closeConnection(party, userId, clientId) {
+  const send = party.members.get(userId)?.connections.get(clientId);
+  if (!send) return false;
+  removeConnection(party, userId, clientId);
+  send(null);
+  return true;
+}
+
+// Ends every party connection an account has, in every party. Called when the account is
+// deleted, signed out, has its password or two-factor reset, or has what it may see or where
+// it may sign in from changed. If the app connects again it goes through the full sign-in
+// and visibility checks, so a revoked account stays out and a restricted one is re-checked.
+// Returns how many connections were closed.
+export function dropUser(userId) {
+  let closed = 0;
+  for (const party of [...parties.values()]) {
+    const member = party.members.get(userId);
+    if (!member) continue;
+    for (const clientId of [...member.connections.keys()]) {
+      if (closeConnection(party, userId, clientId)) closed += 1;
+    }
+  }
+  return closed;
+}
+
+// Asks each connection's check again and closes the ones that fail: covers what raises no
+// event, such as an expiry date passing, a network rule changing, or a change made straight
+// in the database. A check that throws (a database hiccup) keeps the connection for now.
+let rechecking = false;
+export async function recheckConnections() {
+  if (rechecking) return 0;
+  rechecking = true;
+  let closed = 0;
+  try {
+    for (const party of [...parties.values()]) {
+      for (const member of [...party.members.values()]) {
+        for (const [clientId, check] of [...member.checks]) {
+          let ok = true;
+          try {
+            ok = await check(party);
+          } catch {
+            ok = true;
+          }
+          if (!ok && closeConnection(party, member.userId, clientId)) closed += 1;
+        }
+      }
+    }
+  } finally {
+    rechecking = false;
+  }
+  return closed;
+}
+
 // ─── Housekeeping ────────────────────────────────────────────────────────────
 // Drops parties everyone has left, and lets go of anyone stuck buffering.
 export function sweepParties(now = Date.now()) {
@@ -272,8 +334,12 @@ export function endAllParties() {
 }
 
 let sweepTimer = null;
+let recheckTimer = null;
 export function startPartySweeper() {
   if (sweepTimer) return;
   sweepTimer = setInterval(() => sweepParties(), 5000);
   sweepTimer.unref?.();
+  // Slower: it reads the database for every connection.
+  recheckTimer = setInterval(() => { recheckConnections().catch(() => {}); }, RECHECK_MS);
+  recheckTimer.unref?.();
 }

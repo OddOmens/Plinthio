@@ -35,6 +35,8 @@ sees **unrated** titles.
   page URLs, watch parties, OPDS, Mihon and KOReader.
 - **Admin → Health → Unrated** lists titles with no rating, which matters when accounts
   hide unrated titles.
+- An editor account can't have a limit (editors set age ratings, so it could lift its own).
+  Make it a viewer first, or remove the limit before making it an editor.
 
 ## Kids Mode
 
@@ -107,6 +109,8 @@ extends it.
   separately, so someone outside can't keep you from signing in at home.
 - Where Plinthio asks for your password again (changing it, making an API key, turning
   two-factor on or off), ten wrong answers in 15 minutes hold those back for a while (P108).
+  Wrong two-factor codes there (turning two-factor on or off, new backup codes) are counted
+  on their own and only a right code clears them, so a right password doesn't reset them.
   Signing in isn't affected.
 - From outside the home network, a sign-in that's refused because the account is home-only,
   expired, or has no two-factor where that's required gets the same "Invalid username or
@@ -128,7 +132,8 @@ Bitwarden, Aegis, or any other app that does "TOTP".
 
 - **Turning it on:** Settings → Security → Two-factor sign-in (it's also offered at the end
   of onboarding and the setup wizard). Enter your password, scan the QR code or copy the key
-  into the app, then type the code it shows to confirm.
+  into the app, then type the code it shows to confirm. Confirm within 15 minutes, or start
+  again.
 - **Backup codes:** ten one-time codes for a lost phone, shown once when you turn it on.
   Download or copy them somewhere safe. Each one signs you in instead of a code, once. Make
   new ones any time (Settings → Security → New backup codes).
@@ -138,7 +143,9 @@ Bitwarden, Aegis, or any other app that does "TOTP".
   (or a backup code). API keys can't change it.
 - **Locked out?** An admin can reset it: Admin → Users → the account → Two-factor → Reset.
   That signs the account out everywhere; its owner then signs in with just the password and
-  can set two-factor up again.
+  can set two-factor up again. Resetting a password or two-factor there needs a signed-in
+  admin (not an API key) and works only on someone else's account: your own changes in
+  Settings → Security, which asks for your password and a code.
 - A code works once, even within its 30 seconds, and a phone clock a little off still works.
   The secret is stored encrypted with a key derived from the server's JWT secret
   (`/config/jwt.secret`), so changing that secret means everyone sets two-factor up again.
@@ -171,8 +178,11 @@ Made in **Settings → Apps & API keys**. A key acts as its owner, with their ro
   or revoked is noted in Admin → Logs (who and the key's name, never the key).
 - A key can't change the password, make or list keys, change two-factor, or sign the
   account out everywhere.
-- Shown once, when made. The server stores only a SHA-256 hash, plus an MD5 used by
-  KOReader, so a leaked database can't be turned back into working keys.
+- Shown once, when made. The server stores only a SHA-256 hash of the key, plus a SHA-256
+  hash of its MD5 for KOReader (which sends the MD5), so a leaked database can't be turned
+  back into working keys or replayed to KOReader sync. Backups and snapshots made by
+  versions up to 1.10 still hold the plain MD5, so if one of those may have been read by
+  someone else, delete and re-make the KOReader key.
 - Used as `X-API-Key: <key>`, or as the **password** with your username in HTTP Basic sign-in.
   Basic sign-in is how OPDS readers and Mihon connect, so no app ever holds your real
   password.

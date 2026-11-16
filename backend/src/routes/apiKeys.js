@@ -1,7 +1,7 @@
 import express from 'express';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
-import { authenticateToken, requireSession, checkOwnPassword, sendConfirmProblem } from '../middleware/auth.js';
+import { authenticateToken, requireSession, checkOwnPassword, sendConfirmProblem, kosyncKeyHash } from '../middleware/auth.js';
 import { handle, serverError } from '../utils/http.js';
 import { logger } from '../services/logger.js';
 
@@ -55,12 +55,13 @@ router.post('/', async (req, res) => {
 
     // The MD5 is only for KOReader's sync plugin, which hashes the password that way
     // before sending it (routes/kosync.js). The key is 192 random bits, so MD5 is no weaker
-    // here than SHA-256 in practice.
+    // here than SHA-256 in practice. Only a hash of the MD5 is stored, so the stored value
+    // can't be sent back as a kosync sign-in (middleware/auth.js, kosyncKeyHash).
     const keyMd5 = crypto.createHash('md5').update(rawKey).digest('hex');
 
     await db.run(
       'INSERT INTO api_keys (id, user_id, name, key, key_last4, key_md5) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, userId, name.trim(), keyHash, rawKey.slice(-4), keyMd5]
+      [id, userId, name.trim(), keyHash, rawKey.slice(-4), kosyncKeyHash(keyMd5)]
     );
     logger.info('auth', `"${req.user.username}" made an API key named "${name.trim()}"`, { ip: req.ip });
 
