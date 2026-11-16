@@ -1,7 +1,6 @@
 <template>
   <!-- Desktop Sidebar -->
   <aside class="hidden md:flex md:flex-col w-64 flex-shrink-0 h-screen sticky top-0 border-r border-border bg-background/95 backdrop-blur-md transition-colors">
-    <!-- Logo -->
     <router-link to="/" class="flex items-center gap-3 px-4 h-[68px] border-b border-border flex-shrink-0 group">
       <AppLogo class="w-9 h-9 flex-shrink-0" />
       <span class="text-lg font-semibold tracking-tight text-foreground truncate">
@@ -9,7 +8,6 @@
       </span>
     </router-link>
 
-    <!-- Search -->
     <div class="p-3 border-b border-border">
       <div class="relative">
         <Search class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />

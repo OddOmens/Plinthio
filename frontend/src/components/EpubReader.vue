@@ -6,7 +6,6 @@
     class="fixed inset-0 z-50 bg-background text-foreground select-none"
     :style="themeStyle"
   >
-    <!-- Top bar -->
     <header
       class="absolute top-0 inset-x-0 z-30 h-[calc(3.25rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] flex items-center gap-1 bg-background border-b border-border transition-opacity duration-200"
       :class="chromeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'"
@@ -38,7 +37,6 @@
       </button>
     </header>
 
-    <!-- The page -->
     <div
       class="absolute inset-x-0 top-[calc(3.25rem+env(safe-area-inset-top))] bottom-[calc(2rem+env(safe-area-inset-bottom))]"
     >
@@ -157,7 +155,6 @@
       </button>
     </div>
 
-    <!-- Copied toast -->
     <Transition enter-active-class="transition duration-150" enter-from-class="opacity-0" leave-active-class="transition duration-300" leave-to-class="opacity-0">
       <div v-if="toast" class="fixed z-[80] left-1/2 -translate-x-1/2 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] px-3 py-1.5 rounded-lg bg-foreground text-background text-xs font-medium shadow-lg" role="status">
         {{ toast }}
@@ -759,10 +756,9 @@ function hasSelection(contents) {
   return !!sel && !sel.isCollapsed;
 }
 
-// Taps arrive from inside the book's frame; positions are converted to the screen so the
-// left and right quarters of the page turn back and forward, and the middle shows or
-// hides the bars. This replaced invisible tap strips over the page, which blocked
-// selecting text near the edges.
+// Taps arrive from inside the book's frame and are converted to screen positions: the left
+// and right quarters turn pages, the middle shows or hides the bars. Unlike overlay tap strips,
+// this keeps text near the edges selectable.
 function handleTap(clientX, target, contents) {
   if (Date.now() - lastMarkClick < 500) return;
   if (target?.closest?.('a')) return;

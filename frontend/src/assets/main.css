@@ -129,11 +129,8 @@
   background: hsl(var(--muted-foreground));
 }
 
-/* iOS Safe Areas
-   Kept in the components layer so they sort *before* Tailwind utilities: declared after
-   them, a safe-area class beat `px-4` on equal specificity and zeroed the padding on every
-   device without a notch. Where an element needs both a base padding and inset clearance,
-   use an arbitrary value instead, e.g. `pl-[max(1rem,env(safe-area-inset-left))]`. */
+/* iOS safe areas. In the components layer so utilities like `px-4` win on equal specificity.
+   For base padding plus inset, use e.g. `pl-[max(1rem,env(safe-area-inset-left))]`. */
 @layer components {
   .safe-top {
     padding-top: env(safe-area-inset-top, 0px);
@@ -143,11 +140,8 @@
   }
 }
 
-/* Zoom: pinch-zoom is allowed site-wide (blocking it fails WCAG 1.4.4 and locks out anyone
-   who needs to enlarge text). Two things kept it disabled before, handled here instead:
-   - double-tap zoom on app chrome — `manipulation` keeps pinch but drops double-tap;
-   - iOS auto-zooming into any input under 16px — so on touch screens, inputs never are.
-   The paged manga reader has its own pinch/pan (its gesture layer is touch-action: none). */
+/* Pinch-zoom stays allowed (WCAG 1.4.4). `manipulation` drops double-tap zoom, and touch
+   inputs are at least 16px so iOS doesn't auto-zoom into them. */
 html {
   touch-action: manipulation;
 }
@@ -160,17 +154,14 @@ html {
   }
 }
 
-/* Page width, a per-user choice (Settings → Preferences → Page Width, stores/auth.js puts
-   the class on <html>): full width by default, or contained to 1440px, centred. Every page's
-   header and content use .page-width so they line up. */
+/* Page width: full by default, or 1440px centred when <html> has .page-contained. */
 @layer components {
   .page-width { max-width: none; }
   html.page-contained .page-width { max-width: 1440px; }
 }
 
-/* Title page on a wide full-width page: a bigger poster that rises into the backdrop banner,
-   and everything below lines up in one column beside it (views/TitleView.vue). Contained
-   pages and smaller screens keep the stacked layout. 2rem page padding + poster + 2.5rem gap. */
+/* Title page, wide and full-width: a bigger poster rising into the banner, content in one
+   column beside it. Indent = 2rem page padding + poster + 2.5rem gap. */
 @media (min-width: 1280px) {
   html:not(.page-contained) .title-poster { width: 22rem; }
   html:not(.page-contained) .title-poster.has-banner { margin-top: -13rem; }
@@ -183,10 +174,8 @@ html {
 .art-offloaded { opacity: 0.5; filter: saturate(0.8); }
 .art-not-owned { opacity: 0.5; filter: grayscale(1); }
 
-/* Poster grids (shelf, continue rows, a series' volumes/episodes). One definition so every
-   media view sizes its covers the same way — two columns on a phone, five on a laptop. At
-   full width, big screens add columns instead of blowing posters up (about 200px wide each,
-   nine across at 1920px). */
+/* Poster grids, shared by every media view. At full width big screens add columns rather
+   than enlarging posters (about 200px each). */
 @layer components {
   .poster-grid {
     @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5;
@@ -215,8 +204,7 @@ html {
   }
 }
 
-/* Settings and Admin (components/settings, components/admin): one look for every field and
-   button, so each screen doesn't spell out the same dozen utilities. */
+/* Shared field and button styles for Settings and Admin. */
 @layer components {
   .field {
     @apply w-full h-9 bg-background border border-border rounded-lg px-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring disabled:opacity-50 transition;
@@ -253,8 +241,8 @@ html {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
-/* `backwards`, not `both`: an animation still holding its last frame keeps the section a
-   stacking context, so a card menu in one row was painted under the next row's cards. */
+/* `backwards`, not `both`: holding the last frame keeps a stacking context, which would paint
+   a card menu under the next row's cards. */
 .shelf-fade-in { animation: shelf-fade-in 220ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
 @media (prefers-reduced-motion: reduce) {
   .shelf-fade-in { animation: none; }
@@ -269,16 +257,12 @@ html {
   .sheet-enter-active .sheet-panel, .sheet-leave-active .sheet-panel { transition: none; }
 }
 
-/* Form fields on phones. iOS zooms the whole page into any text field under 16px the
-   moment it's tapped (the shelf search, every settings field), and doesn't zoom back
-   out — so on narrow screens they're all 16px, whatever their utility class says.
-   min-width: 0 lets a field shrink inside a flex row instead of pushing out of its box. */
+/* iOS zooms into any field under 16px and doesn't zoom back, so phone fields are 16px.
+   min-width: 0 lets a field shrink inside a flex row. */
 input, select, textarea { min-width: 0; }
 
-/* A <select>'s open list takes its colours from the select. One with a see-through tint
-   (a shelf filter that's set) can't have that drawn behind the list, so the browser falls
-   back to a white list, under the dark theme's white text. The options carry the theme's
-   own solid colours instead. */
+/* A select with a translucent background gets a white option list from the browser, under
+   white dark-theme text, so options carry solid theme colours. */
 select option,
 select optgroup {
   background-color: hsl(var(--popover));

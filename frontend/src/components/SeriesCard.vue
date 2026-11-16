@@ -21,7 +21,6 @@
         style="transform: translate(2px, -2px) rotate(1deg); z-index: 2"
       />
 
-      <!-- Main Cover -->
       <div
         class="absolute inset-0 rounded-lg overflow-hidden bg-muted/40 border border-border/60"
         style="z-index: 3"
@@ -87,7 +86,6 @@
       </div>
     </div>
 
-    <!-- Info -->
     <div class="mt-2.5 px-1 flex flex-col flex-1">
       <h3
         class="text-sm font-semibold text-foreground truncate leading-snug"

@@ -3,13 +3,9 @@ import { getMediaToken } from '../utils/mediaToken';
 import { coverUrl } from '../utils/cover';
 import { t } from '../i18n';
 
-// Offline downloads. Files are written into the service worker's 'plinthio-offline' cache
-// under token-free keys (see public/sw.js offlineKey), which the worker then serves when
-// the network isn't there. The list of what's downloaded — including each item's row, so
-// the Downloads page can render and open it with no API — lives in localStorage.
-//
-// Video is intentionally not offered: files run to several GB, past what browsers will
-// reliably grant a web app, and most need transcoding the server does on the fly.
+// Offline downloads: files go into the worker's 'plinthio-offline' cache under token-free keys
+// (public/sw.js offlineKey); the list, with each item's row, lives in localStorage.
+// No video: files run to several GB and most need on-the-fly transcoding.
 
 const OFFLINE_CACHE = 'plinthio-offline';
 const MANIFEST_KEY = 'plinthio_downloads';
@@ -29,7 +25,7 @@ function saveManifest(entries) {
   try {
     localStorage.setItem(MANIFEST_KEY, JSON.stringify(entries));
   } catch (e) {
-    // Quota or private mode — the files are cached regardless; the list just won't persist.
+    // Quota or private mode: the files are cached, the list just won't persist.
   }
 }
 
@@ -37,7 +33,7 @@ function notifyWorker() {
   try {
     navigator.serviceWorker?.controller?.postMessage({ type: 'offline-changed' });
   } catch (e) {
-    // No worker controlling the page yet — it rebuilds its index on next start anyway.
+    // No controlling worker yet; it rebuilds its index on start.
   }
 }
 
@@ -55,8 +51,7 @@ export function downloadKind(item) {
   if (item.media_type === 'audiobook') return 'audio';
   if (item.media_type === 'manga') return 'pages';
   if (item.media_type === 'book') {
-    // Comic archives shelved as books, and PDFs (rendered to page images on the server),
-    // read page-by-page.
+    // Comic archives and PDFs (rendered to images server-side) read page-by-page.
     return ['cbz', 'cbr', 'cb7', 'zip', 'rar', '7z', 'pdf'].includes((item.format || '').toLowerCase()) ? 'pages' : 'file';
   }
   return null;
@@ -79,8 +74,7 @@ export const useDownloadsStore = defineStore('downloads', {
 
   getters: {
     supported: () => typeof window !== 'undefined' && 'caches' in window && 'serviceWorker' in navigator,
-    // Browsers hide Cache Storage and service workers on plain http:// (anything but
-    // localhost), so downloads are unavailable there for a reason the user can fix.
+    // Cache Storage and service workers need a secure context (HTTPS or localhost).
     needsHttps: () => typeof window !== 'undefined' && window.isSecureContext === false,
     list: (state) => Object.values(state.entries).sort((a, b) => (b.downloadedAt || '').localeCompare(a.downloadedAt || '')),
     totalBytes: (state) => Object.values(state.entries).reduce((sum, e) => sum + (e.bytes || 0), 0)
@@ -109,8 +103,7 @@ export const useDownloadsStore = defineStore('downloads', {
       }
     },
 
-    // Fetches `path` with the media token and writes it to the offline cache, streaming the
-    // body through a counter instead of buffering it — an audiobook can be hundreds of MB.
+    // Streams through a counter instead of buffering: an audiobook can be hundreds of MB.
     async putMedia(cache, id, path, params = {}, signal) {
       const url = new URL(path, window.location.origin);
       url.searchParams.set('token', getMediaToken());
@@ -135,8 +128,7 @@ export const useDownloadsStore = defineStore('downloads', {
       return parseInt(res.headers.get('content-length') || '0', 10);
     },
 
-    // Small JSON the readers ask for on open (page count, chapters, reading direction,
-    // bookmarks). Uses the session token in a header like the app's own API calls.
+    // Small JSON the readers fetch on open (pages, chapters, settings, bookmarks).
     async putJson(cache, path, signal) {
       const token = localStorage.getItem('plinthio_token');
       const res = await fetch(path, { signal, headers: token ? { Authorization: `Bearer ${token}` } : {} });
@@ -150,16 +142,14 @@ export const useDownloadsStore = defineStore('downloads', {
 
       const controller = new AbortController();
       this.active[item.id] = { title: item.title, received: 0, total: item.file_size || 0, done: false, error: null, controller };
-      // Ask the browser not to evict this under storage pressure (best-effort; Chrome
-      // grants it to installed PWAs, Safari decides for itself).
+      // Best-effort request not to evict under storage pressure.
       navigator.storage?.persist?.().catch(() => {});
 
       const { signal } = controller;
       const id = item.id;
 
       try {
-        // Inside the try: a browser that refuses the cache (private mode) must end in the
-        // error state, not a download stuck at "in progress" that can't be started again.
+        // Inside the try so a refused cache (private mode) ends in the error state, not stuck.
         const cache = await caches.open(OFFLINE_CACHE);
         for (const width of COVER_WIDTHS) {
           const url = new URL(coverUrl(item, { width }), window.location.origin);
@@ -247,8 +237,7 @@ export const useDownloadsStore = defineStore('downloads', {
       this.refreshUsage();
     },
 
-    // Keep the stored row's progress roughly current, so reopening offline resumes near
-    // where the reader actually was.
+    // So reopening offline resumes near where the reader was.
     updateStoredProgress(id, patch) {
       if (!this.entries[id]) return;
       this.entries[id].item = { ...this.entries[id].item, ...patch };

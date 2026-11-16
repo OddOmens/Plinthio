@@ -1,7 +1,6 @@
 <template>
   <div class="login-root relative min-h-screen bg-background text-foreground overflow-hidden safe-top safe-bottom transition-colors">
-    <!-- Backdrop: a few soft glows in the logo's colours drifting very slowly, with a faint
-         grain. Decorative only: no API, nothing from the library. -->
+    <!-- Decorative backdrop: slow-drifting glows and grain. -->
     <div class="absolute inset-0 pointer-events-none select-none" aria-hidden="true">
       <div class="aura aura-a"></div>
       <div class="aura aura-b"></div>
@@ -127,13 +126,11 @@
           </div>
           <p v-if="!isSetup" class="mb-4 text-xs text-muted-foreground">{{ $t('auth.passwordHint') }}</p>
 
-          <!-- Error Alert -->
           <div v-if="error" class="mb-4 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
             <AlertCircle class="w-4 h-4 flex-shrink-0" />
             <span>{{ error }}</span>
           </div>
 
-          <!-- Form -->
           <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
             <div>
               <label for="login-username" class="block text-xs font-medium text-foreground mb-1.5">{{ $t('common.username') }}</label>
@@ -334,8 +331,7 @@ function cancelChallenge() {
 </script>
 
 <style scoped>
-/* Three large, heavily blurred glows in the logo's steel blue and a violet, drifting over a
-   minute or so. Stronger in dark mode, where they read as light; softer in light mode. */
+/* Large blurred glows in the logo's colours, drifting over a minute or so. */
 .aura {
   position: absolute;
   border-radius: 9999px;

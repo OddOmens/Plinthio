@@ -1,6 +1,4 @@
-// A local stand-in cover (one letter on a dark card), rendered as an inline SVG data URL.
-// These used to come from placehold.co, which leaked every series name on the shelf to a
-// third party and broke offline.
+// A stand-in cover as an inline SVG data URL: local, so no title goes to a third party.
 export function placeholderCover(text = '?', { width = 200, height = 300 } = {}) {
   const label = String(text || '?').slice(0, 12)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

@@ -12,7 +12,6 @@
           role="dialog"
           aria-modal="true"
         >
-          <!-- Top Icon & Header -->
           <div class="flex items-start gap-3.5">
             <div
               :class="[
@@ -47,7 +46,6 @@
             </button>
           </div>
 
-          <!-- Buttons Action Row -->
           <div class="mt-6 flex items-center justify-end gap-2.5">
             <button
               v-if="dialog.showCancel"

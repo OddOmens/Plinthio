@@ -1,14 +1,7 @@
-// Plinthio's translations. Strings live in src/locales/<language>/<namespace>.json and are
-// looked up as t('namespace.key.path'). English ships in the main bundle and is the
-// fallback for anything a translation hasn't caught up with yet; the other languages load
-// on demand, so nobody downloads five languages they never read.
-//
-// Messages use {name} placeholders. A message that depends on a number is an object keyed
-// by plural category ({ "one": "{count} episode", "other": "{count} episodes" }), picked
-// with Intl.PluralRules from params.count — Japanese and Korean only need "other".
-//
-// Hand-rolled rather than vue-i18n: it's a few dozen lines, and the Content-Security-Policy
-// forbids the eval that vue-i18n's runtime message compiler can fall back on.
+// Translations: src/locales/<language>/<namespace>.json, looked up as t('namespace.key').
+// English is bundled and the fallback; other languages load on demand.
+// Plurals are objects keyed by Intl.PluralRules category, picked from params.count.
+// Hand-rolled because the CSP forbids the eval vue-i18n's message compiler can use.
 import { ref, shallowRef } from 'vue';
 
 // Matched on the browser's base language, so pt-PT gets Brazilian Portuguese and zh-TW gets

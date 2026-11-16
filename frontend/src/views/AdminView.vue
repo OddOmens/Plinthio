@@ -80,8 +80,7 @@ const groups = computed(() => [
   { label: t('admin.nav.groups.system'), items: [item('logs', ScrollText)] }
 ]);
 
-// Tab names from before the redesign, still in links and docs. Server Config was split
-// into Appearance, Features, Playback and Backups; it opens on the first.
+// Legacy tab names still used in links and docs.
 const aliases = { stats: 'overview', settings: 'appearance', config: 'appearance' };
 
 const libraries = ref([]);

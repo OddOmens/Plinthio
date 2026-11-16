@@ -1,7 +1,5 @@
-// The look-and-feel choices, shared by Admin → Appearance (the server's defaults) and
-// Settings → Appearance (a person's own), so both show the same options the same way.
-// `swatch`, `diagram` and `icon` are how OptionTiles draws each one. Labels are getters so
-// they follow the current language (spreading an option copies today's wording).
+// Look-and-feel options shared by Admin and Settings → Appearance. `swatch`, `diagram` and
+// `icon` are how OptionTiles draws each. Labels are getters so they follow the language.
 import { StretchHorizontal, RectangleHorizontal } from '@lucide/vue';
 import { t } from '../i18n';
 

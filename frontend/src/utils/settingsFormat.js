@@ -1,9 +1,7 @@
 import { Headphones, FileImage, Book, Film, Tv, Sparkles } from '@lucide/vue';
 import { t, d, n } from '../i18n';
 
-// Shared by the Settings and Admin sections: how a media type is named and drawn, and how
-// dates, sizes and durations read. Labels are getters so they follow the current language
-// (spreading an entry copies today's wording).
+// Media type labels/icons and date, size and duration formatting for Settings and Admin.
 
 const mediaType = (id, icon) => ({
   icon,

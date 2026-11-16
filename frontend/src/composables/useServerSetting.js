@@ -1,15 +1,13 @@
 import { useCustomizationStore } from '../stores/customization';
 import { useSaveStatus } from './useSaveStatus';
 
-// Admin settings kept in the customization store (look and feel, features): shown changed
-// straight away, saved, and put back if the save fails. `set({ ratings: { showExternal:
-// false } })` changes just that one, like the server does.
+// Optimistic save of admin settings in the customization store, reverted on failure.
+// Nested patches change only the given keys, as on the server.
 export function useServerSetting() {
   const store = useCustomizationStore();
   const save = useSaveStatus();
 
-  // What the store has now at just the patch's own paths, so putting it back can't undo
-  // another change made meanwhile to a neighbour (`ratings.showPersonal` vs `ratings.showExternal`).
+  // Snapshot only the patch's own paths, so a revert can't undo a neighbouring change.
   function pick(source, patch) {
     const out = {};
     for (const [key, value] of Object.entries(patch)) {

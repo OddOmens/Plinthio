@@ -180,8 +180,8 @@ const dirty = computed(() => !!savedConfig.value && JSON.stringify(config.value)
 const savedDestination = ref('');
 const lastCopyAt = ref(null);
 const copyError = ref('');
-// A copy of the sign-in key (jwt.secret) is in the saved folder. Earlier versions always put
-// one there; the server never deletes it, so say so while the admin has chosen not to keep one.
+// A copy of the sign-in key (jwt.secret) is in the saved folder. The server never deletes one,
+// so say so while the admin has chosen not to keep it.
 const serverKeyAtSaved = ref(false);
 const staleServerKey = computed(() => {
   if (!config.value.destination || (config.value.copyFiles && config.value.copyServerKey)) return false;

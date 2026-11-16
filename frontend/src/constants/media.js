@@ -1,16 +1,11 @@
-// Every media type Plinthio can index. Used as the fallback whenever a user's stored
-// `enabledMediaTypes` preference is missing — defaulting to "show everything" means adding
-// a library of a new type just works, instead of the content being indexed but invisible
-// because the type wasn't in a hardcoded three-item default.
+// Every indexable media type; the default when a user has no `enabledMediaTypes`, so a new
+// library type shows up without anyone changing settings.
 import { t } from '../i18n';
 
 export const ALL_MEDIA_TYPES = ['audiobook', 'manga', 'book', 'show', 'movie', 'anime'];
 
-// List categories and the media types each one holds. `searchTypes` are the metadata
-// providers' media types the "add from search" panel can query for that category —
-// audiobooks have no dedicated provider, so Listen searches the book providers.
-// Mirrored on the backend in config/mediaTypes.js. Labels are getters so they follow the
-// current language (spreading one copies today's wording).
+// List categories and their media types. `searchTypes` are what "add from search" queries;
+// audiobooks have no provider, so Listen searches books. Mirrors backend config/mediaTypes.js.
 const searchType = (id, extra = {}) => ({ id, ...extra, get label() { return t(`common.mediaTypes.${id}`); } });
 const category = (id, mediaTypes, searchTypes) => ({
   id,

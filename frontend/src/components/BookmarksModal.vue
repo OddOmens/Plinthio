@@ -1,7 +1,6 @@
 <template>
   <div v-if="isOpen && item" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-card border border-border rounded-2xl w-full max-w-md max-h-[85dvh] my-auto flex flex-col shadow-2xl overflow-hidden">
-      <!-- Modal Header -->
       <div class="px-5 py-4 border-b border-border flex items-center justify-between">
         <div class="flex items-center gap-2 min-w-0">
           <Bookmark class="w-4 h-4 text-primary flex-shrink-0" />

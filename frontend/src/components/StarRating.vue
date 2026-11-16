@@ -57,9 +57,8 @@ const sizeClass = computed(() => ({
   lg: 'w-7 h-7'
 }[props.size] || 'w-5 h-5'));
 
-// Interactive stars pad each button out to a comfortable touch target (a bare 20px star
-// was hard to hit on a phone), and a negative margin keeps the row lined up with the
-// text around it.
+// Interactive stars pad each button out to a comfortable touch target; a negative margin
+// keeps the row lined up with the text around it.
 const gapClass = computed(() => {
   if (props.size === 'xs') return 'gap-px';
   return props.readonly ? 'gap-0.5' : 'gap-0.5 -m-1';

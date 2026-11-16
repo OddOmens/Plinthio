@@ -8,8 +8,7 @@ import { t } from '../i18n';
 let audio = null;
 let saveInterval = null;
 let sleepTicker = null;
-// The resume seek waiting on the current file's metadata. Until it runs, the element reports
-// the 0 of a fresh load, not where the listener is.
+// Pending resume seek; until it runs the element reports 0, not the real position.
 let onMetadata = null;
 // Last stretch of a timed sleep fades the volume down instead of cutting off mid-sentence.
 const SLEEP_FADE_SECONDS = 10;
@@ -24,8 +23,7 @@ export const usePlayerStore = defineStore('player', {
     duration: 0,
     playbackRate: 1.0,
     volume: 1.0,
-    // Sleep timer: a number of minutes, 'chapter' (stop at the end of the current chapter),
-    // or null. sleepEndsAt/sleepRemaining drive the live countdown in the UI.
+    // Minutes, 'chapter' (stop at chapter end), or null.
     sleepTimerMinutes: null,
     sleepEndsAt: null,
     sleepRemaining: 0,
@@ -95,11 +93,9 @@ export const usePlayerStore = defineStore('player', {
 
       const resumeTime = startTime !== null ? startTime : (item.current_time || 0);
 
-      // Only re-set src if playing a different item or not set
       if (audio.src !== window.location.origin + streamUrl) {
         if (isNewItem) {
-          // Fire-and-forget: closes the previous item's listening session (if any) and
-          // opens one for this item. Never awaited — tracking must not delay playback.
+          // Not awaited: tracking must not delay playback.
           viewSession.open(item.id);
           this.chapters = [];
           this.clearSleepTimer();
@@ -109,8 +105,7 @@ export const usePlayerStore = defineStore('player', {
         audio.src = streamUrl;
         audio.playbackRate = this.playbackRate;
 
-        // Switching again before the last file's metadata arrived must not leave its seek
-        // behind, or the new book would start at the old one's position.
+        // Drop a previous file's pending seek, or the new book starts at the old position.
         if (onMetadata) audio.removeEventListener('loadedmetadata', onMetadata);
         onMetadata = () => {
           onMetadata = null;
@@ -155,12 +150,11 @@ export const usePlayerStore = defineStore('player', {
     setPlaybackRate(rate) {
       this.playbackRate = rate;
       if (audio) audio.playbackRate = rate;
-      // Remembered per book (saved alongside progress, so it syncs across devices).
+      // Saved with progress, so speed is remembered per book across devices.
       this.saveProgress();
     },
 
-    // Picks up the speed this listener last used for this book, if any. Otherwise the
-    // current speed carries over, which is what someone who listens at 1.5x expects.
+    // Without a stored speed for this book, the current speed carries over.
     async restoreBookSpeed(itemId) {
       try {
         const res = await api.get(`/progress/${itemId}`);
@@ -170,7 +164,7 @@ export const usePlayerStore = defineStore('player', {
           if (audio) audio.playbackRate = rate;
         }
       } catch (err) {
-        // No stored speed — keep the current one.
+        // Keep the current speed.
       }
     },
 
@@ -188,8 +182,7 @@ export const usePlayerStore = defineStore('player', {
       if (chapter) this.seek(chapter.start);
     },
 
-    // "Previous" restarts the current chapter unless you're within its first few seconds,
-    // like every audio app's back button.
+    // Restarts the current chapter unless within its first few seconds.
     previousChapter() {
       const idx = this.currentChapterIndex;
       if (idx < 0) return this.skip(-30);
@@ -204,7 +197,7 @@ export const usePlayerStore = defineStore('player', {
       if (idx < this.chapters.length - 1) this.seekChapter(idx + 1);
     },
 
-    // Stops playback and dismisses the player entirely.
+    // Stops playback and dismisses the player.
     stop() {
       if (audio) {
         audio.pause();
@@ -287,7 +280,7 @@ export const usePlayerStore = defineStore('player', {
       if (saveInterval) clearInterval(saveInterval);
       saveInterval = setInterval(() => {
         this.saveProgress();
-      }, 5000); // Save every 5 seconds
+      }, 5000);
     },
 
     stopProgressAutoSave() {

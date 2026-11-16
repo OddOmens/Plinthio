@@ -25,19 +25,13 @@ const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
 const onboardingDone = ref(false);
 
-// Runs once per account, for everyone — the admin straight after the setup wizard, and any
-// user an admin adds later (who otherwise lands on a shelf configured by someone else's
-// taste). Kept off the login/setup screens so it can't cover the forms that create the
-// account in the first place.
-// One refresh per app load keeps an active session alive indefinitely under the shorter
-// token lifetime (see POST /api/auth/refresh).
+// One refresh per app load keeps an active session alive under the short token lifetime.
 onMounted(() => {
   authStore.refreshSession();
   authStore.keepMediaTokenFresh();
 });
 
-// Accent color and page width respect user preferences when permitted by the admin,
-// falling back to the admin's global server defaults.
+// User's accent and page width when the admin allows it, else the server defaults.
 watchEffect(() => {
   const accent = customizationStore.effectiveAccentTheme(authStore.user);
   if (accent) {
@@ -51,6 +45,7 @@ watchEffect(() => {
 // reaches everyone who hasn't chosen their own.
 watch(() => languageChoice(authStore.user, customizationStore.defaultLanguage), (choice) => applyLanguage(choice));
 
+// Once per account; never over the login/setup forms.
 const showOnboarding = computed(() => {
   if (onboardingDone.value || !authStore.isAuthenticated) return false;
   if (['/login', '/setup'].includes(route.path)) return false;

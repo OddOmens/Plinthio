@@ -1,6 +1,5 @@
-// Progress saves made while offline (reading a download on a plane) are kept here and sent
-// when the connection returns, instead of being lost. Only the latest save per item is
-// kept — progress is a position, not a log.
+// Progress saves made offline, sent when the connection returns. Only the latest per item
+// is kept: progress is a position, not a log.
 const KEY = 'plinthio_progress_queue';
 
 function read() {
@@ -17,7 +16,7 @@ function write(queue) {
     if (Object.keys(queue).length) localStorage.setItem(KEY, JSON.stringify(queue));
     else localStorage.removeItem(KEY);
   } catch (e) {
-    // Storage unavailable — nothing more we can do offline.
+    // Storage unavailable.
   }
 }
 
@@ -45,9 +44,8 @@ export async function flushProgressQueue(api) {
           write(latest);
         }
       } catch (err) {
-        if (!err.response) break; // Still offline — try again on the next 'online'.
-        // The server rejected it (e.g. item gone) — don't retry forever, but keep a newer
-        // save queued for the same item meanwhile.
+        if (!err.response) break; // Still offline.
+        // Rejected (e.g. item gone): don't retry, but keep any newer save for the item.
         const latest = read();
         if (latest[url]?.queuedAt === queue[url].queuedAt) {
           delete latest[url];

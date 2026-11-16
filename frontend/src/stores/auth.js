@@ -1,18 +1,13 @@
 import { defineStore } from 'pinia';
 import api from '../api/client';
 import { setMediaToken } from '../utils/mediaToken';
-// What one account leaves on a device is cleared on sign-out, when the server ends the
-// session (api/client.js), and when a different account signs in on the same browser (a
-// session that simply ran out never went through sign-out, and keeps its downloads for
-// the same person signing back in; plinthio_device_owner remembers whose they are).
 import { clearAccountDeviceData, claimDeviceData } from '../utils/accountDeviceData';
 
 function loadStoredUser() {
   try {
     return JSON.parse(localStorage.getItem('plinthio_user') || 'null');
   } catch (e) {
-    // Malformed/corrupted localStorage value — treat as logged out rather than crashing
-    // the whole app before it can even render the login screen.
+    // Corrupt value: treat as logged out rather than crash before the login screen renders.
     return null;
   }
 }
@@ -32,19 +27,16 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated: (state) => !!state.token,
     isAdmin: (state) => state.user && state.user.role === 'admin',
-    // Editors can edit shared library metadata; Admins implicitly have every Editor right.
+    // Admins have every editor right.
     isEditor: (state) => state.user && (state.user.role === 'admin' || state.user.role === 'editor')
   },
 
   actions: {
-    // Remembers the signed-in user on this device, so a reload starts with it.
     persistUser() {
       localStorage.setItem('plinthio_user', JSON.stringify(this.user));
     },
 
-    // Changes some of the account's preferences at once and saves them, putting them back
-    // if the save fails. `run` is the section's useSaveStatus().run, so its
-    // "Saving…/Saved" line follows the request.
+    // Optimistic preference save, reverted on failure. `run` is a useSaveStatus().run.
     async patchPreferences(patch, run) {
       if (!this.user) return;
       const id = ++prefsRequest;
@@ -96,9 +88,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     storeSession(data) {
-      // The owner note outlives an expired session (the 401 handler removes plinthio_user);
-      // plinthio_user covers data left before the note existed. No owner at all counts as a
-      // different account.
+      // Clears another account's downloads and cached media before this one uses the device.
       claimDeviceData(data.user?.id, loadStoredUser()?.id);
       this.token = data.token;
       this.user = data.user;
@@ -107,8 +97,7 @@ export const useAuthStore = defineStore('auth', {
       this.persistUser();
     },
 
-    // Returns the server's answer. With two-factor on, that's { twoFactorRequired, challenge }
-    // and no session yet: the sign-in page asks for the code and calls loginTwoFactor.
+    // With two-factor on, returns { twoFactorRequired, challenge } and no session yet.
     async login(username, password) {
       this.loading = true;
       try {
@@ -132,10 +121,9 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Called once on app start. Slides the expiry forward for anyone who actually uses
-    // Plinthio, so the shortened token lifetime only ever bites an idle or stolen session.
-    // Failure is silent: an expired or revoked token is already handled by the 401
-    // interceptor, and being offline must not sign anyone out.
+    // Slides the expiry forward on app start, so the short token lifetime only bites an idle
+    // or stolen session. Silent on failure: the 401 interceptor handles revoked tokens and
+    // being offline must not sign anyone out.
     async refreshSession() {
       if (!this.token) return;
       try {
@@ -150,12 +138,11 @@ export const useAuthStore = defineStore('auth', {
           this.persistUser();
         }
       } catch (err) {
-        // Nothing to do — either the network is down or the 401 path already took over.
+        // Offline, or the 401 path already took over.
       }
     },
 
-    // Media tokens last a day; an installed PWA can stay open far longer than that, so
-    // refresh on a timer well inside the window (and whenever the tab comes back to view).
+    // Media tokens last a day and an installed PWA can stay open longer, so refresh on a timer.
     keepMediaTokenFresh() {
       if (this._mediaTimer) return;
       const refresh = async () => {
@@ -164,7 +151,7 @@ export const useAuthStore = defineStore('auth', {
           const res = await api.post('/auth/media-token');
           setMediaToken(res.data.mediaToken);
         } catch (err) {
-          // Offline or signed out — the next tick or the 401 path will handle it.
+          // Offline or signed out: the next tick handles it.
         }
       };
       this._mediaTimer = setInterval(refresh, 4 * 60 * 60 * 1000);
@@ -208,7 +195,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('plinthio_token');
       localStorage.removeItem('plinthio_user');
       setMediaToken(null);
-      // Downloads belong to the account that made them; the worker deletes the files.
+      // Downloads belong to the account that made them.
       clearAccountDeviceData();
       window.location.href = '/login';
     }

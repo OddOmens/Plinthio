@@ -5,7 +5,6 @@
       v-click-outside="close"
       class="bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90dvh] my-auto transition-all"
     >
-      <!-- Header -->
       <div class="px-5 py-4 border-b border-border flex items-center justify-between flex-shrink-0">
         <div class="min-w-0 pr-2">
           <h3 class="text-sm font-semibold text-foreground truncate">{{ $t('metadata.edit.title') }}</h3>
@@ -23,7 +22,6 @@
       </div>
 
       <div class="overflow-y-auto flex-1">
-        <!-- Editable Fields -->
         <div class="px-5 py-4 flex flex-col gap-3 border-b border-border">
           <div class="flex gap-3">
             <div class="flex-shrink-0 flex flex-col gap-1.5">
@@ -458,9 +456,7 @@ const previewCoverUrl = computed(() => {
   if (pickedCoverUrl.value) return pickedCoverUrl.value;
   const targetId = props.item?.id || (isBulk.value && props.applyToIds?.[0]);
   if (!targetId) return null;
-  // Always fetch from the server — it returns a styled placeholder SVG when no artwork
-  // exists yet, which is far better than showing the ImageOff icon. coverCacheBust forces
-  // a fresh fetch after a user upload so the old art isn't served from the browser cache.
+  // The server returns a placeholder SVG when there's no artwork yet.
   const bust = coverCacheBust.value ? `&v=${coverCacheBust.value}` : '';
   return `/api/media/cover/${targetId}?token=${token}${bust}`;
 });
@@ -573,9 +569,8 @@ watch(
   (val) => {
     if (val && props.item) {
       fillForm(props.item);
-      // Shelf cards carry a trimmed row (no description, themes, publisher, status, rating),
-      // and saving sends every field — so without the full row, saving from the shelf
-      // silently blanked all of those. Load it before the user can save.
+      // Shelf cards carry a trimmed row and saving sends every field, so load the full row
+      // before Save is allowed.
       const fullId = ++fullRequestId;
       loadingFull.value = false;
       if (!isBulk.value && props.item.id) {

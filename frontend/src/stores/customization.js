@@ -8,9 +8,9 @@ export const useCustomizationStore = defineStore('customization', {
     accentTheme: 'zinc',
     loginMessage: '',
     layoutMode: 'topnav',
-    // Server default page width: full | contained
+    // full | contained
     pageWidth: 'full',
-    // Granular permissions for user personalizations:
+    // Which personalizations users may change.
     userCustomization: {
       enabled: true,
       accentColor: true,
@@ -18,25 +18,19 @@ export const useCustomizationStore = defineStore('customization', {
       pageWidth: true,
       pauseScreen: true
     },
-    // Admin display switches for the rating UI — mirrored from the server, all on by default.
     ratings: { showPersonal: true, showCommunity: true, showExternal: true },
-    // Movie collections also list the films the library doesn't have (greyed, requestable).
+    // Collections also list films the library doesn't have.
     showMissingFilms: true,
-    // Watch parties — off until an admin turns them on.
     partyModeEnabled: false,
-    // Live TV — off until an admin turns it on. liveChannelCount is how many channels this
-    // account may watch (GET /api/live/status), asked once per app load while it's on, so the
-    // nav only offers Live TV when there's something to watch.
+    // liveChannelCount: channels this account may watch; the nav hides Live TV at 0.
     liveTvEnabled: false,
     liveChannelCount: 0,
     liveStatusFor: null,
-    // What the video player shows while paused: simple | details | cinematic | bedtime.
+    // simple | details | cinematic | bedtime
     pauseScreen: 'details',
-    // The language for anyone who hasn't picked one: 'auto' (their browser's) or a code.
+    // 'auto' (browser) or a language code.
     defaultLanguage: 'auto',
-    // The opening sequence played before movies/episodes: the built-in clip unless an admin
-    // uploads one (introCustom). introVersion changes with each upload so the new clip isn't
-    // cached over.
+    // Opening sequence before movies/episodes. introVersion changes per upload to bust caches.
     introEnabled: false,
     introMovies: true,
     introShows: true,
@@ -140,14 +134,11 @@ export const useCustomizationStore = defineStore('customization', {
     setLiveTvEnabled(enabled) {
       if (enabled === this.liveTvEnabled) return;
       this.liveTvEnabled = enabled;
-      // Switched on or off: the channel count has to be asked again.
       this.liveStatusFor = null;
       if (!enabled) this.liveChannelCount = 0;
     },
 
-    // Asks the server how many Live TV channels this account can watch — once per app load
-    // and account (a kids account may have none). `userId` keys the answer so signing in as
-    // someone else asks again.
+    // Once per app load and account; `userId` keys the answer so another sign-in asks again.
     async loadLiveStatus(userId, { force = false } = {}) {
       if (!this.liveTvEnabled || !userId) return;
       if (!force && this.liveStatusFor === userId) return;
@@ -156,7 +147,6 @@ export const useCustomizationStore = defineStore('customization', {
         const res = await api.get('/live/status');
         this.liveChannelCount = res.data?.enabled === false ? 0 : Number(res.data?.channelCount) || 0;
       } catch (err) {
-        // Off on the server (P700) or unreachable: no Live TV in the nav this time.
         this.liveChannelCount = 0;
       }
     },
@@ -171,12 +161,10 @@ export const useCustomizationStore = defineStore('customization', {
       this.introDuration = data.introDuration || null;
     },
 
-    // Whether pressing Play on this title shows the opening sequence first. Never for extras
-    // (a trailer) or when resuming partway through (Resume / Continue Watching), and the
-    // caller leaves it out of autoplayed next episodes and watch parties.
+    // Never for extras or when resuming; callers also skip it for autoplay and watch parties.
     playsIntroBefore(item) {
       if (!this.introEnabled || !this.introVersion || !item || item.extra_type) return false;
-      // The same test the player uses to decide whether to resume (VideoPlayer onLoadedMetadata).
+      // Same resume test as VideoPlayer onLoadedMetadata.
       const saved = item.current_time || 0;
       const nearEnd = item.duration > 0 && saved / item.duration >= 0.98;
       if (saved > 10 && !nearEnd) return false;
@@ -186,17 +174,12 @@ export const useCustomizationStore = defineStore('customization', {
     },
 
     applyToDom() {
-      // 1. Update document title
       if (this.serverName && this.serverName.trim()) {
         document.title = `${this.serverName} | Media Server`;
       }
-
-      // 2. Set accent theme on root html
       if (this.accentTheme) {
         document.documentElement.setAttribute('data-accent', this.accentTheme);
       }
-
-      // 3. Inject custom CSS style tag into head
       let styleTag = document.getElementById('plinthio-custom-css');
       if (!styleTag) {
         styleTag = document.createElement('style');
