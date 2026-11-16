@@ -1,24 +1,64 @@
 // What one account leaves on a device, and how it's removed. Shared by the auth store
-// (sign-out, a different account signing in) and the API client (a session the server ended).
+// (sign-out, a different or unknown account signing in) and the API client (a session the
+// server ended).
 
-// Asks the service worker to drop cached covers and comic pages, and the downloads. Cached
-// art is keyed by path with the token stripped, so it must not outlive the session that
-// fetched it.
-function clearOfflineMediaCache() {
+const OWNER_KEY = 'plinthio_device_owner';
+
+// Which account the downloads and cached media on this device belong to. Kept apart from
+// plinthio_user (which goes with the session) so it survives a session that expired, and a
+// different account signing in afterwards can be told apart from the same one coming back.
+export function deviceDataOwner() {
+  try { return localStorage.getItem(OWNER_KEY) || null; } catch (e) { return null; }
+}
+
+export function setDeviceDataOwner(userId) {
+  try {
+    if (userId) localStorage.setItem(OWNER_KEY, String(userId));
+    else localStorage.removeItem(OWNER_KEY);
+  } catch (e) { /* storage unavailable */ }
+}
+
+const MEDIA_CACHES = (name) => name === 'plinthio-offline' || name.startsWith('plinthio-images-');
+
+// Drops cached covers and comic pages, and the downloads. Cached art is keyed by path with
+// the token stripped, so it must not outlive the session that fetched it. The service worker
+// is asked to do it, and the page deletes the same caches itself too, so it still happens
+// when no worker controls the page (the first load after a hard reload, say).
+async function clearOfflineMediaCache() {
   try {
     navigator.serviceWorker?.controller?.postMessage({ type: 'clear-media-cache' });
   } catch (e) {
-    // No service worker (unsupported browser, or a plain HTTP origin) — nothing cached.
+    // No service worker (unsupported browser, or a plain HTTP origin).
+  }
+  try {
+    if (typeof caches === 'undefined') return;
+    const names = await caches.keys();
+    await Promise.all(names.filter(MEDIA_CACHES).map((n) => caches.delete(n)));
+    // Let a running worker rebuild its index of what's downloaded.
+    navigator.serviceWorker?.controller?.postMessage({ type: 'offline-changed' });
+  } catch (e) {
+    // Cache API unavailable (plain HTTP): nothing was cached.
   }
 }
 
-// Its downloads, its queued offline progress, and the manga reader's per-device memory of
-// series it has read.
+// Its downloads, its queued offline progress, the manga reader's per-device memory of
+// series it has read, and the note of whose they were. Resolves once the caches are gone.
 export function clearAccountDeviceData() {
-  clearOfflineMediaCache();
-  for (const key of ['plinthio_downloads', 'plinthio_progress_queue', 'plinthio_reader']) {
+  for (const key of ['plinthio_downloads', 'plinthio_progress_queue', 'plinthio_reader', OWNER_KEY]) {
     try { localStorage.removeItem(key); } catch (e) { /* storage unavailable */ }
   }
+  return clearOfflineMediaCache();
+}
+
+// Called as a session is stored: device data left by another account, or by an account
+// nobody recorded, is cleared before `userId` can use it. Better to drop a download than to
+// hand it to someone else. `fallbackOwner` is the account in plinthio_user, for data left
+// before the owner note existed.
+export function claimDeviceData(userId, fallbackOwner = null) {
+  if (!userId) return;
+  const owner = deviceDataOwner() || fallbackOwner || null;
+  if (String(owner) !== String(userId)) clearAccountDeviceData();
+  setDeviceDataOwner(userId);
 }
 
 // Whether a sign-in token has simply run out, going by the expiry time written inside it.

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { queueProgress, flushProgressQueue } from '../utils/offlineQueue';
 import { translateServerMessage } from '../i18n/serverErrors';
-import { clearAccountDeviceData, tokenHasExpired } from '../utils/accountDeviceData';
+import { clearAccountDeviceData, tokenHasExpired, deviceDataOwner, setDeviceDataOwner } from '../utils/accountDeviceData';
 
 const api = axios.create({
   baseURL: '/api',
@@ -71,7 +71,16 @@ api.interceptors.response.use(
       // its downloads for when the same person signs back in, and a server that can't be
       // reached at all never gets here (there's no response), so going offline wipes nothing.
       const stored = localStorage.getItem('plinthio_token');
-      if (stored && code !== 'P102' && !tokenHasExpired(stored)) clearAccountDeviceData();
+      if (stored && code !== 'P102' && !tokenHasExpired(stored)) {
+        clearAccountDeviceData();
+      } else if (!deviceDataOwner()) {
+        // Expired: the downloads stay, with a note of whose they are, so a different account
+        // signing in next clears them first (stores/auth.js storeSession).
+        try {
+          const user = JSON.parse(localStorage.getItem('plinthio_user') || 'null');
+          if (user?.id) setDeviceDataOwner(user.id);
+        } catch (e) { /* unreadable: no owner, so the next sign-in clears */ }
+      }
       localStorage.removeItem('plinthio_token');
       localStorage.removeItem('plinthio_user');
       localStorage.removeItem('plinthio_media_token');

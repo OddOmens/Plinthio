@@ -4,8 +4,8 @@ import { setMediaToken } from '../utils/mediaToken';
 // What one account leaves on a device is cleared on sign-out, when the server ends the
 // session (api/client.js), and when a different account signs in on the same browser (a
 // session that simply ran out never went through sign-out, and keeps its downloads for
-// the same person signing back in).
-import { clearAccountDeviceData } from '../utils/accountDeviceData';
+// the same person signing back in; plinthio_device_owner remembers whose they are).
+import { clearAccountDeviceData, claimDeviceData } from '../utils/accountDeviceData';
 
 function loadStoredUser() {
   try {
@@ -87,12 +87,8 @@ export const useAuthStore = defineStore('auth', {
           ? payloadOrUsername 
           : { username: payloadOrUsername, password: maybePassword };
         const res = await api.post('/auth/setup', body);
-        this.token = res.data.token;
-        this.user = res.data.user;
-        setMediaToken(res.data.mediaToken);
+        this.storeSession(res.data);
         this.isSetup = true;
-        localStorage.setItem('plinthio_token', this.token);
-        this.persistUser();
         return res.data;
       } finally {
         this.loading = false;
@@ -100,8 +96,10 @@ export const useAuthStore = defineStore('auth', {
     },
 
     storeSession(data) {
-      const previous = loadStoredUser();
-      if (previous?.id && data.user?.id && previous.id !== data.user.id) clearAccountDeviceData();
+      // The owner note outlives an expired session (the 401 handler removes plinthio_user);
+      // plinthio_user covers data left before the note existed. No owner at all counts as a
+      // different account.
+      claimDeviceData(data.user?.id, loadStoredUser()?.id);
       this.token = data.token;
       this.user = data.user;
       setMediaToken(data.mediaToken);

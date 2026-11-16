@@ -27,8 +27,9 @@
     "allowOutside": "Zezwól na dostęp z zewnątrz"
   },
   "proxy": {
-    "title": "Przed Plinthio działa proxy, ale TRUST_PROXY nie jest ustawione",
-    "text": "Plinthio nie potrafi ustalić, skąd naprawdę przychodzą odwiedzający, więc każdy, kto łączy się przez proxy ({from}), jest traktowany jak poza domem. Dodatki Tailscale i adresu publicznego ustawiają to za ciebie. Dla innego proxy zobacz docs/remote-access.md.",
+    "title": "Przyszły żądania z nagłówkami proxy, ale TRUST_PROXY nie jest ustawione",
+    "titleNotCovered": "Żądania z nagłówkami proxy przyszły z adresu, którego TRUST_PROXY nie obejmuje",
+    "text": "Żądania z nagłówkami przekazywania (X-Forwarded-For, Forwarded lub X-Real-IP) przyszły z {from}, więc Plinthio traktuje je jak poza domem. Każde urządzenie w twojej sieci może wysyłać te nagłówki, więc nie kopiuj tego adresu: TRUST_PROXY może wskazywać tylko reverse proxy, które sam prowadzisz, pod adresem, o którym wiesz, że go używa. Adresu pokazanego tutaj używaj tylko do sprawdzenia. Dodatki Tailscale i adresu publicznego ustawiają to za ciebie. Dla innego proxy zobacz docs/remote-access.md.",
     "localAddress": "adres lokalny"
   },
   "adminsWithout2fa": {

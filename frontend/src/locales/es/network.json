@@ -27,8 +27,9 @@
     "allowOutside": "Permitir el acceso desde fuera"
   },
   "proxy": {
-    "title": "Hay un proxy delante de Plinthio, pero TRUST_PROXY no está definido",
-    "text": "Plinthio no puede saber de dónde vienen realmente las visitas, así que todo lo que llega a través del proxy ({from}) se trata como fuera de casa. Los complementos de Tailscale y de dirección pública lo configuran por ti. Para otro proxy, consulta docs/remote-access.md.",
+    "title": "Han llegado solicitudes con cabeceras de proxy, pero TRUST_PROXY no está definido",
+    "titleNotCovered": "Han llegado solicitudes con cabeceras de proxy desde una dirección que TRUST_PROXY no cubre",
+    "text": "Han llegado solicitudes con cabeceras de reenvío (X-Forwarded-For, Forwarded o X-Real-IP) desde {from}, así que Plinthio las trata como fuera de casa. Cualquier dispositivo de tu red puede enviar estas cabeceras, así que no copies esta dirección: TRUST_PROXY solo debe nombrar un proxy inverso que tú gestiones, con la dirección que sabes que usa. Usa la que aparece aquí solo para comprobarlo. Los complementos de Tailscale y de dirección pública lo configuran por ti. Para otro proxy, consulta docs/remote-access.md.",
     "localAddress": "una dirección local"
   },
   "adminsWithout2fa": {

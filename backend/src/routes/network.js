@@ -30,9 +30,11 @@ async function report(req, db) {
     // that TRUST_PROXY doesn't cover, not because of its address.
     thisDevice: { where: loc.where, away: loc.away, ip: loc.ip, untrustedProxy: loc.untrustedProxy },
     trustProxy: config.trustProxy !== false,
-    // Requests arrived through a reverse proxy that TRUST_PROXY doesn't cover (it's unset, or
-    // names another address). Plinthio can't tell those visitors apart, so every one of them
-    // counts as outside, whoever they are, until TRUST_PROXY is set to the proxy's address.
+    // { at, from }: the latest request with forwarding headers from a home or loopback address
+    // that TRUST_PROXY doesn't cover (it's unset, or names another address), within the last
+    // day. It can be the admin's own proxy or any device on the network sending the headers
+    // itself, so the page shows it as something to check, not as the address to trust.
+    // trustProxy above tells the page which case to describe (unset, or set but not covering).
     proxyWithoutTrust: proxyWarning(),
     accounts: {
       total: accounts.length,
