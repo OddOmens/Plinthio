@@ -2,10 +2,8 @@ import { runProbe } from './probe.js';
 
 const PROBE_TIMEOUT_MS = 15000;
 
-// Chapter markers embedded in the file (m4b/m4a chapter atoms, MP3 CHAP frames, Matroska
-// chapters). ffprobe reads all of those with one flag, and it's already a hard dependency
-// for video, so there's no second parser to keep in sync. Resolves [] on any failure — a
-// book without chapter data just plays as one long track.
+// Embedded chapter markers (m4b/m4a atoms, MP3 CHAP frames, Matroska chapters) via ffprobe.
+// Resolves [] on any failure, so the book plays as one long track.
 export async function probeChapters(filePath) {
   const result = await runProbe('ffprobe', ['-v', 'error', '-print_format', 'json', '-show_chapters', filePath], PROBE_TIMEOUT_MS);
   if (!result || result.code !== 0) return [];

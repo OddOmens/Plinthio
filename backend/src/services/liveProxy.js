@@ -1,19 +1,11 @@
 import crypto from 'crypto';
 import { config } from '../config/env.js';
 
-// Live TV streams play through Plinthio rather than straight from the channel's server: most
-// stream servers send no CORS headers (so hls.js in the browser couldn't read them), some
-// need a particular Referer or User-Agent, and a channel on the admin's own network isn't
-// reachable from a phone outside it. So every URL in a channel's playlists is rewritten to
-//
-//   p?u=<base64url(absolute URL)>&s=<HMAC(channel id + "\n" + URL)>&token=<media token>
-//
-// (relative, so it resolves next to the playlist: /api/media/live/<id>/p). The signature is
-// what makes this safe: the proxy only fetches URLs it wrote itself, for that channel, so it
-// can't be pointed anywhere else by editing the link.
+// Live streams are proxied (no CORS upstream, custom headers, LAN-only channels). Playlist URLs
+// are rewritten to p?u=<base64url(URL)>&s=<HMAC(channel id + "\n" + URL)>&token=<media token>;
+// the signature stops the proxy from fetching any URL it didn't write for that channel.
 
-// A key of its own, derived from the server secret, so a proxy signature can never be
-// mistaken for (or turned into) anything else signed with that secret.
+// Separate key derived from the server secret, so proxy signatures can't be reused elsewhere.
 const KEY = crypto.createHash('sha256').update(`plinthio-live-proxy\n${config.jwtSecret}`).digest();
 
 const b64url = (buf) => Buffer.from(buf).toString('base64url');
@@ -39,11 +31,8 @@ export function proxyPath(channelId, url, tokenQuery = '') {
   return `p?u=${b64url(url)}&s=${sign(channelId, url)}${tokenQuery}`;
 }
 
-// A channel logo's address on this server (add ?token=<media token>). Logos come from
-// hundreds of different hosts, which the app's Content-Security-Policy (images from this
-// server only, plus the metadata providers) would otherwise block — and fetching them here
-// keeps viewers' addresses away from those hosts too. A logo the admin chose themselves
-// (`custom`) gets a version in its address, so browsers drop the old one when it changes.
+// Logos are proxied so the CSP can stay strict and viewers' addresses stay off logo hosts.
+// Custom logos get a version param so browsers drop the cached one when it changes.
 export function logoPath(channelId, logo, { custom = false } = {}) {
   if (!logo || !/^https?:\/\//i.test(logo)) return null;
   const path = `/api/media/live/${channelId}/logo`;
@@ -59,11 +48,8 @@ export function looksLikePlaylist(buf) {
 const URI_ATTR_RE = /URI="([^"]*)"/g;
 
 /**
- * Rewrites every URI in an HLS playlist — variant and media playlists, segments, and the
- * URI="…" of tags such as #EXT-X-KEY, #EXT-X-MAP and #EXT-X-MEDIA — to signed proxy links.
- * Relative URIs resolve against `baseUrl` (where the playlist was actually served from,
- * after redirects). Anything that isn't http(s) (a data: key, a DRM scheme) is left alone;
- * the proxy wouldn't fetch it anyway.
+ * Rewrites every URI in an HLS playlist, including tag URI="…" attributes, to signed proxy links.
+ * `baseUrl` is where the playlist was served from after redirects; non-http(s) URIs are left alone.
  */
 export function rewritePlaylist(text, baseUrl, channelId, tokenQuery = '') {
   const proxied = (uri) => {

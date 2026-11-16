@@ -11,32 +11,26 @@ const HLS_DIR = path.join(config.cacheDir, 'hls');
 if (!fs.existsSync(HLS_DIR)) fs.mkdirSync(HLS_DIR, { recursive: true });
 
 const SEGMENT_SECONDS = 3;
-// Any HLS job with no segment/playlist request in this long gets reaped — otherwise every
-// abandoned playback (tab closed mid-buffer, seek away) leaves an encoder running forever.
+// Jobs with no requests for this long are reaped, so abandoned playback doesn't leave encoders running.
 const IDLE_REAP_MS = 25 * 1000;
 const REAP_SWEEP_MS = 10 * 1000;
-// How long a segment request will wait for ffmpeg to catch up before giving up.
 const SEGMENT_WAIT_TIMEOUT_MS = 15 * 1000;
 const SEGMENT_POLL_INTERVAL_MS = 50;
 
-// Bitrates are deliberately generous: this is a self-hosted server usually reached over a
-// LAN or a tunnel, where running out of quality is more annoying than running out of
-// bandwidth. Renditions taller than the source are dropped rather than upscaled.
+// Generous bitrates: a self-hosted server is usually reached over a LAN or tunnel.
 const QUALITY_LADDER = [
   { name: '1080p', height: 1080, bitrate: 8000 },
   { name: '720p', height: 720, bitrate: 4000 },
   { name: '480p', height: 480, bitrate: 1500 }
 ];
 
-// Remux jobs copy the source streams untouched, so there's exactly one rendition and no
-// meaningful "quality" to choose between.
+// Remuxes copy the source streams, so they have a single rendition.
 const SOURCE_QUALITY = 'source';
 
 const PROFILE_RE = /^(source|1080p|720p|480p)-a(\d{1,2})$/;
 
 const jobs = new Map();
-// When each job directory was last asked for, so the size sweep below can tell a film
-// someone is in the middle of from one nobody has touched in a while.
+// Last request time per job directory, for the size sweep's eviction order.
 const dirLastUsed = new Map();
 
 export function parseProfile(profile) {
@@ -49,10 +43,7 @@ export function formatProfile(quality, audioTrack) {
   return `${quality}-a${audioTrack}`;
 }
 
-/**
- * The renditions offered for a given source. A remux needs no ladder; a transcode gets every
- * ladder rung that isn't taller than the source, and always at least one.
- */
+// Renditions for a source: one for a remux, else every rung not taller than the source (at least one).
 export function buildLadder(playbackInfo) {
   if (playbackInfo.mode === 'remux') {
     return [{ name: SOURCE_QUALITY, height: playbackInfo.height || 0, bitrate: 8000 }];
@@ -63,15 +54,10 @@ export function buildLadder(playbackInfo) {
   return rungs.length > 0 ? rungs : [QUALITY_LADDER[QUALITY_LADDER.length - 1]];
 }
 
-// Encodes are the one thing an account can make the server do that costs real CPU, so they
-// are capped. One person only ever watches one thing; a second encode of theirs is usually a
-// quality switch, so past PER_USER_ENCODES their oldest one is stopped rather than refused.
-// Past the server-wide cap a new encode gets P305 ("try again shortly").
-//
-// Remuxes copy the streams, so they cost next to no CPU — but each one writes a second copy
-// of the file into the HLS cache, and a remux can be asked for by URL for any title. They
-// get the same two limits with more headroom: a household streaming to every screen in the
-// house stays well under them, a script walking the library doesn't.
+// Encodes cost real CPU, so they're capped. Past PER_USER_ENCODES a user's oldest encode is
+// stopped (usually a quality switch); past the server cap a new one gets P305.
+// Remuxes are cheap on CPU but each writes a full copy to the cache, so they get the same
+// limits with more headroom.
 const PER_USER_ENCODES = 2;
 const MAX_ENCODES = Math.max(1, parseInt(process.env.TRANSCODE_LIMIT, 10) || 4);
 const PER_USER_REMUXES = 3;
@@ -82,11 +68,9 @@ const LIMITS = {
   remux: { perUser: PER_USER_REMUXES, max: MAX_REMUXES }
 };
 
-// Starts that have been let through the caps but haven't spawned ffmpeg yet (working out
-// the encoder arguments takes an await). Keyed like `jobs`. A second request for the same
-// item + profile waits on the same promise instead of starting its own ffmpeg, and the caps
-// count these alongside running jobs — otherwise a burst of parallel requests all pass the
-// check before any of them is on the books.
+// Starts admitted past the caps but not yet spawned (building args awaits). Keyed like `jobs`.
+// Duplicate requests share the promise, and the caps count these so a parallel burst can't
+// all pass the check.
 const pendingStarts = new Map();
 
 // Everything holding (or about to hold) an ffmpeg process of this kind, oldest first.
@@ -107,13 +91,12 @@ function stopSlot(slot) {
   if (jobs.get(slot.mapKey) === slot) jobs.delete(slot.mapKey);
 }
 
-// Synchronous on purpose: the caller registers its pending start in the same tick, so no
-// other request can be counted in between.
+// Synchronous so the caller registers its pending start in the same tick.
 function makeRoom(mode, userId) {
   const limit = LIMITS[mode];
   if (userId) {
     const now = Date.now();
-    // A job someone else is also watching (a watch party) is never stopped for this.
+    // Never stop a job someone else is also watching.
     const mine = activeSlots(mode)
       .filter((slot) => slot.ownerId === userId && !hasOtherActiveViewers(slot, userId, now));
     while (mine.length >= limit.perUser) stopSlot(mine.shift());
@@ -129,7 +112,6 @@ async function buildEncodeArgs(mode, quality, audioTrack, opts = {}) {
   const mapArgs = ['-map', '0:v:0', '-map', `0:a:${audioTrack}?`];
 
   if (mode === 'remux') {
-    // Matching Jellyfin's exact direct-stream parameters:
     // -fflags +igndts+genpts: smooth timestamps from input
     // -tag:v hvc1: required for Chromium/Safari hardware HEVC decode in fMP4
     // -copyts -avoid_negative_ts disabled: preserves timestamps with zero keyframe wait
@@ -182,9 +164,7 @@ async function buildEncodeArgs(mode, quality, audioTrack, opts = {}) {
     };
   }
 
-  // Software fallback: cap threads so the encode doesn't consume every core and
-  // cause thermal throttling. 'ultrafast' trades quality for speed — still fine
-  // for streaming, and much less likely to lock up a low-power host.
+  // Software fallback: capped threads and 'ultrafast' so low-power hosts keep up.
   return {
     inputArgs: [],
     outputArgs: [
@@ -204,19 +184,15 @@ async function buildEncodeArgs(mode, quality, audioTrack, opts = {}) {
 }
 
 /**
- * Starts (or reuses) a progressive HLS encode for one playback profile of an item. The
- * playlist and segments land on disk as ffmpeg produces them — callers don't wait for the
- * whole file to finish, just for the pieces they need (see waitForStableFile below).
- *
- * Nothing between the "is one already running?" checks and registering the pending start
- * may await: that gap is what used to let parallel requests each start their own ffmpeg.
+ * Starts (or reuses) a progressive HLS encode for one profile of an item.
+ * No await may sit between the existing-job checks and registering the pending start,
+ * or parallel requests could each spawn ffmpeg.
  */
 export function getOrStartJob(itemId, filePath, opts = {}) {
   const mode = opts.mode === 'remux' ? 'remux' : 'transcode';
   const quality = mode === 'remux' ? SOURCE_QUALITY : (opts.quality || '720p');
   const audioTrack = Number.isInteger(opts.audioTrack) ? opts.audioTrack : 0;
-  // A remux of a title's converted copy (services/compat.js) holds different video from a remux
-  // of the file itself, so it's kept apart: its own job and its own folder.
+  // A converted copy (services/compat.js) gets its own job and folder.
   const profile = formatProfile(quality, audioTrack) + (opts.variant ? `-${opts.variant}` : '');
   const mapKey = `${itemId}:${profile}`;
   const dir = jobDir(itemId, profile);
@@ -239,8 +215,7 @@ export function getOrStartJob(itemId, filePath, opts = {}) {
     fs.mkdirSync(dir, { recursive: true });
     const playlistPath = path.join(dir, 'media.m3u8');
 
-    // If a previous run already finished this profile, serve it straight from disk rather
-    // than re-encoding the same thing.
+    // A previous run finished this profile; serve it from disk.
     if (fs.existsSync(playlistPath) && fs.readFileSync(playlistPath, 'utf8').includes('#EXT-X-ENDLIST')) {
       const finished = { mapKey, profile, quality, audioTrack, mode, dir, playlistPath, proc: null, exited: true, error: null, lastRequestedAt: now };
       jobs.set(mapKey, finished);
@@ -273,13 +248,10 @@ async function startJob(start, { itemId, filePath, profile, quality, audioTrack,
   const { mapKey, mode } = start;
   const { inputArgs, outputArgs } = await buildEncodeArgs(mode, quality, audioTrack, opts);
 
-  // Stopped while it was still getting ready (the viewer closed the player, or this account
-  // started something newer): there's no process yet, so simply don't make one.
+  // Cancelled while building args; don't spawn.
   if (start.cancelled) throw new PlinthioError('P305');
 
-  // Relative filenames throughout, with cwd set to the job dir: keeps the playlist's segment
-  // URIs relative ("seg_00000.m4s") so they match exactly what the segment route serves,
-  // regardless of where config.cacheDir happens to live on this machine.
+  // cwd is the job dir so segment URIs in the playlist stay relative, matching the segment route.
   const args = [
     '-hide_banner', '-loglevel', 'error', '-y',
     ...inputArgs,
@@ -288,9 +260,7 @@ async function startJob(start, { itemId, filePath, profile, quality, audioTrack,
     ...outputArgs,
     '-f', 'hls',
     '-hls_time', String(SEGMENT_SECONDS),
-    // 'event' rather than 'vod': the playlist grows as segments land, and clients can start
-    // playing/buffering before the whole file is encoded. #EXT-X-ENDLIST is appended once
-    // ffmpeg finishes, at which point it behaves like a normal VOD playlist.
+    // 'event' so clients can play while the playlist grows; ffmpeg appends #EXT-X-ENDLIST at the end.
     '-hls_playlist_type', 'event',
     '-hls_segment_type', 'fmp4',
     '-hls_fmp4_init_filename', 'init.mp4',
@@ -302,8 +272,7 @@ async function startJob(start, { itemId, filePath, profile, quality, audioTrack,
   // The directory may have been swept while the arguments were being worked out.
   fs.mkdirSync(dir, { recursive: true });
 
-  // From here to jobs.set there is no await, so the process is on the books (and so can be
-  // stopped, reaped and killed at shutdown) from the moment it exists.
+  // No await from here to jobs.set, so the process is tracked from the moment it exists.
   const stale = jobs.get(mapKey);
   if (stale && !stale.exited) killJob(stale);
 
@@ -337,9 +306,7 @@ async function startJob(start, { itemId, filePath, profile, quality, audioTrack,
     // 255/SIGKILL is the normal result of the client disconnecting or seeking away.
     if (code && code !== 255 && stderr) {
       logger.warn('media', `HLS ffmpeg exited ${code} for item ${itemId} (${profile}): ${stderr.trim()}`);
-      // A hardware encoder that fails at runtime (driver mismatch, unsupported pixel format)
-      // would otherwise break playback outright, so the cached output is cleared and the
-      // next request re-runs — falling back to software if the admin switches it off.
+      // Clear the failed output so the next request re-runs (e.g. a runtime hardware encoder failure).
       job.error = new PlinthioError(
         /Input\/output error/i.test(stderr) ? 'P302' : 'P304',
         undefined,
@@ -355,9 +322,7 @@ async function startJob(start, { itemId, filePath, profile, quality, audioTrack,
   return job;
 }
 
-// Polls for a file to appear (and, once found, to stop growing for one poll interval) since
-// ffmpeg writes segment files non-atomically — a client that starts reading mid-write would
-// get a truncated segment.
+// Waits for a file to appear and stop growing, since ffmpeg writes segments non-atomically.
 async function waitForStableFile(filePath, job, timeoutMs = SEGMENT_WAIT_TIMEOUT_MS) {
   const deadline = Date.now() + timeoutMs;
   let lastSize = -1;
@@ -371,7 +336,7 @@ async function waitForStableFile(filePath, job, timeoutMs = SEGMENT_WAIT_TIMEOUT
       if (size > 0 && size === lastSize) return true;
       lastSize = size;
     } else if (job.exited) {
-      // ffmpeg finished (or died) without ever producing this file — it doesn't exist.
+      // ffmpeg exited without producing this file.
       return false;
     }
     await new Promise((r) => setTimeout(r, SEGMENT_POLL_INTERVAL_MS));
@@ -394,15 +359,14 @@ export async function waitForPlaylist(job) {
 
 export async function waitForSegment(job, filename) {
   const target = path.join(job.dir, filename);
-  // Path containment: filename comes from a route param, keep it inside the job directory.
+  // Filename comes from a route param; keep it inside the job directory.
   if (path.resolve(target) !== path.join(path.resolve(job.dir), filename)) return null;
   const ok = await waitForStableFile(target, job);
   return ok ? target : null;
 }
 
-// Jobs are shared per item + profile, so two people watching the same title ride the same
-// encode. Each request records who asked, which lets an explicit stop from one viewer leave
-// the job running for anyone else still pulling segments from it.
+// Jobs are shared per item + profile; viewers are tracked so one viewer's stop leaves the
+// job running for others.
 export function touchJob(job, viewerId) {
   const now = Date.now();
   job.lastRequestedAt = now;
@@ -425,17 +389,14 @@ function killJob(job) {
   if (job.proc && !job.proc.killed) job.proc.kill('SIGKILL');
 }
 
-/**
- * Immediately terminates any active ffmpeg encode/remux processes for an item.
- * Called when the client closes the player, navigates away, or switches media.
- */
+// Kills an item's ffmpeg jobs, unless another viewer is still using them.
 export function stopItemJobs(itemId, viewerId = null) {
   const now = Date.now();
   for (const [mapKey, job] of jobs.entries()) {
     if (mapKey.startsWith(`${itemId}:`)) {
       if (viewerId) {
         job.viewers?.delete(viewerId);
-        // Someone else is still watching this encode — leave it to the idle reaper.
+        // Still watched by someone else; leave it to the idle reaper.
         if (hasOtherActiveViewers(job, viewerId, now)) continue;
       }
       killJob(job);
@@ -444,7 +405,7 @@ export function stopItemJobs(itemId, viewerId = null) {
       jobs.delete(mapKey);
     }
   }
-  // A start that hasn't spawned yet is called off too, unless it's another account's.
+  // Cancel pending starts too, unless another account's.
   for (const [mapKey, start] of pendingStarts.entries()) {
     if (!mapKey.startsWith(`${itemId}:`)) continue;
     if (viewerId && start.ownerId && start.ownerId !== viewerId) continue;
@@ -452,16 +413,12 @@ export function stopItemJobs(itemId, viewerId = null) {
   }
 }
 
-// Conversions running or about to: the background converted copies (services/compat.js) wait
-// while anyone is watching one of these.
+// Running or pending transcodes; background conversions (services/compat.js) wait while any exist.
 export function activeEncodeCount() {
   return activeSlots('transcode').length;
 }
 
-/**
- * Stops an item's jobs and deletes everything cached for it — for when its file has been
- * replaced, and segments cut from the old one would otherwise still be served.
- */
+// Stops an item's jobs and deletes its cache, e.g. after the file was replaced.
 export function dropItemHlsCache(itemId) {
   stopItemJobs(itemId);
   const itemDir = path.join(HLS_DIR, itemId);
@@ -471,17 +428,15 @@ export function dropItemHlsCache(itemId) {
   fs.rmSync(itemDir, { recursive: true, force: true });
 }
 
-// Server shutdown: no ffmpeg outlives the process that started it.
+// No ffmpeg outlives the server process.
 export function stopAllJobs() {
   for (const start of pendingStarts.values()) start.cancelled = true;
   for (const job of jobs.values()) killJob(job);
 }
 process.on('exit', stopAllJobs);
 
-// Reaps ffmpeg processes nobody has asked for output from recently. Segment directories are
-// left on disk for the cache sweep (sweepHlsCache) to age out separately, so a client that
-// comes back to a recently-abandoned item can still be served already-encoded segments
-// without a fresh encode — only actively-running processes are reclaimed here.
+// Kills idle ffmpeg processes; their segments stay on disk for sweepHlsCache, so a returning
+// viewer can reuse them.
 function reapIdleJobs() {
   const now = Date.now();
   for (const [mapKey, job] of jobs.entries()) {
@@ -498,11 +453,8 @@ function reapIdleJobs() {
 
 setInterval(reapIdleJobs, REAP_SWEEP_MS).unref();
 
-// The age sweep alone lets the cache grow as fast as someone can start remuxes (each is a
-// full copy of its film), so it also has a size budget: past it, the job directories that
-// have gone longest without a request are deleted until it fits. A directory with a running
-// ffmpeg, or one requested in the last EVICT_IDLE_MS, is never touched — a returning viewer
-// whose copy was evicted just gets it made again.
+// Size budget on top of the age sweep (each remux is a full copy). Least recently used
+// directories go first; running or recently requested ones (EVICT_IDLE_MS) are kept.
 const HLS_CACHE_MAX_BYTES = Math.max(1, parseFloat(process.env.HLS_CACHE_MAX_GB) || 40) * 1024 ** 3;
 const EVICT_IDLE_MS = 10 * 60 * 1000;
 const SIZE_SWEEP_MS = 5 * 60 * 1000;
@@ -584,10 +536,7 @@ setInterval(() => {
   try { enforceHlsCacheBudget(); } catch (err) { logger.warn('media', `HLS cache size sweep failed: ${err.message}`); }
 }, SIZE_SWEEP_MS).unref();
 
-/**
- * Deletes on-disk HLS job directories untouched for longer than maxAgeMs. Call periodically
- * from the server bootstrap (mirrors the backup scheduler's own setInterval pattern).
- */
+// Deletes HLS job directories untouched for longer than maxAgeMs.
 export function sweepHlsCache(maxAgeMs = 24 * 60 * 60 * 1000) {
   if (!fs.existsSync(HLS_DIR)) return;
   const now = Date.now();
@@ -607,7 +556,7 @@ export function sweepHlsCache(maxAgeMs = 24 * 60 * 60 * 1000) {
           fs.rmSync(dir, { recursive: true, force: true });
         }
       } catch {
-        // Directory may have just been removed by another sweep — ignore.
+        // Already removed by another sweep.
       }
     }
     try {

@@ -32,10 +32,9 @@ function tooDeep(value, levels) {
   return Object.values(value).some((v) => tooDeep(v, levels - 1));
 }
 
-// Multer in-memory storage for avatar upload
 const avatarUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024, files: 1 }, // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
   fileFilter: (req, file, cb) => {
     if (!/^image\//.test(file.mimetype)) {
       return cb(new Error('Only image files can be used as an avatar'));
@@ -44,11 +43,8 @@ const avatarUpload = multer({
   }
 });
 
-// Avatar read endpoint — placed before router.use(authenticateToken) so <img> tags can
-// render avatars directly without Authorization headers. An avatar is found by the account's
-// id, a random UUID nobody can guess, and an <img> can't say who's asking, so there's no
-// sign-in here. But it does follow the server's away-from-home switch: a home-only server
-// hands out nothing to the internet, pictures of the household included.
+// Before authenticateToken so <img> can load it; ids are unguessable UUIDs. Still obeys the
+// away-from-home switch.
 router.get('/:id/avatar', async (req, res) => {
   const { id } = req.params;
   if (!/^[a-zA-Z0-9_-]{1,64}$/.test(id)) {
@@ -110,7 +106,7 @@ router.post('/avatar', (req, res, next) => {
     const filename = `${userId}.webp`;
     const fullPath = path.join(config.avatarsDir, filename);
 
-    // Normalize with Sharp: auto-orient, square crop to 256x256, convert to WebP
+    // Auto-orient, square crop to 256x256, WebP
     await sharp(req.file.buffer)
       .rotate()
       .resize(256, 256, { fit: 'cover', position: 'center' })
@@ -172,11 +168,7 @@ router.delete('/avatar', async (req, res) => {
   }
 });
 
-// Update current user's preferences (accessible by all users).
-// Merges into the stored object rather than replacing it: callers send only the keys their
-// screen owns (the Settings page sends three), and a replace silently dropped every other
-// key — including `onboardingComplete`, which made saving Settings replay the onboarding
-// flow on the next render.
+// Merges into stored preferences: callers send only the keys their screen owns.
 router.patch('/preferences', handle(async (req, res) => {
   const userId = req.user.id;
   const patch = req.body;
@@ -205,13 +197,11 @@ router.patch('/preferences', handle(async (req, res) => {
     const parsed = row?.preferences ? JSON.parse(row.preferences) : {};
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) stored = parsed;
   } catch (e) {
-    // Malformed stored JSON — start clean rather than failing the save.
+    // Malformed stored JSON: start clean.
   }
 
   const preferences = { ...stored, ...patch };
-  // Any key is accepted (the apps add their own as they grow), so the whole thing is capped
-  // instead: it's loaded with the account on every request, and nothing else stops an
-  // account from growing it without end, a few kilobytes of new keys at a time.
+  // Any key is accepted, so the total size is capped (it loads with every request).
   const serialized = JSON.stringify(preferences);
   if (Object.keys(preferences).length > MAX_PREFERENCE_KEYS || Buffer.byteLength(serialized) > MAX_PREFERENCE_BYTES) {
     return res.status(400).json({ error: 'Too many preferences are stored for this account to add more' });
@@ -221,21 +211,14 @@ router.patch('/preferences', handle(async (req, res) => {
     'UPDATE users SET preferences = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
     [serialized, userId]
   );
-  // authenticateToken caches the user row (preferences included) for a minute, so without
-  // this every request for the next 60s — /auth/me among them — keeps answering with the
-  // preferences the user just changed away from.
+  // authenticateToken caches the user row for a minute.
   invalidateUserCache(userId);
 
   res.json({ message: 'Preferences updated', preferences });
 }));
 
-// Changing your own password. Only from a signed-in session: an API key copied out of a
-// reading app must not be able to try passwords, or take the account over with one. Wrong
-// current passwords are counted per account and logged (checkOwnPassword).
-// API keys keep working unless { revokeApiKeys: true } is sent: reading apps sign in with
-// them, and having every one stop on a routine password change would mostly teach people
-// not to change it. The answer says how many keys the account still has (`apiKeys`), so the
-// app can offer to revoke them when the password is being changed because something leaked.
+// Session only, so a leaked API key can't guess or change the password. API keys survive
+// unless { revokeApiKeys: true }; the reply's `apiKeys` count lets the app offer that.
 router.patch('/password', requireSession, handle(async (req, res) => {
   const userId = req.user.id;
   const { currentPassword, newPassword, revokeApiKeys } = req.body;
@@ -252,8 +235,7 @@ router.patch('/password', requireSession, handle(async (req, res) => {
   if (problem) return sendConfirmProblem(req, res, problem, 'Current password incorrect');
 
   const newHash = await bcrypt.hash(newPassword, 10);
-  // Bump token_version so every previously-issued token (e.g. one that may have leaked)
-  // is invalidated immediately instead of remaining valid until it naturally expires.
+  // Bump token_version to invalidate every earlier token now.
   await db.run(
     'UPDATE users SET password_hash = ?, token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
     [newHash, userId]
@@ -274,9 +256,7 @@ router.patch('/password', requireSession, handle(async (req, res) => {
   });
 }));
 
-// ==========================================
-// Admin Only Endpoints Below
-// ==========================================
+// Admin only below.
 
 export function parseExpiration(durationOrDate, fromDate = new Date()) {
   if (!durationOrDate || durationOrDate === 'forever') return null;
@@ -353,7 +333,6 @@ router.post('/', requireAdmin, async (req, res) => {
   }
 });
 
-// Edit another user's account info (Admin only) — username, role, or expiration.
 router.patch('/:id', requireAdmin, handle(async (req, res) => {
   const { username, role, expires_at, duration, maxAgeRating, allowUnrated, kidsMode, remoteAccess } = req.body;
 
@@ -362,15 +341,13 @@ router.patch('/:id', requireAdmin, handle(async (req, res) => {
   if (!target) {
     return res.status(404).json({ error: 'User not found' });
   }
-  // A Kids Mode account is always a plain viewer: an editor can mark titles kids-safe and
-  // change age ratings, so a kids account with that role could let itself see anything.
-  // Checked on what the account will be after this change, whichever half is being changed.
+  // Kids Mode accounts stay viewers (see canEditLibrary), checked on the resulting state.
   const willBeKids = kidsMode !== undefined ? !!kidsMode : !!target.kids_mode;
   const willBeRole = role !== undefined ? role : target.role;
   if (willBeKids && willBeRole === 'editor' && (kidsMode !== undefined || role !== undefined)) {
     return res.status(400).json({ error: 'A Kids Mode account can\'t be an editor. Make it a viewer, or turn Kids Mode off first' });
   }
-  // The same for a content limit: an editor could change the age ratings the limit reads.
+  // Same for a content limit.
   const willBeLimited = maxAgeRating !== undefined ? !!maxAgeRating : !!target.max_age_rating;
   if (willBeLimited && willBeRole === 'editor' && (maxAgeRating !== undefined || role !== undefined)) {
     return res.status(400).json({ error: 'An account with a content limit can\'t be an editor. Make it a viewer, or remove the limit first' });
@@ -412,8 +389,7 @@ router.patch('/:id', requireAdmin, handle(async (req, res) => {
     params.push(calculatedExpiry);
   }
 
-  // Parental controls. null/'' clears the limit. An admin can't restrict themselves —
-  // the same guard as role changes, so nobody locks themselves out of their own library.
+  // null/'' clears the limit. Admins can't restrict themselves.
   if (maxAgeRating !== undefined) {
     if (req.user.id === req.params.id && maxAgeRating) {
       return res.status(400).json({ error: 'Cannot restrict your own account' });
@@ -428,8 +404,7 @@ router.patch('/:id', requireAdmin, handle(async (req, res) => {
     updates.push('allow_unrated = ?');
     params.push(allowUnrated ? 1 : 0);
   }
-  // Kids Mode: the account sees only kids-safe libraries, series and titles. Never on your
-  // own account or an admin's — either would lock someone out of their own server.
+  // Never on your own account or an admin's, which would lock them out.
   if (kidsMode !== undefined) {
     if (kidsMode && req.user.id === req.params.id) {
       return res.status(400).json({ error: 'Cannot put your own account in Kids Mode' });
@@ -441,9 +416,7 @@ router.patch('/:id', requireAdmin, handle(async (req, res) => {
     params.push(kidsMode ? 1 : 0);
   }
 
-  // Away from home: whether this account may use Plinthio outside the home network (when
-  // the server allows that at all). Never switched off for your own account from outside,
-  // which would end the session you're using.
+  // Outside access for this account; can't be turned off for yourself from outside.
   if (remoteAccess !== undefined) {
     if (!remoteAccess && req.user.id === req.params.id && (await requestLocation(req)).away) {
       return res.status(400).json({ error: "You're away from home right now, so that would sign you out. Change it from your home network." });
@@ -459,9 +432,7 @@ router.patch('/:id', requireAdmin, handle(async (req, res) => {
   params.push(req.params.id);
   await db.run(`UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, params);
   invalidateUserCache(req.params.id);
-  // A watch party checks the account only when its stream opens, so anything that can narrow
-  // what the account may see or whether it may sign in ends its party connections; the app
-  // joins again with the account as it is now.
+  // Party streams check the account only on open, so narrowing changes end them (the app rejoins).
   if ([role, expires_at, duration, maxAgeRating, allowUnrated, kidsMode, remoteAccess].some((v) => v !== undefined)) {
     dropPartyMember(req.params.id);
   }
@@ -475,9 +446,7 @@ router.patch('/:id', requireAdmin, handle(async (req, res) => {
   res.json({ message: 'User updated successfully', user: updated });
 }));
 
-// Resetting how someone signs in is for a signed-in admin, never an API key, and never on
-// your own account: that goes through PATCH /users/password and POST /auth/2fa/disable,
-// which ask for the password and a code.
+// Session admins only (no API keys), never on your own account (that path asks for a code).
 function someoneElse(req, res, next) {
   if (req.user.id === req.params.id) {
     return res.status(400).json({ error: 'Change your own password or two-factor in Settings' });
@@ -485,8 +454,7 @@ function someoneElse(req, res, next) {
   next();
 }
 
-// Turn off someone's two-factor, for a lost phone with no backup codes left (Admin only).
-// Their sessions are signed out, so whoever has the account now has to sign in again.
+// Turn off someone's 2FA (lost phone). Their sessions are signed out.
 router.post('/:id/two-factor/reset', requireAdmin, requireSession, someoneElse, handle(async (req, res) => {
   const db = await getDb();
   const target = await db.get('SELECT id, username, totp_enabled_at FROM users WHERE id = ?', [req.params.id]);
@@ -531,9 +499,7 @@ router.post('/:id/extend', requireAdmin, handle(async (req, res) => {
   });
 }));
 
-// Reset another user's password (Admin only) — no current-password check, since the admin is
-// acting on someone else's account (e.g. they forgot it). Bumps token_version like the
-// self-service change so any existing sessions for that user are invalidated immediately.
+// No current-password check; bumps token_version to sign out existing sessions.
 router.patch('/:id/password', requireAdmin, requireSession, someoneElse, handle(async (req, res) => {
   const { newPassword } = req.body;
 
@@ -558,8 +524,7 @@ router.patch('/:id/password', requireAdmin, requireSession, someoneElse, handle(
   res.json({ message: 'Password reset successfully' });
 }));
 
-// Change another user's role (Admin only) — never your own, so an admin can't accidentally
-// lock themselves out or leave the server with zero admins.
+// Never your own role, so the server can't end up with no admin.
 router.patch('/:id/role', requireAdmin, handle(async (req, res) => {
   const { role } = req.body;
 
@@ -579,7 +544,7 @@ router.patch('/:id/role', requireAdmin, handle(async (req, res) => {
   if (target.kids_mode && role !== 'viewer') {
     return res.status(400).json({ error: 'A Kids Mode account can only be a viewer. Turn Kids Mode off first' });
   }
-  // And an account with a content limit can't be an editor (it could lift the limit).
+  // Nor an account with a content limit.
   if (target.max_age_rating && role === 'editor') {
     return res.status(400).json({ error: 'An account with a content limit can\'t be an editor. Remove the limit first' });
   }

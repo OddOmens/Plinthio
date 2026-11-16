@@ -1,18 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 
-// Extras: trailers, featurettes, behind-the-scenes, deleted scenes… They belong to a film
-// or show, not on the shelf. This works out which scanned video files are extras, and of
-// what, purely from where they sit — so it can be tested without a real disk.
-//
-// Recognised the way Plex/Jellyfin users already lay them out:
-//   • a folder named like an extras folder:  Movie (2021)/Featurettes/Making Of.mkv
-//   • a name suffix:                         Movie (2021)/Movie-trailer.mp4
-//   • movies only — anything in a subfolder of a film's own folder, and loose files next to
-//     the film that are much smaller than it:  Movie (2021)/Movie.mkv + Movie (2021)/Bloopers.mp4
-//
-// A folder holding several full-length films (a collection) is left alone: a loose sibling
-// only counts as an extra when it's under EXTRA_SIZE_RATIO of the main film's size.
+// Works out which video files are extras (trailers, featurettes...) and of what, from paths alone:
+//   • an extras-named folder:  Movie (2021)/Featurettes/Making Of.mkv
+//   • a name suffix:           Movie (2021)/Movie-trailer.mp4
+//   • movies only: subfolders of a film's folder, and loose files under EXTRA_SIZE_RATIO
+//     of the main film's size (so collection folders of full films are left alone).
 
 const EXTRA_FOLDERS = new Map([
   ['extras', 'Extra'], ['extra', 'Extra'], ['bonus', 'Extra'], ['bonus features', 'Extra'],
@@ -94,14 +87,12 @@ export function classifyExtras(files, root, libraryType, sizeOf = defaultSizeOf)
     return result;
   }
 
-  // Movies: walk the folder tree from the root.
   const byDir = new Map();
   const childDirs = new Map();
   for (const file of files) {
     const dir = path.dirname(path.resolve(file));
     if (!byDir.has(dir)) byDir.set(dir, []);
     byDir.get(dir).push(file);
-    // Register every ancestor between the root and this folder.
     let d = dir;
     while (d.startsWith(rootResolved) && d !== rootResolved) {
       const parent = path.dirname(d);

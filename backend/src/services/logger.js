@@ -17,8 +17,7 @@ class Logger {
       timestamp
     };
 
-    // Console output, kept to one line per entry (the DB row keeps the
-    // original text; the admin log viewer renders it as text).
+    // One line per console entry; the DB row keeps the original text.
     const prefix = oneLine(`[${timestamp}] [${String(level).toUpperCase()}] [${category}]`);
     const consoleMessage = oneLine(message);
     const consoleDetails = details instanceof Error
@@ -38,7 +37,6 @@ class Logger {
       memoryLogs.pop();
     }
 
-    // SQLite persistence
     try {
       const db = await getDb();
       await db.run(

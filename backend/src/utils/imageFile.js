@@ -3,11 +3,8 @@ import path from 'path';
 
 export const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif']);
 
-// Media folders are full of files that look like images by name but aren't. The worst
-// offenders are macOS AppleDouble sidecars — a folder copied from a Mac carries a 4KB
-// `._www.YTS.MX.jpg` next to the real `www.YTS.MX.jpg`, and since it sorts first, picking
-// "the first image in the folder" picked the junk. That junk then copied cleanly into the
-// cover store and only failed later, at thumbnail time, as a blank card.
+// Media folders hold files named like images that aren't, mainly macOS AppleDouble sidecars
+// (`._cover.jpg`), which sort first and would otherwise become a blank cover.
 export function isJunkFilename(name) {
   return name.startsWith('.') || name.startsWith('._') || name === 'Thumbs.db';
 }
@@ -18,9 +15,7 @@ const MAGIC = [
   { bytes: [0x47, 0x49, 0x46, 0x38], name: 'gif' }
 ];
 
-/**
- * Whether a byte buffer starts with magic bytes of a decodable image.
- */
+/** Whether a byte buffer starts with magic bytes of a decodable image. */
 export function looksLikeImageBuffer(buf) {
   if (!buf || buf.length < 12) return false;
   for (const { bytes } of MAGIC) {
@@ -36,10 +31,7 @@ export function looksLikeImageBuffer(buf) {
   return false;
 }
 
-/**
- * Whether a file is really a decodable image, judged by its first bytes rather than its
- * extension. Cheap enough to run over a folder listing.
- */
+/** Whether a file is really an image, judged by its first bytes rather than its extension. */
 export function looksLikeImage(filePath) {
   let fd;
   try {
@@ -57,11 +49,7 @@ export function looksLikeImage(filePath) {
   }
 }
 
-/**
- * Picks the best cover image sitting next to a media file. Named covers win; otherwise the
- * largest real image in the folder, on the reasoning that a poster outweighs a logo, a
- * scanlation-group banner, or a stray screenshot.
- */
+/** Best cover next to a media file: a named cover, else the largest real image in the folder. */
 export function findCoverInFolder(dirPath) {
   let files;
   try {

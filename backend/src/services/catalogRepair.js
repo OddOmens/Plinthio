@@ -11,19 +11,14 @@ const FILLABLE = ['cover_path', 'cover_source', 'description', 'release_date', '
 const pathHash = (p) => crypto.createHash('md5').update(p).digest('hex');
 
 /**
- * One file, one row. Before 1.8.0 the scan after a rename added a renamed file a second
- * time (the re-linked row kept its old id; see dbItemsByPath in scanner.js), so a library
- * could hold two rows for the same path: shown twice, and in Health as duplicates and
- * volume clashes. This folds each such pair into one, keeping the row people have history
- * on (or else the fuller one) and moving everything that points at the other onto it.
- * Safe to run on every start: with no shared paths it's one query.
+ * Folds rows that share a path into one, keeping the row with history (or else the fuller
+ * one) and repointing everything at it. Cheap to run on every start.
  */
 export async function mergeSamePathRows(db) {
   const shared = await db.all('SELECT path FROM items GROUP BY path HAVING COUNT(*) > 1');
   if (!shared.length) return 0;
 
-  // Every table that points at a title, found rather than listed, so a table added later is
-  // covered too.
+  // Tables with an item_id are discovered, so ones added later are covered too.
   const tables = (await db.all("SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'items'")).map((t) => t.name);
   const refs = [];
   for (const table of tables) {

@@ -7,8 +7,7 @@ const router = express.Router();
 
 router.use(authenticateToken, requireAdmin);
 
-// Running version plus what the last release check found. ?refresh=1 re-checks now
-// (throttled to once a minute server-side, so the button can't be used to hammer GitHub).
+// Running version and the last release check. ?refresh=1 re-checks (throttled to once a minute).
 router.get('/update', async (req, res) => {
   const status = req.query.refresh === '1' ? await checkForUpdate() : getUpdateStatus();
   res.json({ ...status, current: APP_VERSION });

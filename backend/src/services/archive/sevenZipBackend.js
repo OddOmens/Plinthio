@@ -5,39 +5,26 @@ import { execFile } from 'child_process';
 import { config } from '../../config/env.js';
 import { MAX_ENTRY_BYTES, MAX_ARCHIVE_TOTAL_BYTES, MAX_ARCHIVE_ENTRIES } from './handleCache.js';
 
-// Unlike the zip and rar backends, 7-Zip only gives us whole-archive extraction to a
-// directory — there's no "read one entry into memory" API. So a .cb7 is unpacked once into
-// the cache directory on first access and pages are then read straight off disk. The cache
-// is aged out by sweepArchiveCache() below.
+// 7-Zip can only extract whole archives, so a .cb7 is unpacked once into the cache and pages
+// are read off disk. Uses the system 7-Zip so it gets OS security fixes.
 //
-// The unpacking is done by the system's 7-Zip (the `7zip` package: in the Docker image, and
-// one `apt install` away elsewhere), which gets security fixes with the rest of the system.
-// The npm package used before shipped its own 7-Zip binary from 2016.
-//
-// A comic file is whatever somebody downloaded, so nothing is unpacked on trust. The archive
-// is listed first and refused if it isn't a real 7z, would unpack to an absurd size or number
-// of files, or carries links or paths that point outside its own folder. Only then is it
-// unpacked, against a clock, into a temporary folder that is checked again before it is used.
+// Archives are untrusted: the listing is checked first (real 7z, sane size and count, no
+// links or escaping paths), then it's unpacked with a timeout into a temp folder that is
+// verified again before use.
 const ARCHIVE_CACHE_DIR = path.join(config.cacheDir, 'archives');
 
 const LIST_TIMEOUT_MS = 30 * 1000;
 const EXTRACT_TIMEOUT_MS = 5 * 60 * 1000;
-// A listing is a few hundred bytes an entry; one that outgrows this has far more entries
-// than MAX_ARCHIVE_ENTRIES allows anyway.
+// A listing this large has far more entries than MAX_ARCHIVE_ENTRIES allows anyway.
 const LIST_MAX_OUTPUT_BYTES = 32 * 1024 * 1024;
-// Unpacking LZMA needs as much memory as the dictionary the archive was packed with, and the
-// format allows gigabytes. 7-Zip's own "ultra" setting uses 64 MB.
+// LZMA needs memory equal to the archive's dictionary size, which can be gigabytes ("ultra" is 64 MB).
 const MAX_DICTIONARY_BYTES = 512 * 1024 * 1024;
-// Encrypted archives make 7-Zip ask for a password on the terminal. Handing it one that is
-// plainly wrong makes it fail straight away instead (the archive is then reported as
-// password-protected); it is ignored for an archive that isn't encrypted.
+// A dummy password makes encrypted archives fail fast instead of prompting; unencrypted ones ignore it.
 const NO_PASSWORD = '-pplinthio-has-no-password';
 
 const PASSWORD_MESSAGE = 'This archive is password-protected, so its pages can\'t be read';
 const MISSING_MESSAGE = 'CB7/7z support needs the 7zip package — install it (apt install 7zip, brew install sevenzip) '
   + 'or set PLINTHIO_7Z_BIN to a 7-Zip program';
-
-// ─── Finding 7-Zip ──────────────────────────────────────────────────────────
 
 function isProgram(file) {
   try {
@@ -63,11 +50,8 @@ function onPath(name) {
 
 let binary = null;
 
-/**
- * The 7-Zip program to run: PLINTHIO_7Z_BIN if set, else the first of 7zz, 7z and 7za on the
- * PATH (the names the full, the classic and the reduced builds install under). Remembered
- * once found; a failed search is repeated, so installing the package needs no restart.
- */
+// PLINTHIO_7Z_BIN, else the first of 7zz/7z/7za on PATH. Only a success is cached, so
+// installing 7-Zip needs no restart.
 export function findSevenZip() {
   if (binary) return binary;
   const configured = (process.env.PLINTHIO_7Z_BIN || '').trim();
@@ -92,11 +76,8 @@ export function forgetSevenZip() {
   binary = null;
 }
 
-/**
- * Runs 7-Zip with `args` — an argument list handed straight to the program, never a shell —
- * and resolves with what it printed. It is killed if it runs past `timeoutMs`, and anything
- * but a clean exit (7-Zip exits 1 for warnings, 2 for errors) is an error.
- */
+// Runs 7-Zip without a shell and resolves with stdout. Killed after `timeoutMs`; any non-zero
+// exit (1 = warnings, 2 = errors) rejects.
 export function runSevenZip(args, { timeoutMs = LIST_TIMEOUT_MS, maxBuffer = 1024 * 1024 } = {}) {
   const program = findSevenZip();
   return new Promise((resolve, reject) => {
@@ -105,7 +86,7 @@ export function runSevenZip(args, { timeoutMs = LIST_TIMEOUT_MS, maxBuffer = 102
       killSignal: 'SIGKILL',
       maxBuffer,
       windowsHide: true,
-      // File names in the listing and on disk as UTF-8, whatever locale the server runs in.
+      // UTF-8 file names regardless of server locale.
       env: { ...process.env, LC_ALL: 'C.UTF-8' }
     }, (err, stdout, stderr) => {
       if (!err) return resolve(stdout);
@@ -120,16 +101,13 @@ export function runSevenZip(args, { timeoutMs = LIST_TIMEOUT_MS, maxBuffer = 102
       const firstLine = String(stderr || '').split('\n').map((l) => l.trim()).find(Boolean) || '';
       reject(new Error(`7-Zip reported a problem (exit ${err.code})${firstLine ? `: ${firstLine.slice(0, 200)}` : ''}`));
     });
-    // Nothing is ever typed at it: with no input, a prompt fails instead of waiting.
+    // Closed stdin makes any prompt fail instead of hanging.
     child.stdin?.end();
     child.on('error', () => {}); // reported through the callback above
   });
 }
 
-// ─── Reading 7-Zip's listing ────────────────────────────────────────────────
-
-// `7z l -slt` prints the archive's own properties, a line of dashes, then one block of
-// "Key = Value" lines per entry with a blank line between blocks:
+// `7z l -slt` prints archive properties, a line of dashes, then a "Key = Value" block per entry:
 //
 //   Path = /library/Volume 01.cb7
 //   Type = 7z
@@ -142,11 +120,9 @@ export function runSevenZip(args, { timeoutMs = LIST_TIMEOUT_MS, maxBuffer = 102
 //   Encrypted = -
 //   Method = LZMA2:24
 //
-// Entry names are printed as they are, so a name with a line break in it can make up lines
-// of its own. The reading below is therefore one-way strict: every size line is added up,
-// every attribute line is looked at, and anything that isn't a plain "Key = Value" line — or
-// has a slash where only a path can have one — marks the whole listing as not to be trusted.
-// Invented lines can only make an archive look worse, never better.
+// Names are printed raw, so a name containing newlines can forge lines. Parsing is therefore
+// one-way strict: sizes add up, attributes accumulate, and any odd line marks the listing
+// malformed, so forged lines can only make an archive look worse.
 const PATH_KEYS = new Set(['Path', 'Symbolic Link', 'Hard Link']);
 
 function keyValue(line) {
@@ -157,10 +133,10 @@ function keyValue(line) {
 }
 
 /**
- * Parses the output of `7z l -slt` into
+ * Parses `7z l -slt` output into
  *   { version, types: [string], methods: [string], malformed: bool,
  *     entries: [{ path, size, attributes, encrypted, link }] }
- * Nothing is judged here; see sevenZipRefusal.
+ * Judging happens in sevenZipRefusal.
  */
 export function parseSevenZipListing(text) {
   const lines = String(text || '').split(/\r?\n/);
@@ -220,10 +196,8 @@ export function parseSevenZipListing(text) {
   return listing;
 }
 
-// "Attributes = A -rw-r--r--": Windows flag letters, then (for archives made on Linux or
-// macOS) the mode as `ls -l` shows it. A file is "-", a folder "d"; "l" is a symbolic link and
-// the rest are devices, pipes and sockets. Among the Windows letters, L is a reparse point —
-// what junctions and Windows symlinks are.
+// "Attributes = A -rw-r--r--": Windows flags (L = reparse point, i.e. a link), then optionally
+// a Unix mode where only "-" (file) and "d" (folder) are allowed.
 function attributeProblem(attributes) {
   for (const token of attributes.split(/\s+/).filter(Boolean)) {
     if (/^[-a-z][-rwxsStT]{9}[+.@]?$/.test(token)) {
@@ -267,18 +241,14 @@ export function largestDictionary(methods) {
 
 const gb = (bytes) => `${Math.round(bytes / 1024 ** 3 * 10) / 10} GB`;
 
-/**
- * Why an archive with this listing must not be unpacked — a short phrase that finishes
- * "Could not extract 7z archive: …" — or null when it may be.
- */
+// Why this archive must not be unpacked (finishes "Could not extract 7z archive: …"), or null.
 export function sevenZipRefusal(listing, {
   maxEntries = MAX_ARCHIVE_ENTRIES,
   maxTotalBytes = MAX_ARCHIVE_TOTAL_BYTES,
   maxDictionaryBytes = MAX_DICTIONARY_BYTES
 } = {}) {
-  // 7-Zip decides what a file is by its content, and opens tar, zip, disk images and dozens
-  // more. A .cb7 is only ever read as 7z: the other formats bring their own kinds of links and
-  // their own bugs, and the zip and rar ones already have safer readers here.
+  // 7-Zip opens dozens of formats by content; only 7z is allowed, as others bring their own
+  // link types and bugs.
   if (!listing.types.length) return 'its listing could not be read';
   const other = listing.types.find((type) => type.toLowerCase() !== '7z');
   if (other !== undefined) return `it is not a 7z archive (it is ${other.slice(0, 20) || 'unknown'})`;
@@ -297,11 +267,8 @@ export function sevenZipRefusal(listing, {
   return null;
 }
 
-// ─── Unpacking ──────────────────────────────────────────────────────────────
-
-// Keyed on path, size and mtime, so a file replaced on disk is unpacked again rather than
-// served from the old copy. (The "v2" also retires folders unpacked before archives were
-// checked first; the sweep below clears those out.)
+// Keyed on path, size and mtime so a replaced file is unpacked again. "v2" retires folders
+// unpacked without the listing check.
 function cacheDirFor(archivePath) {
   const resolved = path.resolve(archivePath);
   const st = fs.statSync(resolved);
@@ -309,12 +276,8 @@ function cacheDirFor(archivePath) {
   return path.join(ARCHIVE_CACHE_DIR, hash);
 }
 
-/**
- * Looks over a freshly unpacked folder: only plain files and folders, within the same count
- * and size limits the listing was held to. The listing check should have caught all of it;
- * this is what is actually on disk, so it has the last word. Modes are reset on the way (an
- * archive can carry folders nobody may enter, or setuid files).
- */
+// Final check of what actually landed on disk: plain files and folders only, within limits.
+// Also resets modes (archives can carry unenterable folders or setuid files).
 export function verifyUnpacked(root, { maxEntries = MAX_ARCHIVE_ENTRIES, maxTotalBytes = MAX_ARCHIVE_TOTAL_BYTES } = {}) {
   let count = 0;
   let total = 0;
@@ -344,7 +307,7 @@ let warnedOld = false;
 
 async function unpackChecked(archivePath, dir) {
   const archive = path.resolve(archivePath);
-  // `--` ends the options, so a file name can never be read as one (it is absolute anyway).
+  // `--` stops a file name being read as an option.
   const listing = parseSevenZipListing(await runSevenZip(
     ['l', '-slt', '-t7z', '-sccUTF-8', NO_PASSWORD, '--', archive],
     { timeoutMs: LIST_TIMEOUT_MS, maxBuffer: LIST_MAX_OUTPUT_BYTES }
@@ -367,7 +330,7 @@ async function unpackChecked(archivePath, dir) {
     try {
       fs.renameSync(tempDir, dir);
     } catch (err) {
-      // Another process got the same archive there first; theirs is as good.
+      // Another process unpacked it first; use theirs.
       if (!fs.existsSync(dir)) throw err;
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
@@ -380,9 +343,8 @@ async function unpackChecked(archivePath, dir) {
 
 const unpacking = new Map(); // cache folder → the unpack under way
 
-// Extraction is written to a temp directory and renamed into place, so a half-extracted
-// archive is never visible as a complete cache entry (same trick thumbnails.js uses). Two
-// requests for the same archive (a page and the next one preloading) share one unpack.
+// Unpacked to a temp dir then renamed, so partial extractions are never visible. Concurrent
+// requests for one archive share a single unpack.
 async function ensureExtracted(archivePath) {
   const dir = cacheDirFor(archivePath);
   if (fs.existsSync(dir)) {
@@ -392,7 +354,7 @@ async function ensureExtracted(archivePath) {
   if (!unpacking.has(dir)) {
     unpacking.set(dir, unpackChecked(archivePath, dir)
       .catch((err) => {
-        // These two already say everything; the rest are reasons this archive was refused.
+        // These messages stand alone; others are refusal reasons needing the prefix.
         if (err.message === PASSWORD_MESSAGE || err.message === MISSING_MESSAGE) throw err;
         throw new Error(`Could not extract 7z archive: ${err.message}`);
       })
@@ -424,12 +386,12 @@ export default {
   async readEntry(archivePath, name, { maxBytes = MAX_ENTRY_BYTES } = {}) {
     const dir = await ensureExtracted(archivePath);
     const target = path.join(dir, name);
-    // Entry names come from the archive itself, so keep the resolved read inside the cache.
+    // Entry names come from the archive, so keep the read inside the cache folder.
     if (!path.resolve(target).startsWith(path.resolve(dir) + path.sep)) return null;
-    // Only a plain file: a symlink the archive unpacked could point anywhere on disk.
+    // Plain files only: a symlink could point anywhere.
     const stat = fs.lstatSync(target, { throwIfNoEntry: false });
     if (!stat?.isFile()) return null;
-    // ...and not through a linked folder either: where the file really is must be inside too.
+    // Nor through a linked folder: the real path must be inside too.
     if (!fs.realpathSync(target).startsWith(fs.realpathSync(dir) + path.sep)) return null;
     if (stat.size > Math.min(maxBytes, MAX_ENTRY_BYTES)) throw new Error('This page is too large to open');
     return fs.readFileSync(target);
@@ -446,7 +408,7 @@ export function sweepArchiveCache(maxAgeMs = 24 * 60 * 60 * 1000) {
         fs.rmSync(dir, { recursive: true, force: true });
       }
     } catch {
-      // Already gone — nothing to do.
+      // Already gone.
     }
   }
 }

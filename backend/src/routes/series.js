@@ -12,11 +12,8 @@ const AGE_RATINGS = new Set(['Everyone', 'Teen', 'Mature', 'Explicit']);
 
 router.use(authenticateToken);
 
-// Reader settings for a series. Returns defaults rather than 404 when a series has never
-// been configured, so the reader always has something to open with.
-// A series the account can't see any title of (age limit, Kids Mode, hidden by an admin)
-// answers with the same defaults as one that doesn't exist, so asking by name reveals
-// neither that it's there nor how it's rated. Editors manage these settings and see them all.
+// Reader settings for a series; defaults instead of 404 when unconfigured. A series the account
+// can't see also gets defaults, so asking by name reveals nothing about it.
 router.get('/:libraryId/:seriesName/settings', handle(async (req, res) => {
   const { libraryId } = req.params;
   let seriesName = req.params.seriesName;
@@ -41,8 +38,7 @@ router.get('/:libraryId/:seriesName/settings', handle(async (req, res) => {
   });
 }));
 
-// Editing series metadata is a library-management action, so it needs editor rights — the
-// same bar as the per-item metadata editor in routes/metadata.js.
+// Library management, so editor rights (same as the per-item metadata editor).
 router.put('/:libraryId/:seriesName/settings', requireEditor, async (req, res) => {
   const { libraryId } = req.params;
   const seriesName = decodeURIComponent(req.params.seriesName);
@@ -74,8 +70,7 @@ router.put('/:libraryId/:seriesName/settings', requireEditor, async (req, res) =
       [crypto.randomUUID(), libraryId, seriesName, readingDirection || null, ageRating || null, titleOverride || null]
     );
 
-    // A renamed series has to move its items with it, otherwise the settings row is keyed to
-    // a series name that no item carries any more and the settings silently stop applying.
+    // A rename moves its items too, or the settings row would point at a name no item carries.
     const renamed = titleOverride && titleOverride !== seriesName;
     if (renamed) {
       await db.run(

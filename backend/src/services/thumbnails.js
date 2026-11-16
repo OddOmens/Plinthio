@@ -5,9 +5,7 @@ import { config } from '../config/env.js';
 import { getDb } from '../config/database.js';
 import { oneLine } from './logger.js';
 
-// The widths /api/media/cover will build (anything else snaps to 360), so a client can't make
-// the server cache a new variant per request. 1280 is for big cards and banners (a 900px-wide
-// card on a 2x display); sharp never enlarges, so a small cover is simply served as it is.
+// Fixed widths (others snap to 360) so clients can't create unbounded cache variants.
 export const THUMB_WIDTHS = [180, 360, 720, 1280];
 
 const THUMB_DIR = path.join(config.cacheDir, 'thumbnails');
@@ -15,29 +13,19 @@ if (!fs.existsSync(THUMB_DIR)) {
   fs.mkdirSync(THUMB_DIR, { recursive: true });
 }
 
-/**
- * Returns the expected thumbnail path for an item ID and width
- */
 export function getThumbnailPath(itemId, width = 360) {
   return path.join(THUMB_DIR, `${itemId}_w${width}.webp`);
 }
 
-/**
- * Checks if a cached thumbnail exists on disk
- */
 export function hasThumbnail(itemId, width = 360) {
   const thumbPath = getThumbnailPath(itemId, width);
   return fs.existsSync(thumbPath);
 }
 
-/**
- * Resizes and compresses an image to an optimized WebP thumbnail
- * Saves to disk cache atomically to prevent corrupted reads.
- */
+/** Written via temp file + rename so readers never see a partial thumbnail. */
 export async function getOrCreateThumbnail(itemId, coverFilename, width = 360, quality = 80) {
   const thumbPath = getThumbnailPath(itemId, width);
 
-  // Return immediately if cached
   if (fs.existsSync(thumbPath)) {
     return thumbPath;
   }
@@ -68,15 +56,11 @@ export async function getOrCreateThumbnail(itemId, coverFilename, width = 360, q
       try { fs.unlinkSync(tempPath); } catch (e) {}
     }
     console.warn(`[Thumbnails] Failed to generate thumbnail for ${itemId}: ${oneLine(err.message)}`);
-    // Fall back to original cover path
     return coverFullPath;
   }
 }
 
-/**
- * Background warmer: Pre-generates thumbnails for all existing items
- * Uses a concurrency pool to avoid saturating CPU.
- */
+/** Pre-generates 360px thumbnails with a small worker pool to avoid saturating the CPU. */
 export async function warmThumbnailCache(concurrency = 3) {
   try {
     const db = await getDb();
@@ -104,7 +88,7 @@ export async function warmThumbnailCache(concurrency = 3) {
           await getOrCreateThumbnail(item.id, item.cover_path, 360);
           completed++;
         } catch (err) {
-          // Silent continue
+          // getOrCreateThumbnail already logged it; carry on with the rest.
         }
       }
     }

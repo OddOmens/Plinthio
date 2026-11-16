@@ -12,9 +12,8 @@
 // Codes marked side: 'client' are raised by the web app itself (e.g. the video player
 // noticing the browser can't decode a stream) rather than returned by the server.
 //
-// Codes are permanent: once published, a code keeps its meaning. Retire one by leaving it
-// out, never by reusing it. docs/error-codes.md is generated from this file
-// (`npm run docs:errors`), and a test fails if the two drift apart.
+// Codes are permanent: retire one by leaving it out, never by reusing it.
+// docs/error-codes.md is generated from this file (`npm run docs:errors`); a test checks it.
 
 import { oneLine, oneLineError } from './utils/oneLine.js';
 
@@ -522,10 +521,7 @@ export class PlinthioError extends Error {
  *   sendError(req, res, 'P001', { message: 'name is required' })
  *   sendError(req, res, 'P000', { err })                      // logs err; admins get detail
  *
- * Unexpected failures (SQL errors, filesystem errors) carry internals in their message —
- * table names, absolute paths, library layout. Those belong in the server log, not in a
- * response any signed-in viewer can read. Admins still get the detail, since they're the
- * ones who'd act on it and can already read the logs anyway.
+ * Internals in an error (table names, paths) go to the log; only admins get them as detail.
  */
 export function sendError(req, res, code, { message, err, status, extra } = {}) {
   const entry = ERROR_CODES[code] || ERROR_CODES.P000;
@@ -545,8 +541,7 @@ export function sendError(req, res, code, { message, err, status, extra } = {}) 
   res.status(httpStatus).json(body);
 }
 
-// Safety net: any error response a route sends without a code gets one from its HTTP status,
-// so every error the API returns can be looked up in the docs.
+// Gives any codeless error response a code from its HTTP status.
 export function attachErrorCodes(req, res, next) {
   const json = res.json.bind(res);
   res.json = (body) => {

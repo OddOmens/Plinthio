@@ -5,21 +5,10 @@ import net from 'net';
 import zlib from 'zlib';
 import { Transform, pipeline } from 'stream';
 
-// Outbound HTTP for Live TV: playlists, guides, channel streams and logos. Every one of those
-// URLs comes from somewhere Plinthio doesn't control (a public playlist, an XMLTV file, a
-// stream's own playlist), so without a guard the server would fetch whatever they name —
-// the router's admin page, a container's metadata endpoint, Plinthio's own API on localhost.
-//
-// The guard runs where it can't be dodged: in the DNS lookup the socket itself uses to
-// connect. Every address a name resolves to is checked, and the connection goes to one of
-// those checked addresses, so a name that resolves somewhere public for a check and somewhere
-// private a moment later (DNS rebinding) never gets a second chance. Literal IPs, which skip
-// the lookup, are checked before the request. Redirects are followed by hand, each hop
-// checked again.
-//
-// A host can be let through to private addresses (`allowPrivateHosts`) — that's how an
-// admin's own playlist on a LAN IPTV box works — but link-local and cloud metadata
-// addresses are never reachable, whoever asks.
+// SSRF-guarded outbound HTTP for Live TV, whose URLs all come from untrusted sources.
+// The check runs inside the socket's own DNS lookup, so DNS rebinding can't slip past it;
+// literal IPs are checked up front, and each redirect hop is re-checked.
+// `allowPrivateHosts` lets LAN playlists through, but link-local/metadata addresses are never reachable.
 
 export class UpstreamError extends Error {
   constructor(message, { blocked = false, status = null } = {}) {
@@ -40,15 +29,13 @@ function cidrs(list) {
   return blocks;
 }
 
-// Never reachable: "this network", link-local (169.254.169.254 is the AWS/GCP/Azure metadata
-// address), multicast, reserved/broadcast, Alibaba's metadata address, and their IPv6 kin.
+// Never reachable: "this network", link-local (cloud metadata), multicast, reserved, and IPv6 equivalents.
 const NEVER = cidrs([
   '0.0.0.0/8', '169.254.0.0/16', '224.0.0.0/4', '240.0.0.0/4', '100.100.100.200',
   '::/128', 'fe80::/10', 'ff00::/8', 'fd00:ec2::254'
 ]);
 
-// Private unless the host is explicitly allowed: loopback, RFC 1918, carrier-grade NAT (also
-// Tailscale's range), IETF protocol assignments, benchmarking, and IPv6 loopback / ULA.
+// Private unless allowed: loopback, RFC 1918, CGNAT (incl. Tailscale), IETF, benchmarking, IPv6 loopback/ULA.
 const PRIVATE = cidrs([
   '127.0.0.0/8', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10',
   '192.0.0.0/24', '198.18.0.0/15',
@@ -73,8 +60,7 @@ function v6Groups(ip) {
 
 const v4From = (hi, lo) => `${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`;
 
-// The IPv4 address an IPv6 one carries, for the forms that route to it: IPv4-mapped
-// (::ffff:a.b.c.d), IPv4-compatible (::a.b.c.d), NAT64 (64:ff9b::/96) and 6to4 (2002::/16).
+// Embedded IPv4 in mapped, compatible, NAT64 (64:ff9b::/96) and 6to4 (2002::/16) addresses.
 function embeddedV4(ip) {
   const g = v6Groups(ip);
   if (g.length !== 8) return null;
@@ -106,9 +92,7 @@ export function addressBlock(address, { allowPrivate = false } = {}) {
   return null;
 }
 
-// The lookup the socket connects with: resolves every address and refuses the whole name if
-// any one of them is off limits (a name that is half public, half private is a rebinding
-// setup, not a CDN).
+// Refuses the whole name if any resolved address is blocked (mixed answers suggest rebinding).
 function guardedLookup(allowPrivate) {
   return (hostname, options, callback) => {
     if (typeof options === 'function') {
@@ -129,8 +113,7 @@ function guardedLookup(allowPrivate) {
   };
 }
 
-// Kept-alive connections are pooled per guard setting: a socket opened for an allowed private
-// host is never handed to a request that wasn't allowed one.
+// Separate pools so a private-allowed socket is never reused for a public-only request.
 const AGENT_OPTIONS = { keepAlive: true, maxSockets: 64, maxFreeSockets: 16 };
 const agents = {
   public: { 'http:': new http.Agent(AGENT_OPTIONS), 'https:': new https.Agent(AGENT_OPTIONS) },
@@ -150,7 +133,7 @@ export function parseHttpUrl(raw) {
     throw new UpstreamError(`Only http and https addresses can be used (got ${url.protocol})`, { blocked: true });
   }
   if (url.username || url.password) {
-    // Credentials in the URL would be sent as Basic auth to whatever host that is.
+    // Don't send URL credentials as Basic auth.
     url.username = '';
     url.password = '';
   }
@@ -165,10 +148,8 @@ export function hostOf(raw) {
   }
 }
 
-// The host of `raw` when it plainly names something on the local network — a private IP, or a
-// name only a home network can resolve (no dot, .local, .lan, .home.arpa, .internal,
-// .localdomain) — else null. Only such hosts are ever let through to private addresses: a
-// public name that happens to resolve privately later is exactly what DNS rebinding looks like.
+// The host if it plainly names the LAN (private IP, dotless or local-only TLD), else null. Only
+// these may reach private addresses; a public name resolving privately looks like rebinding.
 export function lanHostOf(raw) {
   const host = hostOf(raw)?.replace(/^\[|\]$/g, '');
   if (!host) return null;
@@ -191,8 +172,7 @@ function requestOnce(url, { allowPrivate, headers, timeoutMs, signal }) {
       lookup: guardedLookup(allowPrivate),
       signal
     });
-    // An idle socket timeout: covers a slow connect, a server that never answers, and a body
-    // that stalls halfway.
+    // Idle timeout: covers slow connects, no answer, and stalled bodies.
     req.setTimeout(timeoutMs, () => req.destroy(new UpstreamError('The server took too long to answer')));
     req.once('response', resolve);
     req.once('error', (err) => reject(err instanceof UpstreamError ? err : new UpstreamError(err.message, { blocked: err.code === 'EBLOCKED' })));
@@ -201,11 +181,8 @@ function requestOnce(url, { allowPrivate, headers, timeoutMs, signal }) {
 }
 
 /**
- * Opens `rawUrl` and resolves with `{ res, url }` once the final response's headers arrive
- * (`url` is where redirects ended up — the base for resolving relative links in it). The body
- * is left unread for the caller to stream or buffer. Non-2xx statuses are returned, not thrown.
- *
- *   allowPrivateHosts  host names that may resolve to private addresses (see above)
+ * Resolves `{ res, url }` at the final response's headers; `url` is after redirects. Body unread;
+ * non-2xx statuses are returned, not thrown.
  */
 export async function openUpstream(rawUrl, { allowPrivateHosts = [], headers = {}, timeoutMs = 15000, maxRedirects = 5, signal } = {}) {
   const allowed = new Set([...allowPrivateHosts].filter(Boolean).map((h) => h.toLowerCase()));
@@ -287,9 +264,8 @@ export function peek(stream) {
 }
 
 /**
- * The body as a readable stream, gunzipped when it is gzip (by its magic bytes — a `.gz`
- * guide is often served as plain application/octet-stream) and capped at `maxBytes` after
- * decompression, so a small gzip bomb can't fill memory or disk.
+ * Body stream, gunzipped by magic bytes (content types are unreliable), capped at `maxBytes`
+ * after decompression against gzip bombs.
  */
 export async function decodedBody(res, maxBytes) {
   const first = await peek(res);

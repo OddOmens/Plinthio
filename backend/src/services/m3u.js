@@ -1,24 +1,18 @@
-// M3U channel playlists (the IPTV flavour: #EXTM3U, then #EXTINF lines carrying tvg-* and
-// group-title attributes, each followed by its stream URL). Used by services/liveTv.js.
+// IPTV M3U playlist parser:
 //
 //   #EXTM3U x-tvg-url="https://example.com/guide.xml.gz"
 //   #EXTINF:-1 tvg-id="News.us@SD" tvg-logo="https://…/logo.png" group-title="News;General",News 24 (720p) [Geo-blocked]
 //   #EXTVLCOPT:http-referrer=https://example.com/
 //   https://example.com/news/index.m3u8
 
-// A playlist is whatever the address returned, so it is read within limits. A line longer
-// than this is not a channel (real ones are a few hundred characters, with the odd 2 KB
-// stream address) and is dropped unread; a playlist with more channels than this is cut off.
+// Limits for untrusted input: longer lines are dropped unread; extra channels are cut off.
 export const MAX_LINE_LENGTH = 8192;
 export const MAX_CHANNELS = 100000;
-// The parser hands the event loop back after this many lines, so the server keeps answering
-// requests while a 20 MB playlist is read (see parseM3uAsync).
+// Lines per slice before yielding to the event loop (parseM3uAsync).
 const LINES_PER_SLICE = 2000;
 
-// Attributes as `key="value"`; some playlists leave values unquoted, which is tolerated.
-// A key starts where a word starts (the lookbehind): without that, a long run of letters with
-// no "=" is scanned to its end again from every letter in it, which on one hostile 80 KB
-// line held the whole server for 15 seconds.
+// `key="value"`, unquoted values tolerated. The lookbehind anchors keys at word starts to
+// avoid quadratic backtracking on long runs of letters.
 const ATTRIBUTE_RE = /(?<![\w-])([A-Za-z][\w-]*)=(?:"([^"]*)"|([^\s,"]+))/g;
 
 function parseAttributes(text) {
@@ -29,8 +23,7 @@ function parseAttributes(text) {
   return attrs;
 }
 
-// Splits an #EXTINF line into its attributes and the display name after the first comma
-// that isn't inside a quoted value.
+// The display name follows the first comma outside quotes.
 function parseExtinf(line) {
   const body = line.slice(line.indexOf(':') + 1);
   let inQuotes = false;
@@ -48,17 +41,14 @@ function parseExtinf(line) {
   return { attrs: parseAttributes(head), name };
 }
 
-// Public playlists tag names with "[Geo-blocked]" and "[Not 24/7]" (sometimes both, as
-// "[Not 24/7;Geo-blocked]"). The geo tag becomes a flag; both come out of the name.
+// "[Geo-blocked]" / "[Not 24/7]" name tags (possibly combined with ";") are stripped; geo becomes a flag.
 const TAG_GEO = /^geo-?blocked$/i;
 const TAG_DROP = /^(geo-?blocked|not 24\/7)$/i;
 
 export function cleanChannelName(raw) {
   let geoBlocked = false;
   const name = String(raw || '')
-    // "[" up to the next "]" with no "[" between, and no leading-space match: either would
-    // make a run of "[" (or of spaces) cost its length squared. The space a rewritten tag is
-    // given back is squeezed with the rest just below.
+    // No nested "[" and no leading-space match, to keep this linear.
     .replace(/\[([^[\]]*)\]/g, (whole, inner) => {
       const parts = inner.split(';').map((p) => p.trim()).filter(Boolean);
       if (parts.some((p) => TAG_GEO.test(p))) geoBlocked = true;
@@ -71,7 +61,7 @@ export function cleanChannelName(raw) {
   return { name, geoBlocked };
 }
 
-/** Whether v1 can play a stream: HLS over http(s). */
+/** Only HLS over http(s) is playable. */
 export function isHlsUrl(raw) {
   let url;
   try {
@@ -83,13 +73,12 @@ export function isHlsUrl(raw) {
   return /\.m3u8$/i.test(url.pathname) || /m3u8/i.test(url.search);
 }
 
-/** Adult content, which the public presets never bring in. */
+/** Adult groups, excluded from public presets. */
 export function isAdultGroup(groups) {
   return groups.some((g) => /xxx|adult/i.test(g));
 }
 
-// tvg-country / tvg-language, as some playlists carry them: the first country (if it's a
-// two-letter code), and every language as given, lower-cased.
+// tvg-country: first two-letter code only. tvg-language: all, lower-cased.
 function playlistCountry(value) {
   const first = String(value || '').split(/[;,\s]+/).find(Boolean) || '';
   return /^[a-z]{2}$/i.test(first) ? first.toUpperCase() : null;
@@ -103,21 +92,20 @@ function playlistLanguages(value) {
   return [...new Set(codes)].slice(0, 20);
 }
 
-// Lines one at a time, without first cutting a 20 MB text into an array of them.
+// Yields lines without splitting the whole text into an array.
 function* linesOf(text) {
   let pos = 0;
   while (pos <= text.length) {
     let end = text.indexOf('\n', pos);
     if (end === -1) end = text.length;
     const stop = end > pos && text[end - 1] === '\r' ? end - 1 : end;
-    // An over-long line is passed on as null: counted, never copied or looked into.
+    // Over-long lines become null: counted, never copied.
     yield stop - pos > MAX_LINE_LENGTH ? null : text.slice(pos, stop);
     pos = end + 1;
   }
 }
 
-// The reading itself, one line at a time, so it can be run straight through (parseM3u) or
-// in slices (parseM3uAsync).
+// Line-at-a-time reader shared by parseM3u and parseM3uAsync.
 function playlistReader() {
   const channels = [];
   const usedKeys = new Map();
@@ -128,7 +116,7 @@ function playlistReader() {
   let skippedLines = 0;
   let truncated = false;
 
-  // Returns false once there is no point reading further.
+  // Returns false to stop reading.
   function line(rawLine) {
     if (rawLine === null) {
       skippedLines++;
@@ -136,7 +124,7 @@ function playlistReader() {
         started = true; // a playlist doesn't open with a line like that
         return false;
       }
-      // Whatever it was, the address after it mustn't be given to the wrong channel.
+      // Don't attach the next URL to the wrong channel.
       pending = null;
       return true;
     }
@@ -215,12 +203,8 @@ function playlistReader() {
 const withoutBom = (text) => String(text || '').replace(/^﻿/, '');
 
 /**
- * Parses an M3U playlist. Returns null when `text` isn't one, else
- *   { guideUrls: [string], channels: [{ stableKey, tvgId, name, logo, groups, url, geoBlocked, headers,
- *     country, languages }], skippedLines, truncated }
- * `stableKey` (the tvg-id, else the name) is unique within the playlist, so a channel keeps
- * its identity — and the admin's hide / kids choices — across refreshes. `skippedLines` counts
- * lines over MAX_LINE_LENGTH; `truncated` says the playlist had more than MAX_CHANNELS.
+ * Returns null when `text` isn't an M3U playlist, else { guideUrls, channels, skippedLines, truncated }.
+ * `stableKey` (tvg-id, else name; unique per playlist) keeps a channel's identity across refreshes.
  */
 export function parseM3u(text) {
   const reader = playlistReader();
@@ -230,10 +214,7 @@ export function parseM3u(text) {
   return reader.result();
 }
 
-/**
- * parseM3u for a playlist that may be large: the same result, read a slice at a time with
- * the event loop given a turn between slices.
- */
+/** parseM3u that yields to the event loop between slices. */
 export async function parseM3uAsync(text) {
   const reader = playlistReader();
   let count = 0;

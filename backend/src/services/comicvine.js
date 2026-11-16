@@ -3,12 +3,8 @@ import { fetchJson } from './providerHttp.js';
 import { htmlToText } from './bookMetadata.js';
 import { getSetting } from './settings.js';
 
-/**
- * Comic Vine — free, but every request needs a key of your own: a free account at
- * comicvine.gamespot.com, then comicvine.gamespot.com/api. Western comics: series ("volumes"
- * there), publishers, creators and each issue's cover. 200 requests an hour per kind of
- * lookup are allowed, so answers are kept for a while.
- */
+// Comic Vine: needs a free per-user key (comicvine.gamespot.com/api). Series are "volumes"
+// there. Limited to 200 requests an hour per resource, so answers are cached.
 const CACHE_MS = 60 * 60 * 1000;
 const API = 'https://comicvine.gamespot.com/api';
 

@@ -3,24 +3,18 @@ import { fetchTmdbDetails, findTmdbId, getTmdbApiKey } from './externalMetadata.
 import { cleanSearchTitle, parseMediaTitle } from './titleCleaner.js';
 import { logger } from './logger.js';
 
-// Cast, crew and studios for a movie or show, as shown on its title page. Fetched from TMDB
-// the first time the page is opened and kept on the item, the same way the world rating is
-// (see ratings.js). Credits barely change, so a month between refreshes is plenty; a miss
-// is remembered for the same span so an unknown title isn't searched on every open.
+// Cast, crew and studios from TMDB, fetched on first page open and cached on the item for a
+// month. Misses are cached too, so unknown titles aren't searched on every open.
 export const CREDIT_TYPES = new Set(['movie', 'show', 'anime']);
 const CREDITS_MAX_AGE_DAYS = 30;
-// A film's credits cached before the collection was recorded count as stale, so the film
-// still gets grouped (json_type is NULL for a missing key, 'null' for a known-empty one).
+// Cached credits missing a newer field count as stale (json_type is NULL for a missing key,
+// 'null' for a known-empty one).
 const HAS_COLLECTION_FIELD = `(media_type != 'movie' OR credits_json IS NULL OR json_type(credits_json, '$.collectionId') IS NOT NULL)`;
-// Likewise credits cached before the pause-screen facts were kept.
 const HAS_FACTS_FIELD = `(credits_json IS NULL OR json_type(credits_json, '$.keywords') IS NOT NULL)`;
-// And a show's credits cached before its season posters were.
 const HAS_SEASONS_FIELD = `(media_type = 'movie' OR credits_json IS NULL OR json_type(credits_json, '$.seasons') IS NOT NULL)`;
-// And credits cached before the backdrop and logo were.
 const HAS_ARTWORK_FIELD = `(credits_json IS NULL OR json_type(credits_json, '$.backdropPath') IS NOT NULL)`;
 
-// Episodes of one show share the show's credits, so opening several at once (or one from
-// two tabs) collapses into a single lookup.
+// Episodes share their show's credits, so concurrent opens collapse into one lookup.
 const inFlight = new Map();
 
 function parse(json) {
@@ -32,11 +26,7 @@ function parse(json) {
   }
 }
 
-/**
- * Returns the item's credits, looking them up first if they're missing or stale. Never
- * throws — no key or a TMDB outage just means no credits this time. Returns null when
- * there are none.
- */
+// The item's credits, refreshed if missing or stale. Never throws; null when there are none.
 export async function ensureCredits(db, item) {
   if (!CREDIT_TYPES.has(item.media_type)) return null;
 
@@ -107,11 +97,8 @@ async function withCollection(db, item, credits) {
   return credits;
 }
 
-/**
- * Groups a library's films into their TMDB collection ("Shrek Collection") once it holds
- * at least two of them — a lone film stays a lone film rather than a one-film collection.
- * Only films with no collection yet are touched, so one set by hand is kept.
- */
+// Groups a library's films into their TMDB collection once it holds at least two. Films
+// already in a collection (e.g. set by hand) are left alone.
 export async function assignCollection(db, libraryId, collection) {
   const films = await db.all(
     `SELECT id, series FROM items
@@ -129,10 +116,7 @@ export async function assignCollection(db, libraryId, collection) {
   logger.info('metadata', `Grouped ${loose.length} film(s) into "${collection}"`);
 }
 
-// ─── Background backfill ─────────────────────────────────────────────────────
-// Films get their credits (and so their collection) when their page is first opened; this
-// fills in the rest after startup and after each scan, so collections appear on the shelf
-// without opening every film. One lookup at a time, spaced out, and only with a TMDB key.
+// Fills in film credits (and so collections) after startup and each scan, one spaced lookup at a time.
 const BACKFILL_SPACING_MS = 400;
 let backfillRunning = false;
 
@@ -158,10 +142,7 @@ export async function backfillMovieCredits() {
   }
 }
 
-/**
- * After a metadata match: remember which TMDB title it is and let the next page view
- * refetch the credits for it. For an episode that's the whole show.
- */
+// After a metadata match: store the TMDB id and force a credits refetch (whole show for episodes).
 export async function resetCredits(db, item, tmdbId) {
   if (!CREDIT_TYPES.has(item.media_type) || !tmdbId) return;
   const isEpisode = item.media_type !== 'movie' && item.series;

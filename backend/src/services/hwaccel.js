@@ -3,11 +3,8 @@ import { getDb } from '../config/database.js';
 import { logger } from './logger.js';
 import { getSetting } from './settings.js';
 
-// Frames are decoded in software then uploaded to the GPU for encoding (sw-decode + hw-encode).
-// A full hw-decode + hw-encode pipeline (via -hwaccel vaapi + vpp_vaapi) would be marginally
-// faster but requires vpp_vaapi, which is not compiled into the standard Ubuntu/Debian ffmpeg
-// package. The sw-decode + hwupload path still offloads encoding to the Intel UHD GPU via
-// VAAPI, cutting CPU usage dramatically compared to software libx264.
+// Software decode + hardware encode: full hardware decode needs vpp_vaapi, which distro
+// ffmpeg builds lack, and encoding is where the CPU savings are.
 const HWACCELS = {
   nvenc: {
     encoder: 'h264_nvenc',
@@ -21,7 +18,6 @@ const HWACCELS = {
   },
   vaapi: {
     encoder: 'h264_vaapi',
-    // Software decode, then upload frames to GPU for encoding — works with any ffmpeg build.
     deviceArgs: ['-vaapi_device', '/dev/dri/renderD128'],
     filter: (height) => `scale=-2:${height},format=nv12,hwupload`
   }
@@ -43,12 +39,8 @@ function runFfmpeg(args) {
   });
 }
 
-/**
- * Encodes two seconds of a generated test pattern with the given method. This is the only
- * trustworthy check: distro ffmpeg builds advertise h264_nvenc/h264_qsv/h264_vaapi whether
- * or not any matching hardware is present or passed into the container, so going by the
- * encoder list alone picks an encoder that fails on every real playback.
- */
+// Test-encodes two seconds of a pattern. Distro ffmpeg builds list hardware encoders whether
+// or not the hardware is present, so a real encode is the only trustworthy check.
 export async function testHwaccel(name) {
   const cfg = HWACCELS[name];
   if (!cfg) return { ok: false, error: `Unknown acceleration method: ${name}` };
@@ -92,11 +84,7 @@ export function getDetectedHwaccel() {
   return detectionPromise;
 }
 
-/**
- * The acceleration actually in force, honouring the admin's transcode_hwaccel setting:
- * 'auto' (default) uses whatever passed detection, 'none' forces software, and naming a
- * specific method forces that one — useful when detection guesses wrong on an unusual setup.
- */
+// The method in force per transcode_hwaccel: 'auto' (detected), 'none' (software), or a named method.
 export async function getActiveHwaccel() {
   let preference = 'auto';
   try {
@@ -104,7 +92,7 @@ export async function getActiveHwaccel() {
     const stored = await getSetting(db, 'transcode_hwaccel');
     if (stored) preference = stored;
   } catch {
-    // Settings unavailable (very early boot) — fall back to auto-detection.
+    // Settings unavailable during early boot; use auto-detection.
   }
 
   if (preference === 'none') return null;

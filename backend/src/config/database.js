@@ -5,9 +5,7 @@ import { ALL_MEDIA_TYPES } from './mediaTypes.js';
 
 let dbPromise = null;
 
-// The opening promise is what's cached, not the handle: two callers arriving before the
-// first open finished would otherwise each open a connection and run the migrations
-// concurrently against the same file.
+// Cache the opening promise, not the handle, so concurrent callers don't each open and migrate.
 export function getDb() {
   if (!dbPromise) {
     dbPromise = openDb().catch((err) => {
@@ -18,8 +16,7 @@ export function getDb() {
   return dbPromise;
 }
 
-// For shutdown: waits for the connection (if one was ever opened) and closes it, which
-// checkpoints the WAL back into the main database file.
+// For shutdown: closing checkpoints the WAL into the main file.
 export async function closeDb() {
   if (!dbPromise) return;
   const db = await dbPromise.catch(() => null);
@@ -33,12 +30,11 @@ async function openDb() {
     driver: sqlite3.Database
   });
 
-  // Enable foreign keys & WAL mode for performance
+  // Foreign keys and WAL
   await db.run('PRAGMA foreign_keys = ON');
   await db.run('PRAGMA journal_mode = WAL');
-  // WAL lets readers run during a write, but a writer still blocks another writer. The
-  // driver's 1s default was short enough that a library scan writing in bulk could surface
-  // SQLITE_BUSY to someone just saving their reading position.
+  // Writers still block each other in WAL; a longer busy timeout keeps bulk scan writes from
+  // causing SQLITE_BUSY elsewhere.
   await db.run('PRAGMA busy_timeout = 5000');
 
   await initSchema(db);
@@ -47,7 +43,6 @@ async function openDb() {
 }
 
 async function initSchema(db) {
-  // Users table
   await db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
@@ -62,37 +57,26 @@ async function initSchema(db) {
     );
   `);
 
-  // For users tables created before these columns existed.
   await addColumns(db, 'users', [
     `preferences TEXT DEFAULT '{"enabledMediaTypes":["audiobook","manga","book","show","movie","anime"],"defaultView":"all"}'`,
     'avatar TEXT',
     'expires_at DATETIME'
   ]);
 
-  // token_version is embedded in every JWT and checked on every request. Bumping it (on
-  // password change) instantly invalidates every previously-issued token for that user,
-  // instead of leaving a stolen token valid for its full ~30-day life.
+  // token_version is in every JWT and checked per request; bumping it revokes earlier tokens.
   await addColumns(db, 'users', ['token_version INTEGER DEFAULT 0']);
 
-  // Roles were originally just 'admin' / 'user'. The three-tier model (admin / editor /
-  // viewer) replaces the old catch-all 'user' role with 'viewer' — the safe, read-only
-  // default — rather than 'editor', so existing non-admin accounts don't silently gain
-  // global metadata-edit rights; an admin can promote specific accounts afterward.
+  // The old 'user' role maps to 'viewer' (not 'editor') so no account silently gains edit rights.
   await db.run(`UPDATE users SET role = 'viewer' WHERE role NOT IN ('admin', 'editor', 'viewer')`);
 
-  // Sign-in tracking: a quick "last seen" per user, backed by a full history table below
-  // for the actual date/time-stamped audit trail (including failed attempts).
+  // Quick "last seen"; the full history is in login_history.
   await addColumns(db, 'users', ['last_login_at DATETIME', 'last_login_ip TEXT']);
 
-  // Parental controls: the highest age rating this account may see (NULL = no limit), and
-  // whether content nobody has rated yet is allowed through for a restricted account.
-  // kids_mode: the account only sees what's been marked kids-safe (a kids library, or a
-  // series/title an admin or editor added to Kids Mode) — see services/visibility.js.
+  // Parental controls: max age rating (NULL = none) and whether unrated content passes.
+  // kids_mode: only kids-safe content (services/visibility.js).
   await addColumns(db, 'users', ['max_age_rating TEXT', 'allow_unrated INTEGER DEFAULT 1', 'kids_mode INTEGER DEFAULT 0']);
 
-  // Every sign-in attempt, success or failure. user_id is NULL for attempts against a
-  // username that doesn't exist — username is still recorded so a pattern of guesses
-  // against a nonexistent account is visible to an admin.
+  // Every sign-in attempt. user_id is NULL for unknown usernames (still recorded, masked).
   await db.exec(`
     CREATE TABLE IF NOT EXISTS login_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -108,13 +92,12 @@ async function initSchema(db) {
   `);
 
   // Two-factor sign-in (services/twoFactor.js), optional per account:
-  //   totp_secret / totp_pending — the authenticator secret, encrypted with a key derived
-  //     from the JWT secret; pending holds one being set up until its first code is checked
-  //   totp_pending_at — when the pending one was made; it has to be confirmed soon after
+  //   totp_secret / totp_pending — secret encrypted with a JWT-secret-derived key; pending
+  //     until its first code is confirmed
+  //   totp_pending_at — when the pending one was made
   //   totp_enabled_at — when it was turned on (NULL = off)
-  //   totp_last_step — the 30-second step of the last code accepted, so a code can't be
-  //     used twice
-  //   totp_recovery — JSON list of backup codes, hashed, each with when it was used
+  //   totp_last_step — 30-second step of the last accepted code, so codes can't be reused
+  //   totp_recovery — JSON list of hashed backup codes with when each was used
   // Away from home (services/network.js):
   //   remote_access — 1 this account may use Plinthio from outside the home network
   //   last_login_network — home / tailscale / outside, for Admin → Users
@@ -124,12 +107,8 @@ async function initSchema(db) {
   ]);
   await addColumns(db, 'login_history', ['network TEXT']);
 
-  // One "opened this item" → "closed this item" span per row, for the readers/players
-  // (manga, book, video, audio). item_id carries no FK to items for the same reason as
-  // user_progress/bookmarks — history must survive a library delete + re-scan — but the
-  // row does cascade off the user, since per-user activity has no meaning once the
-  // account itself is gone. item_title/media_type are snapshotted at open time so the
-  // activity feed still reads sensibly even if the item is later deleted.
+  // One open→close viewing span per row. No item FK (see user_progress), but cascades off the
+  // user. Title and media_type are snapshotted at open time.
   await db.exec(`
     CREATE TABLE IF NOT EXISTS view_sessions (
       id TEXT PRIMARY KEY,
@@ -146,8 +125,7 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_view_sessions_started ON view_sessions(started_at DESC);
   `);
 
-  // API Keys for external apps / user integrations. `key` stores a SHA-256 hash of the
-  // actual secret (never the raw value) — the raw key is only ever shown once, at creation.
+  // `key` is a SHA-256 hash; the raw key is shown once at creation.
   await db.exec(`
     CREATE TABLE IF NOT EXISTS api_keys (
       id TEXT PRIMARY KEY,
@@ -168,8 +146,7 @@ async function initSchema(db) {
   await addColumns(db, 'api_keys', ['key_md5 TEXT']);
   await db.exec(`CREATE INDEX IF NOT EXISTS idx_api_keys_md5 ON api_keys(key_md5)`);
 
-  // A stored MD5 is exactly what KOReader sends, so hash it (kosyncKeyHash). Rows already
-  // hashed (64 characters) are skipped, so this is safe on every start.
+  // A plain MD5 is what KOReader sends, so hash it (kosyncKeyHash); 64-char rows are done.
   const md5Rows = await db.all('SELECT id, key_md5 FROM api_keys WHERE length(key_md5) = 32');
   if (md5Rows.length > 0) {
     const { createHash } = await import('crypto');
@@ -179,9 +156,7 @@ async function initSchema(db) {
     }
   }
 
-  // One-time migration: any key still stored as the raw "shlf_..." secret (from before
-  // keys were hashed at rest) gets rehashed in place so a DB leak no longer hands out
-  // live credentials. Already-migrated rows (64-char hex hash, no prefix) are skipped.
+  // Hash any key still stored raw ("shlf_..."); 64-char hex rows are already hashed.
   const legacyKeys = await db.all(`SELECT id, key FROM api_keys WHERE key LIKE 'shlf\\_%' ESCAPE '\\'`);
   if (legacyKeys.length > 0) {
     const crypto = await import('crypto');
@@ -193,7 +168,7 @@ async function initSchema(db) {
     console.log(`Migrated ${legacyKeys.length} API key(s) to hashed storage.`);
   }
 
-  // Item visibility / hiding per user or global
+  // Hidden items, per user or global
   await db.exec(`
     CREATE TABLE IF NOT EXISTS item_visibility (
       item_id TEXT NOT NULL,
@@ -209,7 +184,7 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_item_vis_item ON item_visibility(item_id);
   `);
 
-  // System logs table for Admin live viewer
+  // System logs for the Admin viewer
   await db.exec(`
     CREATE TABLE IF NOT EXISTS system_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -222,7 +197,6 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON system_logs(timestamp DESC);
   `);
 
-  // Libraries table
   await db.exec(`
     CREATE TABLE IF NOT EXISTS libraries (
       id TEXT PRIMARY KEY,
@@ -235,11 +209,9 @@ async function initSchema(db) {
     );
   `);
 
-  // Added after the fact for libraries created before automatic scanning existed.
   await addColumns(db, 'libraries', ['last_scanned_at DATETIME']);
 
-  // TMDB collections (every film in "Shrek Collection", owned or not), cached so a collection
-  // page doesn't ask TMDB each time. Refreshed weekly: announced films get dates and posters.
+  // Cached TMDB collections (owned or not), refreshed weekly.
   await db.exec(`
     CREATE TABLE IF NOT EXISTS tmdb_collections (
       id TEXT PRIMARY KEY,
@@ -249,7 +221,6 @@ async function initSchema(db) {
     )
   `);
 
-  // Media items table
   await db.exec(`
     CREATE TABLE IF NOT EXISTS items (
       id TEXT PRIMARY KEY,
@@ -286,44 +257,28 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_items_series ON items(series);
   `);
 
-  // Migrate extended metadata columns onto items tables that existed previously.
-  // cover_source records where a cover came from ('folder', 'tmdb', 'frame', 'upload') so a
-  // later scan can tell a real poster from the video still used as a stand-in, and upgrade
-  // the stand-in once a TMDB key exists.
-  // age_rating is a per-item override (movies, standalone books); items in a series fall
-  // back to the series' rating in series_settings.
-  //
-  // external_rating* hold a "world" score from an outside provider (TMDB's vote average,
-  // 0–10, for movies/shows/anime) shown beside Plinthio's own star ratings.
-  // external_rating_checked_at records the last lookup — hit or miss — so an item TMDB
-  // doesn't know isn't re-queried every time someone opens its rating.
-  //
-  // tmdb_id / credits_json hold a movie's or show's full credits (cast with characters,
-  // key crew, studios) fetched from TMDB the first time its page is opened; a metadata
-  // match sets tmdb_id and clears credits_checked_at so the next view refetches.
+  // cover_source ('folder', 'tmdb', 'frame', 'upload') lets a scan upgrade a frame stand-in.
+  // age_rating: per-item override; series items fall back to series_settings.
+  // external_rating*: TMDB vote average (0–10); _checked_at stops re-querying misses.
+  // tmdb_id / credits_json: TMDB credits fetched on first view; a match clears
+  // credits_checked_at to refetch.
   await addColumns(db, 'items', [
     'description TEXT', 'release_date TEXT', 'genres TEXT', 'themes TEXT', 'artists TEXT', 'publisher TEXT', 'status TEXT', 'cover_source TEXT',
     'age_rating TEXT', 'chapters_json TEXT', 'extra_type TEXT', 'extra_of TEXT',
     'external_rating REAL', 'external_rating_votes INTEGER', 'external_rating_source TEXT', 'external_rating_checked_at DATETIME',
-    // missing_since: the file vanished from disk. The row is kept (hidden) so progress,
-    // ratings and custom art survive a drive being briefly unavailable; it's restored if the
-    // file comes back, and only an admin removes it for good (Library Health).
+    // missing_since: file gone; row kept hidden so an unplugged drive loses nothing, and
+    // restored if the file returns. Only an admin removes it.
     'missing_since DATETIME',
-    // offloaded_at: an admin chose to keep this as history after removing (or before
-    // removing) its file to free space. Hidden like a missing title, but shown on its title
-    // page, greyed, with everyone's progress; restored if the file comes back.
+    // offloaded_at: kept as history by an admin; hidden, but its page shows greyed.
     'offloaded_at DATETIME',
     'tmdb_id TEXT', 'credits_json TEXT', 'credits_checked_at DATETIME',
-    // Books: the edition's ISBN-13 and language (BCP 47, e.g. "en"), from the file or a match.
-    // book_meta_version is the BOOK_META_VERSION the file was last read with
-    // (services/bookMetadata.js); an older one is read again once to fill empty fields.
+    // Books: ISBN-13 and language (BCP 47). book_meta_version: BOOK_META_VERSION last read
+    // with; older ones are re-read once to fill empty fields.
     'isbn TEXT', 'language TEXT', 'book_meta_version INTEGER'
   ]);
 
-  // KOReader identifies a book by a hash of the file ("binary", its default) or of the file
-  // name. Both are kept per item, filled in lazily by routes/kosync.js. Its last reported
-  // position is kept as it sent it (an EPUB position is a KOReader XPointer, which only
-  // KOReader understands) alongside the percentage Plinthio shows.
+  // KOReader file and file-name hashes, filled lazily by routes/kosync.js, plus its raw last
+  // position (an EPUB XPointer only KOReader understands).
   await addColumns(db, 'items', ['koreader_hash TEXT', 'koreader_name_hash TEXT']);
   await db.exec(`
     CREATE INDEX IF NOT EXISTS idx_items_koreader_hash ON items(koreader_hash);
@@ -342,12 +297,8 @@ async function initSchema(db) {
     );
   `);
 
-  // User progress tracking table. item_id intentionally carries no FK/cascade to items:
-  // a user's reading/listening/watching history must survive an item (or its whole
-  // library) being deleted and later re-scanned. Item ids are derived deterministically
-  // from the file's path (see scanner.js's md5(filePath)), so re-scanning the same file —
-  // even after the library row itself was deleted and re-added — recreates the identical
-  // item id and this row re-attaches automatically with zero extra reconciliation.
+  // No FK/cascade to items: history survives a library delete and re-scan, re-attaching via
+  // the path-derived item id (md5(filePath)).
   await migrateAwayItemsCascade(db, 'user_progress');
   await db.exec(`
     CREATE TABLE IF NOT EXISTS user_progress (
@@ -370,17 +321,13 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_progress_item ON user_progress(item_id);
   `);
   await addColumns(db, 'user_progress', ['cfi TEXT']);
-  // Per-book playback speed for audiobooks, stored with progress so it follows the listener
-  // across devices.
+  // Audiobook playback speed, synced across devices.
   await addColumns(db, 'user_progress', ['playback_rate REAL']);
-  // "Skipped" — the reader chose to pass over this volume (e.g. they watched the anime
-  // adaptation of it). Separate from is_finished so their real read history stays honest;
-  // any actual reading progress clears it again.
+  // Skipped volume (e.g. watched the anime), separate from is_finished; reading clears it.
   await addColumns(db, 'user_progress', ['is_skipped INTEGER DEFAULT 0']);
 
   await finishItemsCascadeMigration(db, 'user_progress', 'user_id, item_id, current_time, duration, current_page, total_pages, progress_percent, is_finished, cfi, playback_rate, is_skipped, updated_at');
 
-  // Settings table
   await db.exec(`
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
@@ -389,12 +336,8 @@ async function initSchema(db) {
     );
   `);
 
-  // Video (shows/movies/anime) shipped scannable but was unreachable — the API rejected the
-  // library type and no player existed — so no existing account could have deliberately
-  // turned those types off; their stored preference simply predates the feature. Backfill
-  // the video types once (guarded by a marker in settings, hence its position after that
-  // table is created) so video content actually appears for accounts made before it worked,
-  // without overriding any later deliberate choice.
+  // One-time backfill of video types into older accounts' preferences (marker in settings,
+  // so it must follow that table).
   const videoBackfill = await db.get("SELECT value FROM settings WHERE key = 'media_types_video_backfill'");
   if (!videoBackfill) {
     const existingUsers = await db.all('SELECT id, preferences FROM users');
@@ -404,7 +347,7 @@ async function initSchema(db) {
       try {
         prefs = user.preferences ? JSON.parse(user.preferences) : {};
       } catch (e) {
-        continue; // Malformed prefs — leave them alone rather than clobbering.
+        continue; // Malformed prefs: leave alone.
       }
       if (!Array.isArray(prefs.enabledMediaTypes)) continue;
       const missing = ALL_MEDIA_TYPES.filter((t) => !prefs.enabledMediaTypes.includes(t));
@@ -422,7 +365,6 @@ async function initSchema(db) {
     }
   }
 
-  // Custom Folders / Collections
   await db.exec(`
     CREATE TABLE IF NOT EXISTS collections (
       id TEXT PRIMARY KEY,
@@ -447,13 +389,11 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_col_items_iid ON collection_items(item_id);
   `);
 
-  // Read lists are collections with type='readlist': same CRUD, but their items carry an
-  // explicit order (a Komga-style reading order spanning several series) rather than being
-  // sorted by when they were added.
+  // Read lists are collections with type='readlist' whose items carry an explicit order.
   await addColumns(db, 'collections', [`type TEXT DEFAULT 'collection'`]);
   try {
     await db.exec(`ALTER TABLE collection_items ADD COLUMN position INTEGER`);
-    // Existing rows have no meaningful order yet, so seed it from the order they were added.
+    // Seed order from when rows were added.
     await db.exec(`
       UPDATE collection_items SET position = (
         SELECT COUNT(*) FROM collection_items older
@@ -466,16 +406,12 @@ async function initSchema(db) {
     // Column already exists
   }
 
-  // Lists (the ordered "readlist" collections) are grouped by what they hold — movies,
-  // shows, anime, read (books + manga) or listen (audiobooks). Every list made before the
-  // categories existed was a comic/book reading order, so those land in 'read'.
+  // List category: movies, shows, anime, read or listen. Older lists default to 'read'.
   await addColumns(db, 'collections', ['category TEXT']);
   await db.run(`UPDATE collections SET category = 'read' WHERE type = 'readlist' AND category IS NULL`);
 
-  // List entries that aren't in the library: a title picked from an external metadata search
-  // (TMDB, MangaDex, Google Books, Open Library), so a list can hold "want to watch" titles
-  // the server doesn't have yet. They share the position space of collection_items, so one
-  // list can interleave library items and external titles in a single order.
+  // List entries from an external search (not in the library). They share collection_items'
+  // position space so both interleave in one order.
   await db.exec(`
     CREATE TABLE IF NOT EXISTS list_external_entries (
       id TEXT PRIMARY KEY,
@@ -497,8 +433,7 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_list_ext_cid ON list_external_entries(collection_id);
   `);
 
-  // Media requests: a user asks for a title the server doesn't have; admins and editors
-  // work through them. status is one of:
+  // Media requests. status is one of:
   //   'pending'          — waiting for an admin/editor to look at it
   //   'accepted_pending' — accepted, not in the library yet
   //   'accepted_added'   — accepted and now in the library
@@ -531,9 +466,7 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_requests_external ON media_requests(source, external_id);
   `);
 
-  // Intro/credits markers, so the player can offer a skip button. item_id carries no
-  // FK/cascade for the same reason as user_progress and bookmarks — markers are worth
-  // keeping across a library wipe and re-scan, and re-attach by the path-derived item id.
+  // Intro/credits markers for skip buttons. No item FK (see user_progress).
   await db.exec(`
     CREATE TABLE IF NOT EXISTS intro_credit_markers (
       item_id TEXT NOT NULL,
@@ -544,10 +477,8 @@ async function initSchema(db) {
     );
   `);
 
-  // H.264 copies of video Apple devices and some browsers can't decode (AV1, VP9, MPEG-2,
-  // 10-bit H.264…), made in the background and kept under DATA_DIR/compat. One row per
-  // title: queued, running, done or failed. source_size/source_mtime are the file the copy was made from, so a
-  // replaced file's copy isn't played. See services/compat.js.
+  // H.264 copies of video some devices can't decode, under DATA_DIR/compat (services/compat.js).
+  // source_size/source_mtime identify the source file, so a replaced file's copy isn't played.
   await db.exec(`
     CREATE TABLE IF NOT EXISTS compat_copies (
       item_id TEXT PRIMARY KEY,
@@ -566,9 +497,7 @@ async function initSchema(db) {
   `);
   await addColumns(db, 'compat_copies', ['error_code TEXT']);
 
-  // Missing posters and details that don't matter (home videos, recordings nobody has
-  // catalogued): an admin can stop them being flagged per title, or for a whole library.
-  // See services/metadataGaps.js.
+  // Missing-metadata flags switched off per title or library (services/metadataGaps.js).
   await addColumns(db, 'items', ['metadata_ignored INTEGER DEFAULT 0']);
   await addColumns(db, 'libraries', ['ignore_missing_metadata INTEGER DEFAULT 0']);
 
@@ -592,11 +521,7 @@ async function initSchema(db) {
   // Extras (trailers, featurettes…) hang off their film via extra_of; see services/extras.js.
   await db.exec('CREATE INDEX IF NOT EXISTS idx_items_extra_of ON items(extra_of)');
 
-  // Per-series reader/display settings. Deliberately keyed by (library_id, series_name)
-  // rather than a foreign key to a series table: `items.series` is a free-text column with
-  // no series table behind it, and normalising that would mean touching every
-  // series-grouping query in the app. Two libraries can hold same-named series without
-  // sharing settings, which is why library_id is part of the key.
+  // Keyed by (library_id, series_name): `items.series` is free text with no series table.
   await db.exec(`
     CREATE TABLE IF NOT EXISTS series_settings (
       id TEXT PRIMARY KEY,
@@ -612,10 +537,7 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_series_settings_lookup ON series_settings(library_id, series_name);
   `);
 
-  // Bookmarks table for Audiobooks, Manga, and Books. item_id intentionally carries no
-  // FK/cascade to items, for the same reason as user_progress above — bookmarks must
-  // survive a library wipe + re-scan, and will re-attach automatically via the
-  // deterministic, path-derived item id.
+  // No item FK (see user_progress).
   await migrateAwayItemsCascade(db, 'bookmarks');
   await db.exec(`
     CREATE TABLE IF NOT EXISTS bookmarks (
@@ -636,9 +558,7 @@ async function initSchema(db) {
   await addColumns(db, 'bookmarks', ['cfi TEXT']);
   await finishItemsCascadeMigration(db, 'bookmarks', 'id, user_id, item_id, type, position, title, notes, cfi, created_at');
 
-  // Highlighted passages in EPUBs, each with a colour and an optional note. Like bookmarks,
-  // item_id carries no FK/cascade to items: highlights survive a library wipe and re-attach
-  // via the path-derived item id on re-scan. `progress` (0–100) orders them through the book.
+  // EPUB highlights. No item FK (see user_progress). `progress` (0–100) orders them.
   await db.exec(`
     CREATE TABLE IF NOT EXISTS highlights (
       id TEXT PRIMARY KEY,
@@ -657,10 +577,8 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_highlights_user_item ON highlights(user_id, item_id);
   `);
 
-  // Internal star ratings, ½ to 5 in half-star steps, one per user per item. item_id carries
-  // no FK/cascade for the same reason as user_progress and bookmarks — a rating should
-  // survive a library wipe and re-attach via the path-derived item id on re-scan. The item_id
-  // index serves the community average ("what does everyone on this server think of it").
+  // Star ratings, ½ to 5, one per user per item. No item FK (see user_progress); the item_id
+  // index serves the server average.
   const userRatingsTable = (name) => `
     CREATE TABLE IF NOT EXISTS ${name} (
       user_id TEXT NOT NULL,
@@ -672,8 +590,7 @@ async function initSchema(db) {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );`;
   await db.exec(userRatingsTable('user_ratings'));
-  // Before half stars the column was a whole number 1–5, and SQLite can't change a CHECK in
-  // place: rebuild the table once, keeping every rating.
+  // SQLite can't alter a CHECK in place, so rebuild once for the half-star constraint.
   const ratingsSchema = await db.get(`SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'user_ratings'`);
   if (/rating INTEGER/i.test(ratingsSchema?.sql || '')) {
     await db.exec('BEGIN');
@@ -695,10 +612,8 @@ async function initSchema(db) {
   }
   await db.exec('CREATE INDEX IF NOT EXISTS idx_user_ratings_item ON user_ratings(item_id);');
 
-  // Live TV (services/liveTv.js). A source is one M3U playlist — a public preset or the
-  // admin's own — and its channels are re-read from it on every refresh, upserted on
-  // (source_id, stable_key) so the admin's hidden / kids / always-show choices survive. Programmes are
-  // keyed by the guide's channel id (tvg_id) and only kept for a day and a half ahead.
+  // Live TV: a source is one M3U playlist; channels are upserted on (source_id, stable_key)
+  // so admin choices survive refreshes. Programmes are keyed by tvg_id, kept 1.5 days ahead.
   await db.exec(`
     CREATE TABLE IF NOT EXISTS live_sources (
       id TEXT PRIMARY KEY,
@@ -747,16 +662,14 @@ async function initSchema(db) {
     );
     CREATE INDEX IF NOT EXISTS idx_live_programmes_start ON live_programmes(start);
   `);
-  // Added with the admin's filters (where a channel is from, what it speaks, "always show").
-  // Then with line-ups: the admin's own number, name and logo for a channel, and the result of
-  // the background check that spots dead streams. Like hidden / pinned, refreshes keep them.
+  // Filter fields, admin overrides (number, name, logo) and dead-stream check results;
+  // refreshes keep them.
   await addColumns(db, 'live_channels', [
     'pinned INTEGER DEFAULT 0', 'country TEXT', 'languages TEXT',
     'custom_number INTEGER', 'custom_name TEXT', 'custom_logo TEXT',
     'health TEXT', 'health_checked_at DATETIME', 'health_fails INTEGER DEFAULT 0'
   ]);
-  // Line-ups are the admin's own channel lists (with their own order); favourites and the
-  // recently watched list (newest 10) are each viewer's. All go with the channel they name.
+  // Line-ups are admin channel lists; favourites and recents (newest 10) are per viewer.
   await db.exec(`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_live_channels_number ON live_channels(custom_number)
       WHERE custom_number IS NOT NULL;
@@ -790,8 +703,7 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_live_recent_channel ON live_recent(channel_id);
   `);
 
-  // One file, one row: folds away the second rows earlier scans added after a rename.
-  // Imported here rather than at the top, as catalogRepair reaches back into this module.
+  // Fold duplicate rows for one file. Imported here since catalogRepair imports this module.
   const { mergeSamePathRows } = await import('../services/catalogRepair.js');
   const merged = await mergeSamePathRows(db);
   if (merged > 0) console.log(`Merged ${merged} title(s) the library had listed twice for the same file.`);
@@ -799,8 +711,7 @@ async function initSchema(db) {
   console.log('Database initialized successfully at:', config.dbPath);
 }
 
-// Columns added after a table was first created. SQLite has no ADD COLUMN IF NOT EXISTS, so
-// each ALTER runs on its own and the error it gives for an existing column is ignored.
+// SQLite has no ADD COLUMN IF NOT EXISTS, so each ALTER runs alone and "exists" errors are ignored.
 async function addColumns(db, table, columns) {
   for (const col of columns) {
     try {
@@ -811,18 +722,10 @@ async function addColumns(db, table, columns) {
   }
 }
 
-// One-time migration for DBs created before item_id stopped cascading from items. SQLite
-// can't ALTER a foreign key constraint in place, so this runs in two steps around the
-// current CREATE TABLE IF NOT EXISTS for `table`:
-//
-//  1. migrateAwayItemsCascade (called BEFORE that CREATE TABLE): if `table` already exists
-//     with the old `FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE`, rename
-//     it aside so the CREATE TABLE right after this call creates a fresh, cascade-free
-//     table under the normal name instead of no-op'ing against the old one.
-//  2. finishItemsCascadeMigration (called AFTER that CREATE TABLE): if the renamed-aside
-//     table is present, copy its rows into the newly-created table and drop it.
-//
-// A fresh install never has the old table, so both steps are harmless no-ops for it.
+// Drops the old item_id cascade FK, which SQLite can't ALTER, in two steps around the
+// CREATE TABLE for `table`:
+//  1. migrateAwayItemsCascade (before): renames a table with the cascade aside.
+//  2. finishItemsCascadeMigration (after): copies its rows into the new table and drops it.
 async function migrateAwayItemsCascade(db, table) {
   const exists = await db.get(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`, [table]);
   if (!exists) return;
@@ -841,10 +744,7 @@ async function finishItemsCascadeMigration(db, table, columns) {
   const exists = await db.get(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`, [oldTable]);
   if (!exists) return;
 
-  // The old, renamed-aside table may predate a column that was added to the current schema
-  // after this cascade migration was first written (e.g. `cfi`, added later) — copy only
-  // the columns that actually exist on it, so upgrading straight from an old version in one
-  // jump doesn't fail on a column the old table never had.
+  // Copy only columns the old table has; it may predate later ones (e.g. `cfi`).
   const oldColumnInfo = await db.all(`PRAGMA table_info(${oldTable})`);
   const oldColumnNames = new Set(oldColumnInfo.map((c) => c.name));
   const requestedColumns = columns.split(',').map((c) => c.trim());

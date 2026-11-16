@@ -15,9 +15,8 @@ const ZIP_MAGIC = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 const RAR_MAGIC = Buffer.from([0x52, 0x61, 0x72, 0x21]);
 const SEVENZIP_MAGIC = Buffer.from([0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c]);
 
-// Comic archives are frequently mislabelled — .cbr files that are really zips are extremely
-// common, because people rename rather than repack. So the first bytes of the file decide
-// the format, and the extension is only a fallback for when the file can't be sniffed.
+// Comic archives are often mislabelled (.cbr files that are really zips), so magic bytes
+// decide the format and the extension is only a fallback.
 function sniffFormat(archivePath) {
   let header = null;
   try {
@@ -46,8 +45,7 @@ function sniffFormat(archivePath) {
   return null;
 }
 
-// Backends are imported lazily so a library of plain CBZs never loads the RAR/7z code (or
-// trips over those packages not being installed).
+// Lazy imports so CBZ-only libraries never load the RAR/7z packages.
 async function backendFor(archivePath) {
   switch (sniffFormat(archivePath)) {
     case 'zip':
@@ -71,32 +69,22 @@ function sortedImageEntries(entries) {
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 }
 
-/**
- * Lists every entry in an archive, whatever its format. Used by the scanner/metadata code
- * that needs non-image entries too (ComicInfo.xml, EPUB's .opf).
- */
+// All entries, including non-images (ComicInfo.xml, EPUB's .opf).
 export async function listArchiveEntries(archivePath) {
   const backend = await backendFor(archivePath);
   return backend.listEntries(archivePath);
 }
 
-/**
- * One entry's bytes, or null when the archive has no such entry. Throws for an entry larger
- * than `maxBytes` (default: the per-page limit), before any of it is unpacked into memory.
- */
+// One entry's bytes, or null if missing. Throws before unpacking an entry over `maxBytes`.
 export async function readArchiveEntry(archivePath, entryName, { maxBytes } = {}) {
   const backend = await backendFor(archivePath);
   return backend.readEntry(archivePath, entryName, maxBytes ? { maxBytes } : undefined);
 }
 
-/**
- * Sorted image page names from a comic archive (CBZ/ZIP, CBR/RAR, CB7/7z), or one name per
- * page of a PDF (rendered on request — see services/pdf.js).
- */
+// Sorted image page names from a comic archive, or one synthetic name per PDF page.
 export async function getMangaPagesList(archivePath) {
   if (isPdf(archivePath)) {
-    // pdfInfo already clamps the count; it is clamped here too because this line turns a
-    // number a file supplied into an array of that length.
+    // Clamped again: this turns a file-supplied number into an array length.
     const { pages } = await pdfInfo(archivePath);
     const count = Number.isInteger(pages) && pages > 0 ? Math.min(pages, MAX_PDF_PAGES) : 0;
     return Array.from({ length: count }, (_, i) => `page-${String(i + 1).padStart(4, '0')}.jpg`);
@@ -105,9 +93,6 @@ export async function getMangaPagesList(archivePath) {
   return sortedImageEntries(entries).map((entry) => entry.name);
 }
 
-/**
- * Extract a single page from a comic archive.
- */
 export async function extractMangaPage(archivePath, pageIndex) {
   if (isPdf(archivePath)) {
     const rendered = await renderPdfPage(archivePath, pageIndex);

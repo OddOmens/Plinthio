@@ -19,12 +19,8 @@ router.get('/', handle(async (req, res) => {
   res.json({ keys });
 }));
 
-// Create new API key. Only the raw key is ever returned to the client (once, here) —
-// the database stores a SHA-256 hash of it so a DB leak can't be used as live credentials.
-// Needs the account's password (body: { name, password }): a key is a way into the account
-// that outlives the session, skips two-factor and survives a password change, so a browser
-// left signed in, or a stolen session, must not be enough to make one. Each one is logged
-// (who and the key's name, never the key).
+// The raw key is returned only here; the DB stores a SHA-256 hash. Requires the password,
+// since a key skips 2FA and survives sign-out, so a stolen session mustn't be enough.
 const MAX_KEY_NAME = 100;
 const MAX_KEYS_PER_USER = 50;
 
@@ -53,10 +49,8 @@ router.post('/', async (req, res) => {
     const rawKey = `plinthio_${crypto.randomBytes(24).toString('hex')}`;
     const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
 
-    // The MD5 is only for KOReader's sync plugin, which hashes the password that way
-    // before sending it (routes/kosync.js). The key is 192 random bits, so MD5 is no weaker
-    // here than SHA-256 in practice. Only a hash of the MD5 is stored, so the stored value
-    // can't be sent back as a kosync sign-in (middleware/auth.js, kosyncKeyHash).
+    // KOReader's sync plugin sends an MD5 of the password; with a 192-bit random key that's
+    // safe. Only a hash of the MD5 is stored, so the DB value can't sign in (kosyncKeyHash).
     const keyMd5 = crypto.createHash('md5').update(rawKey).digest('hex');
 
     await db.run(
@@ -70,7 +64,7 @@ router.post('/', async (req, res) => {
       key: {
         id,
         name: name.trim(),
-        key: rawKey, // Shown only once upon creation
+        key: rawKey,
         created_at: new Date().toISOString()
       }
     });

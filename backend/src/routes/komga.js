@@ -15,12 +15,8 @@ import { SEND_OPTS } from '../utils/fileStream.js';
 import { logger } from '../services/logger.js';
 import { requireLibraryFile } from '../utils/libraryPath.js';
 
-// A Komga-compatible slice of the API, so Mihon (and other Tachiyomi forks) can browse and
-// read Plinthio's comics, manga and PDFs with their Komga extension, and sync what's read
-// back with Mihon's built-in Komga tracker. Mounted at /api/v1 and /api/v2, which is where
-// the extension looks once it's given the server address.
-//
-// Only what those two clients call is implemented, shaped exactly like the DTOs they parse
+// Komga-compatible API (/api/v1, /api/v2) for Mihon's Komga extension and tracker. Only what
+// those clients call, shaped like the DTOs they parse
 // (keiyoushi/extensions-source src/all/komga, mihonapp/mihon data/track/komga):
 //   GET  /api/v1/libraries                      GET /api/v1/series/:id/books
 //   GET  /api/v1/series[?search,library_id,…]   GET /api/v1/books[?search,…]
@@ -28,10 +24,8 @@ import { requireLibraryFile } from '../utils/libraryPath.js';
 //   GET  /api/v1/books/:id/pages(/:number)      GET /api/v1/{genres,tags,publishers,authors}
 //   GET  /api/v1/{collections,readlists}        GET|PUT /api/v2/series/:id/read-progress/tachiyomi
 //
-// Sign-in is the same as OPDS: your username and a Plinthio API key as the password (HTTP
-// Basic), or the key alone in X-API-Key. Mihon's tracker sends no credentials of its own —
-// with real Komga it rides on the session cookie the extension's sign-in left behind — so a
-// successful sign-in here sets one too, tied to the API key it came from.
+// Sign-in: HTTP Basic with an API key as password, or X-API-Key. Mihon's tracker sends no
+// credentials and relies on a session cookie, so sign-in sets one tied to the API key.
 export const komgaV1 = express.Router();
 export const komgaV2 = express.Router();
 
@@ -89,13 +83,10 @@ async function komgaAuth(req, res, next) {
 komgaV1.use(komgaAuth);
 komgaV2.use(komgaAuth);
 
-// ─── Loading what this person can read ───────────────────────────────────────────────────
-// Everything page-readable they can see, with their progress, grouped into series in JS.
-// Komga's queries are all "a page of series/books matching X", and building the groups
-// from one query keeps the ids stable and the visibility rules in one place.
+// Everything page-readable this user can see, grouped into series in JS: one query keeps ids
+// stable and the visibility rules in one place.
 
-// Komga ids are opaque strings. A series is a (library, series name) pair — or, for a
-// standalone title, the title itself — so its id is a hash of that.
+// A series id is a hash of (library, series name), or of the title for a standalone one.
 const seriesKey = (row) => (row.series ? `s:${row.library_id}:${row.series}` : `i:${row.id}`);
 const seriesIdFor = (key) => crypto.createHash('sha1').update(key).digest('hex').slice(0, 24);
 
@@ -113,10 +104,8 @@ function humanSize(bytes) {
   return `${n.toFixed(u ? 1 : 0)} ${units[u]}`;
 }
 
-// What the `url` field of a book or series says. Komga puts the file's location on the
-// server there; reading apps only show it (they fetch everything by id), and it gives away
-// mount points and host usernames. So, as with `path` on the web API (services/itemView.js),
-// only an admin gets the real path — everyone else gets it relative to the library folder.
+// The `url` field: the real server path only for admins, else relative to the library, since
+// it reveals mount points and host usernames.
 function publicPath(row, user) {
   if (user?.role === 'admin' || !row.path) return row.path;
   const relative = row.library_path ? path.relative(row.library_path, row.path) : path.basename(row.path);
@@ -500,8 +489,7 @@ komgaV1.get('/books/:id/pages', async (req, res) => {
   }
 });
 
-// Komga pages are numbered from 1. `?convert=png` is asked for formats a phone can't show;
-// every format Plinthio serves (JPEG, PNG, WebP, GIF, AVIF) already is one, so it's ignored.
+// Pages are numbered from 1. `?convert=png` is ignored: every format served is phone-readable.
 komgaV1.get('/books/:id/pages/:number', async (req, res) => {
   try {
     const found = await findBook(req, res);
@@ -577,8 +565,7 @@ komgaV2.get('/series/:id/read-progress/tachiyomi', handle(async (req, res) => {
   if (found) res.json(readProgressV2(found.g));
 }));
 
-// "I've read up to chapter N": every book numbered N or lower is marked read. Nothing is
-// ever marked unread from here — Mihon only moves forward.
+// Marks every book numbered up to N read; never marks unread (Mihon only moves forward).
 komgaV2.put('/series/:id/read-progress/tachiyomi', handle(async (req, res) => {
   const upTo = Number(req.body?.lastBookNumberSortRead);
   if (!Number.isFinite(upTo)) return sendError(req, res, 'P001', { message: 'lastBookNumberSortRead must be a number' });

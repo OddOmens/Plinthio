@@ -8,9 +8,7 @@ import { setSetting } from './settings.js';
 const BACKUP_PREFIX = 'plinthio-backup-';
 const FILENAME_RE = /^plinthio-backup-[A-Za-z0-9.\-]+\.sqlite$/;
 
-// How often the scheduler wakes up to check whether a backup is due. Independent of the
-// configured backup interval — this just needs to be finer-grained than the shortest
-// interval an admin can pick.
+// Scheduler check period; only needs to be finer than the shortest backup interval.
 const CHECK_INTERVAL_MS = 15 * 60 * 1000;
 
 function backupsDir() {
@@ -44,23 +42,18 @@ export async function getBackupSettings() {
   );
   const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
   return {
-    // A second place every backup is copied to (another disk, a NAS share, a synced cloud
-    // folder): '' means off. A path as the server sees it — in Docker, a mounted folder.
+    // Second copy location as the server sees it (in Docker, a mounted folder); '' means off.
     destination: map.backup_destination || '',
     copyRetentionCount: map.backup_copy_retention ? parseInt(map.backup_copy_retention, 10) : 30,
-    // Also copy what a database restore can't bring back (avatars, uploaded covers, the
-    // HTTPS certificates).
+    // Also copy what a database restore can't bring back (avatars, covers, certificates).
     copyFiles: map.backup_copy_files === undefined ? true : map.backup_copy_files === 'true',
-    // Whether the server key (jwt.secret) goes with those files. Off unless an admin turns
-    // it on, for new and existing servers alike: the key signs every sign-in and unlocks the
-    // stored two-factor secrets, so whoever can read the backup folder (a NAS share, a
-    // synced cloud folder) could sign in as anyone with it. The cost of leaving it out is
-    // only paid on a full restore: everyone signs in again and sets two-factor up again.
+    // Off by default: the server key signs sessions and unlocks two-factor secrets, so anyone
+    // who can read the backup folder could sign in as anyone. Leaving it out only costs
+    // re-signing-in and re-enrolling two-factor after a full restore.
     copyServerKey: map.backup_copy_server_key === 'true',
     lastCopyAt: map.backup_last_copy_at || null,
     lastCopyError: map.backup_last_copy_error || null,
-    // On unless an admin turned it off: a server nobody configured still keeps a week of
-    // daily snapshots of everyone's progress, bookmarks and highlights.
+    // On by default, so an unconfigured server still keeps a week of daily snapshots.
     enabled: map.backup_enabled === undefined ? true : map.backup_enabled === 'true',
     intervalHours: map.backup_interval_hours ? parseInt(map.backup_interval_hours, 10) : 24,
     retentionCount: map.backup_retention ? parseInt(map.backup_retention, 10) : 7
@@ -88,9 +81,7 @@ export async function saveBackupSettings({ enabled, intervalHours, retentionCoun
   return getBackupSettings();
 }
 
-// Creates a complete, consistent snapshot via VACUUM INTO (safe under WAL mode, unlike a
-// raw filesystem copy of the .sqlite file which can miss recently committed pages still
-// sitting in the -wal file) and persists it under dataDir/backups.
+// VACUUM INTO gives a consistent snapshot under WAL; a raw file copy can miss pages still in the -wal file.
 export async function createBackup(reason = 'manual') {
   const dir = backupsDir();
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -106,10 +97,8 @@ export async function createBackup(reason = 'manual') {
   return { filename, size: stat.size, createdAt: stat.mtime.toISOString() };
 }
 
-// The snapshots taken before an upgrade (services/upgrade.js) are how a version is rolled
-// back, so they're kept apart from the schedule: the retention count applies to scheduled
-// and manual backups only, and the newest few pre-upgrade ones are always kept. (They used
-// to count against the same limit, so a week of daily backups deleted them all.)
+// Pre-upgrade snapshots (services/upgrade.js) are for rollback, so they don't count toward
+// the retention limit; the newest few are always kept.
 const UPGRADE_PREFIX = `${BACKUP_PREFIX}before-`;
 const UPGRADE_BACKUPS_KEPT = 5;
 
@@ -127,7 +116,7 @@ async function pruneOldBackups(retentionCount) {
       fs.unlinkSync(path.join(backupsDir(), f.filename));
       await logger.info('backup', `Pruned old backup "${f.filename}" (retention limit is ${retentionCount})`);
     } catch (e) {
-      // Already gone or unremovable — not worth failing the whole prune pass over.
+      // Already gone or unremovable; don't fail the prune.
     }
   }
 }
@@ -145,8 +134,7 @@ async function runBackupIfDue() {
     const last = newestBackupTime();
     const intervalMs = settings.intervalHours * 60 * 60 * 1000;
     if (last !== null && Date.now() - last < intervalMs) {
-      // Not time for a new backup, but a copy that failed (a drive unplugged, a share
-      // offline) is tried again on every check until it goes through.
+      // Retry a failed copy (drive unplugged, share offline) on every check.
       if (settings.destination && settings.lastCopyError) await copyToDestination();
       return;
     }
@@ -163,10 +151,8 @@ let schedulerStarted = false;
 export function initBackupScheduler() {
   if (schedulerStarted) return;
   schedulerStarted = true;
-  // Give the DB a moment to finish initializing before the first check, then recheck
-  // periodically — runBackupIfDue itself no-ops until an interval has actually elapsed.
-  // The first check also copies whatever the destination is missing — the snapshot taken
-  // before an upgrade, or backups made while it was unreachable.
+  // The first check, after startup settles, also copies whatever the destination is missing
+  // (e.g. a pre-upgrade snapshot).
   setTimeout(async () => {
     await runBackupIfDue();
     await copyToDestination().catch(() => {});
@@ -182,9 +168,7 @@ export async function runManualBackupAndPrune() {
   return result;
 }
 
-// ─── Copying to a second place ───────────────────────────────────────────────
-// Snapshots in /config/backups protect against mistakes and bad upgrades, not against the
-// disk under /config failing. So each backup can also be copied somewhere else, laid out as
+// Second copy, so a failed /config disk doesn't take the backups with it. Layout:
 //   <destination>/database/plinthio-backup-*.sqlite
 //   <destination>/files/{avatars,covers,ssl,.version}
 //   <destination>/files/jwt.secret   only when the admin chose to include the server key
@@ -192,10 +176,8 @@ export async function runManualBackupAndPrune() {
 const COPIED_FILES = ['avatars', 'covers', 'ssl', '.version'];
 const SERVER_KEY_FILE = 'jwt.secret';
 
-// Whether a copy of the server key is sitting in a backup folder. Versions before this
-// setting existed always put one there, and turning the setting off leaves it alone too:
-// deleting it might destroy the only copy someone is relying on for a restore. Admin → Backups
-// says it's there instead, so the admin can remove it or move it somewhere private.
+// Whether a server key copy is in the backup folder. It's never deleted automatically (it may
+// be someone's only copy); Admin shows it so the admin can deal with it.
 export function serverKeyAtDestination(destination) {
   if (!destination) return false;
   try {
@@ -210,8 +192,7 @@ function isInside(child, parent) {
   return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
 }
 
-// Whether a folder can take backups, and anything worth warning about. Creates the folder
-// if it doesn't exist yet (its parent must).
+// Validates a destination, creating it if its parent exists.
 export async function checkDestination(input) {
   const raw = String(input || '').trim();
   if (!raw) return { ok: false, error: 'Choose a folder.' };
@@ -247,8 +228,7 @@ export async function checkDestination(input) {
     const stats = await fs.promises.statfs(dest);
     freeBytes = stats.bavail * stats.bsize;
   } catch { /* not every filesystem reports it */ }
-  // Same device as the data folder: it still guards against deleting files by mistake, but
-  // not against that disk failing.
+  // Same device as the data folder protects against mistakes, not disk failure.
   const sameDisk = fs.statSync(dest).dev === fs.statSync(dataDir).dev;
   return { ok: true, path: dest, sameDisk, freeBytes, serverKeyPresent: serverKeyAtDestination(dest) };
 }
@@ -279,9 +259,8 @@ function copyTree(from, to) {
 
 let copyInFlight = null;
 
-// Copies every snapshot not already at the destination, refreshes the extra files, and
-// trims the destination to its own retention. Never throws: a failed copy mustn't fail the
-// backup itself; it's recorded (Admin shows it) and logged.
+// Syncs snapshots and extra files to the destination and applies its retention. Never
+// throws: failures are recorded for Admin and logged.
 export async function copyToDestination() {
   if (copyInFlight) return copyInFlight;
   copyInFlight = (async () => {

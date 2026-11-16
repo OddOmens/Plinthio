@@ -1,13 +1,11 @@
 import { APP_VERSION } from '../config/version.js';
 
-// How Plinthio talks to metadata providers: one User-Agent that names the app (several
-// providers ask for that, and Comic Vine refuses requests without one), a timeout, and for
-// the providers with per-minute limits a short memory and one polite retry.
+// Metadata provider HTTP: named User-Agent (some providers require one), timeout, short cache
+// and one retry for rate limits.
 const FETCH_TIMEOUT_MS = 8000;
 export const USER_AGENT = `Plinthio/${APP_VERSION} (https://github.com/OddOmens/Plinthio)`;
 
-// A 429 that says to come back within this long is waited out once; a longer wait (or none
-// given, as with Google's daily quota) is reported straight away.
+// A 429 with a Retry-After up to this is retried once; longer or missing fails immediately.
 const MAX_RETRY_WAIT_MS = 5000;
 
 const memory = new Map(); // key → { until, value }
@@ -18,12 +16,9 @@ function remember(key, value, ms) {
   memory.set(key, { until: Date.now() + ms, value });
 }
 
-// Providers answer with a few KB of JSON, a few hundred for a long search. Anything past
-// this is not an answer worth holding in memory.
 const MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
 
-// The body as parsed JSON, read a piece at a time so it can be stopped at the size limit
-// (`res.json()` reads whatever is sent, however much).
+// Streamed so it can stop at the size limit; `res.json()` has no limit.
 async function readJson(res) {
   const declared = Number(res.headers?.get?.('content-length'));
   if (declared > MAX_RESPONSE_BYTES) throw new Error('The response was too large');
@@ -44,10 +39,8 @@ async function readJson(res) {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 
-// One request, start to finish, under one clock: the timeout covers reading the body too.
-// It used to stop once the headers arrived, so a server that sent headers and then trickled
-// (or never finished) the body held the request open for good. Resolves with the response
-// and, when it is a success, its parsed body.
+// The timeout covers the body too, so a trickling server can't hold the request open.
+// Resolves { res, value } with the parsed body on success.
 async function request(url, options, timeoutMs) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -55,7 +48,7 @@ async function request(url, options, timeoutMs) {
     const headers = { 'User-Agent': USER_AGENT, ...(options.headers || {}) };
     const res = await fetch(url, { ...options, headers, signal: controller.signal });
     if (res.ok) return { res, value: await readJson(res) };
-    // Not going to be read: let the connection go.
+    // Release the unread body.
     res.body?.cancel?.().catch(() => {});
     return { res, value: undefined };
   } finally {
@@ -63,11 +56,7 @@ async function request(url, options, timeoutMs) {
   }
 }
 
-/**
- * GETs (or POSTs) JSON. `cacheMs` keeps the answer that long, so a batch match asking about
- * the same series a hundred times asks the provider once. `timeoutMs` is for the whole
- * exchange, body included.
- */
+/** `cacheMs` caches the answer (batch matches repeat queries); `timeoutMs` includes the body. */
 export async function fetchJson(url, { cacheMs = 0, timeoutMs = FETCH_TIMEOUT_MS, ...options } = {}) {
   const key = cacheMs ? `${options.method || 'GET'} ${url} ${options.body || ''}` : null;
   const hit = key && memory.get(key);
@@ -80,9 +69,7 @@ export async function fetchJson(url, { cacheMs = 0, timeoutMs = FETCH_TIMEOUT_MS
     ({ res, value } = await request(url, options, timeoutMs));
   }
   if (!res.ok) {
-    // The status is attached, not just interpolated into the message, so callers can tell
-    // "your key is wrong" (401/403) apart from "the server can't get out" — advice that
-    // sends someone to debug their firewall over a rejected credential wastes their time.
+    // Status attached so callers can tell a bad key (401/403) from a network problem.
     const err = new Error(`Request failed with status ${res.status}`);
     err.status = res.status;
     throw err;

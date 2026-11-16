@@ -37,9 +37,7 @@ import { ITEM_ID_RE } from '../utils/ids.js';
 
 const router = express.Router();
 
-// Cover uploads are held in memory and re-encoded by sharp before they ever touch disk.
-// That normalizes anything the user drops in (PNG/WebP/HEIC/huge originals) to a consistent
-// JPEG, and re-encoding strips any non-image payload smuggled inside the file.
+// Cover uploads are re-encoded to JPEG in memory, which also strips any smuggled non-image payload.
 const coverUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 15 * 1024 * 1024, files: 1 },
@@ -54,8 +52,7 @@ const coverUpload = multer({
 // Media types a metadata provider exists for (see services/externalMetadata.js).
 const MATCHABLE_TYPES = new Set(['manga', 'book', 'audiobook', 'movie', 'show', 'anime']);
 
-// Batch/single auto-match already has the TMDB result in hand; store its score as the item's
-// world rating rather than looking it up again the first time someone opens the rating.
+// Auto-match already has the TMDB result, so store its score as the world rating.
 async function saveMatchedRating(db, itemId, result) {
   if (result?.source !== 'tmdb' || result.rating == null) return;
   await db.run(
@@ -69,7 +66,7 @@ async function saveMatchedRating(db, itemId, result) {
 async function writeCoverJpeg(buffer, coverFilename) {
   const fullPath = path.join(config.coversDir, coverFilename);
   await sharp(buffer)
-    .rotate() // honour EXIF orientation so phone photos aren't sideways
+    .rotate() // EXIF orientation
     .resize(1200, 1800, { fit: 'inside', withoutEnlargement: true })
     .jpeg({ quality: 88 })
     .toFile(fullPath);
@@ -88,7 +85,6 @@ function clearCachedThumbnails(itemId) {
 
 router.use(authenticateToken);
 
-// Replace a single item's cover art with an uploaded image (admins and editors).
 router.post('/cover/:itemId', requireEditor, coverUpload.single('cover'), async (req, res) => {
   const { itemId } = req.params;
   if (!ITEM_ID_RE.test(itemId)) {
@@ -118,16 +114,13 @@ router.post('/cover/:itemId', requireEditor, coverUpload.single('cover'), async 
   }
 });
 
-// Replace the cover for a whole series / folder. Applied to every volume in the series so
-// the shelf, the series card and each volume all agree — matching how Jellyfin treats a
-// folder image as the identity for everything under it.
+// Series cover, applied to every volume so the shelf, series card and volumes agree.
 router.post('/series-cover', requireEditor, coverUpload.single('cover'), async (req, res) => {
   const seriesName = (req.body.series || '').trim();
   if (!seriesName) return res.status(400).json({ error: 'Series name is required' });
   if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
 
-  // Scope to the library/media type the editor is looking at, so re-arting one "Naruto"
-  // doesn't overwrite a same-named series elsewhere on the server.
+  // Scoped to library/media type so a same-named series elsewhere is untouched.
   let where = 'series = ?';
   const params = [seriesName];
   if (req.body.libraryId) { where += ' AND library_id = ?'; params.push(String(req.body.libraryId)); }
@@ -155,9 +148,7 @@ router.post('/series-cover', requireEditor, coverUpload.single('cover'), async (
   }
 });
 
-// Multer rejects (oversized file, non-image) throw rather than calling next() with a normal
-// response, so translate them here instead of letting them fall through to the generic
-// 500 handler with an opaque message.
+// Turn multer rejections (too big, not an image) into proper errors instead of a generic 500.
 router.use((err, req, res, next) => {
   if (!err) return next();
   const tooLarge = err.code === 'LIMIT_FILE_SIZE';
@@ -167,16 +158,11 @@ router.use((err, req, res, next) => {
 });
 
 // ─── Looking titles up outside the library ───────────────────────────────────────────────
-// Editors search the providers to fix metadata. Everyone else uses the same search to ask
-// for a title the server doesn't have (Requests) or to add one to a list. Each search goes
-// out with the server's own provider keys, and what comes back is the outside world's
-// catalogue, not the library's, so for accounts that aren't editors:
-//   - a Kids Mode account doesn't get it at all: it would be a way to browse everything
-//     Kids Mode exists to keep out of sight
-//   - an age-limited account never gets a result a provider marks as adult, or rates above
-//     the account's limit (the providers are already asked to leave adult titles out)
-//   - searches are limited per account, so one account can't spend the server's allowance
-//     with a provider (they count requests per key) or use it as a relay
+// Used by editors to fix metadata and by everyone for Requests and lists. Results are the
+// outside catalogue, so for non-editors:
+//   - Kids Mode accounts get no search (it would bypass Kids Mode)
+//   - age-limited accounts never get adult or over-limit results
+//   - searches are rate-limited per account, to protect the server's provider quota
 function isEditorAccount(user) {
   return canEditLibrary(user);
 }
@@ -214,7 +200,6 @@ function resultAllowedFor(user, result) {
   return rank === null || max === null || rank <= max;
 }
 
-// Search external metadata providers (MangaDex, Google Books, Open Library, TMDB)
 router.get('/search', noKidsAccounts, searchLimiter, async (req, res) => {
   const { mediaType, query, year, language } = req.query;
 
@@ -223,16 +208,13 @@ router.get('/search', noKidsAccounts, searchLimiter, async (req, res) => {
   }
 
   try {
-    // For video types the user's title often still has the year or scene tags from the
-    // filename (e.g. "Resident Evil 2020", "The Batman 2022 1080p"). Strip that noise the
-    // same way the scanner does so the manual search finds the right result automatically.
+    // Strip filename year/scene tags from video titles, as the scanner does.
     const VIDEO_TYPES = new Set(['movie', 'show', 'anime']);
     const parsed = VIDEO_TYPES.has(mediaType) ? parseMediaTitle(query) : null;
     const searchQuery = parsed ? (parsed.cleanTitle || query.trim()) : query.trim();
     const searchYear = year || (parsed?.year ?? null);
 
-    // A source that didn't answer is reported (`notices`), so results from the others alone
-    // don't read as that source having nothing.
+    // Report sources that didn't answer (`notices`), so silence isn't read as "no results".
     const found = await searchMetadata(mediaType, searchQuery, { year: searchYear, language: normalizeLanguage(language) });
     const unavailable = found.unavailable;
     const results = (found.results || []).filter((result) => resultAllowedFor(req.user, result));
@@ -244,7 +226,7 @@ router.get('/search', noKidsAccounts, searchLimiter, async (req, res) => {
     if (err.code === 'PROVIDER_OFF') {
       return sendError(req, res, 'P404');
     }
-    // Request text printed on one line, so a line break in it can't fake a log line.
+    // One line, so request text can't fake a log line.
     console.error(`[metadata] Search failed for mediaType="${oneLine(mediaType)}" query="${oneLine(query)}":`, oneLineError(err));
 
     if (err.status === 401 || err.status === 403) {
@@ -263,9 +245,7 @@ router.get('/search', noKidsAccounts, searchLimiter, async (req, res) => {
   }
 });
 
-// The rest of one search result, for the sources whose search leaves things out (Open
-// Library's description, Audnexus's ISBN and genres, a Comic Vine series' creators). The
-// editor asks for it after a search.
+// Fuller details for a search result whose source's search omits fields.
 const DETAIL_IDS = {
   'open-library': /^\/works\/OL\d+W$/,
   'google-books': /^[\w-]{1,40}$/,
@@ -286,7 +266,7 @@ router.get('/details', noKidsAccounts, detailsLimiter, async (req, res) => {
   res.json({ details });
 });
 
-// Admin / Editor: Fetch items for title cleanup & metadata inspection
+// Items for title cleanup and metadata inspection.
 router.get('/admin/items', requireEditor, async (req, res) => {
   const { libraryId, mediaType, filter = 'all', search = '', limit = 100, offset = 0 } = req.query;
 
@@ -303,8 +283,7 @@ router.get('/admin/items', requireEditor, async (req, res) => {
       conditions.push('i.media_type = ?');
       params.push(mediaType);
     }
-    // Only admins may search the full path: for anyone else it would be a way to probe the
-    // server's folder names. Their search matches the title and file name (below).
+    // Only admins search the full path; others could probe server folder names.
     const isAdmin = req.user.role === 'admin';
     const searchText = typeof search === 'string' ? search.trim() : '';
     if (searchText && isAdmin) {
@@ -412,8 +391,7 @@ router.get('/admin/items', requireEditor, async (req, res) => {
   }
 });
 
-// Admin / Editor: stop flagging the selected titles' missing poster and details (a home
-// video has none to find), or start again.
+// Stop (or resume) flagging missing metadata for the selected titles.
 router.post('/admin/ignore-missing', requireEditor, handle(async (req, res) => {
   const { itemIds, ignored } = req.body;
   if (!Array.isArray(itemIds) || itemIds.length === 0 || itemIds.length > 5000 || !itemIds.every((id) => typeof id === 'string')) {
@@ -436,7 +414,6 @@ router.post('/admin/ignore-missing', requireEditor, handle(async (req, res) => {
   res.json({ updated, ignored });
 }));
 
-// Admin / Editor: Batch Clean Titles for selected items
 router.post('/admin/batch-clean-titles', requireEditor, async (req, res) => {
   const { itemIds } = req.body;
   if (!Array.isArray(itemIds) || itemIds.length === 0) {
@@ -480,14 +457,9 @@ router.post('/admin/batch-clean-titles', requireEditor, async (req, res) => {
 });
 
 /**
- * Matches an item against external metadata providers (TMDB, MangaDex, Google Books, Open Library)
- * and updates its fields, covers, credits, and ratings with appropriate granularity:
- * - Movies: syncs as movie (title, overview, releaseDate, poster, cast/crew, TMDB rating)
- * - Shows / Anime: syncs as episode (queries specific season & episode from TMDB, sets episode title,
- *   overview, airDate, episode still, while keeping canonical series name and show credits)
- * - Manga: syncs as volume (preserves volume title "Series, Vol. X", downloads MangaDex per-volume cover,
- *   sets series, author, artists, status)
- * - Frame covers (cover_source === 'frame') are always replaced with real official artwork even if overwriteCover is false.
+ * Matches an item against external providers and updates its fields, cover, credits and rating:
+ * movies as a movie, shows/anime per episode (keeping the series name), manga per volume.
+ * Frame-grab covers (cover_source 'frame') are replaced even when overwriteCover is false.
  */
 export async function matchItemMetadata(db, item, {
   overwriteCover = false,
@@ -708,16 +680,11 @@ export async function matchItemMetadata(db, item, {
   };
 }
 
-// Below this a book result shares too little of the title (and author) to be trusted
-// unattended: half the title words, or most of them with no author to go on.
+// Minimum title (and author) overlap for an unattended book match.
 const BOOK_MATCH_MIN_SCORE = 35;
 
-/**
- * Matches a book. A book's file usually knows more about the edition in hand than a search
- * does (its own blurb, publisher and date), so a match fills in what's missing rather than
- * replacing it, and only renames a book whose title is still its file name. The search uses
- * the ISBN when the file has one, otherwise title and author.
- */
+// Matches a book by ISBN, else title and author. The file knows its edition best, so a match
+// only fills gaps, and only renames a book still titled by its file name.
 async function matchBookMetadata(db, item, { overwriteCover, useCanonicalTitle, cleanTitle, year }) {
   const fileName = path.basename(item.path, path.extname(item.path));
   const titleIsFileName = item.title === fileName;
@@ -730,9 +697,7 @@ async function matchBookMetadata(db, item, { overwriteCover, useCanonicalTitle, 
     throw err;
   }
   const best = await fetchBookDetails(ranked[0]);
-  // An ISBN or publisher belongs to one edition, and only a match made by the book's own ISBN
-  // is known to be that edition; a title match could be any printing (a large-print one, a
-  // translation). A wrong ISBN stored would also steer every later ISBN-first match.
+  // ISBN and publisher are edition-specific, so only stored from an ISBN match.
   const sameEdition = !!item.isbn && best.isbn === item.isbn;
 
   const newTitle = useCanonicalTitle && titleIsFileName && best.title
@@ -788,12 +753,8 @@ async function matchBookMetadata(db, item, { overwriteCover, useCanonicalTitle, 
   };
 }
 
-/**
- * Matches an audiobook on Audible. Its own tags usually know the title and author, often the
- * narrator, so like a book a match fills in what's missing (narrators, series and number,
- * blurb, publisher, date, genres, language, cover) and only renames one still titled by its
- * file name.
- */
+// Matches an audiobook on Audible; like books, fills gaps and only renames one still titled
+// by its file name.
 async function matchAudiobookMetadata(db, item, { overwriteCover, useCanonicalTitle, cleanTitle, year }) {
   const fileName = path.basename(item.path, path.extname(item.path));
   const titleIsFileName = item.title === fileName;
@@ -816,8 +777,7 @@ async function matchAudiobookMetadata(db, item, { overwriteCover, useCanonicalTi
   const newTitle = useCanonicalTitle && titleIsFileName && best.title
     ? (best.subtitle ? `${best.title}: ${best.subtitle}` : best.title)
     : item.title;
-  // The number belongs to the series Audible named; a different series the file already has
-  // keeps its own.
+  // Only take the number if the series matches the one Audible named.
   const sameSeries = !item.series || (best.series && item.series.toLowerCase() === best.series.toLowerCase());
 
   let newCoverPath = null;
@@ -871,7 +831,7 @@ async function matchAudiobookMetadata(db, item, { overwriteCover, useCanonicalTi
   };
 }
 
-// Admin / Editor: Batch Find & Match Metadata with TMDB / external provider
+// Batch auto-match.
 router.post('/admin/batch-match', requireEditor, async (req, res) => {
   const { itemIds, overwriteCovers = false, useCanonicalTitle = true } = req.body;
   if (!Array.isArray(itemIds) || itemIds.length === 0) {
@@ -930,7 +890,6 @@ router.post('/admin/batch-match', requireEditor, async (req, res) => {
   }
 });
 
-// Admin / Editor: Auto-match single item
 router.post('/admin/match-single/:itemId', requireEditor, handle(async (req, res) => {
   const { itemId } = req.params;
   const { overwriteCover = false, useCanonicalTitle = true } = req.body;
@@ -961,7 +920,7 @@ router.post('/admin/match-single/:itemId', requireEditor, handle(async (req, res
   }
 }));
 
-// Apply a chosen external metadata result to an item: updates fields and downloads the cover
+// Apply a chosen external result to an item.
 router.post('/apply/:itemId', requireEditor, handle(async (req, res) => {
   const { itemId } = req.params;
   const { title, author, artists, series, volume, coverUrl, description, releaseDate, genres, themes, publisher, status, ageRating, isbn, language, source, rating, externalId } = req.body;
@@ -988,8 +947,7 @@ router.post('/apply/:itemId', requireEditor, handle(async (req, res) => {
   let coverPath = null;
   if (coverUrl) {
     try {
-      // A Google Books search result only links a thumbnail; its full record has the
-      // larger sizes.
+      // Google Books search results only link a thumbnail; the full record has larger sizes.
       const full = source === 'google-books' && externalId
         ? await fetchBookDetails({ source, externalId, coverUrl })
         : null;
@@ -1026,8 +984,7 @@ router.post('/apply/:itemId', requireEditor, handle(async (req, res) => {
   if (isbn !== undefined) { fields.push('isbn = ?'); params.push(normalizedIsbn); }
   if (language !== undefined) { fields.push('language = ?'); params.push(normalizedLanguage); }
   if (ageRating !== undefined) { fields.push('age_rating = ?'); params.push(ageRating || null); }
-  // A TMDB result carries its community score — keep it as the item's world rating so it
-  // shows without a separate lookup. Other providers' results don't set one.
+  // Keep a TMDB result's score as the world rating.
   if (source === 'tmdb' && typeof rating === 'number' && rating >= 0 && rating <= 10) {
     fields.push('external_rating = ?'); params.push(rating);
     fields.push('external_rating_votes = ?'); params.push(Number.isInteger(req.body.ratingVotes) ? req.body.ratingVotes : null);
@@ -1050,7 +1007,7 @@ router.post('/apply/:itemId', requireEditor, handle(async (req, res) => {
   res.json({ message: 'Metadata updated', item: await shapeItem(db, updated, req.user) });
 }));
 
-// Apply a chosen external metadata result or edited fields across a series (all volumes/episodes)
+// Apply a result or edited fields across every volume/episode of a series.
 router.post('/apply-series', requireEditor, handle(async (req, res) => {
   const {
     applyToIds,
@@ -1113,7 +1070,7 @@ router.post('/apply-series', requireEditor, handle(async (req, res) => {
         try {
           itemCoverPath = await downloadCover(volCoverUrl, itemId);
         } catch (e) {
-          // fallback to shared coverBuffer
+          // Fall back to the shared coverBuffer
         }
       }
     }

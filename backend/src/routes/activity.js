@@ -9,9 +9,8 @@ const router = express.Router();
 
 router.use(authenticateToken);
 
-// Start a view/listen/read/watch session — called when a reader or player opens an item.
-// Snapshots the item's title/media_type at open time so the activity feed still reads
-// sensibly even if the item is later deleted or its library re-scanned.
+// Opens a viewing session. Title and media_type are snapshotted so the feed survives the
+// item being deleted or rescanned.
 router.post('/start', handle(async (req, res) => {
   const { itemId } = req.body;
   if (typeof itemId !== 'string' || !itemId || itemId.length > 64) {
@@ -19,10 +18,8 @@ router.post('/start', handle(async (req, res) => {
   }
 
   const db = await getDb();
-  // Only for a title that exists and that this account may know about (not above its age
-  // limit, not outside Kids Mode, not hidden from everyone by an admin). Anything else is
-  // "not found": the session used to be recorded anyway, which let any id, real or made
-  // up, be written into the activity log without end.
+  // Only for a title this account may see; anything else is "not found", so made-up ids
+  // can't fill the activity log.
   const item = await db.get(
     `SELECT title, media_type FROM items i WHERE i.id = ?${knownSql(req.user, 'i')}`,
     [itemId]
@@ -39,7 +36,6 @@ router.post('/start', handle(async (req, res) => {
   res.json({ sessionId: id });
 }));
 
-// Close a view/listen/read/watch session, stamping how long it was open.
 router.post('/end', handle(async (req, res) => {
   const { sessionId } = req.body;
   if (!sessionId) {
@@ -51,8 +47,7 @@ router.post('/end', handle(async (req, res) => {
     'SELECT id, started_at FROM view_sessions WHERE id = ? AND user_id = ? AND ended_at IS NULL',
     [sessionId, req.user.id]
   );
-  // Already closed, or never existed (e.g. duplicate unmount events) — not an error, just
-  // nothing left to do.
+  // Already closed or never existed (e.g. duplicate unmount events): not an error.
   if (!session) {
     return res.json({ message: 'Session already closed' });
   }
@@ -66,7 +61,7 @@ router.post('/end', handle(async (req, res) => {
   res.json({ message: 'Session closed', durationSeconds });
 }));
 
-// Current user's own recent activity: sign-ins and view sessions, merged and time-sorted.
+// Own sign-ins and view sessions, merged and time-sorted.
 router.get('/me', handle(async (req, res) => {
   const userId = req.user.id;
   const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);

@@ -9,8 +9,7 @@ const router = express.Router();
 
 router.use(authenticateToken);
 
-// Bookmarks are the person's own notes, but they still have limits: without them one account
-// could store them without end, against titles that don't exist.
+// Limits so one account can't store bookmarks without end.
 const MAX_BOOKMARKS_PER_ITEM = 500;
 const MAX_TITLE = 300;
 const MAX_NOTES = 5000;
@@ -83,10 +82,7 @@ router.patch('/:id', handle(async (req, res) => {
   const { id } = req.params;
   const { title, notes } = req.body;
 
-  // Built as an explicit field list rather than `COALESCE(?, title)` — COALESCE can never
-  // actually clear a field, since binding NULL for "clear this" is indistinguishable from
-  // "field omitted" to COALESCE. This also avoids calling .trim() on a null title/notes
-  // (sent to intentionally clear the field), which previously threw a TypeError.
+  // Explicit field list, not COALESCE(?, title): COALESCE can't tell "clear" (null) from "omitted".
   const fields = [];
   const params = [];
   const cleanTitle = cleanText(title, MAX_TITLE);

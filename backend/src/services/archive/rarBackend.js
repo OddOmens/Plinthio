@@ -1,9 +1,8 @@
 import fs from 'fs';
 import { getArchiveHandle, MAX_ENTRY_BYTES } from './handleCache.js';
 
-// node-unrar-js is a WASM build, so there's no system `unrar` binary (or its non-free
-// licensing) to deal with in the Docker image. It's imported lazily by the dispatcher, so a
-// CBZ-only library never pays for loading it.
+// node-unrar-js is WASM, so no system `unrar` binary (or its non-free license) is needed.
+// Loaded lazily so CBZ-only libraries never pay for it.
 let createExtractorFromData = null;
 
 async function getExtractorFactory() {
@@ -17,13 +16,8 @@ async function getExtractorFactory() {
   return createExtractorFromData;
 }
 
-// The whole archive is read into memory, matching what adm-zip already does for CBZ. Comic
-// archives are page images, so this is bounded by the file itself rather than by page count.
-//
-// That read is cached: serving a page calls in here twice (list, then extract), and a reader
-// works through hundreds of pages in one file, so re-reading a multi-hundred-MB CBR off disk
-// each time dominated page-turn latency. The extractor itself is still built per call — it
-// holds extraction state, and building it from an in-memory buffer is the cheap half.
+// The whole archive is read into memory and cached, since each page needs a list and an
+// extract. The extractor is built per call because it holds extraction state.
 async function readArchiveData(archivePath) {
   return getArchiveHandle(archivePath, (p) => Uint8Array.from(fs.readFileSync(p)).buffer);
 }
@@ -31,8 +25,7 @@ async function readArchiveData(archivePath) {
 async function openArchive(archivePath) {
   const factory = await getExtractorFactory();
   const cached = await readArchiveData(archivePath);
-  // Hand the extractor its own copy: the WASM side may take ownership of (and detach) the
-  // buffer it's given, which would poison the cached one for the next page.
+  // Pass a copy: the WASM side may detach the buffer it's given, which would break the cached one.
   return factory({ data: cached.slice(0) });
 }
 

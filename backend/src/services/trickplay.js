@@ -15,8 +15,7 @@ const GRID_COLUMNS = 10;
 const GRID_ROWS = 10;
 const TILES_PER_SHEET = GRID_COLUMNS * GRID_ROWS;
 
-// One generation per item at a time: the scrubber fires a burst of requests as soon as
-// someone hovers it, and without this each one would start its own ffmpeg pass.
+// One generation per item: the scrubber fires bursts of requests.
 const inFlight = new Map();
 
 function itemDir(itemId) {
@@ -63,7 +62,6 @@ async function buildSheets(itemId, framesDir, targetDir) {
   const frames = fs.readdirSync(framesDir).filter((f) => f.endsWith('.jpg')).sort();
   if (frames.length === 0) throw new Error('No frames were extracted');
 
-  // Every frame is the same size, so the first one's dimensions define the whole grid.
   const { width, height } = await sharp(path.join(framesDir, frames[0])).metadata();
   const sheetCount = Math.ceil(frames.length / TILES_PER_SHEET);
 
@@ -101,9 +99,8 @@ async function buildSheets(itemId, framesDir, targetDir) {
 }
 
 /**
- * Builds the scrub-preview sprite sheets for an item: a frame every 10 seconds, packed into
- * 10x10 JPEG grids plus an index describing the layout. Written to a temp directory and
- * renamed into place so a half-built set is never served (same approach as thumbnails.js).
+ * Scrub-preview sprite sheets (a frame every 10s in 10x10 grids) plus index.json. Built in a
+ * temp dir and renamed into place so a partial set is never served.
  */
 export async function generateTrickplay(itemId, videoPath) {
   const existing = getTrickplayIndex(itemId);

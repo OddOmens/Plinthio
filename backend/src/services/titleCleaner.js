@@ -1,14 +1,8 @@
-/**
- * Media title cleanup and metadata parsing utilities.
- * Extracts clean human-readable titles, release years, and TV season/episode numbers
- * from release filenames or dirty library titles.
- */
+// Parses release filenames and messy titles into clean titles, years and season/episode numbers.
 
-// Matches common technical markers used in scene releases and web rips.
-// Everything from the first marker onward is release metadata rather than part of the title.
+// Release markers: everything from the first one onward is not part of the title.
 export const TECH_MARKERS = /\b(?:\d{3,4}p|4k|uhd|hdr\d*|dovi|dv|imax|remux|bluray|blu-ray|brrip|bdrip|webrip|web[- ]?dl|web|hdtv|dvdrip|hdrip|tvrip|x26[45]|h ?26[45]|hevc|avc|xvid|divx|aac\d?(?:\.\d)?|ac3|eac3|dts(?:[- ]?hd)?|truehd|atmos|ddp?\d?(?:\.1)?|\d{1,2}\.\d(?:ch)?|10bit|8bit|proper|repack|extended|remastered|unrated|criterion|directors\.?cut|theatrical|multi|dual|subbed|dubbed|amzn|nf|dsnp|atvp|itunes|hmax|peacock)\b/i;
 
-// All media extensions handled by Plinthio
 export const ALL_MEDIA_EXTENSIONS = /\.(mkv|mp4|avi|mov|wmv|m4v|webm|flv|ts|cbz|cbr|epub|pdf|m4b|mp3)$/i;
 
 // "｜" (fullwidth, what YouTube titles use in file names) or a spaced "|".
@@ -19,17 +13,11 @@ function cutBarTail(str) {
   return head && head.trim() ? head : str;
 }
 
-// Release-name clutter that never belongs in a title. Narrower than TECH_MARKERS, which also
-// lists real words ("Web", "Extended", "Proper") because it only ever reads file names.
+// Narrower than TECH_MARKERS (no real words like "Web" or "Proper"), safe for existing titles.
 const RELEASE_JUNK = /\b(?:\d{3,4}p|x26[45]|h ?26[45]|hevc|blu-?ray|brrip|bdrip|webrip|web-?dl|hdtv|dvdrip|hdrip|10bit|yts(?:\.mx)?)\b/i;
 const EPISODE_TITLE = /^(S\d+E\d+(?:-?E\d+)?):\s*(.*)$/i;
 
-/**
- * Whether a title still carries a file name's clutter: words.joined.by.dots, underscores,
- * [tags], release markers, a year in brackets, a file extension or a "｜ channel" tail. A
- * plain title with a colon, a year that's part of the name ("Blade Runner 2049") or an
- * initial ("Dr. Stone") doesn't.
- */
+/** Dots-for-spaces, underscores, [tags], release markers, (year), extensions or a "｜" tail. */
 export function looksLikeFileName(title) {
   const t = String(title || '');
   return /_/.test(t) ||
@@ -41,8 +29,7 @@ export function looksLikeFileName(title) {
     BAR_SPLIT.test(t);
 }
 
-// An episode's own name, without a "｜ channel" tail, [ids], release markers, or the
-// series' name repeated at either end ("Bumble Nums - Atomic Avocado Toast").
+// Strips bar tails, [ids], release markers and the series name repeated at either end.
 function cleanEpisodeName(name, series) {
   let out = cutBarTail(String(name || ''));
   out = out.replace(/\[[^\]]*\]/g, ' ');
@@ -57,10 +44,8 @@ function cleanEpisodeName(name, series) {
 }
 
 /**
- * The title Admin → Metadata's cleanup proposes, or null when there's nothing to clean:
- * `{ title, year }`. It works from the title as it stands, not the file name, so a title a
- * match or an edit gave ("The Magic Xylophone", "Hans Zimmer: The Sound of Hollywood") is
- * left alone, and cleaning a title once leaves nothing more to clean.
+ * Proposed `{ title, year }` or null. Works from the current title, not the file name, so
+ * matched or edited titles are left alone and cleaning is idempotent.
  */
 export function suggestCleanTitle({ title, path: filePath, series } = {}) {
   const current = String(title || '').trim();
@@ -78,8 +63,7 @@ export function suggestCleanTitle({ title, path: filePath, series } = {}) {
 
   if (!looksLikeFileName(current)) return null;
 
-  // Comic and film releases end in bracketed tags: "… v01 (2023) (Digital) (1r0n)". They
-  // all go, the year kept from among them.
+  // Drop trailing "(…)" tags, keeping a year if one is among them.
   let rest = cutBarTail(current);
   let tagYear = null;
   for (let m; (m = rest.match(/\s*\(([^()]*)\)\s*$/)) && m.index > 0;) {
@@ -94,10 +78,7 @@ export function suggestCleanTitle({ title, path: filePath, series } = {}) {
   return cleaned && cleaned !== current ? { title: cleaned, year: parsed.year || tagYear } : null;
 }
 
-/**
- * Parse a raw filename or existing title into structured components:
- * { cleanTitle, year, isTv, series, season, episode, episodeTitle, original }
- */
+/** Returns { cleanTitle, year, isTv, series, season, episode, episodeTitle, original }. */
 export function parseMediaTitle(rawInput) {
   if (!rawInput || typeof rawInput !== 'string') {
     return { cleanTitle: '', year: null, isTv: false, series: null, season: null, episode: null, episodeTitle: null, original: '' };
@@ -106,31 +87,24 @@ export function parseMediaTitle(rawInput) {
   const original = rawInput.trim();
   let str = original;
 
-  // Take only filename if a full path was passed
   if (str.includes('/') || str.includes('\\')) {
     str = str.split(/[/\\]/).pop();
   }
 
-  // Strip media extension
   str = str.replace(ALL_MEDIA_EXTENSIONS, '');
 
-  // Video downloads (YouTube and the like) tack the channel and a pitch on with bars:
-  // "Tricky Sticky Rice Dumplings ｜ Cartoon For Kids ｜ The Bumble Nums [6a6x0WQnFzY]".
-  // What comes before the first bar is the name.
+  // Downloaded videos append "｜ channel ｜ pitch"; the name is before the first bar.
   str = cutBarTail(str);
 
-  // Strip anime/fansub group tags at start: e.g. [SubsPlease], [Erai-raws], [Judas]
+  // Leading fansub group tag, e.g. [SubsPlease].
   str = str.replace(/^\[[^\]]+\]\s*/, '');
 
-  // Strip 8-character CRC32 checksums common in anime: e.g. [98E7B12C]
+  // CRC32 checksums, e.g. [98E7B12C].
   str = str.replace(/\[[0-9a-fA-F]{8}\]/g, '');
 
-  // Replace dots and underscores with spaces, but preserve hyphens/colons
   let working = str.replace(/[._]/g, ' ');
 
-  // Check for TV / Episode patterns: S01E02, 1x02, Ep 02, Episode 2
-  // Word boundaries matter: without them "x" matches inside an id like "6a6x0WQn" (a YouTube
-  // download) and "ep" inside "Sleep 3".
+  // S01E02, 1x02, Ep 02, Episode 2. Word boundaries stop matches inside ids ("6a6x0W") or words ("Sleep 3").
   const tvPattern = /(?:\bs(\d+)\s*e(\d+)|\b(\d+)x(\d+)\b|\b(?:ep|episode)\.?\s*(\d+))/i;
   const tvMatch = working.match(tvPattern);
 
@@ -141,7 +115,6 @@ export function parseMediaTitle(rawInput) {
     let seriesPart = working.slice(0, tvMatch.index).trim();
     let epPart = working.slice(tvMatch.index + tvMatch[0].length).trim();
 
-    // Clean technical markers from episode title part
     const epMarker = epPart.match(TECH_MARKERS);
     if (epMarker && epMarker.index !== undefined) {
       epPart = epPart.slice(0, epMarker.index);
@@ -149,7 +122,7 @@ export function parseMediaTitle(rawInput) {
     epPart = epPart.replace(/\[[^\]]*\]/g, ' ').replace(/[()[\]]/g, ' ').trim();
     epPart = epPart.replace(/^[\s\-–—:]+|[\s\-–—:]+$/g, '').trim();
 
-    // Extract year from series part if present e.g. "Doctor Who 2005"
+    // Series year, e.g. "Doctor Who 2005".
     let seriesYear = null;
     const sYearMatch = seriesPart.match(/\b(19\d\d|20\d\d)\b/);
     if (sYearMatch && sYearMatch.index > 0) {
@@ -173,30 +146,26 @@ export function parseMediaTitle(rawInput) {
     };
   }
 
-  // Not a TV episode — process as movie / feature film
-
-  // Remove bracketed technical metadata like [1080p], [BluRay], [YTS.MX], [EXTENDED REMASTERED]
+  // Movie.
   working = working.replace(/\[[^\]]*\]/g, ' ');
 
-  // Cut off at the first technical release marker
   const marker = working.match(TECH_MARKERS);
   if (marker && marker.index !== undefined) {
     working = working.slice(0, marker.index);
   }
 
-  // Cut off trailing release group formatted as "-Group" e.g. "-RDNYB" or "-YTS"
+  // Trailing "-Group" release tag.
   working = working.replace(/\s-[A-Za-z0-9_]+$/i, '');
 
   let cleanTitle = working.trim();
   let year = null;
 
-  // Case 1: Release year in parentheses: e.g. "Resident Evil (2002)" or "Blade Runner 2049 (2017)"
+  // "(2002)" wins; otherwise the last bare year.
   const parenYearMatch = cleanTitle.match(/\((19\d\d|20\d\d)\)/);
   if (parenYearMatch) {
     year = parenYearMatch[1];
     cleanTitle = cleanTitle.replace(/\((19\d\d|20\d\d)\)/g, '').trim();
   } else {
-    // Case 2: 4-digit year delimited by spaces
     const allYears = [...cleanTitle.matchAll(/\b(19\d\d|20\d\d)\b/g)];
     if (allYears.length > 0) {
       const lastYearMatch = allYears[allYears.length - 1];
@@ -206,20 +175,17 @@ export function parseMediaTitle(rawInput) {
       const before = cleanTitle.slice(0, yearIdx).trim();
       const after = cleanTitle.slice(yearIdx + 4).trim();
 
-      // Only extract as release year if there is title text before it
-      // (prevents turning "1917" into an empty title with year 1917, or breaking "2001: A Space Odyssey")
+      // Only a year with title text before it ("1917", "2001: A Space Odyssey" stay titles).
       if (before.length > 0) {
         year = yearStr;
         cleanTitle = `${before} ${after}`.trim();
       } else if (after.length === 0) {
-        // Sole word is the year e.g. "1917"
         cleanTitle = yearStr;
         year = null;
       }
     }
   }
 
-  // Cleanup residual punctuation, trailing hyphens, double spaces, empty brackets
   cleanTitle = cleanTitle
     .replace(/[()[\]]/g, ' ')
     .replace(/\s+/g, ' ')
@@ -238,10 +204,7 @@ export function parseMediaTitle(rawInput) {
   };
 }
 
-/**
- * Clean a search title for external provider queries (e.g. TMDB search query).
- * Strips technical noise and trailing years.
- */
+/** Title for provider searches; the series name for episodes. */
 export function cleanSearchTitle(title) {
   if (!title) return '';
   const parsed = parseMediaTitle(title);

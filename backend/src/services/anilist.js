@@ -1,12 +1,8 @@
 import { fetchJson } from './providerHttp.js';
 import { htmlToText } from './bookMetadata.js';
 
-/**
- * AniList — free, no key. https://docs.anilist.co
- * Manga and anime: English and romaji titles, large covers, genres, tags and staff. About 90
- * requests a minute are allowed (fewer while AniList is under load), so answers are kept for
- * a while: a batch match asks once per series, not once per volume.
- */
+// AniList (free, no key; https://docs.anilist.co). Rate-limited to ~90 requests a minute,
+// so answers are cached and a batch match asks once per series.
 const CACHE_MS = 30 * 60 * 1000;
 
 const QUERY = `query ($search: String, $type: MediaType) {
@@ -25,8 +21,7 @@ const QUERY = `query ($search: String, $type: MediaType) {
   }
 }`;
 
-// In the words MangaDex results use, so the status field reads the same whichever source
-// filled it.
+// Same wording as MangaDex results, so status reads the same whichever source filled it.
 const STATUS = {
   FINISHED: 'Completed',
   RELEASING: 'Ongoing',
@@ -74,7 +69,7 @@ function anilistResult(media, type) {
   };
 }
 
-/** `type` is 'MANGA' or 'ANIME'. Adult titles are left out, as MangaDex's search does. */
+/** `type` is 'MANGA' or 'ANIME'. Adult titles are left out. */
 export async function searchAniList(query, type) {
   const data = await fetchJson('https://graphql.anilist.co', {
     method: 'POST',

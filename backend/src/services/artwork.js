@@ -10,10 +10,7 @@ import { USER_AGENT } from './providerHttp.js';
 import sharp from 'sharp';
 import { looksLikeImageBuffer } from '../utils/imageFile.js';
 
-// Only fetch covers from the CDN hosts our own metadata providers actually return —
-// `coverUrl` can be client-supplied, and without this the server would happily turn it into
-// an arbitrary outbound HTTP request (SSRF against internal services / cloud metadata
-// endpoints).
+// `coverUrl` can be client-supplied, so only provider CDN hosts are fetched (prevents SSRF).
 const ALLOWED_COVER_HOSTS = new Set([
   'uploads.mangadex.org',
   'mangadex.org',
@@ -42,10 +39,8 @@ const MAX_COVER_BYTES = 15 * 1024 * 1024; // 15MB
 const COVER_FETCH_TIMEOUT_MS = 15000;
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
-// The same hosts in Content-Security-Policy form, for the browser's img-src (index.js), so
-// the editor can preview every cover the server would save. Kept in one place because the
-// two lists drifted: the browser list lacked bare archive.org, which every Open Library
-// cover redirects through, so no Open Library cover ever showed in Edit Metadata.
+// The same hosts as CSP img-src sources (index.js), so the editor can preview any cover the
+// server would save. Derived here so the two lists can't drift.
 export const COVER_CSP_SOURCES = [
   ...ALLOWED_COVER_HOSTS,
   ...ALLOWED_COVER_EXACT_HOSTS,
@@ -59,9 +54,6 @@ export function isAllowedCoverHost(hostname) {
     ALLOWED_COVER_HOST_SUFFIXES.some((suffix) => host.endsWith(suffix));
 }
 
-/**
- * Downloads and verifies image bytes from an approved metadata provider.
- */
 export async function downloadCoverBuffer(coverUrl) {
   let parsed;
   try {
@@ -73,9 +65,8 @@ export async function downloadCoverBuffer(coverUrl) {
     throw new Error('Cover URL is not from an approved metadata provider');
   }
 
-  // Redirects are followed by hand so every hop has to be an approved https provider host
-  // too: an approved host redirecting to a private or link-local address is refused, not
-  // fetched. The body is read with a running cap rather than buffered whole first.
+  // Redirects are followed by hand so every hop must also be an approved https host.
+  // The body is read with a running size cap.
   let url = parsed;
   let res;
   for (let hop = 0; ; hop++) {
@@ -114,9 +105,6 @@ export async function downloadCoverBuffer(coverUrl) {
   return buffer;
 }
 
-/**
- * Normalizes an image buffer with sharp and saves as standardized JPEG for an item.
- */
 export async function saveCoverJpeg(buffer, itemId) {
   const coverFilename = `${itemId}.jpg`;
   const fullPath = path.join(config.coversDir, coverFilename);
@@ -145,17 +133,12 @@ export async function downloadCover(coverUrl, itemId) {
 export { cleanSearchTitle } from './titleCleaner.js';
 import { cleanSearchTitle } from './titleCleaner.js';
 
-/**
- * Best-effort poster art for a movie/show/anime from TMDB. Returns the cover filename, or
- * null if TMDB isn't configured or nothing matched — callers treat it as optional polish,
- * never a scan failure.
- */
-// Whether TMDB lookups can run at all — i.e. whether an admin has supplied a key. The
-// scanner uses this to decide if a provisional video-frame cover is worth retrying.
+// Whether a TMDB key is set; the scanner uses it to decide if a video-frame cover is worth retrying.
 export async function isVideoArtworkAvailable() {
   return !!(await getTmdbApiKey());
 }
 
+// Best-effort TMDB poster: the cover filename, or null if unconfigured or unmatched.
 export async function fetchVideoArtwork({ itemId, title, series, mediaType, year }) {
   const apiKey = await getTmdbApiKey();
   if (!apiKey) return null;
@@ -168,7 +151,7 @@ export async function fetchVideoArtwork({ itemId, title, series, mediaType, year
     const results = await searchExternalMetadata(mediaType, query, year);
     if (!results || results.length === 0) return null;
 
-    // Prefer a result whose release year matches the filename's, when we have one.
+    // Prefer a result whose release year matches the filename's.
     const match = (year && results.find((r) => (r.releaseDate || '').startsWith(String(year)))) || results[0];
     if (!match?.coverUrl) return null;
 

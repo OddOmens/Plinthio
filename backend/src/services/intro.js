@@ -6,10 +6,8 @@ import { fileURLToPath } from 'url';
 import { config } from '../config/env.js';
 import { setSetting } from './settings.js';
 
-// The opening sequence: a short clip played before a movie or episode starts
-// (components/IntroSequence.vue). Plinthio ships its own (assets/default-intro.mp4), off until
-// an admin switches it on; they can also upload a replacement, kept in the data folder so it survives image
-// updates and goes along with backups of /config.
+// Opening sequence clip played before a movie or episode. Uploads live in the data folder so
+// they survive image updates and are included in backups.
 export const INTRO_DIR = path.join(config.dataDir, 'intro');
 export const INTRO_FILE = path.join(INTRO_DIR, 'intro.mp4');
 export const DEFAULT_INTRO_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../assets/default-intro.mp4');
@@ -72,11 +70,8 @@ async function probe(filePath) {
   }
 }
 
-/**
- * Checks an uploaded clip and, if it's usable, makes it the opening sequence. Throws an
- * Error with a message fit to show the admin when it isn't. The old clip stays in place
- * until the new one has passed.
- */
+// Validates an uploaded clip and installs it; throws an admin-facing message if unusable.
+// The old clip stays until the new one passes.
 export async function installIntro(db, buffer) {
   fs.mkdirSync(INTRO_DIR, { recursive: true });
   const tmp = path.join(INTRO_DIR, `upload-${crypto.randomBytes(6).toString('hex')}.mp4`);

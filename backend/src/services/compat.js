@@ -14,25 +14,15 @@ import { localInputArgs } from './probe.js';
 import { isLibraryScanning } from './scanner.js';
 import { resolveLibraryFile } from '../utils/libraryPath.js';
 
-// Converted copies of video that some devices can't decode. AV1 (and VP9/VP8) plays in most
-// browsers but not on Apple devices without a hardware decoder, and older formats (MPEG-2,
-// MPEG-4/Xvid, VC-1, WMV, 10-bit H.264) play nowhere without help; for those the server
-// converts as it streams (routes/video.js), which costs a full encode every time someone
-// presses play. A copy is that conversion done once, in the background, at full size, to
-// H.264, which everything plays: afterwards the device is simply sent the copy.
-//
-// Copies live under DATA_DIR/compat, never in a library folder, so a title is still one
-// file as far as the scanner and the shelves are concerned. The original is left alone
-// unless the admin switches on "replace the original", in which case the finished copy
-// takes the original's place in the library and its row keeps its id, progress and art.
+// Background H.264 copies of video some devices can't decode (AV1/VP9 on Apple, MPEG-2,
+// VC-1, 10-bit H.264...), so playback doesn't need a live encode every time.
+// Copies live under DATA_DIR/compat, outside libraries, unless "replace the original" is on;
+// then the copy takes the original's place and the row keeps its id.
 
 const COMPAT_DIR = path.join(config.dataDir, 'compat');
 fs.mkdirSync(COMPAT_DIR, { recursive: true });
 
-/**
- * Whether a file's video needs a copy: anything but 8-bit H.264 (plays everywhere) and
- * HEVC (plays on every Apple device, and is already as small as a copy would be).
- */
+// Anything but 8-bit H.264 and HEVC (plays on Apple devices, already compact) needs a copy.
 export function needsCopy(info) {
   if (!info || info.probeFailed || !info.videoCodec) return false;
   if (info.videoCodec === 'hevc') return false;
@@ -42,10 +32,8 @@ export function needsCopy(info) {
 
 const DEFAULT_MAX_GB = 50;
 
-// How hard a copy is compressed. crf is libx264's quality target (lower is better and
-// bigger; 18 is hard to tell from the source, 21 is good on any screen, 24 shows on a big
-// one); bitrate scales the hardware encoders, which take a bitrate instead; preset is how
-// much time the CPU spends making the file smaller for the same picture.
+// crf: libx264 quality (lower = better, bigger). bitrate: multiplier for hardware encoders.
+// preset: CPU time spent on compression.
 export const QUALITIES = {
   smaller: { crf: 24, bitrate: 0.65, preset: 'veryfast' },
   balanced: { crf: 21, bitrate: 1, preset: 'veryfast' },
@@ -55,15 +43,14 @@ export const QUALITIES = {
 export const MAX_HEIGHTS = [0, 1080, 720];
 const TICK_MS = Math.max(50, parseInt(process.env.COMPAT_TICK_MS, 10) || 3000);
 
-// The conversion running now: { itemId, proc, progress, paused, cancelled, capped, tmpPath, budget }.
+// { itemId, proc, progress, paused, cancelled, capped, tmpPath, budget }
 let current = null;
 let working = false;
 let kickAgain = false;
-// A library being searched for titles to convert: { total, done, queued }.
+// Library search in progress: { total, done, queued }.
 let discovery = null;
 
-// A request the queue turns down. The codes (errors.js): P310 nothing to convert, P311 the
-// size limit, P302 a file that can't be read; routes answer with them like any PlinthioError.
+// P310 nothing to convert, P311 size limit, P302 unreadable file.
 export class CompatError extends PlinthioError {}
 
 const copyPath = (itemId) => path.join(COMPAT_DIR, `${itemId}.mp4`);
@@ -87,14 +74,14 @@ export async function getCompatSettings(db) {
 
 export async function saveCompatSettings(db, patch) {
   if (patch.maxGb !== undefined) await setSetting(db, 'compat_max_gb', String(patch.maxGb));
-  // Both apply to copies made from now on; the ones already made are kept as they are.
+  // Quality and height apply only to new copies.
   if (patch.quality !== undefined) await setSetting(db, 'compat_quality', patch.quality);
   if (patch.maxHeight !== undefined) await setSetting(db, 'compat_max_height', String(patch.maxHeight));
   if (patch.allowUsers !== undefined) await setSetting(db, 'compat_allow_users', patch.allowUsers ? '1' : '0');
   if (patch.autoConvert !== undefined) await setSetting(db, 'compat_auto', patch.autoConvert ? '1' : '0');
   if (patch.replaceOriginal !== undefined) {
     await setSetting(db, 'compat_replace_original', patch.replaceOriginal ? '1' : '0');
-    // Saving the switch is also "try again" for originals that couldn't be replaced.
+    // Saving also retries originals that couldn't be replaced.
     await db.run('UPDATE compat_copies SET replace_error = NULL');
   }
   kick();
@@ -118,10 +105,7 @@ function progressOf(row) {
   return 0;
 }
 
-/**
- * Where a title's copy stands, for the apps: { status: 'none' | 'queued' | 'running' |
- * 'done' | 'failed', progress: 0–1, error, errorCode }.
- */
+// { status: 'none' | 'queued' | 'running' | 'done' | 'failed', progress: 0–1, error, errorCode }
 export async function copyState(db, itemId) {
   const row = await db.get('SELECT * FROM compat_copies WHERE item_id = ?', [itemId]);
   if (!row) return { status: 'none', progress: 0, error: null, errorCode: null };
@@ -133,10 +117,7 @@ export async function copyState(db, itemId) {
   };
 }
 
-/**
- * The finished copy of this file, or null. A copy made from a file that has since been
- * replaced (a different size or date) is thrown away rather than played.
- */
+// The finished copy, or null. A copy of a since-changed source is deleted.
 export async function readyCopy(db, itemId, sourcePath) {
   const row = await db.get("SELECT * FROM compat_copies WHERE item_id = ? AND status = 'done'", [itemId]);
   if (!row) return null;
@@ -157,10 +138,7 @@ export async function readyCopy(db, itemId, sourcePath) {
   return { path: file, size: row.size };
 }
 
-/**
- * Queues a copy of one title. Resolves to its state; a title already queued, running or
- * done is left as it is, and a failed one is tried again.
- */
+// Queues a copy; existing ones are left alone except failed ones, which are retried.
 export async function requestCopy(db, itemId, filePath, userId) {
   const existing = await db.get('SELECT status FROM compat_copies WHERE item_id = ?', [itemId]);
   if (existing && existing.status !== 'failed') return copyState(db, itemId);
@@ -199,7 +177,6 @@ export async function removeAllCopies(db) {
   logger.info('media', `Converted copies: all ${rows.length} deleted and the queue emptied`);
 }
 
-/** Puts every failed conversion back in the queue. Resolves to how many there were. */
 export async function retryFailed(db) {
   const { changes } = await db.run(
     `UPDATE compat_copies SET status = 'queued', error = NULL, error_code = NULL, size = 0,
@@ -210,7 +187,6 @@ export async function retryFailed(db) {
   return changes;
 }
 
-/** Everything the admin page shows: the settings, the space used and each copy. */
 export async function compatOverview(db) {
   const rows = await db.all(
     `SELECT c.item_id, c.status, c.size, c.source_codec, c.error, c.error_code, c.replace_error, c.created_at,
@@ -230,7 +206,7 @@ export async function compatOverview(db) {
       mediaType: row.media_type || null,
       status: row.status,
       progress: progressOf(row),
-      // Held back while someone watches something the server is converting live.
+      // Paused while a live transcode runs.
       paused: row.status === 'running' && current?.itemId === row.item_id && current.paused,
       size: row.size || 0,
       sourceCodec: row.source_codec || null,
@@ -241,11 +217,8 @@ export async function compatOverview(db) {
   };
 }
 
-/**
- * Looks through one library (or all of them), or through the titles named in itemIds (a
- * series' episodes, say), for video that needs a copy and queues it. Returns straight away;
- * compatOverview().discovery reports how far it has got.
- */
+// Queues copies for a library, all libraries, or `itemIds`. Runs in the background;
+// progress is in compatOverview().discovery.
 export async function queueLibrary(db, libraryId, userId, itemIds = null) {
   if (discovery) throw new PlinthioError('P004', 'A search for videos to convert is already running');
   const filter = itemIds
@@ -272,7 +245,7 @@ export async function queueLibrary(db, libraryId, userId, itemIds = null) {
             }
           }
         } catch (err) {
-          // Past the size limit nothing more can be queued; anything else is one bad file.
+          // The size limit stops the run; other errors are one bad file.
           if (err?.plinthioCode === 'P311') {
             logger.warn('media', '[P311] Converted copies: the size limit was reached, so the rest of the library was not queued');
             break;
@@ -289,16 +262,12 @@ export async function queueLibrary(db, libraryId, userId, itemIds = null) {
   return { total: items.length };
 }
 
-// Videos a library scan has just added or seen change, waiting to be looked at.
+// Videos a scan added or changed, waiting to be checked.
 const newVideoIds = new Set();
 let drainingNewVideos = false;
 const NEW_VIDEO_BATCH = 500;
 
-/**
- * Called by the scanner with the titles it added or saw change. With "Convert new videos
- * automatically" on, the ones that need a copy are queued, exactly as if an admin had asked
- * for them; with it off this does nothing. Never throws: a scan must not fail over this.
- */
+// From the scanner: queues new/changed titles when auto-convert is on. Never throws, so a scan can't fail here.
 export async function queueNewVideos(db, itemIds) {
   try {
     if (!itemIds?.length || !(await getCompatSettings(db)).autoConvert) return;
@@ -309,7 +278,7 @@ export async function queueNewVideos(db, itemIds) {
   }
 }
 
-// One search runs at a time, so scans that finish close together wait their turn here.
+// One search at a time; batches wait here.
 function drainNewVideos(db) {
   if (discovery || drainingNewVideos || !newVideoIds.size) return;
   const ids = [...newVideoIds].slice(0, NEW_VIDEO_BATCH);
@@ -320,10 +289,7 @@ function drainNewVideos(db) {
     .finally(() => { drainingNewVideos = false; });
 }
 
-// ─── The conversion itself ──────────────────────────────────────────────────
-
-// For the hardware encoders, which take a bitrate rather than a quality. Generous for the
-// same reason as the streaming ladder (services/hls.js): this is the copy people keep.
+// Hardware encoder bitrates; generous because this is the copy people keep.
 function bitrateFor(height) {
   if (height > 1440) return 24000;
   if (height > 1080) return 14000;
@@ -332,17 +298,16 @@ function bitrateFor(height) {
   return 2000;
 }
 
-// The video half of the command, on one encoder: a graphics chip's, or the CPU's when accel
-// is null.
+// Video encoder args; software when accel is null.
 function videoArgs(info, accel, height, quality) {
   const bitrate = Math.round(bitrateFor(height) * quality.bitrate);
   const rate = ['-maxrate', `${Math.round(bitrate * 1.5)}k`, '-bufsize', `${bitrate * 3}k`];
-  // Interlaced video (DVDs, broadcast recordings) would otherwise keep its comb lines for good.
+  // Deinterlace, or comb lines are baked into the copy.
   const deinterlace = info.interlaced ? 'yadif,' : '';
   if (accel) {
     return ['-vf', deinterlace + accel.filter(height), '-c:v', accel.encoder, '-b:v', `${bitrate}k`, ...rate];
   }
-  // Half the cores: this runs for a long time beside a server people are using.
+  // Half the cores, as this runs long beside a server in use.
   return [
     '-vf', `${deinterlace}scale=-2:${height}`, '-c:v', 'libx264', '-preset', quality.preset, '-crf', String(quality.crf), ...rate,
     '-pix_fmt', 'yuv420p', '-threads', String(Math.max(1, Math.floor(os.cpus().length / 2)))
@@ -350,8 +315,7 @@ function videoArgs(info, accel, height, quality) {
 }
 
 function buildArgs(info, sourcePath, outPath, { accel, subtitles, quality, maxHeight }) {
-  // The source's own size, or the admin's limit if it is taller (H.264 past 2160p plays
-  // almost nowhere), with even dimensions. A copy is never made bigger than its source.
+  // Source height capped by the admin's limit or 2160p (H.264 above plays almost nowhere), made even.
   const height = Math.min(info.height || 1080, maxHeight || 2160) & ~1;
 
   const args = [
@@ -366,8 +330,7 @@ function buildArgs(info, sourcePath, outPath, { accel, subtitles, quality, maxHe
 
   args.push(...videoArgs(info, accel, height, QUALITIES[quality] || QUALITIES.balanced));
 
-  // Audio every browser and Apple device plays in an MP4: AAC and MP3 are kept as they
-  // are, anything else (Opus, AC-3, DTS…) becomes AAC with up to 5.1 channels.
+  // AAC and MP3 are copied; anything else becomes AAC with up to 5.1 channels.
   (info.audioTracks || []).forEach((track, index) => {
     if (track.codec === 'aac' || track.codec === 'mp3') {
       args.push(`-c:a:${index}`, 'copy');
@@ -403,7 +366,7 @@ function runEncode(itemId, args, duration, budget) {
       const lines = pending.split('\n');
       pending = lines.pop();
       for (const line of lines) {
-        // Both are microseconds, whatever the older name says.
+        // Both are microseconds despite the name.
         const match = /^out_time_(?:us|ms)=(\d+)/.exec(line);
         if (match && duration > 0) job.progress = Math.min(0.99, parseInt(match[1], 10) / 1e6 / duration);
       }
@@ -422,8 +385,7 @@ function runEncode(itemId, args, duration, budget) {
   });
 }
 
-// Keeps the running conversion out of the way: stopped while someone is watching something
-// the server has to convert live, and ended if it would take the copies past their limit.
+// Pauses the conversion during live transcodes and kills it if it would exceed the size limit.
 function tick() {
   if (!current) return;
   const job = current;
@@ -448,9 +410,8 @@ function tick() {
   } catch { /* no job control on this platform: it keeps running */ }
 }
 
-// Marks a conversion failed. `error` is what the admin list shows ('cap' and 'missing' are
-// translated there, anything else is ffmpeg's own words); `code` is the error code that
-// explains it (docs/error-codes.md), stored with the row and written to the log.
+// `error` is shown in the admin list ('cap' and 'missing' are translated there); `code` is
+// from docs/error-codes.md.
 async function fail(db, itemId, error, code, title) {
   removeFiles(itemId);
   await db.run(
@@ -462,7 +423,7 @@ async function fail(db, itemId, error, code, title) {
     : error === 'missing' ? 'its file is missing from disk'
       : error;
   const message = `[${code}] Converting ${title ? `"${title}"` : `item ${itemId}`} failed: ${why}`;
-  // The limit and a missing file are the admin's to sort out; the rest are real errors.
+  // Size limit and missing file are admin issues, logged as warnings.
   if (code === 'P311' || code === 'P301') logger.warn('media', message);
   else logger.error('media', message);
 }
@@ -480,7 +441,7 @@ async function convert(db, row) {
   const room = settings.maxGb * 1024 ** 3 - await usedBytes(db);
   if (room <= 0) return failed('cap', 'P311');
 
-  // Live conversions come first.
+  // Live transcodes take priority.
   while (activeEncodeCount() > 0) await new Promise((r) => setTimeout(r, TICK_MS));
   const claimed = await db.run("UPDATE compat_copies SET status = 'running' WHERE item_id = ? AND status = 'queued'", [itemId]);
   if (!claimed.changes) return; // cancelled while it waited
@@ -494,9 +455,8 @@ async function convert(db, row) {
   const accel = accelName ? hwaccelConfig(accelName) : null;
   logger.info('media', `Converting "${item.title}" (${row.source_codec || info.videoCodec}) to H.264 with ${accelName || 'the CPU'} (${settings.quality} quality${settings.maxHeight && info.height > settings.maxHeight ? `, scaled down to ${settings.maxHeight}p` : ''})`);
 
-  // The graphics chip first, then the CPU if it fails; and
-  // each of those without the subtitles if it fails with them, since a track ffmpeg can't
-  // turn into MP4 text shouldn't cost the whole copy.
+  // Hardware then CPU, each retried without subtitles, since an unconvertible subtitle
+  // track shouldn't cost the whole copy.
   const hasSubs = (info.subtitleTracks || []).some((track) => track.isTextBased);
   const plans = [];
   for (const encoder of accel ? [accel, null] : [null]) {
@@ -518,7 +478,7 @@ async function convert(db, row) {
   }
   if (!result.ok) return result.error === 'cap' ? failed('cap', 'P311') : failed(result.error, result.code || 'P304');
 
-  // Only a copy that really is the whole film in H.264 is kept.
+  // Keep only a complete H.264 result.
   forgetPlaybackInfo(compatProbeId(itemId));
   const made = await getPlaybackInfo(compatProbeId(itemId), out);
   forgetPlaybackInfo(compatProbeId(itemId));
@@ -538,11 +498,8 @@ async function convert(db, row) {
   logger.info('media', `The H.264 copy of "${item.title}" is ready (${Math.round(size / 1024 ** 2)} MB, the original is ${Math.round(source.size / 1024 ** 2)} MB)`);
 }
 
-// ─── Replacing the original ─────────────────────────────────────────────────
-
-// Puts a finished copy where the original was and deletes the original. The copy is
-// written into the library folder under a temporary name first, so the original is only
-// touched once the whole replacement is sitting beside it on the same disk.
+// Replaces the original with the copy. The copy is staged beside it first, so the original
+// is only touched once the replacement is fully on the same disk.
 async function replaceOriginal(db, row) {
   const itemId = row.item_id;
   const item = await db.get('SELECT id, path, title, library_id FROM items WHERE id = ?', [itemId]);
@@ -559,7 +516,7 @@ async function replaceOriginal(db, row) {
     const why = { readonly: 'the media folder is read-only', link: 'it is a link to a file elsewhere', exists: 'another file already has that name' }[reason] || reason;
     logger.warn('media', `Could not replace "${item.title}" with its converted copy: ${why}`);
   };
-  // A link is someone else's file layout; the copy keeps being used from where it is.
+  // Links aren't replaced; the copy keeps being served from compat.
   if (file.realPath !== original) return giveUp('link');
 
   const dir = path.dirname(original);
@@ -572,12 +529,12 @@ async function replaceOriginal(db, row) {
   try {
     await fs.promises.copyFile(copyPath(itemId), staging);
     if (fs.statSync(staging).size !== row.size) throw new Error('the copy came out a different size');
-    // A scan that started during the copy has already listed this folder: wait for the next round.
+    // A scan started during the copy has already listed this folder; retry next round.
     if (isLibraryScanning(item.library_id)) {
       fs.unlinkSync(staging);
       return;
     }
-    // No await between these: nothing else in the server sees the folder half-changed.
+    // No await between these, so nothing sees the folder half-changed.
     fs.renameSync(staging, target);
     if (target !== original) fs.unlinkSync(original);
   } catch (err) {
@@ -608,8 +565,6 @@ async function replaceOriginals(db) {
   }
 }
 
-// ─── The queue ──────────────────────────────────────────────────────────────
-
 async function work() {
   if (working) {
     kickAgain = true;
@@ -639,10 +594,7 @@ function kick() {
   setImmediate(() => { work(); });
 }
 
-/**
- * Called once at startup: a conversion cut short by the last shutdown goes back in the
- * queue, files nothing refers to are deleted, and the queue starts.
- */
+// Startup: requeues interrupted conversions, deletes orphan files, starts the queue.
 export async function initCompat() {
   const db = await getDb();
   await db.run("UPDATE compat_copies SET status = 'queued' WHERE status = 'running'");
@@ -657,7 +609,7 @@ export async function initCompat() {
   let ticks = 0;
   setInterval(() => {
     tick();
-    // Once a minute: originals that couldn't be replaced during a scan, and the like.
+    // Once a minute, e.g. for originals skipped during a scan.
     if (++ticks % Math.ceil(60000 / TICK_MS) === 0) kick();
   }, TICK_MS).unref();
   kick();

@@ -1,12 +1,8 @@
 import { fetchJson } from './providerHttp.js';
 import { htmlToText, normalizeIsbn, normalizeLanguage } from './bookMetadata.js';
 
-/**
- * Audible's catalog — free, no key, but not an official API: it's the one Audible's own apps
- * use (Audiobookshelf reads it too), so it could change without notice. It has the narrators,
- * series and number in it, publisher, blurb and cover. Details (the ISBN, tidier genres)
- * come from Audnexus, a free community service built on the same catalog. https://audnex.us
- */
+// Audible's catalog API (free, no key, unofficial, so it may change without notice).
+// ISBN and tidier genres come from Audnexus (https://audnex.us), built on the same catalog.
 const CACHE_MS = 30 * 60 * 1000;
 
 // Audible keeps a catalog per country; the book's language (or the reader's) picks one.

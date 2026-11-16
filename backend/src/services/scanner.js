@@ -28,9 +28,7 @@ const AUDIO_EXTS = new Set(['.m4b', '.mp3', '.m4a', '.flac', '.aac', '.ogg']);
 const MANGA_EXTS = new Set(['.cbz', '.zip', '.cbr', '.rar', '.cb7', '.7z']);
 const BOOK_EXTS = new Set(['.epub', '.pdf']);
 
-// Per-library, not global: a slow scan of one library used to reject scans of every other
-// one with "Scanner already running". The lock still exists so the same library can't be
-// walked twice at once (double-inserting, or racing the stale-row prune).
+// Per-library lock so the same library isn't walked twice at once (double inserts, prune races).
 const scanningLibraryIds = new Set();
 
 export function isLibraryScanning(libraryId) {
@@ -56,9 +54,8 @@ export async function scanLibrary(libraryId) {
     if (!fs.existsSync(library.path)) {
       throw new PlinthioError('P200', `Library folder for "${library.name}" does not exist: ${library.path}`);
     }
-    // walkDirectory skips unreadable subfolders so one bad folder can't sink a scan, but an
-    // unreadable library root (EIO from a disconnected drive, EACCES) would then look like
-    // an empty library. Read the root once up front so that fails loudly, with its code.
+    // walkDirectory skips unreadable folders, so check the root explicitly or an unreadable
+    // drive would look like an empty library.
     try {
       fs.readdirSync(library.path);
     } catch (err) {
@@ -69,8 +66,7 @@ export async function scanLibrary(libraryId) {
       );
     }
 
-    // Symlinks are followed only to places inside a library folder (this library's or any
-    // other's) — see utils/libraryPath.js. Read fresh, so a library added a second ago counts.
+    // Symlinks are only followed into library roots (utils/libraryPath.js); read fresh.
     const roots = await getLibraryRoots({ fresh: true });
     const files = [];
     const skippedLinks = { count: 0 };
@@ -82,17 +78,12 @@ export async function scanLibrary(libraryId) {
         'If they lead to media you keep elsewhere on purpose, add that folder as a library or list it in SYMLINK_ALLOWED_ROOTS.');
     }
 
-    // Trailers, featurettes and other extras, worked out from where the files sit. They're
-    // catalogued (so a film's page can list them) but kept off the shelf.
+    // Extras (trailers etc.) are catalogued but kept off the shelf.
     const extras = classifyExtras(files, library.path, library.type);
 
-    // Snapshot what's currently in the DB for this library so we can detect renamed/moved
-    // files (same content, different path) instead of treating them as brand-new items,
-    // which previously caused duplicates whenever a folder was renamed.
+    // Snapshot to detect renamed/moved files rather than adding duplicates.
     const dbItemsBefore = await db.all('SELECT id, path, file_size, format, total_pages, cover_path, media_type, title, series, volume, offloaded_at, book_meta_version FROM items WHERE library_id = ?', [libraryId]);
-    // An unmounted drive usually leaves its mount point behind as an empty folder, which
-    // looks exactly like "every file was deleted" — and the prune below would then wipe the
-    // whole catalog (and its covers, reading progress links, custom art). Refuse instead.
+    // An unmounted drive leaves an empty mount point; refuse rather than mark everything missing.
     if (files.length === 0 && dbItemsBefore.length > 0) {
       throw new PlinthioError(
         'P201',
@@ -104,14 +95,11 @@ export async function scanLibrary(libraryId) {
       );
     }
     const dbItemsById = new Map(dbItemsBefore.map((i) => [i.id, i]));
-    // A row is found by its path too: a file re-linked after a rename keeps its old id, which
-    // isn't the hash of its new path, so looking it up by id alone added the file a second time
-    // on the next scan (two rows, one file — shown in Health as duplicates and clashes).
+    // Also by path: a re-linked file keeps its old id, which isn't the hash of its new path.
     const dbItemsByPath = new Map(dbItemsBefore.map((i) => [i.path, i]));
     const discoveredPathSet = new Set(files);
 
-    // Orphaned rows (path no longer exists on disk) are candidates for a rename match,
-    // keyed by filename + file size so we only re-link an exact, unambiguous match.
+    // Orphaned rows keyed by filename + size; only an unambiguous match is re-linked.
     const orphanedByKey = new Map();
     for (const item of dbItemsBefore) {
       if (!discoveredPathSet.has(item.path)) {
@@ -122,9 +110,7 @@ export async function scanLibrary(libraryId) {
     }
     const claimedOrphanIds = new Set();
 
-    // Offloaded titles whose file is gone. A new file that's clearly the same episode, volume
-    // or film (a re-download under a different name) takes one over, so its history comes
-    // back with it instead of starting a new, empty entry.
+    // A new file matching a gone offloaded title (same episode/volume/film) takes over its row and history.
     const offloadedGone = dbItemsBefore.filter((i) => i.offloaded_at && !discoveredPathSet.has(i.path));
     const offloadedMatch = (mediaType, meta) => {
       const found = offloadedGone.filter((c) => !claimedOrphanIds.has(c.id) && c.media_type === mediaType && (
@@ -145,7 +131,6 @@ export async function scanLibrary(libraryId) {
       const ext = path.extname(filePath).toLowerCase();
       const stats = fs.statSync(filePath);
 
-      // Deterministic ID based on file path
       const computedId = crypto.createHash('md5').update(filePath).digest('hex');
 
       let itemId = dbItemsById.has(computedId) ? computedId : (dbItemsByPath.get(filePath)?.id || computedId);
@@ -163,10 +148,9 @@ export async function scanLibrary(libraryId) {
 
       let existing = dbItemsById.get(itemId) || null;
 
-      // If existing at the same path with an unchanged size, skip heavy metadata re-extraction
+      // Unchanged size at the same path: skip re-extraction.
       if (existing && !isRename && existing.file_size === stats.size) {
-        // A PDF scanned before PDFs read page by page (1.0.0) gets its page count, and page
-        // one as a cover if it has none — only those, so a title someone edited is kept.
+        // PDFs without a page count get one (and a page-one cover if none); edited fields are kept.
         if (ext === '.pdf' && !existing.total_pages) {
           try {
             const { pages } = await pdfInfo(filePath);
@@ -177,7 +161,7 @@ export async function scanLibrary(libraryId) {
             }
           } catch (err) { /* no poppler: stays as it was */ }
         }
-        // A book read by an older version of the extractor gets its empty fields filled once.
+        // Fill empty fields once for books read by an older extractor version.
         if (BOOK_EXTS.has(ext) && existing.media_type === 'book' && (existing.book_meta_version || 0) < BOOK_META_VERSION) {
           await refreshBookMetadata(db, itemId, filePath);
         }
@@ -187,11 +171,8 @@ export async function scanLibrary(libraryId) {
       let meta = null;
       let mediaType = 'book';
 
-      // A new or changed audio/video file that is really a playlist or script (an HLS
-      // playlist renamed to .mkv, a concat list…) isn't media: playing it would have ffmpeg
-      // open whatever it lists. It's left out, and marked missing if it was there before.
-      // Real media is binary, so only a file that starts like text costs an ffprobe here; it
-      // is refused when ffprobe names a script format or can't read it as media at all.
+      // Refuse playlists/scripts disguised as media (ffmpeg would open whatever they list).
+      // Only text-looking files are probed, since real media is binary.
       if ((AUDIO_EXTS.has(ext) || VIDEO_EXTS.has(ext)) && startsLikeText(filePath)) {
         const format = await probeFormatName(filePath);
         if (format === '' || isScriptFormat(format)) {
@@ -219,11 +200,7 @@ export async function scanLibrary(libraryId) {
 
       if (!meta) continue;
 
-      // Video rarely ships a poster next to the file, so fall back to TMDB when an admin has
-      // configured a key. Best-effort: a miss or a network failure leaves the placeholder
-      // cover and never fails the scan.
-      // An extra would only pick up its film's poster or a wrong TMDB match; the artwork pass
-      // below gives it a frame from the clip itself instead.
+      // Best-effort TMDB poster fallback for video. Extras get a frame from the clip later instead.
       if (extras.has(filePath)) meta.coverPath = null;
       if (!meta.coverPath && ['movie', 'show', 'anime'].includes(mediaType) && !extras.has(filePath)) {
         const parsedFile = parseMediaTitle(path.basename(filePath));
@@ -285,9 +262,7 @@ export async function scanLibrary(libraryId) {
         changedIds.push(itemId);
         if (isRename) renamed++;
 
-        // The file changed (that's why we're here — see the size-unchanged skip above),
-        // so its cover may have too. Bust both the thumbnail cache and media.js's in-memory
-        // cover_path cache, or a changed cover would silently keep serving the old image.
+        // The file changed, so clear thumbnails and media.js's cover cache.
         for (const width of THUMB_WIDTHS) {
           const thumbPath = getThumbnailPath(itemId, width);
           if (fs.existsSync(thumbPath)) {
@@ -325,16 +300,9 @@ export async function scanLibrary(libraryId) {
     await applyExtras(db, libraryId, extras);
     await unifySeriesSpellings(db, libraryId);
 
-    // Files that have gone from disk are marked missing, not deleted: a drive that's slow to
-    // mount, or a folder mid-reorganise, must not cost anyone their progress, ratings or
-    // custom art. Missing titles are hidden everywhere (accessSql) and come back on their
-    // own if the file reappears; an admin removes them for good from Library Health.
-    // (Renamed/moved files were already re-linked above and are in discoveredPathSet.)
-    //
-    // Offloaded titles (kept as history on purpose) get missing_since too once their file is
-    // gone, but aren't counted as missing. One whose file is still there was offloaded ahead
-    // of deleting it and stays offloaded; one whose file comes back after being gone is
-    // restored, offload and all.
+    // Gone files are marked missing, not deleted, so progress and custom art survive a slow
+    // mount; they're hidden and return if the file reappears. Offloaded titles get missing_since
+    // but aren't counted; a file that returns clears both flags.
     let removed = 0;
     let restored = 0;
     const knownItems = await db.all('SELECT id, path, missing_since, offloaded_at FROM items WHERE library_id = ?', [libraryId]);
@@ -349,20 +317,15 @@ export async function scanLibrary(libraryId) {
       }
     }
 
-    // Artwork pass. Covers used to be resolved only while a file was being added or
-    // updated, so anything that came in without art — no poster in the folder, no TMDB key
-    // configured at the time — stayed blank forever, since later scans skip unchanged
-    // files. This re-checks every item in the library that still has no usable cover.
+    // Retry covers for every item still without one (unchanged files are otherwise skipped).
     const artwork = await backfillArtwork(db, library);
 
     await db.run('UPDATE libraries SET last_scanned_at = CURRENT_TIMESTAMP WHERE id = ?', [libraryId]);
 
     logger.info('scan', `Scan completed for "${library.name}"`, { added, updated, renamed, missing: removed, restored, artwork, total: files.length });
-    // New films: look up their credits and collection in the background.
     if (library.type === 'movies' && added) backfillMovieCredits().catch(() => {});
-    // New video that Apple devices can't decode: queue a converted copy, if the admin asked for that.
     queueNewVideos(db, changedIds);
-    // `removed` counts titles newly marked missing (kept for recovery, not deleted).
+    // `removed` counts titles newly marked missing, not deleted.
     return { status: 'completed', added, updated, renamed, removed, restored, artwork, total: files.length };
   } finally {
     scanningLibraryIds.delete(libraryId);
@@ -370,21 +333,9 @@ export async function scanLibrary(libraryId) {
 }
 
 /**
- * Finds every item in a library whose cover is missing or unusable and tries, in order:
- * artwork sitting next to the file, TMDB (video only, and only with a key configured), and
- * for video a frame from the file itself. Returns how many covers it managed to fill in.
- *
- * Best-effort throughout: a failure here never fails the scan.
- */
-/**
- * A show's name comes from each episode's filename, so two release groups that spell it
- * differently ("Farming Life in Another World - S01E01" and
- * "Farming.Life.In.Another.World.S02E01") would split one show into two. Names that differ
- * only in case or punctuation are the same show: they're merged under one spelling — the
- * show folder's, when a folder is named exactly that, otherwise the most common one. Series
- * settings and Kids Mode entries saved under a losing spelling move across. Shows, anime and
- * books (whose series comes from each file's metadata); manga and audiobooks take theirs
- * from folders or tags that don't vary per file.
+ * Series names from filenames vary by release group; names differing only in case or punctuation
+ * are merged under the show folder's spelling, else the most common. Series settings and Kids Mode
+ * entries move across. Applies to shows, anime and books.
  */
 export function seriesKey(name) {
   return String(name).normalize('NFKD').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
@@ -399,8 +350,7 @@ async function unifySeriesSpellings(db, libraryId) {
   // key -> spelling -> { count, isFolder }
   const groups = new Map();
   for (const r of rows) {
-    // A book's series comes from each file's own metadata, which says "The First Law" in
-    // one volume and "First Law" in the next.
+    // Book metadata varies on a leading "The" between volumes.
     const name = r.media_type === 'book' ? String(r.series).replace(/^the\s+/i, '') : r.series;
     const key = `${r.media_type}:${seriesKey(name)}`;
     if (!groups.has(key)) groups.set(key, new Map());
@@ -444,11 +394,7 @@ async function unifySeriesSpellings(db, libraryId) {
   }
 }
 
-/**
- * A book's catalogue fields from its file — description, publisher, date, language, ISBN,
- * subjects. Only empty fields are filled, so an edit or a metadata match isn't undone by a
- * rescan.
- */
+// Fills only empty catalogue fields, so edits and metadata matches survive rescans.
 async function saveBookFields(db, itemId, meta) {
   await db.run(
     `UPDATE items SET
@@ -470,10 +416,8 @@ async function saveBookFields(db, itemId, meta) {
 }
 
 /**
- * Reads an unchanged book again with the current extractor and fills in what's missing:
- * the catalogue fields, a series and its number, a cover, an author for "Unknown Author".
- * The title is only tidied ("Dune (Dune Chronicles, #1)" → "Dune") when it's still exactly
- * what the file said, so a title someone typed stays.
+ * Re-reads an unchanged book and fills in missing fields. The title is only tidied when it
+ * still matches what the file said, so typed titles stay.
  */
 async function refreshBookMetadata(db, itemId, filePath) {
   const item = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
@@ -508,9 +452,8 @@ async function refreshBookMetadata(db, itemId, filePath) {
 }
 
 /**
- * Records which items are extras and what of. Runs over every item each scan (not just new
- * or changed files), so moving a clip into an Extras folder — or out of one — takes effect.
- * A show's extras take the show's series name so its page can list them.
+ * Runs over every item each scan so moving clips in or out of Extras folders takes effect.
+ * A show's extras take its series name so its page can list them.
  */
 async function applyExtras(db, libraryId, extras) {
   const rows = await db.all('SELECT id, path, series, extra_type, extra_of FROM items WHERE library_id = ?', [libraryId]);
@@ -548,8 +491,7 @@ async function applyExtras(db, libraryId, extras) {
   }
 }
 
-// Frames grabbed before 1.5 are exactly FRAME_LEGACY_WIDTH wide and look soft on large
-// cards; a new grab is never that width, so this finds old ones once and only once.
+// Old low-res frame grabs are exactly FRAME_LEGACY_WIDTH wide; new grabs never are.
 async function isLegacyFrame(item) {
   if (item.cover_source !== 'frame') return false;
   try {
@@ -560,6 +502,10 @@ async function isLegacyFrame(item) {
   }
 }
 
+/**
+ * Fills missing or unusable covers: folder art, then TMDB (video, with a key), then a video frame.
+ * Best-effort; returns how many were filled.
+ */
 async function backfillArtwork(db, library) {
   const items = await db.all(
     'SELECT id, path, title, series, media_type, duration, cover_path, cover_source, extra_type FROM items WHERE library_id = ?',
@@ -570,10 +516,7 @@ async function backfillArtwork(db, library) {
   for (const item of items) {
     const usable = hasUsableCover(item.cover_path);
 
-    // Covers that predate the cover_source column carry no provenance, so classify them
-    // once: if the folder still holds artwork that's where the cover came from, and for a
-    // video with no folder artwork it can only have been a grabbed frame. Without this, a
-    // stand-in from before the upgrade would never be replaced by a real poster.
+    // Infer cover_source for covers without one, so stand-in frames can later be replaced.
     if (usable && !item.cover_source) {
       const source = findCoverInFolder(path.dirname(item.path))
         ? 'folder'
@@ -581,13 +524,9 @@ async function backfillArtwork(db, library) {
       await db.run('UPDATE items SET cover_source = ? WHERE id = ?', [source, item.id]);
       item.cover_source = source;
     }
-    // A frame grabbed from the film is a stand-in, not artwork. If a TMDB key has been
-    // configured since, this is the moment to trade it for the real poster — otherwise
-    // adding a key would only ever affect newly-added films.
-    // (Not for an extra — a frame is exactly what it should have.)
+    // A frame is a stand-in: swap it for a TMDB poster once a key exists (not for extras).
     const provisional = usable && !item.extra_type && item.cover_source === 'frame' && await isVideoArtworkAvailable();
-    // An extra scanned before extras were recognised got its film's poster (from the folder
-    // or TMDB); swap that for a frame of its own. Art someone uploaded by hand is kept.
+    // Extras carrying their film's poster get a frame of their own; uploaded art is kept.
     const extraWithFilmArt = usable && item.extra_type && ['folder', 'tmdb'].includes(item.cover_source);
     const legacyFrame = usable && await isLegacyFrame(item);
     if (usable && !provisional && !extraWithFilmArt && !legacyFrame) continue;
@@ -595,11 +534,7 @@ async function backfillArtwork(db, library) {
     let coverPath = null;
     let coverSource = null;
 
-    // 1. Art next to the file. This also re-runs for items whose stored cover turned out to
-    //    be junk (a macOS `._` sidecar, a truncated download), now that the picker validates
-    //    what it copies.
-    // (Never for an extra: the folder's art is its film's poster.)
-    // (And never a link to a file outside the library folders.)
+    // 1. Folder art inside library roots (not for extras: that's the film's poster).
     let folderCover = item.extra_type ? null : findCoverInFolder(path.dirname(item.path));
     if (folderCover) folderCover = realPathInRoots(folderCover, await getLibraryRoots(), 'scan');
     if (folderCover) {
@@ -609,11 +544,11 @@ async function backfillArtwork(db, library) {
         coverPath = coverFilename;
         coverSource = 'folder';
       } catch (e) {
-        // Unreadable source — fall through to the next strategy.
+        // Unreadable: try the next source.
       }
     }
 
-    // 2. TMDB, when an admin has configured a key.
+    // 2. TMDB.
     if (!coverPath && VIDEO_MEDIA_TYPES.includes(item.media_type) && !item.extra_type) {
       const parsed = parseMediaTitle(path.basename(item.path));
       coverPath = await fetchVideoArtwork({
@@ -626,13 +561,9 @@ async function backfillArtwork(db, library) {
       if (coverPath) coverSource = 'tmdb';
     }
 
-    // 3. A frame from the film. Needs no API key, which is the point — a keyless install
-    //    would otherwise show a blank card for every movie it has.
-    // A frame is only worth grabbing if nothing better exists — and never worth re-grabbing
-    // for an item that already has one.
+    // 3. A video frame (no API key needed); not re-grabbed if the item already has one.
     if (!coverPath && (!provisional || legacyFrame) && VIDEO_MEDIA_TYPES.includes(item.media_type)) {
-      // (Only from a file that really sits inside a library folder — an item catalogued
-      // before links out of the library were refused may still be in the table.)
+      // Older rows may point outside library roots.
       const source = realPathInRoots(item.path, await getLibraryRoots(), 'scan');
       coverPath = source ? await extractVideoFrameCover(source, item.id, item.duration) : null;
       if (coverPath) coverSource = 'frame';
@@ -654,8 +585,7 @@ async function backfillArtwork(db, library) {
   return filled;
 }
 
-// A cover row is only as good as the file behind it: these libraries are full of files that
-// claim to be images and aren't, and a stored path pointing at one renders as a blank card.
+// The stored file must exist and actually be an image.
 function hasUsableCover(coverPath) {
   if (!coverPath) return false;
   const full = path.join(config.coversDir, coverPath);
@@ -670,8 +600,7 @@ function dropCachedImages(itemId) {
   invalidateCoverCache(itemId);
 }
 
-// Every audio/video container has NUL bytes in its first few hundred bytes (box sizes, EBML
-// lengths, RIFF sizes); playlists and scripts are plain text and have none.
+// Media containers have NUL bytes in their first 512 bytes; playlists and scripts don't.
 function startsLikeText(filePath) {
   let fd;
   try {
@@ -700,10 +629,7 @@ function walkDirectory(dir, libraryType, results, visitedRealPaths = new Set(), 
 
     const fullPath = path.join(dir, entry.name);
 
-    // fs.Dirent.isDirectory()/isFile() report false for symlinks even when they point at a
-    // real directory/file, so resolve the link target explicitly instead of skipping it —
-    // symlinked library/series folders (common with Docker bind mounts and NAS shares)
-    // were previously scanned as empty.
+    // Dirent reports false for symlinks, so resolve link targets explicitly.
     let isDirectory = entry.isDirectory();
     let isFile = entry.isFile();
 
@@ -712,16 +638,13 @@ function walkDirectory(dir, libraryType, results, visitedRealPaths = new Set(), 
       try {
         stats = fs.statSync(fullPath);
       } catch (err) {
-        // Broken symlink — nothing to scan
+        // Broken symlink.
         continue;
       }
       isDirectory = stats.isDirectory();
       isFile = stats.isFile();
 
-      // A link is followed only if it lands inside a library folder. Anything else — a
-      // "book" that is really a link to a key file, a folder link to the whole disk — is
-      // skipped and logged (once per path), so the catalog can't be used to read files the
-      // server happens to have access to.
+      // Only follow links into library roots, so the catalog can't expose arbitrary server files.
       let realPath;
       if (roots) {
         realPath = realPathInRoots(fullPath, roots, 'scan');
@@ -732,7 +655,7 @@ function walkDirectory(dir, libraryType, results, visitedRealPaths = new Set(), 
       }
 
       if (isDirectory) {
-        // Guard against symlink cycles (a symlink pointing back into an ancestor directory)
+        // Guard against symlink cycles.
         realPath = realPath || fs.realpathSync(fullPath);
         if (visitedRealPaths.has(realPath)) continue;
         visitedRealPaths.add(realPath);
@@ -752,7 +675,7 @@ function walkDirectory(dir, libraryType, results, visitedRealPaths = new Set(), 
       } else if ((libraryType === 'shows' || libraryType === 'movies' || libraryType === 'anime') && VIDEO_EXTS.has(ext)) {
         results.push(fullPath);
       } else if (VIDEO_EXTS.has(ext) || BOOK_EXTS.has(ext) || AUDIO_EXTS.has(ext) || MANGA_EXTS.has(ext)) {
-        // Fallback for general custom libraries
+        // Custom libraries.
         results.push(fullPath);
       }
     }

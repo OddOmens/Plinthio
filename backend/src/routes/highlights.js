@@ -5,8 +5,7 @@ import { authenticateToken } from '../middleware/auth.js';
 import { handle } from '../utils/http.js';
 import { canKnowItem } from '../services/visibility.js';
 
-// Highlighted passages in the EPUB reader. Each one is the reader's own: every query is
-// scoped to the signed-in user.
+// EPUB reader highlights; every query is scoped to the signed-in user.
 const router = express.Router();
 router.use(authenticateToken);
 
