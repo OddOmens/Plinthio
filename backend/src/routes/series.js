@@ -1,7 +1,7 @@
 import express from 'express';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
-import { authenticateToken, requireEditor } from '../middleware/auth.js';
+import { authenticateToken, requireEditor, canEditLibrary } from '../middleware/auth.js';
 import { handle, serverError } from '../utils/http.js';
 import { knownSql } from '../services/visibility.js';
 
@@ -22,7 +22,8 @@ router.get('/:libraryId/:seriesName/settings', handle(async (req, res) => {
   let seriesName = req.params.seriesName;
   try { seriesName = decodeURIComponent(seriesName); } catch { /* already decoded */ }
   const db = await getDb();
-  const isEditor = (req.user.role === 'admin' || req.user.role === 'editor') && !req.user.kids_mode;
+  // Same rule as requireEditor: a Kids Mode or content-limited account isn't an editor.
+  const isEditor = canEditLibrary(req.user);
   const visible = isEditor || await db.get(
     `SELECT 1 FROM items i WHERE i.library_id = ? AND i.series = ?${knownSql(req.user, 'i')} LIMIT 1`,
     [libraryId, seriesName]

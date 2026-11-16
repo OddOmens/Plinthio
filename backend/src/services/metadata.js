@@ -8,7 +8,18 @@ import { getOrCreateThumbnail } from './thumbnails.js';
 import { listArchiveEntries, readArchiveEntry } from './archive.js';
 import { IMAGE_EXTENSIONS, findCoverInFolder } from '../utils/imageFile.js';
 import { parseMediaTitle } from './titleCleaner.js';
-import { readBookMetadata } from './bookMetadata.js';
+import { readBookMetadata, libraryFileBeside } from './bookMetadata.js';
+import { getLibraryRoots } from '../utils/libraryPath.js';
+import { oneLine } from './logger.js';
+
+// Art beside a media file (cover.jpg, poster.jpg…), only when it really is a plain file
+// inside a library folder: a link to somewhere else is not copied. Every extractor goes
+// through here so none can forget the check.
+async function folderCoverInLibrary(dir) {
+  const found = findCoverInFolder(dir);
+  if (!found) return null;
+  return libraryFileBeside(found, await getLibraryRoots());
+}
 
 const COMIC_EXTENSIONS = new Set(['.cbz', '.zip', '.cbr', '.rar', '.cb7', '.7z']);
 
@@ -85,12 +96,12 @@ export async function extractAudiobookMetadata(filePath, itemId) {
       result.coverPath = coverFilename;
     }
   } catch (err) {
-    console.warn(`Could not parse audio metadata for ${filePath}: ${err.message}`);
+    console.warn(`Could not parse audio metadata for ${oneLine(filePath)}: ${oneLine(err.message)}`);
   }
 
   // If no embedded cover, check folder for cover.jpg, folder.jpg, etc.
   if (!result.coverPath) {
-    const folderCover = findCoverInFolder(path.dirname(filePath));
+    const folderCover = await folderCoverInLibrary(path.dirname(filePath));
     if (folderCover) {
       const coverFilename = `${itemId}.jpg`;
       const coverFullPath = path.join(config.coversDir, coverFilename);
@@ -216,12 +227,12 @@ export async function extractMangaMetadata(filePath, itemId) {
       if (ageRatingMatch) result.ageRating = ageRatingMatch[1].trim();
     }
   } catch (err) {
-    console.warn(`Could not parse comic archive for ${filePath}: ${err.message}`);
+    console.warn(`Could not parse comic archive for ${oneLine(filePath)}: ${oneLine(err.message)}`);
   }
 
   // Fallback to folder cover
   if (!result.coverPath) {
-    const folderCover = findCoverInFolder(parentDir);
+    const folderCover = await folderCoverInLibrary(parentDir);
     if (folderCover) {
       const coverFilename = `${itemId}.jpg`;
       const coverFullPath = path.join(config.coversDir, coverFilename);
@@ -262,13 +273,13 @@ export async function extractBookMetadata(filePath, itemId, { writeCover = true 
       fs.writeFileSync(coverFullPath, book.coverData);
       result.coverPath = coverFilename;
     } catch (err) {
-      console.warn(`Could not save EPUB cover for ${filePath}: ${err.message}`);
+      console.warn(`Could not save EPUB cover for ${oneLine(filePath)}: ${oneLine(err.message)}`);
     }
   }
 
   // Fallback to folder cover
   if (!result.coverPath) {
-    const folderCover = findCoverInFolder(path.dirname(filePath));
+    const folderCover = await folderCoverInLibrary(path.dirname(filePath));
     if (folderCover) {
       fs.copyFileSync(folderCover, coverFullPath);
       result.coverPath = coverFilename;
@@ -345,7 +356,7 @@ export async function extractVideoMetadata(filePath, itemId, mediaType = 'movie'
   }
 
   // Cover fallback from folder
-  const folderCover = findCoverInFolder(path.dirname(filePath));
+  const folderCover = await folderCoverInLibrary(path.dirname(filePath));
   if (folderCover) {
     const coverFilename = `${itemId}.jpg`;
     const coverFullPath = path.join(config.coversDir, coverFilename);

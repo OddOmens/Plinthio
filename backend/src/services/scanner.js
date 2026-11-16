@@ -4,7 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { getDb } from '../config/database.js';
 import { extractAudiobookMetadata, extractMangaMetadata, extractBookMetadata, extractVideoMetadata } from './metadata.js';
-import { logger } from './logger.js';
+import { logger, oneLine } from './logger.js';
 import { PlinthioError, codeForFsError } from '../errors.js';
 import { config } from '../config/env.js';
 import { getThumbnailPath, THUMB_WIDTHS } from './thumbnails.js';
@@ -20,13 +20,13 @@ import { BOOK_META_VERSION } from './bookMetadata.js';
 import { getLibraryRoots, realPathInRoots } from '../utils/libraryPath.js';
 import { probeFormatName, isScriptFormat } from './probe.js';
 import { queueNewVideos } from './compat.js';
+import { VIDEO_EXTS } from './subtitles.js';
 
 const VIDEO_MEDIA_TYPES = ['movie', 'show', 'anime'];
 
 const AUDIO_EXTS = new Set(['.m4b', '.mp3', '.m4a', '.flac', '.aac', '.ogg']);
 const MANGA_EXTS = new Set(['.cbz', '.zip', '.cbr', '.rar', '.cb7', '.7z']);
 const BOOK_EXTS = new Set(['.epub', '.pdf']);
-const VIDEO_EXTS = new Set(['.mp4', '.mkv', '.webm', '.avi', '.mov']);
 
 // Per-library, not global: a slow scan of one library used to reject scans of every other
 // one with "Scanner already running". The lock still exists so the same library can't be
@@ -691,7 +691,7 @@ function walkDirectory(dir, libraryType, results, visitedRealPaths = new Set(), 
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch (err) {
-    console.warn(`Error reading directory ${dir}: ${err.message}`);
+    console.warn(`Error reading directory ${oneLine(dir)}: ${oneLine(err.message)}`);
     return;
   }
 

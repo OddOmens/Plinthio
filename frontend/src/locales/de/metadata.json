@@ -107,7 +107,7 @@
       "allMediaTypes": "Alle Medientypen",
       "tvShows": "Serien",
       "needsCleanup": "Zu bereinigen",
-      "searchPlaceholder": "Nach Titel oder Pfad filtern…",
+      "searchPlaceholder": "Nach Titel oder Dateiname filtern…",
       "ignored": "Ignoriert ({count})"
     },
     "batch": {

@@ -10,6 +10,10 @@ import { logger } from './logger.js';
 
 const SUBTITLE_EXTENSIONS = ['.srt', '.vtt', '.ass', '.ssa'];
 
+// The video files the scanner catalogues (services/scanner.js uses this list). Kept here,
+// in a module with few imports, so both can share it without loading the scanner.
+export const VIDEO_EXTS = new Set(['.mp4', '.mkv', '.webm', '.avi', '.mov']);
+
 // Plex/Jellyfin convention: subtitles sit next to the video, named after it, with an
 // optional language (and sometimes "forced"/"sdh") between the name and the extension —
 // e.g. "The Movie.en.srt", "The Movie.en.forced.srt".
@@ -46,10 +50,21 @@ export async function findSidecarSubtitles(videoPath) {
     return [];
   }
 
+  // A subtitle file belongs to the video with the longest matching name: beside "Film.mkv",
+  // "Film.Unrated.en.srt" is "Film.Unrated.mkv"'s, not an "Unrated" track of "Film". Otherwise
+  // hiding or age-limiting one title would still serve its subtitles through the other.
+  // Decided from the folder, not the catalogue, so a video not scanned yet still counts.
+  const longerBases = files
+    .filter((f) => VIDEO_EXTS.has(path.extname(f).toLowerCase()))
+    .map((f) => path.basename(f, path.extname(f)))
+    .filter((base) => base !== videoBase && base.startsWith(`${videoBase}.`));
+
   const found = [];
   for (const filename of files) {
     const parsed = parseSidecarName(videoBase, filename);
     if (!parsed) continue;
+    const withoutExt = filename.slice(0, -path.extname(filename).length);
+    if (longerBases.some((base) => withoutExt === base || withoutExt.startsWith(`${base}.`))) continue;
     let resolved;
     try {
       resolved = await resolveLibraryFile(path.join(dir, filename));

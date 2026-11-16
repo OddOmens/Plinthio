@@ -107,7 +107,7 @@
       "allMediaTypes": "Alle mediatypen",
       "tvShows": "Tv-series",
       "needsCleanup": "Moet opgeschoond",
-      "searchPlaceholder": "Filteren op titel of pad...",
+      "searchPlaceholder": "Filteren op titel of bestandsnaam...",
       "ignored": "Genegeerd ({count})"
     },
     "batch": {

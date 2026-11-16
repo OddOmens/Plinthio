@@ -105,7 +105,7 @@
       "allMediaTypes": "所有媒体类型",
       "tvShows": "电视剧",
       "needsCleanup": "需要清理",
-      "searchPlaceholder": "按标题或路径筛选...",
+      "searchPlaceholder": "按标题或文件名筛选...",
       "ignored": "已忽略（{count}）"
     },
     "batch": {

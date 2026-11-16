@@ -5,7 +5,7 @@ import { authenticateToken } from '../middleware/auth.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { shapeItems, shapeItem } from '../services/itemView.js';
-import { accessSql } from '../services/visibility.js';
+import { accessSql, knownSql } from '../services/visibility.js';
 import { LIST_CATEGORIES, categoryForMediaType } from '../config/mediaTypes.js';
 import { matchLibraryTitles, latestRequestStatuses } from '../services/listMatching.js';
 
@@ -448,10 +448,13 @@ router.get('/for-item/:itemId', handle(async (req, res) => {
   const { itemId } = req.params;
 
   const db = await getDb();
+  // Only for a title this account may know about; anything else is "not found", the same as
+  // an id that was never there, so the answer can't confirm a hidden title exists.
+  const item = await db.get(`SELECT i.media_type FROM items i WHERE i.id = ?${knownSql(req.user, 'i')}`, [itemId]);
+  if (!item) return sendError(req, res, 'P300');
   // Only offer the lists this kind of item can go in (a movie never shows the "Read" lists);
   // plain folders take anything.
-  const item = await db.get('SELECT media_type FROM items WHERE id = ?', [itemId]);
-  const category = categoryForMediaType(item?.media_type);
+  const category = categoryForMediaType(item.media_type);
   const rows = await db.all(`
       SELECT c.id, c.name, COALESCE(c.type, 'collection') as type, c.category,
         CASE WHEN ci.item_id IS NOT NULL THEN 1 ELSE 0 END as in_collection

@@ -65,13 +65,20 @@ function navigationEntry({ id, title, href, summary }) {
 router.get('/', async (req, res) => {
   try {
     const db = await getDb();
+    // Only libraries holding something this account can see, with the same rule as the
+    // per-library feed, so a Kids Mode or age-limited account isn't shown the names of
+    // libraries it may see nothing in.
     const libraries = await db.all(
-      `SELECT DISTINCT l.id, l.name
+      `SELECT l.id, l.name
        FROM libraries l
-       JOIN items i ON i.library_id = l.id
-       WHERE i.media_type IN (${COMIC_MEDIA_TYPES.map(() => '?').join(',')})
+       WHERE EXISTS (
+         SELECT 1 FROM items i
+         WHERE i.library_id = l.id
+           AND i.media_type IN (${COMIC_MEDIA_TYPES.map(() => '?').join(',')})
+           AND i.id NOT IN (SELECT item_id FROM item_visibility WHERE user_id = ? OR user_id IS NULL)${accessSql(req.user, 'i')}
+       )
        ORDER BY l.name ASC`,
-      COMIC_MEDIA_TYPES
+      [...COMIC_MEDIA_TYPES, req.user.id]
     );
 
     const entries = libraries.map((lib) => navigationEntry({

@@ -111,7 +111,7 @@
       "allMediaTypes": "Wszystkie typy mediów",
       "tvShows": "Seriale",
       "needsCleanup": "Do uporządkowania",
-      "searchPlaceholder": "Filtruj po tytule lub ścieżce...",
+      "searchPlaceholder": "Filtruj po tytule lub nazwie pliku...",
       "ignored": "Pomijane ({count})"
     },
     "batch": {
