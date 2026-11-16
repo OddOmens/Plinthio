@@ -20,7 +20,7 @@ test('scroll mode keeps only nearby pages loaded, and the slider scrolls', async
   const scroller = page.locator('.webtoon-scroll');
   await expect(scroller.locator('img').first()).toBeVisible();
 
-  // Loading every page at once is what ran phones out of memory.
+  // Not every page at once: that runs phones out of memory.
   expect(await scroller.locator('img').count()).toBeLessThanOrEqual(10);
 
   // Pages are asked for at screen size, not as full scans.

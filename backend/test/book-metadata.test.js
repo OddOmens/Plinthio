@@ -241,7 +241,7 @@ describe('scanning a book library', () => {
   test('a book scanned by an older version is filled in once, keeping edits', async () => {
     const db = await getDb();
     const hanged = await item('Before They Are Hanged.epub');
-    // As 1.6 left it: raw title, nothing else, no cover.
+    // A legacy row: raw title, nothing else, no cover.
     await db.run(
       `UPDATE items SET title = 'Before They Are Hanged (The First Law)', series = NULL, volume = NULL,
          description = NULL, publisher = NULL, isbn = NULL, language = NULL, genres = NULL, release_date = NULL,

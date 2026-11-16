@@ -419,8 +419,7 @@ describe('book descriptions and ComicInfo: hostile text is read in linear time',
     assert.equal(comicInfoField(xml, 'Writer')[1], '');
     assert.equal(comicInfoField(xml, 'Number')[1], '3');
     assert.equal(comicInfoField(xml, 'AgeRating'), null);
-    // Like the pattern it replaces, a value doesn't run over a line break: the first tag
-    // that opens and closes on one line wins.
+    // A value doesn't run over a line break: the first tag that opens and closes on one line wins.
     assert.equal(comicInfoField('<Title>broken\n</Title>\n<Title>whole</Title>', 'Title')[1], 'whole');
     assert.equal(comicInfoField('<Title>a<Title>b</Title>', 'Title')[1], 'a<Title>b');
     assert.equal(comicInfoField('<Title>never closed', 'Title'), null);
@@ -578,7 +577,7 @@ describe('Live TV: names for this machine are not LAN hosts', () => {
     assert.equal(ch('http://[::ffff:127.0.0.1]:2019/', lan), null);
     assert.equal(ch('http://[::1]:2019/', lan), null);
     assert.equal(ch('http://127.1:2019/', lan), null);
-    // What worked before still does.
+    // Ordinary LAN and private hosts still pass.
     assert.equal(ch('http://192.168.1.60:5004/auto/v1', lan), '192.168.1.60');
     assert.equal(ch('http://tuner.local/ch/2', 'http://nas.lan/iptv.m3u'), 'tuner.local');
     assert.equal(ch('http://[fd12::5]/ch/2', lan), 'fd12::5');

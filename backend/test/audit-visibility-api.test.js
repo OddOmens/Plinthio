@@ -5,7 +5,7 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { startTestServer, setupAdmin, authed, getJson } from './helpers/server.js';
 
-// Regression tests for titles an account may not see leaking through side routes: the
+// Titles an account may not see must not leak through side routes: the
 // "which lists is this in" lookup, the editor metadata routes, the OPDS root feed, film
 // extras, and editor rights for an account with a content limit.
 
@@ -79,8 +79,7 @@ describe('restricted titles stay out of side routes', () => {
     assert.equal((await send(server.baseUrl, 'PATCH', `/users/${kidId}`, admin.token, { kidsMode: true })).status, 200);
     await make('viewer');
     await make('ed', { role: 'editor' });
-    // An editor that already carries a content limit (set before the rule refusing the
-    // combination existed): written straight to the database, before it ever signs in.
+    // A legacy editor with a content limit, written straight to the database before it signs in.
     const limitedId = await make('limited', { role: 'editor' });
     await db.run("UPDATE users SET max_age_rating = 'Teen' WHERE id = ?", [limitedId]);
 

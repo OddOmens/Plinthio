@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { signIn } from './helpers.js';
 
-// A shelf filter that's set gets a see-through tint. A <select>'s open list is drawn in the
-// select's colours, and a see-through one can't be, so the list came out white under the
-// dark theme's white text. The options now carry solid theme colours of their own.
+// A set filter has a see-through tint, which a <select>'s open list can't draw, so the options
+// carry solid theme colours (otherwise white text on white in the dark theme).
 test('a set shelf filter still opens a readable list in the dark theme', async ({ page, request }) => {
   await signIn(page, request);
   await page.goto('/');

@@ -35,7 +35,7 @@ RUN sed -i 's/^Components: main$/Components: main contrib non-free non-free-firm
     sed -i 's/ main$/ main contrib non-free non-free-firmware/' /etc/apt/sources.list
 
 # 7zip is Debian's own 7-Zip package (7zz), used to open .cb7/.7z comics; it gets security
-# updates with the base image, which the binary once bundled from npm never did.
+# updates with the base image.
 # The Intel iHD driver only exists for x86-64; ARM images (Raspberry Pi, Apple Silicon,
 # most NAS boxes) get ffmpeg's software encoders plus Mesa, which is all that's usable there.
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -70,8 +70,7 @@ COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # The release workflow passes Plinthio's own TMDB key (a repository secret), so new servers get
-# movie and show details with no setup. It is readable from the image, as Jellyfin's is from its
-# source; a key saved in Admin → Metadata or TMDB_API_KEY wins. Kept last so it doesn't bust the cache.
+# movie and show details with no setup. It is readable from the image; a key saved in Admin → Metadata or TMDB_API_KEY wins. Kept last so it doesn't bust the cache.
 ARG PLINTHIO_BUILTIN_TMDB_KEY=
 ENV PLINTHIO_BUILTIN_TMDB_KEY=${PLINTHIO_BUILTIN_TMDB_KEY}
 

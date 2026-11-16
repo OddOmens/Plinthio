@@ -12,7 +12,7 @@ test('title page on a phone: one-line main button, labelled actions menu', async
   // One line (h-11), not wrapped onto two.
   expect((await cta.boundingBox()).height).toBeLessThan(56);
 
-  // The icon-only row is gone on phones; the same actions are in a labelled menu.
+  // On phones the actions are in a labelled menu, not an icon-only row.
   await expect(page.getByRole('button', { name: 'Reset History' })).toBeHidden();
   await page.getByRole('button', { name: 'More actions' }).click();
   const menu = page.getByRole('menu');

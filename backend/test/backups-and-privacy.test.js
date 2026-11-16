@@ -163,7 +163,7 @@ describe('reading notes are private, and backups keep them', () => {
     assert.equal(fs.readFileSync(secret, 'utf8'), 'secret-for-the-copy-test');
     assert.equal(fs.statSync(secret).mode & 0o777, 0o600);
 
-    // Turned off again: the copy already there (as one from an older version would be) is
+    // Turned off again: the copy already there is
     // left alone and no longer refreshed, and the settings and the folder check both say so.
     fs.writeFileSync(secret, 'an-older-copy', { mode: 0o600 });
     const off = await put({ copyServerKey: false });

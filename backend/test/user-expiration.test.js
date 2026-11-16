@@ -49,7 +49,6 @@ describe('user account expiration limits', () => {
     assert.ok(body.token);
     assert.ok(body.user.expires_at);
 
-    // Can access protected route
     const meRes = await fetch(`${server.baseUrl}/api/auth/me`, {
       headers: authed(body.token)
     });
@@ -82,7 +81,6 @@ describe('user account expiration limits', () => {
   });
 
   test('API request is rejected with 403 P103 (account expired) when account expires', async () => {
-    // 1. Create a user with future expiry
     const futureExpiry = new Date(Date.now() + 10000).toISOString();
     const createRes = await fetch(`${server.baseUrl}/api/users`, {
       method: 'POST',
@@ -97,7 +95,6 @@ describe('user account expiration limits', () => {
     assert.equal(createRes.status, 200);
     const { user } = await createRes.json();
 
-    // 2. Sign in and get a valid token
     const loginRes = await fetch(`${server.baseUrl}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -106,11 +103,9 @@ describe('user account expiration limits', () => {
     assert.equal(loginRes.status, 200);
     const { token: userToken } = await loginRes.json();
 
-    // 3. User can fetch /api/auth/me
     const initialMe = await fetch(`${server.baseUrl}/api/auth/me`, { headers: authed(userToken) });
     assert.equal(initialMe.status, 200);
 
-    // 4. Admin updates user expiration to the past
     const patchRes = await fetch(`${server.baseUrl}/api/users/${user.id}`, {
       method: 'PATCH',
       headers: { ...authed(adminToken), 'Content-Type': 'application/json' },
@@ -120,7 +115,7 @@ describe('user account expiration limits', () => {
     });
     assert.equal(patchRes.status, 200);
 
-    // 5. User token is now rejected on next API request
+    // An existing token stops working once the account expires.
     const expiredMe = await fetch(`${server.baseUrl}/api/auth/me`, { headers: authed(userToken) });
     assert.equal(expiredMe.status, 403);
     const expiredJson = await expiredMe.json();
@@ -128,13 +123,11 @@ describe('user account expiration limits', () => {
   });
 
   test('Admin can extend and renew an expired account', async () => {
-    // Locate the expired user
     const usersRes = await fetch(`${server.baseUrl}/api/users`, { headers: authed(adminToken) });
     const { users } = await usersRes.json();
     const expiredUser = users.find(u => u.username === 'expired_viewer');
     assert.ok(expiredUser);
 
-    // Extend access by 7 days
     const extendRes = await fetch(`${server.baseUrl}/api/users/${expiredUser.id}/extend`, {
       method: 'POST',
       headers: { ...authed(adminToken), 'Content-Type': 'application/json' },
@@ -145,7 +138,6 @@ describe('user account expiration limits', () => {
     assert.ok(extendBody.user.expires_at);
     assert.ok(new Date(extendBody.user.expires_at).getTime() > Date.now());
 
-    // Now expired_viewer can log in again
     const loginRes = await fetch(`${server.baseUrl}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -49,9 +49,8 @@ export default {
         '8.5': '2.125rem',
         '9.5': '2.375rem',
       },
-      // The whole type scale runs one notch larger than Tailwind's default: text-xs (the most
-      // common size in the app, used for body copy on cards and panels) is 13px not 12px,
-      // text-sm 15px not 14px, and so on up. Spacing is untouched, so layouts keep their shape.
+      // Type scale one notch above Tailwind's default (text-xs 13px, text-sm 15px, …);
+      // spacing is unchanged so layouts keep their shape.
       fontSize: {
         xs: ['0.8125rem', { lineHeight: '1.25rem' }],
         sm: ['0.9375rem', { lineHeight: '1.375rem' }],

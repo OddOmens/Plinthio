@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { ADMIN, libraryPath } from './helpers.js';
 
-// The first-run wizard, end to end: every step through to a scanned library. (It once
-// stopped at step 5 of 6 with a Continue button that did nothing.)
+// The first-run wizard, end to end: every step through to a scanned library.
 test('setup wizard creates the admin and the first library', async ({ page, request }) => {
   await page.goto('/');
   await expect(page).toHaveURL(/\/setup/);

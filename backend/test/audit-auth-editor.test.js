@@ -79,7 +79,7 @@ describe('editors with a content limit', () => {
 
   test('an editor left with a content limit by an earlier version cannot edit the library', async () => {
     const id = await makeUser('legacyed', 'editor');
-    // Both at once, as an earlier version allowed; written before it signs in.
+    // Both at once (legacy data), written before it signs in.
     await db.run("UPDATE users SET max_age_rating = 'Teen' WHERE id = ?", [id]);
     const token = await login('legacyed', 'legacyed-password-1');
 

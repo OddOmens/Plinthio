@@ -89,9 +89,7 @@ describe('library scanner', () => {
   });
 
   test('extracts duration without reading the whole file', { skip: hasFfprobe ? false : 'ffprobe not installed' }, async () => {
-    // The original implementation parsed the entire container to find the duration, which
-    // took ~2.5 minutes per multi-GB file and made a scan look like it had hung. This
-    // asserts both that duration is populated and that getting it is fast.
+    // Parsing the whole container takes minutes on multi-GB files; duration must be filled and fast.
     const db = await getDb();
     const started = Date.now();
     await scanLibrary('lib-movies');
