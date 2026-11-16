@@ -163,8 +163,8 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | `GET /admin/health` · `POST /admin/health/remove-missing` | A | Library Health (with missing and offloaded titles grouped by film, series or season), removing missing titles |
 | `POST /admin/health/offload` · `/unoffload` | A | Keep titles as history (`{ itemIds }`), or undo that |
 | `GET /admin/logs` · `DELETE` | A | Server log |
-| `GET /users` · `POST /users` · `PATCH /users/:id` · `/:id/role` · `/:id/password` · `/:id/extend` · `DELETE /users/:id` | A | Accounts. `PATCH` takes `remoteAccess` (may use Plinthio away from home) |
-| `POST /users/:id/two-factor/reset` | A | Turn off someone's two-factor and sign them out |
+| `GET /users` · `POST /users` · `PATCH /users/:id` · `/:id/role` · `/:id/password` · `/:id/extend` · `DELETE /users/:id` | A | Accounts. `PATCH` takes `remoteAccess` (may use Plinthio away from home). `/:id/password` needs a signed-in session (not an API key) and refuses your own account |
+| `POST /users/:id/two-factor/reset` | A | Turn off someone's two-factor and sign them out. Needs a signed-in session (not an API key) and refuses your own account |
 | `GET /admin/network` · `PATCH` | A | Away-from-home settings (`remoteAccess`, `tailscaleIsHome`, `require2faOutside`), where this device connects from, proxy warning, recent outside sign-ins |
 | `GET /system/update` | A | Update check status |
 | `GET /health` · `GET /errors` | public | Health check (with version) and the error catalog |
