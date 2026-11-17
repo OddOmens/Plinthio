@@ -1,14 +1,8 @@
 import fs from 'fs';
 
-// Reading a comic meant re-opening (and for RAR, re-reading from disk) the whole archive on
-// every single page request — and twice per request, since extractMangaPage lists the
-// entries before reading one. On a 76MB CBZ that measured ~119ms per page turn; with the
-// opened archive held here it's ~1.5ms.
-//
-// Entries are keyed by path + mtime + size, so replacing a file on disk invalidates its
-// handle instead of serving stale pages. The cache is deliberately tiny: each entry pins
-// the archive's bytes in memory, and a reader only ever works through one or two files at
-// once (the current volume, plus the next one when they flip over).
+// Keeps opened archives so each page turn doesn't re-open (or re-read) the whole file.
+// Keyed by path + mtime + size so a replaced file is never served stale. Kept tiny because
+// each entry pins the archive's bytes, and a reader only uses one or two files at once.
 const MAX_ENTRIES = 3;
 const MAX_TOTAL_BYTES = 512 * 1024 * 1024;
 const TTL_MS = 10 * 60 * 1000;
@@ -36,21 +30,15 @@ function evictUntilWithinLimits() {
   }
 }
 
-/**
- * Returns the cached handle for `archivePath`, building it with `factory(archivePath)` on a
- * miss. `bytes` is the archive's own size — used only to bound how much the cache pins.
- */
-// The most one archive entry (a page) may unpack to. Real pages are a few MB; this only stops
-// a crafted entry that would inflate to gigabytes.
+// The most one entry (a page) may unpack to; only stops crafted entries that inflate to GBs.
 export const MAX_ENTRY_BYTES = 256 * 1024 * 1024;
 
-// For archives that have to be unpacked whole before a page can be read (7z, see
-// sevenZipBackend.js): the most they may unpack to in total, and how many entries they may
-// hold. A long, high-resolution volume is a few hundred pages and a GB or two; anything past
-// these is a "bomb" meant to fill the cache disk, not a comic.
+// Limits for archives unpacked whole (7z): total size and entry count. Anything past these
+// is a bomb meant to fill the cache disk, not a comic.
 export const MAX_ARCHIVE_TOTAL_BYTES = 4 * 1024 * 1024 * 1024;
 export const MAX_ARCHIVE_ENTRIES = 10000;
 
+// Returns the cached handle for `archivePath`, building it with `factory(archivePath)` on a miss.
 export async function getArchiveHandle(archivePath, factory) {
   let stat;
   try {

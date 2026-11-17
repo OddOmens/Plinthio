@@ -5,9 +5,7 @@ import { accessSql } from './visibility.js';
 import { logger } from './logger.js';
 import { setSetting } from './settings.js';
 
-// A film's whole TMDB collection — the films the library has and the ones it doesn't — for
-// the collection page and a film's "More in …" row. Missing films are shown (greyed, with a
-// Request button) unless the admin turns that off.
+// A film's TMDB collection, owned and missing films, for the collection page and "More in" row.
 const SHOW_MISSING_KEY = 'collections_show_missing';
 const COLLECTION_MAX_AGE_DAYS = 7;
 const inFlight = new Map();
@@ -53,10 +51,8 @@ async function loadCollection(db, collectionId) {
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
 
 /**
- * Every film in `film`'s TMDB collection, in release order. Each part has `itemId` when
- * the library has it (and this user can see it); a missing one has `requestStatus` and
- * `upcoming` (not released yet). Returns null when the film isn't in a collection or
- * nothing is known about it.
+ * Films in `film`'s collection, in release order. Owned (and visible) parts have `itemId`;
+ * missing ones have `requestStatus` and `upcoming`. Null when there's no collection.
  */
 export async function getFilmCollection(db, film, user) {
   if (film.media_type !== 'movie') return null;
@@ -65,8 +61,7 @@ export async function getFilmCollection(db, film, user) {
   const collection = await loadCollection(db, credits.collectionId);
   if (!collection?.parts?.length) return null;
 
-  // The library's copies: by TMDB id first, then by title + year for films matched before
-  // TMDB ids were kept.
+  // Match by TMDB id first, then title + year for items without one.
   const owned = await db.all(
     `SELECT i.id, i.title, i.release_date, i.tmdb_id, i.library_id, i.offloaded_at FROM items i
      WHERE i.media_type = 'movie' AND i.extra_type IS NULL

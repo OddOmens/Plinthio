@@ -7,21 +7,10 @@ import { execFileSync, execFile } from 'child_process';
 import { promisify } from 'util';
 import { config } from '../config/env.js';
 
-// Built-in HTTPS for installs reached straight over the LAN (no reverse proxy in front).
-//
-// A browser on another device only stops warning when the certificate chains to something it
-// trusts, which a plain self-signed certificate never does. So Plinthio makes its own small
-// certificate authority on first start, and issues the server certificate from it: install
-// the CA once on each phone or laptop (it's downloadable from /api/tls/ca.crt) and every
-// certificate the server ever re-issues — new IP address, renewal — is trusted with no more
-// warnings. Service workers (offline reading, the installable app) need this too: browsers
-// won't register one on an untrusted HTTPS page.
-//
-// The CA is name-constrained to private addresses and local host names, so a copy of its key
-// could never be used to impersonate a real website on a device that trusts it.
-//
-// Bring your own certificate instead (mkcert, `tailscale cert`, a real one for your domain)
-// by dropping cert.pem + key.pem into /config/ssl, or pointing TLS_CERT / TLS_KEY at them.
+// Built-in LAN HTTPS. A local CA (served at /api/tls/ca.crt) issues the server certificate, so
+// devices install the CA once and trust every re-issue; service workers need trusted HTTPS.
+// The CA is name-constrained to private addresses/local names, so a leaked key can't impersonate
+// real sites. Custom certs: cert.pem + key.pem in /config/ssl, or TLS_CERT / TLS_KEY.
 
 const SSL_DIR = path.join(config.dataDir, 'ssl');
 const CA_CERT = path.join(SSL_DIR, 'plinthio-ca.crt');
@@ -32,16 +21,13 @@ const SERVER_NAMES = path.join(SSL_DIR, 'server.names.json');
 const CUSTOM_CERT = path.join(SSL_DIR, 'cert.pem');
 const CUSTOM_KEY = path.join(SSL_DIR, 'key.pem');
 
-// Apple rejects server certificates valid for more than 825 days, and Chrome caps public ones
-// at 398 — stay under both and re-issue a month before expiry.
+// Under Apple's 825-day and Chrome's 398-day limits; renew a month before expiry.
 const SERVER_DAYS = 397;
 const CA_DAYS = 3650;
 const RENEW_BEFORE_MS = 30 * 24 * 60 * 60 * 1000;
 
-// What the CA may ever sign for: loopback, RFC 1918, Tailscale's CGNAT range, IPv6 ULA /
-// link-local, and the host names used on home networks. Only names nobody can register
-// publicly: not ts.net, which covers every Tailscale user's machines, so a leaked CA key
-// could impersonate all of them. A tailnet name goes in TLS_HOSTNAMES instead.
+// CA name constraints: private ranges and unregistrable local names only. Not ts.net (shared by
+// all Tailscale users); tailnet names go in TLS_HOSTNAMES.
 const PERMITTED_IPS = [
   '127.0.0.0/255.0.0.0',
   '10.0.0.0/255.0.0.0',
@@ -55,7 +41,7 @@ const PERMITTED_IPS = [
 ];
 const PERMITTED_DNS = ['localhost', 'local', 'lan', 'home', 'internal', 'home.arpa'];
 
-// A host name or IP safe to put in a certificate (and in the openssl config that makes it).
+// Safe to put in a certificate and its openssl config.
 const HOST_NAME_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/;
 function isValidName(name) {
   return net.isIP(name) ? true : name.length <= 253 && HOST_NAME_RE.test(name);
@@ -68,8 +54,7 @@ function parsePort(raw) {
 
 export const tlsSettings = {
   port: parsePort(process.env.HTTPS_PORT),
-  // Extra names the certificate should cover, e.g. the host's LAN IP — inside Docker's
-  // default bridge network the container can't see the address phones actually use.
+  // E.g. the host's LAN IP, which a bridged container can't see.
   extraNames: (process.env.TLS_HOSTNAMES || '').split(',')
     .map((s) => s.trim())
     .map((s) => (net.isIP(s) ? s : s.toLowerCase()))
@@ -99,8 +84,7 @@ function openssl(args) {
   execFileSync('openssl', args, { stdio: ['ignore', 'ignore', 'pipe'] });
 }
 
-// The same, without holding up every other request while a 2048-bit key is generated: used
-// for certificates re-issued while the server is running.
+// Non-blocking variant for re-issues while running.
 const execFileAsync = promisify(execFile);
 async function opensslAsync(args) {
   await execFileAsync('openssl', args);
@@ -118,8 +102,7 @@ function isPrivateIp(ip) {
 
 const CA_NAMES = path.join(SSL_DIR, 'plinthio-ca.names.json');
 
-// Names outside the built-in ranges (a public IP, a real domain) that TLS_HOSTNAMES asked
-// for are added to the CA's constraints — but only when the CA is created.
+// TLS_HOSTNAMES entries outside the built-in ranges; only added when the CA is created.
 function extraConstraintNames() {
   return tlsSettings.extraNames.filter((n) => !withinBuiltInConstraints(n));
 }
@@ -129,9 +112,7 @@ function withinBuiltInConstraints(name) {
   return PERMITTED_DNS.some((d) => name === d || name.endsWith(`.${d}`));
 }
 
-// A host name only a home network can give out (nas.local, plinthio.lan, localhost): nobody
-// can register one publicly and point it somewhere else. Also used by first-run setup, which
-// refuses to run under any other kind of name (routes/auth.js).
+// Unregistrable local names (nas.local, localhost). First-run setup requires one (routes/auth.js).
 export function isPrivateHostName(name) {
   const host = String(name || '').toLowerCase();
   return !net.isIP(host) && HOST_NAME_RE.test(host) && withinBuiltInConstraints(host);
@@ -146,18 +127,14 @@ function caExtraNames() {
   }
 }
 
-// A name the CA isn't allowed to sign for would make clients reject the whole certificate,
-// so those are left off (and reported) rather than included.
+// A name outside the CA's constraints would invalidate the whole certificate, so it's left off.
 function coveredByCa(name, extras) {
   return withinBuiltInConstraints(name) || extras.some((d) => name === d || (!net.isIP(d) && name.endsWith(`.${d}`)));
 }
 
-// Every name the server certificate should list: loopback, this machine's own addresses and
-// host name, and anything from TLS_HOSTNAMES.
 export function certificateNames() {
   const names = new Set(['localhost', '127.0.0.1', '::1']);
-  // Inside Docker this is the container id — only useful (and only covered) when it's a
-  // real local name like "nas.local".
+  // In Docker this is the container id; only covered when it's a local name.
   const host = os.hostname();
   if (host && /^[a-z0-9.-]+$/i.test(host)) names.add(host.toLowerCase());
   for (const list of Object.values(os.networkInterfaces())) {
@@ -222,8 +199,7 @@ function createCa() {
   console.log(`[tls] Created a local certificate authority (${CA_CERT}).`);
 }
 
-// The key and certificate are made under temporary names and moved into place together, so
-// nothing ever reads a new key next to the old certificate.
+// Built under temp names and renamed together so key and cert never mismatch.
 function serverCertSteps(names) {
   const ext = writeTemp('server.ext', [
     'basicConstraints = critical, CA:FALSE',
@@ -291,15 +267,13 @@ function serverCertIsCurrent(names) {
   }
 }
 
-// What loading the certificate involves right now: someone's own certificate, nothing (no
-// openssl), or Plinthio's own with the names it should carry and whether it needs issuing.
+// { custom }, { unavailable }, or { names, extras, issue } for the generated certificate.
 function certificatePlan() {
   const certFile = process.env.TLS_CERT || (fs.existsSync(CUSTOM_CERT) ? CUSTOM_CERT : null);
   const keyFile = process.env.TLS_KEY || (fs.existsSync(CUSTOM_KEY) ? CUSTOM_KEY : null);
   if (certFile && keyFile) return { custom: { certFile, keyFile } };
 
-  // Once a certificate has been generated openssl is known to be there; don't run it again
-  // just to ask.
+  // Skip the openssl check once a certificate has been generated.
   if (state.mode !== 'generated' && !hasOpenssl()) {
     console.warn('[tls] HTTPS is off: `openssl` was not found to make a certificate. Install it, or put cert.pem and key.pem in ' + SSL_DIR);
     return { unavailable: true };
@@ -334,17 +308,14 @@ function credentialsFor(plan) {
   return { cert: fs.readFileSync(SERVER_CERT), key: fs.readFileSync(SERVER_KEY) };
 }
 
-// Returns { key, cert } for https.createServer / setSecureContext, or null when HTTPS can't
-// be served. Safe to call repeatedly: it only re-issues when the names or expiry require it.
-// This one blocks while openssl runs, which is fine at startup.
+// { key, cert } or null. Re-issues only when names or expiry require; blocking, for startup.
 export function loadTlsCredentials() {
   const plan = certificatePlan();
   if (plan.issue) issueServerCert(plan.names);
   return credentialsFor(plan);
 }
 
-// The same for a running server (a newly learned address, the daily expiry check): the key
-// is generated without blocking other requests, and calls that overlap share one run.
+// Non-blocking variant for a running server; overlapping calls share one run.
 let refreshing = null;
 export function refreshTlsCredentials() {
   refreshing ||= (async () => {
@@ -360,16 +331,9 @@ export function refreshTlsCredentials() {
 }
 
 // ─── Addresses learned from requests ─────────────────────────────────────────
-// Inside Docker the server can't see the LAN address phones use, and asking every admin to
-// set TLS_HOSTNAMES is exactly the step people miss. But each visit says which address it
-// used (the Host header), so the certificate simply learns it: the next time that device
-// switches to HTTPS, its address is already covered. Only names the CA may sign for anyway
-// (private IPs, .local-style names) are learned, so a forged Host header can at worst add a
-// harmless private name. The caller (index.js) only passes on the address of a request from
-// someone signed in, or of first-run setup: anyone can send a request, and a stranger could
-// otherwise use up every slot with made-up names, each one costing a new key. The list is
-// capped and never rotates: once it's full nothing more is learned, which keeps the addresses
-// real devices use from being pushed out.
+// Learns Host header addresses so devices are covered without TLS_HOSTNAMES. Only names the
+// CA may sign are learned, and index.js only passes hosts from signed-in requests or setup, so
+// strangers can't fill the slots. Capped and never rotated, so real addresses aren't pushed out.
 const LEARNED_NAMES = path.join(SSL_DIR, 'learned-names.json');
 const MAX_LEARNED = 16;
 let warnedFull = false;
@@ -383,7 +347,7 @@ function learnedNames() {
   }
 }
 
-// Returns true when `host` is new and the certificate should be re-issued to include it.
+// True when `host` is new and the certificate should be re-issued.
 export function noteRequestHost(rawHost) {
   if (state.mode !== 'generated' || !rawHost) return false;
   const host = String(rawHost).replace(/^\[|\]$/g, '').toLowerCase();

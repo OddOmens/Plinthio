@@ -2,8 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { t } from '../i18n';
 
-// Default wording is looked up each time a dialog opens, so it follows the current language;
-// callers pass their own (already translated) title, message and button labels.
+// Default wording is looked up per open so it follows the current language.
 export const useDialogStore = defineStore('dialog', () => {
   const isOpen = ref(false);
   const title = ref('');
@@ -16,8 +15,7 @@ export const useDialogStore = defineStore('dialog', () => {
 
   let resolver = null;
 
-  // A dialog opened over one still waiting for an answer replaces it; the one replaced
-  // counts as cancelled, so whatever awaits it isn't left hanging.
+  // A replaced dialog resolves as cancelled so its caller isn't left hanging.
   function settlePrevious() {
     if (resolver) {
       resolver(false);

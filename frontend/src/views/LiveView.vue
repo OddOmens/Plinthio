@@ -97,8 +97,7 @@
         />
 
         <template v-else>
-          <!-- Lists: Favourites · Recent · each line-up · All channels (only the ones with
-               something in them). The row scrolls sideways on a phone. -->
+          <!-- Favourites · Recent · each line-up · All channels (non-empty ones only). -->
           <div
             v-if="shownTabs.length > 1"
             class="-mx-4 px-4 sm:mx-0 sm:px-0 flex items-center gap-1 overflow-x-auto no-scrollbar border-b border-border"

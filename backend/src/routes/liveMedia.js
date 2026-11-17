@@ -3,7 +3,7 @@ import { pipeline } from 'stream';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { sendError } from '../errors.js';
-import { ITEM_ID_RE as CHANNEL_ID_RE } from '../utils/ids.js'; // channel ids are an md5 too
+import { ITEM_ID_RE as CHANNEL_ID_RE } from '../utils/ids.js';
 import {
   isLiveTvEnabled, isKidsUser, channelPrivateHost, getLiveFilters, isFilteredOut, getHealthSettings,
   upstreamHeaders, USER_AGENT
@@ -13,17 +13,15 @@ import {
   verify, decodeUrlParam, looksLikePlaylist, rewritePlaylist, tokenQueryFor
 } from '../services/liveProxy.js';
 
-// Live TV playback, mounted at /api/media/live so hls.js can authenticate with ?token= like
-// the video player does. Channel playlists are fetched by the server and every link in them
-// rewritten to a signed proxy link (services/liveProxy.js explains why); this serves both.
+// Live TV playback, under /api/media/live so hls.js can use ?token=. Playlists are rewritten
+// to signed proxy links (see services/liveProxy.js).
 //
-//   GET /:id/index.m3u8   the channel's own playlist, rewritten
-//   GET /:id/p?u=&s=      anything a rewritten playlist links to (a playlist again, or bytes)
-//   GET /:id/logo         the channel's logo, fetched from wherever the playlist says
+//   GET /:id/index.m3u8   the channel's playlist, rewritten
+//   GET /:id/p?u=&s=      anything a rewritten playlist links to
+//   GET /:id/logo         the channel's logo
 //
-// The stream proxy only ever fetches URLs it signed (and the logo route only the URL stored
-// for that channel), always through the address guard in safeFetch.js. Upstream bytes pass
-// through without being buffered — only playlists and logos, both small, are read whole.
+// Only signed (or stored logo) URLs are fetched, always through safeFetch's address guard.
+// Stream bytes are not buffered; only playlists and logos are read whole.
 
 const router = express.Router();
 
@@ -32,9 +30,8 @@ const SEGMENT_MAX_BYTES = 100 * 1024 * 1024;
 const LOGO_MAX_BYTES = 2 * 1024 * 1024;
 
 const PLAYLIST_TYPE = /mpegurl/i;
-// Upstream bytes are served from Plinthio's own origin, so only types a browser won't run as
-// a page pass through (no HTML, SVG or XML); everything else goes out as octet-stream. The
-// sandbox CSP is a second lock on the same door.
+// Upstream bytes come from our origin, so only types a browser won't render as a page pass
+// through; the rest become octet-stream. The sandbox CSP is a second guard.
 const PASS_TYPE = /^(video\/[\w.+-]+|audio\/[\w.+-]+|application\/(octet-stream|mp4|mp2t)|text\/vtt|image\/(jpeg|png|gif|webp|avif))$/;
 const LOGO_TYPE = /^image\/[\w.+-]+$/;
 const SANDBOX_CSP = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
@@ -42,8 +39,7 @@ const SANDBOX_CSP = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
 const STREAM_LINK_INVALID = 'This stream link is not valid';
 const CHANNEL_NOT_FOUND = 'Channel not found';
 
-// The same rules as the channel list (channelIndex in services/liveTv.js), for one row read
-// with CHANNEL_COLUMNS. The filters and settings are held in memory, so this costs no extra query.
+// Same rules as channelIndex in services/liveTv.js, for one CHANNEL_COLUMNS row (no extra query).
 const CHANNEL_COLUMNS = `c.hidden, c.unsupported, c.kids_allowed, c.pinned, c.geo_blocked, c.groups, c.languages,
        c.country, c.stream_url, c.health, s.enabled AS source_enabled,
        EXISTS (SELECT 1 FROM live_lineup_channels lc JOIN live_lineups l ON l.id = lc.lineup_id
@@ -70,8 +66,7 @@ function abortOnClose(req, res) {
 }
 
 function unavailable(req, res, err) {
-  // Offline channels are routine, so no stack trace in the server log for each one; admins
-  // still see why in the response.
+  // Offline channels are routine: no stack trace logged, admins still see why.
   sendError(req, res, 'P701', {
     extra: req.user?.role === 'admin' && err?.message ? { detail: err.message } : undefined
   });
@@ -85,9 +80,8 @@ function sendPlaylist(res, text) {
 
 router.use(authenticateToken);
 
-// A channel's logo (the admin's own choice, else the playlist's). Not behind the Live TV switch or the viewing rules for admins, whose
-// channel manager lists hidden and unplayable channels too (and works while Live TV is off).
-// Any failure is a bare 404 — the app shows its own placeholder.
+// The admin's logo, else the playlist's. Admins bypass the Live TV switch and viewing rules
+// (their channel manager lists every channel). Failures are a bare 404.
 router.get('/:logoChannel/logo', async (req, res) => {
   const notFound = () => { if (!res.headersSent) res.status(404).end(); };
   try {
@@ -114,7 +108,7 @@ router.get('/:logoChannel/logo', async (req, res) => {
       upstream.resume();
       return notFound();
     }
-    // Small, so read whole: a logo that turns out too big is still a clean 404.
+    // Read whole; one that's too big is a clean 404.
     const body = await readBody(upstream, LOGO_MAX_BYTES);
     res.setHeader('Content-Type', type);
     res.setHeader('Cache-Control', 'private, max-age=86400');
@@ -134,9 +128,8 @@ router.use(async (req, res, next) => {
   }
 });
 
-// The channel in :id, if this viewer may watch it: its source is on, it isn't hidden,
-// unplayable or caught by the admin's filters (unless pinned), and a kids account only gets
-// channels allowed for kids.
+// The channel in :id, if this viewer may watch it (source on, not hidden or filtered unless
+// pinned, kids-allowed for kids accounts).
 router.param('id', async (req, res, next, id) => {
   try {
     if (!CHANNEL_ID_RE.test(id)) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });

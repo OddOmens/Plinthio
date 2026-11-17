@@ -26,20 +26,17 @@ function mediaFileError(req, res, err) {
 
 const router = express.Router();
 
-// In-memory cache for cover lookups to prevent SQLite query spam
+// In-memory cover path cache.
 const coverPathCache = new Map();
 
-// Called whenever an item's cover_path changes on disk (metadata apply, rescan) so this
-// route doesn't keep serving a stale cached path indefinitely.
+// Call when an item's cover_path changes so a stale path isn't served.
 export function invalidateCoverCache(itemId) {
   coverPathCache.delete(itemId);
 }
 
-// A still from a video (an episode's thumbnail in a show's episode list). Grabbed on first
-// request and cached; 404 when the file can't be read, and the page falls back to the cover.
+// Episode thumbnail, grabbed on first request and cached; 404 falls back to the cover.
 const STILL_TYPES = new Set(['show', 'anime', 'movie']);
-// The opening sequence (Admin → Playback): an uploaded clip, or the built-in one. Any
-// signed-in user may fetch it; URLs carry ?v=<version>, so it's safe to cache hard.
+// Opening sequence clip (uploaded or built-in). URLs carry ?v=<version>, so cache hard.
 router.get('/intro', authenticateToken, (req, res) => {
   const file = activeIntroFile();
   if (!file) return res.status(404).json({ error: 'No opening sequence' });
@@ -72,7 +69,7 @@ router.get('/still/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Cover image endpoint (Supports token via query string: ?token=...)
+// Accepts ?token= for <img> tags.
 router.get('/cover/:id', authenticateToken, async (req, res) => {
   const itemId = req.params.id;
   if (!ITEM_ID_RE.test(itemId)) {
@@ -80,11 +77,8 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
   }
   const isRaw = req.query.raw === 'true' || req.query.full === 'true';
   const requestedWidth = parseInt(req.query.w, 10);
-  // Only a fixed, small set of widths are ever actually requested by the frontend — capping
-  // to this list (matching the widths the invalidation code elsewhere already assumes) means
-  // no amount of requests can make the server cache more than a handful of thumbnail variants
-  // per item, instead of trusting an open 100-1200 range that trivially lets a single client
-  // force ~1100 distinct sharp() resizes per cover.
+  // A fixed set of widths (matching cache invalidation), so a client can't force a resize and
+  // cached file per arbitrary width.
   const width = THUMB_WIDTHS.includes(requestedWidth) ? requestedWidth : 360;
 
   try {
@@ -93,7 +87,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
       return sendError(req, res, 'P300');
     }
 
-    // FAST PATH: If thumbnail WebP file is already generated and cached on disk
+    // Fast path: cached WebP thumbnail on disk
     if (!isRaw) {
       const thumbPath = getThumbnailPath(itemId, width);
       if (fs.existsSync(thumbPath)) {
@@ -107,7 +101,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
       }
     }
 
-    // SLOW PATH: Lookup original cover in memory cache or database
+    // Slow path: find the original cover
     let item = coverPathCache.get(itemId);
     if (!item) {
       item = await db.get('SELECT cover_path, title FROM items WHERE id = ?', [itemId]);
@@ -129,7 +123,6 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
           return res.sendFile(coverFullPath, SEND_OPTS);
         }
 
-        // Generate WebP thumbnail on-the-fly and save to cache
         const thumbPath = await getOrCreateThumbnail(itemId, item.cover_path, width);
         if (thumbPath && fs.existsSync(thumbPath)) {
           const stat = fs.statSync(thumbPath);
@@ -143,7 +136,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
       }
     }
 
-    // Default SVG cover placeholder if no image exists
+    // SVG placeholder when there's no image
     const title = item ? item.title : 'Plinthio';
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450">
@@ -164,9 +157,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
       </svg>
     `;
     res.setHeader('Content-Type', 'image/svg+xml');
-    // The placeholder means "no artwork yet", which is a temporary state — a scan may fill
-    // it in minutes later. Caching it for a day (as this used to) meant a library that
-    // rendered blank once kept rendering blank long after the real posters arrived.
+    // Short cache: a scan may supply the real artwork minutes later.
     res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     res.send(svg);
   } catch (err) {
@@ -174,7 +165,7 @@ router.get('/cover/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Audio Stream Endpoint with HTTP 206 Partial Content (Supports token via query string: ?token=...)
+// Audio with range support; accepts ?token=.
 router.get('/stream/:id', authenticateToken, async (req, res) => {
   if (!ITEM_ID_RE.test(req.params.id)) {
     return res.status(400).json({ error: 'Invalid item id' });
@@ -187,8 +178,7 @@ router.get('/stream/:id', authenticateToken, async (req, res) => {
     if (await isItemHiddenForUser(db, req.params.id, req.user)) {
       return sendError(req, res, 'P300');
     }
-    // The real file behind the catalogued path, refused unless it sits inside a library
-    // folder — a symlink in a library must not turn into a way to read any file on the server.
+    // Refused unless the real file is inside a library (see utils/libraryPath.js).
     const filePath = await requireLibraryFile(req, res, item.path);
     if (!filePath) return;
     const stat = fs.statSync(filePath);
@@ -224,7 +214,7 @@ router.get('/manga/:id/pages', authenticateToken, async (req, res) => {
   }
 });
 
-// Manga Single Page Image Stream (Supports token via query string: ?token=...)
+// One page image; accepts ?token=.
 router.get('/manga/:id/page/:pageIndex', authenticateToken, async (req, res) => {
   if (!ITEM_ID_RE.test(req.params.id)) {
     return res.status(400).json({ error: 'Invalid item id' });
@@ -243,8 +233,7 @@ router.get('/manga/:id/page/:pageIndex', authenticateToken, async (req, res) => 
     }
     const filePath = await requireLibraryFile(req, res, item.path);
     if (!filePath) return;
-    // ?w= asks for a copy sized to the screen (services/pageImages.js); without it, the
-    // original page as stored in the archive (downloads, Mihon, OPDS readers).
+    // ?w= gives a screen-sized copy (services/pageImages.js); without it, the original page.
     const width = pickPageWidth(req.query.w);
     const page = width
       ? await resizedMangaPage(req.params.id, filePath, pageIndex, width)
@@ -255,14 +244,14 @@ router.get('/manga/:id/page/:pageIndex', authenticateToken, async (req, res) => 
     }
 
     res.setHeader('Content-Type', page.mimeType);
-    res.setHeader('Cache-Control', 'private, max-age=604800'); // Cache for 7 days
+    res.setHeader('Cache-Control', 'private, max-age=604800');
     res.send(page.data);
   } catch (err) {
     mediaFileError(req, res, err);
   }
 });
 
-// Raw Book File download / stream for EPUB/PDF
+// Raw EPUB/PDF file.
 router.get('/book/:id/file', authenticateToken, async (req, res) => {
   if (!ITEM_ID_RE.test(req.params.id)) {
     return res.status(400).json({ error: 'Invalid item id' });
@@ -275,9 +264,7 @@ router.get('/book/:id/file', authenticateToken, async (req, res) => {
       return sendError(req, res, 'P300');
     }
 
-    // Answers P301 for a file removed from disk since the last scan (which used to crash the
-    // server via an unhandled stream 'error'), and refuses one that resolves — through a
-    // symlink — to somewhere outside the library folders.
+    // P301 for a file gone since the last scan; refused if it resolves outside the libraries.
     const filePath = await requireLibraryFile(req, res, item.path);
     if (!filePath) return;
 

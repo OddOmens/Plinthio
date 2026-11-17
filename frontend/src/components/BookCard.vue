@@ -3,7 +3,6 @@
     class="group relative flex flex-col bg-card border border-border hover:border-muted-foreground/30 rounded-xl p-2.5 transition-colors cursor-pointer"
     :class="{ 'z-30': showMenu }"
   >
-    <!-- Cover Image Container (No Zoom animations) -->
     <div
       @click="$emit('select', item)"
       class="relative w-full aspect-[2/3] rounded-lg overflow-hidden bg-muted/40 border border-border/60"
@@ -24,7 +23,6 @@
         @error="imgLoaded = true"
       />
 
-      <!-- Media Type Pill Badge -->
       <div class="absolute top-2 left-2 z-10 pointer-events-none">
         <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-background/85 text-foreground backdrop-blur-md text-[12px] font-medium border border-border/80 shadow-sm">
           <component :is="badgeIcon" class="w-3 h-3 text-muted-foreground" />
@@ -69,7 +67,6 @@
       </div>
     </div>
 
-    <!-- Metadata Content -->
     <div class="mt-2.5 px-1 flex flex-col flex-1">
       <div class="flex items-start justify-between gap-1.5">
         <h3
@@ -85,7 +82,7 @@
           class="flex-shrink-0 text-[11px] font-mono font-bold bg-muted text-muted-foreground rounded px-1.5 py-0.5 ml-1 self-start mt-0.5"
         >{{ $t('vocab.manga.entry', { number: item.volume % 1 === 0 ? Math.trunc(item.volume) : item.volume }) }}</span>
 
-        <!-- Context Menu Dropdown Trigger (Visible on touch, 34px target) -->
+        <!-- Menu trigger (always visible on touch, 34px target) -->
         <div class="relative">
           <button :aria-label="$t('shelf.card.options')"
             type="button"
@@ -320,9 +317,8 @@ async function toggleFinished() {
   showMenu.value = false;
   try {
     const isFinished = props.item.is_finished ? 0 : 1;
-    // Marking finished jumps to the very end (intentional). Un-marking must NOT reset to
-    // the beginning — it should restore whatever position was last saved, or "Mark In
-    // Progress" silently destroys real reading/listening progress.
+    // Marking finished jumps to the end; un-marking restores the last saved position rather
+    // than resetting to the start, so real progress isn't lost.
     const payload = isFinished
       ? {
           currentTime: props.item.duration || 1,

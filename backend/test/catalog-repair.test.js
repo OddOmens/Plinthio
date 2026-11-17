@@ -12,7 +12,7 @@ process.env.JWT_SECRET = 'test-secret';
 const { getDb } = await import('../src/config/database.js');
 const { mergeSamePathRows } = await import('../src/services/catalogRepair.js');
 
-// Before 1.8.0 the scan after a rename listed the renamed file a second time.
+// Merges the second row an older scan added for a renamed file.
 describe('one file, one row', () => {
   after(() => fs.rmSync(dataDir, { recursive: true, force: true }));
 

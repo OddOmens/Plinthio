@@ -5,12 +5,8 @@ import { execFile } from 'child_process';
 import { config } from '../config/env.js';
 import { PlinthioError } from '../errors.js';
 
-// PDFs read page by page, like a comic: each page is rendered to a JPEG on the server the
-// first time it's asked for (poppler's pdftoppm, installed in the Docker image) and cached on
-// disk. Serving images rather than the PDF means the web reader, offline downloads, OPDS and
-// the Komga API for Mihon all get PDFs through the same page URLs as a CBZ.
-//
-// Pages are rendered 1600px on their long side: sharp on a tablet, ~200-400 KB a page.
+// PDF pages are rendered to cached JPEGs (pdftoppm) on first request, so every reader and API
+// serves PDFs through the same page URLs as a CBZ. 1600px long side ≈ 200-400 KB a page.
 const PAGE_LONG_SIDE = 1600;
 const TIMEOUT_MS = 60000;
 const MAX_CONCURRENT = 2;
@@ -40,9 +36,7 @@ function fileKey(filePath) {
 
 const infoCache = new Map();
 
-// The page count comes from the file (pdfinfo prints whatever the PDF's page tree claims), and
-// the reader builds a list that long. No real book is near this; a crafted "Pages: 2000000000"
-// would otherwise ask for a two-billion-element array.
+// The page count is file-controlled and sizes the reader's page list; cap crafted values.
 export const MAX_PDF_PAGES = 20000;
 
 export function clampPageCount(value) {
@@ -51,9 +45,6 @@ export function clampPageCount(value) {
   return Math.min(pages, MAX_PDF_PAGES);
 }
 
-/**
- * Page count, title and author from the PDF's own metadata.
- */
 export async function pdfInfo(filePath) {
   const key = fileKey(filePath);
   if (infoCache.has(key)) return infoCache.get(key);
@@ -72,7 +63,6 @@ export async function pdfInfo(filePath) {
   return info;
 }
 
-// Two renders at once at most; the rest wait their turn.
 let running = 0;
 const queue = [];
 function limited(task) {
@@ -98,10 +88,7 @@ function markBusy(dir, delta) {
   else busyDirs.delete(dir);
 }
 
-/**
- * Path of a rendered JPEG of page `pageIndex` (0-based), rendering it first if needed.
- * Returns null for a page past the end.
- */
+/** Path to the rendered JPEG of a 0-based page, or null past the end. */
 export async function renderPdfPage(filePath, pageIndex, { longSide = PAGE_LONG_SIDE } = {}) {
   const { pages } = await pdfInfo(filePath);
   if (pageIndex < 0 || pageIndex >= pages) return null;
@@ -109,8 +96,7 @@ export async function renderPdfPage(filePath, pageIndex, { longSide = PAGE_LONG_
   const dir = path.join(pagesDir, fileKey(filePath));
   const finalPath = path.join(dir, `${pageIndex}-${longSide}.jpg`);
   if (fs.existsSync(finalPath)) {
-    // A volume being read keeps its folder fresh, so the age sweep takes only books nobody
-    // has opened for a while.
+    // Keeps the folder fresh for the age sweep.
     const now = new Date();
     fs.promises.utimes(dir, now, now).catch(() => {});
     return finalPath;
@@ -139,11 +125,7 @@ export async function renderPdfPage(filePath, pageIndex, { longSide = PAGE_LONG_
   return inFlight.get(finalPath);
 }
 
-/**
- * Drops the rendered pages of PDFs nobody has read for `maxAgeMs` (the same age limit as the
- * other media caches). A folder with a render in progress is skipped; a cache hit touches its
- * folder (renderPdfPage), so a book being read stays.
- */
+/** Drops rendered pages not read within `maxAgeMs`, skipping folders with a render in progress. */
 export function sweepPdfPageCache(maxAgeMs) {
   let entries;
   try {
@@ -163,9 +145,7 @@ export function sweepPdfPageCache(maxAgeMs) {
   }
 }
 
-/**
- * Writes page one as the item's cover. Returns the cover filename, or null.
- */
+/** Writes page one as the item's cover; returns its filename or null. */
 export async function extractPdfCover(filePath, itemId) {
   try {
     const page = await renderPdfPage(filePath, 0, { longSide: 900 });

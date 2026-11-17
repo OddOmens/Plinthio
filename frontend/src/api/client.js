@@ -5,11 +5,8 @@ import { clearAccountDeviceData, tokenHasExpired, deviceDataOwner, setDeviceData
 
 const api = axios.create({
   baseURL: '/api',
-  // Media streaming (video/audio/manga pages) uses direct <img>/<video> src URLs with a
-  // ?token= query param, never this axios instance, so a timeout here can't cut off a
-  // long-running stream — it only bounds normal JSON API calls, one of which (the
-  // setup-status check) runs in the router's navigation guard and would otherwise be able
-  // to freeze all routing if it ever hung instead of erroring.
+  // Only bounds JSON calls (media streams use direct URLs). The setup check runs in the
+  // router guard, so a hung request would otherwise freeze routing.
   timeout: 15000
 });
 
@@ -31,15 +28,11 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Server errors carry a message for everyone, a Plinthio error code (P###, listed on the
-    // Docs page) and, for admins only, the underlying cause in `detail` (see backend
-    // errors.js). Fold them into the one `error` string every screen already displays:
+    // Fold message, admin-only `detail` and the P### code into the one `error` string screens show:
     //   "The media folder could not be read (I/O error): EIO: i/o error, scandir '/media' (P201)"
-    // `data.code` stays available for anything that needs to branch on it.
     const data = error.response?.data;
     if (data && typeof data === 'object' && !data._formatted) {
-      // In the reader's language where the message is a known one; `errorEnglish` keeps what
-      // the server said, for anything that has to match on it.
+      // `errorEnglish` keeps the server's original text for code that matches on it.
       data.errorEnglish = data.error;
       data.error = translateServerMessage(data.error, data.code);
       if (data.detail && data.detail !== data.error) {
@@ -50,8 +43,7 @@ api.interceptors.response.use(
       }
       data._formatted = true;
     }
-    // A progress save that never reached the server (no response at all = offline) is
-    // queued and replayed later rather than failing — see utils/offlineQueue.js.
+    // A progress save with no response (offline) is queued for later; see utils/offlineQueue.js.
     const cfg = error.config;
     if (!error.response && cfg && !cfg._fromQueue && cfg.method === 'post' && /^\/?progress\/[^/]+$/.test(cfg.url || '')) {
       let data = cfg.data;
@@ -59,23 +51,18 @@ api.interceptors.response.use(
       queueProgress(cfg.url.startsWith('/') ? cfg.url : `/${cfg.url}`, data);
       return Promise.resolve({ data: { queued: true }, status: 202, config: cfg });
     }
-    // A 401 about the session itself signs out. A wrong password (P107) or two-factor code
-    // (P111, P113) typed into a form is a 401 too, but the session is fine: don't end it.
+    // Only a 401 about the session signs out; a wrong password or 2FA code (P107, P111, P113) doesn't.
     const code = error.response?.data?.code;
     const sessionProblem = !code || ['P100', 'P101', 'P102'].includes(code);
     if (error.response && error.response.status === 401 && sessionProblem) {
-      // The server ended a session that hadn't run out by itself: a password change, "sign
-      // out of all devices", or the account being removed. That's a sign-out someone asked
-      // for, so this device loses what the account left on it (cached covers and pages,
-      // downloads), exactly as the Sign out button does. A session that only expired keeps
-      // its downloads for when the same person signs back in, and a server that can't be
-      // reached at all never gets here (there's no response), so going offline wipes nothing.
+      // A session the server ended early (password change, sign out everywhere, account
+      // removed) clears this device's cached media and downloads, like Sign out. One that
+      // merely expired keeps its downloads for the same person signing back in.
       const stored = localStorage.getItem('plinthio_token');
       if (stored && code !== 'P102' && !tokenHasExpired(stored)) {
         clearAccountDeviceData();
       } else if (!deviceDataOwner()) {
-        // Expired: the downloads stay, with a note of whose they are, so a different account
-        // signing in next clears them first (stores/auth.js storeSession).
+        // Record whose downloads they are, so a different account signing in clears them first.
         try {
           const user = JSON.parse(localStorage.getItem('plinthio_user') || 'null');
           if (user?.id) setDeviceDataOwner(user.id);

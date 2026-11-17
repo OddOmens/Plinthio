@@ -35,25 +35,18 @@ router.get('/setup-status', async (req, res) => {
     const countResult = await db.get('SELECT COUNT(*) as count FROM users');
     res.json({ isSetup: countResult.count > 0 });
   } catch (err) {
-    // These auth routes are reachable without a token, so the raw error (SQL text, file
-    // paths) must stay server-side — it's in the container logs, not the HTTP response.
+    // Unauthenticated routes: the raw error stays in the server log.
     console.error('[auth] setup-status failed:', oneLineError(err));
     res.status(500).json({ error: 'Could not read server setup status' });
   }
 });
 
-// Folder picker for the first-run wizard. Unauthenticated by necessity (no account exists
-// yet), but hard-gated on the server being un-set-up — the same window in which anyone who
-// can reach the server could already claim the admin account, so this grants no new
-// capability, and it closes permanently the moment setup completes.
-// First-run setup claims the admin account, so it's only ever done from the home network
-// (or Tailscale): a server exposed to the internet before it's set up can't be taken over.
+// First-run folder picker: unauthenticated but only before setup, when the server could be
+// claimed anyway. Setup is home-network (or Tailscale) only, so an exposed fresh server
+// can't be taken over.
 
-// A web page on another site, opened by someone on the home network, could otherwise POST
-// here while no admin exists yet and claim the server. The setup wizard is always
-// same-origin; non-browser clients send no Origin at all. Where the browser says outright
-// how the request relates to the page (Sec-Fetch-Site, which a page can't forge), that
-// settles it; otherwise the page's origin has to be the address the request was sent to.
+// Stops another site's page, opened on the home network, from claiming the server. Trusts
+// Sec-Fetch-Site when present (unforgeable), else Origin must match the request address.
 function crossSiteRequest(req) {
   const site = req.headers['sec-fetch-site'];
   if (site) return site !== 'same-origin' && site !== 'none';
@@ -66,13 +59,9 @@ function crossSiteRequest(req) {
   }
 }
 
-// Comparing the page's origin with the Host header isn't enough on its own: a page on
-// evil.example can point its own name at 192.168.1.5 a moment after loading (DNS
-// rebinding), and then the browser calls it same-origin while the request lands on this
-// server. What the attacker can't do is make that name anything but a public one. So until
-// the server is set up, it only answers under an address nobody outside could have pointed
-// here: an IP address, localhost, a bare machine name, a home-network name (.local, .lan,
-// .home, .home.arpa, .internal), a Tailscale name, or one the admin listed in TLS_HOSTNAMES.
+// DNS rebinding defence: before setup, only answer under names an outsider can't point here
+// (IP, localhost, bare machine name, .local/.lan/.home/.home.arpa/.internal, Tailscale, or
+// TLS_HOSTNAMES).
 function hostWithoutPort(raw) {
   const host = String(raw || '').trim().toLowerCase();
   if (host.startsWith('[')) return host.slice(1, host.indexOf(']') === -1 ? undefined : host.indexOf(']'));
@@ -120,10 +109,8 @@ router.get('/setup/browse', async (req, res) => {
   }
 });
 
-// Initial Setup Wizard - Creates the first Admin user and bootstraps server configuration.
-// Only one setup can run at a time: without this, two requests arriving together (the
-// owner's wizard and anyone else on the network) could both see "no users yet" during the
-// bcrypt hashing below and both create an admin account.
+// First-run setup. One at a time, or two concurrent requests could both create an admin
+// while bcrypt runs.
 let setupInFlight = false;
 
 router.post('/setup', async (req, res) => {
@@ -161,10 +148,7 @@ router.post('/setup', async (req, res) => {
       ? enabledMediaTypes.filter((t) => ALL_MEDIA_TYPES.includes(t))
       : ALL_MEDIA_TYPES;
 
-    // The setup wizard already walks the admin through theme, accent and media types, so
-    // mark onboarding done for them — otherwise they'd be asked the same questions twice in
-    // a row. Accounts created below (and any added later) deliberately omit the flag so they
-    // get the onboarding on their own first login.
+    // The wizard already covered onboarding for the admin; other accounts get it on first login.
     const adminPrefs = JSON.stringify({
       theme: theme === 'light' ? 'light' : 'dark',
       enabledMediaTypes: mediaTypes.length > 0 ? mediaTypes : ALL_MEDIA_TYPES,
@@ -172,9 +156,8 @@ router.post('/setup', async (req, res) => {
       onboardingComplete: true
     });
 
-    // Extra accounts are validated and hashed before anything is written, and a name that
-    // repeats one already taken is skipped — so a typo in the wizard can't leave the server
-    // half set up (admin created, then a UNIQUE failure) behind an error message.
+    // Validate and hash extra accounts before writing, skipping duplicate names, so setup
+    // can't fail halfway.
     const takenNames = new Set([adminName]);
     const extraRows = [];
     for (const u of Array.isArray(extraUsers) ? extraUsers : []) {
@@ -193,9 +176,7 @@ router.post('/setup', async (req, res) => {
     for (const lib of Array.isArray(libraries) ? libraries : []) {
       if (!lib || typeof lib.name !== 'string' || !lib.name.trim() || typeof lib.path !== 'string' || !lib.path) continue;
       if (!LIBRARY_TYPES.includes(lib.type)) continue;
-      // Same normalization the Admin "Add Library" path gets, so a host-style path
-      // typed during setup (/media/you/Drive/Books) still resolves to the container's
-      // mount (/media/Books) instead of silently scanning nothing.
+      // Same host-path mapping as Admin "Add Library" (/media/you/Drive/Books → /media/Books).
       libraryRows.push({ id: crypto.randomUUID(), name: lib.name.trim(), path: resolveLibraryPath(lib.path), type: lib.type });
     }
 
@@ -215,8 +196,7 @@ router.post('/setup', async (req, res) => {
       await db.run('INSERT INTO libraries (id, name, path, type) VALUES (?, ?, ?, ?)', [lib.id, lib.name, lib.path, lib.type]);
     }
 
-    // Who can reach the server from where (Admin → Network). A new server is home-only unless
-    // the wizard's Access step opened it up.
+    // A new server is home-only unless the wizard's Access step opened it up.
     await saveNetworkSettings(db, {
       remoteAccess: access.remoteAccess === true,
       tailscaleIsHome: access.tailscaleIsHome !== false,
@@ -234,9 +214,7 @@ router.post('/setup', async (req, res) => {
     await db.run('COMMIT');
     inTransaction = false;
 
-    // Kick off each new library's first scan. Without it the wizard finishes and drops the
-    // user on a completely empty shelf with no indication anything is missing. Scans run in
-    // the background so setup returns immediately.
+    // First scans run in the background so setup returns immediately.
     for (const lib of libraryRows) {
       scanLibrary(lib.id).catch((err) =>
         logger.error('scan', `Initial scan failed for "${lib.name}": ${err.message}`, { libraryId: lib.id })
@@ -286,31 +264,23 @@ async function issueSession(req, res, db, user, where) {
       role: user.role,
       avatar: user.avatar || null,
       expires_at: user.expires_at || null,
-      // As /auth/me reports it, so screens that differ for a Kids Mode account are right
-      // from the first sign-in, not only after the session next refreshes.
+      // As /auth/me reports it, so Kids Mode screens are right from the first sign-in.
       kids_mode: user.kids_mode ? 1 : 0,
       preferences
     }
   });
 }
 
-// Login. Checked in this order:
-//   1. a home-only server refuses outside sign-ins before looking at the password, so the
-//      internet can't even guess passwords (P109)
-//   2. the password (P107), and whether the account has expired (P103)
-//   3. a home-only account from outside
-//   4. two-factor: an account with it gets a challenge to answer at /login/2fa instead of a
-//      session; one without it, signing in from outside where two-factor is required, is
-//      refused
-// From outside, 3, 4's refusal and an expired account all answer exactly like a wrong
-// password (P107) and count as one: "this account is home-only" said only after the right
-// password would tell someone guessing that they'd found it. The real reason goes to the log
-// (Admin → Logs) and the sign-in history. At home each keeps its own message.
+// Login checks, in order:
+//   1. home-only server refuses outside sign-ins before the password (P109)
+//   2. password (P107) and expiry (P103)
+//   3. home-only account from outside
+//   4. two-factor: a challenge for /login/2fa, or refusal from outside without 2FA where required
+// From outside, 3, 4's refusal and expiry answer like a wrong password, so they don't confirm
+// a correct guess; the real reason is logged.
 //
-// Per-account limit on wrong passwords from outside the home network, on top of the per-
-// address limit in index.js: guessing spread over many addresses still stops after
-// OUTSIDE_FAILS_PER_ACCOUNT tries in the window. Sign-ins from home are never held back, so
-// someone on the internet can't lock the household out of its own accounts.
+// Per-account limit on wrong passwords from outside, on top of the per-address one. Home
+// sign-ins are never held back, so outsiders can't lock the household out.
 const OUTSIDE_FAILS_PER_ACCOUNT = 10;
 const OUTSIDE_FAIL_WINDOW_MS = 15 * 60 * 1000;
 const outsideFails = new Map();
@@ -344,32 +314,23 @@ function noteOutsideFail(username) {
   outsideFails.set(key, { count: 1, since: now });
 }
 
-// Wrong two-factor codes, per account. The per-address limit and the five tries a challenge
-// allows don't add up to much on their own: every correct password starts a fresh challenge,
-// and addresses are cheap. Ten wrong codes in 15 minutes hold code entry for that account for
-// 15 minutes, longer each time it happens again. Counted separately for home and away, so
-// someone outside who has the password can't keep the owner from signing in at home.
+// Wrong 2FA codes per account (each correct password starts a fresh challenge, and addresses
+// are cheap). Home and away counted separately, so an outsider can't lock out the owner.
 const codeLock = new FailureLock();
 const codeLockKey = (userId, away) => `${userId}:${away ? 'away' : 'home'}`;
 
-// A username nobody has is often not a username at all: a password typed into the wrong box,
-// or pasted with the username. Sign-in history and the logs are kept, shown to admins and
-// copied into backups, so for a name that matches no account only its first two characters
-// and its length are recorded. A real account's name is recorded as it is.
+// An unknown username is often a mistyped password, so only its first two characters and
+// length are logged.
 export function maskUnknownUsername(raw) {
   const name = String(raw || '').trim();
   const length = [...name].length;
   return `${[...name].slice(0, 2).join('')}… (${length} character${length === 1 ? '' : 's'}, no such account)`;
 }
 
-// Signing in is only for Plinthio's own page (and apps, which send no Origin). A page on
-// another site can't read the answer unless CORS_ORIGIN lets it, but with it opened to
-// everyone (`*`) any site someone visits could try passwords against the server from inside
-// their home network. Origins the admin listed by name in CORS_ORIGIN are let through:
-// that's what listing them is for. Without Sec-Fetch-Site (plain http, older browsers) the
-// only evidence is Origin against Host, which a reverse proxy that rewrites Host would trip
-// for the real page too; browsers already stop a cross-site JSON request unless CORS is open
-// to everyone, so that comparison is only used then.
+// Sign-in only from our own page, apps (no Origin) or origins named in CORS_ORIGIN, so with
+// CORS_ORIGIN=* other sites can't guess passwords from inside the home network. Without
+// Sec-Fetch-Site, Origin vs Host is only compared when CORS is `*` (a Host-rewriting proxy
+// would trip it).
 function crossSiteSignIn(req) {
   const origin = String(req.headers.origin || '').replace(/\/+$/, '');
   const allowed = config.corsOrigin;
@@ -410,8 +371,7 @@ router.post('/login', async (req, res) => {
       return sendError(req, res, 'P108');
     }
 
-    // A failed sign-in: recorded, logged with the real reason, and counted against the
-    // account when it came from outside.
+    // Recorded, logged with the real reason, and counted against the account from outside.
     const fail = async (reason, code = 'P107') => {
       if (loc.away) noteOutsideFail(username);
       await recordLoginAttempt(db, { userId: user?.id || null, username: shown, success: false, ip, userAgent, network: loc.where });
@@ -420,8 +380,7 @@ router.post('/login', async (req, res) => {
     };
 
     if (!user) {
-      // Burn the same bcrypt time a real account would, so response timing doesn't reveal
-      // which usernames exist.
+      // Same bcrypt time as a real account, so timing doesn't reveal which usernames exist.
       await bcrypt.compare(password, DUMMY_HASH);
       return fail(`Failed sign-in attempt for unknown username "${shown}"`);
     }
@@ -455,9 +414,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// The second half of a two-factor sign-in: the challenge from /login plus a code from the
-// authenticator app, or one of the backup codes. Five tries per challenge (P113 after that),
-// under the same rate limit as /login, and ten wrong codes per account (codeLock above).
+// Second step: the /login challenge plus an authenticator or backup code. Five tries per
+// challenge (then P113), plus codeLock.
 router.post('/login/2fa', async (req, res) => {
   const { challenge, code, recoveryCode } = req.body || {};
   const ip = req.ip;
@@ -471,8 +429,7 @@ router.post('/login/2fa', async (req, res) => {
   try {
     const db = await getDb();
     const user = await db.get('SELECT * FROM users WHERE id = ?', [pending.userId]);
-    // The account changed under the challenge (password reset, sign out everywhere, two-
-    // factor turned off, expired): start over.
+    // The account changed under the challenge: start over.
     if (!user || (user.token_version || 0) !== pending.tokenVersion || !user.totp_enabled_at ||
         (user.expires_at && new Date(user.expires_at).getTime() <= Date.now())) {
       endChallenge(challenge);
@@ -514,8 +471,7 @@ router.post('/login/2fa', async (req, res) => {
     }
 
     if (!ok) {
-      // Whoever is entering codes already has the password, so from outside each wrong code
-      // also counts towards holding back outside sign-ins for the account altogether.
+      // They have the password, so outside wrong codes also count toward the outside lock.
       const result = codeLock.fail(lockKey);
       if (loc.away) noteOutsideFail(user.username);
       await recordLoginAttempt(db, { userId: user.id, username: user.username, success: false, ip, userAgent, network: pending.where });
@@ -534,8 +490,7 @@ router.post('/login/2fa', async (req, res) => {
   }
 });
 
-// What the sign-in page needs to know before anyone signs in: whether this device is
-// outside the home network, and if so whether that's allowed at all.
+// Whether this device is outside the home network, and whether that's allowed.
 router.get('/access', handle(async (req, res) => {
   const loc = await requestLocation(req);
   res.json({
@@ -553,7 +508,7 @@ async function recordLoginAttempt(db, { userId, username, success, ip, userAgent
       [userId, username, success ? 1 : 0, ip, userAgent, network]
     );
   } catch (err) {
-    // Never let sign-in tracking break the actual login flow
+    // Sign-in tracking must never break login
     console.error('[auth] failed to record login history:', oneLineError(err));
   }
 }
@@ -562,16 +517,13 @@ router.get('/me', authenticateToken, (req, res) => {
   res.json({ user: req.user });
 });
 
-// Exchange a still-valid token for a fresh one. The app calls this on load, which is what
-// makes a shorter token lifetime workable: someone who opens Plinthio regularly is never
-// signed out, while a token copied off a shared machine stops working within the window
-// rather than a month later.
+// Fresh token for a still-valid one; called on every load, which keeps token lifetimes short.
 router.post('/refresh', authenticateToken, requireSession, (req, res) => {
   const token = signSessionToken(req.user);
   res.json({ token, mediaToken: signMediaToken(req.user), user: req.user });
 });
 
-// Just a fresh media token, for a long-lived tab whose current one is close to expiring.
+// Fresh media token for a long-lived tab.
 router.post('/media-token', authenticateToken, (req, res) => {
   if (req.isApiKey) {
     return res.status(400).json({ error: 'API keys authenticate media requests directly' });
@@ -579,12 +531,8 @@ router.post('/media-token', authenticateToken, (req, res) => {
   res.json({ mediaToken: signMediaToken(req.user) });
 });
 
-// Invalidate every token issued for this account, this one included — the "signed in
-// somewhere I shouldn't be" button. Bumping token_version is the same mechanism a password
-// change uses, so it revokes instantly rather than waiting for expiry. "Everywhere" includes
-// the apps signed in with an API key (reading apps, scripts): the keys are deleted too, or a
-// key copied off a lost device would go on working. Not something a key can do itself: a
-// leaked key could otherwise sign its owner out of everything, over and over.
+// Sign out everywhere: bumps token_version and deletes API keys too. Not allowed with a key,
+// or a leaked one could sign its owner out repeatedly.
 router.post('/sign-out-everywhere', authenticateToken, requireSession, handle(async (req, res) => {
   const db = await getDb();
   await db.run(
@@ -598,9 +546,8 @@ router.post('/sign-out-everywhere', authenticateToken, requireSession, handle(as
   res.json({ message: 'All sessions signed out. Please sign in again.', apiKeysRevoked: keys.changes || 0 });
 }));
 
-// ─── Two-factor: turning it on and off, for your own account ─────────────────────────────
-// Only with a signed-in session, never an API key: a key handed to a reading app mustn't be
-// able to change how the account signs in.
+// ─── Two-factor setup ────────────────────────────────────────────────────────────────────
+// Session only: an API key mustn't change how the account signs in.
 function sessionOnly(req, res, next) {
   if (req.isApiKey) return res.status(403).json({ error: 'Sign in with your password to change two-factor' });
   next();
@@ -619,11 +566,8 @@ router.get('/2fa', authenticateToken, sessionOnly, handle(async (req, res) => {
   res.json(await twoFactorStatus(await getDb(), req.user.id));
 }));
 
-// Step 1: a new secret, held as pending until a code from it is confirmed. Returns the
-// otpauth:// link (the app shows it as a QR code) and the secret for typing in by hand.
-// Needs the account's password (body: { password }): whoever turns two-factor on holds the
-// only authenticator, so someone at an unlocked, signed-in browser could otherwise lock the
-// owner out of their own account with a phone of their own.
+// Step 1: a pending secret and its otpauth:// link. Needs the password, or someone at an
+// unlocked browser could lock the owner out with their own phone.
 router.post('/2fa/setup', authenticateToken, sessionOnly, handle(async (req, res) => {
   const db = await getDb();
   const row = await db.get('SELECT totp_enabled_at FROM users WHERE id = ?', [req.user.id]);
@@ -637,8 +581,7 @@ router.post('/2fa/setup', authenticateToken, sessionOnly, handle(async (req, res
   res.json({ secret, uri: otpauthUri(secret, { issuer: name, account: req.user.username }) });
 }));
 
-// Wrong two-factor codes in signed-in confirmations, per account. Separate from confirmLock,
-// which a right password clears; only a right code clears this one.
+// Wrong codes in signed-in confirmations; only a right code clears it (unlike confirmLock).
 const confirmCodeLock = new FailureLock();
 
 function confirmHeld(userId) {
@@ -655,8 +598,7 @@ function noteConfirmCodeFailure(req, did) {
 // How long a new secret waits to be confirmed.
 const PENDING_SECRET_MS = 15 * 60 * 1000;
 
-// Step 2: a code from the app proves it's set up; two-factor goes on and the backup codes
-// are shown, once.
+// Step 2: a valid code turns 2FA on and returns the backup codes once.
 router.post('/2fa/enable', authenticateToken, sessionOnly, handle(async (req, res) => {
   const db = await getDb();
   const row = await db.get('SELECT totp_pending, totp_pending_at, totp_enabled_at FROM users WHERE id = ?', [req.user.id]);
@@ -668,8 +610,7 @@ router.post('/2fa/enable', authenticateToken, sessionOnly, handle(async (req, re
     await db.run('UPDATE users SET totp_pending = NULL, totp_pending_at = NULL WHERE id = ?', [req.user.id]);
     return res.status(400).json({ error: 'Setting up two-factor took too long. Start again' });
   }
-  // Checked before the code, with no await before a wrong one is counted, so parallel
-  // requests can't slip past the hold.
+  // No await before a wrong code is counted, so parallel requests can't slip past the hold.
   if (confirmHeld(req.user.id)) return sendConfirmProblem(req, res, 'P108');
   const step = verifyTotp(secret, req.body?.code);
   if (step === null) {
@@ -678,8 +619,7 @@ router.post('/2fa/enable', authenticateToken, sessionOnly, handle(async (req, re
   }
   confirmCodeLock.succeed(req.user.id);
   const { codes, stored } = newRecoveryCodes();
-  // Every other session is signed out (one started before two-factor, perhaps by whoever
-  // made it necessary, shouldn't outlive it); this device gets a fresh token in the answer.
+  // Other sessions are signed out; this device gets a fresh token.
   await db.run(
     `UPDATE users SET totp_secret = ?, totp_pending = NULL, totp_pending_at = NULL, totp_enabled_at = CURRENT_TIMESTAMP,
          totp_last_step = ?, totp_recovery = ?, token_version = token_version + 1 WHERE id = ?`,
@@ -692,11 +632,8 @@ router.post('/2fa/enable', authenticateToken, sessionOnly, handle(async (req, re
   res.json({ ...(await twoFactorStatus(db, req.user.id)), recoveryCodes: codes, token, mediaToken: signMediaToken(user) });
 }));
 
-// Checks the password and a current code (or a backup code), for turning two-factor off or
-// getting new backup codes: someone at an unlocked, signed-in browser can't do either. Wrong
-// answers are counted per account: passwords by checkOwnPassword (middleware/auth.js), codes
-// by confirmCodeLock above. After ten of either in 15 minutes it answers P108 until the hold
-// runs out.
+// Password plus a code, for turning 2FA off or new backup codes. Wrong answers are limited by
+// checkOwnPassword and confirmCodeLock (P108).
 async function confirmIdentity(db, req, { needCode, what }) {
   const { password, code, recoveryCode } = req.body || {};
   const problem = await checkOwnPassword(db, req, password, what);

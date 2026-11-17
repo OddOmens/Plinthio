@@ -14,13 +14,11 @@ const router = express.Router();
 
 router.use(authenticateToken, requireAdmin);
 
-// Caps on how many example rows each section returns. Counts are always exact; the lists
-// are there so an admin can see *which* titles, not to page through a whole library.
+// Example rows per section; counts are always exact.
 const LIST_LIMIT = 100;
 const STAT_CONCURRENCY = 64;
 
-// Checks every item's file in parallel batches. Sync stat() on 50k files over a network
-// share would block the event loop (and every other request) for seconds.
+// Parallel async batches: sync stat() on 50k files over a network share blocks for seconds.
 async function findMissingFiles(items) {
   const missing = [];
   for (let i = 0; i < items.length; i += STAT_CONCURRENCY) {
@@ -48,9 +46,8 @@ function publicRow(item) {
   };
 }
 
-// Missing and offloaded titles grouped the way people think about them: a film, a book, or
-// one season of a show (a whole series of books or comics). Each group carries its item ids
-// so the admin can keep it as history, undo that, or remove it, in one go.
+// Groups missing/offloaded titles as a film, a book, or a season (or a book/comic series),
+// with item ids so each group can be acted on in one go.
 function groupTitles(items, goneNow) {
   const groups = new Map();
   for (const item of items) {
@@ -84,10 +81,8 @@ function groupTitles(items, goneNow) {
   return [...groups.values()].sort((a, b) => a.name.localeCompare(b.name) || (a.season ?? -1) - (b.season ?? -1));
 }
 
-// A one-page "what needs attention" report: libraries that can't be reached, catalog rows
-// whose file is gone, likely duplicates, titles missing art/metadata/ratings, and recent
-// playback encode failures. Read-only — each section's fix is an existing action
-// (rescan, metadata editor, series sheet) that the Admin UI links to.
+// Read-only "what needs attention" report: unreachable libraries, missing files, likely
+// duplicates, missing metadata and recent encode failures.
 router.get('/', async (req, res) => {
   try {
     const db = await getDb();
@@ -111,22 +106,17 @@ router.get('/', async (req, res) => {
       JOIN libraries l ON l.id = i.library_id
     `);
 
-    // Files on a library that is itself unreachable are reported under the library, not as
-    // thousands of individually "missing" files.
+    // Files on an unreachable library are reported under the library, not one by one.
     const reachableLibIds = new Set(libraries.filter((l) => l.path_exists).map((l) => l.id));
-    // Missing = the last scan flagged it (kept, hidden, waiting for an admin), or its file is
-    // gone right now even though no scan has run since.
+    // Missing = flagged by the last scan, or its file is gone right now.
     const goneNow = new Set((await findMissingFiles(items.filter((i) => reachableLibIds.has(i.library_id)))).map((i) => i.id));
     // Offloaded titles were removed on purpose and kept as history, so they're not missing.
     const missingFiles = items.filter((i) => !i.offloaded_at && (i.missing_since || goneNow.has(i.id)));
     const offloaded = items.filter((i) => i.offloaded_at);
 
-    // Both checks compare files that are there: a missing title is already listed as missing
-    // (its replacement under a new name would otherwise show up a second time as its
-    // duplicate), an offloaded one is history, and an extra belongs to its film.
+    // Both checks skip missing titles (already listed), offloaded ones and extras.
     const present = 'i.missing_since IS NULL AND i.offloaded_at IS NULL AND i.extra_type IS NULL';
-    // Same title + same byte size in the same media type is almost always the same file
-    // twice (a copy in two folders, or in two libraries).
+    // Same title, byte size and media type is almost always the same file twice.
     const duplicateGroups = await db.all(`
       SELECT i.media_type, LOWER(TRIM(i.title)) AS norm_title, i.file_size,
              COUNT(*) AS copies, GROUP_CONCAT(i.id) AS ids
@@ -206,13 +196,9 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Remove missing titles from the catalog for good ("empty the trash"). Only titles a scan
-// has flagged missing and whose file is still gone are removed — so a drive that came back
-// since is never emptied out. Reading progress, ratings and bookmarks are kept (they're
-// keyed by item id and re-attach if the same file is ever scanned again).
-//
-// Offloaded titles are only removed when asked for by id: "remove everything missing" must
-// never take history someone chose to keep.
+// Removes flagged-missing titles whose file is still gone, so a returned drive is never
+// emptied. Progress, ratings and bookmarks stay (keyed by item id). Offloaded titles go only
+// when named by id, never in "remove everything missing".
 router.post('/remove-missing', handle(async (req, res) => {
   const { itemIds } = req.body || {};
   const db = await getDb();
@@ -240,9 +226,7 @@ router.post('/remove-missing', handle(async (req, res) => {
   res.json({ removed, skipped: rows.length - removed });
 }));
 
-// Keep titles as history: hidden from shelves, search and playback, shown greyed on their
-// title page with everyone's progress. Usually for titles already gone from disk (Library
-// Health's missing list), but it also works ahead of deleting the files.
+// Keep titles as history: hidden from shelves, search and playback, shown greyed on their page.
 router.post('/offload', handle(async (req, res) => {
   const itemIds = validIds(req.body?.itemIds);
   if (!itemIds) return res.status(400).json({ error: 'itemIds must be a list of item ids' });
@@ -256,8 +240,7 @@ router.post('/offload', handle(async (req, res) => {
   res.json({ offloaded: result.changes });
 }));
 
-// Undo that. A title whose file is still there is back on the shelves; one whose file is
-// gone goes back to being missing.
+// Undo: a title with its file back is restored, otherwise it's missing again.
 router.post('/unoffload', handle(async (req, res) => {
   const itemIds = validIds(req.body?.itemIds);
   if (!itemIds) return res.status(400).json({ error: 'itemIds must be a list of item ids' });

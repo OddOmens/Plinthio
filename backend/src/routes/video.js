@@ -31,13 +31,9 @@ function playbackError(req, res, err, message) {
 
 const router = express.Router();
 
-// Resolves an item for playback: the existence, visibility and path-containment checks every
-// route that reads the file needs. Returns null after responding on any failure.
-//
-// `filePath` is the file's real location with symlinks resolved, checked to be inside a
-// library folder (a link out to some other file on the server is refused) — that's what gets
-// opened. `namePath` is the path as catalogued, for anything that goes by the name: the
-// extension, and the subtitle files sitting next to it.
+// Existence, visibility and containment checks for routes that read the file; null after
+// responding on failure. `filePath` is the real (symlink-resolved, in-library) path to open;
+// `namePath` is the catalogued path, for the extension and sibling subtitle files.
 async function resolvePlayableItem(req, res) {
   if (!ITEM_ID_RE.test(req.params.id)) {
     res.status(400).json({ error: 'Invalid item id' });
@@ -74,8 +70,7 @@ async function resolvePlayableItem(req, res) {
   return { item, filePath: realPath, namePath: resolvedItemPath };
 }
 
-// An item id that exists and that this account may see — for the routes that don't read the
-// file. Answers 400/P300 itself and returns false otherwise.
+// For routes that don't read the file: false after answering 400/P300.
 async function requireVisibleItem(req, res) {
   if (!ITEM_ID_RE.test(req.params.id)) {
     res.status(400).json({ error: 'Invalid item id' });
@@ -90,8 +85,7 @@ async function requireVisibleItem(req, res) {
   return true;
 }
 
-// A file ffprobe couldn't make sense of — or one it recognised as a playlist/script rather
-// than media (services/probe.js) — is never handed to ffmpeg, whatever the URL asks for.
+// A file ffprobe couldn't parse, or saw as a playlist/script, is never handed to ffmpeg.
 function refuseUnprobed(req, res, info) {
   if (!info.probeFailed) return false;
   sendError(req, res, 'P304', {
@@ -100,9 +94,7 @@ function refuseUnprobed(req, res, info) {
   return true;
 }
 
-// What the client says it can play: ?clientHevc=1 from browsers that decode HEVC, and
-// ?videoCodecs=h264,hevc from apps that aren't browsers (the full list of video codecs the
-// device decodes — see parseClientVideoCodecs).
+// Client codecs: ?clientHevc=1 from browsers, ?videoCodecs=h264,hevc (full list) from apps.
 function clientCaps(req, { hevc = false } = {}) {
   return {
     clientHevc: hevc || req.query.clientHevc === '1',
@@ -110,8 +102,7 @@ function clientCaps(req, { hevc = false } = {}) {
   };
 }
 
-// The query the playlists hand on to the URLs inside them, so every later request for the
-// same stream is judged the same way (and can sign itself in).
+// Query passed on to playlist URLs so later requests are judged the same and can sign in.
 function carriedQuery(req) {
   const params = [];
   for (const name of ['token', 'clientHevc', 'videoCodecs', 'copy']) {
@@ -127,10 +118,7 @@ async function copyFor(req, resolved) {
   return readyCopy(await getDb(), req.params.id, resolved.filePath);
 }
 
-// Tells the client whether this file can be played directly or has to go through ffmpeg,
-// so the player can pick the right URL up front instead of failing first and retrying.
-// ?clientHevc=1 is sent by browsers (Chrome ≥107, Edge, Safari) that can decode HEVC
-// natively — when set, HEVC files are marked "direct" instead of "transcode".
+// Whether the file can play directly or needs ffmpeg, so the player picks the right URL first.
 router.get('/:id/playback-info', authenticateToken, async (req, res) => {
   try {
     const resolved = await resolvePlayableItem(req, res);
@@ -140,9 +128,8 @@ router.get('/:id/playback-info', authenticateToken, async (req, res) => {
     const fileInfo = await getPlaybackInfo(req.params.id, resolved.filePath, caps);
     const db = await getDb();
 
-    // Video this client can't decode has to be converted as it plays — unless an H.264
-    // copy of it has been made, in which case that is played instead (the client adds
-    // ?copy=1 to the stream URLs when compatCopy is set). Subtitles still come from the file.
+    // Undecodable video is transcoded unless an H.264 copy exists (client then adds ?copy=1).
+    // Subtitles still come from the original file.
     let info = fileInfo;
     if (fileInfo.mode === 'transcode' && !fileInfo.probeFailed) {
       const copy = await readyCopy(db, req.params.id, resolved.filePath);
@@ -185,9 +172,8 @@ router.get('/:id/compat', authenticateToken, async (req, res) => {
   }
 });
 
-// Asks the server to make an H.264 copy of this title in the background. Admins always
-// can; everyone else only when the admin has allowed it (Admin → Playback). Asking again for one that failed tries it again. Refusals carry P310 (nothing
-// to convert), P311 (the size limit) or P312 (admins only).
+// Queues an H.264 copy (non-admins only if allowed); retries a failed one. Refusals: P310
+// (nothing to convert), P311 (size limit), P312 (admins only).
 router.post('/:id/compat', authenticateToken, async (req, res) => {
   try {
     const resolved = await resolvePlayableItem(req, res);
@@ -211,8 +197,7 @@ router.delete('/:id/compat', authenticateToken, requireAdmin, handle(async (req,
   res.json({ ok: true });
 }));
 
-// One subtitle track as WebVTT, which is what a <track> element needs. ?token= is accepted
-// (see authenticateToken) because a <track> tag can't send an Authorization header.
+// One subtitle track as WebVTT; ?token= since <track> can't send an Authorization header.
 router.get('/:id/subtitles/:trackId.vtt', authenticateToken, async (req, res) => {
   try {
     const resolved = await resolvePlayableItem(req, res);
@@ -222,8 +207,7 @@ router.get('/:id/subtitles/:trackId.vtt', authenticateToken, async (req, res) =>
     const isEmbedded = String(req.params.trackId).startsWith('embedded-');
     if (isEmbedded && refuseUnprobed(req, res, info)) return;
 
-    // Extraction is shared and cached (services/subtitles.js); when this request goes away
-    // before it's done, it stops waiting — and the ffmpeg run stops if nobody else is.
+    // Shared, cached extraction: a departed request stops waiting, and ffmpeg stops if no one is.
     const gone = new AbortController();
     res.on('close', () => { if (!res.writableEnded) gone.abort(); });
     const vtt = await getSubtitleVtt(info, resolved.filePath, req.params.trackId, {
@@ -240,10 +224,8 @@ router.get('/:id/subtitles/:trackId.vtt', authenticateToken, async (req, res) =>
   }
 });
 
-// Remuxed/transcoded playback goes out as HLS instead of a raw live pipe: ffmpeg writes a
-// growing playlist + fragmented-MP4 segments to disk (see services/hls.js), which gives the
-// client real segment-level seeking instead of "restart the encode from a new offset".
-// The profile in the URL ("720p-a0") names a quality rung and an audio track. It's parsed
+// Remux/transcode goes out as on-disk HLS (services/hls.js) for real segment seeking.
+// The URL profile ("720p-a0") names a quality rung and an audio track.
 async function resolveHlsJob(req, res, profileParam) {
   const resolved = await resolvePlayableItem(req, res);
   if (!resolved) return null;
@@ -251,8 +233,7 @@ async function resolveHlsJob(req, res, profileParam) {
   const parsed = profileParam ? parseProfile(profileParam) : null;
   const isSourceRemux = parsed ? (parsed.quality === 'source') : (req.query.mode === 'remux');
 
-  // If this is a remux profile ('source-aN') or client explicitly passed clientHevc=1,
-  // evaluate probe info with HEVC support enabled.
+  // Remux profiles ('source-aN') and clientHevc=1 are judged with HEVC support on.
   const caps = clientCaps(req, { hevc: isSourceRemux });
   // The title's converted copy when the client was told to play that (?copy=1).
   const copy = await copyFor(req, resolved);
@@ -310,8 +291,7 @@ router.get('/:id/hls/master.m3u8', authenticateToken, async (req, res) => {
 
     const tokenQuery = carriedQuery(req);
 
-    // Advertised widths follow the source's own aspect ratio, so a 4:3 or ultrawide file
-    // isn't described to the client as if it were 16:9.
+    // Advertised sizes follow the source's aspect ratio, not 16:9.
     const aspect = info.width && info.height ? info.width / info.height : 16 / 9;
     const codecStr = (info.mode === 'remux' && info.videoCodec === 'hevc')
       ? 'hvc1.1.6.L93.B0,mp4a.40.2'
@@ -348,8 +328,7 @@ router.get('/:id/hls/:profile/media.m3u8', authenticateToken, async (req, res) =
     res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
     res.setHeader('Cache-Control', 'no-store');
 
-    // Rewrite segment URIs to include token and client capabilities if present,
-    // so segment requests do not fail with 401/404 in native players / hls.js.
+    // Segment URIs carry the token and client capabilities, or native players get 401/404.
     let playlist = fs.readFileSync(job.playlistPath, 'utf8');
     const q = carriedQuery(req);
     if (q) playlist = playlist.replace(/(init\.mp4|seg_\d{5}\.m4s)/g, `$1${q}`);
@@ -384,16 +363,14 @@ router.get('/:id/hls/:profile/:segmentFile', authenticateToken, async (req, res)
   }
 });
 
-// Explicitly stops any active ffmpeg encode/remux processes for this item when the user
-// closes the player, navigates away, or switches episodes/movies.
+// Stops this item's ffmpeg jobs when the player closes or switches title.
 router.post('/:id/hls/stop', authenticateToken, handle(async (req, res) => {
   if (!await requireVisibleItem(req, res)) return;
   stopItemJobs(req.params.id, req.user.id);
   res.json({ ok: true });
 }));
 
-// Scrub-preview sprite sheets. Pre-generated sheets are served if available.
-// On-the-fly generation during playback is disabled to prevent massive CPU spikes on 4K/heavy files.
+// Pre-generated scrub-preview sprites only; generating during playback spikes CPU on 4K files.
 router.get('/:id/trickplay/index.json', authenticateToken, async (req, res) => {
   try {
     const resolved = await resolvePlayableItem(req, res);
@@ -402,7 +379,7 @@ router.get('/:id/trickplay/index.json', authenticateToken, async (req, res) => {
     const existing = getTrickplayIndex(req.params.id);
     if (existing) return res.json(existing);
 
-    // No sheets for this file is normal, not an error: 204 keeps it out of the browser console.
+    // No sheets is normal: 204 keeps it out of the browser console.
     res.status(204).end();
   } catch (err) {
     console.error('[video] trickplay index failed:', err);
@@ -434,8 +411,7 @@ router.get('/:id/trickplay/sheet_:sheet.jpg', authenticateToken, async (req, res
 
 // Intro/credits markers, so the player can offer a skip button.
 router.get('/:id/markers', authenticateToken, handle(async (req, res) => {
-  // Markers say how long a title's intro and credits are — still something about a title
-  // this account may not be allowed to know exists.
+  // Visibility checked: markers would still reveal a hidden title.
   if (!await requireVisibleItem(req, res)) return;
   const db = await getDb();
   const markers = await db.all(
@@ -480,11 +456,7 @@ router.put('/:id/markers', authenticateToken, requireEditor, async (req, res) =>
   }
 });
 
-/**
- * Range-seeking video stream endpoint
- * Supports HTTP 206 Partial Content for instant seeking on iOS Safari, Chrome, and desktop players.
- * Supports token via query string (?token=...) or Authorization header.
- */
+// Direct-play video with range support; accepts ?token=.
 router.get('/:id/stream', authenticateToken, async (req, res) => {
   try {
     const resolved = await resolvePlayableItem(req, res);

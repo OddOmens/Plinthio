@@ -1,16 +1,10 @@
 import crypto from 'crypto';
 
 // ─── Watch parties ───────────────────────────────────────────────────────────
-// People in different places watching the same movie or episode in step. Each viewer
-// streams the video from the server exactly as they would alone; a party only shares the
-// playback state — playing or paused, and where — and who's there.
-//
-// Parties live in memory: they're minutes-to-hours long, and a server restart ending them
-// is fine (everyone just reopens the link the host shares).
-//
-// Playback state is { playing, position, at }: `position` seconds into the video as of
-// `at` (server ms). While playing, the live position is position + (now − at) / 1000, so
-// clients never need a stream of position updates — only changes.
+// Each viewer streams normally; a party only shares playback state and presence. In memory
+// only: a restart ending parties is acceptable.
+// State is { playing, position, at }: while playing, live position = position + (now − at) / 1000,
+// so clients only need changes, not a stream of updates.
 
 export const MAX_PARTIES = 20;
 export const MAX_MEMBERS = 20;
@@ -18,8 +12,7 @@ export const MAX_MEMBERS = 20;
 const BUFFER_HOLD_LIMIT_MS = 15000;
 // How often each live connection's account is checked again (see recheckConnections).
 const RECHECK_MS = 30000;
-// A party everyone has left is kept this long, so a refresh or a dropped connection can
-// rejoin the same party.
+// Empty parties survive this long so a refresh or dropped connection can rejoin.
 const EMPTY_PARTY_GRACE_MS = 60000;
 const CHAT_HISTORY = 50;
 // No 0/O or 1/I/L: codes get read out loud and typed.
@@ -68,11 +61,9 @@ export function createParty({ host, item }) {
 }
 
 // ─── Membership and live connections ─────────────────────────────────────────
-// A member can have more than one connection (two tabs); they're in the party while any
-// connection is open.
-// `check` (optional) is an async (party) => boolean the route supplies for each connection:
-// whether the sign-in it opened with is still good and the account may still watch. The
-// account is only checked as the stream opens, so recheckConnections asks again now and then.
+// A member stays while any of their connections (tabs) is open.
+// `check`: optional async (party) => boolean, whether the connection's sign-in and access are
+// still valid; re-run periodically by recheckConnections.
 export function addConnection(party, user, clientId, send, check = null) {
   let member = party.members.get(user.id);
   if (!member) {
@@ -99,7 +90,7 @@ export function removeConnection(party, userId, clientId) {
     party.emptySince = Date.now();
     return;
   }
-  // The host left: the longest-standing member takes over, so the party carries on.
+  // Host left: the longest-standing member takes over.
   if (party.hostId === userId) {
     const next = [...party.members.values()].sort((a, b) => a.joinedAt - b.joinedAt)[0];
     party.hostId = next.userId;
@@ -155,7 +146,7 @@ export function applyAction(party, action, position, by) {
   const at = Number.isFinite(position) && position >= 0 ? position : livePosition(party.state, now);
   switch (action) {
     case 'play':
-      // While someone's buffering, a play waits for them: it's recorded, not started.
+      // While held, play is recorded but doesn't start.
       party.state = { playing: !party.held, position: at, at: now };
       party.resumeAfterHold = party.held;
       break;
@@ -167,8 +158,7 @@ export function applyAction(party, action, position, by) {
       party.state = { playing: party.state.playing, position: at, at: now };
       break;
     case 'heartbeat':
-      // The host's player is the clock: it corrects the shared position for the drift a
-      // real player picks up (stalls, rate changes) without anyone seeing a state change.
+      // The host's player is the clock; heartbeats correct drift without a visible state change.
       if (!party.state.playing || party.held) return false;
       party.state = { playing: true, position: at, at: now };
       broadcast(party, { type: 'heartbeat', state: party.state, by });
@@ -180,7 +170,7 @@ export function applyAction(party, action, position, by) {
   return true;
 }
 
-// Someone started or stopped buffering. While anyone is, playback holds for everyone.
+// While anyone is buffering, playback holds for everyone.
 export function setBuffering(party, userId, buffering) {
   const member = party.members.get(userId);
   if (!member) return;
@@ -212,9 +202,7 @@ function releaseHoldIfClear(party) {
   broadcastState(party);
 }
 
-// A new movie or episode (the next one, or the host's pick). Starts from the top, paused
-// until everyone has loaded it — each player reports buffering while it loads, and the
-// host presses play (or auto-plays the next episode).
+// Switches video, paused at 0. With autoplay, held until every player has loaded it.
 export function changeItem(party, itemId, { autoplay = false } = {}) {
   party.itemId = itemId;
   party.state = { playing: false, position: 0, at: Date.now() };
@@ -222,7 +210,6 @@ export function changeItem(party, itemId, { autoplay = false } = {}) {
   party.resumeAfterHold = false;
   for (const m of party.members.values()) m.bufferingSince = null;
   if (autoplay) {
-    // Held until everyone's player has the new video loaded, then it starts for all.
     party.held = true;
     party.resumeAfterHold = true;
     for (const m of party.members.values()) m.bufferingSince = Date.now();
@@ -251,8 +238,7 @@ export function endParty(party, reason = 'ended') {
   parties.delete(party.code);
 }
 
-// Ends one connection from the server's side: out of the party first (so host hand-over and
-// presence happen at once), then the stream is closed.
+// Removes from the party first (host hand-over, presence), then closes the stream.
 function closeConnection(party, userId, clientId) {
   const send = party.members.get(userId)?.connections.get(clientId);
   if (!send) return false;
@@ -261,8 +247,7 @@ function closeConnection(party, userId, clientId) {
   return true;
 }
 
-// Ends all of an account's party connections when it's revoked or restricted. Reconnecting
-// goes through the normal sign-in and visibility checks.
+// For revoked or restricted accounts; reconnecting goes through the normal checks.
 export function dropUser(userId) {
   let closed = 0;
   for (const party of [...parties.values()]) {
@@ -275,9 +260,8 @@ export function dropUser(userId) {
   return closed;
 }
 
-// Asks each connection's check again and closes the ones that fail: covers what raises no
-// event, such as an expiry date passing, a network rule changing, or a change made straight
-// in the database. A check that throws (a database hiccup) keeps the connection for now.
+// Catches changes that raise no event (expiry, network rules, direct DB edits).
+// A check that throws keeps the connection for now.
 let rechecking = false;
 export async function recheckConnections() {
   if (rechecking) return 0;
@@ -304,7 +288,7 @@ export async function recheckConnections() {
 }
 
 // ─── Housekeeping ────────────────────────────────────────────────────────────
-// Drops parties everyone has left, and lets go of anyone stuck buffering.
+// Drops empty parties and releases anyone stuck buffering.
 export function sweepParties(now = Date.now()) {
   for (const party of [...parties.values()]) {
     if (party.members.size === 0 && party.emptySince && now - party.emptySince > EMPTY_PARTY_GRACE_MS) {
@@ -325,7 +309,6 @@ export function sweepParties(now = Date.now()) {
   }
 }
 
-// Turning the feature off ends every party.
 export function endAllParties() {
   for (const party of [...parties.values()]) endParty(party, 'disabled');
 }

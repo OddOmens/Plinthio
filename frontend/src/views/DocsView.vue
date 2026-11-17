@@ -1,9 +1,8 @@
 <template>
   <div class="min-h-screen bg-background text-foreground transition-colors" :class="isSidebarLayout ? 'flex flex-col md:flex-row' : 'flex flex-col'">
-    <!-- Primary navigation: sidebar layout keeps global nav present on this page too -->
     <Sidebar v-if="isSidebarLayout" activeType="all" @filter-type="goToShelf" />
     <div class="flex-1 flex flex-col min-w-0">
-    <!-- Top Bar (width matches the page-width content container below, same as Admin/Settings) -->
+    <!-- Top bar, same width as the content below -->
     <header class="bg-card/60 backdrop-blur-md border-b border-border sticky top-0 z-30 safe-top transition-colors">
       <div class="page-width mx-auto px-4 sm:px-6 lg:px-8 h-[60px] flex items-center justify-between gap-2">
         <div class="flex items-center gap-3 min-w-0">
@@ -27,9 +26,8 @@
       </div>
     </header>
 
-    <!-- Main Container with Sidebar + Content -->
     <div class="flex-1 page-width w-full mx-auto flex flex-col md:flex-row">
-      <!-- Sidebar Navigation -->
+      <!-- Sidebar -->
       <aside class="w-full md:w-64 border-b md:border-b-0 md:border-r border-border p-4 sm:p-6 space-y-6 flex-shrink-0">
         <div v-for="group in navGroups" :key="group.id">
           <div class="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{{ $t(`docs.nav.groups.${group.id}`) }}</div>
@@ -59,7 +57,6 @@
         </div>
       </aside>
 
-      <!-- Content Area -->
       <main class="flex-1 min-w-0 p-6 sm:p-10 max-w-4xl space-y-10">
 
         <!-- SECTION: Overview -->
@@ -992,11 +989,8 @@ import { useAuthStore } from '../stores/auth';
 import { t } from '../i18n';
 import { localizeErrorEntry } from '../i18n/serverErrors';
 
-// A translated docs sentence with markup in it. Works like <I18nT>: each {name} in the
-// message is filled by the slot of that name, so commands, paths and code stay here in the
-// template and never pass through a translation. On top of that, **words** in the message
-// render bold: the bold words are prose, so they belong to the translation. `plain` drops
-// the bold's foreground colour where the original text used an unstyled <strong>.
+// Like <I18nT>: each {name} is filled by its slot, so commands and paths never pass through a
+// translation. **words** render bold. `plain` drops the bold's foreground colour.
 const DocText = (props, { slots }) => {
   const keep = Object.fromEntries(Object.keys(slots).map((name) => [name, `{${name}}`]));
   const text = t(props.keypath, { ...props.params, ...keep });
@@ -1021,7 +1015,7 @@ const Mono = (_, { slots }) => h('code', { class: 'text-foreground bg-muted px-1
 const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
 const router = useRouter();
-// Global nav layout (topnav vs sidebar) respects user preference when allowed, falling back to server default.
+// User's nav layout when allowed, else the server default.
 const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(authStore.user) === 'sidebar');
 function goToShelf(type) {
   router.push({ path: '/', query: type && type !== 'all' ? { type } : {} });
@@ -1140,11 +1134,8 @@ async function loadTlsStatus() {
 }
 
 // ── Error codes ──────────────────────────────────────────────────────────────────────────
-// Served by the backend from its catalog (backend/src/errors.js), so this page can never
-// list a code the server doesn't use. /docs#P301 opens this section on that code, which is
-// where the video player's "what this means" link points. The entries come from the server
-// in English and are shown from serverErrors.codes where translated; the group headings are
-// docs.errors.groups.<id>.
+// From the backend catalog (backend/src/errors.js), so only real codes are listed. /docs#P301
+// opens on that code (the player links there). Group headings are docs.errors.groups.<id>.
 const ERROR_SECTIONS = [
   { prefix: 'P0', id: 'general' },
   { prefix: 'P1', id: 'signIn' },
@@ -1216,8 +1207,7 @@ onMounted(async () => {
   }
 });
 
-// Grouped so the nav stays a fixed, predictable width (w-64) no matter how many guides
-// get added — new topics join an existing group instead of growing a single flat list.
+// Grouped so the nav keeps a fixed width as guides are added.
 // Labels are docs.nav.groups.<id> and docs.nav.items.<id>.
 const navGroups = [
   {

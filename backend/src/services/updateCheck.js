@@ -1,9 +1,8 @@
 import { APP_VERSION, compareVersions } from '../config/version.js';
 import { logger } from './logger.js';
 
-// Asks GitHub for the newest published release so admins can be told an update exists.
-// It's the only outbound call Plinthio makes on its own, so it sends nothing about the
-// install (a plain unauthenticated GET) and can be switched off with UPDATE_CHECK=false.
+// Checks GitHub for the latest release. A plain unauthenticated GET that sends nothing about
+// the install; disable with UPDATE_CHECK=false.
 const RELEASES_URL = process.env.UPDATE_CHECK_URL
   || 'https://api.github.com/repos/OddOmens/Plinthio/releases/latest';
 const CHECK_EVERY_MS = 12 * 60 * 60 * 1000;
@@ -45,7 +44,7 @@ export async function checkForUpdate({ force = false } = {}) {
         headers: { Accept: 'application/vnd.github+json', 'User-Agent': `Plinthio/${APP_VERSION}` },
         signal: AbortSignal.timeout(TIMEOUT_MS)
       });
-      // 404 = no release published yet; not an error worth surfacing.
+      // 404: no release published yet.
       if (res.status === 404) {
         status = { ...status, checkedAt: new Date().toISOString(), error: null };
         return status;
@@ -75,7 +74,7 @@ export async function checkForUpdate({ force = false } = {}) {
         error: null
       };
     } catch (err) {
-      // Offline servers are normal for a self-hosted app — keep the last good answer.
+      // Keep the last good answer when offline.
       status = { ...status, checkedAt: new Date().toISOString(), error: err.message };
     } finally {
       inflight = null;

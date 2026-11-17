@@ -1,11 +1,6 @@
 import { getMediaToken } from './mediaToken';
-// Cover URLs carry a version derived from the item's updated_at.
-//
-// Covers are served `immutable` with a year-long max-age, which is right for the bytes but
-// wrong for the URL: the artwork behind `/api/media/cover/<id>` genuinely does change — a
-// scan replaces a placeholder with a real poster, or an editor uploads their own. Without a
-// version in the URL the browser (and the service worker) keep serving whatever they cached
-// first, so a library that once rendered blank stays blank until the cache ages out.
+// Covers are served `immutable`, but the art behind an id can change (a scan or an upload),
+// so the URL carries a version derived from updated_at.
 export function coverVersion(item) {
   const stamp = item?.updated_at || item?.cover_path || '';
   // Timestamps and filenames both reduce to a short, stable token.
@@ -25,8 +20,8 @@ export function coverUrl(item, { width, raw = false } = {}) {
   return `/api/media/cover/${item.id}?${params.toString()}`;
 }
 
-// A frame from the video itself (an episode's thumbnail). The server grabs it on first
-// request; when it can't, the image errors and the caller falls back to coverUrl().
+// A frame from the video itself. If the server can't grab one the image errors and the
+// caller falls back to coverUrl().
 export function stillUrl(item) {
   if (!item?.id) return '';
   const params = new URLSearchParams();

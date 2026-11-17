@@ -14,17 +14,12 @@ const router = express.Router();
 
 router.use(authenticateToken);
 
-// The shelf renders a card per item, and at library scale this response is the single
-// biggest thing the app moves. `i.*` dragged the long-form metadata (description, genres,
-// themes, artists, publisher, status, release_date) into every row — roughly half the
-// payload, none of it rendered on a card. Detail sheets and the metadata editor fetch the
-// full row from GET /items/:id, so nothing on screen loses a field.
+// Card fields only: the shelf is the biggest response; full rows come from GET /items/:id.
 const LIST_COLUMNS = `
   i.id, i.library_id, i.title, i.author, i.series, i.volume, i.path, i.cover_path,
   i.media_type, i.duration, i.total_pages, i.file_size, i.format, i.created_at, i.updated_at
 `;
 
-// List items with pagination, filtering, search, and visibility check
 router.get('/', handle(async (req, res) => {
   const { libraryId, mediaType, author, series, search, progress, genre, sort, addedWithinDays, limit = 5000, offset = 0 } = req.query;
   const userId = req.user.id;
@@ -74,8 +69,7 @@ router.get('/', handle(async (req, res) => {
     params.push(series);
   }
 
-  // Search reaches past the card fields into the long-form metadata too, so "time travel",
-  // a cast member, a genre or a publisher finds the title even when it isn't in its name.
+  // Search also covers long-form metadata (description, cast, genre, publisher).
   if (search) {
     const fields = ['i.title', 'i.author', 'i.series', 'i.description', 'i.genres', 'i.themes', 'i.artists', 'i.publisher', 'i.isbn'];
     query += ` AND (${fields.map((f) => `${f} LIKE ?`).join(' OR ')})`;
@@ -121,10 +115,8 @@ router.get('/', handle(async (req, res) => {
   res.json({ items });
 }));
 
-// Series are identified by name, but a name alone isn't unique: a manga and an anime both
-// called "Naruto", or the same title in two libraries, used to merge into one detail page
-// (and one mark-as-read). Callers pass ?library= and/or ?type= to pin down which one they
-// mean; without them the old name-only behaviour is kept for compatibility.
+// A series name isn't unique (a manga and an anime, or two libraries), so ?library= and/or
+// ?type= pin it down; without them it matches by name only.
 function seriesScope(query, alias = '') {
   const col = (name) => (alias ? `${alias}.${name}` : name);
   let sql = '';
@@ -239,7 +231,7 @@ router.get('/series', handle(async (req, res) => {
   res.json({ series: seriesList });
 }));
 
-// Single Series Details (all volumes, progress, metadata)
+// Series details: volumes, progress, metadata.
 router.get('/series/:name', handle(async (req, res) => {
   const userId = req.user.id;
   let seriesName = req.params.name;
@@ -278,8 +270,7 @@ router.get('/series/:name', handle(async (req, res) => {
         i.title ASC
     `, [userId, userId, seriesName, ...scope.params, userId]);
 
-  // Extras are listed on the page but aren't volumes/episodes: they don't count toward
-  // progress or "next up". A film's extras are fetched from its own page (/:id/extras).
+  // Extras don't count toward progress or "next up".
   const items = allRows.filter((i) => !i.extra_type);
   const extras = allRows.filter((i) => i.extra_type);
   if (items.length === 0) {
@@ -297,29 +288,22 @@ router.get('/series/:name', handle(async (req, res) => {
   const status = items.find(i => i.status)?.status || null;
   const releaseDate = items.find(i => i.release_date)?.release_date || null;
   const totalPages = items.reduce((sum, i) => sum + (i.total_pages || 0), 0);
-  // A read volume counts as read even if it was once skipped; skipped only applies to
-  // volumes not read.
+  // Read wins over skipped.
   const isSkipped = (i) => !i.is_finished && i.is_skipped;
   const readCount = items.filter(i => i.is_finished).length;
   const skippedCount = items.filter(isSkipped).length;
   const inProgressCount = items.filter(i => !i.is_finished && !isSkipped(i) && i.progress_percent > 0).length;
   const unreadCount = volumeCount - readCount - skippedCount - inProgressCount;
 
-  // Skipped volumes count as covered: someone who watched the anime up to volume 12 and
-  // read 13 is caught up, not 8% through.
+  // Skipped volumes count as covered.
   const totalProgressSum = items.reduce((sum, i) => sum + (i.is_finished || isSkipped(i) ? 100 : (i.progress_percent || 0)), 0);
   const overallProgress = volumeCount > 0 ? Math.round(totalProgressSum / volumeCount) : 0;
 
-  // Determine smart next volume to read, stepping over skipped volumes:
-  // 1. First in-progress volume
-  // 2. First unread volume
-  // 3. First volume in series
-  // A show's specials (season 0, stored as volume 0.xxx) sort first by number but are
-  // watched last: "Start Watching" begins at S1E1, not a behind-the-scenes special.
+  // Next up, skipping skipped volumes: first in progress, else first unread, else the first.
+  // Specials (season 0, volume 0.xxx) go last so "Start Watching" begins at S1E1.
   const isSpecial = (i) => ['show', 'anime'].includes(i.media_type) && i.volume != null && i.volume < 1;
   const watchOrder = [...items.filter((i) => !isSpecial(i)), ...items.filter(isSpecial)];
-  // Offloaded ones are history, not something to play, so "next up" only looks at what's
-  // on the server — and a title that's all offloaded has nothing to play at all.
+  // Offloaded volumes are history, so they're never "next up".
   const playable = watchOrder.filter((i) => !i.offloaded_at);
   const inProgressVol = playable.find(i => !i.is_finished && !isSkipped(i) && i.progress_percent > 0);
   const firstUnreadVol = playable.find(i => !i.is_finished && !isSkipped(i));
@@ -427,7 +411,7 @@ router.post('/series/:name/mark-unread', handle(async (req, res) => {
   res.json({ message: 'Marked all volumes as unread', count: items.length });
 }));
 
-// Group by Folders (Folder Hierarchy View)
+// Folder hierarchy view.
 router.get('/folders', handle(async (req, res) => {
   const userId = req.user.id;
   const db = await getDb();
@@ -444,7 +428,6 @@ router.get('/folders', handle(async (req, res) => {
       ORDER BY i.path ASC
     `, [userId]);
 
-  // Build folder tree
   const foldersMap = {};
   for (const item of items) {
     const dir = path.dirname(item.path);
@@ -466,7 +449,6 @@ router.get('/folders', handle(async (req, res) => {
   res.json({ folders: Object.values(foldersMap) });
 }));
 
-// List hidden items for user or admin
 router.get('/hidden', handle(async (req, res) => {
   const userId = req.user.id;
   const db = await getDb();
@@ -482,16 +464,14 @@ router.get('/hidden', handle(async (req, res) => {
   res.json({ hiddenItems: hidden });
 }));
 
-// Hide item (for current user, or globally if admin specifies global=true)
+// For the current user, or for everyone when an admin sends global=true.
 router.post('/:id/hide', handle(async (req, res) => {
   const userId = req.user.id;
   const itemId = req.params.id;
   const isGlobal = req.body.global === true && req.user.role === 'admin';
 
   const db = await getDb();
-  // Only something this account may see can be hidden (and so listed back under Hidden):
-  // not a title above its age limit or outside Kids Mode, and not one an admin has hidden
-  // from everyone, or hiding it and reading the list back would show what it is.
+  // Only titles this account may see, or the Hidden list would reveal restricted ones.
   const allowed = await db.get(`SELECT 1 FROM items i WHERE i.id = ?${knownSql(req.user, 'i')}`, [itemId]);
   if (!allowed) return res.status(404).json({ error: 'Item not found' });
   await db.run(
@@ -524,8 +504,7 @@ router.get('/:id/extras', handle(async (req, res) => {
     return res.status(400).json({ error: 'Invalid item id' });
   }
   const db = await getDb();
-  // Nothing for a film this account can't open: the same answer as for an id that isn't
-  // there. An offloaded film's page still opens (greyed), so its extras still list.
+  // Same answer as a missing id for a film this account can't open; offloaded ones still list.
   const film = await db.get(
     `SELECT i.id FROM items i WHERE i.id = ?
        AND NOT EXISTS (SELECT 1 FROM item_visibility v WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL))${accessSql(req.user, 'i', { includeOffloaded: true })}`,
@@ -575,9 +554,7 @@ router.get('/:id/collection', handle(async (req, res) => {
   res.json({ collection: await getFilmCollection(db, item, req.user) });
 }));
 
-// Embedded chapter markers (audiobooks, and any video with chapters). Probed on first
-// request and cached on the row alongside the file size it was read from, so replacing
-// the file re-probes rather than serving the old book's chapters.
+// Embedded chapters, probed once and cached with the file size so a replaced file re-probes.
 router.get('/:id/chapters', handle(async (req, res) => {
   if (!ITEM_ID_RE.test(req.params.id)) {
     return res.status(400).json({ error: 'Invalid item id' });
@@ -594,7 +571,7 @@ router.get('/:id/chapters', handle(async (req, res) => {
       return res.json({ chapters: cached.chapters });
     }
   } catch (e) {
-    // Corrupt cache — fall through and re-probe.
+    // Corrupt cache: re-probe.
   }
 
   const chapters = await probeChapters(item.path);

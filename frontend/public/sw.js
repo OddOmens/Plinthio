@@ -1,29 +1,17 @@
-// Plinthio service worker.
-//
-// The previous version registered, intercepted every request, and cached nothing — its only
-// fallback was `caches.match()` against a cache no code ever wrote to. So an installed PWA
-// with no connection showed the browser's offline page.
-//
-// Three caches, each with its own policy, because the content types could not be more
-// different:
-//
-//   shell    the built app (hashed /assets/* files and the HTML entry point) — cache-first,
-//            since a hashed filename's contents can never change
-//   images   covers and comic pages — cache-first with a cap, so a volume you've read stays
-//            readable on a plane
-//   (none)   API JSON, video and audio — always network. Progress, listings and streams
-//            must never be served stale.
+// Plinthio service worker. Caches:
+//   shell    built app (hashed /assets/* and the HTML entry) — cache-first
+//   images   covers and comic pages viewed — cache-first with a cap
+//   offline  explicit downloads
+// API JSON, video and audio always go to the network so they're never stale.
 
 const VERSION = 'v5';
 const SHELL_CACHE = `plinthio-shell-${VERSION}`;
 const IMAGE_CACHE = `plinthio-images-${VERSION}`;
-// Downloads the user explicitly asked for. Deliberately NOT versioned: a service worker
-// update must never throw away someone's offline library. Only the app removes entries
-// (per item, or all of them on sign-out).
+// Not versioned, so a worker update never throws away someone's downloads.
 const OFFLINE_CACHE = 'plinthio-offline';
 const CURRENT_CACHES = new Set([SHELL_CACHE, IMAGE_CACHE, OFFLINE_CACHE]);
 
-// Roughly a couple of comic volumes' worth of pages. Entries are evicted oldest-first.
+// Roughly a couple of comic volumes' worth of pages.
 const MAX_IMAGE_ENTRIES = 600;
 
 const SHELL_URLS = ['/', '/manifest.json', '/icons/icon.svg', '/icons/logo.svg'];
@@ -48,8 +36,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Caches are unordered maps, but keys() returns insertion order — so the first keys are the
-// oldest entries and trimming from the front is a serviceable LRU.
+// keys() returns insertion order, so trimming from the front drops the oldest entries.
 async function trimCache(cacheName, maxEntries) {
   const cache = await caches.open(cacheName);
   const keys = await cache.keys();
@@ -58,16 +45,13 @@ async function trimCache(cacheName, maxEntries) {
 }
 
 function isImageEndpoint(url) {
-  // Covers, episode stills and single comic pages: content-addressed by item id and page
-  // index, and served with a long max-age already, so they're safe to keep.
+  // Content-addressed by item id and page index, so safe to keep.
   return /\/api\/media\/(cover|still)\//.test(url.pathname) ||
     /\/api\/media\/manga\/[^/]+\/page\//.test(url.pathname);
 }
 
-// ─── Offline downloads ───────────────────────────────────────────────────────
-// Media URLs carry a per-session ?token=; the offline cache is keyed without it (plus the
-// cover's w/v params), so a download made under one session still plays under the next.
-// The page (src/stores/downloads.js) writes entries under the same keys.
+// Cache key without the per-session ?token= (keeping w/v), so a download made under one
+// session still plays under the next. src/stores/downloads.js writes the same keys.
 function offlineKey(url) {
   const keep = new URLSearchParams();
   for (const name of ['w', 'v']) {
@@ -81,8 +65,7 @@ function isDownloadableMedia(url) {
   return /^\/api\/media\/(book\/[^/]+\/file|stream\/[^/]+|manga\/[^/]+\/page\/\d+|cover\/[^/]+)$/.test(url.pathname);
 }
 
-// JSON the readers fetch on open. Always tried on the network first (it can change); the
-// downloaded copy is only a fallback for when there is no network.
+// JSON the readers fetch on open: network first, the downloaded copy only when offline.
 function isOfflineJson(url) {
   return /^\/api\/(media\/manga\/[^/]+\/pages|items\/[^/]+\/chapters|series\/[^/]+\/[^/]+\/settings|bookmarks\/[^/]+|highlights\/[^/]+)$/.test(url.pathname);
 }
@@ -117,11 +100,8 @@ async function rangeResponse(cached, rangeHeader) {
   });
 }
 
-// Which downloadable keys are actually downloaded. Kept in memory so the fetch handler can
-// decide *synchronously* to leave a non-downloaded audio/book request alone entirely —
-// routing ordinary streaming through the worker buys nothing and some browsers handle
-// media range requests through a service worker poorly. Rebuilt on startup and whenever
-// the page reports a change.
+// Keys actually downloaded, kept in memory so the fetch handler can decide synchronously to
+// leave ordinary streaming alone (some browsers handle range requests through a worker poorly).
 let offlineIndex = null;
 function rebuildOfflineIndex() {
   return caches.open(OFFLINE_CACHE)
@@ -153,12 +133,9 @@ async function cacheFirst(request, cacheName, { trim = 0 } = {}) {
   return response;
 }
 
-// Covers and single comic pages the user merely viewed (not downloaded): cache-first with a
-// size cap, keyed without the per-session token.
+// Viewed (not downloaded) images. The key drops the session token but keeps `v`, which
+// tells a stale placeholder from the poster that replaced it.
 async function imageCacheFirst(request, url) {
-  // Drop the per-session token from the cache key (it would fragment the cache for no
-  // benefit — the bytes are identical either way) but KEEP the `v` version parameter:
-  // that's what distinguishes a stale placeholder from the poster that replaced it.
   const key = new Request(offlineKey(url), { headers: request.headers });
   const cache = await caches.open(IMAGE_CACHE);
   const hit = await cache.match(key);
@@ -178,8 +155,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Navigations: network first so a deployed update is picked up immediately, falling back
-  // to the cached shell when offline. Vue Router handles the path from there.
+  // Network first so a deployed update is picked up immediately; cached shell when offline.
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).catch(async () => {
@@ -191,8 +167,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (isDownloadableMedia(url)) {
-    // Known not to be downloaded, and not an image the viewing cache handles: straight to
-    // the network without the worker in the way.
+    // Not downloaded and not a cached image type: let the browser handle it directly.
     if (!isImageEndpoint(url) && offlineIndex && !offlineIndex.has(offlineKey(url))) return;
     const rangeHeader = request.headers.get('range');
     event.respondWith((async () => {
@@ -217,13 +192,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Everything else — API JSON, video and audio streams — goes straight to the network.
-  // Range requests in particular must never be answered from a cache.
+  // Everything else goes to the network; range requests must never come from a cache.
 });
 
-// Covers and pages are cached by path with the auth token stripped, which is right for one
-// person's browser but wrong across a sign-out: the next account to use this browser must
-// not be served art for items it may not be allowed to see. The app posts this on logout.
+// Cached art is keyed without the token, so it's cleared on sign-out: the next account must
+// not see art for items it may not be allowed to see.
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'offline-changed') {
     event.waitUntil(rebuildOfflineIndex());

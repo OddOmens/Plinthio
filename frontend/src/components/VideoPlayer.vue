@@ -5,7 +5,7 @@
     @touchstart="revealControls"
     @touchmove="revealControls"
   >
-    <!-- Top bar — auto-hides during playback, like a normal video app -->
+    <!-- Top bar, auto-hides during playback -->
     <header
       :class="[
         'absolute top-0 inset-x-0 z-20 transition-opacity duration-300 bg-gradient-to-b from-black/85 to-transparent pt-safe pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-8 flex items-start gap-3',
@@ -131,9 +131,8 @@
       {{ activeMarker.type === 'intro' ? $t('player.video.skipIntro') : $t('player.video.skipCredits') }}
     </button>
 
-    <!-- Touch: skip buttons either side of the native controls' play button. Not while the
-         stream is still preparing: there's nothing to skip yet, and on a phone they sat on
-         top of the "Converting for your browser…" message. -->
+    <!-- Touch: skip buttons either side of the native play button. Hidden while the stream is
+         preparing, when there's nothing to skip and they'd cover the status message. -->
     <template v-if="!useCustomScrubber && !locked && modeResolved && !errorMessage && !nextEpisode && !preparing">
       <button
         v-for="dir in ['back', 'forward']"
@@ -164,10 +163,8 @@
       :season-rest="seasonRest"
     />
 
-    <!-- Native controls give us fullscreen, PiP, AirPlay, captions and scrubbing for free,
-         and behave correctly on iOS where custom controls often don't — so they stay on
-         touch devices. On a mouse, they're swapped for the custom bar below, which is the
-         only way to show a scrub preview (the native scrubber's geometry isn't addressable). -->
+    <!-- Native controls on touch devices (fullscreen, PiP, AirPlay, captions; reliable on iOS).
+         On a mouse the custom bar below replaces them: the only way to show a scrub preview. -->
     <video
       ref="videoEl"
       class="w-full h-full bg-black"
@@ -410,9 +407,8 @@ const showResumeToast = ref(false);
 const errorMessage = ref('');
 const errorCode = ref('');
 
-// 'direct' plays the file as-is with native range seeking. 'remux'/'transcode' go out as HLS
-// (see services/hls.js on the backend) — segmented, so the video element seeks normally
-// instead of needing a custom restart-the-encode scrubber.
+// 'direct' plays the file as-is with range seeking. 'remux'/'transcode' go out as segmented
+// HLS (backend services/hls.js), so seeking works normally.
 const playbackMode = ref('direct');
 const totalDuration = ref(0);
 const preparing = ref(true);
@@ -451,7 +447,6 @@ const previewLeft = ref(0);
 const previewTime = ref(0);
 const isPlaying = ref(false);
 
-// Native controls stay on touch devices, where they behave far better than anything custom.
 const useCustomScrubber = window.matchMedia?.('(pointer: fine)').matches ?? true;
 
 const isClientHevcSupported = () => {
@@ -460,9 +455,8 @@ const isClientHevcSupported = () => {
      MediaSource.isTypeSupported('video/mp4; codecs="hev1.1.6.L93.B0"'));
 };
 
-// A browser that says it can't play AV1 (Safari on Apple devices without a hardware decoder)
-// tells the server which video codecs it does play, so the server converts AV1 for it
-// instead of sending it untouched. Browsers that play AV1 send nothing and are treated as before.
+// A browser that can't play AV1 (e.g. Safari without a hardware decoder) sends the codecs it
+// does play, so the server converts AV1 for it. Browsers that play AV1 send nothing.
 const clientVideoCodecs = () => {
   if (document.createElement('video').canPlayType('video/mp4; codecs="av01.0.05M.08"')) return null;
   return ['h264', 'vp8', 'vp9', ...(isClientHevcSupported() ? ['hevc'] : [])].join(',');
@@ -600,8 +594,7 @@ async function setSkip(dir, seconds) {
 }
 
 // ── Pause screen ────────────────────────────────────────────────────────────────────────
-// After a few idle seconds paused, the pause screen (see PauseScreen.vue)
-// fades in; any movement, touch or key hides it again.
+// After a few idle seconds paused, PauseScreen fades in; any movement, touch or key hides it.
 const customizationStore = useCustomizationStore();
 const PAUSE_IDLE_MS = 2500;
 const pauseMode = computed(() => customizationStore.effectivePauseScreen(authStore.user));
@@ -792,9 +785,8 @@ function attachStream() {
       // means scrubbing forward never hits a gap even mid-encode.
       maxBufferLength: 60,
       maxMaxBufferLength: 120
-      // No Authorization header: `token` is the media token, which the server only accepts
-      // in the URL (a media token in a header is refused with 401). The master playlist URL
-      // carries ?token= and the server writes it into every variant and segment URL.
+      // No Authorization header: the server only accepts a media token in the URL, and writes
+      // ?token= into every variant and segment URL.
     });
     hls.on(Hls.Events.ERROR, (_event, data) => {
       if (!data.fatal) return;
@@ -874,8 +866,7 @@ function onTimeUpdate() {
   }
 }
 
-// HLS is segmented, so seeking (in either mode) is a normal currentTime jump — no more
-// restarting the encode from a new offset.
+// HLS is segmented, so seeking in either mode is a normal currentTime jump.
 function seekTo(seconds) {
   if (locked.value) return;
   const target = Math.max(0, Math.min(seconds, totalDuration.value || seconds));
@@ -958,10 +949,8 @@ function cancelNextEpisode() {
 }
 
 // ── Playback failures ────────────────────────────────────────────────────────────────────
-// A <video> element or hls.js only reports "it failed", never why. The server does know —
-// every error response carries a Plinthio error code (P### — see Docs → Error codes) — so
-// a failure re-requests the URL that failed and shows the server's own message and code.
-// Client-side failures use the app codes P350–P352.
+// <video> and hls.js only report that something failed, so the failed URL is re-requested to
+// show the server's own message and P### code. Client-side failures use P350–P352.
 
 const CLIENT_ERRORS = {
   P350: () => t('player.video.errors.P350'),
@@ -1084,9 +1073,7 @@ function retryPlayback() {
 
 async function start() {
   try {
-    // Probe whether this browser can decode HEVC. MediaSource.isTypeSupported is synchronous
-    // and reliable: Vivaldi/Chrome ≥107, Edge, and Safari all return true; Firefox returns
-    // false. The result is sent to the server so HEVC files can direct-play without transcoding.
+    // Tell the server whether this browser decodes HEVC, so HEVC files can direct-play.
     const clientHevc = (
       typeof MediaSource !== 'undefined' &&
       (MediaSource.isTypeSupported('video/mp4; codecs="hvc1.1.6.L93.B0"') ||

@@ -1,7 +1,5 @@
-// A viewer's own Live TV bits, shared by the channel list, the guide, the player and the
-// Home row: favourites (on the server, one row per channel), channels hidden "for me" (in
-// the account's preferences, so every device follows), the channels watched this session
-// (for the player's Last channel button) and the tab last open in Live TV (this device only).
+// A viewer's own Live TV state: favourites (server), channels hidden for me (account
+// preferences), channels watched this session, and the last tab open (this device).
 import { defineStore } from 'pinia';
 import api from '../api/client';
 import { useAuthStore } from './auth';
@@ -9,7 +7,7 @@ import { useAuthStore } from './auth';
 const HISTORY_KEY = 'plinthio_live_history';
 const TAB_KEY = 'plinthio_live_tab';
 const HISTORY_MAX = 20;
-// A channel counts as watched once it has played this long — flicking past it doesn't.
+// Played this long before it counts as watched, so flicking past doesn't.
 const WATCHED_AFTER_MS = 5000;
 
 function readSession(key, fallback) {
@@ -29,15 +27,13 @@ let watchedTimer = null;
 
 export const useLiveStore = defineStore('live', {
   state: () => ({
-    // channel id → true/false, for what this session learned or changed. Lists carry each
-    // channel's `favourite` too; this map wins so a star toggled anywhere shows everywhere.
+    // channel id → bool; overrides each list's `favourite` so a toggle shows everywhere.
     favourites: {},
     favouritesFor: null,
     // Channel ids played this session, newest last, and whose they are.
     history: readSession(HISTORY_KEY, { user: null, ids: [] }).ids || [],
     historyFor: readSession(HISTORY_KEY, { user: null }).user || null,
-    // Bumped when favourites, personal hiding or the watched list change, so open lists
-    // know to ask again.
+    // Bumped on any change so open lists refetch.
     revision: 0
   }),
 
@@ -70,7 +66,7 @@ export const useLiveStore = defineStore('live', {
   },
 
   actions: {
-    // Favourites are per account: forget what we knew when someone else signs in.
+    // Favourites are per account: reset when someone else signs in.
     ensureUser() {
       const id = useAuthStore().user?.id || null;
       if (this.favouritesFor !== id) {
@@ -85,7 +81,6 @@ export const useLiveStore = defineStore('live', {
       return channel.id in known ? known[channel.id] : !!channel.favourite;
     },
 
-    // Learns the favourite flags a fresh list brought (the server is the truth).
     learn(channels) {
       this.ensureUser();
       for (const ch of channels || []) {
@@ -119,8 +114,7 @@ export const useLiveStore = defineStore('live', {
       return Array.isArray(channel.groups) && channel.groups.some((g) => hiddenGroups.includes(g));
     },
 
-    // Saves the account's liveTv preferences: the whole object, merged here, as the
-    // server merges only top-level keys. Reverts on failure.
+    // Sends the whole liveTv object: the server merges only top-level keys. Reverts on failure.
     async savePrefs(changes) {
       const authStore = useAuthStore();
       if (!authStore.user) return;
@@ -168,9 +162,7 @@ export const useLiveStore = defineStore('live', {
     },
 
     // ── Watching ──────────────────────────────────────────────────────────────────────
-    // Called when a channel starts playing. It joins this session's history at once, and
-    // the server's Recent list once it has played a few seconds (flicking through doesn't
-    // count). Switching away before then cancels it.
+    // Joins session history at once; reported to the server's Recent list after WATCHED_AFTER_MS.
     playing(id) {
       if (!id) return;
       const user = useAuthStore().user?.id || null;

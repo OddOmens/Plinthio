@@ -4,7 +4,6 @@
       v-click-outside="close"
       class="bg-card border border-border rounded-xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col transition-all my-auto max-h-[calc(100dvh-2rem)]"
     >
-      <!-- Header -->
       <div class="px-5 py-4 border-b border-border flex items-center justify-between">
         <div class="min-w-0 pr-2">
           <h3 class="text-sm font-semibold text-foreground truncate">{{ $t('shelf.folderModal.title') }}</h3>
@@ -78,7 +77,6 @@
         </div>
       </div>
 
-      <!-- Footer -->
       <div class="px-5 py-3 border-t border-border bg-muted/20 flex justify-end">
         <button
           type="button"

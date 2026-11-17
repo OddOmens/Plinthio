@@ -87,7 +87,6 @@ describe('/api/customization user customization rules & server defaults', () => 
       pauseScreen: true
     });
 
-    // Public GET also reflects the updated rules
     const getRes = await fetch(`${server.baseUrl}/api/customization`);
     const publicBody = await getRes.json();
     assert.equal(publicBody.pageWidth, 'contained');

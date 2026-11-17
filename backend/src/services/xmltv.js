@@ -1,9 +1,8 @@
 import { StringDecoder } from 'string_decoder';
 import sax from 'sax';
 
-// XMLTV programme guides. A country's guide runs to tens of megabytes (hundreds once
-// unzipped), so it's parsed as it downloads and never held whole: programmes are handed to
-// `onBatch` a few hundred at a time, and the download waits while each batch is written.
+// Streaming XMLTV parser: guides can be hundreds of MB, so programmes go to `onBatch` in
+// batches and the download waits while each is written.
 //
 //   <programme start="20261022140000 +0000" stop="20261022150000 +0000" channel="News.us@SD">
 //     <title lang="en">Evening News</title><sub-title>…</sub-title><desc>…</desc><category>News</category>
@@ -25,14 +24,11 @@ const MAX_FIELD = { title: 300, subtitle: 300, description: 2000, category: 100 
 const BATCH = 500;
 
 /**
- * Reads an XMLTV stream (text or bytes, already decompressed).
- *
- *   onChannel(id)       → optional; called for each <channel id="…"> (they come first)
- *   targets(channelId)  → the tvg ids a guide channel's programmes belong to ([] to skip it)
- *   from, to            → only programmes overlapping this window (epoch ms) are kept
- *   onBatch(programmes) → async; receives [{ tvgId, start, stop, title, subtitle, description, category }]
- *
- * Resolves with the number of programmes passed on.
+ * `stream` is decompressed text or bytes. Resolves with the number of programmes passed on.
+ *   onChannel(id)       → optional; each <channel id> (they come first)
+ *   targets(channelId)  → tvg ids the programmes belong to ([] to skip)
+ *   from, to            → keep programmes overlapping this window (epoch ms)
+ *   onBatch(programmes) → async; [{ tvgId, start, stop, title, subtitle, description, category }]
  */
 export async function parseXmltv(stream, { onChannel, targets, from, to, onBatch }) {
   const parser = sax.parser(false, { lowercase: true, trim: false, normalize: false });
@@ -110,7 +106,7 @@ export async function parseXmltv(stream, { onChannel, targets, from, to, onBatch
     }
   };
 
-  // Real-world guides have stray ampersands and unknown entities; carry on past them.
+  // Tolerate stray ampersands and unknown entities.
   parser.onerror = () => {
     parser.error = null;
     parser.resume();

@@ -10,13 +10,10 @@ import { logger } from './logger.js';
 
 const SUBTITLE_EXTENSIONS = ['.srt', '.vtt', '.ass', '.ssa'];
 
-// The video files the scanner catalogues (services/scanner.js uses this list). Kept here,
-// in a module with few imports, so both can share it without loading the scanner.
+// Shared with the scanner; lives here to avoid importing the scanner.
 export const VIDEO_EXTS = new Set(['.mp4', '.mkv', '.webm', '.avi', '.mov']);
 
-// Plex/Jellyfin convention: subtitles sit next to the video, named after it, with an
-// optional language (and sometimes "forced"/"sdh") between the name and the extension —
-// e.g. "The Movie.en.srt", "The Movie.en.forced.srt".
+// Sidecars are named after the video with optional qualifiers: "The Movie.en.forced.srt".
 function parseSidecarName(videoBase, filename) {
   const ext = path.extname(filename).toLowerCase();
   if (!SUBTITLE_EXTENSIONS.includes(ext)) return null;
@@ -32,12 +29,8 @@ function parseSidecarName(videoBase, filename) {
 }
 
 /**
- * Subtitle files sitting alongside the video file. These are listed fresh rather than cached
- * in the database so dropping a new .srt next to a movie works without a rescan.
- *
- * A sidecar that is a symlink to somewhere outside the library folders is left out, the
- * same as the scanner does for media files (utils/libraryPath.js): `Movie.en.srt ->
- * /config/…` would otherwise be read out to anyone who can play the film.
+ * Listed fresh (no rescan needed for new .srt files). Symlinks outside library roots are
+ * skipped so they can't expose other server files.
  */
 export async function findSidecarSubtitles(videoPath) {
   const dir = path.dirname(videoPath);
@@ -50,10 +43,8 @@ export async function findSidecarSubtitles(videoPath) {
     return [];
   }
 
-  // A subtitle file belongs to the video with the longest matching name: beside "Film.mkv",
-  // "Film.Unrated.en.srt" is "Film.Unrated.mkv"'s, not an "Unrated" track of "Film". Otherwise
-  // hiding or age-limiting one title would still serve its subtitles through the other.
-  // Decided from the folder, not the catalogue, so a video not scanned yet still counts.
+  // A sidecar belongs to the longest matching video name ("Film.Unrated.en.srt" is
+  // Film.Unrated.mkv's, not Film.mkv's), so hidden titles don't leak subtitles via a sibling.
   const longerBases = files
     .filter((f) => VIDEO_EXTS.has(path.extname(f).toLowerCase()))
     .map((f) => path.basename(f, path.extname(f)))
@@ -85,11 +76,7 @@ export async function findSidecarSubtitles(videoPath) {
   return found;
 }
 
-/**
- * Every subtitle track the player can offer: text-based tracks muxed into the file, plus
- * sidecar files. Embedded bitmap subtitles (DVD/Blu-ray VOBSUB/PGS) are left out — they're
- * images, and there's no way to turn them into WebVTT without burning them into the video.
- */
+/** Embedded text tracks plus sidecars. Bitmap subtitles (VOBSUB/PGS) can't become WebVTT. */
 export async function listSubtitleTracks(playbackInfo, videoPath) {
   const embedded = (playbackInfo.subtitleTracks || [])
     .filter((track) => track.isTextBased)
@@ -115,8 +102,7 @@ export async function listSubtitleTracks(playbackInfo, videoPath) {
 }
 
 function srtToVtt(text) {
-  // WebVTT is SRT with a header and '.' replaced by ',' in timestamps. Cue numbers are
-  // valid in both, so they're left alone.
+  // WebVTT = SRT plus a header, with '.' instead of ',' in timestamps.
   const converted = text
     .replace(/^﻿/, '')
     .replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
@@ -124,24 +110,17 @@ function srtToVtt(text) {
 }
 
 // ─── ffmpeg conversions ──────────────────────────────────────────────────────
-// Pulling a subtitle track out of a film makes ffmpeg read the whole file, so it's treated
-// as the expensive thing it is:
-//   • the result is kept on disk, keyed on the file's path, size and modified time, so each
-//     track is extracted once (and again only if the file changes);
-//   • requests for a track that's already being extracted wait on that one run;
-//   • at most MAX_CONCURRENT run at a time, with a short queue behind them — past that the
-//     player is told to try again shortly rather than piling up ffmpeg processes;
-//   • a run is stopped when everyone waiting for it has gone, when it takes too long, or
-//     when it produces more text than any real subtitle track holds.
+// Extraction reads the whole file, so results are cached on disk (path/size/mtime), concurrent
+// requests share one run, runs are capped with a short queue, and a run is killed when all
+// waiters leave, it times out, or the output is too large.
 const SUBTITLE_CACHE_DIR = path.join(config.cacheDir, 'subtitles');
 const SUBTITLE_CACHE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const MAX_CONCURRENT = 2;
 const MAX_QUEUED = 8;
-// Generous: a 60 GB remux on a slow network share takes minutes to read end to end.
+// Generous: large remuxes on network shares take minutes to read.
 const EXTRACT_TIMEOUT_MS = 10 * 60 * 1000;
 const MAX_VTT_BYTES = 8 * 1024 * 1024;
-// Sidecar files are read into memory whole. Real ones are well under a megabyte; a heavily
-// typeset .ass can reach a few.
+// Sidecars are read whole into memory.
 export const MAX_SIDECAR_BYTES = 8 * 1024 * 1024;
 
 const conversions = new Map(); // cache file -> { promise, waiters, cancel }
@@ -216,12 +195,11 @@ function runFfmpegToVtt(args, conversion) {
   });
 }
 
-// One shared, queued, cached ffmpeg run per cache file. `signal` is the caller's way of
-// saying it has stopped waiting (its HTTP request closed).
+// `signal` aborts when the caller stops waiting (request closed).
 async function convertCached(cacheFile, args, signal) {
   try {
     const cachedVtt = fs.readFileSync(cacheFile, 'utf8');
-    // Touched so the age sweep keeps tracks that are still being watched.
+    // Touch for the age sweep.
     try { fs.utimesSync(cacheFile, new Date(), new Date()); } catch (e) { /* read-only cache */ }
     return cachedVtt;
   } catch (e) {
@@ -255,7 +233,7 @@ async function convertCached(cacheFile, args, signal) {
     }).finally(() => {
       if (conversions.get(cacheFile) === conversion) conversions.delete(cacheFile);
     });
-    // Nobody may be left listening by the time it fails (everyone disconnected).
+    // Avoid unhandled rejection if every waiter has left.
     conversion.promise.catch(() => {});
     conversions.set(cacheFile, conversion);
     queue.push(task);
@@ -269,7 +247,7 @@ async function convertCached(cacheFile, args, signal) {
     released = true;
     conversion.waiters--;
     if (conversion.waiters > 0) return;
-    // The last one waiting has gone: stop the work, whether it's running or still queued.
+    // Last waiter gone: cancel, whether running or queued.
     conversion.cancelled = true;
     if (conversions.get(cacheFile) === conversion) conversions.delete(cacheFile);
     const queuedAt = queue.findIndex((task) => task.conversion === conversion);
@@ -286,7 +264,7 @@ async function convertCached(cacheFile, args, signal) {
     return await conversion.promise;
   } finally {
     signal?.removeEventListener('abort', release);
-    // A finished run has nothing left to stop; this only keeps the count honest.
+    // Just keeps the waiter count accurate.
     if (!released) { released = true; conversion.waiters--; }
   }
 }
@@ -300,10 +278,7 @@ function readSidecar(track) {
 }
 
 /**
- * Returns one subtitle track as WebVTT, which is the only format a <track> element accepts.
- * Embedded tracks and ASS/SSA sidecars are converted by ffmpeg (once — see above); .srt and
- * .vtt sidecars are converted in place or passed through.
- *
+ * One track as WebVTT (the only format <track> accepts). Embedded and ASS/SSA go through ffmpeg.
  * @param {{ signal?: AbortSignal }} [opts] - aborted when the caller stops waiting
  */
 export async function getSubtitleVtt(playbackInfo, videoPath, trackId, opts = {}) {
@@ -332,13 +307,11 @@ export async function getSubtitleVtt(playbackInfo, videoPath, trackId, opts = {}
     const { stat, text } = readSidecar(track);
     if (track.format === 'vtt') return text;
     if (track.format === 'srt') return srtToVtt(text);
-    // ASS/SSA carry styling and positioning that a naive text swap would mangle, so ffmpeg
-    // does the conversion.
+    // ASS/SSA styling needs a real conversion.
     return convertCached(cacheFileFor(track.path, stat, 'sidecar'), [
       '-hide_banner', '-loglevel', 'error',
       ...localInputArgs(),
-      // Stated rather than detected, so a file that only claims to be subtitles can't be
-      // opened as some other format.
+      // Forced format, so the file can't be opened as something else.
       '-f', 'ass',
       '-i', track.path,
       '-f', 'webvtt',
@@ -349,7 +322,7 @@ export async function getSubtitleVtt(playbackInfo, videoPath, trackId, opts = {}
   return null;
 }
 
-// Extracted tracks nobody has asked for in a month are dropped; they're cheap to remake.
+// Drops extracted tracks unused for a month.
 export function sweepSubtitleCache(maxAgeMs = SUBTITLE_CACHE_MAX_AGE_MS) {
   let files;
   try {

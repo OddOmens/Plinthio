@@ -14,8 +14,8 @@ fi
 # SETUID, SETGID); a new step here that needs another one has to add it there too.
 mkdir -p /config/cache /config/covers
 
-# Only files not already owned by PUID:PGID — a blanket `chown -R` walked every cached
-# thumbnail and video segment on every start, which on a big library slowed each boot.
+# Only files not already owned by PUID:PGID: a blanket `chown -R` would walk every cached
+# thumbnail and video segment on each start, slowing boot on a big library.
 find /config \( ! -user "$PUID" -o ! -group "$PGID" \) -exec chown -h "$PUID:$PGID" {} + 2>/dev/null || true
 
 exec gosu "$PUID:$PGID" "$@"

@@ -22,16 +22,14 @@ function clip(value, max) {
   return String(value).slice(0, max);
 }
 
-// Short one-line fields (title, author...) have no use for control characters; a line
-// break in a title would otherwise reach the server log and the review queue as is.
+// One-line fields: control characters would reach the server log and review queue as is.
 function clipLine(value, max) {
   const text = clip(value, max);
   if (text === null) return null;
   return text.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]+/g, ' ').trim() || null;
 }
 
-// Requests are listed newest-first. Everyone sees their own; admins and editors can pass
-// scope=all to see every user's requests (the review queue).
+// Newest first. Own requests; admins and editors can pass scope=all for the review queue.
 router.get('/', handle(async (req, res) => {
   const { status, scope } = req.query;
   const all = scope === 'all';
@@ -67,7 +65,7 @@ router.get('/', handle(async (req, res) => {
   res.json({ requests });
 }));
 
-// How many requests are waiting on an admin/editor — drives the badge in the user menu.
+// Pending count for the user menu badge.
 router.get('/pending-count', requireEditor, handle(async (req, res) => {
   const db = await getDb();
   const row = await db.get("SELECT COUNT(*) AS count FROM media_requests WHERE status = 'pending'");
@@ -91,9 +89,7 @@ router.post('/', handle(async (req, res) => {
 
   const db = await getDb();
 
-  // One open request per title across all users — a second person asking for the same
-  // thing gets told it's already on the queue rather than piling up duplicates. A
-  // rejected title can be asked for again.
+  // One open request per title across all users; a rejected title can be asked for again.
   const existing = await db.get(`
       SELECT id, status, user_id FROM media_requests
       WHERE source = ? AND external_id = ? AND status != 'rejected'
@@ -122,8 +118,7 @@ router.post('/', handle(async (req, res) => {
   res.status(201).json({ message: 'Request sent', request });
 }));
 
-// Admins and editors move a request through its states and can leave a note for the
-// requester (e.g. why it was rejected).
+// Admins and editors change a request's state and can leave the requester a note.
 router.patch('/:id', requireEditor, handle(async (req, res) => {
   const { status } = req.body;
   if (!STATUSES.includes(status)) {
@@ -154,8 +149,7 @@ router.patch('/:id', requireEditor, handle(async (req, res) => {
   res.json({ message: 'Request updated', request: updated });
 }));
 
-// Requesters can withdraw their own request while it's still pending; admins and editors
-// can delete any request.
+// Requesters withdraw their own pending request; admins and editors can delete any.
 router.delete('/:id', handle(async (req, res) => {
   const db = await getDb();
   const request = await db.get('SELECT id, user_id, status FROM media_requests WHERE id = ?', [req.params.id]);

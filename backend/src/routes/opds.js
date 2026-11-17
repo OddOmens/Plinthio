@@ -10,12 +10,8 @@ const router = express.Router();
 const COMIC_MEDIA_TYPES = ['manga', 'book'];
 const PAGED_FORMATS = new Set(['cbz', 'cbr', 'cb7', 'zip', 'rar', '7z', 'pdf']);
 
-/**
- * OPDS readers (Chunky, Panels, Moon+ Reader, KyBook…) authenticate with HTTP Basic, which
- * authenticateToken accepts using an API key as the password. The only extra piece needed
- * here is the WWW-Authenticate challenge, without which a reader never prompts for
- * credentials — it just shows an error.
- */
+// OPDS readers use HTTP Basic with an API key as password; without the WWW-Authenticate
+// challenge they never prompt for credentials.
 router.use((req, res, next) => {
   if (!req.headers.authorization && !req.headers['x-api-key']) {
     res.setHeader('WWW-Authenticate', 'Basic realm="Plinthio OPDS"');
@@ -65,9 +61,7 @@ function navigationEntry({ id, title, href, summary }) {
 router.get('/', async (req, res) => {
   try {
     const db = await getDb();
-    // Only libraries holding something this account can see, with the same rule as the
-    // per-library feed, so a Kids Mode or age-limited account isn't shown the names of
-    // libraries it may see nothing in.
+    // Only libraries with something this account can see, so names of hidden ones don't leak.
     const libraries = await db.all(
       `SELECT l.id, l.name
        FROM libraries l
@@ -232,11 +226,8 @@ router.get('/readlists/:id', async (req, res) => {
   }
 });
 
-/**
- * An acquisition entry is one readable item. Comics also advertise an OPDS-PSE stream link,
- * which is how page-streaming readers fetch individual pages instead of downloading the
- * whole archive up front — it points at the same page route the web reader uses.
- */
+// One readable item. Paged items also get an OPDS-PSE stream link (the web reader's page route)
+// so readers can fetch single pages instead of the whole archive.
 function acquisitionEntry(req, item) {
   if (!ITEM_ID_RE.test(item.id)) return '';
 
@@ -249,11 +240,9 @@ function acquisitionEntry(req, item) {
 
   links.push(`    <link rel="http://opds-spec.org/acquisition" href="${escapeXml(mediaUrl(req, `/book/${item.id}/file`))}" type="${escapeXml(mimeForFormat(item.format))}"/>`);
 
-  // Page streaming for anything read page by page: manga, comics shelved as books, and PDFs
-  // (their pages are rendered to images on the server, see services/pdf.js).
+  // Manga, comics shelved as books, and PDFs (rendered server-side, services/pdf.js).
   if (item.total_pages > 0 && (item.media_type === 'manga' || PAGED_FORMATS.has(String(item.format).toLowerCase()))) {
-    // {pageNumber} is substituted by the reader. Plinthio's page route is zero-indexed,
-    // while OPDS-PSE counts from zero too, so the value passes through unchanged.
+    // The reader fills in {pageNumber}; both OPDS-PSE and the page route count from zero.
     links.push(`    <link rel="http://vaemendis.net/opds-pse/stream" href="${escapeXml(mediaUrl(req, `/manga/${item.id}/page/{pageNumber}`))}" type="image/jpeg" pse:count="${item.total_pages}"/>`);
   }
 
@@ -267,8 +256,7 @@ ${catalogueFields(item)}${links.join('\n')}
   </entry>`;
 }
 
-// The Dublin Core lines OPDS readers show on a book's details page: publisher, date,
-// language, ISBN, and its subjects as categories.
+// Dublin Core fields readers show on a book's details page; subjects become categories.
 function catalogueFields(item) {
   const lines = [];
   if (item.publisher) lines.push(`<dc:publisher>${escapeXml(item.publisher)}</dc:publisher>`);

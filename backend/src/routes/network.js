@@ -24,17 +24,13 @@ async function report(req, db) {
       tailscaleIsHome: settings.tailscaleIsHome,
       require2faOutside: settings.require2faOutside
     },
-    // Where the device looking at this page is connecting from: open it on a phone on mobile
-    // data to check outside access does what you expect.
-    // untrustedProxy: this device shows as outside because it came through a reverse proxy
-    // that TRUST_PROXY doesn't cover, not because of its address.
+    // Where this device connects from (open it on mobile data to test outside access).
+    // untrustedProxy: outside only because it came through a proxy TRUST_PROXY doesn't cover.
     thisDevice: { where: loc.where, away: loc.away, ip: loc.ip, untrustedProxy: loc.untrustedProxy },
     trustProxy: config.trustProxy !== false,
-    // { at, from }: the latest request with forwarding headers from a home or loopback address
-    // that TRUST_PROXY doesn't cover (it's unset, or names another address), within the last
-    // day. It can be the admin's own proxy or any device on the network sending the headers
-    // itself, so the page shows it as something to check, not as the address to trust.
-    // trustProxy above tells the page which case to describe (unset, or set but not covering).
+    // { at, from }: latest request in the past day with forwarding headers from a home or
+    // loopback address TRUST_PROXY doesn't cover. Could be any device, so it's shown as
+    // something to check, not an address to trust.
     proxyWithoutTrust: proxyWarning(),
     accounts: {
       total: accounts.length,
@@ -58,17 +54,15 @@ router.patch('/', handle(async (req, res) => {
     if (value !== undefined && typeof value !== 'boolean') return res.status(400).json({ error: `${name} must be true or false` });
   }
   const db = await getDb();
-  // Don't let an admin shut themselves out: turning outside access off (or making
-  // Tailscale count as outside) from a device that would then be outside.
+  // Don't let an admin lock themselves out by turning off outside access from outside.
   const loc = await requestLocation(req);
   const after = { ...loc.settings, ...Object.fromEntries(Object.entries({ remoteAccess, tailscaleIsHome }).filter(([, v]) => v !== undefined)) };
   const wouldBeAway = loc.where === 'outside' || (loc.where === 'tailscale' && !after.tailscaleIsHome);
   if (wouldBeAway && !after.remoteAccess) {
     return res.status(400).json({ error: "That would lock out the device you're using right now. Change it from your home network." });
   }
-  // The same for two-factor away from home, which applies to sessions already signed in:
-  // switching it on from outside, on an account without two-factor, would end this session
-  // on its next request.
+  // Same for two-factor away from home: it applies to existing sessions, so enabling it from
+  // outside without 2FA would end this one.
   if (require2faOutside === true && !loc.settings.require2faOutside && wouldBeAway && !req.user.two_factor && !req.isApiKey) {
     return res.status(400).json({ error: "You're away from home and your account has no two-factor, so that would lock out the device you're using right now. Turn on two-factor for your account first, or change it from your home network." });
   }

@@ -26,15 +26,13 @@
 # hands requests to Plinthio over that network and passes each device's real address along,
 # and Plinthio believes those forwarding headers from exactly one address: this container's
 # (TRUST_PROXY below). Nothing else can pose as it: not a device on your home network, not
-# the Docker host, and not a tailnet device connecting straight to port 8080, which now ends
+# the Docker host, and not a tailnet device connecting straight to port 8080, which ends
 # up inside this container where nothing is listening.
-# (Earlier versions of this file had Tailscale share Plinthio's network. That let any
-# tailnet device open http://<name>:8080 behind the front door, where it was taken for a
-# home device and could make up its own address. If yours is one of those, see "Upgrading
-# the add-ons" in docs/remote-access.md: replace this file and run
+# (Earlier versions of this file had Tailscale share Plinthio's network. If yours is one of
+# those, see "Upgrading the add-ons" in docs/remote-access.md: replace this file and run
 # `docker compose up -d --force-recreate`.)
 #
-# http://<server>:8088 on your home network keeps working as before. Tailscale devices count
+# http://<server>:8088 on your home network keeps working. Tailscale devices count
 # as home unless you change that in Admin → Network; Funnel visitors come from the internet
 # and count as outside.
 #

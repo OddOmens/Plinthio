@@ -1,6 +1,5 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 bg-background/95 backdrop-blur-2xl flex flex-col safe-top safe-bottom transition-all select-none">
-    <!-- Top Header Bar -->
     <header class="px-5 py-3 flex items-center justify-between border-b border-border/40">
       <button :aria-label="$t('player.nowPlaying.minimize')"
         @click="close"
@@ -50,9 +49,8 @@
       </div>
     </header>
 
-    <!-- Main Player Body -->
     <main class="flex-1 overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 max-w-lg mx-auto w-full gap-3 sm:gap-6 my-auto">
-      <!-- Bookmarks Drawer Overlay if active -->
+      <!-- Bookmarks drawer -->
       <div v-if="showBookmarksDrawer" class="w-full flex-1 flex flex-col gap-4 max-h-[600px] overflow-hidden bg-card border border-border rounded-2xl p-5 shadow-2xl">
         <div class="flex items-center justify-between border-b border-border pb-3">
           <div class="flex items-center gap-2">
@@ -64,7 +62,6 @@
           </button>
         </div>
 
-        <!-- Add Bookmark at Current Position -->
         <div class="flex flex-col gap-2 bg-muted/40 p-3 rounded-xl border border-border">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-foreground">{{ $t('player.nowPlaying.addBookmark') }}</span>
@@ -84,7 +81,6 @@
           </button>
         </div>
 
-        <!-- Bookmarks List -->
         <div class="flex-1 overflow-y-auto flex flex-col gap-2 divide-y divide-border/60">
           <div
             v-for="bm in bookmarks"
@@ -149,12 +145,11 @@
 
       <!-- Regular Player UI (Artwork, Scrubber, Controls) -->
       <template v-else>
-        <!-- Large High-Res Cover Artwork with dynamic height clamp for landscape -->
+        <!-- Cover art, height clamped for landscape -->
         <div class="relative w-40 h-40 sm:w-64 sm:h-64 md:w-72 md:h-72 max-h-[30dvh] sm:max-h-[40dvh] aspect-square rounded-2xl overflow-hidden shadow-2xl border border-border/80 flex-shrink-0">
           <img :src="coverUrl" :alt="$t('player.coverOf', { title: player.currentItem?.title })" class="w-full h-full object-cover" />
         </div>
 
-        <!-- Title & Metadata -->
         <div class="w-full text-center flex flex-col gap-1">
           <h2 class="text-base sm:text-lg font-bold text-foreground truncate" :title="player.currentItem?.title">
             {{ player.currentItem?.title }}
@@ -176,7 +171,6 @@
           <RatingBar :item="player.currentItem" align="center" class="mt-2" />
         </div>
 
-        <!-- Scrubber Timeline -->
         <div class="w-full flex flex-col gap-1.5">
           <input
             type="range"
@@ -258,7 +252,6 @@
 
         <!-- Secondary Controls: Speed Chips, Sleep Timer, Volume -->
         <div class="w-full flex flex-col gap-4 pt-2 border-t border-border/40">
-          <!-- Speed Chips -->
           <div class="flex items-center justify-between gap-2">
             <span class="text-[12px] text-muted-foreground font-medium">{{ $t('player.nowPlaying.speed') }}</span>
             <div class="flex items-center gap-1">
@@ -278,7 +271,6 @@
             </div>
           </div>
 
-          <!-- Sleep Timer Chips -->
           <div class="flex items-center justify-between gap-2">
             <span class="text-[12px] text-muted-foreground font-medium flex items-center gap-1">
               <Moon class="w-3.5 h-3.5" /> {{ $t('player.nowPlaying.sleep') }}
@@ -303,7 +295,6 @@
             {{ player.sleepTimerMinutes === 'chapter' ? $t('player.nowPlaying.stoppingAtChapterEnd') : $t('player.nowPlaying.stoppingIn', { time: formatTime(player.sleepRemaining) }) }}
           </p>
 
-          <!-- Volume Slider -->
           <div class="flex items-center gap-2 pt-1">
             <Volume2 class="w-4 h-4 text-muted-foreground flex-shrink-0" />
             <input

@@ -1,7 +1,6 @@
 <template>
   <header class="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border safe-top transition-colors">
     <div class="page-width mx-auto px-3 sm:px-5 lg:px-8 h-[58px] sm:h-[60px] flex items-center justify-between gap-2 sm:gap-4">
-      <!-- Logo -->
       <router-link to="/" class="flex items-center gap-2.5 sm:gap-3 flex-shrink-0 group">
         <AppLogo class="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0" />
         <span class="text-base sm:text-lg font-semibold tracking-tight text-foreground truncate max-w-[140px] sm:max-w-none">
@@ -9,7 +8,7 @@
         </span>
       </router-link>
 
-      <!-- Center Media Type Filter Tabs (shadcn tabs style) -->
+      <!-- Media type tabs -->
       <nav class="hidden lg:flex items-center gap-0.5 lg:gap-1 bg-muted/50 p-1 rounded-xl border border-border flex-shrink min-w-0 overflow-x-auto no-scrollbar">
         <!-- Narrower desktops can't fit every name (longer still in some languages): there each
              tab but the current one shows its icon, with the name as its tooltip. -->
@@ -62,9 +61,7 @@
         </router-link>
       </nav>
 
-      <!-- Right Section: Search, User Menu -->
       <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-        <!-- Desktop Search input -->
         <div class="relative hidden sm:block w-48 md:w-64 lg:w-52 xl:w-64">
           <Search class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <input
@@ -83,12 +80,12 @@
           </button>
         </div>
 
-        <!-- User Account Menu: Display avatar only in navigation header -->
+        <!-- User menu (avatar only) -->
         <UserMenu placement="bottom-end" :show-label="false" />
       </div>
     </div>
 
-    <!-- Mobile Search Bar (iOS Standard Height & Spacing) -->
+    <!-- Mobile search bar -->
     <div class="sm:hidden px-4 pt-0.5 pb-2">
       <div class="relative w-full flex items-center">
         <Search class="w-4 h-4 absolute left-3.5 text-muted-foreground pointer-events-none" />
@@ -111,9 +108,8 @@
       </div>
     </div>
 
-    <!-- Mobile Category Pills (Horizontally Scrollable iOS Segmented Style). The edges fade
-         where more pills are hidden, so it's clear the row scrolls; the chosen one is
-         scrolled into view (a link straight to Movies used to leave it off screen). -->
+    <!-- Mobile category pills. The edges fade where more pills are hidden, so it's clear the
+         row scrolls; the chosen one is scrolled into view. -->
     <div
       ref="pillsEl"
       @scroll.passive="updatePillEdges"

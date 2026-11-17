@@ -5,8 +5,7 @@ import { isItemHiddenForUser } from '../services/visibility.js';
 import { getRatingSettings, getRatingSummary } from '../services/ratings.js';
 import { handle } from '../utils/http.js';
 
-// Only ever used in parameterised queries (never a file path), so this just rejects junk
-// rather than insisting on the 32-hex shape the media routes need.
+// Only used in parameterised queries (never a file path), so a loose check is enough.
 const ITEM_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
 const router = express.Router();
@@ -18,16 +17,14 @@ router.param('itemId', (req, res, next, id) => {
   next();
 });
 
-// Hidden items — and ones above the user's content limit — 404 like a missing one, same as
-// every other by-id route; a rating shouldn't be the way to confirm an item exists.
+// Hidden or over-limit items 404 like missing ones, so ratings can't confirm an item exists.
 async function loadVisibleItem(db, itemId, user) {
   const item = await db.get('SELECT * FROM items WHERE id = ?', [itemId]);
   if (!item || await isItemHiddenForUser(db, itemId, user)) return null;
   return item;
 }
 
-// Rating summary for one item: your stars, the server-wide average, and (movies/shows/anime)
-// TMDB's score — each only when the admin has that display switched on.
+// Your stars, the server average and TMDB's score, each only if the admin enabled it.
 router.get('/:itemId', handle(async (req, res) => {
   const db = await getDb();
   const item = await loadVisibleItem(db, req.params.itemId, req.user);

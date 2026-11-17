@@ -5,18 +5,12 @@ import { config } from '../config/env.js';
 import { localInputArgs } from './probe.js';
 import { resolveLibraryFile } from '../utils/libraryPath.js';
 
-// Last-resort artwork for video: a frame from the film itself. TMDB posters are better, but
-// they need an API key the user may never set, and a still from the movie beats the blank
-// placeholder a keyless install would otherwise show for its entire library.
-//
-// The frame is taken at a fraction of the runtime rather than the start, because the opening
-// seconds of a film are usually a black screen or a distributor logo.
+// Last-resort video artwork (works without a TMDB key). Grabbed partway in, since openings
+// are usually black or a logo.
 const GRAB_AT_FRACTION = 0.2;
 const FALLBACK_SECONDS = 300;
 const TIMEOUT_MS = 30000;
-// Wide enough for a big card or banner on a retina screen; `min(…, iw)` never enlarges a
-// smaller video. Frames were 600px (stills 480px) before 1.5, which looked soft once cards
-// grew past ~300px — FRAME_LEGACY_WIDTH lets the scanner find and redo those.
+// `min(…, iw)` never enlarges. FRAME_LEGACY_WIDTH lets the scanner find and redo old low-res grabs.
 export const FRAME_WIDTH = 1280;
 export const FRAME_LEGACY_WIDTH = 600;
 const scaleTo = (w) => `scale=min(${w}\\,iw):-2`;
@@ -49,10 +43,7 @@ function runFfmpeg(args) {
   });
 }
 
-/**
- * Writes a poster-shaped still for `itemId` into the covers directory.
- * Returns the cover filename, or null if a frame couldn't be grabbed.
- */
+/** Writes a still into the covers directory; returns its filename or null. */
 export async function extractVideoFrameCover(filePath, itemId, durationSeconds = 0) {
   if (!fs.existsSync(filePath)) return null;
 
@@ -60,28 +51,23 @@ export async function extractVideoFrameCover(filePath, itemId, durationSeconds =
     1,
     Math.floor(durationSeconds > 0 ? durationSeconds * GRAB_AT_FRACTION : FALLBACK_SECONDS)
   );
-  // A clip only a second or two long (a teaser, a short extra) would be sought past its
-  // end — take its middle instead.
+  // Very short clips: take the middle instead of seeking past the end.
   if (durationSeconds > 0 && seekTo >= durationSeconds) seekTo = durationSeconds / 2;
   const coverFilename = `${itemId}.jpg`;
   const finalPath = path.join(config.coversDir, coverFilename);
-  // Written aside and renamed into place so a killed ffmpeg can't leave a truncated JPEG
-  // sitting there looking like a valid cover.
+  // Temp + rename so a killed ffmpeg can't leave a truncated cover.
   const tempPath = `${finalPath}.${process.pid}.tmp`;
 
   const ok = await runFfmpeg([
     '-v', 'error',
-    // Seeking before -i is the fast path: ffmpeg jumps to the keyframe instead of decoding
-    // everything up to that point.
+    // -ss before -i seeks by keyframe instead of decoding up to it.
     '-ss', String(seekTo),
     ...localInputArgs(),
     '-i', filePath,
     '-frames:v', '1',
     '-vf', scaleTo(FRAME_WIDTH),
     '-q:v', '3',
-    // ffmpeg picks the output format from the file extension, and the temp file's is
-    // `.tmp` — so the format has to be stated outright or it exits with "Unable to find a
-    // suitable output format".
+    // Needed because the `.tmp` extension gives ffmpeg no output format.
     '-f', 'image2',
     '-y', tempPath
   ]);
@@ -102,10 +88,7 @@ export async function extractVideoFrameCover(filePath, itemId, durationSeconds =
 }
 
 // ─── Episode stills ──────────────────────────────────────────────────────────
-// A show's episodes usually share the show's poster (folder artwork), which makes an
-// episode list a column of identical pictures. A still per episode is grabbed the first
-// time the list asks for it — 1280px, cached on disk, and never more than
-// two ffmpeg processes at once, so opening a 24-episode season doesn't flood the server.
+// Per-episode stills grabbed on first request, cached, max two ffmpeg runs at once.
 const STILL_WIDTH = 1280;
 const STILL_AT_FRACTION = 0.3; // past the cold open and title sequence
 const MAX_CONCURRENT_STILLS = 2;
@@ -131,21 +114,17 @@ function runQueued(task) {
   });
 }
 
-// Keyed on the file size so replacing the file makes a new still rather than serving the
-// old episode's.
+// Includes file size so a replaced file gets a new still.
 export function stillPath(item) {
   return path.join(stillsDir, `${item.id}-${item.file_size || 0}-w${STILL_WIDTH}.jpg`);
 }
 
-/**
- * Returns the path of a still for this video item, grabbing it first if needed, or null
- * if the file can't be read.
- */
+/** Path to the item's still, grabbing it if needed; null if the file can't be read. */
 export async function getOrCreateStill(item) {
   const finalPath = stillPath(item);
   if (fs.existsSync(finalPath)) return finalPath;
   if (!item.path) return null;
-  // Only a file that really sits inside a library folder (utils/libraryPath.js).
+  // Must resolve inside a library root.
   let source;
   try {
     source = await resolveLibraryFile(item.path);

@@ -1,25 +1,15 @@
 import { openUpstream, readBody } from './safeFetch.js';
 import { looksLikePlaylist } from './liveProxy.js';
 
-// Is a channel's stream still there? Public lists carry plenty of channels whose server has
-// gone, and a viewer only finds out after the player gives up. This asks the way a player
-// would, but stops as soon as the answer is known: the channel's playlist, the first media
-// playlist it leads to (a few hops at most), then the first 2 KB of the first segment. No
-// video is decoded or kept — a stream that hands over bytes counts as alive.
-//
-// Every request goes through the same address guard as playback (safeFetch.js), with the
-// same private-host allowance and headers the stream proxy would use for that channel.
-// services/liveTv.js decides which channels to check and when.
+// Live channel health check: follows the playlist chain (a few hops) and reads the first 2 KB
+// of the first segment; any bytes count as alive. Uses the same address guard and headers as playback.
 
 const REQUEST_TIMEOUT_MS = 10000;
 const CHECK_TIMEOUT_MS = 30000; // the whole check, however many hops and redirects
 const MAX_PLAYLISTS = 3;
 const PLAYLIST_MAX_BYTES = 1024 * 1024;
 
-/**
- * The first link in an HLS playlist, resolved against `baseUrl`, and whether it is another
- * playlist (a variant of a master playlist, or anything named .m3u8) rather than a segment.
- */
+/** First link in an HLS playlist, and whether it is another playlist rather than a segment. */
 export function firstPlaylistLink(text, baseUrl) {
   let variant = false;
   for (const raw of String(text).replace(/^﻿/, '').split(/\r?\n/)) {
@@ -41,8 +31,7 @@ export function firstPlaylistLink(text, baseUrl) {
   return null;
 }
 
-// Whether a response carries any bytes: reads its first chunk only (the request asked for
-// 2 KB; from a server that ignores the range, nothing past that chunk is read), then hangs up.
+// Reads only the first chunk, then hangs up (in case the server ignored the range).
 async function hasBytes(res) {
   try {
     for await (const chunk of res) {
@@ -54,11 +43,7 @@ async function hasBytes(res) {
   }
 }
 
-/**
- * Checks one stream. Resolves with `{ ok: true }` or `{ ok: false, error }`; never rejects.
- *
- *   allowPrivateHosts, headers  as the stream proxy would send them for this channel
- */
+/** Resolves with `{ ok: true }` or `{ ok: false, error }`; never rejects. */
 export async function checkStream(streamUrl, { allowPrivateHosts = [], headers = {}, timeoutMs = REQUEST_TIMEOUT_MS } = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), CHECK_TIMEOUT_MS);
@@ -101,11 +86,7 @@ export async function checkStream(streamUrl, { allowPrivateHosts = [], headers =
   }
 }
 
-/**
- * A channel's health after a check: one success makes it 'ok' (and clears the failures);
- * it is 'offline' after two failures in a row. Before that it keeps what it was (null for
- * a channel never seen working).
- */
+// One success makes a channel 'ok'; two failures in a row make it 'offline'.
 export function nextHealth({ health = null, fails = 0 } = {}, ok) {
   if (ok) return { health: 'ok', fails: 0 };
   const count = (fails || 0) + 1;

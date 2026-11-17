@@ -1,7 +1,5 @@
-// One rule for every place an account name is set (setup wizard, admin create/rename).
-// Letters and digits from any script plus a few separators — enough for real names and
-// email-style logins, while keeping control characters, markup and 10KB "usernames" out of
-// the users table, the login history and every screen that prints them.
+// The one rule for account names: letters and digits from any script plus a few separators,
+// keeping control characters, markup and huge names out of the DB and UI.
 const USERNAME_RE = /^[\p{L}\p{N}][\p{L}\p{N}._@ -]{0,63}$/u;
 
 export function normalizeUsername(raw) {

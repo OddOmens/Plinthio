@@ -5,17 +5,15 @@
     @pointermove="onPointerMove"
     tabindex="0"
   >
-    <!-- Top Controls — always visible on desktop (hover), auto-hide on touch. On a phone the
-         controls take two rows, which ran past the fade into the page itself (unreadable on
-         a white page), so there the bar is solid. -->
+    <!-- Top controls: shown on hover on desktop, auto-hide on touch. Solid on phones, where the
+         two-row bar would otherwise sit over the page. -->
     <header
       :class="[
         'absolute top-0 inset-x-0 z-30 transition-all duration-300 bg-black/80 backdrop-blur-md sm:backdrop-blur-none sm:bg-transparent sm:bg-gradient-to-b sm:from-black/90 sm:via-black/60 sm:to-transparent pt-safe pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-4 flex flex-col gap-2 sm:flex-row landscape:flex-row sm:items-center landscape:items-center sm:justify-between landscape:justify-between sm:gap-3',
         controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
       ]"
     >
-      <!-- min-w-0 is load-bearing: without it a long title grows this block and shoves the
-           reading-mode controls off the edge of a phone/tablet screen entirely. -->
+      <!-- min-w-0 stops a long title pushing the mode controls off a narrow screen. -->
       <div class="flex items-center gap-3 min-w-0 flex-1">
         <button :aria-label="$t('reader.manga.backToShelf')"
           @click="closeReader"
@@ -34,7 +32,6 @@
       <!-- On phones these wrap onto their own row and scroll sideways if the mode buttons
            still don't fit, so every control stays reachable. -->
       <div class="flex items-center gap-2 flex-shrink-0 overflow-x-auto no-scrollbar -mx-1 px-1 sm:overflow-visible sm:mx-0 sm:px-0">
-        <!-- Bookmark Button -->
         <button
           @click.stop="showBookmarksModal = !showBookmarksModal"
           :class="[
@@ -52,7 +49,6 @@
           </span>
         </button>
 
-        <!-- Spread Mode Toggle (Single vs 2-Page Spread) -->
         <div v-if="mode !== 'webtoon'" class="flex items-center gap-0.5 bg-zinc-900/80 p-1 rounded-lg border border-zinc-800 flex-shrink-0">
           <button
             @click="setSpread('single')"
@@ -72,7 +68,6 @@
           </button>
         </div>
 
-        <!-- Page Turn Style Toggle (Fade vs realistic page Flip) -->
         <div v-if="mode !== 'webtoon'" class="flex items-center gap-0.5 bg-zinc-900/80 p-1 rounded-lg border border-zinc-800 flex-shrink-0">
           <button
             @click="setPageTurnStyle('fade')"
@@ -92,7 +87,6 @@
           </button>
         </div>
 
-        <!-- Mode Selector -->
         <div class="flex items-center gap-0.5 bg-zinc-900/80 p-1 rounded-lg border border-zinc-800 flex-shrink-0">
           <button
             v-for="m in modes"
@@ -105,9 +99,7 @@
       </div>
     </header>
 
-    <!-- Main Viewport -->
     <main class="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center">
-      <!-- Loading -->
       <div v-if="loading" class="flex flex-col items-center gap-3 text-zinc-400">
         <Loader2 class="w-7 h-7 animate-spin" />
         <span class="text-xs font-mono">{{ $t('reader.manga.loadingPages') }}</span>
@@ -170,15 +162,12 @@
           @pointerup="onZonePointerUp"
           @pointercancel="onZonePointerUp"
         >
-          <!-- Left zone -->
           <div @click="handleLeftZone" class="h-full cursor-pointer" />
-          <!-- Center zone — toggle controls -->
+          <!-- Center zone toggles the controls -->
           <div @click="toggleControls" class="h-full cursor-pointer" />
-          <!-- Right zone -->
           <div @click="handleRightZone" class="h-full cursor-pointer" />
         </div>
 
-        <!-- Zoom level indicator -->
         <div
           v-if="zoomScale > 1.01"
           class="absolute top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none bg-black/70 text-white text-[12px] font-mono px-2 py-1 rounded-full backdrop-blur-sm"
@@ -199,10 +188,8 @@
         </div>
       </template>
 
-      <!-- Webtoon / Vertical Scroll. Only pages near the one being read get an <img>; the
-           rest are empty boxes sized to the page's shape. Rendering every page of a
-           170-page volume at once decoded them all at full size, and on a phone that
-           exhausted memory until the browser reloaded the tab mid-chapter. -->
+      <!-- Webtoon / vertical scroll. Only pages near the current one get an <img>; the rest are
+           empty boxes sized to the page, so a long volume doesn't exhaust a phone's memory. -->
       <div
         v-else-if="mode === 'webtoon'"
         ref="webtoonContainer"
@@ -233,7 +220,6 @@
       </div>
     </main>
 
-    <!-- Bottom Scrubber -->
     <footer
       :class="[
         'absolute bottom-0 inset-x-0 z-30 transition-all duration-300 bg-gradient-to-t from-black/90 via-black/60 to-transparent pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-safe pt-8 flex flex-col gap-2',
@@ -284,7 +270,6 @@
       </div>
     </Transition>
 
-    <!-- Bookmarks Overlay -->
     <Transition name="sheet-fade">
       <div
         v-if="showBookmarksModal"
@@ -415,11 +400,9 @@ const modes = computed(() => ['rtl', 'ltr', 'webtoon'].map((id) => ({
 })));
 
 // ─── Remembered reader settings ──────────────────────────────────────────────
-// Everything picked here belongs to the person and follows them to every device, like the
-// ebook reader's settings: spread and each series' reading mode live in their preferences
-// as `mangaReader`, the page-turn style as `readerPageTurn`. Earlier versions kept spread
-// and modes on the device only; those are still read as a fallback, so nothing set before
-// is lost, and are kept up to date for offline use.
+// Saved to the person's preferences so they follow them across devices: spread and per-series
+// mode as `mangaReader`, page-turn style as `readerPageTurn`. Device-local copies are a fallback
+// and are kept in sync for offline use.
 const READER_PREFS_KEY = 'plinthio_reader';
 const SERIES_MODES_LIMIT = 300;
 function accountReaderPrefs() {
@@ -495,10 +478,8 @@ const secondPageUrl = computed(() => {
 });
 
 // ─── Page Flip Animation state ───────────────────────────────────────────────
-// A flip turns the outgoing page into a "leaf" that hinges on a fixed edge and rotates
-// away via CSS 3D transform; backface-visibility hides it past 90°, letting the already
-// re-pointed static image underneath (see displayIndex/displayCurrentUrl below) show
-// through. See startFlip()/onFlipTransitionEnd() further down for the full sequence.
+// A flip turns the outgoing page into a "leaf" that rotates away on a fixed edge;
+// backface-visibility hides it past 90°, revealing the destination page underneath.
 const isFlipping = ref(false);
 const flipAnimating = ref(false);
 const flipPivot = ref('left'); // 'left' | 'right' — the fixed edge every active leaf hinges on this turn
@@ -515,8 +496,7 @@ let flipTargetIndex = null;
 // go on to start its animation.
 let flipRun = 0;
 
-// Abandons an in-progress flip without committing it — used when something else (a mode
-// switch, a scrub, a volume change) invalidates the animation already in flight.
+// Abandons an in-progress flip without committing it (mode switch, scrub, volume change).
 function cancelFlip() {
   flipRun++;
   isFlipping.value = false;
@@ -524,9 +504,7 @@ function cancelFlip() {
   flipTargetIndex = null;
 }
 
-// While isFlipping, the resting image(s) must already show the destination page (the
-// leaf sits on top and reveals them as it rotates away) — these resolve to the flip
-// target during that window, and to the real current page otherwise.
+// While flipping, the resting image(s) already show the destination page for the leaf to reveal.
 const displayIndex = computed(() => (isFlipping.value && flipTargetIndex !== null ? flipTargetIndex : currentPageIndex.value));
 const displaySecondIndex = computed(() => {
   if (mode.value === 'webtoon' || spread.value !== 'double') return null;
@@ -558,7 +536,6 @@ const showBookmarksModal = ref(false);
 const bookmarks = ref([]);
 const newBookmarkNote = ref('');
 
-// Touch tracking for swipe detection
 let touchStartX = 0;
 let touchStartY = 0;
 let isTouchDevice = window.matchMedia?.('(pointer: coarse)')?.matches ?? false;
@@ -697,9 +674,8 @@ watch(mode, resetZoom);
 watch(spread, resetZoom);
 
 // ─── URLs ─────────────────────────────────────────────────────────────────────
-// Pages are requested at the width they'll actually be shown at, in device pixels (the
-// server rounds up to a few standard sizes and caches them). A phone gets a ~1400px page
-// instead of a multi-MB full scan — less data, faster turns, and far less memory.
+// Pages are requested at their on-screen width in device pixels (the server rounds up to a few
+// cached sizes), so a phone doesn't load multi-MB full scans.
 const viewportWidth = ref(window.innerWidth);
 const pageRequestWidth = computed(() => {
   const dpr = Math.min(window.devicePixelRatio || 1, 3);
@@ -749,11 +725,8 @@ function onPointerMove() {
   }
 }
 
-// Turning a page should NOT summon the chrome on touch: tapping the left/right zone is the
-// primary way to read, so flashing the title bar and mode buttons on every single tap (then
-// fading them out 3s later) makes the whole reader strobe. On desktop the controls are
-// already pinned by pointer movement, so keeping it there costs nothing and still updates
-// the page counter for keyboard users.
+// On touch, page turns don't show the controls, or tapping through pages would make them
+// flash on every turn. On desktop it keeps the page counter visible for keyboard users.
 function showControlsOnNavigate() {
   if (!isTouchDevice) {
     showControlsNow();
@@ -774,9 +747,8 @@ function setMode(m) {
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
-// Routes a page change either straight through (default) or via startFlip() when the
-// flip page-turn style is active — every caller below (taps, swipe, arrow keys) goes
-// through nextPage()/prevPage(), so they all get the flip for free.
+// Taps, swipes and arrow keys all go through nextPage()/prevPage(), which use startFlip()
+// when the flip style is on.
 function navigateTo(target, isForward) {
   if (target === currentPageIndex.value || isFlipping.value) return;
   // Only clean, fully-paired spreads get the two-leaf flip; a boundary spread (e.g. the
@@ -806,7 +778,7 @@ function prevPage() {
   navigateTo(Math.max(0, currentPageIndex.value - step), false);
 }
 function goToPage(index) {
-  cancelFlip(); // scrubbing mid-flip abandons the in-progress animation rather than leaving orphaned leaves
+  cancelFlip(); // don't leave a half-turned leaf on screen
   currentPageIndex.value = Math.max(0, Math.min(index, totalPages.value - 1));
   if (mode.value === 'webtoon') scrollToWebtoonPage(currentPageIndex.value);
   saveProgress();
@@ -855,14 +827,11 @@ async function startFlip(target, isForward) {
     Promise.all(toPreload.map(preloadImage)),
     new Promise((resolve) => setTimeout(resolve, 300)),
   ]);
-  // Cancelled meanwhile: starting the animation now would leave flipAnimating on, and the
-  // next flip's leaf would mount already turned — no transition, so no transitionend, and
-  // page turns would stop until the next scrub.
+  // Cancelled meanwhile: starting now would mount the next leaf already turned, with no
+  // transitionend to finish it, and page turns would stall.
   if (run !== flipRun) return;
 
-  // Two rAFs: the first lets the leaf paint at rotateY(0) (matching the old page exactly,
-  // so there's no visible jump), the second then flips it to the target angle so the
-  // CSS transition on .flip-leaf actually has a "from" state to animate away from.
+  // Two rAFs: paint the leaf at rotateY(0) first so the CSS transition has a start state.
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       if (run === flipRun) flipAnimating.value = true;
@@ -993,8 +962,7 @@ function onWebtoonScroll(e) {
     const index = webtoonPageAtScroll(container);
     if (index === currentPageIndex.value) return;
     currentPageIndex.value = index;
-    // Scroll mode never went through nextPage(), so progress was only saved on close — and
-    // a tab the browser discarded mid-chapter lost it all.
+    // Scroll mode doesn't go through nextPage(), so save here too in case the tab is discarded.
     clearTimeout(webtoonSaveTimer);
     webtoonSaveTimer = setTimeout(() => {
       webtoonSaveTimer = null;
@@ -1166,8 +1134,7 @@ function applyTabletLandscapeDefault() {
   }
 }
 
-// Reading direction is a property of the series, not of this session — a Japanese manga
-// should open right-to-left every time without the reader having to flip it on each open.
+// Reading direction is saved per series, so a manga opens right-to-left every time.
 async function loadSeriesSettings() {
   // A mode you picked for this series beats the series' default direction.
   const mine = savedSeriesMode();
@@ -1190,9 +1157,8 @@ async function loadSeriesSettings() {
 }
 
 // ─── Lifecycle ─────────────────────────────────────────────────────────────────
-// The page underneath stays scrollable, so a swipe that reached the top of the reader
-// scrolled (or, in mobile Safari, pull-to-refreshed) it instead — reloading mid-chapter.
-// Lock it while the reader is open.
+// Lock the page behind while open, so a swipe at the top can't scroll it or (mobile Safari)
+// pull-to-refresh and reload mid-chapter.
 const lockedStyles = [];
 function lockPageScroll() {
   for (const el of [document.documentElement, document.body]) {

@@ -53,7 +53,7 @@ describe('a reverse proxy the server was never told about (TRUST_PROXY unset)', 
     assert.equal(await where({ 'x-forwarded-for': '127.0.0.1' }), 'outside');
     assert.equal(await where({ forwarded: 'for=192.168.1.20;proto=https' }), 'outside');
     assert.equal(await where({ 'x-real-ip': '10.0.0.5' }), 'outside');
-    // The Tailscale Funnel rule is unchanged.
+    // The Tailscale Funnel header still means outside.
     assert.equal(await where({ 'tailscale-funnel-request': '?1' }), 'outside');
   });
 
@@ -108,7 +108,7 @@ describe('a reverse proxy the server was never told about (TRUST_PROXY unset)', 
     const signIn = await send(base, 'POST', '/auth/login', { headers: { 'x-forwarded-for': '192.168.1.20' }, body: { ...ADMIN } });
     assert.equal(signIn.body.code, 'P109');
     assert.match(signIn.body.error, /TRUST_PROXY/);
-    // Reached directly, the admin is at home as before: nobody is locked out of their server.
+    // Reached directly, the admin is at home: nobody is locked out of their server.
     assert.equal((await send(base, 'GET', '/items', { headers: authed(token) })).status, 200);
   });
 

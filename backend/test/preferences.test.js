@@ -2,8 +2,8 @@ import { test, before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { startTestServer, setupAdmin, authed } from './helpers/server.js';
 
-// Regression cover for: saving Settings wiped every preference key the Settings screen
-// doesn't own, so `onboardingComplete` vanished and the onboarding flow replayed itself.
+// Saving Settings must keep preference keys the Settings screen doesn't own (e.g.
+// `onboardingComplete`, or onboarding replays).
 describe('PATCH /api/users/preferences', () => {
   let server;
   let token;

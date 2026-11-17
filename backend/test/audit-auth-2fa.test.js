@@ -73,7 +73,7 @@ describe('two-factor confirmations and admin resets', () => {
     await server?.stop();
   });
 
-  // ─── F1: wrong codes in a confirmation are held back ─────────────────────────────────
+  // ─── Wrong codes in a confirmation are held back ─────────────────────────────────
   test('ten right-password, wrong-code confirmations hold the eleventh, even with the right code', async () => {
     const u = await withTwoFactor('codeguess');
     for (let i = 0; i < 10; i++) {
@@ -117,7 +117,7 @@ describe('two-factor confirmations and admin resets', () => {
     assert.equal(next.body.code, 'P111', 'counting starts again');
   });
 
-  // ─── F3: enrolment checks the hold before the code ───────────────────────────────────
+  // ─── Enrolment checks the hold before the code ───────────────────────────────────
   test('after ten wrong codes while turning on two-factor, a right code waits as well', async () => {
     const u = await account('enrolguess');
     const start = await req('POST', '/auth/2fa/setup', { token: u.token, body: { password: u.password } });
@@ -158,7 +158,7 @@ describe('two-factor confirmations and admin resets', () => {
     assert.equal((await db.get('SELECT totp_pending_at FROM users WHERE id = ?', [u.id])).totp_pending_at, null);
   });
 
-  // ─── F9: admin resets need a session, and never on your own account ──────────────────
+  // ─── Admin resets need a session, and never on your own account ──────────────────
   test('an admin API key cannot reset passwords or two-factor', async () => {
     const target = await withTwoFactor('resettarget');
     const key = (await req('POST', '/keys', { token: adminToken, body: { name: 'script', password: ADMIN.password } })).body.key.key;

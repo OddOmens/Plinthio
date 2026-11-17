@@ -1,8 +1,6 @@
-// How the UI talks about each media type: what one entry in a series is called, what you
-// do with it, and who made it. One place, so the shelf, series pages and cards agree.
-// The words live in locales/<language>/vocab.json; every field is a getter, so it reads
-// the current language each time it's used (spreading a vocab object freezes today's
-// wording). `type` / `typeSingular` are the shared media type names from common.json.
+// Per-media-type wording (what an entry is called, its verb, its creator), from
+// locales/<language>/vocab.json. Fields are getters so they follow the current language;
+// spreading a vocab object freezes today's wording.
 import { t } from '../i18n';
 
 const FIELDS = ['unit', 'units', 'short', 'verb', 'verbing', 'done', 'creator', 'series'];
@@ -12,7 +10,7 @@ function makeVocab(mediaType) {
     mediaType,
     get type() { return t(`common.mediaTypes.${mediaType}`); },
     get typeSingular() { return t(`common.mediaType.${mediaType}`); },
-    // "3 volumes", "1 episode" — a count of this type's entries.
+    // "3 volumes", "1 episode"
     count(count) { return t(`vocab.${mediaType}.count`, { count }); }
   };
   for (const field of FIELDS) {

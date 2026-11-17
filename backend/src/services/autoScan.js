@@ -4,27 +4,16 @@ import { scanLibrary } from './scanner.js';
 import { logger } from './logger.js';
 import { setSetting } from './settings.js';
 
-// Until this existed, a file added to a library stayed invisible until an admin opened the
-// Admin panel and clicked Scan — the thing every other media server does for you. Two
-// mechanisms, either of which can be turned off:
-//
-//   * a scheduled sweep, which re-scans a library every N minutes or at set times of day
-//     (the reliable floor — works on network shares, bind mounts and
-//     filesystems that emit no events at all), and
-//   * a filesystem watcher, which reacts within seconds of a file appearing.
-//
-// Both funnel into scanLibrary, which holds a per-library lock, so overlapping triggers
-// can't scan the same library twice at once.
+// Automatic scanning: a scheduled sweep (works even on mounts that emit no file events) and a
+// filesystem watcher. Both go through scanLibrary's per-library lock, so triggers can't overlap.
 
 const SETTINGS_KEY = 'auto_scan';
 const TICK_MS = 60 * 1000;
-// A copy landing in a watched folder fires events continuously while it's being written.
-// Waiting for the directory to fall quiet avoids scanning a half-copied file — and avoids
-// one scan per file when a whole season is dropped in at once.
+// Wait for the folder to fall quiet, so half-copied files aren't scanned and a batch drop
+// triggers one scan.
 const WATCH_QUIET_MS = 30 * 1000;
 
-// `enabled` is the scheduled sweep and `watchEnabled` the file watcher; they're independent,
-// so either can run without the other. With both off, scanning is manual only.
+// `enabled` is the scheduled sweep and `watchEnabled` the file watcher; they're independent.
 export const DEFAULT_AUTO_SCAN = {
   enabled: true,
   mode: 'interval', // 'interval' = every N minutes, 'times' = at set times of day
@@ -50,8 +39,7 @@ export async function getAutoScanSettings() {
     if (!row) return { ...DEFAULT_AUTO_SCAN, times: [...DEFAULT_AUTO_SCAN.times] };
     const stored = JSON.parse(row.value);
     const merged = { ...DEFAULT_AUTO_SCAN, ...stored };
-    // Before the two switches were independent, `enabled: false` turned the watcher off too.
-    // Keep that meaning for settings saved back then rather than waking the watcher on upgrade.
+    // Settings saved without `mode` predate the watcher switch; `enabled: false` meant both off.
     if (stored.mode === undefined && stored.enabled === false) merged.watchEnabled = false;
     merged.times = normalizeTimes(merged.times);
     if (merged.mode !== 'times') merged.mode = 'interval';
@@ -78,7 +66,6 @@ export async function saveAutoScanSettings(patch) {
 
   await setSetting(db, SETTINGS_KEY, JSON.stringify(next));
 
-  // Apply immediately rather than at the next restart.
   await syncWatchers();
   return next;
 }
@@ -86,7 +73,7 @@ export async function saveAutoScanSettings(patch) {
 function clampInterval(value) {
   const minutes = parseInt(value, 10);
   if (!Number.isFinite(minutes)) return DEFAULT_AUTO_SCAN.intervalMinutes;
-  // Floor of 5 minutes: anything tighter is just re-walking the disk for no reason.
+  // 5-minute floor; tighter just re-walks the disk.
   return Math.min(Math.max(minutes, 5), 7 * 24 * 60);
 }
 
@@ -103,9 +90,8 @@ async function triggerScan(libraryId, reason) {
 
 // ---------------------------------------------------------------- periodic sweep
 
-// The latest scheduled time that has already passed (today's, or yesterday's if none of
-// today's have arrived yet). A library last scanned before it is overdue — which also means a
-// slot missed while the server was down is made up once on the next tick, not skipped.
+// The latest scheduled time already passed (possibly yesterday's). A library last scanned
+// before it is overdue, so a slot missed while the server was down is made up once.
 export function latestSlot(times, now = new Date()) {
   let latest = null;
   for (const time of times) {
@@ -164,8 +150,7 @@ function startWatching(library) {
   try {
     watcher = fs.watch(library.path, { recursive: true, persistent: false });
   } catch (err) {
-    // Recursive watching isn't available everywhere (and some network mounts emit nothing).
-    // The periodic sweep is the fallback, so this is a warning, not a failure.
+    // Recursive watching isn't available everywhere; the periodic sweep is the fallback.
     logger.warn('scan', `Could not watch "${library.name}" for changes: ${err.message}`);
     return;
   }
@@ -183,9 +168,8 @@ function startWatching(library) {
   });
 }
 
-// Reconciles the live watchers with the libraries that currently exist and the current
-// settings — called at boot, whenever settings change, and on every tick so a library added
-// or deleted through the Admin panel is picked up without a restart.
+// Reconciles watchers with current libraries and settings; runs every tick so library
+// changes are picked up without a restart.
 export async function syncWatchers() {
   const settings = await getAutoScanSettings();
 

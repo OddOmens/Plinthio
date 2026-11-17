@@ -71,30 +71,23 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Only honour X-Forwarded-For when explicitly configured (see TRUST_PROXY in env.js) —
-// required for correct per-IP rate limiting behind a reverse proxy, unsafe without one.
+// X-Forwarded-For only when configured (see TRUST_PROXY in env.js).
 if (config.trustProxy !== false) {
   app.set('trust proxy', config.trustProxy);
 }
 // Admin → Network warns when a proxy is in front that TRUST_PROXY doesn't cover (services/network.js).
 app.use((req, res, next) => { noteProxyHeaders(req); noteTailscale(req); next(); });
 
-// Security and utility middleware
-// Content-Security-Policy. The session token lives in localStorage, so any injected script
-// could lift it — the CSP is the backstop: no inline or third-party script except Google's
-// Cast SDK (loaded on demand, Chromium only), and images only from ourselves plus the
-// metadata providers whose cover art the editor previews (COVER_CSP_SOURCES: the same hosts
-// the server will save a cover from, redirect hops included).
-//   - script www.gstatic.com: only the folders the Cast SDK loads from (CAST_SCRIPT_SOURCES),
-//     not the whole host, which also serves old libraries an injected page could misuse to
-//     run script despite the policy. The trailing slash matters: it makes each a folder.
-//   - style 'unsafe-inline': Vue style bindings, the admin's custom CSS and EPUB styling
-//   - blob:/data: — hls.js MediaSource URLs, epub.js resource URLs, placeholder covers
-//   - no upgrade-insecure-requests: most installs are reached over plain HTTP on a LAN,
-//     where it would rewrite every same-origin request to https and break the app
-// Set CSP=off to disable (e.g. while diagnosing a blocked resource), or CSP=report-only.
-// utils/cast.js loads /cv/js/sender/v1/cast_sender.js, which then pulls in the framework
-// (/cast/sdk/libs/sender/…/cast_framework.js) and Chrome's own sender (/eureka/clank/…).
+// CSP: the session token lives in localStorage, so this is the backstop against injected
+// script. No inline or third-party script except the Cast SDK; images from us plus the cover
+// providers (COVER_CSP_SOURCES).
+//   - gstatic: only the Cast SDK folders (trailing slash = folder), since the host also serves
+//     old libraries that could be misused to bypass the policy
+//   - style 'unsafe-inline': Vue style bindings, admin custom CSS, EPUB styling
+//   - blob:/data:: hls.js MediaSource, epub.js resources, placeholder covers
+//   - no upgrade-insecure-requests: it would break plain-HTTP LAN installs
+// CSP=off disables it, CSP=report-only reports only.
+// cast_sender.js pulls in /cast/sdk/libs/sender/…/cast_framework.js and /eureka/clank/….
 const CAST_SCRIPT_SOURCES = [
   'https://www.gstatic.com/cv/js/sender/',
   'https://www.gstatic.com/cast/sdk/libs/',
@@ -122,36 +115,25 @@ const contentSecurityPolicy = cspMode === 'off' ? false : {
   }
 };
 
-// No HSTS when Plinthio serves HTTPS itself: it's pinned per host name, not per port, so a
-// browser that saw it on https://nas.local:8443 would then refuse plain http://nas.local:8088
-// — and with the local CA not yet installed there'd be no click-through either. A reverse
-// proxy that terminates TLS for a real domain can still send it.
+// No HSTS: it pins per host name, not port, so it would break plain HTTP on the same host.
+// A TLS-terminating proxy can still send it.
 app.use(helmet({
   contentSecurityPolicy,
   crossOriginEmbedderPolicy: false,
   strictTransportSecurity: tlsSettings.port ? false : undefined
 }));
-// Cross-origin access. The web app is served from this same server and the phone, TV and
-// reading apps aren't browsers, so none of them need it: by default no page on another site
-// may read the API. CORS_ORIGIN opens it for someone who hosts their own page elsewhere (one
-// origin, a comma-separated list, or * for any).
-// `credentials` stays off: Plinthio authenticates with a Bearer token the app keeps itself,
-// and the one cookie, Mihon's Komga session (routes/komga.js), is only honoured by /api/v1
-// and /api/v2 and is SameSite=Lax, so there's nothing for a browser to attach automatically.
+// No cross-origin access by default (the web app is same-origin, apps aren't browsers);
+// CORS_ORIGIN opens it. `credentials` stays off: auth is a Bearer token, and the only cookie
+// (Komga session) is SameSite=Lax and limited to /api/v1 and /api/v2.
 if (config.corsOrigin) {
   app.use(cors({ origin: config.corsOrigin }));
 } else {
-  // The one cross-origin reader Plinthio itself sets up: a Chromecast fetches the stream it
-  // was handed (playlists, segments, subtitles) from Google's receiver page, and refuses to
-  // play one it may not read. Those URLs each carry a media token, so being readable from
-  // another origin gives nothing to anyone who doesn't already hold the link.
+  // Chromecast's receiver page fetches streams cross-origin; the URLs carry a media token, so
+  // this exposes nothing to anyone without the link.
   app.use('/api/media/video', cors({ origin: '*', methods: ['GET', 'HEAD'] }));
 }
 
-// JSON responses compress extremely well (a 1000-item shelf page measured 386KB raw vs
-// 29KB gzipped) and that ratio is what a phone or a remote connection actually feels.
-// Media, covers and thumbnails are already-compressed binary formats where gzip burns CPU
-// for nothing, so they opt out — as does any response explicitly marked no-transform.
+// Compress JSON; skip media and images (already compressed) and no-transform responses.
 app.use(compression({
   threshold: 1024,
   filter: (req, res) => {
@@ -168,11 +150,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Built-in HTTPS learns the addresses devices use (see noteRequestHost in services/tls.js),
-// but only from someone who turned out to be signed in, or who just finished first-run setup
-// (which is home-only): looked at once the response is done, when that's known. A stranger's
-// requests teach it nothing. The re-issue is debounced so a burst of requests produces one
-// new certificate.
+// Built-in HTTPS learns device addresses (noteRequestHost) only from signed-in requests or
+// first-run setup, checked after the response. Re-issue is debounced.
 let httpsServer = null;
 let reissueTimer = null;
 app.use((req, res, next) => {
@@ -188,24 +167,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// Every error response carries a Plinthio error code (see errors.js). Routes name specific
-// codes; this fills in a status-based one for any that don't.
+// Fills in a status-based error code for responses that don't name one.
 app.use('/api', attachErrorCodes);
 
-// Media URLs authenticate via a `?token=<JWT>` query param (needed for <img>/<video> src,
-// which can't send an Authorization header) — redact it so a live session token never
-// ends up sitting in plaintext in the access log.
+// Redact `?token=` from the access log.
 morgan.token('url', (req) => (req.originalUrl || req.url).replace(/([?&]token=)[^&]+/i, '$1[REDACTED]'));
 morgan.token('client', clientAddress);
 app.use(morgan(ACCESS_LOG_FORMAT));
 
-// High-throughput media streaming and thumbnail routes are exempt from the strict JSON API
-// rate limit below (a reader/player firing off many small range/page requests per second is
-// normal use, not abuse) but still need *some* ceiling — otherwise nothing stops a single
-// authenticated client from hammering thumbnail generation or video byte-range requests.
+// Media routes make many small requests, so they get a looser limit than the JSON API.
 const mediaLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 1200, // generous — normal seeking/page-turning is well under this
+  max: 1200,
   standardHeaders: true,
   legacyHeaders: false
 });
@@ -213,63 +186,52 @@ app.use('/api/media/video', mediaLimiter, videoRoutes);
 // Live TV streams: a playlist every few seconds plus every segment, like video.
 app.use('/api/media/live', mediaLimiter, liveMediaRoutes);
 app.use('/api/media', mediaLimiter, mediaRoutes);
-// Sync apps: Mihon's Komga extension and tracker at Komga's own paths, and KOReader's
-// progress sync. Mihon fetches pages one by one, so these sit under the media limiter.
+// Komga (Mihon) and KOReader sync: Mihon fetches pages one by one, so the media limiter.
 app.use('/api/v1', mediaLimiter, komgaV1);
 app.use('/api/v2', mediaLimiter, komgaV2);
 app.use('/api/kosync', mediaLimiter, kosyncRoutes);
 
-// Rate limiters for security hardening
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 60, // 60 requests per 15 min for auth/login attempts
+  windowMs: 15 * 60 * 1000,
+  max: 60,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many authentication attempts. Please try again later.', code: 'P108' },
-  // The app calls setup-status, refresh and media-token on every page load. Those can't be
-  // used to guess anything, and counting them locked out a household (one shared IP)
-  // after a few dozen reloads. Only real sign-in / setup attempts count.
+  // Skip routes the app calls on every load; they can't be used to guess anything.
   skip: (req) => req.method === 'GET' || ['/refresh', '/media-token', '/me'].includes(req.path)
 });
 
 const apiLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 600, // 600 requests per minute
+  windowMs: 60 * 1000,
+  max: 600,
   standardHeaders: true,
   legacyHeaders: false
 });
 
-// Tighter limit specifically on password guessing, on top of the general auth limiter. It
-// covers /login and the two-factor step (/login/2fa). Only failures count: a two-factor
-// sign-in is two requests, and a household behind one IP signing in shouldn't lock itself
-// out, while guessing a password or a code still stops after ten tries. This one is per
-// address; wrong passwords from outside and wrong two-factor codes are also counted per
-// account (routes/auth.js), which guessing from many addresses doesn't get round.
+// Per-address limit on failed /login and /login/2fa attempts (successes don't count, so a
+// shared household IP isn't locked out). Per-account limits are in routes/auth.js.
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 failed login attempts per 15 min per IP
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many login attempts. Please wait before trying again.', code: 'P108' }
 });
 
-// Full backups (VACUUM INTO a whole-DB snapshot) are comparatively expensive disk/IO work —
-// an admin token being replayed shouldn't be able to trigger them back-to-back.
+// Full backups are heavy disk work, so a replayed admin token can't trigger them back-to-back.
 const backupLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 12, // making, downloading or copying a backup 12 times in 15 min is plenty by hand
+  max: 12,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many backup requests. Please wait before trying again.', code: 'P005' }
 });
 
-// API Routes
 app.use('/api/', apiLimiter);
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authLimiter, authRoutes);
-// Only the operations that write or stream a whole snapshot; reading the schedule, the
-// list, or checking a destination folder from the Admin page mustn't use up the allowance.
+// Only operations that write or stream a snapshot.
 app.get('/api/settings/backup', backupLimiter);
 app.use(['/api/settings/backup/create', '/api/settings/backup/copy'], backupLimiter);
 app.use('/api/libraries', libraryRoutes);
@@ -295,8 +257,7 @@ app.use('/api/live', liveRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/series', seriesRoutes);
 app.use('/api/ratings', ratingRoutes);
-// OPDS readers poll the catalog and fetch pages one at a time, so it sits under the media
-// limiter rather than the tighter JSON API one.
+// OPDS readers fetch pages one at a time, so the media limiter.
 app.use('/api/opds', mediaLimiter, opdsRoutes);
 
 // The error code catalog, for the in-app docs. Public, like the docs page itself.
@@ -304,8 +265,7 @@ app.get('/api/errors', (req, res) => {
   res.json({ codes: errorCatalog() });
 });
 
-// Built-in HTTPS (services/tls.js). Public on purpose: a phone needs the CA certificate
-// before it can trust the HTTPS address, and a CA certificate holds no secret.
+// Public: a phone needs the CA certificate before trusting HTTPS, and it holds no secret.
 app.get('/api/tls', (req, res) => {
   const status = tlsStatus();
   res.json({ enabled: status.enabled, port: status.enabled ? tlsSettings.port : null, caAvailable: status.mode === 'generated' });
@@ -313,25 +273,20 @@ app.get('/api/tls', (req, res) => {
 app.get('/api/tls/ca.crt', (req, res) => {
   const ca = caCertificate();
   if (!ca) return res.status(404).json({ error: 'Plinthio is not using its own certificate authority' });
-  // This content type is what makes iOS offer "Profile Downloaded" instead of showing text.
+  // This content type makes iOS offer "Profile Downloaded" instead of showing text.
   res.setHeader('Content-Type', 'application/x-x509-ca-cert');
   res.setHeader('Content-Disposition', 'attachment; filename="plinthio-ca.crt"');
   res.send(ca);
 });
 
-// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', version: APP_VERSION, app: 'Plinthio' });
 });
 
-// Serve frontend build if present
 const frontendDist = path.resolve(__dirname, '../../frontend/dist');
 if (fs.existsSync(frontendDist)) {
-  // Build output under /assets/ has a content hash in every filename, so the browser can
-  // keep it for a year without asking again. Everything else (index.html, sw.js, the
-  // manifest) must be rechecked each time, or a deployed update wouldn't be picked up.
-  // Over plain http:// there's no service worker to cache the app, so this is what spares
-  // each visit a round trip per file.
+  // /assets/ filenames are content-hashed, so cache for a year; everything else (index.html,
+  // sw.js, manifest) is rechecked each time so updates are picked up.
   app.use(express.static(frontendDist, {
     setHeaders(res, filePath) {
       const rel = path.relative(frontendDist, filePath);
@@ -350,12 +305,10 @@ if (fs.existsSync(frontendDist)) {
   });
 }
 
-// Global error handler
 app.use((err, req, res, next) => {
   // The message can quote the request (a JSON parse error includes part of the body).
   console.error('Unhandled error:', oneLineError(err));
-  // Body-parser rejects (malformed JSON, oversized body) are the client's fault and safe to
-  // describe; anything else stays in the server log.
+  // Body-parser errors are safe to describe; anything else stays in the log.
   if (err.type === 'entity.parse.failed') {
     return sendError(req, res, 'P001', { message: err.message, status: err.status || 400 });
   }
@@ -365,31 +318,25 @@ app.use((err, req, res, next) => {
   sendError(req, res, 'P000', { err });
 });
 
-// Bootstrap server
 async function start() {
   try {
-    // Snapshot the database before a new version's migrations touch it (no-op when the
-    // version hasn't changed or on a fresh install).
+    // Snapshot the database before a new version's migrations run.
     const upgrade = await backupBeforeUpgrade();
 
-    await getDb(); // Ensure database and tables are ready
+    await getDb();
     recordRunningVersion();
     if (upgrade) {
       console.log(`[upgrade] Now running Plinthio ${APP_VERSION}.`);
     }
 
-    // Admins get a dismissible banner when a newer release is published (UPDATE_CHECK=false
-    // turns the outbound check off entirely).
+    // New-release banner for admins; UPDATE_CHECK=false disables the check.
     initUpdateCheck();
 
-    // Pre-warm WebP thumbnail cache in background
     warmThumbnailCache().catch(e => console.warn('Thumbnail warming warning:', e.message));
 
-    // Periodically snapshot the database per the admin-configured backup schedule
     initBackupScheduler();
 
-    // Pick up new media on its own: a periodic re-scan plus (where the filesystem supports
-    // it) a watcher, both configurable under Admin → Libraries.
+    // Periodic re-scan plus a filesystem watcher where supported.
     initAutoScan();
 
     // Watch parties: drop ones everyone has left, release anyone stuck buffering.
@@ -398,17 +345,14 @@ async function start() {
     // Live TV: refresh each channel source's playlist and guide every 12 hours while it's on.
     initLiveTv();
 
-    // Films not yet looked up on TMDB: fill in their credits and collections (Shrek 1–4 as
-    // one "Shrek Collection"). Delayed so it doesn't compete with startup.
+    // Fill in TMDB credits and collections for films not yet looked up; delayed past startup.
     setTimeout(() => backfillMovieCredits().catch(() => {}), 15000);
 
-    // Converted copies of video some devices can't decode: pick the queue back up.
+    // Resume the converted-copies queue.
     initCompat().catch((err) => console.error('[compat] could not start the conversion queue:', err.message));
 
-    // Evict stale on-disk media caches (see HLS_CACHE_MAX_AGE_HOURS): HLS segments, and the
-    // 7z archives that have to be unpacked to disk to be read page by page. Run once at boot
-    // and then hourly, mirroring the backup scheduler's own setInterval pattern. Trickplay
-    // sheets are slow to build, so they keep their own 30-day limit.
+    // Hourly eviction of stale HLS segments and unpacked 7z archives (HLS_CACHE_MAX_AGE_HOURS).
+    // Trickplay sheets are slow to build, so they keep a 30-day limit.
     const cacheMaxAgeMs = config.hlsCacheMaxAgeHours * 60 * 60 * 1000;
     const sweepCaches = () => {
       sweepHlsCache(cacheMaxAgeMs);
@@ -441,9 +385,8 @@ async function start() {
   }
 }
 
-// HTTPS alongside HTTP (HTTPS_PORT, on by default in the Docker image). Plain HTTP keeps
-// working, so enabling this never locks anyone out. The certificate is checked daily: a new
-// LAN address or an approaching expiry re-issues it without a restart.
+// HTTPS alongside HTTP (HTTPS_PORT). The certificate is checked daily and re-issued for a new
+// LAN address or near expiry, without a restart.
 function startHttps() {
   if (!tlsSettings.port) return null;
   let credentials;
@@ -468,8 +411,7 @@ function startHttps() {
   return server;
 }
 
-// Re-issuing means generating a key, so this goes through the non-blocking path: requests
-// keep being served while openssl runs.
+// Non-blocking re-issue, so requests are served while openssl runs.
 async function refreshHttpsCertificate() {
   if (!httpsServer) return;
   try {
@@ -480,10 +422,9 @@ async function refreshHttpsCertificate() {
   }
 }
 
-// In the Docker image Node runs as PID 1, which ignores SIGTERM unless it handles it — so
-// without this every `docker stop` / update waited out Docker's 10 s grace period and then
-// SIGKILLed the server mid-write. Stop taking requests, close the database (checkpointing
-// its WAL) and exit; a second signal, or a shutdown that hangs, exits straight away.
+// As PID 1 in Docker, Node ignores SIGTERM unless handled, and would be SIGKILLed mid-write.
+// Stop serving, close the database (checkpointing WAL) and exit; a second signal or a hang
+// exits at once.
 function handleShutdown(servers) {
   let stopping = false;
   const shutdown = (signal) => {
@@ -504,8 +445,7 @@ function handleShutdown(servers) {
   process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
-// One stray rejected promise (a background job, a fire-and-forget log write) would
-// otherwise take the whole server down for everyone; log it and keep serving.
+// An unhandled rejection would otherwise crash the server; log it and keep serving.
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled promise rejection:', oneLineError(reason));
 });

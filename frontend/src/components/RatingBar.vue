@@ -117,10 +117,9 @@ async function load() {
   }
 }
 
-// The stars stay usable while a rating saves (disabling them dropped keyboard focus, so arrow
-// keys stepping by half stars stopped after one press); a change made mid-save is sent once
-// the first save is done, so only the latest value sticks. Each value remembers its item: the
-// bar can move on (next episode) mid-save, and a save for the old one mustn't show here.
+// The stars stay usable while a rating saves (disabling them would drop keyboard focus); a
+// change made mid-save is sent once the first finishes, so only the latest value sticks. Each
+// value remembers its item, since the bar can move on (next episode) mid-save.
 let pending;
 async function rate(value) {
   const itemId = props.item?.id;

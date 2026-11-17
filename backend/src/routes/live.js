@@ -3,7 +3,7 @@ import { getDb } from '../config/database.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
-import { ITEM_ID_RE as CHANNEL_ID_RE } from '../utils/ids.js'; // channel ids are an md5 too
+import { ITEM_ID_RE as CHANNEL_ID_RE } from '../utils/ids.js';
 import { logger } from '../services/logger.js';
 import { logoPath } from '../services/liveProxy.js';
 import crypto from 'crypto';
@@ -16,9 +16,8 @@ import {
   personalHiding, notHiddenBy, healthOverview, getHealthSettings, saveHealthSettings, checkChannelById, GUIDE_AHEAD_MS
 } from '../services/liveTv.js';
 
-// Live TV (services/liveTv.js). Viewers get the channel list and guide; playback itself is
-// under /api/media/live (routes/liveMedia.js). Everything but /status answers P700 while
-// Live TV is off — except the admin routes, so sources can be set up before switching it on.
+// Live TV channel list and guide; playback is in routes/liveMedia.js. Viewer routes but
+// /status answer P700 while Live TV is off; admin routes work so it can be set up first.
 
 const router = express.Router();
 router.use(authenticateToken);
@@ -263,8 +262,8 @@ admin.patch('/filters', handle(async (req, res) => {
 
 // ─── Channel manager ────────────────────────────────────────────────────────
 
-// Statuses SQL can pick out alone. 'visible' and 'filtered' also depend on the filters, so
-// those are narrowed down after reading (still a single pass, even over 10k+ channels).
+// Statuses SQL can pick out alone; 'visible' and 'filtered' depend on filters and are narrowed
+// after reading.
 const ADMIN_STATUS_SQL = {
   all: '',
   visible: ' AND c.hidden = 0 AND c.unsupported = 0',
@@ -394,8 +393,7 @@ admin.patch('/channels', handle(async (req, res) => {
   res.json({ updated: result.changes || 0 });
 }));
 
-// The admin's own number, name and logo for one channel. Each field given replaces what's
-// saved; null (or an empty name / logo) clears it, back to the playlist's.
+// Admin overrides for one channel; null (or empty name/logo) reverts to the playlist's.
 admin.patch('/channels/:id', handle(async (req, res) => {
   const body = req.body || {};
   if (!CHANNEL_ID_RE.test(req.params.id)) return sendError(req, res, 'P002', { message: CHANNEL_NOT_FOUND });
@@ -516,8 +514,7 @@ admin.post('/lineups', handle(async (req, res) => {
   res.status(201).json({ lineup: lineupJson(await loadLineup(db, id)) });
 }));
 
-// Before /lineups/:id, so 'order' isn't taken for an id. Line-ups left out keep their
-// order after the ones given.
+// Before /lineups/:id, so 'order' isn't taken for an id. Omitted line-ups follow the given ones.
 admin.put('/lineups/order', handle(async (req, res) => {
   const ids = req.body?.ids;
   if (!Array.isArray(ids) || ids.length > 1000 || !ids.every((id) => typeof id === 'string')) {
@@ -580,8 +577,7 @@ admin.get('/lineups/:id/channels', handle(async (req, res) => {
   res.json({ channels: await adminChannelsJson(db, rows) });
 }));
 
-// PUT replaces a line-up's channels (in the order given), POST adds to the end, DELETE takes
-// out. Ids of channels that don't exist are skipped. Answers with the line-up.
+// PUT replaces a line-up's channels, POST appends, DELETE removes. Unknown ids are skipped.
 async function editLineupChannels(req, res, mode) {
   const ids = channelIds(req.body?.ids, LINEUP_CHANNELS_MAX);
   if (!ids && !(mode === 'replace' && Array.isArray(req.body?.ids) && !req.body.ids.length)) {
@@ -661,12 +657,8 @@ function resolveChannels(index, ids) {
   return out;
 }
 
-/**
- * Everything a viewer request starts from: the shared channel list for their audience
- * (services/liveTv.js caches it), what they hid for themselves, their favourites, and — for
- * ?lineup=<id>|favourites — the channels of that line-up or their favourites, in its own
- * order. `base` is null for a line-up this viewer has no such line-up for.
- */
+// A viewer's starting point: the cached channel list for their audience, their hidden channels
+// and favourites, and for ?lineup= that line-up's channels in order (`base` null if none).
 async function viewerView(db, req, { selector = req.query.lineup } = {}) {
   const index = await channelIndex(db, req.user);
   const keep = notHiddenBy(personalHiding(req.user, index));
@@ -785,8 +777,7 @@ router.get('/now', handle(async (req, res) => {
   res.json({ channels: list.map((c) => channelJson(c, nowMap, nextMap, favouriteSet)) });
 }));
 
-// Channels by name and programmes by title, from now to the end of the guide, over the
-// channels this viewer sees. Under two characters there's nothing to look for.
+// Channels by name and programmes by title from now on; needs at least two characters.
 router.get('/search', handle(async (req, res) => {
   const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 100) : '';
   if (q.length < 2) return res.json({ channels: [], programmes: [] });
@@ -821,8 +812,7 @@ router.get('/search', handle(async (req, res) => {
   res.json({ channels: channelHits.map((c) => channelJson(c, nowMap, nextMap, favouriteSet)), programmes });
 }));
 
-// What the viewer hid for themselves, by current name, for the "Hidden for me" list.
-// Channels they can't get any more are left out.
+// The "Hidden for me" list, leaving out channels they can no longer get.
 router.get('/me/hidden', handle(async (req, res) => {
   const db = await getDb();
   const index = await channelIndex(db, req.user);

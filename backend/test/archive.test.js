@@ -61,8 +61,7 @@ describe('comic archive reading', () => {
   });
 
   test('reading many pages reuses the opened archive', async () => {
-    // Before the handle cache every page re-opened and re-parsed the whole archive — twice,
-    // since listing precedes reading — which measured ~119ms per page on a 76MB CBZ.
+    // Without the handle cache each page re-parses the whole archive (twice: list, then read).
     clearArchiveHandles();
 
     const coldStart = Date.now();

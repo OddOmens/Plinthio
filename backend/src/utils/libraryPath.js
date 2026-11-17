@@ -4,23 +4,16 @@ import { getDb } from '../config/database.js';
 import { sendError } from '../errors.js';
 import { logger } from '../services/logger.js';
 
-// Every file Plinthio catalogues or serves has to really live inside a library folder. A
-// library can hold symlinks, and a link is only a name: `book.epub -> /config/jwt.secret`
-// looks like a book and reads as the server's signing secret. So both the scanner and the
-// routes that hand out file contents resolve the link first and check where it lands.
-//
-// "Inside a library" means inside ANY library's root, so a link from one library into
-// another keeps working. Setups that link out to a separate media pool on purpose can name
-// those folders in SYMLINK_ALLOWED_ROOTS (separated like PATH, with ':').
+// Every file catalogued or served must really live inside a library: a symlink like
+// `book.epub -> /config/jwt.secret` would otherwise serve the signing secret. "Inside" means
+// any library's root; extra targets can be listed in SYMLINK_ALLOWED_ROOTS (':'-separated).
 const EXTRA_ROOTS = (process.env.SYMLINK_ALLOWED_ROOTS || '')
   .split(path.delimiter)
   .map((p) => p.trim())
   .filter((p) => p && path.isAbsolute(p));
 
-// The roots change only when an admin adds, moves or removes a library, so they're kept for
-// a few seconds rather than read from the database on every segment and page request. A
-// file that falls outside the cached roots triggers one re-read (at most once a second)
-// before it's refused, so a library added a moment ago works straight away.
+// Roots are cached for a few seconds. A miss forces one re-read (at most once a second)
+// before refusing, so a just-added library works straight away.
 const ROOTS_TTL_MS = 5000;
 const MISS_REFRESH_MS = 1000;
 let cached = { roots: null, at: 0 };
@@ -63,10 +56,7 @@ export function warnOutsideLibrary(filePath, realPath, category = 'media') {
   logger.warn(category, `Skipped "${filePath}": it links to "${realPath}", which is outside every library folder`);
 }
 
-/**
- * Synchronous check against roots the caller already holds (the scanner's directory walk).
- * Returns the real path, or null when the file is missing or lands outside the roots.
- */
+/** Sync check against roots the caller holds: the real path, or null if missing or outside. */
 export function realPathInRoots(filePath, roots, category = 'media') {
   let realPath;
   try {
@@ -106,10 +96,7 @@ export async function resolveLibraryFile(filePath) {
   return { ok: false, reason: 'outside' };
 }
 
-/**
- * For routes: the real path to read, or null after answering the request (P301 when the
- * file is gone, 403 when it isn't inside a library).
- */
+/** For routes: the real path, or null after answering (P301 if gone, 403 if outside). */
 export async function requireLibraryFile(req, res, filePath) {
   const result = await resolveLibraryFile(filePath);
   if (result.ok) return result.realPath;

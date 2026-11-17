@@ -67,8 +67,7 @@ describe('cover art discovery', () => {
   });
 
   test('skips the AppleDouble sidecar that sorts ahead of the real artwork', () => {
-    // This exact shape — `._www.YTS.MX.jpg` before `www.YTS.MX.jpg` — is what left a real
-    // movie library showing blank cards: the 4KB sidecar was copied in as the cover.
+    // `._www.YTS.MX.jpg` sorts before `www.YTS.MX.jpg`; the 4KB sidecar must not become the cover.
     const dir = fs.mkdtempSync(path.join(workDir, 'yts-'));
     fs.writeFileSync(path.join(dir, '._www.YTS.MX.jpg'), APPLE_DOUBLE);
     fs.writeFileSync(path.join(dir, 'www.YTS.MX.jpg'), JPEG);
@@ -135,7 +134,7 @@ describe('artwork backfill during a scan', () => {
     const db = await getDb();
     const item = await db.get('SELECT id, cover_path FROM items WHERE library_id = ?', ['art-lib']);
 
-    // Simulate the broken state a previous version left behind: a cover row pointing at junk.
+    // A cover row pointing at junk.
     fs.writeFileSync(path.join(config.coversDir, item.cover_path), APPLE_DOUBLE);
 
     await scanLibrary('art-lib');
@@ -212,7 +211,6 @@ describe('remote cover download security & normalization', () => {
   });
 
   test('normalizes an image buffer to JPEG and saves to coversDir', async () => {
-    // Generate a valid PNG buffer using sharp
     const sharp = (await import('sharp')).default;
     const testBuffer = await sharp({
       create: { width: 100, height: 100, channels: 3, background: { r: 255, g: 0, b: 0 } }

@@ -16,31 +16,14 @@ import { logoPath } from './liveProxy.js';
 import { checkStream, nextHealth } from './liveHealth.js';
 import { getSetting, setSetting } from './settings.js';
 
-// Live TV: channels from M3U playlists, with programme guides from XMLTV. Off until an admin
-// turns it on (Admin → Live TV). Two kinds of source:
-//
-//   iptv-org  a one-click preset (a country, language or category) from the public iptv-org
-//             project's playlists, which are rebuilt daily
-//   m3u       any playlist URL the admin pastes, optionally with its own guide URL
-//
-// A refresh re-reads the playlist, upserts its channels, drops the ones that are gone, then
-// streams the guide in. Each source is refreshed when added and every 12 hours while Live TV
-// is on; refreshes run one at a time. Playback goes through routes/liveMedia.js.
-//
-// What viewers see is narrowed further by the admin's filters (whole categories, languages,
-// countries or stream hosts, and region-locked channels): rules kept in settings rather than
-// per-channel flags, so they hold across refreshes and catch channels a list adds later. A
-// channel marked "always show" (pinned) passes them by; a channel the admin hid stays hidden.
-//
-// The admin can also give channels their own number, name and logo, and gather them into
-// line-ups (a line-up can open its channels to kids accounts). A light background check
-// (services/liveHealth.js) spots channels whose stream has gone and, by default, hides them.
-// Viewers' own favourites, recently watched list and "hide for me" choices are applied on top
-// of the shared per-audience channel list, so none of them costs more than a small query.
+// Live TV: channels from M3U playlists (iptv-org presets or any pasted URL) with XMLTV guides.
+// Sources refresh one at a time, on add and every 12 hours. Admin filters live in settings rather
+// than per-channel flags so they also catch channels added by later refreshes; pinned channels bypass them.
+// Per-viewer favourites/recents/hides are applied on top of the shared per-audience channel list.
 
 const SETTING_KEY = 'live_tv_enabled';
 
-// Where the presets come from. Overridable only so the test suite can stand in for it.
+// Overridable for tests.
 export const IPTV_ORG_URL = (process.env.LIVE_TV_IPTV_ORG_URL || 'https://iptv-org.github.io').replace(/\/+$/, '');
 export const USER_AGENT = `Plinthio/${APP_VERSION}`;
 
@@ -67,7 +50,7 @@ export async function isLiveTvEnabled(db) {
 
 export async function saveLiveTvEnabled(db, enabled) {
   await setSetting(db, SETTING_KEY, enabled ? 'true' : 'false');
-  // Sources that went stale while it was off catch up straight away.
+  // Catch up sources that went stale while off.
   if (enabled) kickLiveTv();
 }
 
@@ -101,7 +84,7 @@ async function loadPresets() {
     fetchJson(`${IPTV_ORG_URL}/api/languages.json`),
     fetchJson(`${IPTV_ORG_URL}/api/categories.json`)
   ]);
-  // Codes come back lower-case: they're used as-is in the preset ('countries/us').
+  // Lower-cased: used as-is in the preset id ('countries/us').
   return {
     countries: list(countries)
       .filter((c) => c?.code && c?.name)
@@ -118,7 +101,7 @@ async function loadPresets() {
   };
 }
 
-/** The preset lists, cached for a day (and shared by callers arriving while they load). */
+/** Preset lists, cached for a day; concurrent callers share one load. */
 export async function getPresets() {
   if (presetsCache && Date.now() - presetsCache.at < PRESETS_TTL_MS) return presetsCache.value;
   if (!presetsLoading) {
@@ -148,7 +131,7 @@ export function presetPlaylistUrl(preset) {
   return `${IPTV_ORG_URL}/iptv/${preset}.m3u`;
 }
 
-/** English language names by code ('spa' → 'Spanish'), from the presets; empty if they can't be had soon. */
+/** Language names by code ('spa' → 'Spanish'); empty Map if presets don't load within 4s. */
 export async function languageNames() {
   try {
     const presets = await Promise.race([
@@ -163,11 +146,8 @@ export async function languageNames() {
 
 // ─── iptv-org channel data ──────────────────────────────────────────────────
 
-// Public playlists say little about a channel beyond its tvg-id ("News.us@SD": channel
-// "News.us", feed "SD"). iptv-org's database knows each channel's country and each feed's
-// languages, which is what the admin's language / country filters go by. Both files are
-// large, so they're fetched at most once a day and boiled down to a few Maps; when they can't
-// be had, a refresh carries on and the channels keep what they had.
+// Country and feed languages per tvg-id ("News.us@SD" = channel "News.us", feed "SD"), for the
+// language/country filters. The files are large, so they're fetched at most daily.
 
 let channelData = null; // { at, countries: Map(channel → 'US'), feeds: Map('channel@feed' → 'eng;spa'), mainFeeds: Map(channel → 'eng') }
 let channelDataFailedAt = 0;
@@ -198,10 +178,7 @@ async function loadChannelData() {
   return { countries, feeds: feedLanguages, mainFeeds };
 }
 
-/**
- * iptv-org's channel data, fetched at most once a day (and retried no sooner than an hour
- * after a failure). Resolves with the last good copy, however old, or null; never rejects.
- */
+/** Retries at most hourly after a failure. Resolves with the last good copy or null; never rejects. */
 export function getChannelData() {
   const now = Date.now();
   if (channelData && now - channelData.at < CHANNEL_DATA_TTL_MS) return Promise.resolve(channelData);
@@ -222,11 +199,7 @@ export function getChannelData() {
   return channelDataLoading;
 }
 
-/**
- * Country and languages for an iptv-org channel from its tvg-id. Without the channel data
- * (`data` null), or for a channel it doesn't know, the country is read from the id itself
- * ("News.us@SD" → 'US') and the languages are unknown (null).
- */
+/** Country and languages for a tvg-id; falls back to the id's suffix for country ("News.us" → 'US'). */
 export function iptvOrgDetails(tvgId, data) {
   const [channel, feed] = String(tvgId || '').split('@');
   const dot = channel.lastIndexOf('.');
@@ -242,8 +215,7 @@ export function iptvOrgDetails(tvgId, data) {
 const FILTERS_KEY = 'live_tv_filters';
 const ACK_KEY = 'live_tv_public_ack';
 
-// Until an admin saves filters of their own. jmp2.uk relays many public channels through a
-// third-party redirect service, so its channels start out hidden.
+// jmp2.uk is a third-party redirect relay, so it starts hidden.
 export const DEFAULT_FILTERS = Object.freeze({
   hideGeoBlocked: true,
   hiddenGroups: [],
@@ -257,8 +229,7 @@ export const FILTER_LIST_MAX = 5000;
 const COUNTRY_RE = /^[A-Z]{2}$/;
 const HOST_RE = /^(\[[0-9a-f:.]+\]|[a-z0-9_-]+(\.[a-z0-9_-]+)*)$/;
 
-// How each list's entries are written down, so 'ES', 'es' and ' es ' are one country.
-// Returns null for an entry that can't be one of that list's names.
+// Normalises entries per list ('ES', ' es ' → 'ES'); null when invalid.
 const FILTER_ENTRY = {
   hiddenGroups: (v) => v.trim().slice(0, 200) || null,
   hiddenLanguages: (v) => v.trim().toLowerCase().slice(0, 64) || null,
@@ -309,7 +280,7 @@ function compileFilters(filters) {
 
 let filtersState = null; // { filters, compiled }
 
-/** The admin's filters ({ filters, compiled }), read once and kept until they're saved again. */
+/** Cached until saved again. */
 export async function getLiveFilters(db) {
   if (!filtersState) {
     const row = await db.get('SELECT value FROM settings WHERE key = ?', [FILTERS_KEY]);
@@ -333,14 +304,9 @@ export async function saveLiveFilters(db, filters) {
   return clean;
 }
 
-/** The host a channel streams from ('x.jmp2.uk'), or null. */
 export const streamHost = (url) => hostOf(url);
 
-/**
- * What the host list shows for a stream host: roughly the domain someone registered —
- * the last two labels, or three under a short second-level label ('a.b.co.uk' → 'b.co.uk').
- * IP addresses and single-label LAN names stay as they are.
- */
+/** Approximate registered domain ('a.b.co.uk' → 'b.co.uk'); IPs and single labels unchanged. */
 export function hostGroup(host) {
   if (!host) return null;
   if (host.startsWith('[') || net.isIP(host)) return host;
@@ -349,7 +315,7 @@ export function hostGroup(host) {
   return labels.length <= keep ? host : labels.slice(-keep).join('.');
 }
 
-// The hidden host entry `host` falls under: itself, or a parent domain of it.
+// The hidden entry matching `host` or one of its parent domains.
 function hiddenHostOf(host, hosts) {
   if (!host || !hosts.size) return null;
   for (let h = host; ;) {
@@ -361,10 +327,8 @@ function hiddenHostOf(host, hosts) {
 }
 
 /**
- * Which of the admin's filters catch a channel row (geo_blocked, groups, languages, country,
- * stream_url), as [{ type, value }]: geoBlocked, a group, each language (only when every one
- * of its languages is hidden), its country, its stream host. `first` stops at the first.
- * Pinned or not doesn't come into it — see isFilteredOut.
+ * Filters that catch a channel row, as [{ type, value }]. Languages only count when all of them
+ * are hidden. Ignores pinning (see isFilteredOut). `first` stops at the first match.
  */
 export function filterReasons(row, compiled, { first = false } = {}) {
   const reasons = [];
@@ -395,21 +359,18 @@ export function filterReasons(row, compiled, { first = false } = {}) {
   return reasons;
 }
 
-/** Whether the admin's filters keep a channel from viewers: caught by one, and not pinned. */
+/** Hidden by a filter and not pinned. */
 export function isFilteredOut(row, compiled) {
   return !row.pinned && filterReasons(row, compiled, { first: true }).length > 0;
 }
 
 /**
- * The filters with everything the admin page needs to choose them: how many channels there
- * are and how many viewers see, and every category, language, country and stream host with
- * its channel count. Counted over the playable channels of enabled sources, each stream once
- * (as viewers get them). Hidden entries no channel has any more are still listed, so they
- * can be shown again.
+ * Filters plus channel counts per category, language, country and host, over playable channels
+ * of enabled sources (each stream once). Hidden entries with no channels stay listed so they can be unhidden.
  */
 export async function filterOverview(db) {
   const { filters } = await getLiveFilters(db);
-  // Channels the dead-channel check hides aren't counted either: no filter brings them back.
+  // Offline-hidden channels aren't counted; no filter brings them back.
   const { hideOffline } = await getHealthSettings(db);
   const rows = await db.all(
     `SELECT c.groups, c.languages, c.country, c.stream_url, c.geo_blocked
@@ -468,7 +429,7 @@ const OFFLINE_SQL = " AND (c.health IS NULL OR c.health <> 'offline')";
 
 let healthSettings = null;
 
-/** Whether the check runs and whether offline channels are hidden, read once and kept. */
+/** Cached until saved again. */
 export async function getHealthSettings(db) {
   if (!healthSettings) {
     const row = await db.get('SELECT value FROM settings WHERE key = ?', [HEALTH_KEY]);
@@ -500,8 +461,7 @@ export async function saveHealthSettings(db, changes) {
 
 // ─── Public lists acknowledgement ───────────────────────────────────────────
 
-// Before the first public list, an admin confirms they've read what public channels are
-// (links Plinthio doesn't host or check, some not licensed where they are). Asked once.
+// One-time admin confirmation before adding the first public list.
 export async function publicListsAcknowledged(db) {
   return !!await db.get('SELECT 1 FROM settings WHERE key = ?', [ACK_KEY]);
 }
@@ -520,8 +480,7 @@ export function isKidsUser(user) {
   return user?.kids_mode === 1 || user?.kids_mode === true;
 }
 
-// What a viewer may watch is read on every channel list, guide page and stream request, and
-// only changes on a refresh or an admin edit — so it's cached per audience until one happens.
+// Read on every list, guide and stream request but rarely changes, so cached per audience.
 let channelsVersion = 0;
 const listCache = new Map();
 
@@ -532,30 +491,18 @@ export function channelsChanged() {
 
 export const splitGroups = (value) => (value ? String(value).split(';').filter(Boolean) : []);
 
-// The channel rows viewers may get, before the admin's filters (which need the row) and the
-// per-stream de-duplication. A kids account gets channels allowed for kids, one by one or
-// through a line-up that allows kids.
+// Kids accounts get channels allowed for kids directly or via a kids-allowed line-up.
 const KIDS_SQL = ` AND (c.kids_allowed = 1 OR c.id IN (
   SELECT lc.channel_id FROM live_lineup_channels lc JOIN live_lineups l ON l.id = lc.lineup_id WHERE l.kids_allowed = 1))`;
 
 const isCustomised = (row) => row.custom_number != null || !!row.custom_name || !!row.custom_logo;
 
 /**
- * Everything one audience ('all' or 'kids') may watch, built once and cached until channels,
- * filters, line-ups or settings change:
- *
- *   channels  in order, each with its number — the admin's own number first (in number
- *             order), then the rest in list order, numbered on from the highest of those
- *   byId      channel id → channel, also for the copies the de-duplication dropped (a
- *             favourite or line-up entry naming a copy still finds the channel)
- *   lineups   [{ id, name, channels }] in the admin's order, each channel list in the
- *             line-up's own order and only with channels this audience may watch
- *
- * Enabled sources (oldest first, then playlist order), without hidden or unplayable channels
- * or those the admin's filters catch (unless pinned), nor — when the admin hides them —
- * those the dead-channel check found offline. A channel two sources both carry (a country
- * preset and a language preset overlap a lot) is listed once, under its first copy, unless
- * a later copy is the one the admin gave a number, name or logo.
+ * What one audience ('all' or 'kids') may watch, cached until something changes:
+ *   channels  custom-numbered first, then the rest numbered on from the highest custom number
+ *   byId      channel id → channel, including dropped duplicate copies
+ *   lineups   [{ id, name, channels }], limited to this audience's channels
+ * A stream carried by several sources is listed once, under its first copy unless a later copy is customised.
  */
 export async function channelIndex(db, user) {
   const audience = isKidsUser(user) ? 'kids' : 'all';
@@ -603,7 +550,7 @@ export async function channelIndex(db, user) {
   }));
   const byId = new Map(channels.map((c) => [c.id, c]));
   for (const [from, to] of aliases) {
-    // An alias can point at a copy that was itself replaced later on; follow it through.
+    // Aliases can chain when a kept copy was later replaced.
     let target = to;
     while (!byId.has(target) && aliases.has(target)) target = aliases.get(target);
     if (byId.has(target)) byId.set(from, byId.get(target));
@@ -627,7 +574,6 @@ export async function channelIndex(db, user) {
   return entry;
 }
 
-/** The channels `user` may watch, in order, each with its number (see channelIndex). */
 export async function visibleChannels(db, user) {
   return (await channelIndex(db, user)).channels;
 }
@@ -640,11 +586,7 @@ const stringList = (value) => (Array.isArray(value)
   ? value.filter((v) => typeof v === 'string' && v && v.length <= 200).slice(0, PERSONAL_LIST_MAX)
   : []);
 
-/**
- * What a viewer hid for themselves (preferences.liveTv: hiddenChannels, hiddenGroups; any
- * other keys are ignored), as Sets — channel ids resolved through `index` so a hidden copy
- * hides its channel.
- */
+/** A viewer's own hidden channels and groups; ids resolve through `index` so a hidden copy hides its channel. */
 export function personalHiding(user, index) {
   const liveTv = user?.preferences?.liveTv;
   const prefs = liveTv && typeof liveTv === 'object' && !Array.isArray(liveTv) ? liveTv : {};
@@ -653,20 +595,17 @@ export function personalHiding(user, index) {
   return { channels, groups: new Set(stringList(prefs.hiddenGroups)) };
 }
 
-/** A test for channels the viewer didn't hide for themselves. */
 export function notHiddenBy(hiding) {
   if (!hiding.channels.size && !hiding.groups.size) return () => true;
   return (c) => !hiding.channels.has(c.id) && !c.groups.some((g) => hiding.groups.has(g));
 }
 
 /**
- * What's on now and next for every channel with a guide, as two Maps keyed by tvg id.
- * Bounded by the start index: nothing runs for more than 12 hours, and "next" only looks 12
- * hours ahead.
+ * Now/next Maps keyed by tvg id. Assumes no programme runs over 12 hours so the start index
+ * bounds the query; "next" looks 12 hours ahead.
  */
 export async function nowAndNext(db, now = Date.now(), tvgIds = null) {
   const span = 12 * 60 * 60 * 1000;
-  // For a handful of channels (favourites, a search), only theirs are read.
   const only = tvgIds ? ' AND tvg_id IN (SELECT value FROM json_each(?))' : '';
   const ids = tvgIds ? [JSON.stringify([...tvgIds])] : [];
   const current = await db.all(
@@ -687,14 +626,11 @@ export async function nowAndNext(db, now = Date.now(), tvgIds = null) {
 // ─── Sources ────────────────────────────────────────────────────────────────
 
 const refreshing = new Set();
-// Source id → when its refresh last started without finishing (it failed, or the server
-// stopped partway through). Such a source is left alone for an hour.
+// Source id → when a refresh started without finishing; such a source is skipped for an hour.
 const lastFailure = new Map();
 let queue = Promise.resolve();
 
-// The same, kept in settings so it outlives a restart. Without it a source that had never
-// refreshed successfully was tried again a minute after every start — and a playlist that
-// brings the server down while being read would do so on every start, for ever.
+// Persisted so a playlist that crashes the server isn't retried on every start.
 const ATTEMPTS_KEY = 'live_tv_refresh_attempts';
 let attemptsLoaded = false;
 
@@ -707,13 +643,13 @@ async function loadRefreshAttempts(db) {
       if (Number.isFinite(at) && !lastFailure.has(id)) lastFailure.set(id, at);
     }
   } catch {
-    // Unreadable: nothing is held back, as before this was kept.
+    // Unreadable: hold nothing back.
   }
 }
 
 async function saveRefreshAttempts(db) {
   const now = Date.now();
-  // Old entries no longer hold anything back (and their source may be long gone).
+  // Drop expired entries.
   for (const [id, at] of lastFailure) {
     if (now - at >= RETRY_FAILED_AFTER_MS) lastFailure.delete(id);
   }
@@ -744,9 +680,8 @@ export function newSourceId() {
   return crypto.randomUUID();
 }
 
-// Hosts a source's own fetches may reach on the local network. An admin's own playlist (and
-// the guide they gave for it) can live on a LAN box; a public preset never can.
-// iptv-org itself is public; only the test suite's stand-in (LIVE_TV_IPTV_ORG_URL) is local.
+// LAN hosts a source's fetches may reach: only an admin's own m3u playlist/guide, never a preset
+// (except the test suite's local iptv-org stand-in).
 function iptvOrgTestHosts() {
   return process.env.LIVE_TV_IPTV_ORG_URL ? [hostOf(IPTV_ORG_URL)] : [];
 }
@@ -764,7 +699,7 @@ LOOPBACK.addSubnet('127.0.0.0', 8, 'ipv4');
 LOOPBACK.addAddress('::1', 'ipv6');
 LOOPBACK.addSubnet('::ffff:127.0.0.0', 104, 'ipv6'); // 127.x written as an IPv6 address
 
-// The one kind of IPv6 address a home network's own devices have (unique local, fc00::/7).
+// Unique local IPv6 (fc00::/7), the only private IPv6 a home LAN device has.
 const UNIQUE_LOCAL = new net.BlockList();
 UNIQUE_LOCAL.addSubnet('fc00::', 7, 'ipv6');
 
@@ -774,8 +709,7 @@ function isLoopbackAddress(address) {
   return family ? LOOPBACK.check(ip, family === 6 ? 'ipv6' : 'ipv4') : false;
 }
 
-// The names the hosts file gives a loopback address ("localhost", "ip6-localhost", and on
-// Debian the machine's own name on 127.0.1.1). Re-read only when the file changes.
+// Hosts-file names for loopback addresses (incl. Debian's 127.0.1.1); re-read when the file changes.
 let hostsFile = { mtimeMs: -1, names: new Set() };
 function hostsFileLoopbackNames() {
   const file = process.platform === 'win32'
@@ -798,23 +732,17 @@ function hostsFileLoopbackNames() {
   return hostsFile.names;
 }
 
-// Names found, by actually resolving them while a playlist was being loaded, to lead back to
-// this machine (see noteLoopbackNames). Bounded; a restart starts it empty again.
+// Names seen resolving to loopback during playlist loads (see noteLoopbackNames). In memory, bounded.
 const resolvedToLoopback = new Set();
 const MAX_NOTED_NAMES = 1000;
 
 /**
- * Whether `host` — a private address or home-network name, as lanHostOf returns them — is
- * this machine by another name. The old
- * test knew only "localhost", "::1" and "127.…", so "ip6-localhost", the server's own
- * hostname or "::ffff:127.0.0.1" passed as an ordinary LAN host — and a playlist could point
- * the stream relay at services that listen only on localhost.
+ * Whether a LAN host (as lanHostOf returns) is this machine under any name, so a playlist
+ * can't point the stream relay at localhost-only services.
  */
 export function isLoopbackHost(host) {
   if (!host) return false;
-  // An IPv6 address counts as private either because it is unique-local or because it wraps
-  // an IPv4 one (::ffff:a.b.c.d, NAT64, 6to4). Nobody writes a tuner's address the second
-  // way; it is a way of spelling 127.0.0.1 differently, and is treated as one.
+  // Private IPv6 that isn't unique-local wraps an IPv4 address (::ffff:, NAT64, 6to4): treat as loopback.
   if (net.isIPv6(host)) return !UNIQUE_LOCAL.check(host, 'ipv6');
   if (net.isIP(host)) return isLoopbackAddress(host);
   const name = host.replace(/\.$/, '');
@@ -826,11 +754,7 @@ export function isLoopbackHost(host) {
   return hostsFileLoopbackNames().has(name) || resolvedToLoopback.has(name);
 }
 
-/**
- * Resolves the home-network names a playlist's streams use and remembers the ones that come
- * back as a loopback address, for names nothing above recognises (one the router's DNS
- * points at 127.0.0.1, say). Best effort: a name that can't be resolved is left alone.
- */
+// Best-effort: remembers stream host names that DNS resolves to loopback.
 async function noteLoopbackNames(channels) {
   const names = new Set();
   for (const channel of channels) {
@@ -848,17 +772,14 @@ async function noteLoopbackNames(channels) {
         resolvedToLoopback.add(name.replace(/\.$/, ''));
       }
     } catch {
-      // Unknown or slow to answer: not our concern here.
+      // Unresolvable or slow: ignore.
     }
   }));
 }
 
 /**
- * The private host a channel's stream may use: its own LAN host, only for an admin's own
- * playlist, and only when that playlist was itself loaded from the local network. A playlist
- * from the internet is someone else's list, and mustn't point the server at the LAN (or at
- * localhost, where the Caddy and Tailscale add-ons listen). Loopback — under any of its
- * names, see isLoopbackHost — only for a playlist served from that same host.
+ * The LAN host a stream may use: only for an admin m3u playlist that was itself loaded from the
+ * LAN, so internet playlists can't reach the LAN. Loopback only when the playlist came from the same host.
  */
 export function channelPrivateHost(channel) {
   if (channel.source_kind !== 'm3u') return null;
@@ -881,10 +802,7 @@ export function upstreamHeaders(channel) {
   return headers;
 }
 
-/**
- * Queues a refresh of one source (they run one at a time). Returns false if that source is
- * already queued or refreshing. Never rejects; failures land in the source's last_error.
- */
+/** Queues a refresh; false if already queued. Failures land in the source's last_error. */
 export function refreshSource(sourceId) {
   if (refreshing.has(sourceId)) return false;
   refreshing.add(sourceId);
@@ -895,8 +813,7 @@ export function refreshSource(sourceId) {
   return true;
 }
 
-// Refreshes write thousands of rows in batches. They do it on a connection of their own, so
-// a batch's transaction never swallows (or collides with) a request's writes on the shared one.
+// Separate connection so batch transactions don't swallow or collide with request writes.
 let writerPromise = null;
 function writer() {
   if (!writerPromise) {
@@ -932,16 +849,14 @@ async function runRefresh(sourceId) {
   const w = await writer();
   const stamp = new Date().toISOString();
 
-  // Noted before any of the work, and taken back only when it succeeds: if reading this
-  // playlist is what stops the server, the next start must not walk straight into it again.
+  // Recorded up front and cleared on success, so a playlist that crashes the server isn't retried on restart.
   await loadRefreshAttempts(db);
   lastFailure.set(sourceId, Date.now());
   await saveRefreshAttempts(db);
 
   try {
     const playlist = await loadPlaylist(source);
-    // Public lists get their countries and languages from iptv-org's channel data; without
-    // it, the channels keep what an earlier refresh found.
+    // Without channel data, iptv-org channels keep the details from an earlier refresh.
     const data = source.kind === 'iptv-org' ? await getChannelData() : null;
     const keepDetails = source.kind === 'iptv-org' && !data;
     if (source.kind === 'iptv-org') {
@@ -979,7 +894,7 @@ async function runRefresh(sourceId) {
     logger.warn('media', `Live TV: could not refresh "${source.name}": ${err.message}`);
   }
 
-  // Removed while it was loading (the download can take a while): drop what this run wrote.
+  // Source deleted mid-refresh: drop what this run wrote.
   if (!await w.get('SELECT 1 FROM live_sources WHERE id = ?', [sourceId])) {
     await w.run('DELETE FROM live_channels WHERE source_id = ?', [sourceId]);
     await pruneProgrammes(w);
@@ -998,7 +913,7 @@ async function loadPlaylist(source) {
     throw new Error(`The playlist could not be downloaded (HTTP ${res.statusCode})`);
   }
   const body = await readBody(res, PLAYLIST_MAX_BYTES);
-  // Read in slices, so a large playlist doesn't hold up everything else the server is doing.
+  // Parsed in slices so a large playlist doesn't block the event loop.
   const parsed = await parseM3uAsync(body.toString('utf8'));
   if (!parsed) throw new Error('That address did not return an M3U playlist');
   if (parsed.skippedLines || parsed.truncated) {
@@ -1017,15 +932,12 @@ async function loadPlaylist(source) {
     channels.push(channel);
   }
   if (source.kind === 'm3u' && lanHostOf(source.playlist_url)) await noteLoopbackNames(channels);
-  // A relative guide address is relative to the playlist, like its streams.
   const guideUrls = parsed.guideUrls.map((g) => new URL(g, url).toString());
   return { channels, guideUrls };
 }
 
-// Upserts on (source_id, stable_key), which keeps hidden / kids_allowed / pinned and the
-// admin's own number, name and logo; whatever this refresh didn't touch has left the playlist
-// and goes. A channel whose stream moved starts over with the dead-channel check. With `keepDetails`, a channel's
-// country and languages from an earlier refresh win over what this one could find.
+// Upserts on (source_id, stable_key) so admin settings survive; untouched rows are deleted.
+// A changed stream URL resets health. `keepDetails` keeps earlier country/languages.
 async function saveChannels(w, source, channels, stamp, { keepDetails = false } = {}) {
   const detail = (column) => (keepDetails
     ? `${column} = COALESCE(live_channels.${column}, excluded.${column})`
@@ -1065,23 +977,20 @@ async function saveChannels(w, source, channels, stamp, { keepDetails = false } 
   return channels.length;
 }
 
-/** Drops guide entries that have ended, and those for channels no source carries any more. */
+/** Drops ended guide entries and those for channels no longer carried. */
 export async function pruneProgrammes(db, now = Date.now()) {
   await db.run('DELETE FROM live_programmes WHERE stop < ?', [now - GUIDE_BEHIND_MS]);
   await db.run('DELETE FROM live_programmes WHERE tvg_id NOT IN (SELECT tvg_id FROM live_channels WHERE tvg_id IS NOT NULL)');
 }
 
-/**
- * Which of a source's channels a guide channel id feeds. Exact ids first; public guides often
- * list a channel without the "@feed" suffix playlists use ("News.us" for "News.us@SD"), so a
- * bare id also feeds its suffixed channels, unless the guide lists that exact feed too.
- */
-// A guide is a download like any other: what is remembered per distinct channel id in it is
-// bounded. A country's guide lists a few thousand channels; past these limits ids are still
-// answered, just not remembered (and, for the list of channels a guide has, not noted).
+// Caps on per-guide memory; ids past them are still matched, just not remembered.
 export const MAX_GUIDE_IDS = 50000;
 const MAX_GUIDE_ID_LENGTH = 256;
 
+/**
+ * Maps a guide channel id to the source's tvg ids it feeds. Guides often omit the "@feed" suffix
+ * ("News.us" for "News.us@SD"), so a bare id also feeds suffixed channels the guide doesn't list exactly.
+ */
 export function guideTargets(tvgIds, guideHasChannel, { maxRemembered = MAX_GUIDE_IDS } = {}) {
   const exact = new Set(tvgIds);
   const byBase = new Map();
@@ -1144,7 +1053,7 @@ async function importGuide(w, source, guideUrl) {
       targets,
       onBatch: (programmes) => inTransaction(w, async () => {
         for (const p of programmes) {
-          // A channel's old schedule goes once the new one starts arriving.
+          // Clear a channel's old schedule when its first new entry arrives.
           if (!cleared.has(p.tvgId)) {
             cleared.add(p.tvgId);
             await w.run('DELETE FROM live_programmes WHERE tvg_id = ?', [p.tvgId]);
@@ -1160,10 +1069,8 @@ async function importGuide(w, source, guideUrl) {
 
 // ─── Dead-channel check: schedule ───────────────────────────────────────────
 
-// Each schedule tick (every 10 minutes) checks up to 20 channels, two at a time, the longest
-// unchecked first: about 2,900 checks a day, so ~1,500 channels are each looked at about once
-// a day. A channel that failed once is asked again after an hour (a second failure in a row
-// makes it offline); an offline one only after a day.
+// Each 10-minute tick checks up to 20 channels, two at a time (~2,900 checks a day). A failed
+// channel is retried after an hour; an offline one after a day.
 const HEALTH_BATCH = 20;
 const HEALTH_PARALLEL = 2;
 const HEALTH_RECHECK_MS = 20 * 60 * 60 * 1000;
@@ -1173,10 +1080,7 @@ const HEALTH_OFFLINE_RECHECK_MS = 24 * 60 * 60 * 1000;
 const HEALTH_COLUMNS = `c.id, c.stream_url, c.http_headers, c.health, c.health_fails, c.pinned, c.geo_blocked,
        c.groups, c.languages, c.country, s.kind AS source_kind, s.playlist_url AS source_playlist_url`;
 
-/**
- * The channels due a check, the longest unchecked first: playable channels of enabled
- * sources that viewers could get (not hidden by the admin or caught by a filter).
- */
+/** Channels due a check, longest unchecked first; only ones viewers could get. */
 export async function healthCandidates(db, { now = Date.now(), limit = HEALTH_BATCH } = {}) {
   const before = (ms) => new Date(now - ms).toISOString();
   const rows = await db.all(
@@ -1209,7 +1113,7 @@ async function runCheck(db, channel) {
   });
   const { health, fails } = nextHealth({ health: channel.health, fails: channel.health_fails }, result.ok);
   const checkedAt = new Date().toISOString();
-  // Only if the stream is still the one checked (a refresh may have moved it meanwhile).
+  // Skip if a refresh changed the stream meanwhile.
   await db.run(
     'UPDATE live_channels SET health = ?, health_checked_at = ?, health_fails = ? WHERE id = ? AND stream_url = ?',
     [health, checkedAt, fails, channel.id, channel.stream_url]
@@ -1223,7 +1127,7 @@ async function runCheck(db, channel) {
   return { health, checkedAt, error: result.ok ? null : result.error };
 }
 
-/** Checks one channel row (HEALTH_COLUMNS) now; joins a check of it already under way. */
+/** Checks a channel row (HEALTH_COLUMNS); joins a check already under way. */
 export function checkChannelHealth(db, channel) {
   if (!checking.has(channel.id)) {
     checking.set(channel.id, runCheck(db, channel).finally(() => checking.delete(channel.id)));
@@ -1231,7 +1135,6 @@ export function checkChannelHealth(db, channel) {
   return checking.get(channel.id);
 }
 
-/** Loads a channel by id and checks it now. Resolves null for no such channel. */
 export async function checkChannelById(db, id) {
   const channel = await db.get(
     `SELECT ${HEALTH_COLUMNS} FROM live_channels c JOIN live_sources s ON s.id = c.source_id WHERE c.id = ?`,
@@ -1242,7 +1145,7 @@ export async function checkChannelById(db, id) {
 
 let healthRun = null;
 
-/** One batch of checks (see above). A batch still running when the next tick comes is left to finish. */
+/** One batch of checks; returns the running batch if one is still going. */
 export function runHealthChecks({ now } = {}) {
   if (healthRun) return healthRun;
   healthRun = (async () => {
@@ -1270,10 +1173,7 @@ export function runHealthChecks({ now } = {}) {
   return healthRun;
 }
 
-/**
- * The check's settings with how many channels it found working, offline or hasn't checked
- * yet — of those it covers (see healthCandidates), so channels a filter hides don't count.
- */
+/** Health settings plus ok/offline/unchecked counts, excluding filtered-out channels. */
 export async function healthOverview(db) {
   const settings = await getHealthSettings(db);
   const { compiled } = await getLiveFilters(db);
@@ -1301,8 +1201,7 @@ export function isRefreshDue(lastRefreshedAt, lastFailureMs, now = Date.now()) {
   return !Number.isFinite(last) || now - last >= REFRESH_EVERY_MS;
 }
 
-// `checks`: whether this pass also runs a batch of channel checks. Only the regular ticks
-// do, so switching Live TV on and off never sets off extra ones.
+// Only regular ticks run checks, so toggling Live TV doesn't trigger extra ones.
 async function tick({ checks = true } = {}) {
   try {
     const db = await getDb();
@@ -1319,15 +1218,13 @@ async function tick({ checks = true } = {}) {
   }
 }
 
-/** Runs a schedule pass now (after Live TV is switched on). */
 export function kickLiveTv() {
   tick({ checks: false });
 }
 
 let started = false;
 
-// Like the library auto-scan (services/autoScan.js): a periodic tick that refreshes whatever
-// is due, so a refresh missed while the server was down is made up on the next pass.
+// Periodic tick refreshes whatever is due, so refreshes missed while down are made up.
 export function initLiveTv() {
   if (started) return;
   started = true;

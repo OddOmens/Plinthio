@@ -1,6 +1,5 @@
 <template>
-  <!-- First-run setup, full screen: one question per step, big enough to read on a phone or
-       across the room. Ends with an optional two-factor step for the new admin. -->
+  <!-- First-run setup: one question per step, then optional two-factor for the new admin. -->
   <div class="min-h-screen bg-background text-foreground flex flex-col safe-top safe-bottom transition-colors">
     <div class="pointer-events-none fixed inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/10 to-transparent" />
 
@@ -542,9 +541,7 @@ const reviewRows = computed(() => [
   { label: t('setup.review.rows.access'), value: accessSummary() }
 ]);
 
-// The language picked during the wizard becomes the new admin's own and the server's default,
-// like the accent: whoever sets the server up usually speaks the household's language. Best
-// effort: it's already remembered on this device, and both can be changed later.
+// The wizard's language becomes the admin's own and the server default. Best effort.
 async function saveLanguage() {
   const language = storedLanguageChoice();
   if (!language || language === 'auto') return;

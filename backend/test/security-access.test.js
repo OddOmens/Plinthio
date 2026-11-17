@@ -318,7 +318,7 @@ describe('accounts, keys and restricted views', () => {
     // The admin still manages them.
     const adminHidden = (await req('GET', '/items/hidden', { token: adminToken })).body.hiddenItems.map((i) => i.id);
     assert.ok(adminHidden.includes('seed-00001'));
-    // And an ordinary title works as before.
+    // And an ordinary title still works.
     assert.equal((await req('POST', '/activity/start', { token: u.token, body: { itemId: 'seed-00003' } })).status, 200);
   });
 
@@ -436,8 +436,8 @@ describe('accounts, keys and restricted views', () => {
     assert.equal((await req('PATCH', `/users/${ed.id}`, { token: adminToken, body: { kidsMode: true } })).status, 400);
     assert.equal((await req('PATCH', `/users/${ed.id}`, { token: adminToken, body: { kidsMode: true, role: 'viewer' } })).status, 200, 'both at once is fine');
 
-    // An account left as both by an earlier version (written straight to the database, before
-    // it signs in): the role no longer lets it widen its own Kids Mode.
+    // A legacy account that is both (written straight to the database before it signs in):
+    // the role doesn't let it widen its own Kids Mode.
     const made = await req('POST', '/users', { token: adminToken, body: { username: 'legacy', password: 'legacy-password-1' } });
     await db.run("UPDATE users SET kids_mode = 1, role = 'editor' WHERE id = ?", [made.body.user.id]);
     const legacy = await login('legacy', 'legacy-password-1');

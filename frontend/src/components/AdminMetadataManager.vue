@@ -84,7 +84,6 @@
     <!-- Filters & Search Toolbar -->
     <div class="bg-card border border-border rounded-xl p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div class="flex flex-wrap items-center gap-2">
-        <!-- Library Selector -->
         <select
           v-model="selectedLibraryId"
           @change="fetchItems"
@@ -96,7 +95,6 @@
           </option>
         </select>
 
-        <!-- Media Type Selector -->
         <select
           v-model="selectedMediaType"
           @change="fetchItems"
@@ -145,7 +143,6 @@
         </div>
       </div>
 
-      <!-- Search Box -->
       <div class="relative w-full md:w-64">
         <Search class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
@@ -218,7 +215,6 @@
           <span>{{ statusFilter === 'ignored' ? $t('metadata.manager.batch.unignoreCount', { count: selectedIds.size }) : $t('metadata.manager.batch.ignoreCount', { count: selectedIds.size }) }}</span>
         </button>
 
-        <!-- Clean Titles Button -->
         <button
           @click="batchCleanTitles"
           :disabled="selectedIds.size === 0 || processingBatch"
@@ -229,7 +225,6 @@
           <span>{{ $t('metadata.manager.batch.cleanCount', { count: selectedIds.size }) }}</span>
         </button>
 
-        <!-- Match TMDB Button -->
         <button
           @click="batchMatchMetadata"
           :disabled="selectedIds.size === 0 || processingBatch"
@@ -268,7 +263,7 @@
       </div>
     </div>
 
-    <!-- Last batch result (inline, dismissible — no pop-up to click through) -->
+    <!-- Last batch result (inline, dismissible) -->
     <div
       v-if="batchSummary && !processingBatch"
       class="rounded-xl border px-4 py-3 flex items-start gap-3 text-xs"
@@ -402,12 +397,10 @@
 
           <!-- Middle: Metadata Badges -->
           <div class="flex items-center gap-2 flex-shrink-0 flex-wrap pl-7 md:pl-0">
-            <!-- Library Tag -->
             <span class="text-[11px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
               {{ item.library_name || item.media_type }}
             </span>
 
-            <!-- Poster badge -->
             <span
               v-if="item.hasCover"
               :class="[
@@ -431,7 +424,6 @@
               {{ $t('metadata.manager.badges.noPoster') }}
             </span>
 
-            <!-- Synopsis badge -->
             <span
               v-if="item.hasDescription"
               class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1 font-medium"
@@ -444,7 +436,6 @@
               {{ $t('metadata.manager.badges.noSynopsis') }}
             </span>
 
-            <!-- Release Date badge -->
             <span
               v-if="item.hasReleaseDate"
               class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-mono font-medium"
@@ -653,10 +644,9 @@ function toggleSelectItem(id) {
 }
 
 // ─── Auto match ─────────────────────────────────────────────────────────────
-// Each match reports back on its own row instead of in a pop-up, so several can be started
-// back to back. Batch "Find Metadata" runs the very same single-item match one title at a
-// time from here: one long request for the whole selection used to outlive the API
-// timeout (a real match takes 1–3s) and report failure while the server carried on.
+// Each match reports on its own row, so several can run back to back. Batch "Find Metadata"
+// runs the same match one title at a time: one request for the whole selection would outlast
+// the API timeout (a match takes 1–3s).
 const matchResults = ref({});
 
 async function performMatch(item) {

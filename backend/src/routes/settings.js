@@ -28,10 +28,8 @@ import { getSetting, setSetting } from '../services/settings.js';
 
 const router = express.Router();
 
-// Shelf views ("grouping modes"). Series and Creator are the core ways to browse and are
-// always available; Disk Folders and Custom Folders are the ones an admin may switch off.
-// Older installs stored the previous mode names (grid / author / series), which map onto
-// the new ones so a saved choice survives the upgrade.
+// Shelf views. Series and Creator are always on; admins may switch off Disk/Custom Folders.
+// Old stored names (grid / author / series) map onto the current ones.
 const SHELF_MODES = ['series', 'creator', 'disk_folder', 'custom_folder'];
 const OPTIONAL_SHELF_MODES = ['disk_folder', 'custom_folder'];
 const LEGACY_MODE_NAMES = { grid: 'series', series: 'series', author: 'creator', creator: 'creator', disk_folder: 'disk_folder', custom_folder: 'custom_folder' };
@@ -48,14 +46,13 @@ async function readShelfModes(db) {
   return normalizeShelfModes(stored);
 }
 
-// Which shelf views this server offers (every signed-in user needs this to draw the shelf).
+// Enabled shelf views (every signed-in user needs this).
 router.get('/filters', authenticateToken, handle(async (req, res) => {
   const db = await getDb();
   res.json({ allowedGroupingModes: await readShelfModes(db), optionalGroupingModes: OPTIONAL_SHELF_MODES });
 }));
 
-// Admin: turn the optional views on or off. Anything else in the list is ignored — Series
-// and Creator can't be disabled.
+// Toggle the optional views; Series and Creator can't be disabled.
 router.patch('/filters', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { allowedGroupingModes } = req.body;
 
@@ -93,7 +90,6 @@ async function providerSwitches() {
   return { providers: Object.fromEntries(METADATA_PROVIDERS.map((p) => [p, !off.has(p)])) };
 }
 
-// Admin endpoint to check which metadata provider keys are configured
 router.get('/metadata-providers', authenticateToken, requireAdmin, handle(async (req, res) => {
   res.json({ ...await tmdbStatus(), ...await googleBooksStatus(), ...await comicVineStatus(), ...await providerSwitches() });
 }));
@@ -120,8 +116,7 @@ router.put('/transcoding', authenticateToken, requireAdmin, handle(async (req, r
   res.json({ message: 'Transcoding settings saved', preference });
 }));
 
-// Runs a short real encode, because ffmpeg listing an encoder is no guarantee the driver
-// underneath it actually works — that usually only shows up as failed playback otherwise.
+// A short real encode: ffmpeg listing an encoder doesn't prove the driver works.
 router.post('/transcoding/test', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { method } = req.body;
   if (!listHwaccels().includes(method)) {
@@ -131,8 +126,7 @@ router.post('/transcoding/test', authenticateToken, requireAdmin, handle(async (
   res.json(await testHwaccel(method));
 }));
 
-// Converted copies (services/compat.js): the size limit, who may ask for one,
-// whether a finished copy replaces the original, and the copies themselves.
+// Converted copies settings and list (services/compat.js).
 router.get('/compat', authenticateToken, requireAdmin, handle(async (req, res) => {
   res.json(await compatOverview(await getDb()));
 }));
@@ -162,7 +156,7 @@ router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) =
   const before = await compatOverview(db);
   await saveCompatSettings(db, patch);
   const after = await compatOverview(db);
-  // Deleting originals is the one thing here that can't be taken back: the log says who.
+  // Deleting originals is irreversible, so log who turned it on.
   if (before.replaceOriginal !== after.replaceOriginal) {
     logger.warn('media', `Converted copies: replacing originals was switched ${after.replaceOriginal ? 'ON' : 'off'} by ${req.user.username}`);
   }
@@ -175,8 +169,7 @@ router.put('/compat', authenticateToken, requireAdmin, handle(async (req, res) =
   res.json(after);
 }));
 
-// Queues every video that needs a copy: in one library, in all of them, or among the titles
-// in itemIds (the web app sends a series' episodes).
+// Queues every video needing a copy, in one library, all, or among itemIds.
 router.post('/compat/queue', authenticateToken, requireAdmin, handle(async (req, res) => {
   const libraryId = req.body?.libraryId || null;
   let itemIds = null;
@@ -205,7 +198,7 @@ router.post('/compat/retry', authenticateToken, requireAdmin, handle(async (req,
   res.json(await compatOverview(db));
 }));
 
-// Deletes every copy and empties the queue. Originals are never touched by this.
+// Deletes every copy and empties the queue; originals untouched.
 router.delete('/compat/copies', authenticateToken, requireAdmin, handle(async (req, res) => {
   const db = await getDb();
   await removeAllCopies(db);
@@ -226,7 +219,7 @@ router.put('/metadata-providers/enabled', authenticateToken, requireAdmin, handl
   res.json(await providerSwitches());
 }));
 
-// Admin endpoint to set/clear the TMDB API key used for movie/show/anime metadata search
+// Set or clear the TMDB API key.
 router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { apiKey } = req.body;
 
@@ -240,8 +233,7 @@ router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, hand
     });
   }
 
-  // Verify before storing. A key that doesn't work should say so here, not silently do
-  // nothing until someone notices their posters never arrived.
+  // Verify before storing so a bad key fails here, not silently later.
   const check = await verifyTmdbApiKey(apiKey);
   if (!check.ok) {
     return sendError(req, res, 'P401', { message: check.reason, status: 400 });
@@ -257,8 +249,7 @@ router.put('/metadata-providers/tmdb-key', authenticateToken, requireAdmin, hand
   });
 }));
 
-// Admin endpoint to set/clear an optional Google Books API key (book metadata). Without one,
-// Google Books runs on the shared keyless quota and Open Library carries the lookups.
+// Optional Google Books key; without one it uses the shared keyless quota.
 router.put('/metadata-providers/comicvine-key', authenticateToken, requireAdmin, handle(async (req, res) => {
   const { apiKey } = req.body;
 
@@ -294,13 +285,8 @@ router.put('/metadata-providers/google-books-key', authenticateToken, requireAdm
   res.json({ message: 'Google Books API key saved and verified', ...await googleBooksStatus() });
 }));
 
-// Admin endpoint: download a consistent point-in-time snapshot of the database.
-// Uses SQLite's own VACUUM INTO rather than copying the file directly — the live database
-// runs in WAL mode, so a raw filesystem copy of just the .sqlite file can miss recently
-// committed data still sitting in the -wal file. VACUUM INTO produces one complete,
-// self-contained, crash-safe file. Note: this only covers the database — covers/, the
-// jwt.secret, and the media libraries themselves live under the same /config and library
-// volumes and should be included in whatever external backup schedule you run for those.
+// Database snapshot download via VACUUM INTO: a raw copy in WAL mode can miss data still in
+// the -wal file. Covers database only, not covers/, jwt.secret or media.
 router.get('/backup', authenticateToken, requireAdmin, async (req, res) => {
   const backupsDir = path.join(config.dataDir, 'backups');
   fs.mkdirSync(backupsDir, { recursive: true });
@@ -324,19 +310,17 @@ router.get('/backup', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// Admin endpoint: read the automatic backup schedule (enabled, interval, retention)
+// Automatic backup schedule.
 router.get('/backup/config', authenticateToken, requireAdmin, handle(async (req, res) => {
   const settings = await getBackupSettings();
   res.json(withServerKeyStatus(settings));
 }));
 
-// Adds whether a copy of the server key (jwt.secret) is in the backup folder, so the page can
-// warn about one left there by an earlier version or by a setting since turned off.
+// Also reports whether a jwt.secret copy sits in the backup folder, so the page can warn.
 function withServerKeyStatus(settings) {
   return { ...settings, serverKeyAtDestination: serverKeyAtDestination(settings.destination) };
 }
 
-// Admin endpoint: update the automatic backup schedule
 router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) => {
   const { enabled, intervalHours, retentionCount, destination, copyRetentionCount, copyFiles, copyServerKey } = req.body;
 
@@ -375,8 +359,7 @@ router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) =
       destination: cleanDestination,
       copyRetentionCount: parsedCopyRetention,
       copyFiles: copyFiles === undefined ? undefined : !!copyFiles,
-      // Only a real `true` turns this on: it puts the key that signs every sign-in into the
-      // backup folder, so nothing loosely truthy should.
+      // Strictly `true`: this copies the signing key into the backup folder.
       copyServerKey: copyServerKey === undefined ? undefined : copyServerKey === true
     });
     // A new destination gets the existing backups straight away, not at the next backup.
@@ -389,7 +372,7 @@ router.put('/backup/config', authenticateToken, requireAdmin, async (req, res) =
   }
 });
 
-// Admin endpoints: automatic library scanning (periodic sweep + filesystem watcher)
+// Automatic library scanning (periodic sweep + filesystem watcher).
 router.get('/auto-scan', authenticateToken, requireAdmin, handle(async (req, res) => {
   res.json(await getAutoScanSettings());
 }));
@@ -415,13 +398,11 @@ router.put('/auto-scan', authenticateToken, requireAdmin, handle(async (req, res
   res.json({ message: 'Automatic scanning updated', ...settings });
 }));
 
-// Admin endpoint: can this folder take backups? (exists or can be made, writable, and
-// whether it's on the same disk as the server's data)
+// Can this folder take backups (writable, and on the same disk as the data?).
 router.post('/backup/destination/check', authenticateToken, requireAdmin, handle(async (req, res) => {
   res.json(await checkDestination(req.body?.path));
 }));
 
-// Admin endpoint: copy backups to the destination now
 router.post('/backup/copy', authenticateToken, requireAdmin, handle(async (req, res) => {
   const result = await copyToDestination();
   if (!result) return res.status(400).json({ error: 'No backup destination is set' });
@@ -429,13 +410,11 @@ router.post('/backup/copy', authenticateToken, requireAdmin, handle(async (req, 
   res.json(result);
 }));
 
-// Admin endpoint: list backups currently stored on disk
 router.get('/backup/list', authenticateToken, requireAdmin, handle(async (req, res) => {
   res.json({ backups: listBackupFiles() });
 }));
 
-// Admin endpoint: create a backup right now and keep it on disk (unlike GET /backup, which
-// streams a one-off snapshot to the browser and deletes the server-side copy afterward)
+// Creates a backup kept on disk (GET /backup streams a one-off instead).
 router.post('/backup/create', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const result = await runManualBackupAndPrune();
@@ -445,7 +424,6 @@ router.post('/backup/create', authenticateToken, requireAdmin, async (req, res) 
   }
 });
 
-// Admin endpoint: download one previously stored backup
 router.get('/backup/:filename', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const filePath = getBackupFilePath(req.params.filename);
@@ -455,7 +433,6 @@ router.get('/backup/:filename', authenticateToken, requireAdmin, async (req, res
   }
 });
 
-// Admin endpoint: delete one stored backup
 router.delete('/backup/:filename', authenticateToken, requireAdmin, async (req, res) => {
   try {
     await deleteBackupFile(req.params.filename);

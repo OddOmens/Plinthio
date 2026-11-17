@@ -1,9 +1,7 @@
 import path from 'path';
 
-// Item rows carry the absolute on-disk path, which is server layout (mount points, host
-// usernames, drive names) that a viewer has no use for. Everyone gets `folder` — the item's
-// directory relative to its library root, which is all the shelf's "disk folder" grouping
-// needs — and only admins keep `path`.
+// The absolute path reveals server layout, so only admins keep `path`; everyone gets
+// `folder`, the item's directory relative to its library root.
 export async function shapeItems(db, items, user) {
   if (!items || items.length === 0) return items;
   const libs = await db.all('SELECT id, path FROM libraries');

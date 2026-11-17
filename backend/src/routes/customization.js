@@ -14,16 +14,15 @@ import { getSetting, setSetting } from '../services/settings.js';
 
 const router = express.Router();
 
-// What the video player shows while paused (components/VideoPlayer.vue): nothing but the
-// controls, the title's details, a full-screen cinematic card, or a dim bedtime clock.
+// What the video player shows while paused (components/VideoPlayer.vue).
 const PAUSE_SCREENS = ['simple', 'details', 'cinematic', 'bedtime'];
 const DEFAULT_PAUSE_SCREEN = 'details';
 
 const PAGE_WIDTHS = ['full', 'contained'];
 const DEFAULT_PAGE_WIDTH = 'full';
 
-// The language for anyone who hasn't picked one (frontend/src/i18n LANGUAGES). 'auto' follows
-// each browser; a language here wins over the browser, but never over a person's own choice.
+// Default language (frontend/src/i18n LANGUAGES). 'auto' follows the browser; a user's own
+// choice always wins.
 const LANGUAGES = ['auto', 'en', 'de', 'es', 'fr', 'it', 'nl', 'pl', 'pt', 'ja', 'ko', 'zh'];
 const DEFAULT_LANGUAGE = 'auto';
 
@@ -49,12 +48,12 @@ function parseUserCustomization(raw) {
       };
     }
   } catch (e) {
-    // Malformed stored JSON — fall back to defaults
+    // Malformed stored JSON: use defaults
   }
   return { ...DEFAULT_USER_CUSTOMIZATION };
 }
 
-// GET /api/customization (Public - needed for login screen and dynamic UI theming)
+// Public: the login screen needs branding before auth.
 router.get('/', async (req, res) => {
   try {
     const db = await getDb();
@@ -87,27 +86,22 @@ router.get('/', async (req, res) => {
       if (row.key === 'user_customization') config.userCustomization = parseUserCustomization(row.value);
     }
 
-    // Which parts of the rating UI are shown (personal stars, server average, TMDB score).
     config.ratings = await getRatingSettings(db);
     // Whether a movie collection also shows the films the library doesn't have.
     config.showMissingFilms = await getShowMissingFilms(db);
-    // Watch parties — off unless an admin turns them on.
     config.partyModeEnabled = await isPartyModeEnabled(db);
-    // Live TV — off unless an admin turns it on.
     config.liveTvEnabled = await isLiveTvEnabled(db);
     // The opening sequence played before movies and episodes.
     Object.assign(config, await getIntroSettings(db));
 
     res.json(config);
   } catch (err) {
-    // This route is intentionally public (the login screen needs branding before auth),
-    // so keep the raw error server-side rather than returning it to any anonymous caller.
+    // Public route, so the raw error stays server-side.
     console.error('[customization] load failed:', err);
     res.status(500).json({ error: 'Could not load server customization' });
   }
 });
 
-// PATCH /api/customization (Admin only)
 router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
   const {
     serverName,
@@ -135,11 +129,8 @@ router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
   }
 
   if (customCss !== undefined) {
-    // This is admin-only (requireAdmin above) and the actual safety boundary is on the
-    // frontend, which injects this as `styleTag.textContent = customCss` — plain CSS
-    // text, never parsed as HTML/JS, so no client-side sink here to sanitize against. Do
-    // not add a `v-html` (or similarly HTML-parsing) consumer of this value without
-    // reintroducing real sanitization first.
+    // Admin-only, and the frontend injects it via textContent (never parsed as HTML). Any
+    // HTML-parsing consumer (v-html) would need real sanitization first.
     await setSetting(db, 'custom_css', String(customCss));
   }
 
@@ -253,8 +244,7 @@ router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
   res.json({ message: 'Customization updated successfully', ...result });
 }));
 
-// ─── Opening sequence ────────────────────────────────────────────────────────
-// POST /api/customization/intro (Admin): upload or replace the clip. multipart, field "intro".
+// Opening sequence upload (multipart, field "intro").
 const introUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: INTRO_MAX_BYTES, files: 1 } });
 
 router.post('/intro', authenticateToken, requireAdmin, (req, res) => {
@@ -277,7 +267,7 @@ router.post('/intro', authenticateToken, requireAdmin, (req, res) => {
   });
 });
 
-// DELETE /api/customization/intro (Admin): remove the uploaded clip, back to the built-in one.
+// Back to the built-in clip.
 router.delete('/intro', authenticateToken, requireAdmin, handle(async (req, res) => {
   const db = await getDb();
   await removeIntro();

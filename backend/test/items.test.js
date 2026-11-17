@@ -3,9 +3,7 @@ import assert from 'node:assert/strict';
 import { startTestServer, setupAdmin, authed, getJson } from './helpers/server.js';
 import { seedItems } from './helpers/seed.js';
 
-// Regression cover for: the shelf asked for 5000 items in one request and the API capped it
-// there, so anything past the 5000th item alphabetically simply didn't exist as far as the
-// UI was concerned — silently, with no error and no indicator.
+// Paging must reach every item, including those past the per-request cap.
 describe('GET /api/items', () => {
   let server;
   let token;
@@ -36,8 +34,7 @@ describe('GET /api/items', () => {
   });
 
   test('every item is reachable past the old 5000 cap boundary', async () => {
-    // The cap itself still exists as a ceiling per request — what must not happen is a
-    // request for the rows beyond it coming back empty.
+    // The cap is per request; rows beyond it must still come back when paged to.
     const beyond = await getJson(server.baseUrl, '/items?limit=50&offset=110', token);
     assert.equal(beyond.body.items.length, 10);
   });

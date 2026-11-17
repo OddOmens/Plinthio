@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen lg:h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground relative" :class="isSidebarLayout ? 'flex flex-col md:flex-row lg:overflow-hidden' : 'flex flex-col lg:overflow-hidden'">
-    <!-- Standard Plinthio Navbar / Sidebar -->
     <Sidebar
       v-if="isSidebarLayout"
       :activeType="navType"
@@ -15,7 +14,7 @@
     />
 
     <div class="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
-    <!-- Sub-Navigation Header: Dedicated Breadcrumbs & Back Bar -->
+    <!-- Breadcrumbs and back bar -->
     <nav class="bg-muted/40 border-b border-border/80 flex-shrink-0 z-20">
       <div class="page-width mx-auto px-4 sm:px-6 lg:px-8 h-10 flex items-center justify-between gap-3 text-xs">
         <div class="flex items-center gap-2.5 min-w-0">
@@ -49,13 +48,11 @@
       </div>
     </nav>
 
-    <!-- Loading State -->
     <div v-if="loading" class="flex-1 flex flex-col items-center justify-center py-24 gap-3 text-muted-foreground">
       <Loader2 class="w-8 h-8 animate-spin text-primary" />
       <p class="text-xs font-mono">{{ $t('common.loading') }}</p>
     </div>
 
-    <!-- Error State -->
     <div v-else-if="error" class="flex-1 max-w-lg mx-auto px-4 py-20 text-center flex flex-col items-center justify-center">
       <div class="w-12 h-12 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center mb-4">
         <AlertCircle class="w-6 h-6" />
@@ -70,7 +67,7 @@
       </button>
     </div>
 
-    <!-- Main View Content: one scrolling page — hero, then the sections below it. -->
+    <!-- One scrolling page: hero, then sections. -->
     <main v-else-if="series" class="flex-1 lg:min-h-0 lg:overflow-y-auto">
       <!-- ─── Banner: the TMDB backdrop, with the title's logo when it has one ─────── -->
       <section v-if="backdropUrl" class="relative h-[34vh] min-h-[200px] max-h-[520px] overflow-hidden bg-black">
@@ -92,8 +89,7 @@
       </section>
 
       <!-- ─── Hero: artwork, what it is, what to do, and the key facts ─────────────── -->
-      <!-- With a banner, the poster rises into it on a wide full-width page (.title-poster in
-           assets/main.css), so the hero mustn't clip, and the blurred cover isn't needed. -->
+      <!-- With a banner the poster rises into it on wide full-width pages, so the hero mustn't clip. -->
       <section class="relative border-b border-border/60" :class="backdropUrl ? '' : 'overflow-hidden'">
         <template v-if="!backdropUrl">
           <div
@@ -155,8 +151,7 @@
                 </p>
               </div>
 
-              <!-- Ratings: your stars, the server average, TMDB. On a series this rates one
-                   entry at a time — the star button on any volume/episode below switches it. -->
+              <!-- Ratings. On a series this rates one entry; each entry's star button switches it. -->
               <div ref="heroRatingEl">
                 <RatingBar
                   v-if="heroRatingItem"
@@ -167,7 +162,6 @@
                 />
               </div>
 
-              <!-- Actions -->
               <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                 <button
                   v-if="series.nextVolume"
@@ -178,16 +172,13 @@
                   <Book v-else-if="!smartCtaState.isFinished" class="w-4 h-4 group-hover:scale-110 transition-transform" />
                   <BookOpen v-else class="w-4 h-4 group-hover:scale-110 transition-transform" />
                   <span class="whitespace-nowrap">{{ smartCtaState.label }}</span>
-                  <!-- On a phone the button fills the row, so the "Vol 1 · Page 98 of 172" detail
-                       truncates rather than wrapping the whole button onto two lines. -->
+                  <!-- On a phone the detail truncates rather than wrapping the button. -->
                   <span v-if="smartCtaState.subLabel" class="min-w-0 truncate text-xs font-normal opacity-80 tabular-nums">
                     · {{ smartCtaState.subLabel }}
                   </span>
                 </button>
 
-                <!-- Secondary actions. Wider screens get a row of labelled buttons. A phone only had
-                     room for their icons, which nobody could tell apart, so there they sit in a
-                     labelled "⋯" menu beside the main button instead. -->
+                <!-- Secondary actions: labelled buttons on wider screens, a labelled "⋯" menu on phones. -->
                 <button
                   v-for="action in heroActions"
                   :key="action.key"
@@ -264,7 +255,6 @@
                 <span>{{ series.offloadedCount === series.volumeCount ? typed('offloadedAll') : typed('offloadedSome', { count: series.offloadedCount, total: series.volumeCount }) }}</span>
               </p>
 
-              <!-- Tagline + overview -->
               <p v-if="credits?.tagline" class="text-base italic text-foreground/80">{{ credits.tagline }}</p>
               <!-- A collection's "description" is just its first film's plot; each film lists its own below. -->
               <div v-if="series.description && !isMovieCollection">
@@ -555,9 +545,7 @@
               <span class="count-pill">{{ filteredVolumes.length }}</span>
             </h2>
 
-            <!-- Filter, order and layout. On a phone the status tabs collapse into one button
-                 that opens them as a sheet (five tabs didn't fit across), and all three
-                 controls share one height. -->
+            <!-- Filter, order and layout. On a phone the status tabs collapse into a sheet button. -->
             <div class="flex items-center justify-between sm:justify-end gap-2">
               <button
                 type="button"
@@ -625,7 +613,6 @@
             </div>
           </div>
 
-        <!-- Empty Filtered Results -->
         <div
           v-if="filteredVolumes.length === 0"
           class="py-16 text-center border border-dashed border-border rounded-2xl bg-card/30"
@@ -635,7 +622,7 @@
           <p class="text-xs text-muted-foreground mt-1">{{ typed('emptyHint') }}</p>
         </div>
 
-        <!-- Volumes View: Grid Layout -->
+        <!-- Grid layout -->
         <div
           v-else-if="viewLayout === 'grid'"
           class="poster-grid gap-4"
@@ -645,7 +632,6 @@
             :key="vol.id"
             class="group relative flex flex-col bg-card border border-border hover:border-muted-foreground/30 rounded-2xl p-3 transition-all hover:shadow-md"
           >
-            <!-- Thumbnail with interactive click to read -->
             <div
               @click="openEntry(vol)"
               class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-muted/50 border border-border/60 cursor-pointer"
@@ -659,7 +645,6 @@
               />
               <AvailabilityBadge v-if="vol.offloaded_at" kind="offloaded" :since="vol.offloaded_at" small class="absolute bottom-2 left-2 z-10" />
 
-              <!-- Volume Pill -->
               <div class="absolute top-2 left-2 z-10 pointer-events-none">
                 <span
                   v-if="vol.volume != null"
@@ -669,7 +654,6 @@
                 </span>
               </div>
 
-              <!-- Read Status Overlay Badge (Top Right) -->
               <div class="absolute top-2 right-2 z-10 pointer-events-none">
                 <span
                   v-if="vol.is_finished"
@@ -697,7 +681,6 @@
                 </span>
               </div>
 
-              <!-- Hover Read Button overlay -->
               <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <div class="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
                   <Play v-if="(isTimeBasedType || hasStarted(vol)) && !vol.is_finished" class="w-5 h-5 fill-current ml-0.5" />
@@ -706,7 +689,6 @@
                 </div>
               </div>
 
-              <!-- Progress bar at bottom of thumbnail -->
               <div v-if="vol.progress_percent > 0 || vol.is_finished" class="absolute bottom-0 inset-x-0 h-1.5 bg-background/80">
                 <div
                   class="h-full transition-all"
@@ -716,7 +698,6 @@
               </div>
             </div>
 
-            <!-- Volume Info & History Status -->
             <div class="mt-3 flex flex-col flex-1">
               <h3
                 @click="openEntry(vol)"
@@ -729,7 +710,6 @@
               <div class="mt-1 flex items-center justify-between text-[12px] text-muted-foreground">
                 <span class="font-mono" :class="lengthLabel(vol) === vol.format ? 'uppercase' : ''">{{ lengthLabel(vol) }}</span>
 
-                <!-- Read history text -->
                 <span v-if="vol.is_finished" class="text-emerald-500 font-semibold flex items-center gap-0.5">
                   <Check class="w-3 h-3" /> {{ $t('title.status.done') }}
                 </span>
@@ -744,10 +724,7 @@
                 </span>
               </div>
 
-              <!-- Actions. A phone card is too narrow for six buttons in a row, so there it's
-                   the main button plus a "⋯" that opens every action, labelled, in a sheet.
-                   Wider cards put the main button on its own row and share the next one
-                   evenly between the icon buttons. -->
+              <!-- Actions: on a phone the main button plus a "⋯" sheet; wider cards add icon buttons. -->
               <div class="mt-auto pt-2.5 flex flex-col gap-1.5 border-t border-border/50">
                 <div class="flex items-center gap-1.5">
                   <button
@@ -769,7 +746,6 @@
                 </div>
 
                 <div class="hidden sm:grid grid-flow-col auto-cols-fr gap-1.5">
-                  <!-- Mark Read / Unread 1-Click Toggle -->
                   <button :aria-label="vol.is_finished ? $t('title.volume.markNotStarted') : typed('markAs')"
                     @click="toggleVolumeReadStatus(vol)"
                     class="h-8 min-w-0 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
@@ -788,7 +764,6 @@
                     <FastForward class="w-3.5 h-3.5" />
                   </button>
 
-                  <!-- Bookmarks button -->
                   <button :aria-label="$t('title.bookmarks.title')"
                     @click="openBookmarks(vol)"
                     class="h-8 min-w-0 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition active:scale-95"
@@ -807,7 +782,7 @@
                     <Download v-else class="w-3.5 h-3.5" />
                   </button>
 
-                  <!-- Rate — shows your stars once you've rated it; the stars themselves are in the header -->
+                  <!-- Rate: the stars themselves are in the header -->
                   <button v-if="customizationStore.ratings.showPersonal" :aria-label="typed('rateThis')"
                     @click="openRating(vol)"
                     class="h-8 min-w-0 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center gap-0.5 transition active:scale-95 text-[12px] font-semibold"
@@ -822,16 +797,14 @@
           </div>
         </div>
 
-        <!-- Volumes View: List Layout -->
+        <!-- List layout -->
         <div v-else class="flex flex-col gap-2.5">
           <div
             v-for="vol in filteredVolumes"
             :key="vol.id"
             class="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 rounded-2xl bg-card hover:bg-muted/40 border border-border hover:border-muted-foreground/30 transition-all shadow-sm"
           >
-            <!-- Left: Cover & Info -->
             <div class="flex items-center gap-4 min-w-0">
-              <!-- Thumbnail -->
               <div
                 @click="openEntry(vol)"
                 class="relative w-14 h-20 rounded-xl overflow-hidden bg-muted/50 border border-border/70 flex-shrink-0 cursor-pointer group-hover:shadow-md transition"
@@ -851,7 +824,6 @@
                 </div>
               </div>
 
-              <!-- Details & History -->
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span
@@ -869,12 +841,10 @@
                   </h3>
                 </div>
 
-                <!-- Reading History Status Details -->
                 <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                   <span class="font-mono" :class="lengthLabel(vol) === vol.format ? 'uppercase' : ''">{{ lengthLabel(vol) }}</span>
                   <span v-if="vol.file_size" class="font-mono">{{ formatFileSize(vol.file_size) }}</span>
 
-                  <!-- Status state -->
                   <span v-if="vol.is_finished" class="text-emerald-500 font-semibold flex items-center gap-1">
                     <BookCheck class="w-3.5 h-3.5" />
                     <span>{{ $t('title.status.finished') }}</span>
@@ -899,7 +869,6 @@
                   </span>
                 </div>
 
-                <!-- Progress bar -->
                 <div v-if="vol.progress_percent > 0 || vol.is_finished" class="mt-2 max-w-md h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
                     class="h-full rounded-full transition-all"
@@ -912,7 +881,6 @@
 
             <!-- Right: Actions. On a phone: the main button across the row and a "⋯" sheet. -->
             <div class="flex items-center gap-2 w-full sm:w-auto sm:self-center flex-shrink-0">
-              <!-- Read / Resume Button -->
               <button
                 @click="openVolumeReader(vol)"
                 class="flex-1 sm:flex-none justify-center h-10 sm:h-9 px-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-sm sm:text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shadow-sm"
@@ -932,7 +900,6 @@
                 <MoreHorizontal class="w-4 h-4" />
               </button>
 
-              <!-- Mark Read / Unread Button -->
               <button
                 @click="toggleVolumeReadStatus(vol)"
                 class="hidden sm:flex h-9 px-3 rounded-xl border border-border hover:bg-muted text-foreground text-xs font-medium transition active:scale-95 items-center gap-1.5"
@@ -953,7 +920,6 @@
                 <span class="hidden md:inline">{{ isSkipped(vol) ? $t('title.skip.unskip') : $t('title.skip.skip') }}</span>
               </button>
 
-              <!-- Bookmarks Button -->
               <button :aria-label="$t('title.bookmarks.title')"
                 @click="openBookmarks(vol)"
                 class="hidden sm:flex w-9 h-9 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground items-center justify-center transition active:scale-95"
@@ -972,7 +938,7 @@
                 <Download v-else class="w-4 h-4" />
               </button>
 
-              <!-- Rate — shows your stars once you've rated it; the stars themselves are in the header -->
+              <!-- Rate: the stars themselves are in the header -->
               <button v-if="customizationStore.ratings.showPersonal" :aria-label="typed('rateThis')"
                 @click="openRating(vol)"
                 class="hidden sm:flex h-9 min-w-9 px-2 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground items-center justify-center gap-1 transition active:scale-95 text-xs font-semibold"
@@ -1130,8 +1096,7 @@
       </Transition>
     </Teleport>
 
-    <!-- One volume's actions on a phone, as a bottom sheet: the card only has room for the
-         main button, and bare icons side by side were impossible to tell apart. -->
+    <!-- One volume's actions on a phone, as a bottom sheet. -->
     <Teleport to="body">
       <Transition name="sheet" :duration="260">
         <div
@@ -1292,8 +1257,7 @@
       :item="activeEpubItem"
       @close="activeEpubItem = null; fetchSeriesData()"
     />
-    <!-- The opening sequence before the title itself. The player loads underneath it, held,
-         so the title starts the moment the clip ends instead of after a load. -->
+    <!-- Opening sequence. The player loads underneath, held, so the title starts as the clip ends. -->
     <IntroSequence v-if="introFor" @done="introFor = null" />
     <VideoPlayer
       v-if="activeVideoItem"
@@ -1304,7 +1268,6 @@
       @play-next="activeVideoItem = $event"
     />
 
-    <!-- Fullscreen In-App Manga Reader -->
     <MangaReader
       v-if="activeReadingItem"
       :item="activeReadingItem"
@@ -1313,7 +1276,6 @@
       @close="handleReaderClose"
     />
 
-    <!-- Universal Bookmarks & Notes Modal -->
     <BookmarksModal
       :isOpen="showBookmarksModal"
       :item="selectedBookmarksItem"
@@ -1322,7 +1284,7 @@
     />
 
 
-    <!-- External Metadata Search Modal (series-wide or single volume) -->
+    <!-- Metadata search (series-wide or single volume) -->
     <MetadataSearchModal
       :isOpen="showMetadataModal"
       :item="metadataTargetItem"
@@ -1435,8 +1397,7 @@ const overviewExpanded = ref(false);
 const credits = ref(null);
 const extrasList = ref([]);
 const collection = ref(null);
-// The film's whole TMDB collection — owned films and (unless the admin turned it off) the
-// ones this server doesn't have. See GET /items/:id/collection.
+// The film's TMDB collection, including films this server lacks unless the admin hides them.
 const filmCollection = ref(null);
 // In release order, like the collection's own page.
 const collectionSiblings = computed(() =>
@@ -1451,25 +1412,22 @@ const introFor = ref(null);
 const error = ref(null);
 const series = ref(null);
 
-// Filter & Sort State
 const activeFilterTab = ref('all'); // 'all', 'unread', 'in_progress', 'completed'
 const sortAscending = ref(true);
 const viewLayout = ref('grid'); // 'grid' or 'list'
 
-// Reader & Bookmarks Modal State
 const activeReadingItem = ref(null);
 const showBookmarksModal = ref(false);
 const selectedBookmarksItem = ref(null);
 
-// Metadata search/apply modal — used both for series-wide (author/series) and per-volume edits
+// Metadata modal, for series-wide and per-volume edits
 const showMetadataModal = ref(false);
 const metadataTargetItem = ref(null);
 const metadataApplyIds = ref([]);
 
 function openSeriesMetadataSearch() {
   if (!series.value) return;
-  // One title (a film, a standalone book): edit that title itself. The series-wide editor
-  // would save the page's name as its series, turning "Dune" into a series called "Dune".
+  // One title: edit the title itself. The series-wide editor would save its name as a series.
   if (isSingle.value) {
     metadataTargetItem.value = series.value.volumes[0];
     metadataApplyIds.value = [];
@@ -1522,8 +1480,7 @@ const genreTags = computed(() => splitTags(series.value?.genres));
 const themeTags = computed(() => splitTags(series.value?.themes));
 
 // ─── Cover URLs ─────────────────────────────────────────────────────────────
-// TMDB artwork for the banner (movies and shows with credits). w1280 for most screens, the
-// original for big ones, so it stays sharp on a 4K display.
+// TMDB banner art: w1280, or the original on big screens.
 const tmdbImage = (size, path) => (path ? `https://image.tmdb.org/t/p/${size}${path}` : null);
 const backdropUrl = computed(() => (isVideoType.value ? tmdbImage('w1280', credits.value?.backdropPath) : null));
 const backdropSrcset = computed(() => {
@@ -1536,8 +1493,7 @@ const primaryCoverUrl = computed(() => {
   if (!series.value || !series.value.volumes || series.value.volumes.length === 0) {
     return placeholderCover(vocab.value.type, { width: 400, height: 600 });
   }
-  // Show the cover for whichever volume is "current" (in progress, or next up to read)
-  // rather than always volume 1, so the hero art tracks where you actually are in the series.
+  // The cover of the current volume (in progress or next up), not always volume 1.
   let current = series.value.nextVolume || series.value.volumes[0];
   if (isVideo(current.media_type) && current.cover_source === 'frame') {
     current = series.value.volumes.find((v) => v.cover_path && v.cover_source !== 'frame') || current;
@@ -1580,7 +1536,6 @@ const filteredVolumes = computed(() => {
 
   let list = [...series.value.volumes];
 
-  // Apply tab filter
   if (activeFilterTab.value === 'unread') {
     list = list.filter(v => !v.is_finished && !isSkipped(v) && (!v.progress_percent || v.progress_percent === 0));
   } else if (activeFilterTab.value === 'in_progress') {
@@ -1591,7 +1546,6 @@ const filteredVolumes = computed(() => {
     list = list.filter(isSkipped);
   }
 
-  // Apply sort order
   list.sort((a, b) => {
     let diff = 0;
     if (a.volume == null && b.volume == null) {
@@ -1609,7 +1563,7 @@ const filteredVolumes = computed(() => {
   return list;
 });
 
-// ─── Smart CTA State ────────────────────────────────────────────────────────
+// ─── Main button ────────────────────────────────────────────────────────────
 const smartCtaState = computed(() => {
   if (!series.value || !series.value.nextVolume) {
     return { label: typed('start'), subLabel: '', isResume: false, isFinished: false };
@@ -1651,8 +1605,7 @@ const undownloadedUnread = computed(() => (series.value?.volumes || []).filter(
 ));
 
 // ─── Hero actions ────────────────────────────────────────────────────────────
-// Everything beside the main play/read button, in one list so the same actions render as a
-// row of buttons on wider screens and as a labelled menu on phones.
+// Everything beside the main button: a row on wide screens, a labelled menu on phones.
 const showActionMenu = ref(false);
 
 const heroActions = computed(() => {
@@ -1693,8 +1646,7 @@ const heroActions = computed(() => {
       iconClass: done ? 'text-emerald-500' : 'text-muted-foreground', run: () => toggleVolumeDownload(it)
     });
   }
-  // Over plain http:// the browser won't allow downloads at all; say why instead of leaving
-  // the button silently missing.
+  // Over plain http:// downloads are impossible; explain rather than hide the button.
   if (offerHttpsForDownloads.value) {
     actions.push({
       key: 'download-https', label: t('common.download'), title: t('title.download.forOffline'),
@@ -1721,9 +1673,8 @@ const heroActions = computed(() => {
       icon: Search, iconClass: 'text-muted-foreground', run: openSeriesMetadataSearch
     });
   }
-  // A video that doesn't play on every device (AV1 on most Apple devices, older formats
-  // anywhere): have the server convert it once, in the background, instead of every time
-  // someone presses play. One film shows where its copy stands; a series queues its episodes.
+  // Videos some devices can't play: the server converts once, in the background.
+  // A film shows its copy's status; a series queues its episodes.
   const copy = compat.value;
   if (copy?.eligible && (copy.canRequest || copy.status !== 'none')) {
     const state = copy.status;
@@ -1740,8 +1691,7 @@ const heroActions = computed(() => {
       icon: Clapperboard, iconClass: 'text-muted-foreground', disabled: converting.value, run: convertAll
     });
   }
-  // Admins: keep a film, or the season on screen, as history ahead of deleting its files
-  // (or undo that). Library Health does the same for files already gone.
+  // Admins: keep a film or the season on screen as history before deleting its files.
   if (authStore.isAdmin) {
     const target = offloadTarget.value;
     if (target) {
@@ -1765,9 +1715,7 @@ const heroActions = computed(() => {
 const phoneMenuActions = computed(() => heroActions.value.filter((a) => !a.onPhone));
 
 // ─── Converted copy ──────────────────────────────────────────────────────────
-// Where a single video's converted copy stands (GET /media/video/:id/compat): whether it
-// needs one, whether this account may ask, and how far a conversion has got. Kept current
-// while one is waiting or running.
+// A video's converted-copy status (GET /media/video/:id/compat), polled while pending.
 const compat = ref(null);
 const converting = ref(false);
 let compatTimer = null;
@@ -1884,9 +1832,7 @@ async function downloadUnread() {
 }
 
 // ─── Single titles ──────────────────────────────────────────────────────────
-// A movie, a standalone book or audiobook — or a "series" the library only holds one of —
-// gets a title page rather than a one-row list with tabs and sorting. A collection with
-// more than one title (Star Wars, say) keeps the list.
+// One title (or a series with only one) gets a title page instead of a list with tabs.
 
 const isSingle = computed(() => (series.value?.volumes?.length || 0) === 1);
 const shownCreator = computed(() => realCreator(series.value?.author, series.value?.name));
@@ -1924,15 +1870,12 @@ const singleFacts = computed(() => {
 });
 
 // ─── Media-type vocabulary & helpers ────────────────────────────────────────
-// This page serves every media type; the words (Volume/Episode, Read/Watch…) and how
-// progress is shown (pages vs. time) follow the series being viewed.
+// Wording and progress display follow the media type being viewed.
 const mediaType = computed(() =>
   series.value?.mediaType || series.value?.volumes?.[0]?.media_type || route.query.type || 'manga'
 );
 const vocab = computed(() => vocabFor(mediaType.value));
-// Sentences that name this page's entries ("Skip this volume", "Mark all watched") are
-// written out whole for each media type under title.typed, so every language can phrase
-// them properly rather than slotting a translated word into an English sentence.
+// Whole sentences per media type (title.typed) so each language can phrase them properly.
 const MEDIA_TYPES = ['manga', 'book', 'audiobook', 'show', 'anime', 'movie'];
 const typeKey = computed(() => (MEDIA_TYPES.includes(mediaType.value) ? mediaType.value : 'book'));
 function typed(key, params) {
@@ -2259,9 +2202,8 @@ async function toggleSeasonWatched(season) {
   }
 }
 
-// Cast & crew: director and writers first, then the cast in billing
-// order, then the rest of the crew. Someone with several jobs gets one card. Without TMDB
-// credits it falls back to the names in the metadata (director, cast).
+// Director and writers, then cast in billing order, then crew; one card per person.
+// Without TMDB credits, falls back to the names in the metadata.
 const LEAD_JOBS = ['Director', 'Screenplay', 'Writer', 'Story', 'Novel', 'Characters'];
 const people = computed(() => {
   if (!isVideoType.value || isMovieCollection.value) return [];
@@ -2369,9 +2311,7 @@ async function loadCredits(itemId) {
 // ─── Data Fetching ──────────────────────────────────────────────────────────
 // Every load bumps loadId, so a slow answer for the last page never lands on this one.
 let loadId = 0;
-// The page the title on screen belongs to. Loading it again (after marking an episode
-// watched, closing the reader…) refreshes it in place; only a different page, or one that
-// failed, starts from the spinner.
+// Reloading the same page refreshes in place; only a different or failed page shows the spinner.
 let shownPage = null;
 function pageKey() {
   return JSON.stringify([route.params.seriesName, route.params.id, route.query.library, route.query.type]);
@@ -2415,7 +2355,6 @@ async function fetchSeriesData() {
       if (type === 'movie' && vols.length) loadFilmCollection(vols[0].id);
       else filmCollection.value = null;
     } else if (itemIdParam) {
-      // Fetch item first
       const itemRes = await api.get(`/items/${itemIdParam}`);
       if (id !== loadId) return;
       const item = itemRes.data.item;
@@ -2620,7 +2559,6 @@ async function clearAllSkips() {
 async function toggleVolumeReadStatus(vol) {
   try {
     const newFinished = vol.is_finished ? 0 : 1;
-    // Optimistic UI update
     vol.is_finished = newFinished;
     if (newFinished) {
       vol.progress_percent = 100;
@@ -2638,7 +2576,6 @@ async function toggleVolumeReadStatus(vol) {
     });
     if (newFinished) offerMarkEarlier(vol);
 
-    // Re-sync metadata and progress
     await fetchSeriesData();
   } catch (err) {
     console.error('Failed to toggle volume read status:', err);
@@ -2647,8 +2584,7 @@ async function toggleVolumeReadStatus(vol) {
 }
 
 // ─── Mark read up to here ───────────────────────────────────────────────────
-// Finishing one volume or episode with unfinished ones before it offers to finish those
-// too. The offer waits at the bottom of the screen and never blocks marking the next one.
+// Finishing an entry with unfinished ones before it offers to mark those too, without blocking.
 const markEarlier = ref(null); // { vol, ids }
 let markEarlierTimer = null;
 function earlierUnfinished(vol) {
@@ -2681,9 +2617,7 @@ async function confirmMarkEarlier() {
 }
 
 // ─── Reader Actions ─────────────────────────────────────────────────────────
-// Clicking an entry's cover or title. In a movie collection that opens the film's own page
-// (details, extras, the rest of the collection); everywhere else it opens the reader/player
-// straight away, as the dedicated Watch/Read button always does.
+// Clicking an entry: in a movie collection opens the film's page, otherwise the reader/player.
 function openEntry(vol) {
   if (vol.media_type === 'movie' && !isSingle.value) {
     router.push(`/title/${vol.id}`);
@@ -2797,8 +2731,7 @@ function handleMangaJump({ item, page }) {
 }
 
 // ─── Navigation Helpers ─────────────────────────────────────────────────────
-// vue-router records the previous in-app page in history.state.back; history.length also
-// counts pages from other sites, so a title opened from a link would "go back" out of the app.
+// history.state.back is the previous in-app page; history.length also counts other sites.
 function goBack() {
   if (window.history.state?.back) {
     router.back();
@@ -2814,8 +2747,7 @@ function goBackToType() {
 function formatDate(dateStr) {
   if (!dateStr) return '';
   try {
-    // SQLite's CURRENT_TIMESTAMP is UTC with no zone marker ("2026-09-26 21:10:00"), which
-    // Date would read as local time — putting it hours in the future ("-1 days ago").
+    // SQLite timestamps are UTC without a zone marker; Date would read them as local time.
     const date = new Date(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateStr) ? `${dateStr.replace(' ', 'T')}Z` : dateStr);
     const now = new Date();
     const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));

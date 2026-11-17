@@ -26,10 +26,10 @@
         <span class="flex-1">{{ $t('shelf.offline.message') }}</span>
         <span class="font-semibold whitespace-nowrap">{{ $t('shelf.offline.openDownloads') }}</span>
       </router-link>
-      <!-- Live now: the viewer's favourite channels (it hides itself when there's nothing). -->
+      <!-- Favourite live channels; hides itself when empty. -->
       <LiveNowRow v-if="activeType === 'all' && !searchQuery && !filtersActive && groupBy === 'series'" />
 
-      <!-- Continue Watching (video only, shown as its own row on the "All" view) -->
+      <!-- Continue Watching: video only, its own row on the "All" view -->
       <section :key="`watching-${activeType}`" v-if="continueWatchingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="shelf-fade-in flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-semibold tracking-tight text-foreground flex items-center gap-1.5">
@@ -52,7 +52,7 @@
         </div>
       </section>
 
-      <!-- Continue Reading / Listening Section (Filtered to All or specific category) -->
+      <!-- Continue Reading / Listening -->
       <section :key="`reading-${activeType}`" v-if="continueReadingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="shelf-fade-in flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-semibold tracking-tight text-foreground flex items-center gap-1.5">
@@ -75,7 +75,7 @@
         </div>
       </section>
 
-      <!-- Main Shelf Header with Organization Switcher -->
+      <!-- Main shelf -->
       <section class="flex flex-col gap-4">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div class="flex items-center gap-2 min-w-0">
@@ -87,8 +87,7 @@
             </span>
           </div>
 
-          <!-- Grouping selector. On a phone the modes share the row equally under short
-               names, so none of them hides off the edge behind a sideways scroll. -->
+          <!-- View selector. On a phone the modes share the row under short names. -->
           <div class="w-full lg:w-auto overflow-x-auto no-scrollbar flex items-center gap-1 sm:gap-1.5 p-1 bg-muted/40 rounded-xl border border-border flex-nowrap">
             <button
               v-for="mode in groupingModes"
@@ -102,8 +101,7 @@
                   : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
               ]"
             >
-              <!-- On a phone only the chosen view keeps its icon, leaving the others room for
-                   labels longer than English's. -->
+              <!-- On a phone only the chosen view keeps its icon, to leave room for labels. -->
               <component :is="mode.icon" class="w-3.5 h-3.5 flex-shrink-0" :class="groupBy === mode.id ? '' : 'hidden sm:block'" />
               <span class="sm:hidden truncate">{{ mode.short }}</span>
               <span class="hidden sm:inline">{{ mode.label }}</span>
@@ -111,9 +109,7 @@
           </div>
         </div>
 
-        <!-- Filters: progress, genre, recency, sort. A phone gets a tidy two-column grid (the
-             old wrapping row squeezed every select down to an empty chip), with the movie
-             collections switch on its own full-width row below. -->
+        <!-- Filters and sort: a two-column grid on a phone, a wrapping row above that. -->
         <div v-if="groupBy !== 'custom_folder'" class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
           <select v-model="progressFilter" :aria-label="$t('shelf.filters.progress')" :class="filterSelectClass(progressFilter)">
             <option value="">{{ $t('shelf.filters.status') }}</option>
@@ -169,16 +165,15 @@
           </button>
         </div>
 
-        <!-- Results. Keyed by the view on screen, so a new category or filter fades in
-             instead of blinking through a skeleton; while a slow one loads, the old view
-             stays put, dimmed. -->
+        <!-- Keyed by the view on screen so a new category or filter fades in; while a slow
+             one loads the old view stays, dimmed. -->
         <div
           :key="shelfKey"
           class="shelf-fade-in transition-opacity duration-200"
           :class="refreshing ? 'opacity-40 pointer-events-none' : ''"
           :aria-busy="String(loading || refreshing)"
         >
-        <!-- Loading Skeleton (first visit only) -->
+        <!-- Skeleton (first visit only) -->
         <div v-if="loading" class="poster-grid gap-3 sm:gap-4">
           <div v-for="i in 12" :key="i" class="aspect-[2/3] bg-muted/40 animate-pulse rounded-xl border border-border"></div>
         </div>
@@ -194,7 +189,6 @@
           </button>
         </div>
 
-        <!-- Empty State -->
         <div v-else-if="items.length === 0 && groupBy !== 'custom_folder'" class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border rounded-2xl bg-card/50 p-8">
           <div class="w-10 h-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mb-3">
             <BookX class="w-5 h-5" />
@@ -212,13 +206,10 @@
           </router-link>
         </div>
 
-        <!-- Mode 1: Series — one card per series (any media type), plus standalone titles.
-             Every card opens a detail page; nothing plays straight from the shelf. -->
+        <!-- Series: one card per series plus standalone titles -->
         <div v-else-if="groupBy === 'series'" class="flex flex-col gap-3">
-          <!-- Spacers stand in for the rows unmounted above and below the window, so the
-               page keeps the height it would have with every card rendered. They sit outside
-               the grid: inside it, auto-rows-fr stretched every row to the spacer's height,
-               the next measurement doubled the spacer, and the page grew without end. -->
+          <!-- Spacers stand in for unmounted rows. They must stay outside the grid: inside,
+               auto-rows-fr stretches every row to the spacer's height and the page grows forever. -->
           <div ref="gridWrapEl">
           <div v-if="padTopHeight > 0" :style="{ height: padTopHeight + 'px' }"></div>
           <div ref="gridEl" class="poster-grid auto-rows-fr gap-3 sm:gap-4">
@@ -261,7 +252,7 @@
           </div>
         </div>
 
-        <!-- Mode 2: Grouped by Creator (author / director / studio) — series cards per creator -->
+        <!-- By creator (author / director / studio) -->
         <div v-else-if="groupBy === 'creator'" class="flex flex-col gap-6">
           <div v-for="group in entriesByCreator" :key="group.heading" class="flex flex-col gap-3">
             <div class="flex items-center gap-2 border-b border-border pb-1.5">
@@ -280,7 +271,7 @@
           </div>
         </div>
 
-        <!-- Mode 4: Grouped by Disk Folders — a series sits once, under its own folder -->
+        <!-- By disk folder: a series sits once, under its own folder -->
         <div v-else-if="groupBy === 'disk_folder'" class="flex flex-col gap-6">
           <div v-for="group in entriesByFolder" :key="group.heading" class="flex flex-col gap-3">
             <div class="flex items-center gap-2 border-b border-border pb-1.5">
@@ -299,7 +290,7 @@
           </div>
         </div>
 
-        <!-- Mode 5: Custom In-App Folders (matches Author/Series layout & includes Unorganized catch-all) -->
+        <!-- Custom folders, plus an Unorganized catch-all -->
         <div v-else-if="groupBy === 'custom_folder'" class="flex flex-col gap-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-3.5">
             <div class="flex items-center gap-2">
@@ -352,7 +343,6 @@
               </button>
             </div>
 
-            <!-- Folder Items Grid -->
             <ShelfEntryGrid
               v-if="folder.items.length > 0"
               :entries="folderEntries(folder)"
@@ -375,14 +365,12 @@
     </main>
     </div>
 
-    <!-- Fullscreen Manga Reader Modal -->
     <MangaReader
       v-if="activeMangaItem"
       :item="activeMangaItem"
       @close="closeMangaReader"
     />
 
-    <!-- Add To Custom Folder Modal -->
     <AddToFolderModal
       :isOpen="showAddToFolderModal"
       :item="selectedFolderItem"
@@ -390,7 +378,6 @@
       @updated="loadCustomFolders"
     />
 
-    <!-- Universal Bookmarks & Notes Modal -->
     <BookmarksModal
       :isOpen="showBookmarksModal"
       :item="selectedBookmarksItem"
@@ -398,7 +385,6 @@
       @select-manga-page="handleMangaJump"
     />
 
-    <!-- External Metadata Search Modal -->
     <MetadataSearchModal
       :isOpen="showMetadataModal"
       :item="selectedMetadataItem"
@@ -429,8 +415,7 @@ import { detailRoute, creatorLabel, realCreator, VIDEO_TYPES } from '../utils/me
 import { normalizeShelfModes, userShelfModes } from '../utils/shelfModes';
 import { t } from '../i18n';
 import I18nT from '../i18n/I18nT.vue';
-// Readers, players and editors only mount once something is opened, so they load on demand
-// instead of riding in the shelf's first download (hls.js alone is ~500KB).
+// Loaded on demand to keep the shelf's first download small.
 const MangaReader = defineAsyncComponent(() => import('../components/MangaReader.vue'));
 const AddToFolderModal = defineAsyncComponent(() => import('../components/AddToFolderModal.vue'));
 const BookmarksModal = defineAsyncComponent(() => import('../components/BookmarksModal.vue'));
@@ -460,15 +445,13 @@ const router = useRouter();
 
 const isSidebarLayout = computed(() => customizationStore.effectiveLayoutMode(authStore.user) === 'sidebar');
 
-// ?type= lets other pages (e.g. the sidebar on Admin/Settings/Docs) deep-link straight into
-// a filtered shelf instead of always dumping you on "All".
+// ?type= deep-links into a filtered shelf.
 const route = useRoute();
 const defaultType = () => authStore.user?.preferences?.defaultView || 'all';
 const activeType = ref(route.query.type || defaultType());
 
-// The category you pick is kept in the URL (replaced, not pushed), so Back from a title
-// page returns to the shelf you left — Shows stays Shows — rather than to whatever ?type=
-// the history entry was first opened with. The default category leaves the URL bare.
+// The category is kept in the URL (replaced, not pushed) so Back from a title returns to
+// the same shelf. The default category leaves the URL bare.
 watch(activeType, (type) => {
   const wanted = type === defaultType() ? undefined : type;
   if (route.path !== '/' || route.query.type === wanted) return;
@@ -486,7 +469,7 @@ const groupBy = ref('series');
 const isOnline = ref(navigator.onLine);
 const updateOnline = () => { isOnline.value = navigator.onLine; };
 
-// Shelf filters, applied server-side (see GET /api/items).
+// Applied server-side (GET /api/items).
 const progressFilter = ref('');
 const genreFilter = ref('');
 const addedWithin = ref('');
@@ -496,7 +479,7 @@ const filtersActive = computed(() => !!(progressFilter.value || genreFilter.valu
 
 function filterSelectClass(value) {
   return [
-    // 16px text on a phone: iOS zooms the page into any smaller form control on focus.
+    // 16px on a phone: iOS zooms into smaller form controls on focus.
     'h-10 sm:h-9 w-full sm:w-auto min-w-0 sm:min-w-[7rem] sm:max-w-[11rem] pl-3 sm:pl-2.5 pr-2 sm:pr-1.5 rounded-lg border text-base sm:text-xs font-medium bg-background transition focus:outline-none focus:ring-2 focus:ring-ring/40',
     value ? 'border-primary/60 text-foreground bg-primary/5' : 'border-border text-muted-foreground'
   ];
@@ -509,8 +492,7 @@ function clearFilters() {
   sortBy.value = 'title';
 }
 
-// Genres per category, so switching back shows the Genre select straight away rather than
-// popping it in (and shifting the filter row) after a round trip.
+// Per category, so switching back doesn't pop the Genre select in after a round trip.
 const genresCache = new Map();
 
 async function loadGenres() {
@@ -528,18 +510,15 @@ async function loadGenres() {
   }
 }
 
-// Items arrive a page at a time rather than in one 5000-row response: the old single fetch
-// both stalled first paint and silently truncated any library past 5000 items.
+// Items are fetched a page at a time so large libraries don't stall first paint.
 const PAGE_SIZE = 1000;
-// Rows of cards kept mounted above and below the viewport, so a fast scroll never exposes
-// an empty gap before the next frame renders.
+// Rows kept mounted beyond the viewport so a fast scroll doesn't expose a gap.
 const BUFFER_ROWS = 4;
 
 const items = ref([]);
 const hasMoreServerItems = ref(false);
 const continueItems = ref([]);
 const loading = ref(true);
-// Set when the shelf asked for couldn't be loaded and there's nothing of its own to show.
 const loadError = ref('');
 const activeMangaItem = ref(null);
 
@@ -573,14 +552,12 @@ function handleMangaJump({ item, page }) {
   activeMangaItem.value = { ...item, initialPage: page };
 }
 
-// Shelf views. Series and Creator are always there; Disk Folders and Custom Folders can
-// be switched off by an admin for the whole server, or hidden by a user for themselves.
+// Allowed by the server and not hidden by the user (see utils/shelfModes).
 const groupingModes = computed(() => {
   const serverModes = normalizeShelfModes(allowedFilters.value);
   const userModes = userShelfModes(authStore.user?.preferences?.enabledGroupingModes);
   const all = [
-    // Internally still "series": every view shows series cards now, and this one is simply
-    // all of them A–Z (the stored preference name is kept so saved choices carry over).
+    // Id "series" kept for saved preferences; this is the A–Z view.
     { id: 'series', label: t('shelf.modes.alphabetical'), short: t('shelf.modes.alphabeticalShort'), icon: ArrowDownAZ },
     { id: 'creator', label: creatorLabel(activeType.value), short: creatorLabel(activeType.value), icon: User },
     { id: 'disk_folder', label: t('shelf.modes.diskFolders'), short: t('shelf.modes.diskFoldersShort'), icon: HardDrive },
@@ -601,7 +578,6 @@ const continueTitle = computed(() =>
   t(`shelf.continue.${CONTINUE_TYPES.includes(activeType.value) ? activeType.value : 'all'}`)
 );
 
-// Continue items strictly filtered by the current category (or all)
 const displayedContinueItems = computed(() => {
   const enabled = authStore.user?.preferences?.enabledMediaTypes || ALL_MEDIA_TYPES;
   return continueItems.value.filter(i => {
@@ -611,9 +587,7 @@ const displayedContinueItems = computed(() => {
   });
 });
 
-// "Continue Watching" is its own row: resuming a film is a different intent from picking
-// the next chapter, and mixing them buries one behind the other. On a filtered view the
-// single row above already says which it is, so the split only applies to "All".
+// On "All", video gets its own Continue Watching row; a filtered view has just one row.
 const continueWatchingItems = computed(() =>
   activeType.value === 'all'
     ? displayedContinueItems.value.filter(i => VIDEO_TYPES.includes(i.media_type))
@@ -638,7 +612,6 @@ const sectionTitle = computed(() => {
   }
 });
 
-// Filter items respecting user's enabled media categories
 const filteredItems = computed(() => {
   const enabled = authStore.user?.preferences?.enabledMediaTypes || ALL_MEDIA_TYPES;
   return items.value.filter(item => enabled.includes(item.media_type));
@@ -660,14 +633,7 @@ const displayItemCount = computed(() => {
   return t('shelf.counts.items', { count: filteredItems.value.length });
 });
 
-/**
- * The Series view: one entry per series (keyed by library and media type too, since two
- * libraries — or a manga and its anime — can share a name), and one per title with no
- * series. With title order the entries are alphabetical; with any other sort they keep the
- * server's order (a series sits where its first-listed title would).
- */
-// Movie collections (Star Wars…) show as one card, or — with "All movies" — every film on
-// its own. Only movies: shows and manga are always one card per series.
+// Movie collections show as one card, or with "All movies" every film on its own.
 const EXPAND_KEY = 'plinthio_expand_collections';
 const expandCollections = ref((() => { try { return localStorage.getItem(EXPAND_KEY) === '1'; } catch (e) { return false; } })());
 watch(expandCollections, (on) => { try { localStorage.setItem(EXPAND_KEY, on ? '1' : '0'); } catch (e) { /* ignore */ } });
@@ -679,10 +645,8 @@ const hasMovieCollections = computed(() => filteredItems.value.some((i) => i.med
 
 const shelfEntries = computed(() => buildShelfEntries(filteredItems.value, shelfOptions.value));
 
-// Windowed rendering. The grid only ever mounts the rows near the viewport: rows scrolled
-// off the top are unmounted again and replaced by a spacer of exactly their height, so the
-// scrollbar and scroll position stay honest while the DOM stays small no matter how far
-// down a 50,000-item library you are.
+// Windowed rendering: only rows near the viewport are mounted; spacers of exact height stand
+// in for the rest so the scrollbar stays honest.
 const gridEl = ref(null);
 const gridWrapEl = ref(null);
 const gridColumns = ref(6);
@@ -699,9 +663,7 @@ const displayedEntries = computed(() =>
   )
 );
 
-// rowHeight includes one row gap. The spacers sit outside the grid, so a spacer for N rows
-// is exactly N*rowHeight: N cards' heights plus the N gaps that would separate them from
-// the rendered rows.
+// rowHeight includes one gap, so a spacer for N rows is exactly N*rowHeight.
 const padTopHeight = computed(() =>
   windowStartRow.value > 0 ? windowStartRow.value * rowHeight.value : 0
 );
@@ -715,9 +677,8 @@ function resetGridWindow() {
   windowEndRow.value = BUFFER_ROWS * 2;
 }
 
-// Column count comes from the grid's own resolved template, so the responsive breakpoints
-// stay the single source of truth. Row height is measured off a real card (they're a fixed
-// aspect ratio, so every row matches) and only falls back to an estimate before first paint.
+// Columns come from the grid's resolved template so CSS breakpoints stay the source of
+// truth; row height is measured off a real card.
 function measureGrid() {
   const el = gridEl.value;
   if (!el) return;
@@ -729,8 +690,7 @@ function measureGrid() {
   if (card) {
     const gap = parseFloat(getComputedStyle(el).rowGap) || 0;
     const measured = card.getBoundingClientRect().height + gap;
-    // Sub-pixel jitter between measurements would re-trigger the render watcher forever;
-    // only a real change in card size counts.
+    // Ignore sub-pixel jitter, which would re-trigger the render watcher forever.
     if (measured > 0 && Math.abs(measured - rowHeight.value) > 1) rowHeight.value = measured;
   }
 }
@@ -751,8 +711,7 @@ function updateGridWindow() {
     Math.max(BUFFER_ROWS * 2, firstVisibleRow + rowsOnScreen + BUFFER_ROWS)
   );
 
-  // Pull the next page in before the window reaches the end of what's loaded, so scrolling
-  // never stalls on a round trip.
+  // Prefetch the next page before the window reaches the end of what's loaded.
   const renderedThrough = windowEndRow.value * gridColumns.value;
   if (renderedThrough > shelfEntries.value.length - PAGE_SIZE / 2) {
     loadMoreItems();
@@ -769,13 +728,9 @@ function onScroll() {
   });
 }
 
-// Grouped views: series cards (and standalone titles) under each heading, never loose
-// volumes or episodes. Creator uses the series' author (author, director or studio).
 const entriesByCreator = computed(() => groupEntries(shelfEntries.value, creatorHeading));
 
-// Without online metadata the scanner fills a video's "creator" with its folder name
-// ("Quiet Harbor (2021)"), and books default to "Unknown Author". Neither is a real
-// creator, so both go under one Unknown group instead of posing as a director.
+// Placeholder creators (folder names, "Unknown Author") go under one Unknown group; see realCreator.
 function creatorHeading(entry) {
   return entry.kind === 'series'
     ? realCreator(entry.author, entry.name) || t('common.unknown')
@@ -799,7 +754,7 @@ function setGrouping(id) {
 // Monotonic request id: a slower earlier request must never overwrite a newer result.
 let fetchSeq = 0;
 let searchDebounce = null;
-// The page being fetched, if one is: a second ask waits on it instead of starting another.
+// In-flight page fetch; a second request waits on it.
 let loadingMore = null;
 
 async function fetchItemPage(offset) {
@@ -815,12 +770,10 @@ async function fetchItemPage(offset) {
   return res.data.items || [];
 }
 
-// The last few views (category + filters + sort) are kept in memory, so going back to one
-// shows it instantly and then quietly refreshes it. Searches aren't kept: they're one-offs.
+// Recent views (not searches) are cached so going back shows them instantly, then refreshes.
 const SHELF_CACHE_LIMIT = 12;
 const shelfCache = new Map();
-// What's on screen, and a counter that bumps whenever that changes to a different view —
-// it keys the results block, which is what plays the fade-in.
+// Bumped when a different view is shown; keys the results block to play the fade-in.
 const shelfKey = ref(0);
 const refreshing = ref(false);
 let shownView = null;
@@ -855,7 +808,7 @@ async function fetchLibraryItems() {
   if (cached) {
     showItems(cached.items, cached.hasMore, view);
   } else if (shownView === null) {
-    // Nothing to show yet (first visit): the skeleton.
+    // First visit: skeleton.
     loading.value = true;
   } else if (view !== shownView) {
     // Keep the current view up; only dim it if the answer is slow enough to notice.
@@ -863,20 +816,17 @@ async function fetchLibraryItems() {
   }
   try {
     const page = await fetchItemPage(0);
-    if (seq !== fetchSeq) return; // A newer fetch already started — discard this one.
+    if (seq !== fetchSeq) return;
     showItems(page, page.length === PAGE_SIZE, view);
     rememberShelf(view);
-    // Recompute from wherever the page is actually scrolled rather than assuming the top:
-    // a refresh after editing an item shouldn't yank the reader back to row 0, and a new
-    // search landing on a shorter list shouldn't leave the window pointing past its end.
+    // Recompute from the actual scroll position rather than assuming the top.
     resetGridWindow();
     nextTick(() => {
       measureGrid();
       updateGridWindow();
     });
 
-    // Only the grid renders a window; the grouped modes (author / series / disk folder)
-    // build their buckets from the whole set, so they need every page up front.
+    // Grouped modes bucket the whole set, so they need every page.
     if (groupBy.value !== 'series') loadAllRemainingItems(seq);
   } catch (err) {
     console.error('Failed to fetch items:', err);
@@ -902,9 +852,8 @@ async function loadNextPage() {
   const seq = fetchSeq;
   try {
     const page = await fetchItemPage(items.value.length);
-    if (seq !== fetchSeq) return; // The shelf changed underneath us — this page is stale.
-    // The offset walks a stable title ordering, but a concurrent scan can shift rows, so
-    // guard against a row arriving twice rather than rendering a duplicate card.
+    if (seq !== fetchSeq) return; // Stale: the shelf changed.
+    // A concurrent scan can shift offsets, so drop rows already loaded.
     const known = new Set(items.value.map((i) => i.id));
     items.value = items.value.concat(page.filter((i) => !known.has(i.id)));
     hasMoreServerItems.value = page.length === PAGE_SIZE;
@@ -1006,8 +955,7 @@ function openAddToFolderModal(item) {
   showAddToFolderModal.value = true;
 }
 
-// Every card opens a detail page first — the series page, or the title's own page — and
-// reading, listening or watching starts from there.
+// Cards open a detail page; playback starts from there.
 function handleItemSelect(item) {
   router.push(detailRoute(item));
 }
@@ -1033,9 +981,7 @@ function refreshShelf() {
   }
 }
 
-// Media type changes fetch immediately; typing is debounced. Without the debounce every
-// keystroke fired a full library query (5000 rows, megabytes of JSON) — 15 in-flight
-// requests for "attack on titan", with the results racing each other into the grid.
+// Filter and category changes fetch immediately; search typing is debounced.
 watch([progressFilter, genreFilter, addedWithin, sortBy], () => {
   resetGridWindow();
   clearTimeout(searchDebounce);
@@ -1056,27 +1002,23 @@ watch([activeType, searchQuery], ([type], [prevType]) => {
   }
 });
 
-// Grouping (grid / author / series / folder) is applied client-side over the items we
-// already hold, so it doesn't need — and mustn't wait for — another round trip.
+// Grouping is client-side over the items already loaded.
 watch(groupBy, (mode) => {
   resetGridWindow();
   if (mode === 'custom_folder') {
     loadCustomFolders();
   } else if (mode !== 'series') {
-    // Grouped modes bucket the entire library, so make sure the rest of it is here.
     loadAllRemainingItems(fetchSeq);
   }
 });
 
-// A resize can change the column count and the card height at once, which moves every row
-// boundary — re-measure before recomputing the window.
+// Re-measure first: a resize can change both column count and card height.
 function onResize() {
   measureGrid();
   updateGridWindow();
 }
 
-// Cards only exist to be measured once they've rendered, so re-measure whenever the set of
-// rendered items changes (first paint, a new page, a different filter).
+// Cards can only be measured once rendered.
 watch(displayedEntries, () => {
   nextTick(() => {
     measureGrid();
@@ -1085,8 +1027,7 @@ watch(displayedEntries, () => {
 });
 
 onMounted(() => {
-  // A ?type= link (breadcrumbs, the sidebar on other pages) wins over the startup default;
-  // this used to overwrite it, so every deep link landed on the default category.
+  // A ?type= link wins over the default view.
   if (!route.query.type && authStore.user?.preferences?.defaultView) {
     activeType.value = authStore.user.preferences.defaultView;
   }
@@ -1098,8 +1039,7 @@ onMounted(() => {
   loadFilterSettings();
   fetchLibraryItems();
   fetchContinueItems();
-  // Every card opens a title page, so fetch that code while the shelf sits idle; the first
-  // tap then doesn't wait on a download.
+  // Prefetch the title page chunk while idle so the first tap doesn't wait.
   const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1500));
   idle(() => import('./TitleView.vue').catch(() => {}));
 });

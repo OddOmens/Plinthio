@@ -114,9 +114,8 @@ jobs:
         with:
           persist-credentials: false
 
-      # The image is how Plinthio actually ships, and it has broken on its own before (a
-      # non-free apt component that isn't enabled in the base image), so build it on every
-      # change rather than finding out at release time.
+      # The image is how Plinthio ships and can break on its own (e.g. an apt component the
+      # base image doesn't enable), so build it on every change, not just at release time.
       - name: Build image
         run: docker build -f docker/Dockerfile -t plinthio:ci .
 

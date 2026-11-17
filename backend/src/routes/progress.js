@@ -10,7 +10,6 @@ const router = express.Router();
 
 router.use(authenticateToken);
 
-// Get "Continue Listening / Reading" items for the user
 router.get('/continue', handle(async (req, res) => {
   const userId = req.user.id;
   const db = await getDb();
@@ -41,9 +40,8 @@ router.get('/continue', handle(async (req, res) => {
   res.json({ items });
 }));
 
-// Mark volumes skipped (or not). Used for "I watched the anime for these volumes".
-// Only the skip flag changes — a volume already read stays read, and partial progress is
-// kept so un-skipping restores it. Declared before /:itemId so "skip" isn't taken for an id.
+// Marks volumes skipped ("watched the anime instead"). Only the flag changes, so un-skipping
+// restores progress. Declared before /:itemId so "skip" isn't taken for an id.
 router.post('/skip', handle(async (req, res) => {
   const { itemIds, skipped = true } = req.body || {};
   if (!Array.isArray(itemIds) || itemIds.length === 0 || itemIds.length > 2000) {
@@ -53,7 +51,6 @@ router.post('/skip', handle(async (req, res) => {
   if (ids.length === 0) return res.status(400).json({ error: 'No valid item ids' });
 
   const db = await getDb();
-  // Only items this user can actually see.
   const visible = await db.all(`
       SELECT i.id, i.total_pages FROM items i
       WHERE i.id IN (${ids.map(() => '?').join(',')})
@@ -84,8 +81,7 @@ router.post('/skip', handle(async (req, res) => {
   res.json({ message: skipped ? 'Marked as skipped' : 'No longer skipped', count: visible.length });
 }));
 
-// Mark several titles finished (or not) at once — "mark read up to here". Finishing clears
-// skipped, like reading does. Declared before /:itemId for the same reason as /skip.
+// "Mark read up to here". Finishing clears skipped. Declared before /:itemId, like /skip.
 router.post('/finish', handle(async (req, res) => {
   const { itemIds, finished = true } = req.body || {};
   if (!Array.isArray(itemIds) || itemIds.length === 0 || itemIds.length > 2000) {
@@ -148,9 +144,7 @@ function position(value) {
 }
 const MAX_CFI = 2000;
 
-// Save progress (called periodically or on pause/page change). Only for a title that exists
-// and that the account may know about: a row used to be stored for any id at all, so an
-// account could fill the database with progress for titles that were never there.
+// Only for a title the account may see, so made-up ids can't fill the database.
 router.post('/:itemId', handle(async (req, res) => {
   const userId = req.user.id;
   const itemId = req.params.itemId;

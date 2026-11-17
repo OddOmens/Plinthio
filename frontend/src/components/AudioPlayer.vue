@@ -4,7 +4,7 @@
       <div class="bg-card/95 backdrop-blur-xl border border-border shadow-2xl rounded-2xl p-3 flex flex-col gap-2 transition-colors">
         <!-- Top Track Info & Controls Row -->
         <div class="flex items-center justify-between gap-3">
-          <!-- Left: Cover & Title (Click to open Fullscreen Now Playing) -->
+          <!-- Cover and title (opens Now Playing) -->
           <div @click="showNowPlaying = true" class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer group" :title="$t('player.audio.openNowPlaying')">
             <div class="w-11 h-11 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border group-hover:ring-2 ring-primary/40 transition">
               <img :src="coverUrl" :alt="$t('player.coverOf', { title: player.currentItem.title })" class="w-full h-full object-cover" />
@@ -122,7 +122,7 @@
       </div>
     </div>
 
-    <!-- Fullscreen Spotify/Apple Music Style Now Playing Modal -->
+    <!-- Full-screen Now Playing -->
     <NowPlayingModal
       :isOpen="showNowPlaying"
       @close="showNowPlaying = false"

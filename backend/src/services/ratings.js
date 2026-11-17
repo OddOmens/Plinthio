@@ -3,8 +3,7 @@ import { cleanSearchTitle, parseMediaTitle } from './titleCleaner.js';
 import { logger } from './logger.js';
 import { setSetting } from './settings.js';
 
-// Admin display switches for the rating UI. Each defaults on; stored as 'true'/'false' in
-// the settings table and served alongside the rest of the server customization.
+// Admin rating display switches; default on, stored as 'true'/'false'.
 export const RATING_SETTING_KEYS = {
   showPersonal: 'ratings_show_personal',
   showCommunity: 'ratings_show_community',
@@ -31,23 +30,16 @@ export async function saveRatingSettings(db, updates) {
   }
 }
 
-// Only video has a world rating source today (TMDB). Books and manga fall back to Plinthio's
-// own ratings alone.
+// Only video has an external rating source (TMDB).
 export const EXTERNAL_RATING_TYPES = new Set(['movie', 'show', 'anime']);
 
-// A title's TMDB score drifts slowly; a week between lookups keeps it current without
-// querying TMDB every time someone opens a rating. Misses are remembered for the same span.
+// Scores (and misses) are re-checked weekly.
 const EXTERNAL_RATING_MAX_AGE_DAYS = 7;
 
-// Episodes of one show all share the show's score, so concurrent opens of several episodes
-// (or the same movie from two tabs) collapse into a single TMDB request.
+// Dedupes concurrent lookups; episodes share their show's key.
 const inFlight = new Map();
 
-/**
- * Fills in the item's TMDB score if it's missing or stale, and returns the item with the
- * current external_rating* columns. Never throws — a provider outage just means no world
- * rating is shown this time.
- */
+/** Refreshes a missing or stale TMDB score and returns the updated item. Never throws. */
 export async function ensureExternalRating(db, item) {
   if (!EXTERNAL_RATING_TYPES.has(item.media_type)) return item;
 
@@ -70,8 +62,7 @@ export async function ensureExternalRating(db, item) {
       try {
         result = await lookupTmdbRating(item.media_type, query, isEpisode ? null : year);
       } catch (err) {
-        // No key configured, or TMDB unreachable: leave checked_at alone so the next open
-        // retries once the admin adds a key or the network comes back.
+        // Leave checked_at unset so the next open retries.
         if (err.code !== 'MISSING_API_KEY') {
           logger.warn('media', `TMDB rating lookup failed for "${query}": ${err.message}`);
         }
@@ -101,10 +92,7 @@ export async function ensureExternalRating(db, item) {
   return db.get('SELECT * FROM items WHERE id = ?', [item.id]);
 }
 
-/**
- * The rating summary for one item as a given user sees it, honouring the admin's display
- * switches — a hidden section is omitted from the response, not just from the UI.
- */
+/** Hidden sections are omitted from the response, not just the UI. */
 export async function getRatingSummary(db, item, userId, settings) {
   const summary = { itemId: item.id, settings };
 

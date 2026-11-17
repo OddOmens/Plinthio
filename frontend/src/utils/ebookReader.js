@@ -1,9 +1,4 @@
-// The EPUB reader's display settings. They belong to the person, not the book: set them
-// once in any book and every book opens the same way, on every device (they're saved in
-// the user's preferences as `ebookReader`).
-//
-// Option labels are getters, so they follow the current language (spreading an option
-// copies today's wording).
+// EPUB reader display settings, per person rather than per book (preferences.ebookReader).
 import { t } from '../i18n';
 
 const labelled = (group, id, extra = {}) => ({ id, ...extra, get label() { return t(`reader.${group}.${id}`); } });

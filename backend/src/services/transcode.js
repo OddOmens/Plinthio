@@ -3,14 +3,10 @@ import { PlinthioError } from '../errors.js';
 import { logger } from './logger.js';
 import { localInputArgs, isScriptFormat } from './probe.js';
 
-// Codecs a mainstream browser can play from a plain <video> tag. HEVC/H.265 is absent from
-// the base set: Chrome ≥107/Edge/Safari support it, but Firefox does not, and capability
-// varies by platform — so we only include it when the client explicitly signals support via
-// the clientHevc flag sent by the player after a MediaSource.isTypeSupported() probe.
+// Browser-playable codecs. HEVC support varies, so it's added only when the client sends clientHevc.
 const BASE_BROWSER_VIDEO_CODECS = new Set(['h264', 'vp8', 'vp9', 'av1']);
 const BROWSER_AUDIO_CODECS = new Set(['aac', 'mp3', 'opus', 'vorbis', 'flac']);
-// MKV is a container browsers don't play even when the streams inside are compatible, so
-// it gets remuxed (stream-copied into MP4) — far cheaper than a real transcode.
+// Other containers (e.g. MKV) get remuxed to MP4, far cheaper than transcoding.
 const BROWSER_CONTAINERS = new Set(['mov,mp4,m4a,3gp,3g2,mj2', 'webm']);
 const WEBM_VIDEO_CODECS = new Set(['vp8', 'vp9', 'av1']);
 const WEBM_AUDIO_CODECS = new Set(['opus', 'vorbis']);
@@ -18,15 +14,10 @@ const WEBM_AUDIO_CODECS = new Set(['opus', 'vorbis']);
 const probeCache = new Map();
 const PROBE_CACHE_MAX = 500;
 
-// Video codecs a client may say it decodes (?videoCodecs=h264,hevc). Apps that aren't
-// browsers send the list: Apple's players, for one, only decode AV1 on devices with a
-// hardware decoder and never VP8/VP9, so "what browsers play" is the wrong test for them.
+// Codecs native apps may declare (?videoCodecs=h264,hevc), since browser defaults don't fit them.
 const CLIENT_VIDEO_CODECS = ['h264', 'hevc', 'av1', 'vp9', 'vp8'];
 
-/**
- * Reads a ?videoCodecs= value into a sorted list of known codec names, or null when the
- * client didn't send one (then the browser defaults above apply).
- */
+/** Known codecs from ?videoCodecs=, or null to use browser defaults. */
 export function parseClientVideoCodecs(raw) {
   if (typeof raw !== 'string' || !raw) return null;
   const asked = new Set(raw.toLowerCase().split(',').map((c) => c.trim()));
@@ -34,7 +25,7 @@ export function parseClientVideoCodecs(raw) {
   return known.length ? known : null;
 }
 
-// Drops what's remembered about an item's file, for when the file itself has been replaced.
+// For when an item's file has been replaced.
 export function forgetPlaybackInfo(itemId) {
   for (const key of probeCache.keys()) {
     if (key.startsWith(`${itemId}:`)) probeCache.delete(key);
@@ -57,8 +48,7 @@ function runFfprobe(filePath) {
     let stderr = '';
     proc.stdout.on('data', (d) => { stdout += d; });
     proc.stderr.on('data', (d) => { stderr += d; });
-    // ffprobe that can't even launch is P303; one that can't read the file is P302 when the
-    // disk itself failed (a disconnected drive), otherwise P304 (corrupt/unsupported file).
+    // P303: can't launch. P302: disk I/O failure. P304: corrupt/unsupported file.
     proc.on('error', (err) => reject(new PlinthioError('P303', undefined, { cause: err })));
     proc.on('close', (code) => {
       if (code !== 0) {
@@ -76,15 +66,8 @@ function runFfprobe(filePath) {
 }
 
 /**
- * Decides whether a file can be streamed to the browser untouched, remuxed, or needs a full
- * transcode. Cached per item because ffprobe costs ~50-150ms and playback-info is hit on
- * every open.
- *
- * @param {string} itemId
- * @param {string} filePath
- * @param {{ clientHevc?: boolean, videoCodecs?: string[] | null }} [caps] - client capability
- *   flags sent by the player. videoCodecs (see parseClientVideoCodecs) is the full list of
- *   video codecs the client decodes and replaces the browser defaults.
+ * Direct, remux or transcode. Cached per item and capabilities since it runs on every open.
+ * @param {{ clientHevc?: boolean, videoCodecs?: string[] | null }} [caps] - videoCodecs replaces the browser defaults
  */
 export async function getPlaybackInfo(itemId, filePath, caps = {}) {
   const cacheKey = `${itemId}:${caps.videoCodecs ? caps.videoCodecs.join('+') : (caps.clientHevc ? 'hevc' : 'base')}`;
@@ -114,22 +97,17 @@ export async function getPlaybackInfo(itemId, filePath, caps = {}) {
 
     const videoOk = videoStream ? BROWSER_VIDEO_CODECS.has(videoStream.codec_name) : true;
     const audioOk = audioStream ? BROWSER_AUDIO_CODECS.has(audioStream.codec_name) : true;
-    // ffprobe names WebM and MKV alike ("matroska,webm"). A .webm file holding only WebM
-    // codecs (VP8/VP9/AV1, Opus/Vorbis) is WebM, which browsers play as-is; an MKV isn't.
+    // ffprobe reports WebM and MKV alike; a .webm with only WebM codecs plays as-is.
     const isWebm = container === 'matroska,webm' && /\.webm$/i.test(filePath) &&
       (!videoStream || WEBM_VIDEO_CODECS.has(videoStream.codec_name)) &&
       audioStreams.every((a) => WEBM_AUDIO_CODECS.has(a.codec_name));
     const containerOk = BROWSER_CONTAINERS.has(container) || isWebm;
 
-    // 10-bit H.264 is technically "h264" but browsers can't decode High10 profile.
+    // Browsers can't decode 10-bit (High10) H.264.
     const tenBitH264 = videoStream?.codec_name === 'h264' && (videoStream.pix_fmt || '').includes('10');
 
-    // Direct Stream logic (mirroring Jellyfin):
-    // 1. 'direct': Container and all streams natively playable. 0% CPU.
-    // 2. 'remux': Video is browser-compatible (e.g. H.264 or HEVC on Vivaldi/Chrome), but container is MKV
-    //    and/or audio is EAC3/DTS/TrueHD. Video is stream-copied (-c:v copy) untouched; only audio
-    //    is converted to AAC (-c:a aac). Takes ~0.5% CPU and starts instantly.
-    // 3. 'transcode': Only needed if the VIDEO codec itself cannot be decoded by the browser.
+    // direct: everything playable. remux: video copied, container and/or audio converted.
+    // transcode: only when the video codec itself can't be decoded.
     let mode = 'direct';
     if (!videoOk || tenBitH264) {
       mode = 'transcode';
@@ -143,15 +121,13 @@ export async function getPlaybackInfo(itemId, filePath, caps = {}) {
       audioOk,
       container,
       videoCodec: videoStream?.codec_name || null,
-      // 10-bit H.264 and interlaced video: both matter to the converted copies
-      // (services/compat.js), which treat the first as undecodable and deinterlace the second.
+      // Used by services/compat.js for converted copies.
       tenBitH264,
       interlaced: ['tt', 'bb', 'tb', 'bt'].includes(videoStream?.field_order),
       audioCodec: audioStream?.codec_name || null,
       width: videoStream?.width || 0,
       height: videoStream?.height || 0,
-      // Track indexes here are per-type (the Nth audio stream), which is what ffmpeg's
-      // `-map 0:a:N` wants — not the absolute stream index.
+      // Per-type indexes, as `-map 0:a:N` expects, not absolute stream indexes.
       audioTracks: audioStreams.map((stream, index) => ({
         index,
         codec: stream.codec_name,
@@ -167,8 +143,7 @@ export async function getPlaybackInfo(itemId, filePath, caps = {}) {
         title: stream.tags?.title || null,
         forced: stream.disposition?.forced === 1,
         isDefault: stream.disposition?.default === 1,
-        // Bitmap subtitles (DVD/Blu-ray) can't be converted to WebVTT text, so they're
-        // advertised but flagged as unsupported rather than silently failing to load.
+        // Bitmap subtitles can't become WebVTT.
         isTextBased: ['subrip', 'ass', 'ssa', 'mov_text', 'webvtt', 'text'].includes(stream.codec_name)
       })),
       duration: parseFloat(probe.format?.duration) || 0,
@@ -179,13 +154,11 @@ export async function getPlaybackInfo(itemId, filePath, caps = {}) {
           : null
     };
   } catch (err) {
-    // If ffprobe isn't available or fails, fall back to a direct stream — that's the old
-    // behaviour, and a direct attempt is better than refusing to play anything.
+    // Fall back to a direct stream attempt rather than refusing to play.
     logger.warn('media', `ffprobe failed for item ${itemId}: ${err.message}`);
     info = {
       mode: 'direct',
-      // Nothing is known about this file, so the routes won't hand it to ffmpeg (a remux can
-      // be asked for by URL whatever this says); unsafeFormat marks a refused playlist/script.
+      // Routes won't pass an unprobed file to ffmpeg; unsafeFormat marks a refused playlist/script.
       probeFailed: true,
       unsafeFormat: err.unsafeFormat === true,
       container: null,

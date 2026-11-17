@@ -36,8 +36,7 @@ router.get('/', handle(async (req, res) => {
       ORDER BY c.name ASC
     `, params);
 
-  // Lists show the first few entries' artwork on their card, like a shelf. Library items
-  // give an id (and updated_at, which versions the cover URL); external titles a URL.
+  // Card artwork: library items give an id (+ updated_at to version the URL), external a URL.
   if (type === 'readlist' && collections.length) {
     const ids = collections.map((c) => c.id);
     const marks = ids.map(() => '?').join(', ');
@@ -66,23 +65,20 @@ router.get('/', handle(async (req, res) => {
   res.json({ collections });
 }));
 
-// Get all collections and their items, plus an "Unorganized" section for remaining items
+// All collections with items, plus an "Unorganized" section for the rest.
 router.get('/all-grouped', handle(async (req, res) => {
   const userId = req.user.id;
   const { mediaType } = req.query;
 
   const db = await getDb();
 
-  // 1. Fetch user's custom collections. Read lists are excluded — they're an explicit
-  // reading order browsed on their own, not part of the folder/Unorganized split.
+  // Read lists are excluded: they're browsed on their own, not part of the folder split.
   const collections = await db.all(
     "SELECT * FROM collections WHERE user_id = ? AND COALESCE(type, 'collection') = 'collection' ORDER BY name ASC",
     [userId]
   );
 
-  // 2. Fetch the items of every collection in one query and group them here. This used
-  // to run a query per collection, so a user with 40 folders paid 40 round trips (each
-  // re-running the visibility check) every time the shelf switched to folder grouping.
+  // Every collection's items in one query, grouped here.
   const groupedCollections = [];
   if (collections.length > 0) {
     const placeholders = collections.map(() => '?').join(', ');
@@ -123,7 +119,7 @@ router.get('/all-grouped', handle(async (req, res) => {
     }
   }
 
-  // 3. Fetch unorganized items (items visible to user not assigned to ANY collection of this user)
+  // Visible items in none of this user's collections.
   let unorgQuery = `
       SELECT i.*, p.current_time, p.current_page, p.progress_percent, p.is_finished
       FROM items i
@@ -149,7 +145,6 @@ router.get('/all-grouped', handle(async (req, res) => {
   const unorganizedItems = await db.all(unorgQuery, unorgParams);
   await shapeItems(db, unorganizedItems, req.user);
 
-  // Append non-deletable "Unorganized" collection
   groupedCollections.push({
     id: 'unorganized',
     name: 'Unorganized',
@@ -171,7 +166,7 @@ router.post('/', async (req, res) => {
   if (type && !['collection', 'readlist'].includes(type)) {
     return res.status(400).json({ error: 'Type must be collection or readlist' });
   }
-  // Lists always belong to a category; older clients that don't send one made reading orders.
+  // Older clients send no category; theirs were reading orders.
   const category = type === 'readlist' ? (req.body.category || 'read') : null;
   if (category && !LIST_CATEGORIES[category]) {
     return res.status(400).json({ error: `Category must be one of: ${Object.keys(LIST_CATEGORIES).join(', ')}` });
@@ -224,8 +219,7 @@ router.get('/:id', handle(async (req, res) => {
 
   await shapeItems(db, items, req.user);
 
-  // Lists interleave library items with external titles in one order. `items` stays as the
-  // library-only array for existing callers; `entries` is the merged, ordered view.
+  // `items` is library-only; `entries` merges library items and external titles in order.
   const externals = await db.all(
     'SELECT * FROM list_external_entries WHERE collection_id = ? ORDER BY position ASC, added_at ASC',
     [id]
@@ -278,9 +272,7 @@ router.post('/:id/items', handle(async (req, res) => {
     return sendError(req, res, 'P500', { message: 'Folder or list not found' });
   }
 
-  // Reject unknown or hidden-from-this-user item ids up front — otherwise a bogus id
-  // silently sits in collection_items forever (every read query INNER JOINs items, so it
-  // never surfaces, but it also never errors and never gets cleaned up).
+  // Reject unknown or hidden ids, or they'd sit unseen in collection_items forever.
   const item = await db.get(`
       SELECT i.id, i.media_type FROM items i
       WHERE i.id = ?
@@ -297,7 +289,7 @@ router.post('/:id/items', handle(async (req, res) => {
     return sendError(req, res, 'P501', { message: `This list only holds ${collection.category}` });
   }
 
-  // New items go on the end of the reading order rather than the start.
+  // New items go at the end of the reading order.
   await db.run(`
       INSERT OR IGNORE INTO collection_items (collection_id, item_id, position)
       VALUES (?, ?, ?)
@@ -306,13 +298,11 @@ router.post('/:id/items', handle(async (req, res) => {
   res.json({ message: 'Item added to folder' });
 }));
 
-// Set the reading order of a folder/read list. Takes the full ordered list of item ids and
-// renumbers them, so the client can send the list it's showing rather than computing deltas.
+// Takes the full ordered list and renumbers, so the client sends what it shows.
 router.put('/:id/reorder', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
-  // `entries` ([{ kind: 'item' | 'external', id }]) orders a list that mixes library items
-  // and external titles; plain `itemIds` is still accepted from older clients.
+  // `entries` ([{ kind: 'item' | 'external', id }]) for mixed lists; `itemIds` from older clients.
   const entries = Array.isArray(req.body.entries)
     ? req.body.entries
     : Array.isArray(req.body.itemIds) ? req.body.itemIds.map((itemId) => ({ kind: 'item', id: itemId })) : null;
@@ -367,8 +357,7 @@ function clip(value, max) {
   return String(value).slice(0, max);
 }
 
-// Add a title from an external metadata search (TMDB, MangaDex, Google Books, Open Library)
-// to a list — for things the library doesn't have yet.
+// Add a title from an external metadata search, for things the library doesn't have yet.
 router.post('/:id/external', handle(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
@@ -442,18 +431,16 @@ async function nextPosition(db, collectionId) {
   return row.position;
 }
 
-// Check which folders an item is already inside
+// Which folders an item is already in.
 router.get('/for-item/:itemId', handle(async (req, res) => {
   const userId = req.user.id;
   const { itemId } = req.params;
 
   const db = await getDb();
-  // Only for a title this account may know about; anything else is "not found", the same as
-  // an id that was never there, so the answer can't confirm a hidden title exists.
+  // Hidden titles answer "not found", so this can't confirm they exist.
   const item = await db.get(`SELECT i.media_type FROM items i WHERE i.id = ?${knownSql(req.user, 'i')}`, [itemId]);
   if (!item) return sendError(req, res, 'P300');
-  // Only offer the lists this kind of item can go in (a movie never shows the "Read" lists);
-  // plain folders take anything.
+  // Only lists this kind of item fits (no "Read" lists for a movie); folders take anything.
   const category = categoryForMediaType(item.media_type);
   const rows = await db.all(`
       SELECT c.id, c.name, COALESCE(c.type, 'collection') as type, c.category,

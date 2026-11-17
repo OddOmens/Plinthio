@@ -1,11 +1,8 @@
 import { accessSql } from './visibility.js';
 
-// External titles (from a metadata search) carry no link to library items — the library has
-// no provider ids to join on — so "is this already on the server?" is answered by title: an
-// item of the same media type whose title, or series name for shows/anime/manga volumes,
-// matches case-insensitively. Only items this user can actually see count as a match.
-//
-// `rows` are objects with { id, media_type, title }. Returns Map(row.id → { id, title }).
+// Matches external search results to library items by title or series name (case-insensitive,
+// same media type), since the library has no provider ids to join on. Only items the user can see count.
+// `rows`: { id, media_type, title }. Returns Map(row.id → { id, title }).
 export async function matchLibraryTitles(db, user, rows) {
   const matches = new Map();
   if (!rows.length) return matches;
@@ -47,9 +44,8 @@ export async function matchLibraryTitles(db, user, rows) {
   return matches;
 }
 
-// The most recent request for each external title, so a list or search result can show
-// "Requested" / "Rejected" instead of offering to request it again.
-// `rows` carry { source, external_id }. Returns Map(`${source}:${external_id}` → status).
+// Latest request status per external title. `rows`: { source, external_id }.
+// Returns Map(`${source}:${external_id}` → status).
 export async function latestRequestStatuses(db, rows) {
   const statuses = new Map();
   if (!rows.length) return statuses;

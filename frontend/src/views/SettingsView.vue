@@ -59,6 +59,6 @@ const groups = computed(() => [
   }
 ]);
 
-// Tab names from before the redesign, still in links and docs.
+// Legacy tab names still used in links and docs.
 const aliases = { account: 'security', preferences: 'shelves', stats: 'activity', apikeys: 'apps' };
 </script>

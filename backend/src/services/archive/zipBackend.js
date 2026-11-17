@@ -1,10 +1,7 @@
 import AdmZip from 'adm-zip';
 import { getArchiveHandle, MAX_ENTRY_BYTES } from './handleCache.js';
 
-// `new AdmZip(path)` reads and parses the archive's central directory up front, so it's the
-// expensive part of serving a page — hence the shared handle cache rather than a fresh
-// instance per call. Entry objects come off the cached instance, so getData() below reads
-// straight out of the already-parsed archive.
+// Parsing the central directory is the expensive part, so instances go through the handle cache.
 function open(archivePath) {
   return new AdmZip(archivePath);
 }
@@ -18,14 +15,12 @@ export default {
     }));
   },
 
-  // `maxBytes` lets a caller that knows it wants something small (ComicInfo.xml) ask for a
-  // tighter limit than a page gets.
+  // `maxBytes` lets a caller wanting something small (ComicInfo.xml) set a tighter limit.
   async readEntry(archivePath, name, { maxBytes = MAX_ENTRY_BYTES } = {}) {
     const zip = await getArchiveHandle(archivePath, open);
     const entry = zip.getEntry(name);
     if (!entry) return null;
-    // A page is never this big; refusing it up front stops a tiny "zip bomb" entry from
-    // being inflated into memory.
+    // Refuse oversized entries up front so a zip bomb is never inflated into memory.
     if (entry.header.size > Math.min(maxBytes, MAX_ENTRY_BYTES)) throw new Error('This page is too large to open');
     return entry.getData();
   }

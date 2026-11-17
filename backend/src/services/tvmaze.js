@@ -1,13 +1,8 @@
 import { fetchJson } from './providerHttp.js';
 import { htmlToText } from './bookMetadata.js';
 
-/**
- * TVmaze — free, no key; its data is licensed CC BY-SA, so it's credited in Admin → Metadata.
- * https://www.tvmaze.com/api
- * Shows, with every episode's title, date, summary and still. At least 20 requests every 10
- * seconds are allowed; answers are kept for a while so matching a season's episodes asks
- * about the show once.
- */
+// TVmaze (https://www.tvmaze.com/api): no key; CC BY-SA, credited in Admin → Metadata.
+// Rate limited (20 req / 10s), so answers are cached.
 const CACHE_MS = 30 * 60 * 1000;
 
 function tvmazeResult(show) {
@@ -34,7 +29,7 @@ export async function searchTvmaze(query) {
   return (Array.isArray(data) ? data : []).slice(0, 10).map((hit) => tvmazeResult(hit.show || {}));
 }
 
-/** A show's episodes by "season×number" ("1x2"), each with name, airdate, summary and still. */
+/** Episodes keyed by "season x number" ("1x2"). */
 export async function fetchTvmazeEpisodes(showId) {
   const episodes = await fetchJson(`https://api.tvmaze.com/shows/${encodeURIComponent(showId)}/episodes`, { cacheMs: CACHE_MS });
   return new Map((Array.isArray(episodes) ? episodes : []).map((e) => [`${e.season}x${e.number}`, {

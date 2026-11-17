@@ -1,10 +1,8 @@
-// "Report a problem": opens a new GitHub issue on the bug-report form, with what the app
-// already knows filled in (version, browser, the page it was on), so a report arrives with
-// enough to act on. Nothing is sent anywhere until the person submits it on GitHub.
+// Prefilled GitHub bug-report link. Nothing is sent until the person submits it on GitHub.
 const ISSUE_URL = 'https://github.com/OddOmens/Plinthio/issues/new';
 
 let versionPromise = null;
-// The running server's version, fetched once per page load.
+// Fetched once per page load.
 export function serverVersion() {
   versionPromise ||= fetch('/api/health')
     .then((res) => (res.ok ? res.json() : {}))
@@ -26,9 +24,7 @@ export function reportProblemUrl(version = '') {
     template: 'bug_report.yml',
     version,
     client: clientDescription(),
-    // Only the kind of page (/series, /docs …): the host is the person's own server address,
-    // and the rest of the path can hold titles from their library — neither belongs in a
-    // public issue.
+    // Only the first path segment: the host and the rest of the path are private.
     what: `\n\n(Reported from the ${window.location.pathname.split('/')[1] || 'home'} page)`
   });
   return `${ISSUE_URL}?${params}`;

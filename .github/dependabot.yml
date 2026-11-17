@@ -28,7 +28,7 @@ updates:
       # vue-router 5 is held until there's a reason to move.
       - dependency-name: tailwindcss
         update-types: [version-update:semver-major]
-      # Tailwind 3 pins this; a major bump of it drags Tailwind 4 in with it (see #44).
+      # Tailwind 3 pins this; a major bump of it drags Tailwind 4 in with it.
       - dependency-name: postcss-selector-parser
         update-types: [version-update:semver-major]
       - dependency-name: vue-router

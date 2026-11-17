@@ -1,13 +1,10 @@
 import api from '../api/client';
 
-// Tracks "opened this item" → "closed this item" spans for the readers/players (manga,
-// book, video, audio) so Admin → Activity can show what's actually being read/watched and
-// for how long. Tracking failures are swallowed everywhere — a network hiccup here must
-// never block or interrupt someone's reading/viewing session.
+// Open/close spans for the readers and players, shown in Admin → Activity. Failures are
+// swallowed so tracking never interrupts playback or reading.
 export function useViewSession() {
   let sessionId = null;
-  // Bumped by every open and close, so a start that answers after the item was closed (or
-  // another opened) is ended straight away rather than left "viewing" forever.
+  // Bumped on open/close, so a start that answers late is ended instead of left "viewing".
   let generation = 0;
 
   async function open(itemId) {

@@ -12,9 +12,7 @@ import { knownSql, isLimitedAccount } from '../services/visibility.js';
 
 const router = express.Router();
 
-// The library types the scanner actually knows how to walk (see walkDirectory in
-// services/scanner.js). Shared with the setup wizard's library bootstrap in auth.js so the
-// two entry points can't drift apart again.
+// Library types the scanner can walk (walkDirectory); shared with the setup wizard in auth.js.
 export const LIBRARY_TYPES = ['audiobooks', 'manga', 'books', 'shows', 'movies', 'anime'];
 
 router.use(authenticateToken);
@@ -23,7 +21,7 @@ export function resolveLibraryPath(inputPath) {
   let p = inputPath.trim();
   if (fs.existsSync(p)) return p;
 
-  // If host path like /media/<user>/Database... was provided, map to /media
+  // Map a host path like /media/<user>/Database... to /media
   const hostMatch = p.match(/^\/media\/[^/]+\/Database\d*(\/.*)?$/i);
   if (hostMatch) {
     const relative = hostMatch[1] || '';
@@ -38,9 +36,8 @@ export function resolveLibraryPath(inputPath) {
   return p;
 }
 
-// List libraries with total items count. A Kids Mode or age-limited account gets only the
-// libraries it can see something in, counted by what it can see: the name of a library
-// ("Horror", "Dad's films") and how much is in it say plenty about what's being kept from it.
+// Restricted accounts get only libraries they can see something in, counted by what they can
+// see: a library's name and size reveal what's being kept from them.
 router.get('/', handle(async (req, res) => {
   const db = await getDb();
   const limited = isLimitedAccount(req.user);
@@ -59,8 +56,7 @@ router.get('/', handle(async (req, res) => {
   res.json({ libraries });
 }));
 
-// Shared by the admin browse route below and the pre-setup browse route in auth.js, so the
-// first-run wizard can offer the same folder picker the Admin panel has.
+// Shared with the setup wizard's folder picker in auth.js.
 export function listMediaDirectories(dir) {
   const targetDir = dir ? resolveLibraryPath(dir) : '/media';
   if (!fs.existsSync(targetDir)) {
@@ -78,7 +74,6 @@ export function listMediaDirectories(dir) {
   return { currentDir: targetDir, directories };
 }
 
-// Browse available media folders in /media
 router.get('/browse', requireAdmin, handle(async (req, res) => {
   res.json(listMediaDirectories(req.query.dir));
 }));
@@ -90,10 +85,7 @@ router.post('/', requireAdmin, async (req, res) => {
     return res.status(400).json({ error: 'Name, path, and type are required' });
   }
 
-  // Must stay in sync with the scanner's walkDirectory() type handling, the Admin "Add
-  // Library" dropdown, and the setup wizard — video types were supported by the scanner and
-  // offered in both UIs while this validator still rejected them, so picking Movies/TV/Anime
-  // failed with a 400 and video was impossible to set up at all.
+  // Must match walkDirectory(), the Admin "Add Library" dropdown and the setup wizard.
   if (!LIBRARY_TYPES.includes(type)) {
     return res.status(400).json({ error: `Type must be one of: ${LIBRARY_TYPES.join(', ')}` });
   }
@@ -116,7 +108,7 @@ router.post('/', requireAdmin, async (req, res) => {
     );
     logger.info('library', `Library "${name.trim()}" (${type}) created by admin ${req.user.username}`, { libraryId: id, path: resolvedPath });
 
-    // Auto-trigger initial scan in background
+    // Initial scan in the background
     scanLibrary(id).catch(err => console.error(`Error in initial scan for ${oneLine(name)}:`, oneLineError(err)));
 
     res.json({
@@ -128,9 +120,8 @@ router.post('/', requireAdmin, async (req, res) => {
   }
 });
 
-// Library options admins and editors can change: whether it's kids-safe (every title in a
-// kids-safe library is visible to Kids Mode accounts), and whether its missing posters and
-// details are flagged at all (off for home videos; services/metadataGaps.js).
+// Editor-changeable options: kids-safe, and whether missing metadata is flagged
+// (off for home videos; services/metadataGaps.js).
 const LIBRARY_OPTIONS = { kidsAllowed: 'kids_allowed', ignoreMissingMetadata: 'ignore_missing_metadata' };
 
 router.patch('/:id', requireEditor, handle(async (req, res) => {
@@ -158,8 +149,7 @@ router.post('/:id/scan', requireAdmin, handle(async (req, res) => {
   res.json(result);
 }));
 
-// Delete library (Admin only) — cascades to remove every item, progress row, and bookmark
-// tied to it, so log exactly what's about to be lost before it's gone for good.
+// Cascades to every item, progress row and bookmark, so log what's lost first.
 router.delete('/:id', requireAdmin, handle(async (req, res) => {
   const db = await getDb();
   const lib = await db.get('SELECT name, type, path FROM libraries WHERE id = ?', [req.params.id]);

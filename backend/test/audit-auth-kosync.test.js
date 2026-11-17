@@ -59,7 +59,7 @@ describe('kosync keys at rest', () => {
   });
 
   test('a database from before keeps working after the upgrade, and the plain MD5 is gone', async () => {
-    // As an earlier version stored it: the MD5 itself.
+    // The legacy format: the MD5 itself.
     let db = await openDb();
     await db.run('UPDATE api_keys SET key_md5 = ? WHERE id = ?', [md5(rawKey), keyId]);
     await db.close();

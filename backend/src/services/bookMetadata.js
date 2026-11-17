@@ -5,11 +5,8 @@ import AdmZip from 'adm-zip';
 import { getLibraryRoots, realPathInRoots } from '../utils/libraryPath.js';
 import { oneLine } from './logger.js';
 
-// What an ebook says about itself. An EPUB's package document (the .opf) carries the same
-// Dublin Core record a library catalogue does — title, authors, publisher, date, language,
-// ISBN, subjects, a blurb — and Calibre adds the series and its number. Calibre's library
-// folders also keep a copy beside the file (metadata.opf), which is the curated one: what
-// the owner edited in Calibre, even when the EPUB inside was never rewritten.
+// Ebook metadata from the EPUB's .opf (Dublin Core, plus Calibre's series metas) and from
+// Calibre's sidecar metadata.opf, which holds the owner's edits and so wins.
 //
 //   <dc:title>Before They Are Hanged (The First Law)</dc:title>
 //   <dc:creator opf:role="aut">Joe Abercrombie</dc:creator>
@@ -17,27 +14,22 @@ import { oneLine } from './logger.js';
 //   <meta name="calibre:series" content="First Law"/>  <meta name="calibre:series_index" content="2.0"/>
 //   <meta name="cover" content="cover"/> … <item href="cover1.jpeg" id="cover" media-type="image/jpeg"/>
 //
-// EPUB 3 says the same things differently (cover-image property, belongs-to-collection with
-// a group-position, roles as refining <meta>s), so both forms are read.
+// EPUB 3 uses different forms (cover-image, belongs-to-collection, refining <meta>s); both are read.
 
-// Bump when extraction learns something new: books scanned with an older version are read
-// again once (see the scanner), filling only the fields that are still empty.
+// Bump to make the scanner re-read books once, filling only still-empty fields.
 export const BOOK_META_VERSION = 1;
 
 const MAX_DESCRIPTION = 6000;
 
-// A book is a file somebody downloaded, so what it says about itself is read within limits.
-// Sizes are checked against what the zip declares before anything is inflated (a few KB of
-// zip can claim to hold gigabytes), and text is clipped before any pattern is run over it.
+// Books are untrusted: declared zip sizes are checked before inflating, and text is clipped
+// before any regex runs over it.
 const MAX_CONTAINER_BYTES = 1024 * 1024; // META-INF/container.xml is a few hundred bytes
 const MAX_OPF_BYTES = 2 * 1024 * 1024; // a big anthology's package document is ~200 KB
 const MAX_COVER_BYTES = 15 * 1024 * 1024; // the same limit an uploaded cover gets
-// A blurb is cut to MAX_DESCRIPTION characters of text; this is how much markup is read to
-// find them.
+// How much markup is read to produce up to MAX_DESCRIPTION characters of text.
 const MAX_HTML_INPUT = 200 * 1000;
 const MAX_FIELD_TEXT = 2000; // a title, a name, a subject
-// How many of each thing a package document may list before the rest are ignored. Several
-// lookups below compare one list against another, so the lists can't be left open-ended.
+// Per-list caps; some lookups compare lists pairwise, so they can't be unbounded.
 const MAX_LISTED = { titles: 50, creators: 200, identifiers: 50, subjects: 500, metas: 2000, manifest: 20000, guide: 200 };
 const MAX_SUBJECTS = 8;
 // Catalogue filler that says nothing about the book.
@@ -57,10 +49,8 @@ function decodeEntities(text) {
   });
 }
 
-// The two functions below do by hand what /<!\[CDATA\[([\s\S]*?)\]\]>/ and
-// /<(script|style)[\s\S]*?<\/\1>/ would. Those patterns search to the end of the text again
-// from every opening that has no closing, so a description made of 40,000 "<script"s took
-// 23 seconds; these read the text once.
+// Hand-written instead of /<!\[CDATA\[[\s\S]*?\]\]>/ and /<(script|style)[\s\S]*?<\/\1>/,
+// which go quadratic on many unclosed openings; these read the text once.
 function unwrapCdata(text) {
   let out = '';
   let pos = 0;
@@ -100,17 +90,13 @@ function stripScriptAndStyle(text) {
   return pos ? out + text.slice(pos) : text;
 }
 
-/**
- * A blurb as plain text with its paragraphs kept. Descriptions arrive as HTML (Calibre and
- * publishers both write it), sometimes escaped a second time, and the title page shows text.
- */
+// HTML (sometimes double-escaped) blurb to plain text, keeping paragraphs.
 export function htmlToText(html) {
   if (!html) return null;
   let text = String(html).slice(0, MAX_HTML_INPUT);
   // Escaped markup ("&lt;p&gt;") is markup once decoded.
   if (!/<[a-z!/]/i.test(text) && /&lt;\/?[a-z]/i.test(text)) text = decodeEntities(text);
-  // A tag runs from "<" to the next ">" with no "<" between: without that, a run of "<"s
-  // with no ">" is searched to the end once per "<".
+  // Tags exclude "<" inside, so a run of unclosed "<"s can't make the regex quadratic.
   text = stripScriptAndStyle(unwrapCdata(text))
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<li[^<>]*>/gi, '\n• ')
@@ -122,8 +108,7 @@ export function htmlToText(html) {
     .replace(/ *\n */g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
-  // A lone "**" or "* * *" left at the end of a publisher blurb is a scene-break ornament:
-  // everything from the first line break in the trailing run of asterisks and spaces goes.
+  // Drop a trailing scene-break ornament ("**", "* * *") on its own line.
   let tail = text.length;
   while (tail > 0 && (text[tail - 1] === '*' || /\s/.test(text[tail - 1]))) tail--;
   const ornament = text.indexOf('\n', tail);
@@ -183,9 +168,7 @@ const attr = (attrs, name) => {
   return undefined;
 };
 
-/**
- * Reads an OPF package document. Everything is optional; missing fields come back null.
- */
+// Parses an OPF package document; missing fields come back null.
 export function parseOpf(xml) {
   const parser = sax.parser(false, { lowercase: true, trim: false, normalize: false });
   const titles = []; // { id, text }
@@ -221,7 +204,7 @@ export function parseOpf(xml) {
     if (!METADATA_FIELDS.has(name)) return; // e.g. OPF 1's <dc-metadata> wrapper
     open = { name, id: a.id || null, role: attr(a, 'role'), scheme: attr(a, 'scheme'), event: attr(a, 'event'), property: a.property, refines: a.refines, text: '' };
   };
-  // Only a description is long; the rest are names, and stop growing once they clearly aren't.
+  // Only descriptions are long; other fields stop growing at MAX_FIELD_TEXT.
   const collect = (text) => {
     if (open && open.text.length < (open.name === 'description' ? MAX_HTML_INPUT : MAX_FIELD_TEXT)) open.text += text;
   };
@@ -301,8 +284,8 @@ export function parseOpf(xml) {
     if (genres.length >= MAX_SUBJECTS) break;
   }
 
-  // Cover, most explicit first: EPUB 3's property, EPUB 2's <meta name="cover"> (an id, or
-  // now and then the path itself), then anything that calls itself a cover.
+  // Cover, most explicit first: EPUB 3 property, EPUB 2 <meta name="cover"> (id or path),
+  // then anything named like a cover.
   const isImage = (item) => item && (item.type.startsWith('image/') || /\.(jpe?g|png|gif|webp)$/i.test(item.href || ''));
   const coverMeta = named.cover;
   const cover = manifest.find((i) => /(^|\s)cover-image(\s|$)/.test(i.properties) && i.href)
@@ -330,11 +313,7 @@ export function parseOpf(xml) {
 
 const comparable = (s) => String(s || '').toLowerCase().replace(/^the\s+/, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 
-/**
- * Calibre and store downloads often put the series in the title — "Before They Are Hanged
- * (The First Law)", "Dune (Dune Chronicles, #1)". With the series stored on its own, that's
- * repetition, so the bracket goes.
- */
+// Drops a bracketed series from the title ("Dune (Dune Chronicles, #1)") when it matches `series`.
 export function stripSeriesFromTitle(title, series) {
   if (!title || !series) return title;
   const m = title.match(/^(.*\S)\s*[([]([^()[\]]+)[)\]]\s*$/);
@@ -352,12 +331,8 @@ function numberFromName(name) {
 
 const EBOOK_EXTS = new Set(['.epub', '.pdf', '.mobi', '.azw3', '.azw', '.kepub', '.fb2', '.djvu', '.cbz', '.cbr']);
 
-/**
- * A file found by name beside a media file (folder art, Calibre's metadata.opf): its real
- * path, only when that is a regular file inside a library root (or SYMLINK_ALLOWED_ROOTS),
- * the same rule the media file itself is held to. A link out of the library is skipped and
- * logged. `roots` from getLibraryRoots().
- */
+// Real path of a file beside a media file (folder art, metadata.opf), only if it's a regular
+// file inside a library root; links out of the library are skipped and logged.
 export function libraryFileBeside(filePath, roots, category = 'scan') {
   const real = realPathInRoots(filePath, roots, category);
   if (!real) return null;
@@ -368,11 +343,8 @@ export function libraryFileBeside(filePath, roots, category = 'scan') {
   }
 }
 
-/**
- * Calibre's metadata.opf from the book's folder, parsed — only when the folder holds a
- * single book (Calibre names every format of a book the same, so "Dune.epub" and "Dune.pdf"
- * count as one). In a shared folder the sidecar can't be tied to a file.
- */
+// Parsed metadata.opf from the book's folder, only when the folder holds a single book
+// (same base name counts as one, e.g. "Dune.epub" and "Dune.pdf").
 export function readSidecarOpf(filePath, { roots } = {}) {
   const dir = path.dirname(filePath);
   let names;
@@ -397,17 +369,14 @@ export function readSidecarOpf(filePath, { roots } = {}) {
   }
 }
 
-// An entry's bytes, or null when it says it is bigger than `maxBytes`. The size is the one
-// the zip declares, checked before inflating; the zip library stops inflating at that size,
-// so an entry that lies about it comes out as an error rather than as gigabytes.
+// Null if the declared size exceeds `maxBytes`; adm-zip stops at the declared size, so a lying
+// entry errors instead of inflating to gigabytes.
 function readCapped(entry, maxBytes) {
   if (!entry || entry.isDirectory || entry.header.size > maxBytes) return null;
   return entry.getData();
 }
 
-/**
- * The OPF inside an EPUB, parsed, plus its cover image's bytes when it has one.
- */
+// The EPUB's parsed OPF plus its cover image bytes.
 export function readEpubOpf(filePath) {
   const zip = new AdmZip(filePath);
   const entries = zip.getEntries();
@@ -438,10 +407,7 @@ export function readEpubOpf(filePath) {
   return { ...opf, coverData };
 }
 
-/**
- * Everything known about one book file, from (in order of trust) Calibre's sidecar, the
- * EPUB itself, and the PDF's info block. Returns plain fields; the caller writes the cover.
- */
+// Book metadata, by trust: sidecar .opf, then the EPUB, then the PDF info block.
 export async function readBookMetadata(filePath, { pdfInfo = null } = {}) {
   const ext = path.extname(filePath).toLowerCase();
   let embedded = null;

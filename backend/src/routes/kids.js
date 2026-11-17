@@ -5,15 +5,12 @@ import { authenticateToken, requireEditor } from '../middleware/auth.js';
 import { handle } from '../utils/http.js';
 import { logger } from '../services/logger.js';
 
-// Kids Mode: what a kids account may see. Admins and editors mark whole libraries (see
-// PATCH /api/libraries/:id), or single series or titles here. Enforcement lives in
-// services/visibility.js (accessSql) so it applies to every listing, page, file and sync API.
-// requireEditor turns away a Kids Mode account even if it was given the editor role (which
-// routes/users.js no longer allows): it can't add titles to its own allow-list.
+// Kids Mode allow-list: single series or titles here, whole libraries via PATCH
+// /api/libraries/:id. Enforced in services/visibility.js (accessSql). requireEditor also
+// rejects Kids Mode accounts, so one can't edit its own allow-list.
 const router = express.Router();
 router.use(authenticateToken, requireEditor);
 
-// Everything currently kids-safe.
 router.get('/', handle(async (req, res) => {
   const db = await getDb();
   const libraries = await db.all('SELECT id, name, type, COALESCE(kids_allowed, 0) AS kids_allowed FROM libraries ORDER BY name ASC');

@@ -9,22 +9,18 @@ import { isItemHiddenForUser } from '../services/visibility.js';
 import { logger } from '../services/logger.js';
 import { resolveLibraryFile } from '../utils/libraryPath.js';
 
-// KOReader's progress sync ("Progress sync" plugin), mounted at /api/kosync — the address
-// KOReader is given as its custom sync server. It speaks the kosync protocol:
+// KOReader "Progress sync" server (kosync protocol), at /api/kosync:
 //
 //   GET  /users/auth              check the credentials (x-auth-user, x-auth-key headers)
 //   POST /users/create            refused: accounts are made in Plinthio
 //   PUT  /syncs/progress          { document, progress, percentage, device, device_id }
 //   GET  /syncs/progress/:doc     the latest position for that document
 //
-// x-auth-user is the Plinthio username and x-auth-key is the MD5 of the "password", which
-// is a Plinthio API key (KOReader hashes it before sending; keys store their MD5 for this).
+// x-auth-key is the MD5 of a Plinthio API key used as the password.
 //
-// KOReader names a book by a hash of the file — a sample of 1 KB blocks, its "binary"
-// method and the default — or by a hash of the file name. When the document matches a book
-// in the library, the position also moves Plinthio's progress for it, and Plinthio's
-// progress is sent back when it's newer. Positions for books Plinthio doesn't have are still
-// kept, so KOReader devices sync with each other through Plinthio like any kosync server.
+// KOReader names a book by a partial hash of the file (default) or of the file name. Matched
+// books sync both ways with Plinthio's progress; unmatched positions are still stored so
+// devices can sync with each other.
 const router = express.Router();
 
 // kosync's own error codes, which KOReader shows.
@@ -82,8 +78,7 @@ export function koreaderPartialMd5(filePath) {
 const READABLE_TYPES = ['book', 'manga'];
 let hashing = null;
 
-// Hashes every readable item that doesn't have one yet (new ones, or ones the scanner reset
-// because their file changed). A dozen 1 KB reads per file, done once.
+// Hashes readable items without one yet (new, or reset by the scanner after a file change).
 function ensureHashes(db) {
   if (!hashing) {
     hashing = (async () => {
@@ -147,9 +142,8 @@ router.put('/syncs/progress', async (req, res) => {
     `, [req.user.id, document, item?.id || null, String(progress).slice(0, 2000), pct, String(device || '').slice(0, 100), String(deviceId || '').slice(0, 100)]);
 
     if (item) {
-      // For a PDF or comic, KOReader's position is the page number; for an EPUB it's an
-      // XPointer Plinthio can't use, so only the percentage carries over (and the web
-      // reader's own position is cleared so it opens at that percentage instead).
+      // PDF/comic positions are page numbers. An EPUB's is an XPointer Plinthio can't use, so only
+      // the percentage carries over and the web reader's position is cleared.
       const pages = item.total_pages || 0;
       const page = isPaged(item) ? Math.max(0, parseInt(progress, 10) || 0) : 0;
       const finished = pct >= 0.995 || (pages > 0 && page >= pages) ? 1 : 0;
@@ -183,8 +177,8 @@ router.get('/syncs/progress/:document', async (req, res) => {
       ? await db.get('SELECT current_page, progress_percent, is_finished, updated_at FROM user_progress WHERE user_id = ? AND item_id = ?', [req.user.id, item.id])
       : null;
 
-    // Plinthio's own progress wins when it's newer — as a page number, which is all KOReader
-    // can take from it (an EPUB's position can only come from another KOReader).
+    // Plinthio's progress wins when newer, as a page number (EPUB positions only come from
+    // another KOReader).
     const plinthioNewer = plinthio && item && isPaged(item) && plinthio.current_page > 0 &&
       (!saved || toUnix(plinthio.updated_at) > toUnix(saved.updated_at));
     if (plinthioNewer) {

@@ -47,9 +47,8 @@ router.param('code', (req, res, next, code) => {
   next();
 });
 
-// The account as it is now, in the shape authenticateToken gives req.user, or null if it's
-// gone. A party outlives the request that joined it, so later checks read the row again
-// rather than trusting what the account was when it joined.
+// The account as it is now (req.user shape), or null if gone. A party outlives the joining
+// request, so checks re-read the row.
 async function currentUser(db, userId) {
   const user = await db.get(`SELECT id, username, role, preferences, expires_at, token_version, max_age_rating,
       allow_unrated, kids_mode, remote_access, (totp_enabled_at IS NOT NULL) AS two_factor FROM users WHERE id = ?`, [userId]);
@@ -62,9 +61,8 @@ async function currentUser(db, userId) {
   return user;
 }
 
-// Whether a party connection may stay open: the sign-in it opened with still works (account
-// there and not expired; same token_version for a session, the same key still there for an
-// API key), the network rules still let it in, and it may still see what the party watches.
+// Whether a party connection may stay open: its sign-in is still valid, network rules still
+// allow it, and it may still see what the party watches.
 function connectionCheck(req) {
   const keyId = req.isApiKey ? req.apiKeyId : null;
   const tokenVersion = req.isApiKey ? null : (req.user.token_version || 0);
@@ -92,7 +90,7 @@ async function loadWatchable(db, itemId, user) {
   return item;
 }
 
-// Start a party on a movie or episode. The creator hosts.
+// The creator hosts.
 router.post('/', handle(async (req, res) => {
   const db = await getDb();
   const item = await loadWatchable(db, req.body?.itemId, req.user);
@@ -109,8 +107,8 @@ router.get('/:code', handle(async (req, res) => {
   res.json({ party: snapshot(req.party) });
 }));
 
-// The live connection: Server-Sent Events. Being connected is being in the party. The
-// first event is a full snapshot; after that, changes (state, presence, item, chat, ended).
+// Server-Sent Events; being connected is being in the party. First event is a full snapshot,
+// then changes.
 router.get('/:code/events', async (req, res) => {
   const clientId = String(req.query.clientId || '');
   if (!CLIENT_ID_RE.test(clientId)) return res.status(400).json({ error: 'A clientId is required' });
@@ -125,8 +123,7 @@ router.get('/:code/events', async (req, res) => {
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
-    // no-transform keeps the compression middleware from buffering the stream; the
-    // X-Accel header does the same for an nginx reverse proxy in front of the server.
+    // Stop compression middleware and an nginx proxy from buffering the stream.
     'Cache-Control': 'no-cache, no-transform',
     Connection: 'keep-alive',
     'X-Accel-Buffering': 'no'
@@ -182,8 +179,7 @@ router.post('/:code/buffering', (req, res) => {
   res.json({ ok: true });
 });
 
-// Watch something else — the next episode, or the host's pick — only if everyone there
-// is allowed to see it.
+// Switch item, only if every member is allowed to see it.
 router.post('/:code/item', async (req, res) => {
   if (!requireMember(req, res)) return;
   const party = req.party;
@@ -221,7 +217,6 @@ router.post('/:code/chat', (req, res) => {
   res.json({ ok: true });
 });
 
-// The host ends the party for everyone.
 router.delete('/:code', (req, res) => {
   if (req.party.hostId !== req.user.id) return sendError(req, res, 'P602');
   endParty(req.party);

@@ -5,13 +5,8 @@ import { open } from 'sqlite';
 import { config } from '../config/env.js';
 import { APP_VERSION } from '../config/version.js';
 
-// Every upgrade can run schema migrations on first start, and those are one-way. So before
-// the database is opened by a new version for the first time, snapshot it exactly as the
-// old version left it — rolling back is then "put the old image tag back and restore this
-// file" rather than hoping the new schema is backwards compatible.
-//
-// The last version that ran is kept in /config/.version rather than inside the database,
-// because it has to be read before anything (migrations included) touches the DB.
+// Migrations are one-way, so snapshot the database before a new version first opens it.
+// The last-run version lives in /config/.version because it must be read before the DB is touched.
 const versionFile = () => path.join(config.dataDir, '.version');
 
 export async function backupBeforeUpgrade() {
@@ -27,8 +22,7 @@ export async function backupBeforeUpgrade() {
   const filename = `plinthio-backup-before-${APP_VERSION}-from-${from}-${stamp}.sqlite`;
   const target = path.join(dir, filename);
 
-  // A plain connection with no migrations; VACUUM INTO folds in anything still in the WAL,
-  // which a raw file copy could miss.
+  // No migrations here; VACUUM INTO includes WAL contents a raw copy could miss.
   const db = await open({ filename: config.dbPath, driver: sqlite3.Database });
   try {
     await db.exec(`VACUUM INTO '${target.replace(/'/g, "''")}'`);

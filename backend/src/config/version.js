@@ -2,9 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// The one place the running version comes from: backend/package.json, which the release
-// script (scripts/set-version.mjs) keeps in step with the root and frontend packages and
-// the git tag. APP_VERSION can override it (e.g. a dev build stamped by CI).
+// Running version from backend/package.json (kept in step by scripts/set-version.mjs).
+// APP_VERSION overrides it, e.g. for a CI dev build.
 const pkgPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../package.json');
 
 function readPackageVersion() {
@@ -17,8 +16,7 @@ function readPackageVersion() {
 
 export const APP_VERSION = process.env.APP_VERSION || readPackageVersion();
 
-// Minimal semver compare for x.y.z (a "-pre" suffix sorts below its release). Returns
-// -1 / 0 / 1. Enough for "is the published release newer than me" without a dependency.
+// Minimal x.y.z compare (a "-pre" suffix sorts below its release). Returns -1 / 0 / 1.
 export function compareVersions(a, b) {
   const parse = (v) => {
     const [core, pre = ''] = String(v || '').replace(/^v/i, '').split('-', 2);

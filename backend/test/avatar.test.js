@@ -23,7 +23,6 @@ describe('avatar management', () => {
   });
 
   test('POST /api/users/avatar uploads and normalizes an avatar image', async () => {
-    // Generate a test PNG image buffer with sharp
     const testImage = await sharp({
       create: {
         width: 100,
@@ -48,14 +47,12 @@ describe('avatar management', () => {
     assert.ok(body.avatar.startsWith(`/api/users/${adminUser.id}/avatar`));
     assert.equal(body.user.avatar, body.avatar);
 
-    // Verify GET /api/users/:id/avatar serves the newly uploaded image as WebP
     const getRes = await fetch(`${server.baseUrl}/api/users/${adminUser.id}/avatar`);
     assert.equal(getRes.status, 200);
     assert.equal(getRes.headers.get('content-type'), 'image/webp');
     const imageBytes = await getRes.arrayBuffer();
     assert.ok(imageBytes.byteLength > 0);
 
-    // Verify /api/auth/me returns the avatar
     const meRes = await fetch(`${server.baseUrl}/api/auth/me`, { headers: authed(token) });
     const me = await meRes.json();
     assert.equal(me.user.avatar, body.avatar);
@@ -84,11 +81,9 @@ describe('avatar management', () => {
     const body = await res.json();
     assert.equal(body.user.avatar, null);
 
-    // GET should now return 404
     const getRes = await fetch(`${server.baseUrl}/api/users/${adminUser.id}/avatar`);
     assert.equal(getRes.status, 404);
 
-    // /api/auth/me should have null avatar
     const meRes = await fetch(`${server.baseUrl}/api/auth/me`, { headers: authed(token) });
     const me = await meRes.json();
     assert.equal(me.user.avatar, null);

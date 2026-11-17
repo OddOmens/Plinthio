@@ -1,8 +1,7 @@
 <template>
-  <!-- A card's menu: a dropdown beside its button, or on a phone a sheet from the bottom of
-       the screen (a dropdown from a left-column card ran off the screen's left edge). Place it
-       in the `relative` box that holds the button toggling `open`. The slot gets `itemClass`
-       for its buttons. -->
+  <!-- A card's menu: a dropdown beside its button, or on a phone a sheet from the bottom (a
+       dropdown could run off the screen's edge). Place it in the `relative` box that holds the
+       button toggling `open`. The slot gets `itemClass` for its buttons. -->
   <Teleport to="body" :disabled="!isPhone">
     <Transition :name="isPhone ? 'sheet' : ''" :duration="isPhone ? 260 : 0">
       <div

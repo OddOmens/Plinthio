@@ -1,13 +1,7 @@
-// Every listing endpoint (GET /items, series view, etc.) excludes items hidden for a
-// user or hidden globally (user_id IS NULL = admin restrict). Any route that serves a
-// raw file straight by item id must apply the same check, or hiding/restricting an item
-// wouldn't actually stop someone who already has (or guesses) its id from accessing it
-// directly.
+// Routes serving files by item id must apply the same visibility checks as listings, or hidden
+// items stay reachable by id. (item_visibility.user_id IS NULL = hidden for everyone.)
 
-// Parental controls. An item's effective rating is its own age_rating if set, else its
-// series' rating (series_settings, keyed by library + series name). A restricted account
-// sees only items at or below its max_age_rating; unrated items pass only if the account
-// allows them.
+// Effective rating: the item's age_rating, else its series'. Unrated passes only if allowed.
 export const AGE_RATINGS = ['Everyone', 'Teen', 'Mature', 'Explicit'];
 
 export function ratingRank(rating) {
@@ -15,22 +9,10 @@ export function ratingRank(rating) {
   return rank === -1 ? null : rank;
 }
 
-// SQL fragment (starting with AND) restricting `alias` rows to what `user` may see:
-//   • never a title whose file has gone missing (kept for recovery, see missing_since), and
-//     never an offloaded one (kept as history, see offloaded_at). A title page passes
-//     { includeOffloaded: true } to show offloaded ones greyed with their progress.
-//   • Kids Mode: only kids-safe libraries, series and titles
-//   • the libraries, and the kids content, this person has chosen to hide
-//   • parental controls: nothing above the account's age rating
-// It carries no bind parameters — every interpolated value is an integer or a fixed string
-// computed here, never user input — so it can be dropped into any existing query without
-// disturbing that query's parameter order.
-//   • a film's extra (extra_of) is only as visible as its film: the film must pass the same
-//     Kids Mode and age rules and not be hidden from everyone by an admin
-// { restrictionsOnly: true } keeps just what the account isn't allowed to see (Kids Mode, age
-// rating), for lists of things the person has already chosen to hide. { hiddenFilms } says
-// whether an extra of a film hidden from everyone is left out too (default: unless
-// restrictionsOnly; knownSql sets it for everyone but an admin, matching its own rule).
+// SQL fragment (starting with AND) for rows `user` may see: not missing or offloaded (unless
+// includeOffloaded), Kids Mode, personal hides, age rating, and extras only as visible as their film.
+// No bind parameters (interpolated values are never user input), so it drops into any query.
+// restrictionsOnly: only Kids Mode and age rating. hiddenFilms: also drop extras of globally hidden films.
 export function accessSql(user, alias = 'i', { includeOffloaded = false, restrictionsOnly = false, hiddenFilms = !restrictionsOnly } = {}) {
   let sql = '';
   if (!restrictionsOnly) {
@@ -46,7 +28,6 @@ export function accessSql(user, alias = 'i', { includeOffloaded = false, restric
   return sql;
 }
 
-// Kids Mode: only kids-safe libraries, series and titles.
 function kidsModeSql(user, alias) {
   if (user && (user.kids_mode === 1 || user.kids_mode === true)) {
     return ` AND (
@@ -61,7 +42,6 @@ function kidsModeSql(user, alias) {
   return '';
 }
 
-// Parental controls: nothing above the account's age rating.
 function ageRatingSql(user, alias) {
   const maxRank = ratingRank(user?.max_age_rating);
   if (maxRank === null) return '';
@@ -73,10 +53,8 @@ function ageRatingSql(user, alias) {
     )) ${cases} ELSE ${unratedRank} END) <= ${maxRank}`;
 }
 
-// An extra (trailer, featurette) belongs to its film, and the scanner copies neither the
-// film's rating nor its hide onto it, so the extra is held to the film's rules here: no
-// extra of a film this account may not see. One primary-key lookup, and only for rows that
-// are extras. An extra whose film row is gone is judged on its own.
+// Extras don't carry their film's rating or hide, so they're held to the film's rules here.
+// An extra whose film row is gone is judged on its own.
 function extraFilmSql(user, alias, hiddenFilms) {
   const film = `${alias}_film`;
   let rules = kidsModeSql(user, film) + ageRatingSql(user, film);
@@ -89,11 +67,7 @@ function extraFilmSql(user, alias, hiddenFilms) {
     ))`;
 }
 
-// What someone has chosen not to see (Settings → Hidden), as opposed to what they aren't
-// allowed to see: whole libraries (`hiddenLibraries`, library ids), and kids content
-// (`hideKids`: kids-safe libraries and every title or series marked for Kids Mode). A Kids
-// Mode account sees only kids content, so `hideKids` is ignored there rather than leaving
-// it with nothing.
+// The user's own hides (hiddenLibraries, hideKids). hideKids is ignored for Kids Mode accounts.
 export const LIBRARY_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 export const MAX_HIDDEN_LIBRARIES = 200;
 
@@ -102,8 +76,7 @@ function personalSql(user, alias) {
   if (!prefs || typeof prefs !== 'object') return '';
   let sql = '';
 
-  // Preferences are the user's own JSON, so the ids are checked here too, not only when
-  // saved: only ids of the library-id shape reach the SQL, each quoted.
+  // User-controlled JSON: validate ids again before interpolating them into SQL.
   const hidden = Array.isArray(prefs.hiddenLibraries)
     ? prefs.hiddenLibraries.filter((id) => typeof id === 'string' && LIBRARY_ID_PATTERN.test(id)).slice(0, MAX_HIDDEN_LIBRARIES)
     : [];
@@ -122,11 +95,9 @@ function personalSql(user, alias) {
   return sql;
 }
 
-// SQL fragment (starting with AND) for "may this account know this title exists at all": the
-// account's restrictions (Kids Mode, age rating) and, for everyone but an admin, titles an
-// admin has hidden from everyone. Unlike accessSql it keeps what the person hid themselves,
-// missing files and offloaded titles: those are theirs to know about. For routes that take an
-// item id and say something back about it, or store something against it. No bind parameters.
+// SQL fragment for "may this account know the title exists": restrictions plus (non-admins)
+// global hides, but unlike accessSql keeps personal hides, missing and offloaded titles.
+// For routes that act on an item id. No bind parameters.
 export function knownSql(user, alias = 'i') {
   let sql = accessSql(user, alias, { restrictionsOnly: true, hiddenFilms: user?.role !== 'admin' });
   if (user?.role !== 'admin') {
@@ -135,13 +106,12 @@ export function knownSql(user, alias = 'i') {
   return sql;
 }
 
-// Whether item `itemId` exists and `user` may know about it (see knownSql).
 export async function canKnowItem(db, itemId, user) {
   if (typeof itemId !== 'string' || !itemId || itemId.length > 64) return false;
   return !!(await db.get(`SELECT 1 FROM items i WHERE i.id = ?${knownSql(user, 'i')}`, [itemId]));
 }
 
-// An account whose view of the library is cut down: Kids Mode, or an age rating limit.
+// Kids Mode or an age rating limit.
 export function isLimitedAccount(user) {
   return !!user && (user.kids_mode === 1 || user.kids_mode === true || ratingRank(user.max_age_rating) !== null);
 }

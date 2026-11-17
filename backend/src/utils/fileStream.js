@@ -1,18 +1,13 @@
 import fs from 'fs';
 import { pipeline } from 'stream';
 
-// Options for res.sendFile/res.download on paths the server built itself. Express 5 refuses
-// any path with a dot segment by default, which would 404 every cover and backup when the
-// data directory lives somewhere like ~/.local/share.
+// For res.sendFile/res.download on server-built paths. Express 5 refuses dot segments by
+// default, which breaks a data directory like ~/.local/share.
 export const SEND_OPTS = { dotfiles: 'allow' };
 
-// Parses a single-range `Range: bytes=…` header against a file of `size` bytes. Returns
-// { start, end } (inclusive), `null` when there's no usable range header (serve the whole
-// file), or `false` when the range can't be satisfied (416).
-//
-// Handles the three forms clients actually send: `a-b`, open-ended `a-`, and suffix `-n`
-// (last n bytes) — and clamps an `end` past EOF, which the spec allows and which previously
-// produced a Content-Length the stream could never fill, hanging the client.
+// Parses a single `Range: bytes=…` header (`a-b`, `a-`, `-n`). Returns { start, end }
+// (inclusive), null for no usable range (whole file), or false when unsatisfiable (416).
+// An `end` past EOF is clamped, or Content-Length would promise bytes that never come.
 export function parseRange(header, size) {
   if (!header || !header.startsWith('bytes=')) return null;
   const spec = header.slice(6).split(',')[0].trim();
@@ -35,9 +30,8 @@ export function parseRange(header, size) {
   return { start, end };
 }
 
-// Streams a file into the response without letting a read error (file deleted or unreadable
-// between the existence check and the read, a cache sweep removing a segment mid-send) become
-// an unhandled 'error' event — which, with a bare `.pipe()`, takes down the whole process.
+// Streams a file so a read error (file removed mid-send) can't become an unhandled 'error'
+// event, which with a bare `.pipe()` crashes the process.
 export function streamFile(res, filePath, options) {
   pipeline(fs.createReadStream(filePath, options), res, (err) => {
     if (!err) return;
@@ -49,8 +43,7 @@ export function streamFile(res, filePath, options) {
   });
 }
 
-// Shared by the audio and direct-play video routes: 206 for a satisfiable range, 416 for an
-// unsatisfiable one, 200 with the whole file otherwise.
+// 206 for a satisfiable range, 416 for an unsatisfiable one, 200 with the whole file otherwise.
 export function sendRangedFile(req, res, filePath, fileSize, contentType) {
   const range = parseRange(req.headers.range, fileSize);
 

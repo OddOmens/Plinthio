@@ -12,9 +12,8 @@ import { readBookMetadata, libraryFileBeside } from './bookMetadata.js';
 import { getLibraryRoots } from '../utils/libraryPath.js';
 import { oneLine } from './logger.js';
 
-// Art beside a media file (cover.jpg, poster.jpg…), only when it really is a plain file
-// inside a library folder: a link to somewhere else is not copied. Every extractor goes
-// through here so none can forget the check.
+// Folder art (cover.jpg…) only if it's a plain file inside a library root, never a link out.
+// All extractors use this so the check can't be skipped.
 async function folderCoverInLibrary(dir) {
   const found = findCoverInFolder(dir);
   if (!found) return null;
@@ -27,13 +26,8 @@ const MAX_COMICINFO_BYTES = 1024 * 1024;
 const MAX_COMICINFO_VALUE = 500;
 
 /**
- * The text of the first <Tag>…</Tag> in a ComicInfo.xml that opens and closes on one line, in
- * the shape `String.match` gives (the value at [1]), or null.
- *
- * This used to be /<Tag>(.*?)<\/Tag>/i. For a file with many openings and no closing, that
- * pattern searches on to the end of the line from each opening in turn: 300 KB of "<Title>"
- * held the scanner for 16 seconds. Here the closing tag and the line break are each looked
- * for once and remembered, so the text is read through a single time.
+ * First single-line <Tag>…</Tag> in ComicInfo.xml, shaped like a `String.match` result, or null.
+ * Remembers closing-tag and line-end positions so hostile input is scanned in linear time.
  */
 export function comicInfoField(xml, tag) {
   const opening = new RegExp(`<${tag}>`, 'gi');
@@ -59,9 +53,6 @@ export function comicInfoField(xml, tag) {
   return null;
 }
 
-/**
- * Extract metadata and cover for an audiobook file
- */
 export async function extractAudiobookMetadata(filePath, itemId) {
   const result = {
     title: path.basename(filePath, path.extname(filePath)),
@@ -87,7 +78,6 @@ export async function extractAudiobookMetadata(filePath, itemId) {
       result.duration = metadata.format.duration;
     }
 
-    // Try embedded picture
     if (metadata.common.picture && metadata.common.picture.length > 0) {
       const pic = metadata.common.picture[0];
       const coverFilename = `${itemId}.jpg`;
@@ -99,7 +89,6 @@ export async function extractAudiobookMetadata(filePath, itemId) {
     console.warn(`Could not parse audio metadata for ${oneLine(filePath)}: ${oneLine(err.message)}`);
   }
 
-  // If no embedded cover, check folder for cover.jpg, folder.jpg, etc.
   if (!result.coverPath) {
     const folderCover = await folderCoverInLibrary(path.dirname(filePath));
     if (folderCover) {
@@ -117,12 +106,7 @@ export async function extractAudiobookMetadata(filePath, itemId) {
   return result;
 }
 
-/**
- * Strip volume/chapter/number patterns from a manga filename to get a clean series title.
- * e.g. "Solo Leveling Vol 01" → "Solo Leveling"
- *      "One Piece v100" → "One Piece"
- *      "Dragon Ball Chapter 5" → "Dragon Ball"
- */
+// "Solo Leveling Vol 01" → "Solo Leveling"
 function stripVolumeFromName(name) {
   return name
     .replace(/\s*[-_]?\s*v(?:ol(?:ume)?)?\s*\d+(?:\.\d+)?/i, '')   // Vol 01, v01, Volume 3
@@ -130,17 +114,15 @@ function stripVolumeFromName(name) {
     .replace(/\s*[-_]?\s*#\s*\d+/i, '')                              // #12
     .replace(/\s*[-_]?\s*\(\d{4}\)/, '')                             // (2021) year suffix
     .replace(/\s*[-_]?\s*\[\d+\]/, '')                               // [42]
-    .replace(/\s+$/, '')                                             // trailing whitespace
+    .replace(/\s+$/, '')
     .trim();
 }
 
-/**
- * Extract metadata and cover for a Manga / Comic archive (CBZ, ZIP)
- */
+/** Comic/manga archives. */
 export async function extractMangaMetadata(filePath, itemId) {
   const fileName = path.basename(filePath, path.extname(filePath));
   const parentDir = path.dirname(filePath);
-  const parentDirName = path.basename(parentDir); // e.g. "Solo Leveling" or "One Piece"
+  const parentDirName = path.basename(parentDir);
 
   const result = {
     title: fileName,
@@ -153,7 +135,6 @@ export async function extractMangaMetadata(filePath, itemId) {
     ageRating: null
   };
 
-  // Extract volume/chapter number from filename before anything else
   const volMatch = fileName.match(/v(?:ol(?:ume)?)?\s*(\d+(?:\.\d+)?)/i)
     || fileName.match(/ch(?:apter)?\s*(\d+(?:\.\d+)?)/i)
     || fileName.match(/#\s*(\d+(?:\.\d+)?)/i);
@@ -161,9 +142,6 @@ export async function extractMangaMetadata(filePath, itemId) {
     result.volume = parseFloat(volMatch[1]);
   }
 
-  // Use parent folder name as series if it looks like a series folder
-  // (not the library root itself — check if the grandparent is the library root is hard here,
-  //  so we use a heuristic: if the file has a volume number OR there are sibling cbz files)
   const siblings = (() => {
     try {
       return fs.readdirSync(parentDir).filter(f => {
@@ -173,9 +151,7 @@ export async function extractMangaMetadata(filePath, itemId) {
     } catch { return []; }
   })();
 
-  // Set series from parent folder if:
-  // 1. There are sibling CBZ files (multi-volume series folder), OR
-  // 2. The file has a volume number (strongly implies it's part of a series)
+  // Heuristic: the parent folder is a series if it has sibling archives or the file has a volume number.
   if (!result.series && (siblings.length > 0 || result.volume !== null)) {
     result.series = parentDirName;
   }
@@ -183,7 +159,6 @@ export async function extractMangaMetadata(filePath, itemId) {
   try {
     const entries = await listArchiveEntries(filePath);
 
-    // Filter image entries and sort natural alphanumerically
     const imageEntries = entries.filter(entry => {
       if (entry.isDirectory) return false;
       const ext = path.extname(entry.name).toLowerCase();
@@ -203,22 +178,20 @@ export async function extractMangaMetadata(filePath, itemId) {
       }
     }
 
-    // Check if ComicInfo.xml exists — this overrides our filename-derived values
+    // ComicInfo.xml overrides filename-derived values.
     const comicInfoEntry = entries.find(entry => path.basename(entry.name).toLowerCase() === 'comicinfo.xml');
     if (comicInfoEntry) {
-      // ComicInfo.xml is a page of text; one that claims to be bigger isn't read at all.
       const xmlText = (await readArchiveEntry(filePath, comicInfoEntry.name, { maxBytes: MAX_COMICINFO_BYTES }))?.toString('utf8') || '';
       const titleMatch = comicInfoField(xmlText, 'Title');
       const seriesMatch = comicInfoField(xmlText, 'Series');
       const writerMatch = comicInfoField(xmlText, 'Writer');
       const numberMatch = comicInfoField(xmlText, 'Number');
-      // ComicInfo's own reading-direction and age-rating fields seed the per-series settings
-      // (see routes/series.js) so a tagged library comes in correctly configured.
+      // Seed per-series reading direction and age rating (routes/series.js).
       const mangaMatch = comicInfoField(xmlText, 'Manga');
       const ageRatingMatch = comicInfoField(xmlText, 'AgeRating');
 
       if (titleMatch) result.title = titleMatch[1];
-      if (seriesMatch) result.series = seriesMatch[1]; // ComicInfo always wins
+      if (seriesMatch) result.series = seriesMatch[1];
       if (writerMatch) result.author = writerMatch[1];
       if (numberMatch && result.volume === null) result.volume = parseFloat(numberMatch[1]);
       if (mangaMatch) {
@@ -230,7 +203,6 @@ export async function extractMangaMetadata(filePath, itemId) {
     console.warn(`Could not parse comic archive for ${oneLine(filePath)}: ${oneLine(err.message)}`);
   }
 
-  // Fallback to folder cover
   if (!result.coverPath) {
     const folderCover = await folderCoverInLibrary(parentDir);
     if (folderCover) {
@@ -248,14 +220,10 @@ export async function extractMangaMetadata(filePath, itemId) {
   return result;
 }
 
-/**
- * Extract metadata and cover for an EPUB or PDF book. `writeCover: false` reads everything
- * but leaves the cover file alone — for refreshing a book whose cover may be one someone chose.
- */
+/** EPUB/PDF. `writeCover: false` leaves the existing (possibly user-chosen) cover alone. */
 export async function extractBookMetadata(filePath, itemId, { writeCover = true } = {}) {
   const ext = path.extname(filePath).toLowerCase();
-  // A PDF reads page by page, so it needs its page count; its first page makes the cover
-  // when the folder has none. Without poppler installed it still scans, just without these.
+  // PDFs need a page count, and page 1 is the fallback cover; both need poppler.
   const book = await readBookMetadata(filePath, { pdfInfo: ext === '.pdf' ? pdfInfo : null });
   const result = {
     ...book,
@@ -277,7 +245,6 @@ export async function extractBookMetadata(filePath, itemId, { writeCover = true 
     }
   }
 
-  // Fallback to folder cover
   if (!result.coverPath) {
     const folderCover = await folderCoverInLibrary(path.dirname(filePath));
     if (folderCover) {
@@ -296,11 +263,7 @@ export async function extractBookMetadata(filePath, itemId, { writeCover = true 
 // "Season 01", "Series 2", "S03", "Specials": a folder that splits a show up, not the show.
 const SEASON_FOLDER = /^(?:(?:season|series|staffel|saison|temporada)[\s._-]*(\d{1,3})|s(\d{1,3})|(specials?))$/i;
 
-/**
- * The show a video file belongs to and, when it sits in a season folder, which season:
- * `Bumble Nums/Season 02/01 - Pancakes.mp4` is show "Bumble Nums", season 2 — not a show
- * called "Season 02".
- */
+// `Show/Season 02/01 - Ep.mp4` → show "Show", season 2.
 function showFolderInfo(filePath) {
   const dir = path.dirname(filePath);
   const folder = path.basename(dir);
@@ -312,9 +275,6 @@ function showFolderInfo(filePath) {
   return { show, season: match[3] ? 0 : parseInt(match[1] || match[2], 10) };
 }
 
-/**
- * Extract metadata and cover for a Video file (Shows, Movies, Anime)
- */
 export async function extractVideoMetadata(filePath, itemId, mediaType = 'movie') {
   const filename = path.basename(filePath, path.extname(filePath));
   const { show: parentFolder, season: folderSeason } = showFolderInfo(filePath);
@@ -328,15 +288,12 @@ export async function extractVideoMetadata(filePath, itemId, mediaType = 'movie'
     coverPath: null
   };
 
-  // Use parseMediaTitle to cleanly extract series, season/episode, or clean title without scene junk
   const parsed = parseMediaTitle(filename);
 
   if (parsed.isTv) {
     const season = parsed.season || 1;
     const episode = parsed.episode || 1;
-    // Encode season into the integer part so S01E05 and S02E05 don't collide on the same
-    // `volume` value in a series folder that isn't split into per-season subfolders — the
-    // fractional part still sorts episodes within a season correctly (up to episode 999).
+    // volume = season + episode/1000, so episodes from different seasons don't collide (max 999 per season).
     result.volume = parseInt(season, 10) + parseInt(episode, 10) / 1000;
     result.series = parsed.series || parentFolder;
     result.author = result.series;
@@ -355,7 +312,6 @@ export async function extractVideoMetadata(filePath, itemId, mediaType = 'movie'
     }
   }
 
-  // Cover fallback from folder
   const folderCover = await folderCoverInLibrary(path.dirname(filePath));
   if (folderCover) {
     const coverFilename = `${itemId}.jpg`;
@@ -364,21 +320,17 @@ export async function extractVideoMetadata(filePath, itemId, mediaType = 'movie'
       fs.copyFileSync(folderCover, coverFullPath);
       result.coverPath = coverFilename;
     } catch (e) {
-      // Ignore cover copy failure
+      // Unreadable art: the item just has no cover.
     }
   }
 
-  // Duration comes from ffprobe, not music-metadata: on a multi-GB MKV/MP4 music-metadata
-  // walks the entire stream to work the duration out, which took minutes per file over a
-  // network share and made a movie library scan look like it had hung. ffprobe reads the
-  // container header and answers in milliseconds.
+  // ffprobe reads only the container header; music-metadata walks the whole file (minutes over a network share).
   result.duration = await probeVideoDuration(filePath);
 
   return result;
 }
 
-// Header-only duration probe. Best-effort: if ffprobe is missing, fails, or takes longer
-// than the timeout, duration stays 0 and the scan carries on — playback re-probes anyway.
+// Best-effort: on failure or timeout duration stays 0; playback re-probes anyway.
 const DURATION_PROBE_TIMEOUT_MS = 15000;
 
 async function probeVideoDuration(filePath) {

@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div class="fixed inset-0 z-[90] bg-background flex flex-col overflow-y-auto">
-      <!-- Ambient accent wash so the flow feels like part of the product, not a modal -->
+      <!-- Ambient accent wash -->
       <div class="pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/10 to-transparent" />
 
       <div class="relative flex-1 flex flex-col items-center justify-center px-5 py-10">
@@ -285,8 +285,7 @@ const doneMessage = computed(() => {
   return t('onboarding.done.tuned', { list: list(labels) });
 });
 
-// Theme and accent apply live as they're picked — the whole point is seeing the choice,
-// not reading a label about it.
+// Theme and accent apply live as they're picked.
 function selectTheme(id) {
   choices.theme = id;
   if ((id === 'dark') !== themeStore.isDark) themeStore.toggleTheme();

@@ -12,8 +12,7 @@ router.get('/me', handle(async (req, res) => {
 
   const db = await getDb();
 
-  // Aggregates from user_progress — excludes items hidden/restricted for this user, same
-  // as every listing endpoint, so a stat can't reveal a hidden item's existence via count.
+  // Excludes items hidden from this user, so a count can't reveal a hidden item.
   const statsRow = await db.get(`
       SELECT
         COALESCE(SUM(p.current_time), 0) as total_seconds_listened,
@@ -28,7 +27,6 @@ router.get('/me', handle(async (req, res) => {
       )
     `, [userId, userId]);
 
-  // Breakdown of user items by media_type
   const typeBreakdown = await db.all(`
       SELECT i.media_type, COUNT(p.item_id) as count
       FROM user_progress p

@@ -8,17 +8,14 @@ import { outsideAccessProblem } from '../services/network.js';
 import { logger, oneLineError } from '../services/logger.js';
 
 const userAuthCache = new Map();
-const AUTH_CACHE_TTL = 60 * 1000; // 60 seconds
+const AUTH_CACHE_TTL = 60 * 1000;
 
-// Call whenever a user's auth-relevant state changes server-side (password change bumping
-// token_version, role change, deletion) so the change takes effect on their very next
-// request instead of waiting up to AUTH_CACHE_TTL for the stale cache entry to expire.
+// Call when a user's auth state changes (token_version, role, deletion) so it applies at once.
 export function invalidateUserCache(userId) {
   userAuthCache.delete(userId);
 }
 
-// Pulls the API key out of an HTTP Basic header. The username half is ignored for lookup
-// (the key alone identifies the account) but readers still need to send something there.
+// API key from an HTTP Basic header; the username half is ignored for lookup.
 function basicAuthApiKey(req) {
   const header = req.headers['authorization'] || '';
   if (!header.startsWith('Basic ')) return null;
@@ -31,12 +28,8 @@ function basicAuthApiKey(req) {
   }
 }
 
-// Every token says what it is (`typ`), and each kind is only accepted where it belongs: a
-// session token in the Authorization header, a media token in a media URL, Mihon's cookie on
-// the Komga routes (routes/komga.js). All are signed with the same secret, so without the
-// label one kind could be passed off as another. Session tokens issued before they carried a
-// label (a `userId` and no `typ`) are still accepted, so updating signs nobody out; they're
-// replaced by labelled ones the next time the app refreshes its session.
+// Each token kind (`typ`) is accepted only where it belongs, since all share one secret.
+// Unlabelled session tokens (`userId`, no `typ`) are still accepted until refreshed.
 const SESSION_TOKEN_TYPE = 'session';
 
 export function signSessionToken(user) {
@@ -47,14 +40,9 @@ export function signSessionToken(user) {
   );
 }
 
-// Media URLs (<img>, <video>, <track>, OPDS page links) can't carry an Authorization
-// header, so they authenticate with `?token=`. Anything in a URL leaks — browser history,
-// proxy access logs, a copied link — so the URL never carries the session token itself: it
-// carries a separate media token that only opens /api/media/* and expires within a day.
-// Revocation still works because it's bound to the same token_version as the session.
-// It only reads (GET, HEAD): a leaked link can't be used to change anything. The one
-// exception is the video player telling the server to stop transcoding as the page closes,
-// which the browser can only send as a header-less POST (navigator.sendBeacon).
+// Media URLs can't send headers, so they use `?token=` with a separate media token: URLs
+// leak, so it only opens /api/media/* read-only, expires within a day, and shares the
+// session's token_version. Exception: the player's stop-transcode sendBeacon POST.
 const MEDIA_TOKEN_TYPE = 'media';
 const MEDIA_TOKEN_TTL = process.env.MEDIA_TOKEN_EXPIRES_IN || '24h';
 
@@ -91,25 +79,19 @@ async function apiKeyUser(where, params) {
   return { user, keyId, expired: !!(user.expires_at && new Date(user.expires_at).getTime() <= Date.now()) };
 }
 
-/**
- * The account behind a raw API key — `{ user, keyId, expired }`, or null. Used by every
- * app that signs in with a key: scripts (X-API-Key), OPDS readers and Mihon (HTTP Basic,
- * key as the password).
- */
+/** The account behind a raw API key: `{ user, keyId, expired }`, or null. */
 export function userForApiKey(rawKey) {
   const keyHash = crypto.createHash('sha256').update(String(rawKey).trim()).digest('hex');
   return apiKeyUser('k.key = ?', [keyHash]);
 }
 
-// A key by its id — for the Komga session cookie (routes/komga.js), which names the key it
-// was issued for so deleting the key signs Mihon out too.
+// For the Komga session cookie, so deleting the key signs Mihon out too.
 export function userForApiKeyId(keyId) {
   return apiKeyUser('k.id = ?', [keyId]);
 }
 
-// KOReader's sync plugin sends the MD5 of the password rather than the password. Keys store
-// the SHA-256 of that MD5 (routes/apiKeys.js), so the stored value is not itself a sign-in:
-// a copy of the database can't be replayed as the header. The username has to match as well.
+// KOReader sends an MD5 of the key; the DB stores SHA-256 of that, so a DB copy can't be
+// replayed. The username must match too.
 export function kosyncKeyHash(md5) {
   return crypto.createHash('sha256').update(String(md5).trim().toLowerCase()).digest('hex');
 }
@@ -120,11 +102,8 @@ export function userForApiKeyMd5(username, md5) {
 
 export { basicAuthApiKey };
 
-// Away from home (services/network.js): a server that only allows home access, or an
-// account that's home-only, gets nothing from outside — not the API, not media, not the
-// reading apps. Sends the error and returns true when the request has to stop here.
-// { session: true } for a signed-in session, which also has to meet "two-factor away from
-// home" on every request (P112, see outsideAccessProblem).
+// Home-only servers or accounts get nothing from outside. Returns true after sending the
+// error. { session: true } also enforces two-factor away from home (P112).
 export async function blockedByNetwork(req, res, user, options) {
   const problem = await outsideAccessProblem(req, user, options);
   if (!problem) return false;
@@ -133,9 +112,7 @@ export async function blockedByNetwork(req, res, user, options) {
 }
 
 export async function authenticateToken(req, res, next) {
-  // 1. Support X-API-Key for developer/script integrations, and HTTP Basic (username +
-  // API key as the password) for OPDS reader apps, which can't do Bearer tokens and
-  // shouldn't be handed the real account password.
+  // X-API-Key for scripts, HTTP Basic (API key as password) for reader apps.
   const apiKey = req.headers['x-api-key'] || basicAuthApiKey(req);
   if (apiKey) {
     try {
@@ -154,7 +131,7 @@ export async function authenticateToken(req, res, next) {
     return sendError(req, res, 'P104');
   }
 
-  // 2. Support Bearer token or URL query token
+  // Bearer token or ?token=
   let token = null;
   let fromQuery = false;
   const authHeader = req.headers['authorization'];
@@ -172,10 +149,8 @@ export async function authenticateToken(req, res, next) {
   try {
     const payload = jwt.verify(token, config.jwtSecret, { algorithms: ['HS256'] });
 
-    // A URL token must be a media token on a media route; a header token must be a full
-    // session token. So a leaked media URL can't drive the API, and a session token pasted
-    // into a URL is simply refused. Anything else signed with the server's secret (the Komga
-    // cookie, a kind added later) is not a sign-in at all.
+    // URL tokens must be media tokens on a media route; header tokens must be session tokens.
+    // Any other kind is not a sign-in.
     const isMediaToken = payload.typ === MEDIA_TOKEN_TYPE;
     const isSessionToken = payload.typ === SESSION_TOKEN_TYPE || payload.typ === undefined;
     if ((!isMediaToken && !isSessionToken) || typeof payload.userId !== 'string' || !payload.userId) {
@@ -217,9 +192,7 @@ export async function authenticateToken(req, res, next) {
       return sendError(req, res, 'P103');
     }
 
-    // A password change bumps token_version server-side, which immediately invalidates
-    // every token issued before that change (rather than leaving a stolen/old token
-    // valid for its full remaining lifetime).
+    // A bumped token_version revokes every earlier token.
     if ((payload.tokenVersion || 0) !== (user.token_version || 0)) {
       return sendError(req, res, 'P101', { message: 'Session was signed out, please log in again' });
     }
@@ -228,19 +201,14 @@ export async function authenticateToken(req, res, next) {
     req.user = user;
     next();
   } catch (err) {
-    // Any jwt.verify failure (bad signature, malformed, expired) means this token can never
-    // become valid again — 401 so the frontend's response interceptor clears it and bounces
-    // to /login, instead of 403 which it doesn't treat as "log in again" and just retries
-    // into the same dead token forever.
+    // 401, not 403: the frontend only clears the token and goes to /login on 401.
     return sendError(req, res, 'P101', {
       message: fromQuery ? 'Media link expired, reload to get a new one' : 'Session expired, please log in again'
     });
   }
 }
 
-// A key acts as its owner (scripts may run admin tasks with one), but it can't be turned into
-// a sign-in or make more keys: a key copied out of a reader app could otherwise be exchanged
-// for a session that skips two-factor and the away-from-home sign-in rules.
+// A key acts as its owner but can't become a session or make keys, which would skip 2FA.
 export function requireSession(req, res, next) {
   if (req.isApiKey) {
     return sendError(req, res, 'P003', { message: 'API keys cannot do this. Sign in with your password' });
@@ -279,9 +247,8 @@ export function requireEditor(req, res, next) {
 }
 
 // ─── Guess limits ────────────────────────────────────────────────────────────────────────
-// Counts failures per key. `max` of them inside `windowMs` holds the key for `lockMs`, and
-// each further hold within a day lasts twice as long (up to `maxLockMs`), so slow, patient
-// guessing gets slower instead of settling into a steady rate. In memory: a restart clears it.
+// `max` failures within `windowMs` hold the key for `lockMs`, doubling per hold within a day
+// (up to `maxLockMs`) so patient guessing slows. In memory only.
 export class FailureLock {
   constructor({ max = 10, windowMs = 15 * 60 * 1000, lockMs = 15 * 60 * 1000, maxLockMs = 24 * 60 * 60 * 1000, maxKeys = 10000 } = {}) {
     Object.assign(this, { max, windowMs, lockMs, maxLockMs, maxKeys });
@@ -328,16 +295,11 @@ export class FailureLock {
   }
 }
 
-// Someone already signed in, asked for their password again before something sensitive
-// (changing it, making an API key, turning two-factor on or off). Without a limit, a session
-// left open on a shared computer, or a stolen one, could be used to guess the password as
-// fast as the server answers. Ten wrong answers in 15 minutes hold that account's
-// confirmations back; signing in is unaffected, so nobody is locked out of the server.
+// Limits password re-confirmation, so an open or stolen session can't be used to guess the
+// password. Sign-in itself is unaffected.
 export const confirmLock = new FailureLock();
 
-// Null when `password` is the signed-in account's password, otherwise the error code to
-// send: P107 (wrong) or P108 (too many wrong answers, wait). `what` names the action for the
-// log, e.g. "making an API key".
+// Null when the password is right, else P107 (wrong) or P108 (too many). `what` is for the log.
 export async function checkOwnPassword(db, req, password, what) {
   const key = req.user.id;
   if (confirmLock.heldFor(key)) return 'P108';
@@ -360,8 +322,7 @@ export function noteConfirmFailure(req, did) {
     : `"${req.user.username}" ${did}`, { ip: req.ip });
 }
 
-// Sends what checkOwnPassword (or a wrong code) returned. P108's own wording is about
-// signing in, which this isn't.
+// Sends checkOwnPassword's code; P108 gets its own wording since this isn't a sign-in.
 export function sendConfirmProblem(req, res, code, message) {
   if (code === 'P108') {
     return sendError(req, res, 'P108', { message: 'Too many wrong answers. Wait a while, then try again' });
