@@ -393,8 +393,8 @@
                 </span>
               </div>
 
-              <!-- Original Filename / Path -->
-              <p class="text-[11px] font-mono text-muted-foreground truncate mt-0.5" :title="item.path">
+              <!-- Original file name; the tooltip shows its folder inside the library -->
+              <p class="text-[11px] font-mono text-muted-foreground truncate mt-0.5" :title="item.folder ? `${item.folder}/${item.filename}` : item.filename">
                 {{ item.filename }}
               </p>
             </div>

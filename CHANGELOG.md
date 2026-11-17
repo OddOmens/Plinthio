@@ -26,6 +26,29 @@ the admin update banner. Add entries under **Unreleased** as you go.
 - **The server's output says who made each request.** Each request line in `docker logs plinthio` now starts with the visitor's address and ends with their browser or app, for example `203.0.113.7 GET /api/items 200 4.1 ms - 512 "Mozilla/5.0 …"`. Before, the line had no address, so a scan or a run of wrong passwords from the internet couldn't be traced, and a log watcher that blocks repeat offenders had nothing to act on. Behind a reverse proxy this is the visitor's own address when `TRUST_PROXY` covers the proxy (the Tailscale and public add-ons set it for you). The lines are no longer coloured.
 
 ### Security
+A second review of the server and web app. Nothing here needs action when you upgrade, but **if you use KOReader sync and a copy of your database or backups may have been read by someone else, delete and re-make your KOReader API keys** (see the first point).
+
+Sign-in and accounts:
+- **The key KOReader sync checks is no longer stored as is.** The database kept the exact value KOReader sends, so a copy of the database or a backup was enough to sign in to sync as that key's owner. It now keeps a one-way hash of it, and existing keys are converted when the server starts; KOReader keeps working without changes. Backups and the pre-upgrade copy made before this version still hold the old values, which stay valid until the key is deleted.
+- **Wrong two-factor codes are held back when turning two-factor off or making new backup codes.** A right password used to reset the count, so the limit of ten wrong codes never took effect there. Codes now have a count of their own that only a right code clears.
+- **Turning on two-factor respects the hold** after too many wrong codes, for right codes as well as wrong ones, and a setup that isn't finished within 15 minutes has to be started again.
+- **An API key can't reset its own owner's password or two-factor.** The admin reset routes need a signed-in admin and refuse your own account; change your own in Settings → Security, which asks for your password and a code.
+- **An editor with a content limit can no longer edit the library**, since editors can change age ratings. Admin → Users refuses the combination, as it already did for Kids Mode.
+- **Watch-party streams end when an account is deleted, expires, is signed out everywhere, or is restricted**, and members are re-checked every 30 seconds.
+
+Content limits and hidden titles:
+- **Extras follow their film.** Extras of a film that is hidden or above someone's content limit were still listed and playable; they now count as hidden too, and no longer appear in the folder list for anyone.
+- **Subtitles belong to the video with the longest matching name**, so "Film.Unrated.en.srt" beside "Film.mkv" and "Film.Unrated.mkv" is only offered with the unrated cut.
+- **The OPDS catalogue only lists libraries with something the account may see.**
+- **"Add to list" no longer confirms that a hidden title exists**; it answers the same as for a title that doesn't.
+
+Smaller fixes:
+- **Editors no longer see the full path of files on the server**, only the folder inside the library. Searching by path in Admin → Metadata is for admins.
+- **Folder artwork and `metadata.opf` are only read from inside a library**, like the media itself; a symlink leading elsewhere is skipped.
+- **Text from a request or a file can't start a new line in the server's output,** so nobody can add a fake line to the request log, signed in or not.
+- **Admin → Network's reverse-proxy hint only shows addresses on this machine or the home network,** and says that any device can send forwarding headers: check it against your proxy's own address before copying it into `TRUST_PROXY`. It clears after a day.
+- **Rendered PDF pages are cleaned out of the cache** like other cached media, instead of being kept forever.
+- **Signing in as someone else on the same browser clears the previous person's downloads**, even when their session had already expired.
 - **Scanner requests get "not found" instead of the app.** Bots ask every public server for files such as `/.env`, `/.git/config`, `/wp-login.php` and `/info.php`. Plinthio has none of these and never exposed anything, but it answered with the app's own page and a success code, which made the server look like a hit and hid the scan among normal traffic. These now return 404.
 
 ## [1.10.0] - 2026-11-10

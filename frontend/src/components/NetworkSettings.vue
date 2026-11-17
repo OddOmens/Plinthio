@@ -67,11 +67,13 @@
         </div>
       </section>
 
-      <!-- Warnings -->
+      <!-- Warnings. The proxy address is whoever last sent forwarding headers from the home
+           network, which any device can do: it's shown as a cross-check, never as the value
+           to put in TRUST_PROXY. -->
       <div v-if="report.proxyWithoutTrust" class="rounded-xl border border-amber-500/40 bg-amber-500/5 p-4 text-sm flex items-start gap-3">
         <AlertTriangle class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
         <div class="text-xs text-muted-foreground leading-relaxed">
-          <p class="text-sm font-semibold text-foreground">{{ $t('network.proxy.title') }}</p>
+          <p class="text-sm font-semibold text-foreground">{{ report.trustProxy ? $t('network.proxy.titleNotCovered') : $t('network.proxy.title') }}</p>
           {{ $t('network.proxy.text', { from: report.proxyWithoutTrust.from || $t('network.proxy.localAddress') }) }}
         </div>
       </div>

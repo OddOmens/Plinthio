@@ -435,7 +435,9 @@ router.get('/folders', handle(async (req, res) => {
       SELECT i.id, i.title, i.author, i.path, i.media_type, l.name as library_name, l.path as library_path
       FROM items i
       JOIN libraries l ON i.library_id = l.id
-      WHERE NOT EXISTS (
+      -- Extras belong on their film's page, not in the folder list (like the other listings).
+      WHERE i.extra_type IS NULL
+      AND NOT EXISTS (
         SELECT 1 FROM item_visibility v
         WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL)
       )${accessSql(req.user, 'i')}
@@ -522,6 +524,14 @@ router.get('/:id/extras', handle(async (req, res) => {
     return res.status(400).json({ error: 'Invalid item id' });
   }
   const db = await getDb();
+  // Nothing for a film this account can't open: the same answer as for an id that isn't
+  // there. An offloaded film's page still opens (greyed), so its extras still list.
+  const film = await db.get(
+    `SELECT i.id FROM items i WHERE i.id = ?
+       AND NOT EXISTS (SELECT 1 FROM item_visibility v WHERE v.item_id = i.id AND (v.user_id = ? OR v.user_id IS NULL))${accessSql(req.user, 'i', { includeOffloaded: true })}`,
+    [req.params.id, req.user.id]
+  );
+  if (!film) return res.status(404).json({ error: 'Item not found' });
   const extras = await db.all(`
       SELECT i.*, p.current_time, p.progress_percent, p.is_finished
       FROM items i

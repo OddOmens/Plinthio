@@ -110,6 +110,7 @@ async function initSchema(db) {
   // Two-factor sign-in (services/twoFactor.js), optional per account:
   //   totp_secret / totp_pending — the authenticator secret, encrypted with a key derived
   //     from the JWT secret; pending holds one being set up until its first code is checked
+  //   totp_pending_at — when the pending one was made; it has to be confirmed soon after
   //   totp_enabled_at — when it was turned on (NULL = off)
   //   totp_last_step — the 30-second step of the last code accepted, so a code can't be
   //     used twice
@@ -119,7 +120,7 @@ async function initSchema(db) {
   //   last_login_network — home / tailscale / outside, for Admin → Users
   await addColumns(db, 'users', [
     'totp_secret TEXT', 'totp_pending TEXT', 'totp_enabled_at DATETIME', 'totp_last_step INTEGER',
-    'totp_recovery TEXT', 'remote_access INTEGER DEFAULT 1', 'last_login_network TEXT'
+    'totp_recovery TEXT', 'remote_access INTEGER DEFAULT 1', 'last_login_network TEXT', 'totp_pending_at TEXT'
   ]);
   await addColumns(db, 'login_history', ['network TEXT']);
 
@@ -167,6 +168,16 @@ async function initSchema(db) {
   await addColumns(db, 'api_keys', ['key_md5 TEXT']);
   await db.exec(`CREATE INDEX IF NOT EXISTS idx_api_keys_md5 ON api_keys(key_md5)`);
 
+  // A stored MD5 is exactly what KOReader sends, so hash it (kosyncKeyHash). Rows already
+  // hashed (64 characters) are skipped, so this is safe on every start.
+  const md5Rows = await db.all('SELECT id, key_md5 FROM api_keys WHERE length(key_md5) = 32');
+  if (md5Rows.length > 0) {
+    const { createHash } = await import('crypto');
+    for (const row of md5Rows) {
+      const hashed = createHash('sha256').update(row.key_md5.toLowerCase()).digest('hex');
+      await db.run('UPDATE api_keys SET key_md5 = ? WHERE id = ?', [hashed, row.id]);
+    }
+  }
 
   // One-time migration: any key still stored as the raw "shlf_..." secret (from before
   // keys were hashed at rest) gets rehashed in place so a DB leak no longer hands out

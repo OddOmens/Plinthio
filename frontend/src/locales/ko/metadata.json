@@ -105,7 +105,7 @@
       "allMediaTypes": "모든 미디어 유형",
       "tvShows": "TV 프로그램",
       "needsCleanup": "정리 필요",
-      "searchPlaceholder": "제목이나 경로로 필터…",
+      "searchPlaceholder": "제목이나 파일 이름으로 필터…",
       "ignored": "무시함({count})"
     },
     "batch": {

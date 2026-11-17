@@ -1,4 +1,7 @@
 import { getDb } from '../config/database.js';
+import { oneLine, oneLineError } from '../utils/oneLine.js';
+
+export { oneLine, oneLineError };
 
 const memoryLogs = [];
 const MAX_MEMORY_LOGS = 200;
@@ -14,14 +17,19 @@ class Logger {
       timestamp
     };
 
-    // Console output
-    const prefix = `[${timestamp}] [${level.toUpperCase()}] [${category}]`;
+    // Console output, kept to one line per entry (the DB row keeps the
+    // original text; the admin log viewer renders it as text).
+    const prefix = oneLine(`[${timestamp}] [${String(level).toUpperCase()}] [${category}]`);
+    const consoleMessage = oneLine(message);
+    const consoleDetails = details instanceof Error
+      ? oneLineError(details)
+      : (entry.details ? oneLine(entry.details) : '');
     if (level === 'error') {
-      console.error(prefix, message, details || '');
+      console.error(prefix, consoleMessage, consoleDetails);
     } else if (level === 'warn') {
-      console.warn(prefix, message, details || '');
+      console.warn(prefix, consoleMessage, consoleDetails);
     } else {
-      console.log(prefix, message, details || '');
+      console.log(prefix, consoleMessage, consoleDetails);
     }
 
     // Memory ring buffer

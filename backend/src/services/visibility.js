@@ -25,9 +25,13 @@ export function ratingRank(rating) {
 // It carries no bind parameters — every interpolated value is an integer or a fixed string
 // computed here, never user input — so it can be dropped into any existing query without
 // disturbing that query's parameter order.
+//   • a film's extra (extra_of) is only as visible as its film: the film must pass the same
+//     Kids Mode and age rules and not be hidden from everyone by an admin
 // { restrictionsOnly: true } keeps just what the account isn't allowed to see (Kids Mode, age
-// rating), for lists of things the person has already chosen to hide.
-export function accessSql(user, alias = 'i', { includeOffloaded = false, restrictionsOnly = false } = {}) {
+// rating), for lists of things the person has already chosen to hide. { hiddenFilms } says
+// whether an extra of a film hidden from everyone is left out too (default: unless
+// restrictionsOnly; knownSql sets it for everyone but an admin, matching its own rule).
+export function accessSql(user, alias = 'i', { includeOffloaded = false, restrictionsOnly = false, hiddenFilms = !restrictionsOnly } = {}) {
   let sql = '';
   if (!restrictionsOnly) {
     sql = includeOffloaded
@@ -35,8 +39,17 @@ export function accessSql(user, alias = 'i', { includeOffloaded = false, restric
       : ` AND ${alias}.missing_since IS NULL AND ${alias}.offloaded_at IS NULL`;
   }
 
+  sql += kidsModeSql(user, alias);
+  if (!restrictionsOnly) sql += personalSql(user, alias);
+  sql += ageRatingSql(user, alias);
+  sql += extraFilmSql(user, alias, hiddenFilms);
+  return sql;
+}
+
+// Kids Mode: only kids-safe libraries, series and titles.
+function kidsModeSql(user, alias) {
   if (user && (user.kids_mode === 1 || user.kids_mode === true)) {
-    sql += ` AND (
+    return ` AND (
       EXISTS (SELECT 1 FROM libraries kl WHERE kl.id = ${alias}.library_id AND kl.kids_allowed = 1)
       OR EXISTS (
         SELECT 1 FROM kids_titles kt
@@ -45,19 +58,35 @@ export function accessSql(user, alias = 'i', { includeOffloaded = false, restric
       )
     )`;
   }
+  return '';
+}
 
-  if (!restrictionsOnly) sql += personalSql(user, alias);
-
+// Parental controls: nothing above the account's age rating.
+function ageRatingSql(user, alias) {
   const maxRank = ratingRank(user?.max_age_rating);
-  if (maxRank !== null) {
-    const unratedRank = user.allow_unrated === 0 || user.allow_unrated === false ? 99 : 0;
-    const cases = AGE_RATINGS.map((r, idx) => `WHEN '${r}' THEN ${idx}`).join(' ');
-    sql += ` AND (CASE COALESCE(NULLIF(${alias}.age_rating, ''), (
+  if (maxRank === null) return '';
+  const unratedRank = user.allow_unrated === 0 || user.allow_unrated === false ? 99 : 0;
+  const cases = AGE_RATINGS.map((r, idx) => `WHEN '${r}' THEN ${idx}`).join(' ');
+  return ` AND (CASE COALESCE(NULLIF(${alias}.age_rating, ''), (
       SELECT ss.age_rating FROM series_settings ss
       WHERE ss.library_id = ${alias}.library_id AND ss.series_name = ${alias}.series
     )) ${cases} ELSE ${unratedRank} END) <= ${maxRank}`;
+}
+
+// An extra (trailer, featurette) belongs to its film, and the scanner copies neither the
+// film's rating nor its hide onto it, so the extra is held to the film's rules here: no
+// extra of a film this account may not see. One primary-key lookup, and only for rows that
+// are extras. An extra whose film row is gone is judged on its own.
+function extraFilmSql(user, alias, hiddenFilms) {
+  const film = `${alias}_film`;
+  let rules = kidsModeSql(user, film) + ageRatingSql(user, film);
+  if (hiddenFilms) {
+    rules += ` AND NOT EXISTS (SELECT 1 FROM item_visibility ${film}_v WHERE ${film}_v.item_id = ${film}.id AND ${film}_v.user_id IS NULL)`;
   }
-  return sql;
+  if (!rules) return '';
+  return ` AND (${alias}.extra_of IS NULL OR NOT EXISTS (
+      SELECT 1 FROM items ${film} WHERE ${film}.id = ${alias}.extra_of AND NOT (1${rules})
+    ))`;
 }
 
 // What someone has chosen not to see (Settings → Hidden), as opposed to what they aren't
@@ -99,7 +128,7 @@ function personalSql(user, alias) {
 // missing files and offloaded titles: those are theirs to know about. For routes that take an
 // item id and say something back about it, or store something against it. No bind parameters.
 export function knownSql(user, alias = 'i') {
-  let sql = accessSql(user, alias, { restrictionsOnly: true });
+  let sql = accessSql(user, alias, { restrictionsOnly: true, hiddenFilms: user?.role !== 'admin' });
   if (user?.role !== 'admin') {
     sql += ` AND NOT EXISTS (SELECT 1 FROM item_visibility gv WHERE gv.item_id = ${alias}.id AND gv.user_id IS NULL)`;
   }

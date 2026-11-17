@@ -27,8 +27,9 @@
     "allowOutside": "允许外部访问"
   },
   "proxy": {
-    "title": "Plinthio 前面有代理，但没有设置 TRUST_PROXY",
-    "text": "Plinthio 无法判断访问者的真实来源，因此所有通过代理（{from}）到达的访问都会被视为不在家中。Tailscale 和公网地址插件会为你设置它。如果是其他代理，请参阅 docs/remote-access.md。",
+    "title": "收到了带代理请求头的请求，但没有设置 TRUST_PROXY",
+    "titleNotCovered": "带代理请求头的请求来自 TRUST_PROXY 未覆盖的地址",
+    "text": "带转发请求头（X-Forwarded-For、Forwarded 或 X-Real-IP）的请求来自 {from}，因此 Plinthio 将它们视为不在家中。你网络中的任何设备都能发送这些请求头，所以不要直接照抄这个地址：TRUST_PROXY 只能填写你自己运行的反向代理，并使用你确知它所用的地址。这里显示的地址仅供核对。Tailscale 和公网地址插件会为你设置它。如果是其他代理，请参阅 docs/remote-access.md。",
     "localAddress": "本地地址"
   },
   "adminsWithout2fa": {

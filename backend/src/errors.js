@@ -16,6 +16,8 @@
 // out, never by reusing it. docs/error-codes.md is generated from this file
 // (`npm run docs:errors`), and a test fails if the two drift apart.
 
+import { oneLine, oneLineError } from './utils/oneLine.js';
+
 export const ERROR_CODES = {
   // ── General ──────────────────────────────────────────────────────────────────────────
   P000: {
@@ -529,7 +531,8 @@ export function sendError(req, res, code, { message, err, status, extra } = {}) 
   const entry = ERROR_CODES[code] || ERROR_CODES.P000;
   const httpStatus = status || entry.status || 500;
   if (err && httpStatus >= 500) {
-    console.error(`[${code}] [${req.method} ${req.baseUrl || ''}${req.route?.path || ''}]`, err);
+    // One line per failure: an error's message can carry a file name or request text.
+    console.error(oneLine(`[${code}] [${req.method} ${req.baseUrl || ''}${req.route?.path || ''}]`), oneLineError(err));
   }
   if (res.headersSent) return;
 

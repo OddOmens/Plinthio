@@ -2,6 +2,7 @@ import express from 'express';
 import { getDb } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { isItemHiddenForUser } from '../services/visibility.js';
+import { outsideAccessProblem } from '../services/network.js';
 import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { logger } from '../services/logger.js';
@@ -45,6 +46,43 @@ router.param('code', (req, res, next, code) => {
   req.party = party;
   next();
 });
+
+// The account as it is now, in the shape authenticateToken gives req.user, or null if it's
+// gone. A party outlives the request that joined it, so later checks read the row again
+// rather than trusting what the account was when it joined.
+async function currentUser(db, userId) {
+  const user = await db.get(`SELECT id, username, role, preferences, expires_at, token_version, max_age_rating,
+      allow_unrated, kids_mode, remote_access, (totp_enabled_at IS NOT NULL) AS two_factor FROM users WHERE id = ?`, [userId]);
+  if (!user) return null;
+  try {
+    user.preferences = user.preferences ? JSON.parse(user.preferences) : {};
+  } catch {
+    user.preferences = {};
+  }
+  return user;
+}
+
+// Whether a party connection may stay open: the sign-in it opened with still works (account
+// there and not expired; same token_version for a session, the same key still there for an
+// API key), the network rules still let it in, and it may still see what the party watches.
+function connectionCheck(req) {
+  const keyId = req.isApiKey ? req.apiKeyId : null;
+  const tokenVersion = req.isApiKey ? null : (req.user.token_version || 0);
+  const userId = req.user.id;
+  return async (party) => {
+    const db = await getDb();
+    const user = await currentUser(db, userId);
+    if (!user) return false;
+    if (user.expires_at && new Date(user.expires_at).getTime() <= Date.now()) return false;
+    if (keyId) {
+      if (!await db.get('SELECT 1 FROM api_keys WHERE id = ? AND user_id = ?', [keyId, userId])) return false;
+    } else if ((user.token_version || 0) !== tokenVersion) {
+      return false;
+    }
+    if (await outsideAccessProblem(req, user, { session: !keyId })) return false;
+    return !await isItemHiddenForUser(db, party.itemId, user);
+  };
+}
 
 async function loadWatchable(db, itemId, user) {
   if (typeof itemId !== 'string' || !ITEM_ID_RE.test(itemId)) return null;
@@ -106,7 +144,7 @@ router.get('/:code/events', async (req, res) => {
     res.write(`data: ${JSON.stringify(payload)}\n\n`);
   };
 
-  addConnection(party, req.user, clientId, send);
+  addConnection(party, req.user, clientId, send, connectionCheck(req));
   send({ type: 'snapshot', party: snapshot(party), you: { userId: req.user.id, clientId } });
 
   const keepalive = setInterval(() => open && res.write(': keepalive\n\n'), KEEPALIVE_MS);
@@ -154,8 +192,10 @@ router.post('/:code/item', async (req, res) => {
     const db = await getDb();
     const item = await loadWatchable(db, req.body?.itemId, req.user);
     if (!item) return res.status(400).json({ error: 'Pick a movie or episode to watch together' });
-    for (const member of party.members.values()) {
-      if (await isItemHiddenForUser(db, item.id, member.user)) return sendError(req, res, 'P604');
+    // Each member as the account is now: a limit or Kids Mode turned on since they joined counts.
+    for (const member of [...party.members.values()]) {
+      const user = await currentUser(db, member.userId);
+      if (!user || await isItemHiddenForUser(db, item.id, user)) return sendError(req, res, 'P604');
     }
     changeItem(party, item.id, { autoplay: !!req.body?.autoplay });
     res.json({ ok: true });

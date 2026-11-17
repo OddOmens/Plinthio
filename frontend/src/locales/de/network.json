@@ -27,8 +27,9 @@
     "allowOutside": "Zugriff von außen erlauben"
   },
   "proxy": {
-    "title": "Vor Plinthio läuft ein Proxy, aber TRUST_PROXY ist nicht gesetzt",
-    "text": "Plinthio kann nicht erkennen, woher Besuche wirklich kommen, daher gilt jeder, der über den Proxy ({from}) kommt, als unterwegs. Die Add-ons für Tailscale und die öffentliche Adresse setzen das für dich. Für einen anderen Proxy siehe docs/remote-access.md.",
+    "title": "Anfragen mit Proxy-Headern sind angekommen, aber TRUST_PROXY ist nicht gesetzt",
+    "titleNotCovered": "Anfragen mit Proxy-Headern kamen von einer Adresse, die TRUST_PROXY nicht abdeckt",
+    "text": "Anfragen mit Weiterleitungs-Headern (X-Forwarded-For, Forwarded oder X-Real-IP) kamen von {from}, daher behandelt Plinthio sie als unterwegs. Jedes Gerät in deinem Netzwerk kann diese Header senden, also übernimm diese Adresse nicht einfach: TRUST_PROXY darf nur einen Reverse-Proxy nennen, den du selbst betreibst, mit der Adresse, von der du weißt, dass er sie nutzt. Nutze die hier gezeigte nur zum Abgleich. Die Add-ons für Tailscale und die öffentliche Adresse setzen das für dich. Für einen anderen Proxy siehe docs/remote-access.md.",
     "localAddress": "eine lokale Adresse"
   },
   "adminsWithout2fa": {

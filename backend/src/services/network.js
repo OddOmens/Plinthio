@@ -172,15 +172,23 @@ export async function outsideAccessError(req, user, options) {
   return (await outsideAccessProblem(req, user, options))?.code || null;
 }
 
-// Remembered for Admin → Network, which tells the admin to set TRUST_PROXY: the first request
-// that arrived through a proxy Plinthio doesn't trust.
+// Hint for Admin → Network: the latest home or loopback peer that sent forwarding headers
+// TRUST_PROXY doesn't cover. Any device can send them, so it's only shown as something to check.
+export const PROXY_HINT_TTL_MS = 24 * 60 * 60 * 1000;
 let proxySeen = null;
 export function noteProxyHeaders(req) {
-  if (proxySeen || !forwardedUntrusted(req)) return;
-  proxySeen = { at: new Date().toISOString(), from: normalizeIp(req.socket?.remoteAddress) };
+  if (!forwardedUntrusted(req)) return;
+  const from = normalizeIp(req.socket?.remoteAddress);
+  if (classifyAddress(from) !== 'home') return;
+  proxySeen = { at: new Date().toISOString(), from };
 }
-export function proxyWarning() {
+export function proxyWarning(now = Date.now()) {
+  if (proxySeen && now - Date.parse(proxySeen.at) > PROXY_HINT_TTL_MS) proxySeen = null;
   return proxySeen;
+}
+// For tests.
+export function resetProxyWarning() {
+  proxySeen = null;
 }
 
 // ─── Tailscale, seen working ────────────────────────────────────────────────

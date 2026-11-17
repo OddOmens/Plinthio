@@ -15,7 +15,8 @@ import { handle, serverError } from '../utils/http.js';
 import { normalizeUsername, USERNAME_RULE } from '../utils/username.js';
 import { AGE_RATINGS, LIBRARY_ID_PATTERN, MAX_HIDDEN_LIBRARIES } from '../services/visibility.js';
 import { requestLocation } from '../services/network.js';
-import { logger } from '../services/logger.js';
+import { logger, oneLineError } from '../services/logger.js';
+import { dropUser as dropPartyMember } from '../services/party.js';
 
 const router = express.Router();
 const VALID_ROLES = ['admin', 'editor', 'viewer'];
@@ -135,7 +136,7 @@ router.post('/avatar', (req, res, next) => {
       user: updatedUser
     });
   } catch (err) {
-    console.error('Avatar upload failed:', err);
+    console.error('Avatar upload failed:', oneLineError(err));
     res.status(500).json({ error: 'Failed to process and save avatar image' });
   }
 });
@@ -166,7 +167,7 @@ router.delete('/avatar', async (req, res) => {
       user: updatedUser
     });
   } catch (err) {
-    console.error('Avatar deletion failed:', err);
+    console.error('Avatar deletion failed:', oneLineError(err));
     serverError(req, res, err);
   }
 });
@@ -263,6 +264,7 @@ router.patch('/password', requireSession, handle(async (req, res) => {
   }
   const left = await db.get('SELECT COUNT(*) AS count FROM api_keys WHERE user_id = ?', [userId]);
   invalidateUserCache(userId);
+  dropPartyMember(userId);
   logger.info('auth', `"${req.user.username}" changed their password${revoked ? ` and revoked ${revoked} API key${revoked === 1 ? '' : 's'}` : ''}`, { ip: req.ip });
 
   res.json({
@@ -356,7 +358,7 @@ router.patch('/:id', requireAdmin, handle(async (req, res) => {
   const { username, role, expires_at, duration, maxAgeRating, allowUnrated, kidsMode, remoteAccess } = req.body;
 
   const db = await getDb();
-  const target = await db.get('SELECT id, role, expires_at, kids_mode FROM users WHERE id = ?', [req.params.id]);
+  const target = await db.get('SELECT id, role, expires_at, kids_mode, max_age_rating FROM users WHERE id = ?', [req.params.id]);
   if (!target) {
     return res.status(404).json({ error: 'User not found' });
   }
@@ -367,6 +369,11 @@ router.patch('/:id', requireAdmin, handle(async (req, res) => {
   const willBeRole = role !== undefined ? role : target.role;
   if (willBeKids && willBeRole === 'editor' && (kidsMode !== undefined || role !== undefined)) {
     return res.status(400).json({ error: 'A Kids Mode account can\'t be an editor. Make it a viewer, or turn Kids Mode off first' });
+  }
+  // The same for a content limit: an editor could change the age ratings the limit reads.
+  const willBeLimited = maxAgeRating !== undefined ? !!maxAgeRating : !!target.max_age_rating;
+  if (willBeLimited && willBeRole === 'editor' && (maxAgeRating !== undefined || role !== undefined)) {
+    return res.status(400).json({ error: 'An account with a content limit can\'t be an editor. Make it a viewer, or remove the limit first' });
   }
 
   const updates = [];
@@ -452,6 +459,12 @@ router.patch('/:id', requireAdmin, handle(async (req, res) => {
   params.push(req.params.id);
   await db.run(`UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, params);
   invalidateUserCache(req.params.id);
+  // A watch party checks the account only when its stream opens, so anything that can narrow
+  // what the account may see or whether it may sign in ends its party connections; the app
+  // joins again with the account as it is now.
+  if ([role, expires_at, duration, maxAgeRating, allowUnrated, kidsMode, remoteAccess].some((v) => v !== undefined)) {
+    dropPartyMember(req.params.id);
+  }
 
   const updated = await db.get(`SELECT id, username, role, avatar, preferences, expires_at, created_at, last_login_at,
       last_login_network, max_age_rating, allow_unrated, kids_mode, remote_access, totp_enabled_at FROM users WHERE id = ?`, [req.params.id]);
@@ -462,19 +475,30 @@ router.patch('/:id', requireAdmin, handle(async (req, res) => {
   res.json({ message: 'User updated successfully', user: updated });
 }));
 
+// Resetting how someone signs in is for a signed-in admin, never an API key, and never on
+// your own account: that goes through PATCH /users/password and POST /auth/2fa/disable,
+// which ask for the password and a code.
+function someoneElse(req, res, next) {
+  if (req.user.id === req.params.id) {
+    return res.status(400).json({ error: 'Change your own password or two-factor in Settings' });
+  }
+  next();
+}
+
 // Turn off someone's two-factor, for a lost phone with no backup codes left (Admin only).
 // Their sessions are signed out, so whoever has the account now has to sign in again.
-router.post('/:id/two-factor/reset', requireAdmin, handle(async (req, res) => {
+router.post('/:id/two-factor/reset', requireAdmin, requireSession, someoneElse, handle(async (req, res) => {
   const db = await getDb();
   const target = await db.get('SELECT id, username, totp_enabled_at FROM users WHERE id = ?', [req.params.id]);
   if (!target) return res.status(404).json({ error: 'User not found' });
   if (!target.totp_enabled_at) return res.status(400).json({ error: "Two-factor isn't on for that account" });
   await db.run(
-    `UPDATE users SET totp_secret = NULL, totp_pending = NULL, totp_enabled_at = NULL, totp_last_step = NULL,
+    `UPDATE users SET totp_secret = NULL, totp_pending = NULL, totp_pending_at = NULL, totp_enabled_at = NULL, totp_last_step = NULL,
          totp_recovery = NULL, token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
     [target.id]
   );
   invalidateUserCache(target.id);
+  dropPartyMember(target.id);
   logger.warn('auth', `Two-factor for "${target.username}" was reset by admin ${req.user.username}`);
   res.json({ message: 'Two-factor turned off. They can sign in with their password and set it up again.' });
 }));
@@ -510,7 +534,7 @@ router.post('/:id/extend', requireAdmin, handle(async (req, res) => {
 // Reset another user's password (Admin only) — no current-password check, since the admin is
 // acting on someone else's account (e.g. they forgot it). Bumps token_version like the
 // self-service change so any existing sessions for that user are invalidated immediately.
-router.patch('/:id/password', requireAdmin, handle(async (req, res) => {
+router.patch('/:id/password', requireAdmin, requireSession, someoneElse, handle(async (req, res) => {
   const { newPassword } = req.body;
 
   if (!newPassword || newPassword.length < 8) {
@@ -529,6 +553,7 @@ router.patch('/:id/password', requireAdmin, handle(async (req, res) => {
     [newHash, req.params.id]
   );
   invalidateUserCache(req.params.id);
+  dropPartyMember(req.params.id);
 
   res.json({ message: 'Password reset successfully' });
 }));
@@ -546,7 +571,7 @@ router.patch('/:id/role', requireAdmin, handle(async (req, res) => {
   }
 
   const db = await getDb();
-  const target = await db.get('SELECT id, kids_mode FROM users WHERE id = ?', [req.params.id]);
+  const target = await db.get('SELECT id, kids_mode, max_age_rating FROM users WHERE id = ?', [req.params.id]);
   if (!target) {
     return res.status(404).json({ error: 'User not found' });
   }
@@ -554,9 +579,14 @@ router.patch('/:id/role', requireAdmin, handle(async (req, res) => {
   if (target.kids_mode && role !== 'viewer') {
     return res.status(400).json({ error: 'A Kids Mode account can only be a viewer. Turn Kids Mode off first' });
   }
+  // And an account with a content limit can't be an editor (it could lift the limit).
+  if (target.max_age_rating && role === 'editor') {
+    return res.status(400).json({ error: 'An account with a content limit can\'t be an editor. Remove the limit first' });
+  }
 
   await db.run('UPDATE users SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [role, req.params.id]);
   invalidateUserCache(req.params.id);
+  dropPartyMember(req.params.id);
 
   res.json({ message: 'Role updated successfully', role });
 }));
@@ -569,6 +599,7 @@ router.delete('/:id', requireAdmin, handle(async (req, res) => {
   const db = await getDb();
   await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
   invalidateUserCache(req.params.id);
+  dropPartyMember(req.params.id);
   res.json({ message: 'User deleted successfully' });
 }));
 

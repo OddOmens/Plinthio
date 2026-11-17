@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import sax from 'sax';
 import AdmZip from 'adm-zip';
+import { getLibraryRoots, realPathInRoots } from '../utils/libraryPath.js';
+import { oneLine } from './logger.js';
 
 // What an ebook says about itself. An EPUB's package document (the .opf) carries the same
 // Dublin Core record a library catalogue does — title, authors, publisher, date, language,
@@ -351,11 +353,27 @@ function numberFromName(name) {
 const EBOOK_EXTS = new Set(['.epub', '.pdf', '.mobi', '.azw3', '.azw', '.kepub', '.fb2', '.djvu', '.cbz', '.cbr']);
 
 /**
+ * A file found by name beside a media file (folder art, Calibre's metadata.opf): its real
+ * path, only when that is a regular file inside a library root (or SYMLINK_ALLOWED_ROOTS),
+ * the same rule the media file itself is held to. A link out of the library is skipped and
+ * logged. `roots` from getLibraryRoots().
+ */
+export function libraryFileBeside(filePath, roots, category = 'scan') {
+  const real = realPathInRoots(filePath, roots, category);
+  if (!real) return null;
+  try {
+    return fs.statSync(real).isFile() ? real : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Calibre's metadata.opf from the book's folder, parsed — only when the folder holds a
  * single book (Calibre names every format of a book the same, so "Dune.epub" and "Dune.pdf"
  * count as one). In a shared folder the sidecar can't be tied to a file.
  */
-export function readSidecarOpf(filePath) {
+export function readSidecarOpf(filePath, { roots } = {}) {
   const dir = path.dirname(filePath);
   let names;
   try { names = fs.readdirSync(dir); } catch { return null; }
@@ -366,7 +384,12 @@ export function readSidecarOpf(filePath) {
     .map((n) => path.basename(n, path.extname(n)).toLowerCase()));
   if (books.size > 1) return null;
   try {
-    const file = path.join(dir, sidecar);
+    let file = path.join(dir, sidecar);
+    // The scan passes the library roots: a sidecar that links outside them is not read.
+    if (roots) {
+      file = libraryFileBeside(file, roots);
+      if (!file) return null;
+    }
     if (fs.statSync(file).size > MAX_OPF_BYTES) return null;
     return parseOpf(fs.readFileSync(file, 'utf8'));
   } catch {
@@ -426,7 +449,7 @@ export async function readBookMetadata(filePath, { pdfInfo = null } = {}) {
     try {
       embedded = readEpubOpf(filePath);
     } catch (err) {
-      console.warn(`Could not parse EPUB metadata for ${filePath}: ${err.message}`);
+      console.warn(`Could not parse EPUB metadata for ${oneLine(filePath)}: ${oneLine(err.message)}`);
     }
   }
 
@@ -435,11 +458,11 @@ export async function readBookMetadata(filePath, { pdfInfo = null } = {}) {
     try {
       pdf = await pdfInfo(filePath);
     } catch (err) {
-      console.warn(`Could not read PDF info for ${filePath}: ${err.message}`);
+      console.warn(`Could not read PDF info for ${oneLine(filePath)}: ${oneLine(err.message)}`);
     }
   }
 
-  const sidecar = readSidecarOpf(filePath);
+  const sidecar = readSidecarOpf(filePath, { roots: await getLibraryRoots() });
   const pick = (key) => {
     const fromSidecar = sidecar?.[key];
     if (Array.isArray(fromSidecar) ? fromSidecar.length : fromSidecar != null && fromSidecar !== '') return fromSidecar;

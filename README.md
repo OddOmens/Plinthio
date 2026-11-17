@@ -81,7 +81,7 @@ A factual summary; details in [docs/accounts-and-access.md](docs/accounts-and-ac
 * **Away from home:** home-only by default for new servers. Admins choose whether the server can be used from outside the home network, and per person who may; checked on every request, including the reading apps.
 * **Sessions:** JWTs signed with a per-install secret generated on first boot (`/config/jwt.secret`). 7-day lifetime, renewed on use; a password change or **Sign out of all devices** revokes every token at once.
 * **Media URLs** carry a separate 24-hour media-only token, never the session token.
-* **API keys:** shown once; stored as SHA-256 (plus an MD5 for KOReader's protocol). Apps sign in with a key, never your password. Making one needs your password, and a key can't change the password, two-factor or other keys.
+* **API keys:** shown once; stored as SHA-256 (KOReader's protocol sends an MD5 of the key; only a hash of that is kept). Apps sign in with a key, never your password. Making one needs your password, and a key can't change the password, two-factor or other keys.
 * **Roles, content limits and Kids Mode** are enforced on every request, including direct file and page URLs, watch parties and the sync APIs.
 * **Path checks:** file-serving routes verify the resolved path is inside its library.
 * **Rate limits:** 10 failed sign-ins / 15 min per address, 10 wrong two-factor codes / 15 min per account, 600 API requests / min, 1200 media requests / min, 6 backups / 15 min.
