@@ -25,6 +25,9 @@ the admin update banner. Add entries under **Unreleased** as you go.
 ### Changed
 - **The server's output says who made each request.** Each request line in `docker logs plinthio` now starts with the visitor's address and ends with their browser or app, for example `203.0.113.7 GET /api/items 200 4.1 ms - 512 "Mozilla/5.0 …"`. Before, the line had no address, so a scan or a run of wrong passwords from the internet couldn't be traced, and a log watcher that blocks repeat offenders had nothing to act on. Behind a reverse proxy this is the visitor's own address when `TRUST_PROXY` covers the proxy (the Tailscale and public add-ons set it for you). The lines are no longer coloured.
 
+### Fixed
+- **Saved positions survive the history-table upgrade, and damaged ones are repaired.** An earlier upgrade copied the clock time (for example `20:44:06`) into each saved video and audio position instead of the seconds, so resuming started from the wrong place. The upgrade now copies the real value, and on start the server rebuilds any damaged position from the saved percentage and the runtime, to within 1%. Books and comics keep their saved page.
+
 ### Security
 A second review of the server and web app. Nothing here needs action when you upgrade, but **if you use KOReader sync and a copy of your database or backups may have been read by someone else, delete and re-make your KOReader API keys** (see the first point).
 
