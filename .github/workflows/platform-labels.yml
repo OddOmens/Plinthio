@@ -1,0 +1,30 @@
+name: Platform labels
+
+# Adds a "platform: …" label for each box ticked under "Platform" in an issue form.
+# Only adds labels, so a label set by hand is never taken away.
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label from the Platform checklist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          # Only the lines between "### Platform" and the next heading.
+          section=$(printf '%s\n' "$BODY" | tr -d '\r' | awk '/^### /{p=($0=="### Platform")} p')
+          for platform in "Browser" "iOS" "macOS" "Android TV" "Server"; do
+            if printf '%s\n' "$section" | grep -qixF -- "- [x] $platform"; then
+              gh issue edit "$NUMBER" --add-label "platform: $platform"
+            fi
+          done

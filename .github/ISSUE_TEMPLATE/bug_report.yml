@@ -32,6 +32,17 @@ body:
         - Something else
     validations:
       required: true
+  - type: checkboxes
+    id: platforms
+    attributes:
+      label: Platform
+      description: Where you saw it. Tick every one that applies.
+      options:
+        - label: Browser
+        - label: iOS
+        - label: macOS
+        - label: Android TV
+        - label: Server
   - type: textarea
     id: what
     attributes:
