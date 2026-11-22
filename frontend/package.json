@@ -11,7 +11,7 @@
     "check:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
-    "@lucide/vue": "^1.73.0",
+    "@lucide/vue": "^1.76.0",
     "axios": "^1.21.1",
     "epubjs": "^0.3.93",
     "hls.js": "^1.7.4",
