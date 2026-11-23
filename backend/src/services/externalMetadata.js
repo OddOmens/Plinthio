@@ -752,6 +752,41 @@ export async function findTmdbId(mediaType, query, year = null) {
   return best?.externalId || null;
 }
 
+/**
+ * The TMDB id behind an IMDb or TVDB id (read from a folder tag or .nfo), or null. TMDB's
+ * /find answers for films and shows at once; only the kind asked for counts.
+ */
+export async function findTmdbIdByExternalId(mediaType, { imdbId = null, tvdbId = null } = {}) {
+  const apiKey = await getTmdbApiKey();
+  if (!apiKey) {
+    const err = new Error('TMDB API key is not configured');
+    err.code = 'MISSING_API_KEY';
+    throw err;
+  }
+  const list = mediaType === 'movie' ? 'movie_results' : 'tv_results';
+  for (const [id, source] of [[imdbId, 'imdb_id'], [tvdbId, 'tvdb_id']]) {
+    if (!id) continue;
+    const req = tmdbRequest(
+      `https://api.themoviedb.org/3/find/${encodeURIComponent(id)}?external_source=${source}`,
+      apiKey
+    );
+    const data = await fetchJson(req.url, req.options);
+    const found = data?.[list]?.[0]?.id;
+    if (found) return String(found);
+  }
+  return null;
+}
+
+/** A title's poster URL by TMDB id, or null. */
+export async function fetchTmdbPosterUrl(tmdbId, mediaType) {
+  const apiKey = await getTmdbApiKey();
+  if (!apiKey || !tmdbId) return null;
+  const endpoint = mediaType === 'movie' ? 'movie' : 'tv';
+  const req = tmdbRequest(`https://api.themoviedb.org/3/${endpoint}/${encodeURIComponent(tmdbId)}`, apiKey);
+  const data = await fetchJson(req.url, req.options);
+  return data?.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : null;
+}
+
 function missingTmdbKeyError() {
   const err = new Error('TMDB API key is not configured. An admin must add one in Admin → Metadata.');
   err.code = 'MISSING_API_KEY';

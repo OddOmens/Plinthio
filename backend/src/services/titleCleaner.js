@@ -1,4 +1,5 @@
 // Parses release filenames and messy titles into clean titles, years and season/episode numbers.
+import { hasProviderIdTag, stripProviderIdTags } from './providerIds.js';
 
 // Release markers: everything from the first one onward is not part of the title.
 export const TECH_MARKERS = /\b(?:\d{3,4}p|4k|uhd|hdr\d*|dovi|dv|imax|remux|bluray|blu-ray|brrip|bdrip|webrip|web[- ]?dl|web|hdtv|dvdrip|hdrip|tvrip|x26[45]|h ?26[45]|hevc|avc|xvid|divx|aac\d?(?:\.\d)?|ac3|eac3|dts(?:[- ]?hd)?|truehd|atmos|ddp?\d?(?:\.1)?|\d{1,2}\.\d(?:ch)?|10bit|8bit|proper|repack|extended|remastered|unrated|criterion|directors\.?cut|theatrical|multi|dual|subbed|dubbed|amzn|nf|dsnp|atvp|itunes|hmax|peacock)\b/i;
@@ -23,6 +24,7 @@ export function looksLikeFileName(title) {
   return /_/.test(t) ||
     /\p{L}{2,}\.\p{L}{2,}\.\p{L}/u.test(t) ||
     /\[[^\]]*\]/.test(t) ||
+    hasProviderIdTag(t) ||
     RELEASE_JUNK.test(t) ||
     /\((?:19|20)\d\d\)/.test(t) ||
     ALL_MEDIA_EXTENSIONS.test(t) ||
@@ -92,6 +94,9 @@ export function parseMediaTitle(rawInput) {
   }
 
   str = str.replace(ALL_MEDIA_EXTENSIONS, '');
+
+  // Id tags such as {tmdb-603}: read by the scanner, never part of the title.
+  str = stripProviderIdTags(str);
 
   // Downloaded videos append "｜ channel ｜ pitch"; the name is before the first bar.
   str = cutBarTail(str);

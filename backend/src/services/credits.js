@@ -1,5 +1,5 @@
 import { getDb } from '../config/database.js';
-import { fetchTmdbDetails, findTmdbId, getTmdbApiKey } from './externalMetadata.js';
+import { fetchTmdbDetails, findTmdbId, findTmdbIdByExternalId, getTmdbApiKey } from './externalMetadata.js';
 import { cleanSearchTitle, parseMediaTitle } from './titleCleaner.js';
 import { logger } from './logger.js';
 
@@ -41,17 +41,26 @@ export async function ensureCredits(db, item) {
   if (!inFlight.has(key)) {
     inFlight.set(key, (async () => {
       let tmdbId = item.tmdb_id;
+      // Ids read from the files (folder tags, .nfo) when there's no TMDB one among them.
+      let external = { imdbId: item.imdb_id || null, tvdbId: item.tvdb_id || null };
       if (!tmdbId && isEpisode) {
         // Another episode may already know which show this is (a match sets it on one).
         const known = await db.get(
-          `SELECT tmdb_id FROM items WHERE media_type = ? AND library_id = ? AND series = ? AND tmdb_id IS NOT NULL LIMIT 1`,
+          `SELECT tmdb_id, imdb_id, tvdb_id FROM items
+           WHERE media_type = ? AND library_id = ? AND series = ?
+             AND (tmdb_id IS NOT NULL OR imdb_id IS NOT NULL OR tvdb_id IS NOT NULL)
+           ORDER BY tmdb_id IS NULL LIMIT 1`,
           [item.media_type, item.library_id, item.series]
         );
         tmdbId = known?.tmdb_id || null;
+        if (known && !external.imdbId && !external.tvdbId) external = { imdbId: known.imdb_id, tvdbId: known.tvdb_id };
       }
 
       let details = null;
       try {
+        if (!tmdbId && (external.imdbId || external.tvdbId)) {
+          tmdbId = await findTmdbIdByExternalId(item.media_type, external);
+        }
         if (!tmdbId) {
           const rawTitle = isEpisode ? item.series : item.title;
           const query = cleanSearchTitle(rawTitle);

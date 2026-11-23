@@ -21,6 +21,7 @@ import { getLibraryRoots, realPathInRoots } from '../utils/libraryPath.js';
 import { probeFormatName, isScriptFormat } from './probe.js';
 import { queueNewVideos } from './compat.js';
 import { VIDEO_EXTS } from './subtitles.js';
+import { fileProviderIds, hasProviderIdTag, stripProviderIdTags } from './providerIds.js';
 
 const VIDEO_MEDIA_TYPES = ['movie', 'show', 'anime'];
 
@@ -82,7 +83,7 @@ export async function scanLibrary(libraryId) {
     const extras = classifyExtras(files, library.path, library.type);
 
     // Snapshot to detect renamed/moved files rather than adding duplicates.
-    const dbItemsBefore = await db.all('SELECT id, path, file_size, format, total_pages, cover_path, media_type, title, series, volume, offloaded_at, book_meta_version FROM items WHERE library_id = ?', [libraryId]);
+    const dbItemsBefore = await db.all('SELECT id, path, file_size, format, total_pages, cover_path, media_type, title, author, series, volume, offloaded_at, book_meta_version, tmdb_id, imdb_id, tvdb_id, file_ids FROM items WHERE library_id = ?', [libraryId]);
     // An unmounted drive leaves an empty mount point; refuse rather than mark everything missing.
     if (files.length === 0 && dbItemsBefore.length > 0) {
       throw new PlinthioError(
@@ -120,6 +121,14 @@ export async function scanLibrary(libraryId) {
       ));
       return found.length === 1 ? found[0] : null;
     };
+
+    // Ids the files carry (name tags, .nfo); extras sit in their film's folder and have none of their own.
+    const videoType = library.type === 'shows' ? 'show' : (library.type === 'anime' ? 'anime' : 'movie');
+    const nfoFolders = new Map();
+    const idsOnDisk = (filePath) => (extras.has(filePath)
+      ? null
+      : fileProviderIds(filePath, videoType, library.path, nfoFolders));
+    let identified = 0;
 
     let added = 0;
     // Added or changed files, for "Convert new videos automatically".
@@ -165,6 +174,9 @@ export async function scanLibrary(libraryId) {
         if (BOOK_EXTS.has(ext) && existing.media_type === 'book' && (existing.book_meta_version || 0) < BOOK_META_VERSION) {
           await refreshBookMetadata(db, itemId, filePath);
         }
+        if (VIDEO_EXTS.has(ext) && VIDEO_MEDIA_TYPES.includes(existing.media_type)) {
+          if (await applyFileIds(db, existing, idsOnDisk(filePath))) identified++;
+        }
         continue;
       }
 
@@ -202,6 +214,7 @@ export async function scanLibrary(libraryId) {
 
       // Best-effort TMDB poster fallback for video. Extras get a frame from the clip later instead.
       if (extras.has(filePath)) meta.coverPath = null;
+      const onDisk = VIDEO_EXTS.has(ext) ? idsOnDisk(filePath) : null;
       if (!meta.coverPath && ['movie', 'show', 'anime'].includes(mediaType) && !extras.has(filePath)) {
         const parsedFile = parseMediaTitle(path.basename(filePath));
         meta.coverPath = await fetchVideoArtwork({
@@ -209,7 +222,8 @@ export async function scanLibrary(libraryId) {
           title: meta.title,
           series: meta.series,
           mediaType,
-          year: parsedFile.year
+          year: parsedFile.year,
+          tmdbId: onDisk?.ids().tmdb
         });
       }
 
@@ -258,6 +272,7 @@ export async function scanLibrary(libraryId) {
           ]
         );
         if (mediaType === 'book') await saveBookFields(db, itemId, meta);
+        if (await applyFileIds(db, { ...existing, title: meta.title, author: meta.author }, onDisk)) identified++;
         updated++;
         changedIds.push(itemId);
         if (isRename) renamed++;
@@ -292,6 +307,7 @@ export async function scanLibrary(libraryId) {
           ]
         );
         if (mediaType === 'book') await saveBookFields(db, itemId, meta);
+        if (await applyFileIds(db, { id: itemId, title: meta.title, author: meta.author }, onDisk)) identified++;
         added++;
         changedIds.push(itemId);
       }
@@ -322,8 +338,9 @@ export async function scanLibrary(libraryId) {
 
     await db.run('UPDATE libraries SET last_scanned_at = CURRENT_TIMESTAMP WHERE id = ?', [libraryId]);
 
-    logger.info('scan', `Scan completed for "${library.name}"`, { added, updated, renamed, missing: removed, restored, artwork, total: files.length });
-    if (library.type === 'movies' && added) backfillMovieCredits().catch(() => {});
+    logger.info('scan', `Scan completed for "${library.name}"`, { added, updated, renamed, missing: removed, restored, artwork, identified, total: files.length });
+    // New ids clear a film's cached credits, so they're looked up again along with new films'.
+    if (library.type === 'movies' && (added || identified)) backfillMovieCredits().catch(() => {});
     queueNewVideos(db, changedIds);
     // `removed` counts titles newly marked missing, not deleted.
     return { status: 'completed', added, updated, renamed, removed, restored, artwork, total: files.length };
@@ -333,12 +350,50 @@ export async function scanLibrary(libraryId) {
 }
 
 /**
+ * Stores the ids a video file carries on disk (services/providerIds.js). They're applied when
+ * what's on disk changes, not on every scan, so a match made by hand afterwards stays. Returns
+ * whether the item's ids changed.
+ */
+async function applyFileIds(db, item, onDisk) {
+  if (!onDisk || onDisk.key === (item.file_ids || '')) return false;
+
+  const ids = onDisk.ids();
+  const sets = ['file_ids = ?'];
+  const params = [onDisk.key];
+  const differs = (kind) => ids[kind] && ids[kind] !== String(item[`${kind}_id`] || '').toLowerCase();
+  const changed = differs('tmdb') || differs('imdb') || differs('tvdb');
+
+  if (ids.imdb) { sets.push('imdb_id = ?'); params.push(ids.imdb); }
+  if (ids.tvdb) { sets.push('tvdb_id = ?'); params.push(ids.tvdb); }
+  if (ids.tmdb) {
+    sets.push('tmdb_id = ?');
+    params.push(ids.tmdb);
+  } else if (changed) {
+    // Only an IMDb or TVDB id: drop a TMDB id found by title search, so credits resolve the
+    // right one from these.
+    sets.push('tmdb_id = NULL');
+  }
+  if (changed) sets.push('credits_checked_at = NULL');
+
+  // Rows scanned before tags were understood still have them in the title.
+  for (const field of ['title', 'author']) {
+    if (hasProviderIdTag(item[field])) {
+      const clean = stripProviderIdTags(item[field]);
+      if (clean) { sets.push(`${field} = ?`); params.push(clean); }
+    }
+  }
+
+  await db.run(`UPDATE items SET ${sets.join(', ')} WHERE id = ?`, [...params, item.id]);
+  return !!changed;
+}
+
+/**
  * Series names from filenames vary by release group; names differing only in case or punctuation
  * are merged under the show folder's spelling, else the most common. Series settings and Kids Mode
  * entries move across. Applies to shows, anime and books.
  */
 export function seriesKey(name) {
-  return String(name).normalize('NFKD').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+  return stripProviderIdTags(name).normalize('NFKD').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
 }
 
 async function unifySeriesSpellings(db, libraryId) {
@@ -357,17 +412,23 @@ async function unifySeriesSpellings(db, libraryId) {
     const spellings = groups.get(key);
     const entry = spellings.get(r.series) || { count: 0, isFolder: false };
     entry.count++;
-    if (!entry.isFolder && r.path.split(path.sep).includes(r.series)) entry.isFolder = true;
+    // A folder's id tag ({tvdb-81189}) isn't part of its name.
+    if (!entry.isFolder && r.path.split(path.sep).some((part) => part === r.series || stripProviderIdTags(part) === r.series)) entry.isFolder = true;
     spellings.set(r.series, entry);
   }
 
   for (const [key, spellings] of groups) {
-    if (spellings.size < 2) continue;
+    const tagged = [...spellings.keys()].some((name) => hasProviderIdTag(name));
+    if (spellings.size < 2 && !tagged) continue;
     const mediaType = key.slice(0, key.indexOf(':'));
     // Between equally common book spellings the longer is the fuller name ("The First Law").
-    const [canonical] = [...spellings.entries()].sort(([a, x], [b, y]) =>
+    const [best] = [...spellings.entries()].sort(([a, x], [b, y]) =>
+      (hasProviderIdTag(a) - hasProviderIdTag(b)) ||
       (y.isFolder - x.isFolder) || (y.count - x.count) || (mediaType === 'book' ? b.length - a.length : 0) || a.localeCompare(b))[0];
+    // Names taken from a tagged folder by an older scan lose the tag.
+    const canonical = stripProviderIdTags(best) || best;
     const others = [...spellings.keys()].filter((name) => name !== canonical);
+    if (!others.length) continue;
 
     await db.run('BEGIN TRANSACTION');
     try {
@@ -508,7 +569,7 @@ async function isLegacyFrame(item) {
  */
 async function backfillArtwork(db, library) {
   const items = await db.all(
-    'SELECT id, path, title, series, media_type, duration, cover_path, cover_source, extra_type FROM items WHERE library_id = ?',
+    'SELECT id, path, title, series, media_type, duration, cover_path, cover_source, extra_type, tmdb_id FROM items WHERE library_id = ?',
     [library.id]
   );
 
@@ -556,7 +617,8 @@ async function backfillArtwork(db, library) {
         title: parsed.cleanTitle || item.title,
         series: item.series,
         mediaType: item.media_type,
-        year: parsed.year
+        year: parsed.year,
+        tmdbId: item.tmdb_id
       });
       if (coverPath) coverSource = 'tmdb';
     }

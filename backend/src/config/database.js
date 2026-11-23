@@ -272,6 +272,9 @@ async function initSchema(db) {
     // offloaded_at: kept as history by an admin; hidden, but its page shows greyed.
     'offloaded_at DATETIME',
     'tmdb_id TEXT', 'credits_json TEXT', 'credits_checked_at DATETIME',
+    // imdb_id / tvdb_id: read from folder-name tags and .nfo files at scan time, like tmdb_id
+    // when the files carry one. file_ids: what the disk last said (services/providerIds.js).
+    'imdb_id TEXT', 'tvdb_id TEXT', 'file_ids TEXT',
     // Books: ISBN-13 and language (BCP 47). book_meta_version: BOOK_META_VERSION last read
     // with; older ones are re-read once to fill empty fields.
     'isbn TEXT', 'language TEXT', 'book_meta_version INTEGER'
@@ -283,6 +286,7 @@ async function initSchema(db) {
   await db.exec(`
     CREATE INDEX IF NOT EXISTS idx_items_koreader_hash ON items(koreader_hash);
     CREATE INDEX IF NOT EXISTS idx_items_koreader_name_hash ON items(koreader_name_hash);
+    CREATE INDEX IF NOT EXISTS idx_items_tmdb_id ON items(tmdb_id);
     CREATE TABLE IF NOT EXISTS kosync_progress (
       user_id TEXT NOT NULL,
       document TEXT NOT NULL,
