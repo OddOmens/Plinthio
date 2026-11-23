@@ -348,6 +348,12 @@ Codes marked *app* are raised by the web app itself rather than returned by the 
 
 **What to do:** Refresh the Requests page.
 
+### P507: Could not connect to Seerr
+
+*HTTP 502.* Accepted requests are set to be sent to a Seerr server, and Plinthio could not use it: the address did not answer, what answered was not Seerr, or Seerr refused the API key.
+
+**What to do:** Check the address and API key under Admin → Features → Requests. The address must be one the Plinthio server itself can reach: inside Docker, `localhost` is the Plinthio container, not the machine it runs on.
+
 ## Watch parties
 
 ### P600: Watch parties are turned off

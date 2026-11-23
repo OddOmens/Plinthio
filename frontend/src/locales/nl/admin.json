@@ -209,6 +209,34 @@
         "label": "Watchparty's",
         "desc": "Een knop Samen kijken bij films en afleveringen: kijk synchroon vanaf verschillende plekken, met chat. Inhoudslimieten gelden nog steeds voor iedereen in een watchparty. Vrienden buitenshuis moeten deze server kunnen bereiken (zie Netwerk). Uitzetten beëindigt lopende watchparty's."
       }
+    },
+    "requests": {
+      "title": "Verzoeken",
+      "desc": "Geaccepteerde verzoeken voor films en series kunnen worden doorgegeven aan een Seerr-server, zodat niemand ze daar met de hand hoeft toe te voegen.",
+      "badge": {
+        "on": "Verstuurt",
+        "off": "Uit",
+        "notSet": "Niet ingesteld"
+      },
+      "address": "Seerr-adres",
+      "apiKey": "API-sleutel",
+      "apiKeySaved": "Opgeslagen. Typ een nieuwe om hem te vervangen",
+      "save": "Opslaan en controleren",
+      "checking": "Controleren…",
+      "connected": "Verbonden met Seerr",
+      "connectedVersion": "Verbonden met Seerr {version}",
+      "send": {
+        "label": "Geaccepteerde verzoeken naar Seerr sturen",
+        "desc": "Als een verzoek wordt geaccepteerd met “Accepteren · Wordt toegevoegd”, vraagt Plinthio die titel aan bij Seerr. Een serie wordt met alle seizoenen aangevraagd."
+      },
+      "hint": "De API-sleutel staat in de algemene instellingen van Seerr. Gebruik een adres dat de Plinthio-server zelf kan bereiken. Alleen films, series en anime die op TMDB zijn gevonden worden verstuurd; boeken, manga en luisterboeken blijven in deze lijst.",
+      "errors": {
+        "invalid_url": "Vul het adres in als http:// of https:// gevolgd door de server en de poort.",
+        "key_required": "Vul de API-sleutel opnieuw in: het adres is veranderd.",
+        "unreachable": "Er kwam geen antwoord van dat adres.",
+        "not_seerr": "Dat adres antwoordde, maar niet als Seerr.",
+        "unauthorized": "Seerr weigerde de API-sleutel."
+      }
     }
   },
   "kids": {

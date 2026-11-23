@@ -138,6 +138,23 @@
               <span v-if="req.response_note" class="text-foreground/90">{{ req.response_note }}</span>
             </p>
 
+            <!-- Where an accepted request was passed on to, for reviewers. -->
+            <p v-if="scope === 'all' && (req.forward_state || req.can_forward)" class="text-xs flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span v-if="req.forward_state === 'sent'" class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><Forward class="w-3.5 h-3.5" /> {{ $t('requests.forward.sent') }}</span>
+              <span v-else-if="req.forward_state === 'exists'" class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><Forward class="w-3.5 h-3.5" /> {{ $t('requests.forward.exists') }}</span>
+              <span v-else-if="req.forward_state === 'failed'" class="text-destructive flex items-center gap-1">
+                <TriangleAlert class="w-3.5 h-3.5" /> {{ forwardFailure(req) }}
+              </span>
+              <button
+                v-if="req.can_forward"
+                @click="forward(req)"
+                :disabled="updating.has(req.id)"
+                class="h-7 px-2 rounded-lg text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-1 transition disabled:opacity-40"
+              >
+                <Forward class="w-3.5 h-3.5" /> {{ req.forward_state === 'failed' ? $t('requests.forward.again') : $t('requests.forward.send') }}
+              </button>
+            </p>
+
             <!-- Review actions -->
             <div v-if="scope === 'all'" class="flex flex-col gap-2 mt-1">
               <input
@@ -189,7 +206,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, Send, Inbox, ImageOff, Trash2, X, Clock, CheckCircle2, PackageCheck, Ban } from '@lucide/vue';
+import { ArrowLeft, Send, Inbox, ImageOff, Trash2, X, Clock, CheckCircle2, PackageCheck, Ban, Forward, TriangleAlert } from '@lucide/vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { useDialogStore } from '../stores/dialog';
@@ -330,6 +347,27 @@ async function setStatus(req, status) {
     if (statusFilter.value && statusFilter.value !== status) {
       requests.value = requests.value.filter((r) => r.id !== req.id);
     }
+  } catch (err) {
+    error.value = err.response?.data?.error || t('requests.errors.update');
+  } finally {
+    withUpdating(req.id, false);
+  }
+}
+
+// Why sending an accepted request on failed, in the reader's language, with the other
+// server's own words after it when it gave some.
+function forwardFailure(req) {
+  const key = `requests.forward.reasons.${req.forward_reason}`;
+  const reason = te(key) ? t(key) : t('requests.forward.reasons.failed');
+  return req.forward_detail && req.forward_reason !== 'unreachable' ? `${reason} (${req.forward_detail})` : reason;
+}
+
+async function forward(req) {
+  withUpdating(req.id, true);
+  error.value = '';
+  try {
+    const res = await api.post(`/requests/${req.id}/forward`);
+    Object.assign(req, res.data.request);
   } catch (err) {
     error.value = err.response?.data?.error || t('requests.errors.update');
   } finally {

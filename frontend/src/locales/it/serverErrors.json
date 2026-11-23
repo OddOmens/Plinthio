@@ -324,6 +324,12 @@
       "meaning": "La richiesta è stata eliminata o non è mai esistita.",
       "fix": "Aggiorna la pagina Richieste."
     },
+    "P507": {
+      "title": "Impossibile connettersi a Seerr",
+      "message": "Impossibile connettersi a Seerr",
+      "meaning": "Le richieste accettate sono impostate per essere inviate a un server Seerr e Plinthio non è riuscito a usarlo: l'indirizzo non ha risposto, a rispondere non era Seerr, oppure Seerr ha rifiutato la chiave API.",
+      "fix": "Controlla indirizzo e chiave API in Amministrazione → Funzioni → Richieste. L'indirizzo deve essere raggiungibile dal server Plinthio stesso: dentro Docker, `localhost` è il container di Plinthio, non la macchina su cui gira."
+    },
     "P600": {
       "title": "Le watch party sono disattivate",
       "message": "Le watch party sono disattivate su questo server",

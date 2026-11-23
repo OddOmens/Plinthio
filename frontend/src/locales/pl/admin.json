@@ -209,6 +209,34 @@
         "label": "Wspólne seanse",
         "desc": "Przycisk Oglądaj razem przy filmach i odcinkach: oglądanie w synchronizacji z różnych miejsc, z czatem. Limity treści nadal obowiązują wszystkich uczestników. Znajomi poza domem muszą mieć dostęp do tego serwera (zob. Sieć). Wyłączenie kończy trwające wspólne seanse."
       }
+    },
+    "requests": {
+      "title": "Prośby",
+      "desc": "Przyjęte prośby o filmy i seriale można przekazywać do serwera Seerr, żeby nikt nie musiał dodawać ich tam ręcznie.",
+      "badge": {
+        "on": "Wysyłanie",
+        "off": "Wyłączone",
+        "notSet": "Nie skonfigurowano"
+      },
+      "address": "Adres Seerr",
+      "apiKey": "Klucz API",
+      "apiKeySaved": "Zapisany. Wpisz nowy, aby go zastąpić",
+      "save": "Zapisz i sprawdź",
+      "checking": "Sprawdzanie…",
+      "connected": "Połączono z Seerr",
+      "connectedVersion": "Połączono z Seerr {version}",
+      "send": {
+        "label": "Wysyłaj przyjęte prośby do Seerr",
+        "desc": "Gdy prośba zostaje przyjęta jako „Przyjmij · Czeka na dodanie”, Plinthio prosi Seerr o ten tytuł. Serial jest zamawiany ze wszystkimi sezonami."
+      },
+      "hint": "Klucz API znajdziesz w ogólnych ustawieniach Seerr. Użyj adresu, do którego dotrze sam serwer Plinthio. Wysyłane są tylko filmy, seriale i anime znalezione w TMDB; książki, manga i audiobooki zostają w tej kolejce.",
+      "errors": {
+        "invalid_url": "Wpisz adres jako http:// lub https://, a po nim serwer i port.",
+        "key_required": "Wpisz klucz API ponownie: adres się zmienił.",
+        "unreachable": "Pod tym adresem nic nie odpowiedziało.",
+        "not_seerr": "Ten adres odpowiedział, ale nie jako Seerr.",
+        "unauthorized": "Seerr odrzucił klucz API."
+      }
     }
   },
   "kids": {

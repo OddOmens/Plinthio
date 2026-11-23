@@ -209,6 +209,34 @@
         "label": "Watch parties",
         "desc": "A Watch Together button on movies and episodes: watch in sync from different places, with chat. Content limits still apply to everyone in a party. Friends away from home need to be able to reach this server (see Network). Turning it off ends any party in progress."
       }
+    },
+    "requests": {
+      "title": "Requests",
+      "desc": "Accepted requests for movies and shows can be passed on to a Seerr server, so nobody has to add them there by hand.",
+      "badge": {
+        "on": "Sending",
+        "off": "Off",
+        "notSet": "Not set up"
+      },
+      "address": "Seerr address",
+      "apiKey": "API key",
+      "apiKeySaved": "Saved. Type a new one to replace it",
+      "save": "Save and check",
+      "checking": "Checking…",
+      "connected": "Connected to Seerr",
+      "connectedVersion": "Connected to Seerr {version}",
+      "send": {
+        "label": "Send accepted requests to Seerr",
+        "desc": "When a request is accepted as “Accept · Pending add”, Plinthio asks Seerr for that title. A show is asked for with all its seasons."
+      },
+      "hint": "The API key is in Seerr's general settings. Use an address the Plinthio server itself can reach. Only movies, shows and anime found on TMDB are sent; books, manga and audiobooks stay in this queue.",
+      "errors": {
+        "invalid_url": "Enter the address as http:// or https:// followed by the server and port.",
+        "key_required": "Enter the API key again: the address changed.",
+        "unreachable": "Nothing answered at that address.",
+        "not_seerr": "That address answered, but not as Seerr.",
+        "unauthorized": "Seerr refused the API key."
+      }
     }
   },
   "kids": {

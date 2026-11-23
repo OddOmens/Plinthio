@@ -52,5 +52,17 @@
     },
     "noResults": "没有找到“{query}”的结果。",
     "failed": "搜索失败，请稍后重试。"
+  },
+  "forward": {
+    "sent": "已发送到 Seerr",
+    "exists": "Seerr 中已存在",
+    "send": "发送到 Seerr",
+    "again": "重新发送",
+    "reasons": {
+      "unreachable": "无法连接到 Seerr",
+      "unauthorized": "Seerr 拒绝了 API 密钥",
+      "refused": "Seerr 不接受该请求",
+      "failed": "Seerr 未能接受该请求"
+    }
   }
 }

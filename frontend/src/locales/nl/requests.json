@@ -52,5 +52,17 @@
     },
     "noResults": "Geen resultaten voor ‘{query}’.",
     "failed": "Zoeken mislukt. Probeer het zo opnieuw."
+  },
+  "forward": {
+    "sent": "Naar Seerr gestuurd",
+    "exists": "Staat al in Seerr",
+    "send": "Naar Seerr sturen",
+    "again": "Opnieuw sturen",
+    "reasons": {
+      "unreachable": "Seerr was niet bereikbaar",
+      "unauthorized": "Seerr weigerde de API-sleutel",
+      "refused": "Seerr nam het verzoek niet aan",
+      "failed": "Seerr kon het verzoek niet aannemen"
+    }
   }
 }

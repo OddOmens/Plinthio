@@ -70,6 +70,31 @@ collection's missing films.
 - Requesters can withdraw a request while it's pending.
 - The user menu shows how many requests are waiting for review.
 
+### Sending accepted requests to Seerr
+
+If you run a [Seerr](https://github.com/seerr-team/seerr) server, Plinthio can pass accepted
+requests on to it, so nobody has to add the title there by hand. Plinthio only tells Seerr
+that the title was approved. It never searches for or downloads anything itself.
+
+**Set it up** in **Admin → Features → Requests**: the Seerr address (for example
+`http://seerr:5055`) and its API key, found in Seerr's general settings. Plinthio checks
+both before saving. The key is stored on the server and never shown again.
+
+- **When it sends:** when an admin or editor presses **Accept · Pending add**. Rejecting, or
+  **Accept · Added** (it's already in the library), sends nothing.
+- **What it sends:** the title's TMDB id. A show is requested with all its seasons. The
+  request is made by the account the API key belongs to, so with the Seerr owner's key it
+  is approved there straight away.
+- **What stays in Plinthio:** books, manga and audiobooks, and any title found somewhere
+  other than TMDB (TVmaze, AniList). They're handled in the review queue as before.
+- **In the review queue:** each request shows **Sent to Seerr**, **Already in Seerr**, or why
+  it couldn't be sent, with **Send again**. A failure never undoes the accept. Requests
+  accepted before Seerr was set up get a **Send to Seerr** button.
+- **The address** must be one the Plinthio server itself can reach. Inside Docker,
+  `localhost` is the Plinthio container, so use the Seerr container's name on a shared
+  network, or the machine's own address.
+- Marking a request **Added** is still done by hand once the title is in the library.
+
 ## Ratings
 
 - **Your stars:** give any title 1–5 stars from its page. On a series page you rate one

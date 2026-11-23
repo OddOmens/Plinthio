@@ -209,6 +209,34 @@
         "label": "Watch party",
         "desc": "Un pulsante Guarda insieme su film ed episodi: guardate in sincronia da posti diversi, con la chat. I limiti sui contenuti valgono comunque per tutti i partecipanti. Gli amici fuori casa devono poter raggiungere questo server (vedi Rete). Disattivarle termina le watch party in corso."
       }
+    },
+    "requests": {
+      "title": "Richieste",
+      "desc": "Le richieste accettate di film e serie TV possono essere passate a un server Seerr, così nessuno deve aggiungerle lì a mano.",
+      "badge": {
+        "on": "Invio attivo",
+        "off": "Disattivato",
+        "notSet": "Non configurato"
+      },
+      "address": "Indirizzo di Seerr",
+      "apiKey": "Chiave API",
+      "apiKeySaved": "Salvata. Scrivine una nuova per sostituirla",
+      "save": "Salva e verifica",
+      "checking": "Verifica…",
+      "connected": "Connesso a Seerr",
+      "connectedVersion": "Connesso a Seerr {version}",
+      "send": {
+        "label": "Invia a Seerr le richieste accettate",
+        "desc": "Quando una richiesta viene accettata come “Accetta · Da aggiungere”, Plinthio chiede quel titolo a Seerr. Una serie viene chiesta con tutte le stagioni."
+      },
+      "hint": "La chiave API è nelle impostazioni generali di Seerr. Usa un indirizzo che il server Plinthio stesso possa raggiungere. Vengono inviati solo film, serie TV e anime trovati su TMDB; libri, manga e audiolibri restano in questa coda.",
+      "errors": {
+        "invalid_url": "Scrivi l'indirizzo come http:// o https:// seguito da server e porta.",
+        "key_required": "Scrivi di nuovo la chiave API: l'indirizzo è cambiato.",
+        "unreachable": "Nessuna risposta a quell'indirizzo.",
+        "not_seerr": "Quell'indirizzo ha risposto, ma non come Seerr.",
+        "unauthorized": "Seerr ha rifiutato la chiave API."
+      }
     }
   },
   "kids": {

@@ -324,6 +324,12 @@
       "meaning": "La solicitud se eliminó o nunca existió.",
       "fix": "Actualiza la página Solicitudes."
     },
+    "P507": {
+      "title": "No se pudo conectar con Seerr",
+      "message": "No se pudo conectar con Seerr",
+      "meaning": "Las solicitudes aceptadas están configuradas para enviarse a un servidor Seerr y Plinthio no pudo usarlo: la dirección no respondió, lo que respondió no era Seerr o Seerr rechazó la clave de API.",
+      "fix": "Revisa la dirección y la clave de API en Administración → Funciones → Solicitudes. La dirección debe ser una a la que llegue el propio servidor de Plinthio: dentro de Docker, `localhost` es el contenedor de Plinthio, no la máquina donde se ejecuta."
+    },
     "P600": {
       "title": "Las watch parties están desactivadas",
       "message": "Las watch parties están desactivadas en este servidor",

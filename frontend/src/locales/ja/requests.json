@@ -52,5 +52,17 @@
     },
     "noResults": "「{query}」の検索結果はありません。",
     "failed": "検索に失敗しました。しばらくしてからもう一度お試しください。"
+  },
+  "forward": {
+    "sent": "Seerr に送信済み",
+    "exists": "すでに Seerr にあります",
+    "send": "Seerr に送る",
+    "again": "もう一度送る",
+    "reasons": {
+      "unreachable": "Seerr に接続できませんでした",
+      "unauthorized": "Seerr が APIキーを拒否しました",
+      "refused": "Seerr がリクエストを受け付けませんでした",
+      "failed": "Seerr がリクエストを受け取れませんでした"
+    }
   }
 }

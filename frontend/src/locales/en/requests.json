@@ -52,5 +52,17 @@
     },
     "noResults": "No results for “{query}”.",
     "failed": "Search failed. Try again in a moment."
+  },
+  "forward": {
+    "sent": "Sent to Seerr",
+    "exists": "Already in Seerr",
+    "send": "Send to Seerr",
+    "again": "Send again",
+    "reasons": {
+      "unreachable": "Couldn't reach Seerr",
+      "unauthorized": "Seerr refused the API key",
+      "refused": "Seerr wouldn't take the request",
+      "failed": "Seerr couldn't take the request"
+    }
   }
 }

@@ -324,6 +324,12 @@
       "meaning": "Prośba została usunięta albo nigdy nie istniała.",
       "fix": "Odśwież stronę Prośby."
     },
+    "P507": {
+      "title": "Nie udało się połączyć z Seerr",
+      "message": "Nie udało się połączyć z Seerr",
+      "meaning": "Przyjęte prośby mają być wysyłane do serwera Seerr, a Plinthio nie mogło z niego skorzystać: adres nie odpowiedział, odpowiedziało coś innego niż Seerr albo Seerr odrzucił klucz API.",
+      "fix": "Sprawdź adres i klucz API w Administracja → Funkcje → Prośby. Adres musi być osiągalny dla samego serwera Plinthio: w Dockerze `localhost` to kontener Plinthio, a nie komputer, na którym działa."
+    },
     "P600": {
       "title": "Wspólne seanse są wyłączone",
       "message": "Wspólne seanse są wyłączone na tym serwerze",

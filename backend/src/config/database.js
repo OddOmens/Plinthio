@@ -470,6 +470,13 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_requests_status ON media_requests(status, created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_requests_external ON media_requests(source, external_id);
   `);
+  // Where an accepted request was passed on to (services/seerr.js) and how that went:
+  // forward_state 'sent' | 'exists' | 'failed', forward_reason says why it failed,
+  // forward_ref is the other side's own id for it.
+  await addColumns(db, 'media_requests', [
+    'forward_target TEXT', 'forward_state TEXT', 'forward_reason TEXT', 'forward_detail TEXT',
+    'forward_ref TEXT', 'forwarded_at DATETIME'
+  ]);
 
   // Intro/credits markers for skip buttons. No item FK (see user_progress).
   await db.exec(`

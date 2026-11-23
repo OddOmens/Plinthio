@@ -324,6 +324,12 @@
       "meaning": "Het verzoek is verwijderd of heeft nooit bestaan.",
       "fix": "Vernieuw de pagina Verzoeken."
     },
+    "P507": {
+      "title": "Kon geen verbinding maken met Seerr",
+      "message": "Kon geen verbinding maken met Seerr",
+      "meaning": "Geaccepteerde verzoeken worden naar een Seerr-server gestuurd, en Plinthio kon die niet gebruiken: het adres antwoordde niet, wat antwoordde was geen Seerr, of Seerr weigerde de API-sleutel.",
+      "fix": "Controleer het adres en de API-sleutel onder Admin → Functies → Verzoeken. Het adres moet bereikbaar zijn voor de Plinthio-server zelf: binnen Docker is `localhost` de Plinthio-container, niet de machine waarop die draait."
+    },
     "P600": {
       "title": "Watchparty's staan uit",
       "message": "Watchparty's staan uit op deze server",

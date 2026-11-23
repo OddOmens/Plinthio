@@ -74,6 +74,7 @@ button. Sections are listed in [Administration](administration.md).
 | Features | **Shelf views** | all on | Whether **Disk folders** and **Custom folders** are offered to everyone. Alphabetical and Creator are always there |
 | Features | **Ratings** | all on | Personal stars, the server average, TMDB's world score. A switched-off rating isn't sent by the API either |
 | Features | **Show missing films in collections** | on | A collection also lists the films the server doesn't have, greyed out with a Request button. They never appear on the shelf |
+| Features | **Requests: send to Seerr** | not set up | A Seerr server's address and API key. With it on, a request accepted as "Pending add" is sent there. See [Together → Requests](together.md#sending-accepted-requests-to-seerr) |
 | Features | **Watch parties** | off | Adds "Watch Together" to movies and episodes. Turning it off ends any party in progress |
 | Playback | **Hardware acceleration** | auto | Auto-detect, a specific method (VAAPI, QuickSync, NVENC), or the CPU only. **Test** runs a real encode |
 | Playback | **Converted copies** | 50 GB, Balanced quality, original size, admins only, originals kept | Background conversions of video some devices can't play (AV1, VP9, 10-bit H.264, older formats) to H.264: a size limit, the quality (Smaller files, Balanced, High quality), a largest size (original, 1080p, 720p), who may ask for one, converting a whole library, and optionally replacing the originals. See [Converted copies](administration.md#converted-copies) |

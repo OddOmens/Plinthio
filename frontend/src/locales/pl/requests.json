@@ -52,5 +52,17 @@
     },
     "noResults": "Brak wyników dla „{query}”.",
     "failed": "Wyszukiwanie nie powiodło się. Spróbuj ponownie za chwilę."
+  },
+  "forward": {
+    "sent": "Wysłano do Seerr",
+    "exists": "Już jest w Seerr",
+    "send": "Wyślij do Seerr",
+    "again": "Wyślij ponownie",
+    "reasons": {
+      "unreachable": "Nie udało się połączyć z Seerr",
+      "unauthorized": "Seerr odrzucił klucz API",
+      "refused": "Seerr nie przyjął prośby",
+      "failed": "Seerr nie mógł przyjąć prośby"
+    }
   }
 }

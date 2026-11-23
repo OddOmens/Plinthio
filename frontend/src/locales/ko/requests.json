@@ -52,5 +52,17 @@
     },
     "noResults": "'{query}'에 대한 결과가 없어요.",
     "failed": "검색에 실패했어요. 잠시 후 다시 시도하세요."
+  },
+  "forward": {
+    "sent": "Seerr로 보냄",
+    "exists": "이미 Seerr에 있음",
+    "send": "Seerr로 보내기",
+    "again": "다시 보내기",
+    "reasons": {
+      "unreachable": "Seerr에 연결할 수 없었어요",
+      "unauthorized": "Seerr가 API 키를 거부했어요",
+      "refused": "Seerr가 요청을 받지 않았어요",
+      "failed": "Seerr가 요청을 받지 못했어요"
+    }
   }
 }
