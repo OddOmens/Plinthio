@@ -113,6 +113,17 @@
       "desc": "Das Regal, mit dem Plinthio startet.",
       "all": "Alle Medien"
     },
+    "homeRows": {
+      "title": "Reihen auf der Startseite",
+      "desc": "Die Reihen über deinem Regal auf der Startseite. Schalte aus, was du nicht brauchst, und bring den Rest in deine Reihenfolge.",
+      "moveUp": "{row} nach oben",
+      "moveDown": "{row} nach unten",
+      "rows": {
+        "live": { "label": "Live-TV-Favoriten", "desc": "Deine Lieblingssender und was gerade läuft." },
+        "watching": { "label": "Weiterschauen", "desc": "Filme und Folgen, die du angefangen hast." },
+        "reading": { "label": "Weiterlesen und Weiterhören", "desc": "Bücher, Manga und Hörbücher, die du angefangen hast." }
+      }
+    },
     "views": {
       "title": "Regalansichten",
       "desc": "Die Ansichten über deinem Regal. Jede zeigt eine Karte pro Reihe; Alphabetisch ist immer dabei.",

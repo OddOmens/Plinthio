@@ -28,6 +28,23 @@
     "textSize": {
       "title": "文字大小",
       "desc": "调整此设备上文字和控件的大小。每台设备各自保存自己的大小。"
+    },
+    "themeMode": {
+      "title": "浅色或深色",
+      "desc": "“跟随设备”会随设备的浅色或深色设置变化。"
+    },
+    "font": {
+      "title": "字体",
+      "desc": "此设备上整个 Plinthio 使用的字体。书籍的字体在阅读器中单独设置。"
+    },
+    "posterSize": {
+      "title": "海报大小",
+      "desc": "书架上海报和封面的大小。紧凑可在一行中显示更多。"
+    },
+    "motion": {
+      "title": "动效",
+      "label": "减弱动效",
+      "desc": "内容直接出现，不再滑动、淡入或缩放。如果设备已要求减弱动效，Plinthio 本来就会这样做。"
     }
   },
   "accents": {
@@ -95,5 +112,37 @@
     "default": "默认",
     "large": "大",
     "xlarge": "特大"
+  },
+  "device": {
+    "title": "此设备",
+    "desc": "以下设置保存在此设备上，这样手机、电脑和电视可以各自使用合适的外观。"
+  },
+  "themeModes": {
+    "system": "跟随设备",
+    "light": "浅色",
+    "dark": "深色"
+  },
+  "posterSizes": {
+    "compact": "紧凑",
+    "default": "默认",
+    "large": "大"
+  },
+  "fonts": {
+    "default": {
+      "label": "默认",
+      "desc": "设备自带的字体。"
+    },
+    "serif": {
+      "label": "衬线",
+      "desc": "书籍风格的字体。"
+    },
+    "legible": {
+      "label": "Atkinson Hyperlegible",
+      "desc": "字形不易混淆，适合低视力读者。"
+    },
+    "dyslexic": {
+      "label": "OpenDyslexic",
+      "desc": "底部加重的字形，部分阅读障碍读者觉得更易读。"
+    }
   }
 }

@@ -28,6 +28,23 @@
     "textSize": {
       "title": "Taille du texte",
       "desc": "Agrandit ou réduit le texte et les commandes sur cet appareil. Chaque appareil garde sa propre taille."
+    },
+    "themeMode": {
+      "title": "Clair ou sombre",
+      "desc": "« Comme l'appareil » suit le réglage clair ou sombre de votre appareil quand il change."
+    },
+    "font": {
+      "title": "Police",
+      "desc": "La police de tout Plinthio sur cet appareil. Les livres gardent la leur, réglée dans le lecteur."
+    },
+    "posterSize": {
+      "title": "Taille des affiches",
+      "desc": "La taille des affiches et des couvertures sur vos étagères. Compacte en montre plus par rangée."
+    },
+    "motion": {
+      "title": "Mouvement",
+      "label": "Réduire les animations",
+      "desc": "Les éléments apparaissent sans glisser, fondre ni zoomer. Plinthio le fait déjà quand votre appareil demande moins d'animations."
     }
   },
   "accents": {
@@ -95,5 +112,37 @@
     "default": "Par défaut",
     "large": "Grande",
     "xlarge": "Très grande"
+  },
+  "device": {
+    "title": "Cet appareil",
+    "desc": "Ces réglages restent sur cet appareil : votre téléphone, votre ordinateur et votre télé peuvent chacun avoir l'apparence qui leur convient."
+  },
+  "themeModes": {
+    "system": "Comme l'appareil",
+    "light": "Clair",
+    "dark": "Sombre"
+  },
+  "posterSizes": {
+    "compact": "Compacte",
+    "default": "Par défaut",
+    "large": "Grande"
+  },
+  "fonts": {
+    "default": {
+      "label": "Par défaut",
+      "desc": "La police de votre appareil."
+    },
+    "serif": {
+      "label": "Avec empattements",
+      "desc": "Une police de style livre."
+    },
+    "legible": {
+      "label": "Atkinson Hyperlegible",
+      "desc": "Des lettres difficiles à confondre. Adaptée à la basse vision."
+    },
+    "dyslexic": {
+      "label": "OpenDyslexic",
+      "desc": "Des lettres lestées vers le bas, que certaines personnes dyslexiques lisent plus facilement."
+    }
   }
 }

@@ -28,6 +28,23 @@
     "textSize": {
       "title": "Tamaño del texto",
       "desc": "Hace el texto y los controles más grandes o más pequeños en este dispositivo. Cada dispositivo guarda su propio tamaño."
+    },
+    "themeMode": {
+      "title": "Claro u oscuro",
+      "desc": "«Como el dispositivo» sigue el ajuste claro u oscuro de tu dispositivo cuando cambia."
+    },
+    "font": {
+      "title": "Tipo de letra",
+      "desc": "La letra de todo Plinthio en este dispositivo. Los libros conservan la suya, que se elige en el lector."
+    },
+    "posterSize": {
+      "title": "Tamaño de los pósteres",
+      "desc": "Cómo de grandes son los pósteres y las portadas en tus estanterías. Compacto muestra más por fila."
+    },
+    "motion": {
+      "title": "Movimiento",
+      "label": "Reducir el movimiento",
+      "desc": "Las cosas aparecen sin deslizarse, fundirse ni hacer zoom. Plinthio ya lo hace cuando tu dispositivo pide reducir el movimiento."
     }
   },
   "accents": {
@@ -95,5 +112,37 @@
     "default": "Predeterminado",
     "large": "Grande",
     "xlarge": "Muy grande"
+  },
+  "device": {
+    "title": "Este dispositivo",
+    "desc": "Esto se guarda en este dispositivo, para que tu teléfono, tu ordenador y tu tele se vean cada uno como mejor les va."
+  },
+  "themeModes": {
+    "system": "Como el dispositivo",
+    "light": "Claro",
+    "dark": "Oscuro"
+  },
+  "posterSizes": {
+    "compact": "Compacto",
+    "default": "Predeterminado",
+    "large": "Grande"
+  },
+  "fonts": {
+    "default": {
+      "label": "Predeterminada",
+      "desc": "La letra de tu dispositivo."
+    },
+    "serif": {
+      "label": "Con serifa",
+      "desc": "Una letra de estilo libro."
+    },
+    "legible": {
+      "label": "Atkinson Hyperlegible",
+      "desc": "Letras difíciles de confundir entre sí. Buena para baja visión."
+    },
+    "dyslexic": {
+      "label": "OpenDyslexic",
+      "desc": "Letras con más peso abajo que a algunas personas con dislexia les resultan más fáciles."
+    }
   }
 }

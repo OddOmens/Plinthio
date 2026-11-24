@@ -28,6 +28,23 @@
     "textSize": {
       "title": "Textgröße",
       "desc": "Macht Text und Bedienelemente auf diesem Gerät größer oder kleiner. Jedes Gerät merkt sich seine eigene Größe."
+    },
+    "themeMode": {
+      "title": "Hell oder dunkel",
+      "desc": "„Wie das Gerät“ folgt der Hell-/Dunkel-Einstellung deines Geräts, auch wenn sie wechselt."
+    },
+    "font": {
+      "title": "Schrift",
+      "desc": "Die Schrift in ganz Plinthio auf diesem Gerät. Bücher behalten ihre eigene Schrift, die du im Reader einstellst."
+    },
+    "posterSize": {
+      "title": "Postergröße",
+      "desc": "Wie groß Poster und Cover in deinen Regalen sind. Kompakt zeigt mehr in einer Reihe."
+    },
+    "motion": {
+      "title": "Bewegung",
+      "label": "Bewegung reduzieren",
+      "desc": "Dinge erscheinen einfach, statt zu gleiten, einzublenden oder zu zoomen. Plinthio macht das bereits, wenn dein Gerät reduzierte Bewegung verlangt."
     }
   },
   "accents": {
@@ -95,5 +112,37 @@
     "default": "Standard",
     "large": "Groß",
     "xlarge": "Sehr groß"
+  },
+  "device": {
+    "title": "Dieses Gerät",
+    "desc": "Diese Einstellungen bleiben auf diesem Gerät, damit Handy, Computer und Fernseher jeweils so aussehen können, wie es zu ihnen passt."
+  },
+  "themeModes": {
+    "system": "Wie das Gerät",
+    "light": "Hell",
+    "dark": "Dunkel"
+  },
+  "posterSizes": {
+    "compact": "Kompakt",
+    "default": "Standard",
+    "large": "Groß"
+  },
+  "fonts": {
+    "default": {
+      "label": "Standard",
+      "desc": "Die Schrift deines Geräts."
+    },
+    "serif": {
+      "label": "Serifen",
+      "desc": "Eine Schrift wie im Buch."
+    },
+    "legible": {
+      "label": "Atkinson Hyperlegible",
+      "desc": "Buchstaben, die sich schwer verwechseln lassen. Gut bei Sehschwäche."
+    },
+    "dyslexic": {
+      "label": "OpenDyslexic",
+      "desc": "Unten betonte Buchstaben, die manche Menschen mit Legasthenie leichter lesen."
+    }
   }
 }

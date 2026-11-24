@@ -167,6 +167,17 @@
       "desc": "Półka, na której otwiera się Plinthio.",
       "all": "Wszystkie media"
     },
+    "homeRows": {
+      "title": "Rzędy na stronie głównej",
+      "desc": "Rzędy nad twoją półką na stronie głównej. Wyłącz te, których nie chcesz, a resztę ułóż po swojemu.",
+      "moveUp": "Przenieś w górę: {row}",
+      "moveDown": "Przenieś w dół: {row}",
+      "rows": {
+        "live": { "label": "Ulubione z telewizji na żywo", "desc": "Twoje ulubione kanały i to, co teraz leci." },
+        "watching": { "label": "Oglądaj dalej", "desc": "Filmy i odcinki, które zaczęto oglądać." },
+        "reading": { "label": "Czytaj i słuchaj dalej", "desc": "Książki, mangi i audiobooki, które zaczęto." }
+      }
+    },
     "views": {
       "title": "Widoki półki",
       "desc": "Widoki nad twoją półką. Każdy pokazuje jedną kartę na serię; Alfabetycznie jest zawsze dostępne.",

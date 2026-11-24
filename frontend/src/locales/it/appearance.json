@@ -28,6 +28,23 @@
     "textSize": {
       "title": "Dimensione del testo",
       "desc": "Ingrandisce o rimpicciolisce testo e controlli su questo dispositivo. Ogni dispositivo mantiene la propria dimensione."
+    },
+    "themeMode": {
+      "title": "Chiaro o scuro",
+      "desc": "«Come il dispositivo» segue l'impostazione chiaro o scuro del tuo dispositivo quando cambia."
+    },
+    "font": {
+      "title": "Carattere",
+      "desc": "Il carattere di tutto Plinthio su questo dispositivo. I libri mantengono il proprio, scelto nel lettore."
+    },
+    "posterSize": {
+      "title": "Dimensione delle locandine",
+      "desc": "Quanto sono grandi locandine e copertine sui tuoi scaffali. Compatta ne mostra di più per riga."
+    },
+    "motion": {
+      "title": "Movimento",
+      "label": "Riduci il movimento",
+      "desc": "Gli elementi compaiono senza scorrere, sfumare o zoomare. Plinthio lo fa già quando il dispositivo chiede meno movimento."
     }
   },
   "accents": {
@@ -95,5 +112,37 @@
     "default": "Predefinita",
     "large": "Grande",
     "xlarge": "Molto grande"
+  },
+  "device": {
+    "title": "Questo dispositivo",
+    "desc": "Queste impostazioni restano su questo dispositivo, così telefono, computer e TV possono avere ciascuno l'aspetto più adatto."
+  },
+  "themeModes": {
+    "system": "Come il dispositivo",
+    "light": "Chiaro",
+    "dark": "Scuro"
+  },
+  "posterSizes": {
+    "compact": "Compatta",
+    "default": "Predefinita",
+    "large": "Grande"
+  },
+  "fonts": {
+    "default": {
+      "label": "Predefinito",
+      "desc": "Il carattere del tuo dispositivo."
+    },
+    "serif": {
+      "label": "Con grazie",
+      "desc": "Un carattere in stile libro."
+    },
+    "legible": {
+      "label": "Atkinson Hyperlegible",
+      "desc": "Lettere difficili da confondere. Adatto a chi ha la vista ridotta."
+    },
+    "dyslexic": {
+      "label": "OpenDyslexic",
+      "desc": "Lettere più pesanti in basso, che alcune persone con dislessia leggono più facilmente."
+    }
   }
 }

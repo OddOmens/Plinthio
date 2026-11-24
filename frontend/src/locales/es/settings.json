@@ -113,6 +113,17 @@
       "desc": "La estantería con la que se abre Plinthio.",
       "all": "Todos los medios"
     },
+    "homeRows": {
+      "title": "Filas de Inicio",
+      "desc": "Las filas que hay sobre tu estantería en Inicio. Desactiva las que no quieras y pon el resto en tu orden.",
+      "moveUp": "Subir {row}",
+      "moveDown": "Bajar {row}",
+      "rows": {
+        "live": { "label": "Favoritos de TV en directo", "desc": "Tus canales favoritos y lo que están emitiendo." },
+        "watching": { "label": "Seguir viendo", "desc": "Películas y episodios que has empezado." },
+        "reading": { "label": "Seguir leyendo y escuchando", "desc": "Libros, manga y audiolibros que has empezado." }
+      }
+    },
     "views": {
       "title": "Vistas de estantería",
       "desc": "Las vistas sobre tu estantería. Cada una muestra una tarjeta por serie; la alfabética siempre está.",

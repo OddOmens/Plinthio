@@ -98,11 +98,24 @@ and the pause screen beside its settings; hovering a choice shows it before you 
 - **Security:** change password, two-factor sign-in, and sign out of every device.
 - **Appearance:** when the admin allows it (Admin → Appearance), your own **accent colour**,
   **navigation** (top bar or sidebar), **page width** (full width, or contained at up to
-  1440px) and **video pause screen**. Light or dark mode is the sun/moon button in the top bar.
-  **Language** and **Text size** are always yours to set. Text size (Small, Default, Large,
-  Extra large) makes text and controls bigger or smaller together, and is kept on the device
-  rather than your account, so a phone and a computer can each have their own.
-- **Shelves:** which media types you see, the shelf you start on, and which shelf views you use.
+  1440px) and **video pause screen**. **Language** is always yours to set.
+- **Appearance → This device:** kept on the device rather than your account, so a phone, a
+  computer and a TV can each have their own, and never locked by the admin.
+  - **Light or dark:** Light, Dark, or **Match device**, which follows the device's own
+    setting as it changes. The sun/moon button in the user menu still switches between light
+    and dark.
+  - **Text size:** Small, Default, Large or Extra large. Text and controls get bigger or
+    smaller together.
+  - **Font:** Default (the device's own), Serif, Atkinson Hyperlegible (letters drawn to be
+    hard to mix up) or OpenDyslexic. The last two ship with Plinthio and are only downloaded
+    by a device that chooses them. Books keep their own font, set in the reader.
+  - **Poster size:** Compact, Default or Large: how many posters sit in a row on your
+    shelves. On a phone, Large is the same as Default (two in a row).
+  - **Reduce motion:** things appear instead of sliding, fading or zooming. Plinthio already
+    does this when the device itself asks for reduced motion.
+- **Shelves:** which media types you see, the shelf you start on, which shelf views you use,
+  and the **Home rows**: switch Continue watching, Continue reading and listening, and the
+  Live TV favourites row on or off, and put them in your own order.
 - **Hidden titles:** titles you've hidden from your own shelves, with a way to bring them back.
 - **Activity:** what you've read, watched and listened to, and your recent sign-ins.
 - **Apps & API keys:** the **reading apps** setup guide, and keys for apps and scripts.

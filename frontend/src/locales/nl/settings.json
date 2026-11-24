@@ -167,6 +167,17 @@
       "desc": "De plank waarop Plinthio opent.",
       "all": "Alle media"
     },
+    "homeRows": {
+      "title": "Rijen op Home",
+      "desc": "De rijen boven je plank op Home. Zet uit wat je niet wilt en zet de rest in jouw volgorde.",
+      "moveUp": "{row} omhoog",
+      "moveDown": "{row} omlaag",
+      "rows": {
+        "live": { "label": "Favorieten van live-tv", "desc": "Je favoriete zenders en wat er nu op is." },
+        "watching": { "label": "Verder kijken", "desc": "Films en afleveringen waaraan je bent begonnen." },
+        "reading": { "label": "Verder lezen en luisteren", "desc": "Boeken, manga en luisterboeken waaraan je bent begonnen." }
+      }
+    },
     "views": {
       "title": "Plankweergaven",
       "desc": "De weergaven boven je plank. Elke weergave toont één kaart per serie; Alfabetisch is er altijd.",

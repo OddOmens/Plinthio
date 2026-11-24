@@ -22,16 +22,6 @@
           grid-class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-2.5"
         />
       </SettingsCard>
-      <!-- Also the person's own, and kept on the device: a phone and a TV want different sizes. -->
-      <SettingsCard :title="$t('appearance.cards.textSize.title')" :description="$t('appearance.cards.textSize.desc')">
-        <OptionTiles
-          :label="$t('appearance.cards.textSize.title')"
-          :options="TEXT_SIZE_OPTIONS"
-          :model-value="themeStore.textSize"
-          @update:model-value="themeStore.setTextSize($event)"
-          grid-class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-2.5"
-        />
-      </SettingsCard>
       <SettingsCard
         v-for="card in appearanceCards"
         :key="card.field"
@@ -56,6 +46,56 @@
           :grid-class="card.grid"
         />
       </SettingsCard>
+
+      <!-- From here on: kept on the device, not the account. A phone, a computer and a TV
+           each want their own, and the admin can't lock them. -->
+      <div class="pt-2">
+        <h3 class="text-sm font-semibold text-foreground">{{ $t('appearance.device.title') }}</h3>
+        <p class="text-xs text-muted-foreground mt-0.5">{{ $t('appearance.device.desc') }}</p>
+      </div>
+      <SettingsCard :title="$t('appearance.cards.themeMode.title')" :description="$t('appearance.cards.themeMode.desc')">
+        <OptionTiles
+          :label="$t('appearance.cards.themeMode.title')"
+          :options="THEME_MODE_OPTIONS"
+          :model-value="themeStore.mode"
+          @update:model-value="themeStore.setMode($event)"
+          grid-class="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3 gap-2.5"
+        />
+      </SettingsCard>
+      <SettingsCard :title="$t('appearance.cards.textSize.title')" :description="$t('appearance.cards.textSize.desc')">
+        <OptionTiles
+          :label="$t('appearance.cards.textSize.title')"
+          :options="TEXT_SIZE_OPTIONS"
+          :model-value="themeStore.textSize"
+          @update:model-value="themeStore.setTextSize($event)"
+          grid-class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-2.5"
+        />
+      </SettingsCard>
+      <SettingsCard :title="$t('appearance.cards.font.title')" :description="$t('appearance.cards.font.desc')">
+        <OptionTiles
+          :label="$t('appearance.cards.font.title')"
+          :options="FONT_OPTIONS"
+          :model-value="themeStore.font"
+          @update:model-value="themeStore.setFont($event)"
+        />
+      </SettingsCard>
+      <SettingsCard :title="$t('appearance.cards.posterSize.title')" :description="$t('appearance.cards.posterSize.desc')">
+        <OptionTiles
+          :label="$t('appearance.cards.posterSize.title')"
+          :options="POSTER_SIZE_OPTIONS"
+          :model-value="themeStore.posterSize"
+          @update:model-value="themeStore.setPosterSize($event)"
+          grid-class="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3 gap-2.5"
+        />
+      </SettingsCard>
+      <SettingsCard :title="$t('appearance.cards.motion.title')">
+        <ToggleRow
+          :label="$t('appearance.cards.motion.label')"
+          :description="$t('appearance.cards.motion.desc')"
+          :model-value="themeStore.reduceMotion"
+          @update:model-value="themeStore.setReduceMotion($event)"
+        />
+      </SettingsCard>
     </div>
     <div class="order-1 xl:order-2 xl:sticky xl:top-[84px] min-w-0">
       <CustomizationPreview v-model:view="previewView" :settings="previewSettings" :only="['shelf', 'pause']" />
@@ -69,13 +109,17 @@ import { Lock } from '@lucide/vue';
 import { useAuthStore } from '../../../stores/auth';
 import { useCustomizationStore } from '../../../stores/customization';
 import { useSaveStatus } from '../../../composables/useSaveStatus';
-import { ACCENT_OPTIONS, LAYOUT_OPTIONS, PAGE_WIDTH_OPTIONS, PAUSE_SCREEN_OPTIONS, TEXT_SIZE_OPTIONS } from '../../../constants/appearance';
+import {
+  ACCENT_OPTIONS, LAYOUT_OPTIONS, PAGE_WIDTH_OPTIONS, PAUSE_SCREEN_OPTIONS, TEXT_SIZE_OPTIONS,
+  THEME_MODE_OPTIONS, POSTER_SIZE_OPTIONS, FONT_OPTIONS
+} from '../../../constants/appearance';
 import { useThemeStore } from '../../../stores/theme';
 import OptionTiles from '../../OptionTiles.vue';
 import CustomizationPreview from '../../CustomizationPreview.vue';
 import SectionHeader from '../SectionHeader.vue';
 import SettingsCard from '../SettingsCard.vue';
 import SaveStatus from '../SaveStatus.vue';
+import ToggleRow from '../ToggleRow.vue';
 import { t, LANGUAGES, setLanguage, languageChoice as currentLanguageChoice } from '../../../i18n';
 
 const authStore = useAuthStore();

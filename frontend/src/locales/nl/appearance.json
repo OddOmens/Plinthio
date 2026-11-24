@@ -28,6 +28,23 @@
     "textSize": {
       "title": "Tekstgrootte",
       "desc": "Maakt tekst en knoppen groter of kleiner op dit apparaat. Elk apparaat onthoudt zijn eigen grootte."
+    },
+    "themeMode": {
+      "title": "Licht of donker",
+      "desc": "‘Zoals het apparaat’ volgt de licht- of donkerinstelling van je apparaat als die verandert."
+    },
+    "font": {
+      "title": "Lettertype",
+      "desc": "Het lettertype in heel Plinthio op dit apparaat. Boeken houden hun eigen lettertype, dat je in de reader kiest."
+    },
+    "posterSize": {
+      "title": "Postergrootte",
+      "desc": "Hoe groot posters en covers op je planken zijn. Compact toont er meer per rij."
+    },
+    "motion": {
+      "title": "Beweging",
+      "label": "Beweging verminderen",
+      "desc": "Dingen verschijnen gewoon in plaats van te schuiven, vervagen of zoomen. Plinthio doet dit al als je apparaat om minder beweging vraagt."
     }
   },
   "accents": {
@@ -95,5 +112,37 @@
     "default": "Standaard",
     "large": "Groot",
     "xlarge": "Extra groot"
+  },
+  "device": {
+    "title": "Dit apparaat",
+    "desc": "Deze instellingen blijven op dit apparaat, zodat je telefoon, computer en tv er elk uit kunnen zien zoals het past."
+  },
+  "themeModes": {
+    "system": "Zoals het apparaat",
+    "light": "Licht",
+    "dark": "Donker"
+  },
+  "posterSizes": {
+    "compact": "Compact",
+    "default": "Standaard",
+    "large": "Groot"
+  },
+  "fonts": {
+    "default": {
+      "label": "Standaard",
+      "desc": "Het lettertype van je apparaat."
+    },
+    "serif": {
+      "label": "Schreef",
+      "desc": "Een lettertype zoals in een boek."
+    },
+    "legible": {
+      "label": "Atkinson Hyperlegible",
+      "desc": "Letters die je moeilijk door elkaar haalt. Goed bij slechtziendheid."
+    },
+    "dyslexic": {
+      "label": "OpenDyslexic",
+      "desc": "Letters met een zwaardere onderkant, die sommige lezers met dyslexie makkelijker vinden."
+    }
   }
 }

@@ -1,6 +1,6 @@
 // Look-and-feel options shared by Admin and Settings → Appearance. `swatch`, `diagram` and
 // `icon` are how OptionTiles draws each. Labels are getters so they follow the language.
-import { StretchHorizontal, RectangleHorizontal } from '@lucide/vue';
+import { StretchHorizontal, RectangleHorizontal, MonitorSmartphone, Sun, Moon, Grid3x3, LayoutGrid, Grid2x2 } from '@lucide/vue';
 import { t } from '../i18n';
 
 const accent = (id, swatch) => ({ id, swatch, get label() { return t(`appearance.accents.${id}`); } });
@@ -59,4 +59,28 @@ export const TEXT_SIZE_OPTIONS = [
   textSize('default', 'text-sm'),
   textSize('large', 'text-base'),
   textSize('xlarge', 'text-lg')
+];
+
+// Light or dark; 'system' follows the device.
+const simple = (group, id, extra = {}) => ({ id, ...extra, get label() { return t(`appearance.${group}.${id}`); } });
+export const THEME_MODE_OPTIONS = [
+  simple('themeModes', 'system', { icon: MonitorSmartphone }),
+  simple('themeModes', 'light', { icon: Sun }),
+  simple('themeModes', 'dark', { icon: Moon })
+];
+
+// Most posters in a row to fewest.
+export const POSTER_SIZE_OPTIONS = [
+  simple('posterSizes', 'compact', { icon: Grid3x3 }),
+  simple('posterSizes', 'default', { icon: LayoutGrid }),
+  simple('posterSizes', 'large', { icon: Grid2x2 })
+];
+
+// `fontFamily` draws each tile's "Aa" in its own lettering where the device already has it;
+// the two that ship with the app show in it once chosen.
+export const FONT_OPTIONS = [
+  option('fonts', 'default', { sample: 'text-base' }),
+  option('fonts', 'serif', { sample: 'text-base', fontFamily: 'ui-serif, Georgia, serif' }),
+  option('fonts', 'legible', { sample: 'text-base', fontFamily: '"Atkinson Hyperlegible Next Variable", sans-serif' }),
+  option('fonts', 'dyslexic', { sample: 'text-base', fontFamily: '"OpenDyslexic", sans-serif' })
 ];

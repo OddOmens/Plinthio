@@ -113,6 +113,17 @@
       "desc": "L'étagère sur laquelle Plinthio s'ouvre.",
       "all": "Tous les médias"
     },
+    "homeRows": {
+      "title": "Rangées de l'accueil",
+      "desc": "Les rangées au-dessus de votre étagère sur l'accueil. Désactivez celles dont vous ne voulez pas et mettez les autres dans votre ordre.",
+      "moveUp": "Monter {row}",
+      "moveDown": "Descendre {row}",
+      "rows": {
+        "live": { "label": "Favoris de la TV en direct", "desc": "Vos chaînes favorites et ce qu'elles diffusent." },
+        "watching": { "label": "Reprendre le visionnage", "desc": "Les films et épisodes que vous avez commencés." },
+        "reading": { "label": "Reprendre la lecture et l'écoute", "desc": "Les livres, mangas et livres audio que vous avez commencés." }
+      }
+    },
     "views": {
       "title": "Vues des étagères",
       "desc": "Les vues au-dessus de votre étagère. Chacune affiche une carte par série ; la vue alphabétique est toujours présente.",
