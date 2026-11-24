@@ -22,6 +22,16 @@
           grid-class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-2.5"
         />
       </SettingsCard>
+      <!-- Also the person's own, and kept on the device: a phone and a TV want different sizes. -->
+      <SettingsCard :title="$t('appearance.cards.textSize.title')" :description="$t('appearance.cards.textSize.desc')">
+        <OptionTiles
+          :label="$t('appearance.cards.textSize.title')"
+          :options="TEXT_SIZE_OPTIONS"
+          :model-value="themeStore.textSize"
+          @update:model-value="themeStore.setTextSize($event)"
+          grid-class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-2.5"
+        />
+      </SettingsCard>
       <SettingsCard
         v-for="card in appearanceCards"
         :key="card.field"
@@ -59,7 +69,8 @@ import { Lock } from '@lucide/vue';
 import { useAuthStore } from '../../../stores/auth';
 import { useCustomizationStore } from '../../../stores/customization';
 import { useSaveStatus } from '../../../composables/useSaveStatus';
-import { ACCENT_OPTIONS, LAYOUT_OPTIONS, PAGE_WIDTH_OPTIONS, PAUSE_SCREEN_OPTIONS } from '../../../constants/appearance';
+import { ACCENT_OPTIONS, LAYOUT_OPTIONS, PAGE_WIDTH_OPTIONS, PAUSE_SCREEN_OPTIONS, TEXT_SIZE_OPTIONS } from '../../../constants/appearance';
+import { useThemeStore } from '../../../stores/theme';
 import OptionTiles from '../../OptionTiles.vue';
 import CustomizationPreview from '../../CustomizationPreview.vue';
 import SectionHeader from '../SectionHeader.vue';
@@ -69,6 +80,7 @@ import { t, LANGUAGES, setLanguage, languageChoice as currentLanguageChoice } fr
 
 const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
+const themeStore = useThemeStore();
 const save = useSaveStatus();
 
 // Each setting is the person's own when the admin allows it, otherwise the server's (shown,

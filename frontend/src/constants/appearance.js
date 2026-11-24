@@ -51,3 +51,12 @@ export const PAUSE_SCREEN_OPTIONS = [
 export function optionLabel(options, id) {
   return options.find((o) => o.id === id)?.label || id;
 }
+
+// Smallest to largest. `sample` is the tile's own "Aa", drawn at that size.
+const textSize = (id, sample) => ({ id, sample, get label() { return t(`appearance.textSizes.${id}`); } });
+export const TEXT_SIZE_OPTIONS = [
+  textSize('small', 'text-xs'),
+  textSize('default', 'text-sm'),
+  textSize('large', 'text-base'),
+  textSize('xlarge', 'text-lg')
+];

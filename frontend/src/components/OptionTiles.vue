@@ -35,6 +35,9 @@
 
       <component v-else-if="opt.icon" :is="opt.icon" class="w-5 h-5 mt-0.5 text-muted-foreground flex-shrink-0" />
 
+      <!-- Text sample ("Aa") at the size the option stands for. -->
+      <span v-else-if="opt.sample" aria-hidden="true" class="w-7 h-5 flex items-center justify-center font-semibold text-muted-foreground flex-shrink-0 leading-none" :class="opt.sample">Aa</span>
+
       <div class="min-w-0">
         <span class="text-xs text-foreground block" :class="swatches ? '' : 'font-semibold'">{{ opt.label }}</span>
         <span v-if="opt.desc && !swatches" class="text-[12px] text-muted-foreground">{{ opt.desc }}</span>
@@ -45,7 +48,7 @@
 
 <script setup>
 const props = defineProps({
-  // [{ id, label, desc?, swatch?, diagram?, icon? }]
+  // [{ id, label, desc?, swatch?, diagram?, icon?, sample? }]
   options: { type: Array, required: true },
   modelValue: { type: String, default: null },
   label: { type: String, default: '' },

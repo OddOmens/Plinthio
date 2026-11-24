@@ -24,6 +24,10 @@
     "pauseScreen": {
       "title": "Schermata di pausa",
       "desc": "Cosa appare dopo un paio di secondi di pausa su un film o un episodio."
+    },
+    "textSize": {
+      "title": "Dimensione del testo",
+      "desc": "Ingrandisce o rimpicciolisce testo e controlli su questo dispositivo. Ogni dispositivo mantiene la propria dimensione."
     }
   },
   "accents": {
@@ -85,5 +89,11 @@
   "defaultLanguage": {
     "title": "Lingua predefinita",
     "desc": "Per chi non ne ha scelta una. Automatica segue il browser di ciascuno; chiunque può sceglierne un'altra nelle Impostazioni."
+  },
+  "textSizes": {
+    "small": "Piccola",
+    "default": "Predefinita",
+    "large": "Grande",
+    "xlarge": "Molto grande"
   }
 }

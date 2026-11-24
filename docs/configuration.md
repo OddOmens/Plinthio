@@ -99,6 +99,9 @@ and the pause screen beside its settings; hovering a choice shows it before you 
 - **Appearance:** when the admin allows it (Admin → Appearance), your own **accent colour**,
   **navigation** (top bar or sidebar), **page width** (full width, or contained at up to
   1440px) and **video pause screen**. Light or dark mode is the sun/moon button in the top bar.
+  **Language** and **Text size** are always yours to set. Text size (Small, Default, Large,
+  Extra large) makes text and controls bigger or smaller together, and is kept on the device
+  rather than your account, so a phone and a computer can each have their own.
 - **Shelves:** which media types you see, the shelf you start on, and which shelf views you use.
 - **Hidden titles:** titles you've hidden from your own shelves, with a way to bring them back.
 - **Activity:** what you've read, watched and listened to, and your recent sign-ins.

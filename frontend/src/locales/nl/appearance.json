@@ -24,6 +24,10 @@
     "pauseScreen": {
       "title": "Pauzescherm",
       "desc": "Wat er verschijnt als een film of aflevering een paar seconden gepauzeerd is."
+    },
+    "textSize": {
+      "title": "Tekstgrootte",
+      "desc": "Maakt tekst en knoppen groter of kleiner op dit apparaat. Elk apparaat onthoudt zijn eigen grootte."
     }
   },
   "accents": {
@@ -85,5 +89,11 @@
   "defaultLanguage": {
     "title": "Standaardtaal",
     "desc": "Voor iedereen die zelf geen taal heeft gekozen. Automatisch volgt de browser van elke persoon; iedereen kan in Instellingen een andere kiezen."
+  },
+  "textSizes": {
+    "small": "Klein",
+    "default": "Standaard",
+    "large": "Groot",
+    "xlarge": "Extra groot"
   }
 }

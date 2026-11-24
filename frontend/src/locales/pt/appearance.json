@@ -24,6 +24,10 @@
     "pauseScreen": {
       "title": "Tela de pausa",
       "desc": "O que aparece depois de alguns segundos com um filme ou episódio pausado."
+    },
+    "textSize": {
+      "title": "Tamanho do texto",
+      "desc": "Deixa o texto e os controles maiores ou menores neste dispositivo. Cada dispositivo guarda o próprio tamanho."
     }
   },
   "accents": {
@@ -85,5 +89,11 @@
   "defaultLanguage": {
     "title": "Idioma padrão",
     "desc": "Para quem ainda não escolheu o seu. Automático segue o navegador de cada pessoa; qualquer um pode escolher outro em Configurações."
+  },
+  "textSizes": {
+    "small": "Pequeno",
+    "default": "Padrão",
+    "large": "Grande",
+    "xlarge": "Extra grande"
   }
 }

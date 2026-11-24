@@ -24,6 +24,10 @@
     "pauseScreen": {
       "title": "Pause screen",
       "desc": "What appears after a couple of seconds paused on a movie or episode."
+    },
+    "textSize": {
+      "title": "Text size",
+      "desc": "Makes text and controls bigger or smaller on this device. Each device keeps its own size."
     }
   },
   "accents": {
@@ -85,5 +89,11 @@
   "defaultLanguage": {
     "title": "Default language",
     "desc": "For everyone who hasn't picked their own. Automatic follows each person's browser; people can always choose another in Settings."
+  },
+  "textSizes": {
+    "small": "Small",
+    "default": "Default",
+    "large": "Large",
+    "xlarge": "Extra large"
   }
 }

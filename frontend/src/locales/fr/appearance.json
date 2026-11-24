@@ -24,6 +24,10 @@
     "pauseScreen": {
       "title": "Écran de pause",
       "desc": "Ce qui s'affiche après quelques secondes de pause sur un film ou un épisode."
+    },
+    "textSize": {
+      "title": "Taille du texte",
+      "desc": "Agrandit ou réduit le texte et les commandes sur cet appareil. Chaque appareil garde sa propre taille."
     }
   },
   "accents": {
@@ -85,5 +89,11 @@
   "defaultLanguage": {
     "title": "Langue par défaut",
     "desc": "Pour toutes les personnes qui n'en ont pas choisi. Automatique suit le navigateur de chacun ; chacun peut en choisir une autre dans les Paramètres."
+  },
+  "textSizes": {
+    "small": "Petite",
+    "default": "Par défaut",
+    "large": "Grande",
+    "xlarge": "Très grande"
   }
 }

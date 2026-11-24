@@ -24,6 +24,10 @@
     "pauseScreen": {
       "title": "Ekran pauzy",
       "desc": "Co pojawia się po kilku sekundach pauzy w filmie lub odcinku."
+    },
+    "textSize": {
+      "title": "Rozmiar tekstu",
+      "desc": "Powiększa lub pomniejsza tekst i elementy sterujące na tym urządzeniu. Każde urządzenie zapamiętuje własny rozmiar."
     }
   },
   "accents": {
@@ -85,5 +89,11 @@
   "defaultLanguage": {
     "title": "Domyślny język",
     "desc": "Dla osób, które nie wybrały własnego. Automatycznie oznacza język przeglądarki danej osoby; każdy może wybrać inny w Ustawieniach."
+  },
+  "textSizes": {
+    "small": "Mały",
+    "default": "Domyślny",
+    "large": "Duży",
+    "xlarge": "Bardzo duży"
   }
 }
