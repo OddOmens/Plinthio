@@ -18,13 +18,14 @@
   "withdraw": "Withdraw",
   "status": {
     "pending": "Pending",
-    "accepted_pending": "Accepted · Pending add",
-    "accepted_added": "Accepted · Added",
+    "accepted_pending": "Approved",
+    "accepted_added": "Added",
     "rejected": "Rejected"
   },
   "actions": {
-    "acceptPending": "Accept · Pending add",
-    "acceptAdded": "Accept · Added",
+    "acceptPending": "Approve",
+    "approveSend": "Approve · Send to Seerr",
+    "acceptAdded": "Mark as added",
     "reject": "Reject",
     "backToPending": "Back to pending"
   },
@@ -66,7 +67,7 @@
     }
   },
   "auto": {
-    "accepted": "Accepted automatically",
+    "accepted": "Approved automatically",
     "added": "Marked as added when it arrived in the library"
   }
 }

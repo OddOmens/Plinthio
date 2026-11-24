@@ -18,13 +18,14 @@
   "withdraw": "撤回",
   "status": {
     "pending": "待处理",
-    "accepted_pending": "已接受 · 待添加",
-    "accepted_added": "已接受 · 已添加",
+    "accepted_pending": "已接受",
+    "accepted_added": "已添加",
     "rejected": "已拒绝"
   },
   "actions": {
-    "acceptPending": "接受 · 待添加",
-    "acceptAdded": "接受 · 已添加",
+    "acceptPending": "接受",
+    "approveSend": "接受 · 发送到 Seerr",
+    "acceptAdded": "标记为已添加",
     "reject": "拒绝",
     "backToPending": "退回待处理"
   },

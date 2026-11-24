@@ -34,10 +34,13 @@ function clipLine(value, max) {
 // Where a request was passed on to is the reviewers' business; requesters see its status.
 const FORWARD_FIELDS = ['forward_target', 'forward_state', 'forward_reason', 'forward_detail', 'forward_ref', 'forwarded_at'];
 
-// `can_forward`: accepted, a kind the other side takes, and not already there.
+// `will_forward`: approving it would pass it on (the review queue says so on the button).
+// `can_forward`: approved, a kind the other side takes, and not already there.
 function forReviewer(request, forwarding) {
+  const sendable = forwarding && canSendToSeerr(request) && !['sent', 'exists'].includes(request.forward_state);
   return {
     ...request,
+    will_forward: sendable && request.status !== 'accepted_pending',
     can_forward: forwarding && request.status === 'accepted_pending' && canSendToSeerr(request) &&
       !['sent', 'exists'].includes(request.forward_state)
   };

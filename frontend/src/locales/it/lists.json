@@ -46,8 +46,8 @@
   "requestHint": "Chiedi a un amministratore di aggiungerlo alla libreria",
   "requestStatus": {
     "pending": "In attesa",
-    "accepted_pending": "Accettata · Da aggiungere",
-    "accepted_added": "Accettata · Aggiunta",
+    "accepted_pending": "Accettata",
+    "accepted_added": "Aggiunta",
     "rejected": "Rifiutata"
   },
   "deleteDialog": {

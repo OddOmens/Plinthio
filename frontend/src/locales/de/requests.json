@@ -18,13 +18,14 @@
   "withdraw": "Zurückziehen",
   "status": {
     "pending": "Ausstehend",
-    "accepted_pending": "Angenommen · Wird hinzugefügt",
-    "accepted_added": "Angenommen · Hinzugefügt",
+    "accepted_pending": "Angenommen",
+    "accepted_added": "Hinzugefügt",
     "rejected": "Abgelehnt"
   },
   "actions": {
-    "acceptPending": "Annehmen · Wird hinzugefügt",
-    "acceptAdded": "Annehmen · Hinzugefügt",
+    "acceptPending": "Annehmen",
+    "approveSend": "Annehmen · An Seerr senden",
+    "acceptAdded": "Als hinzugefügt markieren",
     "reject": "Ablehnen",
     "backToPending": "Zurück auf ausstehend"
   },

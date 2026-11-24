@@ -46,8 +46,8 @@
   "requestHint": "Ask an admin to add this to the library",
   "requestStatus": {
     "pending": "Pending",
-    "accepted_pending": "Accepted · Pending add",
-    "accepted_added": "Accepted · Added",
+    "accepted_pending": "Approved",
+    "accepted_added": "Added",
     "rejected": "Rejected"
   },
   "deleteDialog": {

@@ -18,13 +18,14 @@
   "withdraw": "Wycofaj",
   "status": {
     "pending": "Oczekuje",
-    "accepted_pending": "Przyjęta · Czeka na dodanie",
-    "accepted_added": "Przyjęta · Dodano",
+    "accepted_pending": "Przyjęta",
+    "accepted_added": "Dodano",
     "rejected": "Odrzucona"
   },
   "actions": {
-    "acceptPending": "Przyjmij · Czeka na dodanie",
-    "acceptAdded": "Przyjmij · Dodano",
+    "acceptPending": "Przyjmij",
+    "approveSend": "Przyjmij · Wyślij do Seerr",
+    "acceptAdded": "Oznacz jako dodaną",
     "reject": "Odrzuć",
     "backToPending": "Przywróć do oczekujących"
   },

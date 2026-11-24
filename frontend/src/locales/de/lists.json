@@ -46,8 +46,8 @@
   "requestHint": "Einen Admin bitten, das zur Bibliothek hinzuzufügen",
   "requestStatus": {
     "pending": "Offen",
-    "accepted_pending": "Angenommen · Wird hinzugefügt",
-    "accepted_added": "Angenommen · Hinzugefügt",
+    "accepted_pending": "Angenommen",
+    "accepted_added": "Hinzugefügt",
     "rejected": "Abgelehnt"
   },
   "deleteDialog": {

@@ -18,13 +18,14 @@
   "withdraw": "Intrekken",
   "status": {
     "pending": "In afwachting",
-    "accepted_pending": "Geaccepteerd · Wordt toegevoegd",
-    "accepted_added": "Geaccepteerd · Toegevoegd",
+    "accepted_pending": "Geaccepteerd",
+    "accepted_added": "Toegevoegd",
     "rejected": "Afgewezen"
   },
   "actions": {
-    "acceptPending": "Accepteren · Wordt toegevoegd",
-    "acceptAdded": "Accepteren · Toegevoegd",
+    "acceptPending": "Accepteren",
+    "approveSend": "Accepteren · Naar Seerr sturen",
+    "acceptAdded": "Als toegevoegd markeren",
     "reject": "Afwijzen",
     "backToPending": "Terug naar in afwachting"
   },

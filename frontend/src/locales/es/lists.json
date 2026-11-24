@@ -46,8 +46,8 @@
   "requestHint": "Pide a un admin que lo añada a la biblioteca",
   "requestStatus": {
     "pending": "Pendiente",
-    "accepted_pending": "Aceptada · Pendiente de añadir",
-    "accepted_added": "Aceptada · Añadida",
+    "accepted_pending": "Aceptada",
+    "accepted_added": "Añadida",
     "rejected": "Rechazada"
   },
   "deleteDialog": {

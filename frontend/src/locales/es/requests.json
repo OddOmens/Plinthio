@@ -18,13 +18,14 @@
   "withdraw": "Retirar",
   "status": {
     "pending": "Pendiente",
-    "accepted_pending": "Aceptada · Pendiente de añadir",
-    "accepted_added": "Aceptada · Añadida",
+    "accepted_pending": "Aceptada",
+    "accepted_added": "Añadida",
     "rejected": "Rechazada"
   },
   "actions": {
-    "acceptPending": "Aceptar · Pendiente de añadir",
-    "acceptAdded": "Aceptar · Añadida",
+    "acceptPending": "Aceptar",
+    "approveSend": "Aceptar · Enviar a Seerr",
+    "acceptAdded": "Marcar como añadida",
     "reject": "Rechazar",
     "backToPending": "Volver a pendiente"
   },

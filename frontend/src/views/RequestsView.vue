@@ -180,7 +180,7 @@
                   :class="action.classes"
                 >
                   <component :is="action.icon" class="w-3.5 h-3.5" />
-                  {{ action.label }}
+                  {{ action.status === 'accepted_pending' && req.will_forward ? $t('requests.actions.approveSend') : action.label }}
                 </button>
                 <button
                   @click="removeRequest(req)"
