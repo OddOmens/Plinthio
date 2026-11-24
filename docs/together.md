@@ -103,7 +103,8 @@ library and marks a request **Accepted · Added** once its title is there. This 
 
 If you run a [Seerr](https://github.com/seerr-team/seerr) server, Plinthio can pass accepted
 requests on to it, so nobody has to add the title there by hand. Plinthio only tells Seerr
-that the title was approved. It never searches for or downloads anything itself.
+that the title was approved. It never searches for or downloads anything itself. Seerr is a
+separate project with its own maintainers; Plinthio isn't affiliated with it.
 
 **Set it up** in **Admin → Features → Requests**: the Seerr address (for example
 `http://seerr:5055`) and its API key, found in Seerr's general settings. Plinthio checks

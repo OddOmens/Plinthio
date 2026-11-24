@@ -285,8 +285,10 @@ html.reduce-motion *:not(.animate-spin):not(.animate-pulse)::after {
 }
 
 /* iOS zooms into any field under 16px and doesn't zoom back, so phone fields are 16px.
-   min-width: 0 lets a field shrink inside a flex row. */
+   min-width: 0 lets a field shrink inside a flex row. A tick box or radio button never
+   should: beside a long label it was squeezed to a sliver. */
 input, select, textarea { min-width: 0; }
+input[type="checkbox"], input[type="radio"] { min-width: auto; flex-shrink: 0; }
 
 /* A select with a translucent background gets a white option list from the browser, under
    white dark-theme text, so options carry solid theme colours. */

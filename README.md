@@ -238,7 +238,7 @@ Plinthio is open source under the [GNU Affero General Public License v3.0](LICEN
 - **If you share it:** anyone you give a copy to, modified or not, gets the complete source code under the same license.
 - **If you run a modified version for others** over a network (for example, as a hosted service), you must offer those users its complete source code under the same license, too.
 
-Copyright © Odd Omens LLC. Plinthio is distributed in the hope that it will be useful, but without any warranty; see the [license](LICENSE) for details. The libraries it uses keep their own licenses.
+Copyright © Odd Omens LLC. Plinthio is distributed in the hope that it will be useful, but without any warranty; see the [license](LICENSE) for details. The libraries it uses keep their own licenses, and the fonts bundled with it are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 Contributions are accepted under the same license; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
