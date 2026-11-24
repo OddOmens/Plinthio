@@ -9,6 +9,8 @@ the admin update banner. Add entries under **Unreleased** as you go.
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-11-24
+
 ### Added
 - **Subtitles can start switched on** (Admin → Playback, and Settings → Appearance). An admin sets whether videos start with subtitles and in which language: each person's own, or one for everyone. Each person can follow that, or choose Off or On with their own language, and their choice wins. Before, subtitles had to be switched on from the player's menu for every video. A video without subtitles in that language starts without them. See [Subtitles by default](docs/video.md#subtitles-by-default).
 - **Plinthio asks before an anime episode plays in a language you don't have set.** When an episode's audio isn't in your language and no subtitles are about to show, you choose to play it with subtitles, in your language if the file has that audio, or as it is. The answer is kept for the rest of the series on that device. Nothing is asked when the file doesn't say what language it's in.
