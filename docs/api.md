@@ -131,7 +131,7 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | --- | --- | --- |
 | `/collections…` | V | Custom folders and Lists: create, add library or outside titles, reorder, remove |
 | `GET /requests` · `POST /requests` · `DELETE /requests/:id` | V | Your requests. A new one comes back `accepted_pending` (with `auto_accepted: 1`) when the server accepts yours automatically, or `accepted_added` when the title is already in the library. `auto_added_at` is set on a request a library scan marked as added |
-| `GET /requests/pending-count` · `PATCH /requests/:id` | E | Review queue. With `?scope=all`, `GET /requests` also gives `forwarding` (`seerr` or `null`) and, on each request, `forward_state` (`sent`, `exists`, `failed`), `forward_reason`, `forward_detail`, `forward_ref` and `can_forward` |
+| `GET /requests/pending-count` · `PATCH /requests/:id` | E | Review queue. With `?scope=all`, `GET /requests` also gives `forwarding` (`seerr` or `null`) and, on each request, `forward_state` (`sent`, `exists`, `failed`), `forward_reason`, `forward_detail`, `forward_ref`, `can_forward` and `will_forward` (approving it would send it on) |
 | `POST /requests/:id/forward` | E | Send an accepted request to Seerr again (after a failure, or one accepted before Seerr was set up). P507 when no Seerr server is set up |
 | `GET /live/status` · `GET /live/channels?lineup=<id>\|favourites&group=&q=` · `GET /live/channels/:id` · `GET /live/guide?from=&hours=&offset=&limit=&lineup=` | V | Live TV (when enabled): channels with now/next and the line-ups you can see, one channel's programmes, the guide grid |
 | `POST/DELETE /live/favourites/:channelId` · `GET /live/now?limit=` · `POST /live/channels/:id/watched` · `GET /live/recent` · `GET /live/search?q=` · `GET /live/me/hidden` | V | Favourites, the Home "Live now" row, recently watched, channel and programme search, your personally hidden channels (hide them with `PATCH /users/preferences { liveTv: { hiddenChannels, hiddenGroups, showOnHome } }`) |
@@ -155,7 +155,7 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 
 | Route | Who | |
 | --- | --- | --- |
-| `GET /customization` · `PATCH` | public / A | Branding, theme, layout, ratings display, collections, parties, pause screen, opening sequence switches |
+| `GET /customization` · `PATCH` | public / A | Branding, theme, layout, ratings display, collections, parties, pause screen, opening sequence switches, and `subtitles: { on, language }` (whether subtitles start on, and in which language: `auto` for each person's own, or an ISO 639-1 code). A person's own choice is `preferences.subtitles = { mode: "on" \| "off", language }` |
 | `POST /customization/intro` · `DELETE` | A | Upload (multipart field `intro`) or remove the opening sequence clip |
 | `GET /media/intro` | V | The opening sequence clip (range requests; `?v=` is the upload version) |
 | `GET /settings/filters` · `PATCH` | V / A | Which shelf views are offered |

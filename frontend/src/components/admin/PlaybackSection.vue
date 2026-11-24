@@ -1,6 +1,30 @@
 <template>
   <SectionHeader :title="$t('admin.playback.title')" :description="$t('admin.playback.description')" />
 
+  <!-- Whether subtitles start switched on. Each person can choose their own in Settings. -->
+  <SettingsCard :title="$t('admin.playback.subtitles.title')" :description="$t('admin.playback.subtitles.desc')">
+    <template #actions><SaveStatus :status="subtitleSetting.status.value" :message="subtitleSetting.message.value" /></template>
+    <ToggleRow
+      :label="$t('admin.playback.subtitles.on.label')"
+      :description="$t('admin.playback.subtitles.on.desc')"
+      :model-value="store.subtitles.on"
+      @update:model-value="subtitleSetting.set({ subtitles: { on: $event } })"
+    />
+    <div v-if="store.subtitles.on" class="mt-3 pt-3 border-t border-border">
+      <label for="subtitle-language" class="field-label">{{ $t('admin.playback.subtitles.language') }}</label>
+      <select
+        id="subtitle-language"
+        :value="store.subtitles.language"
+        @change="subtitleSetting.set({ subtitles: { language: $event.target.value } })"
+        class="field w-full sm:w-72"
+      >
+        <option value="auto">{{ $t('admin.playback.subtitles.own') }}</option>
+        <option v-for="lang in subtitleLanguages" :key="lang.code" :value="lang.code">{{ lang.name }}</option>
+      </select>
+      <p class="field-hint">{{ $t('admin.playback.subtitles.languageHint') }}</p>
+    </div>
+  </SettingsCard>
+
   <SettingsCard :title="$t('admin.playback.hwaccel.title')" :description="$t('admin.playback.hwaccel.desc')">
     <template #actions><SaveStatus :status="save.status.value" :message="save.message.value" /></template>
     <div class="flex flex-col gap-4">
@@ -229,10 +253,16 @@ import SettingsCard from '../settings/SettingsCard.vue';
 import ToggleRow from '../settings/ToggleRow.vue';
 import SaveStatus from '../settings/SaveStatus.vue';
 import I18nT from '../../i18n/I18nT.vue';
-import { t, n } from '../../i18n';
+import { t, n, languageName } from '../../i18n';
+import { SUBTITLE_LANGUAGES } from '../../utils/languages';
 
 const store = useCustomizationStore();
 const dialog = useDialogStore();
+
+// ─── Subtitles by default ─────────────────────────────────────────────────
+const subtitleSetting = useServerSetting();
+// Named in the admin's own language.
+const subtitleLanguages = computed(() => SUBTITLE_LANGUAGES.map((code) => ({ code, name: languageName(code) })));
 
 // ─── Hardware acceleration ────────────────────────────────────────────────
 const save = useSaveStatus();

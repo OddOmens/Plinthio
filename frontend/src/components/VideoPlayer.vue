@@ -261,7 +261,7 @@
 
     <!-- Preparing spinner while ffmpeg warms up -->
     <div
-      v-if="preparing"
+      v-if="preparing && !languagePrompt"
       class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/70 pointer-events-none"
     >
       <Loader2 class="w-8 h-8 animate-spin text-white/80" />
@@ -319,6 +319,50 @@
       </div>
     </div>
 
+    <!-- Asked before an anime episode starts in a language that isn't the viewer's, with no
+         subtitles about to show. The stream isn't loaded until they answer. -->
+    <div
+      v-if="languagePrompt && !errorMessage"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="$t('player.video.language.title', { language: languagePrompt.audioName })"
+      class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-black/90 px-6 text-center"
+    >
+      <div class="w-12 h-12 rounded-xl bg-white/10 text-white flex items-center justify-center">
+        <Languages class="w-6 h-6" />
+      </div>
+      <div>
+        <h3 class="text-base font-semibold text-white">{{ $t('player.video.language.title', { language: languagePrompt.audioName }) }}</h3>
+        <p class="text-sm text-white/70 mt-1 max-w-md">
+          {{ languagePrompt.subs ? $t('player.video.language.subsOff') : $t('player.video.language.noSubs', { language: languagePrompt.mineName }) }}
+          {{ $t('player.video.language.remember') }}
+        </p>
+      </div>
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto max-w-xs sm:max-w-none">
+        <button
+          v-if="languagePrompt.subs"
+          @click="answerLanguagePrompt('subtitles')"
+          class="h-11 px-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold transition active:scale-95"
+        >
+          {{ languagePrompt.subsName ? $t('player.video.language.withSubtitlesIn', { language: languagePrompt.subsName }) : $t('player.video.language.withSubtitles') }}
+        </button>
+        <button
+          v-if="languagePrompt.dub"
+          @click="answerLanguagePrompt('dub')"
+          :class="['h-11 px-4 rounded-xl text-sm font-semibold transition active:scale-95', languagePrompt.subs ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-primary text-primary-foreground hover:bg-primary/90']"
+        >
+          {{ $t('player.video.language.inLanguage', { language: languagePrompt.mineName }) }}
+        </button>
+        <button
+          @click="answerLanguagePrompt('original')"
+          class="h-11 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition active:scale-95"
+        >
+          {{ $t('player.video.language.anyway') }}
+        </button>
+      </div>
+      <button @click="closePlayer" class="text-xs text-white/50 hover:text-white underline underline-offset-2">{{ $t('common.cancel') }}</button>
+    </div>
+
     <!-- Playback error -->
     <div
       v-if="errorMessage"
@@ -370,12 +414,13 @@ import RatingBar from './RatingBar.vue';
 import PauseScreen from './PauseScreen.vue';
 import { useAuthStore } from '../stores/auth';
 import { useCustomizationStore } from '../stores/customization';
-import { t } from '../i18n';
+import { t, locale, languageName } from '../i18n';
+import { languageCode, isLanguage } from '../utils/languages';
 import { formatClock } from '../utils/time';
 import { isVideo } from '../utils/mediaVocab';
 import {
   ArrowLeft, AlertCircle, Loader2, Play, Pause, Maximize,
-  Settings, Cast, MonitorSpeaker, RotateCcw, RotateCw
+  Settings, Cast, MonitorSpeaker, RotateCcw, RotateCw, Languages
 } from '@lucide/vue';
 
 const viewSession = useViewSession();
@@ -500,15 +545,21 @@ function menuItemClass(active) {
   ];
 }
 
+// "jpn" → "Japanese", in the viewer's language; a tag the list doesn't know shows as it is.
+function trackLanguage(track) {
+  const code = languageCode(track.language);
+  return code ? languageName(code) : track.language;
+}
+
 function audioLabel(track) {
-  const parts = [track.language || t('player.video.track', { number: track.index + 1 })];
+  const parts = [trackLanguage(track) || t('player.video.track', { number: track.index + 1 })];
   if (track.title) parts.push(track.title);
   if (track.channels > 2) parts.push(t('player.video.channels', { count: track.channels }));
   return parts.join(' · ');
 }
 
 function subtitleLabel(track) {
-  const parts = [track.language || t('player.video.track', { number: track.index + 1 })];
+  const parts = [trackLanguage(track) || t('player.video.track', { number: track.index + 1 })];
   if (track.title) parts.push(track.title);
   if (track.forced) parts.push(t('player.video.forced'));
   return parts.join(' · ');
@@ -522,11 +573,18 @@ function setQuality(index) {
   settingsOpen.value = false;
 }
 
+// The file played as it is always sounds its own default track, so choosing another one
+// means going through the server, which sends the chosen track.
+function chooseAudioTrack(index) {
+  selectedAudioTrack.value = index;
+  if (!isTranscoding.value) playbackMode.value = 'remux';
+}
+
 // Audio track selection changes which stream ffmpeg muxes, so it needs a new master
 // playlist — position is restored afterwards so the switch isn't disruptive.
 function setAudioTrack(index) {
   if (index === selectedAudioTrack.value) return;
-  selectedAudioTrack.value = index;
+  chooseAudioTrack(index);
   settingsOpen.value = false;
 
   const resumeAt = videoTime.value;
@@ -543,6 +601,109 @@ function setAudioTrack(index) {
 function setSubtitle(trackId) {
   selectedSubtitle.value = trackId;
   settingsOpen.value = false;
+}
+
+// ── Subtitles by default, and the language question ─────────────────────────────────────
+// Subtitles start on when the viewer (Settings → Appearance) or the server (Admin →
+// Playback) says so, in the language chosen there; 'auto' is the viewer's own.
+const myLanguage = computed(() => locale.value);
+const subtitlePreference = computed(() => useCustomizationStore().effectiveSubtitles(useAuthStore().user));
+const subtitleLanguage = computed(() => (subtitlePreference.value.language === 'auto' ? myLanguage.value : subtitlePreference.value.language));
+
+// The full subtitles in a language (not a forced track, which only covers signs and songs).
+// A track that doesn't say its language stands in when none says the right one: a lone
+// subtitle file beside a video is usually in the household's language.
+function subtitlesIn(code) {
+  const full = subtitles.value.filter((track) => !track.forced);
+  return full.find((track) => isLanguage(track, code)) || full.find((track) => !languageCode(track.language)) || null;
+}
+
+// The track that sounds when nothing is chosen: the first one through the server, the
+// file's own default when it plays as it is.
+function soundingTrack() {
+  const tracks = audioTracks.value;
+  if (isTranscoding.value) return tracks[selectedAudioTrack.value] || tracks[0] || null;
+  return tracks.find((track) => track.isDefault) || tracks[0] || null;
+}
+
+// What was answered for a series is kept on the device, so the rest of it plays the same
+// way without asking again.
+const LANGUAGE_ANSWERS = 'plinthio_language_answers';
+const seriesKey = () => `${props.item.library_id || ''}:${props.item.series || props.item.id}`;
+
+function rememberedAnswer() {
+  try {
+    return JSON.parse(localStorage.getItem(LANGUAGE_ANSWERS) || '{}')[seriesKey()] || null;
+  } catch {
+    return null;
+  }
+}
+
+function rememberAnswer(choice) {
+  try {
+    const all = JSON.parse(localStorage.getItem(LANGUAGE_ANSWERS) || '{}');
+    delete all[seriesKey()];
+    all[seriesKey()] = choice;
+    // Newest last; the oldest series fall off.
+    const kept = Object.fromEntries(Object.entries(all).slice(-200));
+    localStorage.setItem(LANGUAGE_ANSWERS, JSON.stringify(kept));
+  } catch {
+    // Storage unavailable: it just asks again next episode.
+  }
+}
+
+const languagePrompt = ref(null);
+
+// For anime: is this about to play in a language the viewer doesn't have set, with no
+// subtitles showing? Null when there's nothing to ask (including when the file doesn't say
+// what language it's in). Not asked in a watch party, where everyone starts together.
+function languageQuestion() {
+  if (props.partyMode || props.item.media_type !== 'anime') return null;
+  const audio = languageCode(soundingTrack()?.language);
+  if (!audio || audio === myLanguage.value) return null;
+  const showing = subtitles.value.find((track) => track.id === selectedSubtitle.value);
+  if (showing && !showing.forced) return null;
+
+  const subs = subtitlesIn(subtitleLanguage.value) || (subtitleLanguage.value !== myLanguage.value ? subtitlesIn(myLanguage.value) : null);
+  const subsCode = subs && languageCode(subs.language);
+  return {
+    audioName: languageName(audio),
+    mineName: languageName(myLanguage.value),
+    dub: audioTracks.value.find((track) => isLanguage(track, myLanguage.value)) || null,
+    subs,
+    subsName: subsCode ? languageName(subsCode) : ''
+  };
+}
+
+function applyLanguageChoice(choice, question) {
+  if (choice === 'subtitles' && question.subs) selectedSubtitle.value = question.subs.id;
+  if (choice === 'dub' && question.dub) chooseAudioTrack(question.dub.index);
+}
+
+function answerLanguagePrompt(choice) {
+  applyLanguageChoice(choice, languagePrompt.value);
+  rememberAnswer(choice);
+  languagePrompt.value = null;
+  beginPlayback();
+}
+
+// Called once the tracks are known, before the stream is attached. Returns true when the
+// viewer has to answer first.
+function chooseLanguages() {
+  if (subtitlePreference.value.on && !props.partyMode) {
+    const wanted = subtitlesIn(subtitleLanguage.value);
+    if (wanted) selectedSubtitle.value = wanted.id;
+  }
+  const question = languageQuestion();
+  if (!question) return false;
+  const past = rememberedAnswer();
+  const usable = past === 'original' || (past === 'subtitles' && question.subs) || (past === 'dub' && question.dub);
+  if (usable) {
+    applyLanguageChoice(past, question);
+    return false;
+  }
+  languagePrompt.value = question;
+  return true;
 }
 
 // ── Skip back / forward ─────────────────────────────────────────────────────────────────
@@ -1072,6 +1233,7 @@ function retryPlayback() {
 }
 
 async function start() {
+  let waitForAnswer = false;
   try {
     // Tell the server whether this browser decodes HEVC, so HEVC files can direct-play.
     const clientHevc = (
@@ -1096,22 +1258,30 @@ async function start() {
     // Default to a forced track if the file marks one (typically foreign-language signs).
     const forced = subtitles.value.find((track) => track.forced);
     if (forced) selectedSubtitle.value = forced.id;
+    waitForAnswer = chooseLanguages();
   } catch (err) {
     // Probe unavailable — just try a direct stream; onError still falls back to HLS.
     console.warn('Playback info unavailable, attempting direct stream:', err.message);
   } finally {
     modeResolved.value = true;
-    requestAnimationFrame(() => {
-      attachStream();
-      if (!props.held) videoEl.value?.play?.().catch(() => {});
-    });
+    // With a language question up, the stream starts when it's answered.
+    if (!waitForAnswer) beginPlayback();
   }
+}
+
+function beginPlayback() {
+  requestAnimationFrame(() => {
+    attachStream();
+    if (!props.held) videoEl.value?.play?.().catch(() => {});
+  });
 }
 
 function onKeyDown(e) {
   const video = videoEl.value;
   if (!video || props.held) return;
   if (e.key === 'Escape') { closePlayer(); return; }
+  // Nothing is loaded yet while the language question is up.
+  if (languagePrompt.value) return;
   if (locked.value && ['ArrowRight', 'ArrowLeft'].includes(e.key)) { e.preventDefault(); revealControls(); return; }
   if (e.key === ' ') { e.preventDefault(); video.paused ? video.play() : video.pause(); }
   else if (e.key === 'ArrowRight') { e.preventDefault(); seekTo(virtualTime.value + skipForward.value); }

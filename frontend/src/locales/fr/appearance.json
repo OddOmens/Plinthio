@@ -144,5 +144,27 @@
       "label": "OpenDyslexic",
       "desc": "Des lettres lestées vers le bas, que certaines personnes dyslexiques lisent plus facilement."
     }
+  },
+  "subtitles": {
+    "title": "Sous-titres",
+    "desc": "Si les sous-titres sont activés au démarrage d'une vidéo. Vous pouvez toujours les changer dans le lecteur.",
+    "language": "Langue des sous-titres",
+    "mine": "Ma langue",
+    "hint": "Une vidéo sans sous-titres dans cette langue démarre sans. Avant qu'un épisode d'anime ne soit lu dans une autre langue sans sous-titres, Plinthio vous demande comment vous voulez le regarder.",
+    "modes": {
+      "server": {
+        "label": "Réglage du serveur",
+        "descOn": "Actuellement : activés ({language}).",
+        "descOff": "Actuellement : désactivés."
+      },
+      "off": {
+        "label": "Désactivés",
+        "desc": "Les vidéos démarrent sans sous-titres."
+      },
+      "on": {
+        "label": "Activés",
+        "desc": "Les vidéos démarrent avec les sous-titres quand elles en ont."
+      }
+    }
   }
 }

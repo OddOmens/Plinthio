@@ -7,6 +7,16 @@
     "minutesShort": "{count}분"
   },
   "video": {
+    "language": {
+      "title": "이 에피소드의 음성: {language}",
+      "subsOff": "자막이 꺼져 있어요.",
+      "noSubs": "{language} 자막이 없어요.",
+      "remember": "답변은 이 기기에서 이 시리즈의 나머지에도 적용돼요.",
+      "withSubtitlesIn": "{language} 자막으로 재생",
+      "withSubtitles": "자막과 함께 재생",
+      "inLanguage": "{language} 음성으로 재생",
+      "anyway": "그대로 재생"
+    },
     "backToShelf": "라이브러리로 돌아가기",
     "castToTv": "TV로 전송",
     "playbackSettings": "재생 설정",

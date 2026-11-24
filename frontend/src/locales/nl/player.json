@@ -7,6 +7,16 @@
     "minutesShort": "{count}m"
   },
   "video": {
+    "language": {
+      "title": "Deze aflevering is in het {language}",
+      "subsOff": "Ondertiteling staat uit.",
+      "noSubs": "Er is geen ondertiteling in het {language}.",
+      "remember": "Je antwoord geldt op dit apparaat voor de rest van deze serie.",
+      "withSubtitlesIn": "Afspelen met ondertiteling in het {language}",
+      "withSubtitles": "Afspelen met ondertiteling",
+      "inLanguage": "Afspelen in het {language}",
+      "anyway": "Toch afspelen"
+    },
     "backToShelf": "Terug naar plank",
     "castToTv": "Casten naar tv",
     "playbackSettings": "Afspeelinstellingen",

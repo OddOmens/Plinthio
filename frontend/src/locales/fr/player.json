@@ -7,6 +7,16 @@
     "minutesShort": "{count} min"
   },
   "video": {
+    "language": {
+      "title": "Cet épisode est en {language}",
+      "subsOff": "Les sous-titres sont désactivés.",
+      "noSubs": "Il n'a pas de sous-titres en {language}.",
+      "remember": "Votre réponse est gardée pour le reste de cette série sur cet appareil.",
+      "withSubtitlesIn": "Lire avec les sous-titres en {language}",
+      "withSubtitles": "Lire avec les sous-titres",
+      "inLanguage": "Lire en {language}",
+      "anyway": "Lire quand même"
+    },
     "backToShelf": "Retour à la bibliothèque",
     "castToTv": "Caster sur la TV",
     "playbackSettings": "Paramètres de lecture",

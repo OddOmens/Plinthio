@@ -212,7 +212,7 @@
     },
     "requests": {
       "title": "Requests",
-      "desc": "Accepted requests for movies and shows can be passed on to a Seerr server, so nobody has to add them there by hand.",
+      "desc": "Approved requests for movies and shows can be passed on to a Seerr server, so nobody has to add them there by hand.",
       "badge": {
         "on": "Sending",
         "off": "Off",
@@ -226,8 +226,8 @@
       "connected": "Connected to Seerr",
       "connectedVersion": "Connected to Seerr {version}",
       "send": {
-        "label": "Send accepted requests to Seerr",
-        "desc": "When a request is accepted as “Accept · Pending add”, Plinthio asks Seerr for that title. A show is asked for with all its seasons."
+        "label": "Send approved requests to Seerr",
+        "desc": "When a request is approved, Plinthio asks Seerr for that title. A show is asked for with all its seasons."
       },
       "hint": "The API key is in Seerr's general settings. Use an address the Plinthio server itself can reach. Only movies, shows and anime found on TMDB are sent; books, manga and audiobooks stay in this queue.",
       "errors": {
@@ -239,21 +239,21 @@
       },
       "seerrTitle": "Seerr",
       "autoAccept": {
-        "desc": "Who has their requests accepted as they make them, without waiting for a reviewer.",
-        "label": "Accept automatically",
+        "desc": "Who has their requests approved as they make them, without waiting for a reviewer.",
+        "label": "Approve automatically",
         "off": {
           "label": "Nobody",
           "desc": "Every request waits in the review queue."
         },
         "staff": {
           "label": "Admins and editors",
-          "desc": "Their own requests are accepted as they make them."
+          "desc": "Their own requests are approved as they make them."
         },
         "all": {
           "label": "Everyone",
-          "desc": "Every request is accepted as it's made. Accounts with Kids Mode or an age rating limit still wait."
+          "desc": "Every request is approved as it's made. Accounts with Kids Mode or an age rating limit still wait."
         },
-        "hint": "An accepted movie or show goes on to Seerr when that is switched on below. A request is marked as added by itself once a library scan finds the title."
+        "hint": "An approved movie or show goes on to Seerr when that is switched on below. A request is marked as added by itself once a library scan finds the title."
       }
     }
   },
@@ -989,6 +989,17 @@
       "removeTitle": "Remove your clip",
       "removeMessage": "Remove your clip and go back to Plinthio's built-in opening sequence?",
       "couldNotRemove": "Could not remove it"
+    },
+    "subtitles": {
+      "title": "Subtitles",
+      "desc": "Whether subtitles are switched on when a video starts. Each person can choose their own in Settings → Appearance.",
+      "on": {
+        "label": "Subtitles on by default",
+        "desc": "A video starts with subtitles showing when it has them in the chosen language. Anyone can still switch them off in the player."
+      },
+      "language": "Language",
+      "own": "Each person's own language",
+      "languageHint": "A video without subtitles in this language starts without them."
     }
   },
   "users": {

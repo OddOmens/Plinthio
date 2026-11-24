@@ -111,4 +111,20 @@ describe('/api/customization user customization rules & server defaults', () => 
 
     await sendJson(server.baseUrl, 'PATCH', '/customization', adminToken, { defaultLanguage: 'auto' });
   });
+  test('subtitles are off by default, an admin can turn them on with a language, and a bad value is refused', async () => {
+    const start = await (await fetch(`${server.baseUrl}/api/customization`)).json();
+    assert.deepEqual(start.subtitles, { on: false, language: 'auto' });
+
+    assert.equal((await sendJson(server.baseUrl, 'PATCH', '/customization', viewerToken, { subtitles: { on: true } })).status, 403);
+    assert.equal((await sendJson(server.baseUrl, 'PATCH', '/customization', adminToken, { subtitles: { language: 'klingon' } })).status, 400);
+    assert.equal((await sendJson(server.baseUrl, 'PATCH', '/customization', adminToken, { subtitles: { on: 'yes' } })).status, 400);
+    assert.equal((await sendJson(server.baseUrl, 'PATCH', '/customization', adminToken, { subtitles: 'on' })).status, 400);
+
+    const on = await sendJson(server.baseUrl, 'PATCH', '/customization', adminToken, { subtitles: { on: true } });
+    assert.deepEqual(on.body.subtitles, { on: true, language: 'auto' });
+    // Each part is saved on its own, so the language select doesn't switch them off.
+    const spanish = await sendJson(server.baseUrl, 'PATCH', '/customization', adminToken, { subtitles: { language: 'es' } });
+    assert.deepEqual(spanish.body.subtitles, { on: true, language: 'es' });
+    assert.deepEqual((await (await fetch(`${server.baseUrl}/api/customization`)).json()).subtitles, { on: true, language: 'es' });
+  });
 });

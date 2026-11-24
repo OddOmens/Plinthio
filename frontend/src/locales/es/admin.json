@@ -227,7 +227,7 @@
       "connectedVersion": "Conectado a Seerr {version}",
       "send": {
         "label": "Enviar a Seerr las solicitudes aceptadas",
-        "desc": "Cuando una solicitud se acepta como «Aceptar · Pendiente de añadir», Plinthio pide ese título a Seerr. Una serie se pide con todas sus temporadas."
+        "desc": "Cuando se acepta una solicitud, Plinthio pide ese título a Seerr. Una serie se pide con todas sus temporadas."
       },
       "hint": "La clave de API está en los ajustes generales de Seerr. Usa una dirección a la que pueda llegar el propio servidor de Plinthio. Solo se envían películas, series y anime encontrados en TMDB; los libros, el manga y los audiolibros se quedan en esta cola.",
       "errors": {
@@ -989,6 +989,17 @@
       "removeTitle": "Quitar tu clip",
       "removeMessage": "¿Quitar tu clip y volver a la secuencia de apertura integrada de Plinthio?",
       "couldNotRemove": "No se pudo quitar"
+    },
+    "subtitles": {
+      "title": "Subtítulos",
+      "desc": "Si los subtítulos están activados cuando empieza un vídeo. Cada persona puede elegir lo suyo en Ajustes → Apariencia.",
+      "on": {
+        "label": "Subtítulos activados por defecto",
+        "desc": "Un vídeo empieza con subtítulos si los tiene en el idioma elegido. Cualquiera puede quitarlos en el reproductor."
+      },
+      "language": "Idioma",
+      "own": "El idioma de cada persona",
+      "languageHint": "Un vídeo sin subtítulos en este idioma empieza sin ellos."
     }
   },
   "users": {

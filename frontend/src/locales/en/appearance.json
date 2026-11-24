@@ -144,5 +144,27 @@
       "label": "OpenDyslexic",
       "desc": "Weighted letters that some readers with dyslexia find easier."
     }
+  },
+  "subtitles": {
+    "title": "Subtitles",
+    "desc": "Whether subtitles are on when a video starts. You can always switch them in the player.",
+    "language": "Subtitle language",
+    "mine": "My language",
+    "hint": "A video without subtitles in that language starts without them. Before an anime episode plays in another language with no subtitles showing, Plinthio asks how you want to watch it.",
+    "modes": {
+      "server": {
+        "label": "Server setting",
+        "descOn": "Now: on ({language}).",
+        "descOff": "Now: off."
+      },
+      "off": {
+        "label": "Off",
+        "desc": "Videos start without subtitles."
+      },
+      "on": {
+        "label": "On",
+        "desc": "Videos start with subtitles when they have them."
+      }
+    }
   }
 }

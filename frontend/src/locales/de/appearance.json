@@ -144,5 +144,27 @@
       "label": "OpenDyslexic",
       "desc": "Unten betonte Buchstaben, die manche Menschen mit Legasthenie leichter lesen."
     }
+  },
+  "subtitles": {
+    "title": "Untertitel",
+    "desc": "Ob Untertitel an sind, wenn ein Video startet. Im Player kannst du sie jederzeit umschalten.",
+    "language": "Untertitelsprache",
+    "mine": "Meine Sprache",
+    "hint": "Ein Video ohne Untertitel in dieser Sprache startet ohne sie. Bevor eine Anime-Folge in einer anderen Sprache ohne Untertitel läuft, fragt Plinthio, wie du sie sehen möchtest.",
+    "modes": {
+      "server": {
+        "label": "Servereinstellung",
+        "descOn": "Aktuell: an ({language}).",
+        "descOff": "Aktuell: aus."
+      },
+      "off": {
+        "label": "Aus",
+        "desc": "Videos starten ohne Untertitel."
+      },
+      "on": {
+        "label": "An",
+        "desc": "Videos starten mit Untertiteln, wenn es welche gibt."
+      }
+    }
   }
 }

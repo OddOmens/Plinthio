@@ -7,6 +7,16 @@
     "minutesShort": "{count}分"
   },
   "video": {
+    "language": {
+      "title": "このエピソードの音声は{language}です",
+      "subsOff": "字幕はオフです。",
+      "noSubs": "{language}の字幕はありません。",
+      "remember": "回答はこのデバイスで、このシリーズの残りにも使われます。",
+      "withSubtitlesIn": "{language}の字幕付きで再生",
+      "withSubtitles": "字幕付きで再生",
+      "inLanguage": "{language}で再生",
+      "anyway": "このまま再生"
+    },
     "backToShelf": "ライブラリに戻る",
     "castToTv": "テレビにキャスト",
     "playbackSettings": "再生設定",

@@ -144,5 +144,27 @@
       "label": "OpenDyslexic",
       "desc": "Letras mais pesadas embaixo, que algumas pessoas com dislexia acham mais fáceis de ler."
     }
+  },
+  "subtitles": {
+    "title": "Legendas",
+    "desc": "Se as legendas ficam ativadas quando um vídeo começa. Você sempre pode trocá-las no player.",
+    "language": "Idioma das legendas",
+    "mine": "Meu idioma",
+    "hint": "Um vídeo sem legendas nesse idioma começa sem elas. Antes de um episódio de anime ser reproduzido em outro idioma sem legendas, o Plinthio pergunta como você quer assistir.",
+    "modes": {
+      "server": {
+        "label": "Configuração do servidor",
+        "descOn": "Agora: ativadas ({language}).",
+        "descOff": "Agora: desativadas."
+      },
+      "off": {
+        "label": "Desativadas",
+        "desc": "Os vídeos começam sem legendas."
+      },
+      "on": {
+        "label": "Ativadas",
+        "desc": "Os vídeos começam com legendas quando as têm."
+      }
+    }
   }
 }

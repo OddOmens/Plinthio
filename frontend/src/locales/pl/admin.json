@@ -227,7 +227,7 @@
       "connectedVersion": "Połączono z Seerr {version}",
       "send": {
         "label": "Wysyłaj przyjęte prośby do Seerr",
-        "desc": "Gdy prośba zostaje przyjęta jako „Przyjmij · Czeka na dodanie”, Plinthio prosi Seerr o ten tytuł. Serial jest zamawiany ze wszystkimi sezonami."
+        "desc": "Gdy prośba zostaje przyjęta, Plinthio prosi Seerr o ten tytuł. Serial jest zamawiany ze wszystkimi sezonami."
       },
       "hint": "Klucz API znajdziesz w ogólnych ustawieniach Seerr. Użyj adresu, do którego dotrze sam serwer Plinthio. Wysyłane są tylko filmy, seriale i anime znalezione w TMDB; książki, manga i audiobooki zostają w tej kolejce.",
       "errors": {
@@ -1029,6 +1029,17 @@
       "removeTitle": "Usuń swój klip",
       "removeMessage": "Usunąć twój klip i wrócić do wbudowanej czołówki Plinthio?",
       "couldNotRemove": "Nie udało się go usunąć"
+    },
+    "subtitles": {
+      "title": "Napisy",
+      "desc": "Czy napisy są włączone, gdy zaczyna się film. Każdy może wybrać po swojemu w Ustawienia → Wygląd.",
+      "on": {
+        "label": "Napisy domyślnie włączone",
+        "desc": "Film zaczyna się z napisami, jeśli ma je w wybranym języku. Każdy może je wyłączyć w odtwarzaczu."
+      },
+      "language": "Język",
+      "own": "Własny język każdej osoby",
+      "languageHint": "Film bez napisów w tym języku zaczyna się bez nich."
     }
   },
   "users": {

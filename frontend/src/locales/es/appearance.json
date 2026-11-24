@@ -144,5 +144,27 @@
       "label": "OpenDyslexic",
       "desc": "Letras con más peso abajo que a algunas personas con dislexia les resultan más fáciles."
     }
+  },
+  "subtitles": {
+    "title": "Subtítulos",
+    "desc": "Si los subtítulos están activados cuando empieza un vídeo. Siempre puedes cambiarlos en el reproductor.",
+    "language": "Idioma de los subtítulos",
+    "mine": "Mi idioma",
+    "hint": "Un vídeo sin subtítulos en ese idioma empieza sin ellos. Antes de que un episodio de anime se reproduzca en otro idioma sin subtítulos, Plinthio te pregunta cómo quieres verlo.",
+    "modes": {
+      "server": {
+        "label": "Ajuste del servidor",
+        "descOn": "Ahora: activados ({language}).",
+        "descOff": "Ahora: desactivados."
+      },
+      "off": {
+        "label": "Desactivados",
+        "desc": "Los vídeos empiezan sin subtítulos."
+      },
+      "on": {
+        "label": "Activados",
+        "desc": "Los vídeos empiezan con subtítulos si los tienen."
+      }
+    }
   }
 }

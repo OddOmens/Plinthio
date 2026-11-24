@@ -144,5 +144,27 @@
       "label": "OpenDyslexic",
       "desc": "Letters met een zwaardere onderkant, die sommige lezers met dyslexie makkelijker vinden."
     }
+  },
+  "subtitles": {
+    "title": "Ondertiteling",
+    "desc": "Of ondertiteling aanstaat wanneer een video start. Je kunt ze altijd in de speler wisselen.",
+    "language": "Taal van de ondertiteling",
+    "mine": "Mijn taal",
+    "hint": "Een video zonder ondertiteling in die taal start zonder. Voordat een anime-aflevering in een andere taal zonder ondertiteling wordt afgespeeld, vraagt Plinthio hoe je wilt kijken.",
+    "modes": {
+      "server": {
+        "label": "Serverinstelling",
+        "descOn": "Nu: aan ({language}).",
+        "descOff": "Nu: uit."
+      },
+      "off": {
+        "label": "Uit",
+        "desc": "Video's starten zonder ondertiteling."
+      },
+      "on": {
+        "label": "Aan",
+        "desc": "Video's starten met ondertiteling als die er is."
+      }
+    }
   }
 }

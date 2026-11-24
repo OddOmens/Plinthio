@@ -144,5 +144,27 @@
       "label": "OpenDyslexic",
       "desc": "Litery cięższe u dołu, które części osób z dysleksją czyta się łatwiej."
     }
+  },
+  "subtitles": {
+    "title": "Napisy",
+    "desc": "Czy napisy są włączone, gdy zaczyna się film. Zawsze możesz je przełączyć w odtwarzaczu.",
+    "language": "Język napisów",
+    "mine": "Mój język",
+    "hint": "Film bez napisów w tym języku zaczyna się bez nich. Zanim odcinek anime zostanie odtworzony w innym języku bez napisów, Plinthio zapyta, jak chcesz go oglądać.",
+    "modes": {
+      "server": {
+        "label": "Ustawienie serwera",
+        "descOn": "Teraz: włączone ({language}).",
+        "descOff": "Teraz: wyłączone."
+      },
+      "off": {
+        "label": "Wyłączone",
+        "desc": "Filmy zaczynają się bez napisów."
+      },
+      "on": {
+        "label": "Włączone",
+        "desc": "Filmy zaczynają się z napisami, jeśli je mają."
+      }
+    }
   }
 }

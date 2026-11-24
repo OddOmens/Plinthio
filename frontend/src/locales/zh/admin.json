@@ -227,7 +227,7 @@
       "connectedVersion": "已连接到 Seerr {version}",
       "send": {
         "label": "将已接受的请求发送到 Seerr",
-        "desc": "以“接受 · 待添加”接受请求时，Plinthio 会向 Seerr 请求该作品。剧集会请求全部季。"
+        "desc": "接受请求后，Plinthio 会向 Seerr 请求该作品。剧集会请求全部季。"
       },
       "hint": "API 密钥在 Seerr 的常规设置中。请使用 Plinthio 服务器自身能访问的地址。只发送在 TMDB 上找到的电影、剧集和动画；书籍、漫画和有声书留在此队列中。",
       "errors": {
@@ -969,6 +969,17 @@
       "removeTitle": "移除你的短片",
       "removeMessage": "要移除你的短片并改回Plinthio内置的片头吗？",
       "couldNotRemove": "无法移除"
+    },
+    "subtitles": {
+      "title": "字幕",
+      "desc": "视频开始时是否开启字幕。每个人都可以在“设置 → 外观”中自行选择。",
+      "on": {
+        "label": "默认开启字幕",
+        "desc": "如果视频有所选语言的字幕，开始时就会显示。任何人仍可在播放器中关闭。"
+      },
+      "language": "语言",
+      "own": "每个人自己的语言",
+      "languageHint": "没有该语言字幕的视频开始时不显示字幕。"
     }
   },
   "users": {
