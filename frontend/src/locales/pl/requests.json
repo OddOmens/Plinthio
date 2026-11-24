@@ -64,5 +64,9 @@
       "refused": "Seerr nie przyjął prośby",
       "failed": "Seerr nie mógł przyjąć prośby"
     }
+  },
+  "auto": {
+    "accepted": "Przyjęta automatycznie",
+    "added": "Oznaczona jako dodana, gdy tytuł trafił do biblioteki"
   }
 }

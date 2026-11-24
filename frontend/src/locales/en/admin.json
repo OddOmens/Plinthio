@@ -236,6 +236,24 @@
         "unreachable": "Nothing answered at that address.",
         "not_seerr": "That address answered, but not as Seerr.",
         "unauthorized": "Seerr refused the API key."
+      },
+      "seerrTitle": "Seerr",
+      "autoAccept": {
+        "desc": "Who has their requests accepted as they make them, without waiting for a reviewer.",
+        "label": "Accept automatically",
+        "off": {
+          "label": "Nobody",
+          "desc": "Every request waits in the review queue."
+        },
+        "staff": {
+          "label": "Admins and editors",
+          "desc": "Their own requests are accepted as they make them."
+        },
+        "all": {
+          "label": "Everyone",
+          "desc": "Every request is accepted as it's made. Accounts with Kids Mode or an age rating limit still wait."
+        },
+        "hint": "An accepted movie or show goes on to Seerr when that is switched on below. A request is marked as added by itself once a library scan finds the title."
       }
     }
   },

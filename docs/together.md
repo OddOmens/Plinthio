@@ -70,6 +70,35 @@ collection's missing films.
 - Requesters can withdraw a request while it's pending.
 - The user menu shows how many requests are waiting for review.
 
+### Requests that handle themselves
+
+Two steps need no one to press anything.
+
+**Accepting.** In **Admin → Features → Requests**, choose who has their requests accepted as
+they make them:
+
+- **Nobody** (the default): every request waits in the review queue.
+- **Admins and editors:** their own requests are accepted on the spot.
+- **Everyone:** every request is accepted on the spot. An account with Kids Mode or an age
+  rating limit still waits for a reviewer.
+
+A request accepted this way shows **Accepted automatically** in the review queue, and a movie
+or show goes on to Seerr just as if a reviewer had pressed **Accept · Pending add** (see
+below). If the title is already in the library, the request is marked as added instead and
+nothing is sent.
+
+**Marking it added.** After every library scan, Plinthio checks open requests against the
+library and marks a request **Accepted · Added** once its title is there. This is always on.
+
+- A movie or show is found by its TMDB id where the library knows it, otherwise by name. A
+  movie's year must also match to within a year, so a remake doesn't count for the original.
+- Books, manga and audiobooks are found by name.
+- A request still waiting for review is marked too: the title is here, so there's nothing
+  left to decide.
+- Each request is only marked this way once. If a reviewer moves it back, later scans leave
+  it alone.
+- How soon it happens depends on when the library is next scanned (Admin → Libraries).
+
 ### Sending accepted requests to Seerr
 
 If you run a [Seerr](https://github.com/seerr-team/seerr) server, Plinthio can pass accepted
@@ -80,8 +109,9 @@ that the title was approved. It never searches for or downloads anything itself.
 `http://seerr:5055`) and its API key, found in Seerr's general settings. Plinthio checks
 both before saving. The key is stored on the server and never shown again.
 
-- **When it sends:** when an admin or editor presses **Accept · Pending add**. Rejecting, or
-  **Accept · Added** (it's already in the library), sends nothing.
+- **When it sends:** when an admin or editor presses **Accept · Pending add**, or when a
+  request is accepted automatically. Rejecting, or **Accept · Added** (it's already in the
+  library), sends nothing.
 - **What it sends:** the title's TMDB id. A show is requested with all its seasons. The
   request is made by the account the API key belongs to, so with the Seerr owner's key it
   is approved there straight away.
@@ -93,7 +123,8 @@ both before saving. The key is stored on the server and never shown again.
 - **The address** must be one the Plinthio server itself can reach. Inside Docker,
   `localhost` is the Plinthio container, so use the Seerr container's name on a shared
   network, or the machine's own address.
-- Marking a request **Added** is still done by hand once the title is in the library.
+- Once the title arrives and the library is scanned, the request is marked **Added** by
+  itself (see [Requests that handle themselves](#requests-that-handle-themselves)).
 
 ## Ratings
 

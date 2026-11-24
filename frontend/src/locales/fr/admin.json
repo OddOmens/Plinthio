@@ -236,6 +236,24 @@
         "unreachable": "Rien n'a répondu à cette adresse.",
         "not_seerr": "Cette adresse a répondu, mais pas comme Seerr.",
         "unauthorized": "Seerr a refusé la clé API."
+      },
+      "seerrTitle": "Seerr",
+      "autoAccept": {
+        "desc": "Qui voit ses demandes acceptées dès qu'il les fait, sans attendre un examen.",
+        "label": "Accepter automatiquement",
+        "off": {
+          "label": "Personne",
+          "desc": "Chaque demande attend dans la file à examiner."
+        },
+        "staff": {
+          "label": "Admins et éditeurs",
+          "desc": "Leurs propres demandes sont acceptées dès qu'ils les font."
+        },
+        "all": {
+          "label": "Tout le monde",
+          "desc": "Chaque demande est acceptée dès qu'elle est faite. Les comptes en Mode Enfants ou avec une limite d'âge attendent toujours."
+        },
+        "hint": "Un film ou une série acceptés partent vers Seerr si c'est activé ci-dessous. Une demande est marquée comme ajoutée d'elle-même dès qu'une analyse de la bibliothèque trouve le titre."
       }
     }
   },

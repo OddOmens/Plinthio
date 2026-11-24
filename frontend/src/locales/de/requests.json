@@ -64,5 +64,9 @@
       "refused": "Seerr hat die Anfrage nicht angenommen",
       "failed": "Seerr konnte die Anfrage nicht annehmen"
     }
+  },
+  "auto": {
+    "accepted": "Automatisch angenommen",
+    "added": "Als hinzugefügt markiert, als der Titel in der Bibliothek ankam"
   }
 }

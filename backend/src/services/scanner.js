@@ -13,6 +13,7 @@ import { fetchVideoArtwork, isVideoArtworkAvailable } from './artwork.js';
 import sharp from 'sharp';
 import { extractVideoFrameCover, FRAME_LEGACY_WIDTH } from './videoFrame.js';
 import { backfillMovieCredits } from './credits.js';
+import { markArrivedRequests } from './requestAutomation.js';
 import { findCoverInFolder, looksLikeImage } from '../utils/imageFile.js';
 import { parseMediaTitle } from './titleCleaner.js';
 import { classifyExtras } from './extras.js';
@@ -342,6 +343,8 @@ export async function scanLibrary(libraryId) {
     // New ids clear a film's cached credits, so they're looked up again along with new films'.
     if (library.type === 'movies' && (added || identified)) backfillMovieCredits().catch(() => {});
     queueNewVideos(db, changedIds);
+    // A request for something this scan found is done.
+    await markArrivedRequests(db).catch((err) => logger.warn('scan', `Could not check requests against the library: ${err.message}`));
     // `removed` counts titles newly marked missing, not deleted.
     return { status: 'completed', added, updated, renamed, removed, restored, artwork, total: files.length };
   } finally {

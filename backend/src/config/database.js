@@ -477,6 +477,10 @@ async function initSchema(db) {
     'forward_target TEXT', 'forward_state TEXT', 'forward_reason TEXT', 'forward_detail TEXT',
     'forward_ref TEXT', 'forwarded_at DATETIME'
   ]);
+  // auto_accepted: accepted as it was made, by the admin's setting rather than a reviewer.
+  // auto_added_at: marked as added by a scan that found the title; set once, so a reviewer
+  // who moves the request back isn't overruled by the next scan (services/requestAutomation.js).
+  await addColumns(db, 'media_requests', ['auto_accepted INTEGER DEFAULT 0', 'auto_added_at DATETIME']);
 
   // Intro/credits markers for skip buttons. No item FK (see user_progress).
   await db.exec(`

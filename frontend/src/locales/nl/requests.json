@@ -64,5 +64,9 @@
       "refused": "Seerr nam het verzoek niet aan",
       "failed": "Seerr kon het verzoek niet aannemen"
     }
+  },
+  "auto": {
+    "accepted": "Automatisch geaccepteerd",
+    "added": "Als toegevoegd gemarkeerd toen de titel in de bibliotheek kwam"
   }
 }

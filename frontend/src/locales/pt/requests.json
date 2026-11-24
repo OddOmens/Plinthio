@@ -64,5 +64,9 @@
       "refused": "O Seerr não aceitou o pedido",
       "failed": "O Seerr não conseguiu aceitar o pedido"
     }
+  },
+  "auto": {
+    "accepted": "Aceito automaticamente",
+    "added": "Marcado como adicionado ao chegar à biblioteca"
   }
 }

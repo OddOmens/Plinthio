@@ -138,6 +138,12 @@
               <span v-if="req.response_note" class="text-foreground/90">{{ req.response_note }}</span>
             </p>
 
+            <!-- Steps nobody took by hand: accepted by the admin's setting, added by a scan. -->
+            <p v-if="req.auto_added_at || (req.auto_accepted && !req.handled_by_username)" class="text-xs text-muted-foreground flex items-center gap-1">
+              <Zap class="w-3.5 h-3.5 flex-shrink-0" />
+              {{ req.auto_added_at ? $t('requests.auto.added') : $t('requests.auto.accepted') }}
+            </p>
+
             <!-- Where an accepted request was passed on to, for reviewers. -->
             <p v-if="scope === 'all' && (req.forward_state || req.can_forward)" class="text-xs flex flex-wrap items-center gap-x-2 gap-y-1">
               <span v-if="req.forward_state === 'sent'" class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><Forward class="w-3.5 h-3.5" /> {{ $t('requests.forward.sent') }}</span>
@@ -206,7 +212,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, Send, Inbox, ImageOff, Trash2, X, Clock, CheckCircle2, PackageCheck, Ban, Forward, TriangleAlert } from '@lucide/vue';
+import { ArrowLeft, Send, Inbox, ImageOff, Trash2, X, Clock, CheckCircle2, PackageCheck, Ban, Forward, TriangleAlert, Zap } from '@lucide/vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { useDialogStore } from '../stores/dialog';
@@ -316,8 +322,9 @@ async function submitRequest(result, mediaType) {
   const key = resultKey(result);
   submitting.value = new Set(submitting.value).add(key);
   try {
-    await api.post('/requests', externalTitlePayload(result, mediaType));
-    sent.value = { ...sent.value, [key]: 'pending' };
+    const res = await api.post('/requests', externalTitlePayload(result, mediaType));
+    // Accepted on the spot where the admin set requests up that way.
+    sent.value = { ...sent.value, [key]: res.data.request?.status || 'pending' };
     loadPendingCount();
     if (scope.value === 'mine') loadRequests();
   } catch (err) {

@@ -7,6 +7,7 @@ import { handle } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { logger } from '../services/logger.js';
 import { getSeerrConfig, canSendToSeerr, forwardRequest } from '../services/seerr.js';
+import { acceptsAutomatically, markIfArrived } from '../services/requestAutomation.js';
 
 const router = express.Router();
 
@@ -129,21 +130,29 @@ router.post('/', handle(async (req, res) => {
     });
   }
 
+  // Accepted on the spot when the admin set requests up that way; otherwise it waits for review.
+  const accepted = await acceptsAutomatically(db, req.user);
   const id = crypto.randomUUID();
   await db.run(`
       INSERT INTO media_requests
-        (id, user_id, media_type, source, external_id, title, subtitle, author, release_date, overview, cover_url, note)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, user_id, media_type, source, external_id, title, subtitle, author, release_date, overview, cover_url, note,
+         status, auto_accepted, handled_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${accepted ? 'CURRENT_TIMESTAMP' : 'NULL'})
     `, [
     id, req.user.id, mediaType, clip(source, 40), clip(externalId, 200),
     title, clipLine(req.body.subtitle, 300), clipLine(req.body.author, 300),
     clipLine(req.body.releaseDate, 40), clip(req.body.overview, 4000), clip(coverUrl, 1000),
-    clip(req.body.note?.trim(), 1000)
+    clip(req.body.note?.trim(), 1000), accepted ? 'accepted_pending' : 'pending', accepted ? 1 : 0
   ]);
 
-  logger.info('media', `${req.user.username} requested "${title}" (${mediaType})`);
-  const request = await db.get('SELECT * FROM media_requests WHERE id = ?', [id]);
-  res.status(201).json({ message: 'Request sent', request });
+  logger.info('media', `${req.user.username} requested "${title}" (${mediaType})${accepted ? ', accepted automatically' : ''}`);
+  let request = await db.get('SELECT * FROM media_requests WHERE id = ?', [id]);
+  if (accepted) {
+    // Already in the library (the search just didn't know): done, with nothing to pass on.
+    if (!(await markIfArrived(db, request))) await forwardRequest(db, request);
+    request = await db.get('SELECT * FROM media_requests WHERE id = ?', [id]);
+  }
+  res.status(201).json({ message: 'Request sent', request: isStaff(req.user) ? request : forRequester(request) });
 }));
 
 // Admins and editors change a request's state and can leave the requester a note.

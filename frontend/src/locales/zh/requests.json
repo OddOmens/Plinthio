@@ -64,5 +64,9 @@
       "refused": "Seerr 不接受该请求",
       "failed": "Seerr 未能接受该请求"
     }
+  },
+  "auto": {
+    "accepted": "已自动接受",
+    "added": "影片进入媒体库后已标记为已添加"
   }
 }

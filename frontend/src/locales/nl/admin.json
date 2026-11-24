@@ -236,6 +236,24 @@
         "unreachable": "Er kwam geen antwoord van dat adres.",
         "not_seerr": "Dat adres antwoordde, maar niet als Seerr.",
         "unauthorized": "Seerr weigerde de API-sleutel."
+      },
+      "seerrTitle": "Seerr",
+      "autoAccept": {
+        "desc": "Van wie verzoeken meteen bij het indienen worden geaccepteerd, zonder op beoordeling te wachten.",
+        "label": "Automatisch accepteren",
+        "off": {
+          "label": "Niemand",
+          "desc": "Elk verzoek wacht in de lijst om te beoordelen."
+        },
+        "staff": {
+          "label": "Admins en editors",
+          "desc": "Hun eigen verzoeken worden meteen geaccepteerd."
+        },
+        "all": {
+          "label": "Iedereen",
+          "desc": "Elk verzoek wordt meteen geaccepteerd. Accounts met Kindermodus of een leeftijdsgrens wachten nog steeds."
+        },
+        "hint": "Een geaccepteerde film of serie gaat door naar Seerr als dat hieronder aanstaat. Een verzoek wordt vanzelf als toegevoegd gemarkeerd zodra een bibliotheekscan de titel vindt."
       }
     }
   },

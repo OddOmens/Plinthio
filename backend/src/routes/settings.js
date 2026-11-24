@@ -27,6 +27,7 @@ import { logger } from '../services/logger.js';
 import { getSetting, setSetting } from '../services/settings.js';
 import { SeerrError, normalizeSeerrUrl, getSeerrConfig, seerrStatus, saveSeerrConfig, clearSeerrConfig, checkSeerr } from '../services/seerr.js';
 import { hostOf } from '../services/safeFetch.js';
+import { AUTO_ACCEPT_MODES, getAutoAccept, setAutoAccept } from '../services/requestAutomation.js';
 
 const router = express.Router();
 
@@ -278,6 +279,22 @@ router.post('/seerr/test', authenticateToken, requireAdmin, handle(async (req, r
   } catch (err) {
     return seerrFailure(req, res, err);
   }
+}));
+
+// Who has their requests accepted as they make them: 'off' | 'staff' | 'all'.
+router.get('/requests', authenticateToken, requireAdmin, handle(async (req, res) => {
+  res.json({ autoAccept: await getAutoAccept(await getDb()) });
+}));
+
+router.put('/requests', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const { autoAccept } = req.body;
+  if (!AUTO_ACCEPT_MODES.includes(autoAccept)) {
+    return res.status(400).json({ error: `autoAccept must be one of: ${AUTO_ACCEPT_MODES.join(', ')}` });
+  }
+  const db = await getDb();
+  await setAutoAccept(db, autoAccept);
+  logger.info('settings', `${req.user.username} set automatic acceptance of requests to "${autoAccept}"`);
+  res.json({ autoAccept });
 }));
 
 // Set or clear the TMDB API key.

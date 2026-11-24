@@ -64,5 +64,9 @@
       "refused": "Seerr wouldn't take the request",
       "failed": "Seerr couldn't take the request"
     }
+  },
+  "auto": {
+    "accepted": "Accepted automatically",
+    "added": "Marked as added when it arrived in the library"
   }
 }

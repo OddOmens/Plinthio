@@ -47,13 +47,30 @@
     </div>
   </SettingsCard>
 
-  <!-- Accepted requests can be passed on to a Seerr server. The key is write-only. -->
-  <SettingsCard :title="$t('admin.features.requests.title')" :description="$t('admin.features.requests.desc')">
-    <template #actions>
-      <span :class="['text-[11px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border', seerr.enabled ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : 'text-muted-foreground border-border bg-muted/40']">
+  <!-- Requests: who skips the review queue, and passing accepted ones on to a Seerr server
+       (its key is write-only). A request is also marked as added by a scan that finds it. -->
+  <SettingsCard :title="$t('admin.features.requests.title')">
+    <template #actions><SaveStatus :status="autoAcceptSave.status.value" :message="autoAcceptSave.message.value" /></template>
+    <h4 class="text-xs font-semibold text-foreground">{{ $t('admin.features.requests.autoAccept.label') }}</h4>
+    <p class="text-[12px] text-muted-foreground mt-0.5 mb-3">{{ $t('admin.features.requests.autoAccept.desc') }}</p>
+    <OptionTiles
+      :label="$t('admin.features.requests.autoAccept.label')"
+      :options="autoAcceptOptions"
+      :model-value="autoAccept"
+      @update:model-value="setAutoAccept"
+      grid-class="grid grid-cols-1 sm:grid-cols-3 gap-2.5"
+    />
+    <p class="field-hint mt-3">{{ $t('admin.features.requests.autoAccept.hint') }}</p>
+
+    <div class="mt-4 pt-4 border-t border-border flex items-start justify-between gap-3 mb-3">
+      <div class="min-w-0">
+        <h4 class="text-xs font-semibold text-foreground">{{ $t('admin.features.requests.seerrTitle') }}</h4>
+        <p class="text-[12px] text-muted-foreground mt-0.5">{{ $t('admin.features.requests.desc') }}</p>
+      </div>
+      <span :class="['flex-shrink-0 text-[11px] font-mono uppercase tracking-wide px-2 py-0.5 rounded-full border', seerr.enabled ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : 'text-muted-foreground border-border bg-muted/40']">
         {{ seerr.enabled ? $t('admin.features.requests.badge.on') : (seerr.hasKey ? $t('admin.features.requests.badge.off') : $t('admin.features.requests.badge.notSet')) }}
       </span>
-    </template>
+    </div>
     <form @submit.prevent="saveSeerr()" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div>
         <label for="seerr-url" class="field-label">{{ $t('admin.features.requests.address') }}</label>
@@ -101,11 +118,29 @@ import SectionHeader from '../settings/SectionHeader.vue';
 import SettingsCard from '../settings/SettingsCard.vue';
 import ToggleRow from '../settings/ToggleRow.vue';
 import SaveStatus from '../settings/SaveStatus.vue';
+import OptionTiles from '../OptionTiles.vue';
 import { t, te } from '../../i18n';
 
 const store = useCustomizationStore();
 const setting = useServerSetting();
 const filterSave = useSaveStatus();
+
+// Whose requests are accepted as they're made: 'off' | 'staff' | 'all'.
+const autoAccept = ref('off');
+const autoAcceptSave = useSaveStatus();
+const autoAcceptOptions = computed(() => ['off', 'staff', 'all'].map((id) => ({
+  id,
+  label: t(`admin.features.requests.autoAccept.${id}.label`),
+  desc: t(`admin.features.requests.autoAccept.${id}.desc`)
+})));
+
+async function setAutoAccept(mode) {
+  const before = autoAccept.value;
+  autoAccept.value = mode;
+  const result = await autoAcceptSave.run(() => api.put('/settings/requests', { autoAccept: mode }));
+  // The newest choice stands; an older save that failed only undoes itself.
+  if (!result.ok && autoAccept.value === mode) autoAccept.value = before;
+}
 
 // Seerr: the server checks the address and key before saving, and never sends the key back.
 const seerr = ref({ url: '', hasKey: false, enabled: false });
@@ -186,6 +221,11 @@ onMounted(async () => {
     if (res.data.allowedGroupingModes) allowedFilters.value = res.data.allowedGroupingModes;
   } catch (err) {
     console.warn('Could not load shelf views:', err);
+  }
+  try {
+    autoAccept.value = (await api.get('/settings/requests')).data.autoAccept || 'off';
+  } catch (err) {
+    console.warn('Could not load how requests are accepted:', err);
   }
   try {
     seerr.value = (await api.get('/settings/seerr')).data;

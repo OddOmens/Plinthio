@@ -236,6 +236,24 @@
         "unreachable": "Nada respondió en esa dirección.",
         "not_seerr": "Esa dirección respondió, pero no como Seerr.",
         "unauthorized": "Seerr rechazó la clave de API."
+      },
+      "seerrTitle": "Seerr",
+      "autoAccept": {
+        "desc": "A quién se le aceptan las solicitudes en cuanto las hace, sin esperar a una revisión.",
+        "label": "Aceptar automáticamente",
+        "off": {
+          "label": "Nadie",
+          "desc": "Todas las solicitudes esperan en la cola de revisión."
+        },
+        "staff": {
+          "label": "Admins y editores",
+          "desc": "Sus propias solicitudes se aceptan en cuanto las hacen."
+        },
+        "all": {
+          "label": "Todos",
+          "desc": "Cada solicitud se acepta en cuanto se hace. Las cuentas con Modo Niños o límite de edad siguen esperando."
+        },
+        "hint": "Una película o serie aceptada pasa a Seerr si eso está activado más abajo. Una solicitud se marca sola como añadida cuando un escaneo de la biblioteca encuentra el título."
       }
     }
   },

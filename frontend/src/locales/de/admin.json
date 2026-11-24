@@ -236,6 +236,24 @@
         "unreachable": "Unter dieser Adresse hat nichts geantwortet.",
         "not_seerr": "Die Adresse hat geantwortet, aber nicht als Seerr.",
         "unauthorized": "Seerr hat den API-Schlüssel abgelehnt."
+      },
+      "seerrTitle": "Seerr",
+      "autoAccept": {
+        "desc": "Wessen Anfragen gleich beim Stellen angenommen werden, ohne auf eine Prüfung zu warten.",
+        "label": "Automatisch annehmen",
+        "off": {
+          "label": "Niemand",
+          "desc": "Jede Anfrage wartet in der Prüfliste."
+        },
+        "staff": {
+          "label": "Admins und Editoren",
+          "desc": "Ihre eigenen Anfragen werden gleich beim Stellen angenommen."
+        },
+        "all": {
+          "label": "Alle",
+          "desc": "Jede Anfrage wird gleich beim Stellen angenommen. Konten mit Kindermodus oder Altersgrenze warten weiterhin."
+        },
+        "hint": "Ein angenommener Film oder eine Serie geht an Seerr weiter, wenn das unten eingeschaltet ist. Eine Anfrage wird von selbst als hinzugefügt markiert, sobald ein Bibliotheksscan den Titel findet."
       }
     }
   },

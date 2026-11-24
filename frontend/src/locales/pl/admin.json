@@ -236,6 +236,24 @@
         "unreachable": "Pod tym adresem nic nie odpowiedziało.",
         "not_seerr": "Ten adres odpowiedział, ale nie jako Seerr.",
         "unauthorized": "Seerr odrzucił klucz API."
+      },
+      "seerrTitle": "Seerr",
+      "autoAccept": {
+        "desc": "Czyje prośby są przyjmowane od razu po złożeniu, bez czekania na rozpatrzenie.",
+        "label": "Przyjmuj automatycznie",
+        "off": {
+          "label": "Nikt",
+          "desc": "Każda prośba czeka w kolejce do rozpatrzenia."
+        },
+        "staff": {
+          "label": "Administratorzy i redaktorzy",
+          "desc": "Ich własne prośby są przyjmowane od razu."
+        },
+        "all": {
+          "label": "Wszyscy",
+          "desc": "Każda prośba jest przyjmowana od razu. Konta z Trybem dziecięcym lub limitem wieku nadal czekają."
+        },
+        "hint": "Przyjęty film lub serial trafia dalej do Seerr, jeśli jest to włączone poniżej. Prośba sama zostaje oznaczona jako dodana, gdy skanowanie biblioteki znajdzie tytuł."
       }
     }
   },
