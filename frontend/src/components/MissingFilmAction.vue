@@ -57,7 +57,7 @@ const statusClass = computed(() => (status.value === 'pending' ? 'text-sky-500' 
 async function request() {
   sending.value = true;
   try {
-    await api.post('/requests', {
+    const res = await api.post('/requests', {
       mediaType: 'movie',
       source: 'tmdb',
       externalId: props.part.tmdbId,
@@ -66,7 +66,7 @@ async function request() {
       overview: props.part.overview,
       coverUrl: props.part.posterUrl
     });
-    status.value = 'pending';
+    status.value = res.data.request?.status || 'pending';
   } catch (err) {
     // Someone else already asked for it — show where that request is at.
     if (err.response?.status === 409 && err.response.data?.status) {

@@ -24,6 +24,27 @@
     "pauseScreen": {
       "title": "Tela de pausa",
       "desc": "O que aparece depois de alguns segundos com um filme ou episódio pausado."
+    },
+    "textSize": {
+      "title": "Tamanho do texto",
+      "desc": "Deixa o texto e os controles maiores ou menores neste dispositivo. Cada dispositivo guarda o próprio tamanho."
+    },
+    "themeMode": {
+      "title": "Claro ou escuro",
+      "desc": "“Como o dispositivo” acompanha a configuração de claro ou escuro do seu dispositivo quando ela muda."
+    },
+    "font": {
+      "title": "Fonte",
+      "desc": "A fonte de todo o Plinthio neste dispositivo. Os livros mantêm a própria fonte, definida no leitor."
+    },
+    "posterSize": {
+      "title": "Tamanho dos pôsteres",
+      "desc": "O tamanho dos pôsteres e das capas nas suas estantes. Compacto mostra mais por fileira."
+    },
+    "motion": {
+      "title": "Movimento",
+      "label": "Reduzir movimento",
+      "desc": "As coisas aparecem em vez de deslizar, esmaecer ou dar zoom. O Plinthio já faz isso quando seu dispositivo pede menos movimento."
     }
   },
   "accents": {
@@ -85,5 +106,65 @@
   "defaultLanguage": {
     "title": "Idioma padrão",
     "desc": "Para quem ainda não escolheu o seu. Automático segue o navegador de cada pessoa; qualquer um pode escolher outro em Configurações."
+  },
+  "textSizes": {
+    "small": "Pequeno",
+    "default": "Padrão",
+    "large": "Grande",
+    "xlarge": "Extra grande"
+  },
+  "device": {
+    "title": "Este dispositivo",
+    "desc": "Isto fica guardado neste dispositivo, então seu celular, computador e TV podem ter cada um a aparência que combina melhor."
+  },
+  "themeModes": {
+    "system": "Como o dispositivo",
+    "light": "Claro",
+    "dark": "Escuro"
+  },
+  "posterSizes": {
+    "compact": "Compacto",
+    "default": "Padrão",
+    "large": "Grande"
+  },
+  "fonts": {
+    "default": {
+      "label": "Padrão",
+      "desc": "A fonte do seu dispositivo."
+    },
+    "serif": {
+      "label": "Com serifa",
+      "desc": "Uma fonte com cara de livro."
+    },
+    "legible": {
+      "label": "Atkinson Hyperlegible",
+      "desc": "Letras difíceis de confundir. Boa para baixa visão."
+    },
+    "dyslexic": {
+      "label": "OpenDyslexic",
+      "desc": "Letras mais pesadas embaixo, que algumas pessoas com dislexia acham mais fáceis de ler."
+    }
+  },
+  "subtitles": {
+    "title": "Legendas",
+    "desc": "Se as legendas ficam ativadas quando um vídeo começa. Você sempre pode trocá-las no player.",
+    "language": "Idioma das legendas",
+    "mine": "Meu idioma",
+    "hint": "Um vídeo sem legendas nesse idioma começa sem elas. Antes de um episódio de anime ser reproduzido em outro idioma sem legendas, o Plinthio pergunta como você quer assistir.",
+    "modes": {
+      "server": {
+        "label": "Configuração do servidor",
+        "descOn": "Agora: ativadas ({language}).",
+        "descOff": "Agora: desativadas."
+      },
+      "off": {
+        "label": "Desativadas",
+        "desc": "Os vídeos começam sem legendas."
+      },
+      "on": {
+        "label": "Ativadas",
+        "desc": "Os vídeos começam com legendas quando as têm."
+      }
+    }
   }
 }

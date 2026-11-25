@@ -46,8 +46,8 @@
   "requestHint": "Vraag een admin om dit aan de bibliotheek toe te voegen",
   "requestStatus": {
     "pending": "In afwachting",
-    "accepted_pending": "Geaccepteerd · Wordt toegevoegd",
-    "accepted_added": "Geaccepteerd · Toegevoegd",
+    "accepted_pending": "Geaccepteerd",
+    "accepted_added": "Toegevoegd",
     "rejected": "Afgewezen"
   },
   "deleteDialog": {

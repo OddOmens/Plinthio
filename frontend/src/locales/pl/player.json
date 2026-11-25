@@ -7,6 +7,16 @@
     "minutesShort": "{count} min"
   },
   "video": {
+    "language": {
+      "title": "Język tego odcinka: {language}",
+      "subsOff": "Napisy są wyłączone.",
+      "noSubs": "Brak napisów w języku: {language}.",
+      "remember": "Odpowiedź zostanie zapamiętana na tym urządzeniu dla reszty tej serii.",
+      "withSubtitlesIn": "Odtwórz z napisami ({language})",
+      "withSubtitles": "Odtwórz z napisami",
+      "inLanguage": "Odtwórz w języku: {language}",
+      "anyway": "Odtwórz mimo to"
+    },
     "backToShelf": "Wróć do półki",
     "castToTv": "Przesyłaj na TV",
     "playbackSettings": "Ustawienia odtwarzania",

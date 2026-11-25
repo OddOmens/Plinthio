@@ -22,6 +22,29 @@
           grid-class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-2.5"
         />
       </SettingsCard>
+      <!-- Subtitles are the person's own too: what someone needs to follow a film isn't the admin's call. -->
+      <SettingsCard :title="$t('appearance.subtitles.title')" :description="$t('appearance.subtitles.desc')">
+        <OptionTiles
+          :label="$t('appearance.subtitles.title')"
+          :options="subtitleModes"
+          :model-value="subtitleMode"
+          @update:model-value="setSubtitles({ mode: $event })"
+          grid-class="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3 gap-2.5"
+        />
+        <div v-if="subtitleMode === 'on'" class="mt-3">
+          <label for="my-subtitle-language" class="field-label">{{ $t('appearance.subtitles.language') }}</label>
+          <select
+            id="my-subtitle-language"
+            :value="subtitleLanguage"
+            @change="setSubtitles({ language: $event.target.value })"
+            class="field w-full sm:w-72"
+          >
+            <option value="auto">{{ $t('appearance.subtitles.mine') }}</option>
+            <option v-for="lang in subtitleLanguages" :key="lang.code" :value="lang.code">{{ lang.name }}</option>
+          </select>
+        </div>
+        <p class="field-hint mt-3">{{ $t('appearance.subtitles.hint') }}</p>
+      </SettingsCard>
       <SettingsCard
         v-for="card in appearanceCards"
         :key="card.field"
@@ -46,6 +69,56 @@
           :grid-class="card.grid"
         />
       </SettingsCard>
+
+      <!-- From here on: kept on the device, not the account. A phone, a computer and a TV
+           each want their own, and the admin can't lock them. -->
+      <div class="pt-2">
+        <h3 class="text-sm font-semibold text-foreground">{{ $t('appearance.device.title') }}</h3>
+        <p class="text-xs text-muted-foreground mt-0.5">{{ $t('appearance.device.desc') }}</p>
+      </div>
+      <SettingsCard :title="$t('appearance.cards.themeMode.title')" :description="$t('appearance.cards.themeMode.desc')">
+        <OptionTiles
+          :label="$t('appearance.cards.themeMode.title')"
+          :options="THEME_MODE_OPTIONS"
+          :model-value="themeStore.mode"
+          @update:model-value="themeStore.setMode($event)"
+          grid-class="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3 gap-2.5"
+        />
+      </SettingsCard>
+      <SettingsCard :title="$t('appearance.cards.textSize.title')" :description="$t('appearance.cards.textSize.desc')">
+        <OptionTiles
+          :label="$t('appearance.cards.textSize.title')"
+          :options="TEXT_SIZE_OPTIONS"
+          :model-value="themeStore.textSize"
+          @update:model-value="themeStore.setTextSize($event)"
+          grid-class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-2.5"
+        />
+      </SettingsCard>
+      <SettingsCard :title="$t('appearance.cards.font.title')" :description="$t('appearance.cards.font.desc')">
+        <OptionTiles
+          :label="$t('appearance.cards.font.title')"
+          :options="FONT_OPTIONS"
+          :model-value="themeStore.font"
+          @update:model-value="themeStore.setFont($event)"
+        />
+      </SettingsCard>
+      <SettingsCard :title="$t('appearance.cards.posterSize.title')" :description="$t('appearance.cards.posterSize.desc')">
+        <OptionTiles
+          :label="$t('appearance.cards.posterSize.title')"
+          :options="POSTER_SIZE_OPTIONS"
+          :model-value="themeStore.posterSize"
+          @update:model-value="themeStore.setPosterSize($event)"
+          grid-class="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3 gap-2.5"
+        />
+      </SettingsCard>
+      <SettingsCard :title="$t('appearance.cards.motion.title')">
+        <ToggleRow
+          :label="$t('appearance.cards.motion.label')"
+          :description="$t('appearance.cards.motion.desc')"
+          :model-value="themeStore.reduceMotion"
+          @update:model-value="themeStore.setReduceMotion($event)"
+        />
+      </SettingsCard>
     </div>
     <div class="order-1 xl:order-2 xl:sticky xl:top-[84px] min-w-0">
       <CustomizationPreview v-model:view="previewView" :settings="previewSettings" :only="['shelf', 'pause']" />
@@ -59,16 +132,23 @@ import { Lock } from '@lucide/vue';
 import { useAuthStore } from '../../../stores/auth';
 import { useCustomizationStore } from '../../../stores/customization';
 import { useSaveStatus } from '../../../composables/useSaveStatus';
-import { ACCENT_OPTIONS, LAYOUT_OPTIONS, PAGE_WIDTH_OPTIONS, PAUSE_SCREEN_OPTIONS } from '../../../constants/appearance';
+import {
+  ACCENT_OPTIONS, LAYOUT_OPTIONS, PAGE_WIDTH_OPTIONS, PAUSE_SCREEN_OPTIONS, TEXT_SIZE_OPTIONS,
+  THEME_MODE_OPTIONS, POSTER_SIZE_OPTIONS, FONT_OPTIONS
+} from '../../../constants/appearance';
+import { useThemeStore } from '../../../stores/theme';
 import OptionTiles from '../../OptionTiles.vue';
 import CustomizationPreview from '../../CustomizationPreview.vue';
 import SectionHeader from '../SectionHeader.vue';
 import SettingsCard from '../SettingsCard.vue';
 import SaveStatus from '../SaveStatus.vue';
-import { t, LANGUAGES, setLanguage, languageChoice as currentLanguageChoice } from '../../../i18n';
+import ToggleRow from '../ToggleRow.vue';
+import { t, LANGUAGES, setLanguage, languageChoice as currentLanguageChoice, languageName } from '../../../i18n';
+import { SUBTITLE_LANGUAGES } from '../../../utils/languages';
 
 const authStore = useAuthStore();
 const customizationStore = useCustomizationStore();
+const themeStore = useThemeStore();
 const save = useSaveStatus();
 
 // Each setting is the person's own when the admin allows it, otherwise the server's (shown,
@@ -119,6 +199,30 @@ const languageOptions = computed(() => [
   ...LANGUAGES.map((lang) => ({ id: lang.code, label: lang.name }))
 ]);
 const languageChoice = computed(() => currentLanguageChoice(authStore.user, customizationStore.defaultLanguage));
+
+// Subtitles: follow the server's default, or always off, or always on in a chosen language.
+// Kept as preferences.subtitles = { mode: 'on' | 'off', language }; absent follows the server.
+const ownSubtitles = computed(() => authStore.user?.preferences?.subtitles || null);
+const subtitleMode = computed(() => (['on', 'off'].includes(ownSubtitles.value?.mode) ? ownSubtitles.value.mode : 'server'));
+const subtitleLanguage = computed(() => ownSubtitles.value?.language || 'auto');
+const subtitleLanguages = computed(() => SUBTITLE_LANGUAGES.map((code) => ({ code, name: languageName(code) })));
+const subtitleModes = computed(() => {
+  const server = customizationStore.subtitles;
+  const serverNow = server.on
+    ? t('appearance.subtitles.modes.server.descOn', { language: server.language === 'auto' ? t('appearance.subtitles.mine') : languageName(server.language) })
+    : t('appearance.subtitles.modes.server.descOff');
+  return [
+    { id: 'server', label: t('appearance.subtitles.modes.server.label'), desc: serverNow },
+    { id: 'off', label: t('appearance.subtitles.modes.off.label'), desc: t('appearance.subtitles.modes.off.desc') },
+    { id: 'on', label: t('appearance.subtitles.modes.on.label'), desc: t('appearance.subtitles.modes.on.desc') }
+  ];
+});
+
+function setSubtitles(change) {
+  const next = { mode: subtitleMode.value, language: subtitleLanguage.value, ...change };
+  // Null clears the person's own choice, so the server's default applies again.
+  return setPersonal('subtitles', next.mode === 'server' ? null : next);
+}
 
 async function setPersonalLanguage(value) {
   await setLanguage(value);

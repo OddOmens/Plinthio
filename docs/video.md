@@ -62,6 +62,34 @@ including HEVC/H.265, which Chrome, Edge and Safari can play.
   `.vtt`, `.ass` and `.ssa`. Language and "forced" are read from the name, and a new file is
   picked up without a rescan. Files over 8 MB aren't read.
 - A **forced** track, used for foreign-language signs, is turned on automatically.
+- Languages are shown by name ("Japanese" rather than `jpn`), in your own language.
+
+### Subtitles by default
+
+Subtitles can start switched on, so nobody has to open the menu each time.
+
+- **For the server:** Admin → Playback → **Subtitles**. Off by default. When on, choose
+  the language: each person's own (the language they use Plinthio in), or one for everyone.
+- **For yourself:** Settings → Appearance → **Subtitles**. Follow the server's setting, or
+  choose Off or On with your own language. Your choice wins over the server's.
+- A video starts with the full subtitles in that language when it has them. One without
+  them starts without subtitles; a subtitle file that doesn't say its language counts.
+- You can always switch subtitles in the player. That changes the video you're watching,
+  not the setting.
+
+### When an anime episode isn't in your language
+
+Before an anime episode plays in a language other than yours with no subtitles showing,
+Plinthio asks how you want to watch it, and loads nothing until you answer:
+
+- **Play with subtitles**, when the episode has them in your language.
+- **Play in your language**, when the file has an audio track in it (a dub).
+- **Play anyway.**
+
+Your answer is kept on the device for the rest of that series, so you're asked once per
+series, not once per episode. Nothing is asked when subtitles are already on, when the
+episode is in your language, when the file doesn't say what language its audio is, or in a
+watch party. "Your language" is the one you use Plinthio in (Settings → Appearance).
 
 ## The player
 

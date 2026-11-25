@@ -18,13 +18,14 @@
   "withdraw": "撤回",
   "status": {
     "pending": "待处理",
-    "accepted_pending": "已接受 · 待添加",
-    "accepted_added": "已接受 · 已添加",
+    "accepted_pending": "已接受",
+    "accepted_added": "已添加",
     "rejected": "已拒绝"
   },
   "actions": {
-    "acceptPending": "接受 · 待添加",
-    "acceptAdded": "接受 · 已添加",
+    "acceptPending": "接受",
+    "approveSend": "接受 · 发送到 Seerr",
+    "acceptAdded": "标记为已添加",
     "reject": "拒绝",
     "backToPending": "退回待处理"
   },
@@ -52,5 +53,21 @@
     },
     "noResults": "没有找到“{query}”的结果。",
     "failed": "搜索失败，请稍后重试。"
+  },
+  "forward": {
+    "sent": "已发送到 Seerr",
+    "exists": "Seerr 中已存在",
+    "send": "发送到 Seerr",
+    "again": "重新发送",
+    "reasons": {
+      "unreachable": "无法连接到 Seerr",
+      "unauthorized": "Seerr 拒绝了 API 密钥",
+      "refused": "Seerr 不接受该请求",
+      "failed": "Seerr 未能接受该请求"
+    }
+  },
+  "auto": {
+    "accepted": "已自动接受",
+    "added": "影片进入媒体库后已标记为已添加"
   }
 }

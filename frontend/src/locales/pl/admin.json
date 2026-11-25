@@ -209,6 +209,52 @@
         "label": "Wspólne seanse",
         "desc": "Przycisk Oglądaj razem przy filmach i odcinkach: oglądanie w synchronizacji z różnych miejsc, z czatem. Limity treści nadal obowiązują wszystkich uczestników. Znajomi poza domem muszą mieć dostęp do tego serwera (zob. Sieć). Wyłączenie kończy trwające wspólne seanse."
       }
+    },
+    "requests": {
+      "title": "Prośby",
+      "desc": "Przyjęte prośby o filmy i seriale można przekazywać do serwera Seerr, żeby nikt nie musiał dodawać ich tam ręcznie.",
+      "badge": {
+        "on": "Wysyłanie",
+        "off": "Wyłączone",
+        "notSet": "Nie skonfigurowano"
+      },
+      "address": "Adres Seerr",
+      "apiKey": "Klucz API",
+      "apiKeySaved": "Zapisany. Wpisz nowy, aby go zastąpić",
+      "save": "Zapisz i sprawdź",
+      "checking": "Sprawdzanie…",
+      "connected": "Połączono z Seerr",
+      "connectedVersion": "Połączono z Seerr {version}",
+      "send": {
+        "label": "Wysyłaj przyjęte prośby do Seerr",
+        "desc": "Gdy prośba zostaje przyjęta, Plinthio prosi Seerr o ten tytuł. Serial jest zamawiany ze wszystkimi sezonami."
+      },
+      "hint": "Klucz API znajdziesz w ogólnych ustawieniach Seerr. Użyj adresu, do którego dotrze sam serwer Plinthio. Wysyłane są tylko filmy, seriale i anime znalezione w TMDB; książki, manga i audiobooki zostają w tej kolejce.",
+      "errors": {
+        "invalid_url": "Wpisz adres jako http:// lub https://, a po nim serwer i port.",
+        "key_required": "Wpisz klucz API ponownie: adres się zmienił.",
+        "unreachable": "Pod tym adresem nic nie odpowiedziało.",
+        "not_seerr": "Ten adres odpowiedział, ale nie jako Seerr.",
+        "unauthorized": "Seerr odrzucił klucz API."
+      },
+      "seerrTitle": "Seerr",
+      "autoAccept": {
+        "desc": "Czyje prośby są przyjmowane od razu po złożeniu, bez czekania na rozpatrzenie.",
+        "label": "Przyjmuj automatycznie",
+        "off": {
+          "label": "Nikt",
+          "desc": "Każda prośba czeka w kolejce do rozpatrzenia."
+        },
+        "staff": {
+          "label": "Administratorzy i redaktorzy",
+          "desc": "Ich własne prośby są przyjmowane od razu."
+        },
+        "all": {
+          "label": "Wszyscy",
+          "desc": "Każda prośba jest przyjmowana od razu. Konta z Trybem dziecięcym lub limitem wieku nadal czekają."
+        },
+        "hint": "Przyjęty film lub serial trafia dalej do Seerr, jeśli jest to włączone poniżej. Prośba sama zostaje oznaczona jako dodana, gdy skanowanie biblioteki znajdzie tytuł."
+      }
     }
   },
   "kids": {
@@ -983,6 +1029,17 @@
       "removeTitle": "Usuń swój klip",
       "removeMessage": "Usunąć twój klip i wrócić do wbudowanej czołówki Plinthio?",
       "couldNotRemove": "Nie udało się go usunąć"
+    },
+    "subtitles": {
+      "title": "Napisy",
+      "desc": "Czy napisy są włączone, gdy zaczyna się film. Każdy może wybrać po swojemu w Ustawienia → Wygląd.",
+      "on": {
+        "label": "Napisy domyślnie włączone",
+        "desc": "Film zaczyna się z napisami, jeśli ma je w wybranym języku. Każdy może je wyłączyć w odtwarzaczu."
+      },
+      "language": "Język",
+      "own": "Własny język każdej osoby",
+      "languageHint": "Film bez napisów w tym języku zaczyna się bez nich."
     }
   },
   "users": {

@@ -324,6 +324,12 @@
       "meaning": "该请求已被删除，或从未存在。",
       "fix": "刷新请求页面。"
     },
+    "P507": {
+      "title": "无法连接到 Seerr",
+      "message": "无法连接到 Seerr",
+      "meaning": "已接受的请求被设置为发送到 Seerr 服务器，但 Plinthio 无法使用它：该地址没有响应、响应的不是 Seerr，或者 Seerr 拒绝了 API 密钥。",
+      "fix": "请在“管理 → 功能 → 请求”中检查地址和 API 密钥。该地址必须是 Plinthio 服务器自身能访问的：在 Docker 中，`localhost` 指的是 Plinthio 容器，而不是运行它的机器。"
+    },
     "P600": {
       "title": "一起看已关闭",
       "message": "此服务器已关闭一起看",

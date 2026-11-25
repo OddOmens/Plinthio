@@ -7,6 +7,16 @@
     "minutesShort": "{count}m"
   },
   "video": {
+    "language": {
+      "title": "This episode is in {language}",
+      "subsOff": "Subtitles are off.",
+      "noSubs": "It has no {language} subtitles.",
+      "remember": "Your answer is kept for the rest of this series on this device.",
+      "withSubtitlesIn": "Play with {language} subtitles",
+      "withSubtitles": "Play with subtitles",
+      "inLanguage": "Play in {language}",
+      "anyway": "Play anyway"
+    },
     "backToShelf": "Back to shelf",
     "castToTv": "Cast to TV",
     "playbackSettings": "Playback settings",

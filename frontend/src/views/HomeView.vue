@@ -26,11 +26,13 @@
         <span class="flex-1">{{ $t('shelf.offline.message') }}</span>
         <span class="font-semibold whitespace-nowrap">{{ $t('shelf.offline.openDownloads') }}</span>
       </router-link>
+      <!-- The rows above the shelf, in the person's own order (Settings → Shelves). -->
+      <template v-for="row in homeRowIds" :key="row">
       <!-- Favourite live channels; hides itself when empty. -->
-      <LiveNowRow v-if="activeType === 'all' && !searchQuery && !filtersActive && groupBy === 'series'" />
+      <LiveNowRow v-if="row === 'live' && activeType === 'all' && !searchQuery && !filtersActive && groupBy === 'series'" />
 
       <!-- Continue Watching: video only, its own row on the "All" view -->
-      <section :key="`watching-${activeType}`" v-if="continueWatchingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="shelf-fade-in flex flex-col gap-3">
+      <section :key="`watching-${activeType}`" v-else-if="row === 'watching' && continueWatchingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="shelf-fade-in flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-semibold tracking-tight text-foreground flex items-center gap-1.5">
             <MonitorPlay class="w-4 h-4 text-muted-foreground" />
@@ -53,7 +55,7 @@
       </section>
 
       <!-- Continue Reading / Listening -->
-      <section :key="`reading-${activeType}`" v-if="continueReadingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="shelf-fade-in flex flex-col gap-3">
+      <section :key="`reading-${activeType}`" v-else-if="row === 'reading' && continueReadingItems.length > 0 && !searchQuery && !filtersActive && groupBy === 'series'" class="shelf-fade-in flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-semibold tracking-tight text-foreground flex items-center gap-1.5">
             <Clock class="w-4 h-4 text-muted-foreground" />
@@ -74,6 +76,7 @@
           />
         </div>
       </section>
+      </template>
 
       <!-- Main shelf -->
       <section class="flex flex-col gap-4">
@@ -410,6 +413,7 @@ import BookCard from '../components/BookCard.vue';
 import SeriesCard from '../components/SeriesCard.vue';
 import ShelfEntryGrid from '../components/ShelfEntryGrid.vue';
 import LiveNowRow from '../components/live/LiveNowRow.vue';
+import { homeRowOrder, hiddenHomeRows } from '../utils/homeRows';
 import { buildShelfEntries, entryFolder, groupEntries } from '../utils/shelfEntries';
 import { detailRoute, creatorLabel, realCreator, VIDEO_TYPES } from '../utils/mediaVocab';
 import { normalizeShelfModes, userShelfModes } from '../utils/shelfModes';
@@ -587,16 +591,25 @@ const displayedContinueItems = computed(() => {
   });
 });
 
+// The rows above the shelf: the person's order, and which they've hidden (Settings → Shelves).
+const homeRowIds = computed(() => homeRowOrder(authStore.user?.preferences?.homeRows));
+// (The Live TV row has its own switch, preferences.liveTv.showOnHome, which it reads itself.)
+const hiddenRows = computed(() => hiddenHomeRows(authStore.user?.preferences?.homeRows));
+// A hidden row's titles stay off Home on every tab: "watching" is video, "reading" the rest.
+const shownContinueItems = computed(() => displayedContinueItems.value.filter(
+  (i) => !hiddenRows.value.includes(VIDEO_TYPES.includes(i.media_type) ? 'watching' : 'reading')
+));
+
 // On "All", video gets its own Continue Watching row; a filtered view has just one row.
 const continueWatchingItems = computed(() =>
   activeType.value === 'all'
-    ? displayedContinueItems.value.filter(i => VIDEO_TYPES.includes(i.media_type))
+    ? shownContinueItems.value.filter(i => VIDEO_TYPES.includes(i.media_type))
     : []
 );
 const continueReadingItems = computed(() =>
   activeType.value === 'all'
-    ? displayedContinueItems.value.filter(i => !VIDEO_TYPES.includes(i.media_type))
-    : displayedContinueItems.value
+    ? shownContinueItems.value.filter(i => !VIDEO_TYPES.includes(i.media_type))
+    : shownContinueItems.value
 );
 
 const sectionTitle = computed(() => {

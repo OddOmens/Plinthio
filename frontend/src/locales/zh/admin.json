@@ -209,6 +209,52 @@
         "label": "一起看",
         "desc": "在电影和剧集上显示“一起看”按钮：身处不同地方也能同步观看，还可以聊天。内容限制对参与的每个人仍然有效。不在家的朋友需要能访问此服务器（见“网络”）。关闭后会结束所有正在进行的一起看。"
       }
+    },
+    "requests": {
+      "title": "请求",
+      "desc": "已接受的电影和剧集请求可以转交给 Seerr 服务器，不必再到那边手动添加。",
+      "badge": {
+        "on": "发送中",
+        "off": "已关闭",
+        "notSet": "未设置"
+      },
+      "address": "Seerr 地址",
+      "apiKey": "API 密钥",
+      "apiKeySaved": "已保存。输入新密钥即可替换",
+      "save": "保存并检查",
+      "checking": "正在检查…",
+      "connected": "已连接到 Seerr",
+      "connectedVersion": "已连接到 Seerr {version}",
+      "send": {
+        "label": "将已接受的请求发送到 Seerr",
+        "desc": "接受请求后，Plinthio 会向 Seerr 请求该作品。剧集会请求全部季。"
+      },
+      "hint": "API 密钥在 Seerr 的常规设置中。请使用 Plinthio 服务器自身能访问的地址。只发送在 TMDB 上找到的电影、剧集和动画；书籍、漫画和有声书留在此队列中。",
+      "errors": {
+        "invalid_url": "请以 http:// 或 https:// 开头，后接服务器和端口来输入地址。",
+        "key_required": "地址已更改，请重新输入 API 密钥。",
+        "unreachable": "该地址没有任何响应。",
+        "not_seerr": "该地址有响应，但不是 Seerr。",
+        "unauthorized": "Seerr 拒绝了 API 密钥。"
+      },
+      "seerrTitle": "Seerr",
+      "autoAccept": {
+        "desc": "谁的请求在提出时就被接受，无需等待审核。",
+        "label": "自动接受",
+        "off": {
+          "label": "无人",
+          "desc": "每个请求都在审核队列中等待。"
+        },
+        "staff": {
+          "label": "管理员和编辑",
+          "desc": "他们自己的请求一提出就被接受。"
+        },
+        "all": {
+          "label": "所有人",
+          "desc": "每个请求一提出就被接受。开启儿童模式或有年龄分级限制的账号仍需等待审核。"
+        },
+        "hint": "如果下方已开启，被接受的电影或剧集会转给 Seerr。媒体库扫描找到该影片后，请求会自动标记为已添加。"
+      }
     }
   },
   "kids": {
@@ -923,6 +969,17 @@
       "removeTitle": "移除你的短片",
       "removeMessage": "要移除你的短片并改回Plinthio内置的片头吗？",
       "couldNotRemove": "无法移除"
+    },
+    "subtitles": {
+      "title": "字幕",
+      "desc": "视频开始时是否开启字幕。每个人都可以在“设置 → 外观”中自行选择。",
+      "on": {
+        "label": "默认开启字幕",
+        "desc": "如果视频有所选语言的字幕，开始时就会显示。任何人仍可在播放器中关闭。"
+      },
+      "language": "语言",
+      "own": "每个人自己的语言",
+      "languageHint": "没有该语言字幕的视频开始时不显示字幕。"
     }
   },
   "users": {

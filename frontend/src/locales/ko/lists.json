@@ -45,8 +45,8 @@
   "requestHint": "관리자에게 라이브러리에 추가해 달라고 요청해요",
   "requestStatus": {
     "pending": "대기 중",
-    "accepted_pending": "수락됨 · 추가 대기",
-    "accepted_added": "수락됨 · 추가됨",
+    "accepted_pending": "수락됨",
+    "accepted_added": "추가됨",
     "rejected": "거절됨"
   },
   "deleteDialog": {

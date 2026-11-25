@@ -74,7 +74,9 @@ button. Sections are listed in [Administration](administration.md).
 | Features | **Shelf views** | all on | Whether **Disk folders** and **Custom folders** are offered to everyone. Alphabetical and Creator are always there |
 | Features | **Ratings** | all on | Personal stars, the server average, TMDB's world score. A switched-off rating isn't sent by the API either |
 | Features | **Show missing films in collections** | on | A collection also lists the films the server doesn't have, greyed out with a Request button. They never appear on the shelf |
+| Features | **Requests: send to Seerr** | not set up | A Seerr server's address and API key. With it on, an approved request for a movie or show is sent there. See [Together → Requests](together.md#sending-accepted-requests-to-seerr) |
 | Features | **Watch parties** | off | Adds "Watch Together" to movies and episodes. Turning it off ends any party in progress |
+| Playback | **Subtitles** | off | Whether subtitles are on when a video starts, and in which language (each person's own, or one you pick). Each person can choose their own in Settings → Appearance. See [Subtitles by default](video.md#subtitles-by-default) |
 | Playback | **Hardware acceleration** | auto | Auto-detect, a specific method (VAAPI, QuickSync, NVENC), or the CPU only. **Test** runs a real encode |
 | Playback | **Converted copies** | 50 GB, Balanced quality, original size, admins only, originals kept | Background conversions of video some devices can't play (AV1, VP9, 10-bit H.264, older formats) to H.264: a size limit, the quality (Smaller files, Balanced, High quality), a largest size (original, 1080p, 720p), who may ask for one, converting a whole library, and optionally replacing the originals. See [Converted copies](administration.md#converted-copies) |
 | Playback | **Opening sequence** | off, built-in clip | A short clip played before movies and/or episodes when someone presses Play. Replace it with your own 1–10 second MP4 (H.264, under 20 MB). See [Movies and shows](video.md#opening-sequence) |
@@ -97,8 +99,26 @@ and the pause screen beside its settings; hovering a choice shows it before you 
 - **Security:** change password, two-factor sign-in, and sign out of every device.
 - **Appearance:** when the admin allows it (Admin → Appearance), your own **accent colour**,
   **navigation** (top bar or sidebar), **page width** (full width, or contained at up to
-  1440px) and **video pause screen**. Light or dark mode is the sun/moon button in the top bar.
-- **Shelves:** which media types you see, the shelf you start on, and which shelf views you use.
+  1440px) and **video pause screen**. **Language** is always yours to set, and so are
+  **Subtitles**: follow the server's setting, or have them always off or always on in a
+  language you choose.
+- **Appearance → This device:** kept on the device rather than your account, so a phone, a
+  computer and a TV can each have their own, and never locked by the admin.
+  - **Light or dark:** Light, Dark, or **Match device**, which follows the device's own
+    setting as it changes. The sun/moon button in the user menu still switches between light
+    and dark.
+  - **Text size:** Small, Default, Large or Extra large. Text and controls get bigger or
+    smaller together.
+  - **Font:** Default (the device's own), Serif, Atkinson Hyperlegible (letters drawn to be
+    hard to mix up) or OpenDyslexic. The last two ship with Plinthio and are only downloaded
+    by a device that chooses them. Books keep their own font, set in the reader.
+  - **Poster size:** Compact, Default or Large: how many posters sit in a row on your
+    shelves. On a phone, Large is the same as Default (two in a row).
+  - **Reduce motion:** things appear instead of sliding, fading or zooming. Plinthio already
+    does this when the device itself asks for reduced motion.
+- **Shelves:** which media types you see, the shelf you start on, which shelf views you use,
+  and the **Home rows**: switch Continue watching, Continue reading and listening, and the
+  Live TV favourites row on or off, and put them in your own order.
 - **Hidden titles:** titles you've hidden from your own shelves, with a way to bring them back.
 - **Activity:** what you've read, watched and listened to, and your recent sign-ins.
 - **Apps & API keys:** the **reading apps** setup guide, and keys for apps and scripts.

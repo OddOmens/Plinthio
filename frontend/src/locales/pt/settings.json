@@ -113,6 +113,17 @@
       "desc": "A estante em que o Plinthio abre.",
       "all": "Todas as mídias"
     },
+    "homeRows": {
+      "title": "Fileiras do Início",
+      "desc": "As fileiras acima da sua estante no Início. Desative as que não quiser e coloque o resto na sua ordem.",
+      "moveUp": "Mover {row} para cima",
+      "moveDown": "Mover {row} para baixo",
+      "rows": {
+        "live": { "label": "Favoritos da TV ao vivo", "desc": "Seus canais favoritos e o que está passando." },
+        "watching": { "label": "Continuar assistindo", "desc": "Filmes e episódios que você começou." },
+        "reading": { "label": "Continuar lendo e ouvindo", "desc": "Livros, mangás e audiolivros que você começou." }
+      }
+    },
     "views": {
       "title": "Visualizações da estante",
       "desc": "As visualizações acima da sua estante. Cada uma mostra um card por série; Alfabética está sempre disponível.",

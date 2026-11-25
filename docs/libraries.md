@@ -91,6 +91,8 @@ Movies/
 - **Extras:** see below.
 - **Poster:** a `poster.jpg`/`cover.jpg`/`folder.jpg` in the film's folder, else TMDB (with
   a key), else a frame from about 20% into the film.
+- **Ids:** an id tag in the folder or file name, or an `.nfo` beside the film, says exactly
+  which film it is. See [Ids in names and .nfo files](#ids-in-names-and-nfo-files).
 
 ### Shows and anime
 
@@ -109,8 +111,46 @@ Shows/
   Specials are season 0 and listed last.
 - **Series:** the show name in the file name, else the folder.
 - A show split into season folders appears once, under the show.
+- **Ids:** an id tag on the show's folder, or a `tvshow.nfo` in it, says exactly which show
+  it is. See [Ids in names and .nfo files](#ids-in-names-and-nfo-files).
 - Episode stills are grabbed from the video (about 30% in) the first time the list shows
   them, two at a time at most, then cached.
+
+### Ids in names and .nfo files
+
+Without an id, a film or show is identified by searching TMDB for its title, which can pick
+the wrong one when two share a name (a remake, a film and a show). If your files already
+say which title they are, Plinthio reads that and never guesses.
+
+```text
+Movies/
+  The Matrix (1999) {tmdb-603}/
+    The Matrix (1999).mkv
+  Arrival (2016)/
+    Arrival (2016) [imdbid-tt2543164].mkv
+    movie.nfo
+Shows/
+  Breaking Bad {tvdb-81189}/
+    tvshow.nfo
+    Season 01/
+      Breaking Bad - S01E01.mkv
+```
+
+- **Tags:** `{tmdb-603}`, `{imdb-tt0133093}` and `{tvdb-81189}`, in curly or square
+  brackets, also written `[tmdbid-603]` or `[tmdbid=603]`. A film's tag goes on its folder or
+  its file; a show's goes on the show folder. Tags never appear in the title.
+- **`.nfo` files:** `<file name>.nfo` or `movie.nfo` beside a film, and `tvshow.nfo` in a
+  show's folder. Plinthio reads the ids from them (`<uniqueid type="tmdb">`, `<tmdbid>`,
+  `<imdbid>`, `<tvdbid>`, or a link to the title's TMDB or IMDb page) and nothing else. An
+  episode's own `.nfo` is ignored, and so is a `movie.nfo` in the library's top folder.
+- A tag wins over an `.nfo` when both give the same kind of id.
+- **What ids do:** the poster, cast and crew come from that exact title, a film is found in
+  its collection, and Lists show a title as in your library even when its name on disk is
+  spelled differently. With only an IMDb or TVDB id, the TMDB one is looked up from it the
+  first time it's needed (with a TMDB key).
+- **When they're read:** when a file is added, and again whenever its tags or `.nfo` change.
+  A match you make by hand afterwards is kept; scans don't put the file's id back until the
+  tags or `.nfo` change again.
 
 ### Extras
 

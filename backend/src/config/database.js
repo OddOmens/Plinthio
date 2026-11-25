@@ -272,6 +272,9 @@ async function initSchema(db) {
     // offloaded_at: kept as history by an admin; hidden, but its page shows greyed.
     'offloaded_at DATETIME',
     'tmdb_id TEXT', 'credits_json TEXT', 'credits_checked_at DATETIME',
+    // imdb_id / tvdb_id: read from folder-name tags and .nfo files at scan time, like tmdb_id
+    // when the files carry one. file_ids: what the disk last said (services/providerIds.js).
+    'imdb_id TEXT', 'tvdb_id TEXT', 'file_ids TEXT',
     // Books: ISBN-13 and language (BCP 47). book_meta_version: BOOK_META_VERSION last read
     // with; older ones are re-read once to fill empty fields.
     'isbn TEXT', 'language TEXT', 'book_meta_version INTEGER'
@@ -283,6 +286,7 @@ async function initSchema(db) {
   await db.exec(`
     CREATE INDEX IF NOT EXISTS idx_items_koreader_hash ON items(koreader_hash);
     CREATE INDEX IF NOT EXISTS idx_items_koreader_name_hash ON items(koreader_name_hash);
+    CREATE INDEX IF NOT EXISTS idx_items_tmdb_id ON items(tmdb_id);
     CREATE TABLE IF NOT EXISTS kosync_progress (
       user_id TEXT NOT NULL,
       document TEXT NOT NULL,
@@ -466,6 +470,17 @@ async function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_requests_status ON media_requests(status, created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_requests_external ON media_requests(source, external_id);
   `);
+  // Where an accepted request was passed on to (services/seerr.js) and how that went:
+  // forward_state 'sent' | 'exists' | 'failed', forward_reason says why it failed,
+  // forward_ref is the other side's own id for it.
+  await addColumns(db, 'media_requests', [
+    'forward_target TEXT', 'forward_state TEXT', 'forward_reason TEXT', 'forward_detail TEXT',
+    'forward_ref TEXT', 'forwarded_at DATETIME'
+  ]);
+  // auto_accepted: accepted as it was made, by the admin's setting rather than a reviewer.
+  // auto_added_at: marked as added by a scan that found the title; set once, so a reviewer
+  // who moves the request back isn't overruled by the next scan (services/requestAutomation.js).
+  await addColumns(db, 'media_requests', ['auto_accepted INTEGER DEFAULT 0', 'auto_added_at DATETIME']);
 
   // Intro/credits markers for skip buttons. No item FK (see user_progress).
   await db.exec(`

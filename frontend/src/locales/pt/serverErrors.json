@@ -324,6 +324,12 @@
       "meaning": "O pedido foi excluído ou nunca existiu.",
       "fix": "Atualize a página Pedidos."
     },
+    "P507": {
+      "title": "Não foi possível conectar ao Seerr",
+      "message": "Não foi possível conectar ao Seerr",
+      "meaning": "Os pedidos aceitos estão configurados para serem enviados a um servidor Seerr, e o Plinthio não conseguiu usá-lo: o endereço não respondeu, o que respondeu não era o Seerr ou o Seerr recusou a chave de API.",
+      "fix": "Confira o endereço e a chave de API em Administração → Recursos → Pedidos. O endereço precisa ser alcançável pelo próprio servidor do Plinthio: dentro do Docker, `localhost` é o contêiner do Plinthio, não a máquina em que ele roda."
+    },
     "P600": {
       "title": "As sessões conjuntas estão desativadas",
       "message": "As sessões conjuntas estão desativadas neste servidor",

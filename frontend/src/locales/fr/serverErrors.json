@@ -324,6 +324,12 @@
       "meaning": "La demande a été supprimée ou n'a jamais existé.",
       "fix": "Actualisez la page Demandes."
     },
+    "P507": {
+      "title": "Connexion à Seerr impossible",
+      "message": "Connexion à Seerr impossible",
+      "meaning": "Les demandes acceptées doivent être envoyées à un serveur Seerr, et Plinthio n'a pas pu l'utiliser : l'adresse n'a pas répondu, ce qui a répondu n'était pas Seerr, ou Seerr a refusé la clé API.",
+      "fix": "Vérifiez l'adresse et la clé API dans Administration → Fonctionnalités → Demandes. L'adresse doit être joignable par le serveur Plinthio lui-même : dans Docker, `localhost` désigne le conteneur Plinthio, pas la machine qui l'héberge."
+    },
     "P600": {
       "title": "Les soirées de visionnage sont désactivées",
       "message": "Les soirées de visionnage sont désactivées sur ce serveur",

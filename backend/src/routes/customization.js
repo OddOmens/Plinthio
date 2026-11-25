@@ -26,6 +26,28 @@ const DEFAULT_PAGE_WIDTH = 'full';
 const LANGUAGES = ['auto', 'en', 'de', 'es', 'fr', 'it', 'nl', 'pl', 'pt', 'ja', 'ko', 'zh'];
 const DEFAULT_LANGUAGE = 'auto';
 
+// Whether subtitles are switched on when a video starts, and in which language. 'auto' is
+// each person's own language. The server's default; a person's own choice always wins
+// (preferences.subtitles). Codes are ISO 639-1, as in frontend/src/utils/languages.js.
+const SUBTITLE_LANGUAGES = ['auto', 'en', 'de', 'es', 'fr', 'it', 'nl', 'pl', 'pt', 'ja', 'ko', 'zh',
+  'ar', 'cs', 'da', 'el', 'fi', 'he', 'hi', 'hu', 'id', 'no', 'ro', 'ru', 'sv', 'th', 'tr', 'uk', 'vi'];
+const DEFAULT_SUBTITLES = { on: false, language: 'auto' };
+
+function parseSubtitles(raw) {
+  try {
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return {
+        on: parsed.on === true,
+        language: SUBTITLE_LANGUAGES.includes(parsed.language) ? parsed.language : DEFAULT_SUBTITLES.language
+      };
+    }
+  } catch (e) {
+    // Malformed stored JSON: use defaults
+  }
+  return { ...DEFAULT_SUBTITLES };
+}
+
 const DEFAULT_USER_CUSTOMIZATION = {
   enabled: true,
   accentColor: true,
@@ -59,7 +81,7 @@ router.get('/', async (req, res) => {
     const db = await getDb();
     const rows = await db.all(`
       SELECT key, value FROM settings
-      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen', 'page_width', 'default_language', 'user_customization')
+      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen', 'page_width', 'default_language', 'user_customization', 'subtitles_default')
     `);
 
     const config = {
@@ -71,7 +93,8 @@ router.get('/', async (req, res) => {
       pauseScreen: DEFAULT_PAUSE_SCREEN,
       pageWidth: DEFAULT_PAGE_WIDTH,
       defaultLanguage: DEFAULT_LANGUAGE,
-      userCustomization: { ...DEFAULT_USER_CUSTOMIZATION }
+      userCustomization: { ...DEFAULT_USER_CUSTOMIZATION },
+      subtitles: { ...DEFAULT_SUBTITLES }
     };
 
     for (const row of rows) {
@@ -84,6 +107,7 @@ router.get('/', async (req, res) => {
       if (row.key === 'page_width' && PAGE_WIDTHS.includes(row.value)) config.pageWidth = row.value;
       if (row.key === 'default_language' && LANGUAGES.includes(row.value)) config.defaultLanguage = row.value;
       if (row.key === 'user_customization') config.userCustomization = parseUserCustomization(row.value);
+      if (row.key === 'subtitles_default') config.subtitles = parseSubtitles(row.value);
     }
 
     config.ratings = await getRatingSettings(db);
@@ -117,6 +141,7 @@ router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
     liveTvEnabled,
     pauseScreen,
     defaultLanguage,
+    subtitles,
     introEnabled,
     introMovies,
     introShows
@@ -171,6 +196,23 @@ router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
     await setSetting(db, 'default_language', defaultLanguage);
   }
 
+  if (subtitles !== undefined) {
+    if (!subtitles || typeof subtitles !== 'object' || Array.isArray(subtitles)) {
+      return res.status(400).json({ error: 'subtitles must be an object' });
+    }
+    if (subtitles.on !== undefined && typeof subtitles.on !== 'boolean') {
+      return res.status(400).json({ error: 'subtitles.on must be true or false' });
+    }
+    if (subtitles.language !== undefined && !SUBTITLE_LANGUAGES.includes(subtitles.language)) {
+      return res.status(400).json({ error: `subtitles.language must be one of ${SUBTITLE_LANGUAGES.join(', ')}` });
+    }
+    const current = parseSubtitles(await getSetting(db, 'subtitles_default'));
+    await setSetting(db, 'subtitles_default', JSON.stringify({
+      on: subtitles.on !== undefined ? subtitles.on : current.on,
+      language: subtitles.language !== undefined ? subtitles.language : current.language
+    }));
+  }
+
   if (userCustomization !== undefined) {
     if (!userCustomization || typeof userCustomization !== 'object' || Array.isArray(userCustomization)) {
       return res.status(400).json({ error: 'userCustomization must be an object' });
@@ -209,7 +251,7 @@ router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
 
   const rows = await db.all(`
       SELECT key, value FROM settings
-      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen', 'page_width', 'default_language', 'user_customization')
+      WHERE key IN ('server_name', 'custom_css', 'accent_theme', 'login_message', 'layout_mode', 'pause_screen', 'page_width', 'default_language', 'user_customization', 'subtitles_default')
     `);
 
   const result = {
@@ -221,7 +263,8 @@ router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
     pauseScreen: DEFAULT_PAUSE_SCREEN,
     pageWidth: DEFAULT_PAGE_WIDTH,
     defaultLanguage: DEFAULT_LANGUAGE,
-    userCustomization: { ...DEFAULT_USER_CUSTOMIZATION }
+    userCustomization: { ...DEFAULT_USER_CUSTOMIZATION },
+    subtitles: { ...DEFAULT_SUBTITLES }
   };
 
   for (const row of rows) {
@@ -234,6 +277,7 @@ router.patch('/', authenticateToken, requireAdmin, handle(async (req, res) => {
     if (row.key === 'page_width' && PAGE_WIDTHS.includes(row.value)) result.pageWidth = row.value;
     if (row.key === 'default_language' && LANGUAGES.includes(row.value)) result.defaultLanguage = row.value;
     if (row.key === 'user_customization') result.userCustomization = parseUserCustomization(row.value);
+    if (row.key === 'subtitles_default') result.subtitles = parseSubtitles(row.value);
   }
   result.ratings = await getRatingSettings(db);
   result.showMissingFilms = await getShowMissingFilms(db);

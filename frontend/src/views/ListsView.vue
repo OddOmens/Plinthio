@@ -483,7 +483,7 @@ async function requestEntry(entry) {
   requesting.value = new Set(requesting.value).add(entry.id);
   error.value = '';
   try {
-    await api.post('/requests', {
+    const res = await api.post('/requests', {
       mediaType: ext.media_type,
       source: ext.source,
       externalId: ext.external_id,
@@ -494,7 +494,7 @@ async function requestEntry(entry) {
       overview: ext.overview,
       coverUrl: ext.cover_url
     });
-    ext.request_status = 'pending';
+    ext.request_status = res.data.request?.status || 'pending';
   } catch (err) {
     // Someone else already asked for it — show where that request is at.
     if (err.response?.status === 409 && err.response.data?.status) {

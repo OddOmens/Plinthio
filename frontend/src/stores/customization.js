@@ -30,6 +30,8 @@ export const useCustomizationStore = defineStore('customization', {
     pauseScreen: 'details',
     // 'auto' (browser) or a language code.
     defaultLanguage: 'auto',
+    // Whether subtitles start switched on, and in which language ('auto': the viewer's own).
+    subtitles: { on: false, language: 'auto' },
     // Opening sequence before movies/episodes. introVersion changes per upload to bust caches.
     introEnabled: false,
     introMovies: true,
@@ -65,6 +67,13 @@ export const useCustomizationStore = defineStore('customization', {
       }
       return state.pageWidth || 'full';
     },
+    // A person's own choice (Settings → Appearance) wins; otherwise the server's default.
+    effectiveSubtitles: (state) => (user) => {
+      const own = user?.preferences?.subtitles;
+      const server = state.subtitles || { on: false, language: 'auto' };
+      if (own?.mode !== 'on' && own?.mode !== 'off') return { on: !!server.on, language: server.language || 'auto' };
+      return { on: own.mode === 'on', language: own.language || 'auto' };
+    },
     effectivePauseScreen: (state) => (user) => {
       if (state.userCustomization?.enabled !== false && state.userCustomization?.pauseScreen !== false && user?.preferences?.pauseScreen) {
         return user.preferences.pauseScreen;
@@ -93,6 +102,7 @@ export const useCustomizationStore = defineStore('customization', {
           if (typeof res.data.liveTvEnabled === 'boolean') this.setLiveTvEnabled(res.data.liveTvEnabled);
           if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
           if (res.data.defaultLanguage) this.defaultLanguage = res.data.defaultLanguage;
+          if (res.data.subtitles) this.subtitles = { ...this.subtitles, ...res.data.subtitles };
           this.applyIntro(res.data);
           this.applyToDom();
         }
@@ -122,6 +132,7 @@ export const useCustomizationStore = defineStore('customization', {
           if (typeof res.data.liveTvEnabled === 'boolean') this.setLiveTvEnabled(res.data.liveTvEnabled);
           if (res.data.pauseScreen) this.pauseScreen = res.data.pauseScreen;
           if (res.data.defaultLanguage) this.defaultLanguage = res.data.defaultLanguage;
+          if (res.data.subtitles) this.subtitles = { ...this.subtitles, ...res.data.subtitles };
           this.applyIntro(res.data);
           this.applyToDom();
         }

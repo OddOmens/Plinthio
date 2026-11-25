@@ -6,6 +6,8 @@ import { ALL_MEDIA_TYPES } from '../config/mediaTypes.js';
 import { handle } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { logger } from '../services/logger.js';
+import { getSeerrConfig, canSendToSeerr, forwardRequest } from '../services/seerr.js';
+import { acceptsAutomatically, markIfArrived } from '../services/requestAutomation.js';
 
 const router = express.Router();
 
@@ -28,6 +30,34 @@ function clipLine(value, max) {
   if (text === null) return null;
   return text.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]+/g, ' ').trim() || null;
 }
+
+// Where a request was passed on to is the reviewers' business; requesters see its status.
+const FORWARD_FIELDS = ['forward_target', 'forward_state', 'forward_reason', 'forward_detail', 'forward_ref', 'forwarded_at'];
+
+// `will_forward`: approving it would pass it on (the review queue says so on the button).
+// `can_forward`: approved, a kind the other side takes, and not already there.
+function forReviewer(request, forwarding) {
+  const sendable = forwarding && canSendToSeerr(request) && !['sent', 'exists'].includes(request.forward_state);
+  return {
+    ...request,
+    will_forward: sendable && request.status !== 'accepted_pending',
+    can_forward: forwarding && request.status === 'accepted_pending' && canSendToSeerr(request) &&
+      !['sent', 'exists'].includes(request.forward_state)
+  };
+}
+
+function forRequester(request) {
+  const out = { ...request };
+  for (const field of FORWARD_FIELDS) delete out[field];
+  return out;
+}
+
+const REVIEW_ROW = `
+  SELECT r.*, u.username AS requested_by, h.username AS handled_by_username
+  FROM media_requests r
+  LEFT JOIN users u ON u.id = r.user_id
+  LEFT JOIN users h ON h.id = r.handled_by
+  WHERE r.id = ?`;
 
 // Newest first. Own requests; admins and editors can pass scope=all for the review queue.
 router.get('/', handle(async (req, res) => {
@@ -62,7 +92,9 @@ router.get('/', handle(async (req, res) => {
       LIMIT 500
     `, params);
 
-  res.json({ requests });
+  if (!isStaff(req.user)) return res.json({ requests: requests.map(forRequester) });
+  const forwarding = (await getSeerrConfig(db)).enabled;
+  res.json({ requests: requests.map((r) => forReviewer(r, forwarding)), forwarding: forwarding ? 'seerr' : null });
 }));
 
 // Pending count for the user menu badge.
@@ -101,21 +133,29 @@ router.post('/', handle(async (req, res) => {
     });
   }
 
+  // Accepted on the spot when the admin set requests up that way; otherwise it waits for review.
+  const accepted = await acceptsAutomatically(db, req.user);
   const id = crypto.randomUUID();
   await db.run(`
       INSERT INTO media_requests
-        (id, user_id, media_type, source, external_id, title, subtitle, author, release_date, overview, cover_url, note)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, user_id, media_type, source, external_id, title, subtitle, author, release_date, overview, cover_url, note,
+         status, auto_accepted, handled_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${accepted ? 'CURRENT_TIMESTAMP' : 'NULL'})
     `, [
     id, req.user.id, mediaType, clip(source, 40), clip(externalId, 200),
     title, clipLine(req.body.subtitle, 300), clipLine(req.body.author, 300),
     clipLine(req.body.releaseDate, 40), clip(req.body.overview, 4000), clip(coverUrl, 1000),
-    clip(req.body.note?.trim(), 1000)
+    clip(req.body.note?.trim(), 1000), accepted ? 'accepted_pending' : 'pending', accepted ? 1 : 0
   ]);
 
-  logger.info('media', `${req.user.username} requested "${title}" (${mediaType})`);
-  const request = await db.get('SELECT * FROM media_requests WHERE id = ?', [id]);
-  res.status(201).json({ message: 'Request sent', request });
+  logger.info('media', `${req.user.username} requested "${title}" (${mediaType})${accepted ? ', accepted automatically' : ''}`);
+  let request = await db.get('SELECT * FROM media_requests WHERE id = ?', [id]);
+  if (accepted) {
+    // Already in the library (the search just didn't know): done, with nothing to pass on.
+    if (!(await markIfArrived(db, request))) await forwardRequest(db, request);
+    request = await db.get('SELECT * FROM media_requests WHERE id = ?', [id]);
+  }
+  res.status(201).json({ message: 'Request sent', request: isStaff(req.user) ? request : forRequester(request) });
 }));
 
 // Admins and editors change a request's state and can leave the requester a note.
@@ -126,7 +166,7 @@ router.patch('/:id', requireEditor, handle(async (req, res) => {
   }
 
   const db = await getDb();
-  const request = await db.get('SELECT id, title FROM media_requests WHERE id = ?', [req.params.id]);
+  const request = await db.get('SELECT * FROM media_requests WHERE id = ?', [req.params.id]);
   if (!request) return sendError(req, res, 'P506');
 
   // Moving a request back to pending un-handles it.
@@ -139,14 +179,28 @@ router.patch('/:id', requireEditor, handle(async (req, res) => {
     `, [status, clip(req.body.responseNote?.trim(), 1000), handled ? req.user.id : null, request.id]);
 
   logger.info('media', `${req.user.username} set request "${request.title}" to ${status}`);
-  const updated = await db.get(`
-      SELECT r.*, u.username AS requested_by, h.username AS handled_by_username
-      FROM media_requests r
-      LEFT JOIN users u ON u.id = r.user_id
-      LEFT JOIN users h ON h.id = r.handled_by
-      WHERE r.id = ?
-    `, [request.id]);
-  res.json({ message: 'Request updated', request: updated });
+  // "Accepted, still to be added" is the moment to pass it on (when a Seerr server is set up).
+  // The status is already saved: a failure to send shows on the request, with a way to retry.
+  if (status === 'accepted_pending') await forwardRequest(db, request);
+
+  const forwarding = (await getSeerrConfig(db)).enabled;
+  const updated = await db.get(REVIEW_ROW, [request.id]);
+  res.json({ message: 'Request updated', request: forReviewer(updated, forwarding) });
+}));
+
+// Send an accepted request on again, after a failure or for one accepted before Seerr was set up.
+router.post('/:id/forward', requireEditor, handle(async (req, res) => {
+  const db = await getDb();
+  const request = await db.get('SELECT * FROM media_requests WHERE id = ?', [req.params.id]);
+  if (!request) return sendError(req, res, 'P506');
+  if (request.status !== 'accepted_pending' || !canSendToSeerr(request)) {
+    return res.status(400).json({ error: 'Only an accepted film or show found on TMDB can be sent on' });
+  }
+  if (!(await getSeerrConfig(db)).enabled) return sendError(req, res, 'P507', { status: 400, extra: { reason: 'off' } });
+
+  await forwardRequest(db, request, { again: true });
+  const updated = await db.get(REVIEW_ROW, [request.id]);
+  res.json({ message: 'Request sent on', request: forReviewer(updated, true) });
 }));
 
 // Requesters withdraw their own pending request; admins and editors can delete any.

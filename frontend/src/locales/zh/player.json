@@ -7,6 +7,16 @@
     "minutesShort": "{count}分"
   },
   "video": {
+    "language": {
+      "title": "这一集的音频是{language}",
+      "subsOff": "字幕已关闭。",
+      "noSubs": "没有{language}字幕。",
+      "remember": "你的回答会在此设备上用于这部剧的其余剧集。",
+      "withSubtitlesIn": "播放并显示{language}字幕",
+      "withSubtitles": "带字幕播放",
+      "inLanguage": "用{language}播放",
+      "anyway": "仍然播放"
+    },
     "backToShelf": "返回书架",
     "castToTv": "投屏到电视",
     "playbackSettings": "播放设置",

@@ -45,8 +45,8 @@
   "requestHint": "请管理员把它添加到媒体库",
   "requestStatus": {
     "pending": "待处理",
-    "accepted_pending": "已接受 · 待添加",
-    "accepted_added": "已接受 · 已添加",
+    "accepted_pending": "已接受",
+    "accepted_added": "已添加",
     "rejected": "已拒绝"
   },
   "deleteDialog": {

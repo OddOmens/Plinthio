@@ -410,6 +410,13 @@ export const ERROR_CODES = {
     meaning: 'The request was deleted or never existed.',
     fix: 'Refresh the Requests page.'
   },
+  P507: {
+    status: 502,
+    title: 'Could not connect to Seerr',
+    message: 'Could not connect to Seerr',
+    meaning: 'Approved requests are set to be sent to a Seerr server, and Plinthio could not use it: the address did not answer, what answered was not Seerr, or Seerr refused the API key.',
+    fix: 'Check the address and API key under Admin → Features → Requests. The address must be one the Plinthio server itself can reach: inside Docker, `localhost` is the Plinthio container, not the machine it runs on.'
+  },
 
   // ── Watch parties ──────────────────────────────────────────────────────────
   P600: {

@@ -24,6 +24,27 @@
     "pauseScreen": {
       "title": "Ekran pauzy",
       "desc": "Co pojawia się po kilku sekundach pauzy w filmie lub odcinku."
+    },
+    "textSize": {
+      "title": "Rozmiar tekstu",
+      "desc": "Powiększa lub pomniejsza tekst i elementy sterujące na tym urządzeniu. Każde urządzenie zapamiętuje własny rozmiar."
+    },
+    "themeMode": {
+      "title": "Jasny lub ciemny",
+      "desc": "„Jak urządzenie” podąża za jasnym lub ciemnym ustawieniem urządzenia, gdy się zmienia."
+    },
+    "font": {
+      "title": "Czcionka",
+      "desc": "Czcionka w całym Plinthio na tym urządzeniu. Książki zachowują własną, ustawianą w czytniku."
+    },
+    "posterSize": {
+      "title": "Rozmiar plakatów",
+      "desc": "Jak duże są plakaty i okładki na twoich półkach. Kompaktowy mieści więcej w rzędzie."
+    },
+    "motion": {
+      "title": "Ruch",
+      "label": "Ogranicz ruch",
+      "desc": "Elementy po prostu się pojawiają, zamiast się przesuwać, przenikać czy powiększać. Plinthio już to robi, gdy urządzenie prosi o ograniczenie ruchu."
     }
   },
   "accents": {
@@ -85,5 +106,65 @@
   "defaultLanguage": {
     "title": "Domyślny język",
     "desc": "Dla osób, które nie wybrały własnego. Automatycznie oznacza język przeglądarki danej osoby; każdy może wybrać inny w Ustawieniach."
+  },
+  "textSizes": {
+    "small": "Mały",
+    "default": "Domyślny",
+    "large": "Duży",
+    "xlarge": "Bardzo duży"
+  },
+  "device": {
+    "title": "To urządzenie",
+    "desc": "Te ustawienia zostają na tym urządzeniu, więc telefon, komputer i telewizor mogą wyglądać każdy po swojemu."
+  },
+  "themeModes": {
+    "system": "Jak urządzenie",
+    "light": "Jasny",
+    "dark": "Ciemny"
+  },
+  "posterSizes": {
+    "compact": "Kompaktowy",
+    "default": "Domyślny",
+    "large": "Duży"
+  },
+  "fonts": {
+    "default": {
+      "label": "Domyślna",
+      "desc": "Czcionka twojego urządzenia."
+    },
+    "serif": {
+      "label": "Szeryfowa",
+      "desc": "Czcionka jak w książce."
+    },
+    "legible": {
+      "label": "Atkinson Hyperlegible",
+      "desc": "Litery, które trudno ze sobą pomylić. Dobra dla osób słabowidzących."
+    },
+    "dyslexic": {
+      "label": "OpenDyslexic",
+      "desc": "Litery cięższe u dołu, które części osób z dysleksją czyta się łatwiej."
+    }
+  },
+  "subtitles": {
+    "title": "Napisy",
+    "desc": "Czy napisy są włączone, gdy zaczyna się film. Zawsze możesz je przełączyć w odtwarzaczu.",
+    "language": "Język napisów",
+    "mine": "Mój język",
+    "hint": "Film bez napisów w tym języku zaczyna się bez nich. Zanim odcinek anime zostanie odtworzony w innym języku bez napisów, Plinthio zapyta, jak chcesz go oglądać.",
+    "modes": {
+      "server": {
+        "label": "Ustawienie serwera",
+        "descOn": "Teraz: włączone ({language}).",
+        "descOff": "Teraz: wyłączone."
+      },
+      "off": {
+        "label": "Wyłączone",
+        "desc": "Filmy zaczynają się bez napisów."
+      },
+      "on": {
+        "label": "Włączone",
+        "desc": "Filmy zaczynają się z napisami, jeśli je mają."
+      }
+    }
   }
 }

@@ -49,8 +49,8 @@
   "requestHint": "Demander à un admin d'ajouter ce titre à la bibliothèque",
   "requestStatus": {
     "pending": "En attente",
-    "accepted_pending": "Acceptée · Ajout en attente",
-    "accepted_added": "Acceptée · Ajoutée",
+    "accepted_pending": "Acceptée",
+    "accepted_added": "Ajoutée",
     "rejected": "Refusée"
   },
   "deleteDialog": {

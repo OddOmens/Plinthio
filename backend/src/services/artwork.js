@@ -3,7 +3,7 @@ import path from 'path';
 import { config } from '../config/env.js';
 import { getThumbnailPath, THUMB_WIDTHS } from './thumbnails.js';
 import { invalidateCoverCache } from '../routes/media.js';
-import { searchExternalMetadata, getTmdbApiKey } from './externalMetadata.js';
+import { searchExternalMetadata, getTmdbApiKey, fetchTmdbPosterUrl } from './externalMetadata.js';
 import { logger } from './logger.js';
 import { USER_AGENT } from './providerHttp.js';
 
@@ -138,10 +138,20 @@ export async function isVideoArtworkAvailable() {
   return !!(await getTmdbApiKey());
 }
 
-// Best-effort TMDB poster: the cover filename, or null if unconfigured or unmatched.
-export async function fetchVideoArtwork({ itemId, title, series, mediaType, year }) {
+// Best-effort TMDB poster: the cover filename, or null if unconfigured or unmatched. A known
+// `tmdbId` is asked for directly; the title search is the fallback.
+export async function fetchVideoArtwork({ itemId, title, series, mediaType, year, tmdbId = null }) {
   const apiKey = await getTmdbApiKey();
   if (!apiKey) return null;
+
+  if (tmdbId) {
+    try {
+      const posterUrl = await fetchTmdbPosterUrl(tmdbId, mediaType);
+      if (posterUrl) return await downloadCover(posterUrl, itemId);
+    } catch (err) {
+      logger.warn('scan', `TMDB artwork lookup failed for id ${tmdbId}: ${err.message}`);
+    }
+  }
 
   // Episodes match far better against the show name than an "S01E03: ..." episode title.
   const query = cleanSearchTitle(mediaType === 'movie' ? title : (series || title));

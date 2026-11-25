@@ -25,6 +25,9 @@ import { handle, serverError } from '../utils/http.js';
 import { sendError } from '../errors.js';
 import { logger } from '../services/logger.js';
 import { getSetting, setSetting } from '../services/settings.js';
+import { SeerrError, normalizeSeerrUrl, getSeerrConfig, seerrStatus, saveSeerrConfig, clearSeerrConfig, checkSeerr } from '../services/seerr.js';
+import { hostOf } from '../services/safeFetch.js';
+import { AUTO_ACCEPT_MODES, getAutoAccept, setAutoAccept } from '../services/requestAutomation.js';
 
 const router = express.Router();
 
@@ -217,6 +220,81 @@ router.put('/metadata-providers/enabled', authenticateToken, requireAdmin, handl
   const db = await getDb();
   await setSetting(db, 'metadata_providers_off', JSON.stringify([...off]));
   res.json(await providerSwitches());
+}));
+
+// Sending accepted requests on to a Seerr server. The key is write-only: it is never returned.
+function seerrFailure(req, res, err) {
+  if (!(err instanceof SeerrError)) throw err;
+  const messages = {
+    invalid_url: 'Enter the address as http:// or https:// followed by the server and port',
+    key_required: 'Enter the API key again: the address changed',
+    unreachable: 'Nothing answered at that address',
+    not_seerr: 'That address answered, but not as Seerr',
+    unauthorized: 'Seerr refused the API key'
+  };
+  const input = err.reason === 'invalid_url' || err.reason === 'key_required';
+  return sendError(req, res, 'P507', {
+    message: messages[err.reason] || undefined,
+    status: input ? 400 : undefined,
+    extra: { reason: err.reason, ...(req.user?.role === 'admin' && err.detail ? { detail: err.detail } : {}) }
+  });
+}
+
+router.get('/seerr', authenticateToken, requireAdmin, handle(async (req, res) => {
+  res.json(await seerrStatus(await getDb()));
+}));
+
+router.put('/seerr', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const db = await getDb();
+  const rawUrl = typeof req.body.url === 'string' ? req.body.url.trim() : '';
+  if (!rawUrl) {
+    await clearSeerrConfig(db);
+    logger.info('settings', `${req.user.username} removed the Seerr connection`);
+    return res.json(await seerrStatus(db));
+  }
+
+  try {
+    const saved = await getSeerrConfig(db);
+    const url = normalizeSeerrUrl(rawUrl);
+    const typedKey = typeof req.body.apiKey === 'string' ? req.body.apiKey.trim() : '';
+    // The saved key only ever goes to the server it was saved for.
+    if (!typedKey && (!saved.apiKey || hostOf(saved.url) !== hostOf(url))) throw new SeerrError('key_required');
+    const next = { url, apiKey: typedKey || saved.apiKey, enabled: req.body.enabled !== false };
+
+    // Checked before saving, so a wrong address or key fails here and not on the next request.
+    const { version } = await checkSeerr(next);
+    await saveSeerrConfig(db, next);
+    logger.info('settings', `${req.user.username} ${next.enabled ? 'connected' : 'saved (switched off)'} Seerr at ${hostOf(url)}`);
+    res.json({ ...await seerrStatus(db), version });
+  } catch (err) {
+    return seerrFailure(req, res, err);
+  }
+}));
+
+router.post('/seerr/test', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const config = await getSeerrConfig(await getDb());
+  try {
+    if (!config.url || !config.apiKey) throw new SeerrError('invalid_url');
+    res.json({ ok: true, ...await checkSeerr(config) });
+  } catch (err) {
+    return seerrFailure(req, res, err);
+  }
+}));
+
+// Who has their requests accepted as they make them: 'off' | 'staff' | 'all'.
+router.get('/requests', authenticateToken, requireAdmin, handle(async (req, res) => {
+  res.json({ autoAccept: await getAutoAccept(await getDb()) });
+}));
+
+router.put('/requests', authenticateToken, requireAdmin, handle(async (req, res) => {
+  const { autoAccept } = req.body;
+  if (!AUTO_ACCEPT_MODES.includes(autoAccept)) {
+    return res.status(400).json({ error: `autoAccept must be one of: ${AUTO_ACCEPT_MODES.join(', ')}` });
+  }
+  const db = await getDb();
+  await setAutoAccept(db, autoAccept);
+  logger.info('settings', `${req.user.username} set automatic acceptance of requests to "${autoAccept}"`);
+  res.json({ autoAccept });
 }));
 
 // Set or clear the TMDB API key.

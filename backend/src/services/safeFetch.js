@@ -157,7 +157,7 @@ export function lanHostOf(raw) {
   return !host.includes('.') || /\.(local|lan|home\.arpa|internal|localdomain)$/.test(host) ? host : null;
 }
 
-function requestOnce(url, { allowPrivate, headers, timeoutMs, signal }) {
+function requestOnce(url, { allowPrivate, headers, timeoutMs, signal, method = 'GET', body = null }) {
   const host = url.hostname.replace(/^\[|\]$/g, '');
   if (net.isIP(host)) {
     const block = addressBlock(host, { allowPrivate });
@@ -166,7 +166,7 @@ function requestOnce(url, { allowPrivate, headers, timeoutMs, signal }) {
   const mod = url.protocol === 'https:' ? https : http;
   return new Promise((resolve, reject) => {
     const req = mod.request(url, {
-      method: 'GET',
+      method,
       headers,
       agent: agents[allowPrivate ? 'private' : 'public'][url.protocol],
       lookup: guardedLookup(allowPrivate),
@@ -176,15 +176,16 @@ function requestOnce(url, { allowPrivate, headers, timeoutMs, signal }) {
     req.setTimeout(timeoutMs, () => req.destroy(new UpstreamError('The server took too long to answer')));
     req.once('response', resolve);
     req.once('error', (err) => reject(err instanceof UpstreamError ? err : new UpstreamError(err.message, { blocked: err.code === 'EBLOCKED' })));
-    req.end();
+    req.end(body ?? undefined);
   });
 }
 
 /**
  * Resolves `{ res, url }` at the final response's headers; `url` is after redirects. Body unread;
- * non-2xx statuses are returned, not thrown.
+ * non-2xx statuses are returned, not thrown. A request with a `body` is never re-sent to a
+ * redirect's target.
  */
-export async function openUpstream(rawUrl, { allowPrivateHosts = [], headers = {}, timeoutMs = 15000, maxRedirects = 5, signal } = {}) {
+export async function openUpstream(rawUrl, { allowPrivateHosts = [], headers = {}, timeoutMs = 15000, maxRedirects = 5, signal, method = 'GET', body = null } = {}) {
   const allowed = new Set([...allowPrivateHosts].filter(Boolean).map((h) => h.toLowerCase()));
   let url = parseHttpUrl(rawUrl);
   const requestHeaders = { accept: '*/*', ...headers };
@@ -193,10 +194,13 @@ export async function openUpstream(rawUrl, { allowPrivateHosts = [], headers = {
       allowPrivate: allowed.has(url.hostname.toLowerCase()),
       headers: requestHeaders,
       timeoutMs,
-      signal
+      signal,
+      method,
+      body
     });
     if (REDIRECTS.has(res.statusCode) && res.headers.location) {
       res.resume();
+      if (body !== null) throw new UpstreamError('The server answered with a redirect');
       if (hop >= maxRedirects) throw new UpstreamError('Too many redirects');
       url = parseHttpUrl(new URL(res.headers.location, url).toString());
       continue;

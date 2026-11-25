@@ -24,6 +24,27 @@
     "pauseScreen": {
       "title": "Pauzescherm",
       "desc": "Wat er verschijnt als een film of aflevering een paar seconden gepauzeerd is."
+    },
+    "textSize": {
+      "title": "Tekstgrootte",
+      "desc": "Maakt tekst en knoppen groter of kleiner op dit apparaat. Elk apparaat onthoudt zijn eigen grootte."
+    },
+    "themeMode": {
+      "title": "Licht of donker",
+      "desc": "‘Zoals het apparaat’ volgt de licht- of donkerinstelling van je apparaat als die verandert."
+    },
+    "font": {
+      "title": "Lettertype",
+      "desc": "Het lettertype in heel Plinthio op dit apparaat. Boeken houden hun eigen lettertype, dat je in de reader kiest."
+    },
+    "posterSize": {
+      "title": "Postergrootte",
+      "desc": "Hoe groot posters en covers op je planken zijn. Compact toont er meer per rij."
+    },
+    "motion": {
+      "title": "Beweging",
+      "label": "Beweging verminderen",
+      "desc": "Dingen verschijnen gewoon in plaats van te schuiven, vervagen of zoomen. Plinthio doet dit al als je apparaat om minder beweging vraagt."
     }
   },
   "accents": {
@@ -85,5 +106,65 @@
   "defaultLanguage": {
     "title": "Standaardtaal",
     "desc": "Voor iedereen die zelf geen taal heeft gekozen. Automatisch volgt de browser van elke persoon; iedereen kan in Instellingen een andere kiezen."
+  },
+  "textSizes": {
+    "small": "Klein",
+    "default": "Standaard",
+    "large": "Groot",
+    "xlarge": "Extra groot"
+  },
+  "device": {
+    "title": "Dit apparaat",
+    "desc": "Deze instellingen blijven op dit apparaat, zodat je telefoon, computer en tv er elk uit kunnen zien zoals het past."
+  },
+  "themeModes": {
+    "system": "Zoals het apparaat",
+    "light": "Licht",
+    "dark": "Donker"
+  },
+  "posterSizes": {
+    "compact": "Compact",
+    "default": "Standaard",
+    "large": "Groot"
+  },
+  "fonts": {
+    "default": {
+      "label": "Standaard",
+      "desc": "Het lettertype van je apparaat."
+    },
+    "serif": {
+      "label": "Schreef",
+      "desc": "Een lettertype zoals in een boek."
+    },
+    "legible": {
+      "label": "Atkinson Hyperlegible",
+      "desc": "Letters die je moeilijk door elkaar haalt. Goed bij slechtziendheid."
+    },
+    "dyslexic": {
+      "label": "OpenDyslexic",
+      "desc": "Letters met een zwaardere onderkant, die sommige lezers met dyslexie makkelijker vinden."
+    }
+  },
+  "subtitles": {
+    "title": "Ondertiteling",
+    "desc": "Of ondertiteling aanstaat wanneer een video start. Je kunt ze altijd in de speler wisselen.",
+    "language": "Taal van de ondertiteling",
+    "mine": "Mijn taal",
+    "hint": "Een video zonder ondertiteling in die taal start zonder. Voordat een anime-aflevering in een andere taal zonder ondertiteling wordt afgespeeld, vraagt Plinthio hoe je wilt kijken.",
+    "modes": {
+      "server": {
+        "label": "Serverinstelling",
+        "descOn": "Nu: aan ({language}).",
+        "descOff": "Nu: uit."
+      },
+      "off": {
+        "label": "Uit",
+        "desc": "Video's starten zonder ondertiteling."
+      },
+      "on": {
+        "label": "Aan",
+        "desc": "Video's starten met ondertiteling als die er is."
+      }
+    }
   }
 }

@@ -167,6 +167,17 @@
       "desc": "Lo scaffale su cui si apre Plinthio.",
       "all": "Tutti i contenuti"
     },
+    "homeRows": {
+      "title": "Righe della Home",
+      "desc": "Le righe sopra il tuo scaffale nella Home. Disattiva quelle che non vuoi e metti le altre nel tuo ordine.",
+      "moveUp": "Sposta su {row}",
+      "moveDown": "Sposta giù {row}",
+      "rows": {
+        "live": { "label": "Preferiti della TV in diretta", "desc": "I tuoi canali preferiti e cosa c'è in onda." },
+        "watching": { "label": "Continua a guardare", "desc": "Film ed episodi che hai iniziato." },
+        "reading": { "label": "Continua a leggere e ascoltare", "desc": "Libri, manga e audiolibri che hai iniziato." }
+      }
+    },
     "views": {
       "title": "Viste dello scaffale",
       "desc": "Le viste sopra il tuo scaffale. Ognuna mostra una scheda per serie; Alfabetica c'è sempre.",

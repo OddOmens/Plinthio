@@ -18,13 +18,14 @@
   "withdraw": "取り下げ",
   "status": {
     "pending": "保留中",
-    "accepted_pending": "承認済み・追加待ち",
-    "accepted_added": "承認済み・追加済み",
+    "accepted_pending": "承認済み",
+    "accepted_added": "追加済み",
     "rejected": "却下"
   },
   "actions": {
-    "acceptPending": "承認・追加待ち",
-    "acceptAdded": "承認・追加済み",
+    "acceptPending": "承認",
+    "approveSend": "承認・Seerr に送る",
+    "acceptAdded": "追加済みにする",
     "reject": "却下",
     "backToPending": "保留中に戻す"
   },
@@ -52,5 +53,21 @@
     },
     "noResults": "「{query}」の検索結果はありません。",
     "failed": "検索に失敗しました。しばらくしてからもう一度お試しください。"
+  },
+  "forward": {
+    "sent": "Seerr に送信済み",
+    "exists": "すでに Seerr にあります",
+    "send": "Seerr に送る",
+    "again": "もう一度送る",
+    "reasons": {
+      "unreachable": "Seerr に接続できませんでした",
+      "unauthorized": "Seerr が APIキーを拒否しました",
+      "refused": "Seerr がリクエストを受け付けませんでした",
+      "failed": "Seerr がリクエストを受け取れませんでした"
+    }
+  },
+  "auto": {
+    "accepted": "自動で承認",
+    "added": "ライブラリに届いたため追加済みにしました"
   }
 }

@@ -7,6 +7,11 @@ export default {
   ],
   theme: {
     extend: {
+      // `font-sans` (and the page's base font) follow the font chosen in Settings → Appearance:
+      // --font-app is set in assets/main.css.
+      fontFamily: {
+        sans: ['var(--font-app)'],
+      },
       colors: {
         border: "hsl(var(--border) / <alpha-value>)",
         input: "hsl(var(--input) / <alpha-value>)",

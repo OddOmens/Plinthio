@@ -48,8 +48,8 @@
   "requestHint": "Poproś administratora o dodanie tego do biblioteki",
   "requestStatus": {
     "pending": "Oczekuje",
-    "accepted_pending": "Przyjęta · Czeka na dodanie",
-    "accepted_added": "Przyjęta · Dodano",
+    "accepted_pending": "Przyjęta",
+    "accepted_added": "Dodano",
     "rejected": "Odrzucona"
   },
   "deleteDialog": {

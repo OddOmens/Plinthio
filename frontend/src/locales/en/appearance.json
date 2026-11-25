@@ -24,6 +24,27 @@
     "pauseScreen": {
       "title": "Pause screen",
       "desc": "What appears after a couple of seconds paused on a movie or episode."
+    },
+    "textSize": {
+      "title": "Text size",
+      "desc": "Makes text and controls bigger or smaller on this device. Each device keeps its own size."
+    },
+    "themeMode": {
+      "title": "Light or dark",
+      "desc": "Match device follows your device's own light or dark setting as it changes."
+    },
+    "font": {
+      "title": "Font",
+      "desc": "The lettering across Plinthio on this device. Books keep their own font, set in the reader."
+    },
+    "posterSize": {
+      "title": "Poster size",
+      "desc": "How big posters and covers are on your shelves. Compact fits more in a row."
+    },
+    "motion": {
+      "title": "Motion",
+      "label": "Reduce motion",
+      "desc": "Things appear instead of sliding, fading or zooming. Plinthio already does this when your device asks for reduced motion."
     }
   },
   "accents": {
@@ -85,5 +106,65 @@
   "defaultLanguage": {
     "title": "Default language",
     "desc": "For everyone who hasn't picked their own. Automatic follows each person's browser; people can always choose another in Settings."
+  },
+  "textSizes": {
+    "small": "Small",
+    "default": "Default",
+    "large": "Large",
+    "xlarge": "Extra large"
+  },
+  "device": {
+    "title": "This device",
+    "desc": "These are kept on this device, so your phone, computer and TV can each look the way that suits them."
+  },
+  "themeModes": {
+    "system": "Match device",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "posterSizes": {
+    "compact": "Compact",
+    "default": "Default",
+    "large": "Large"
+  },
+  "fonts": {
+    "default": {
+      "label": "Default",
+      "desc": "Your device's own font."
+    },
+    "serif": {
+      "label": "Serif",
+      "desc": "A book-style font."
+    },
+    "legible": {
+      "label": "Atkinson Hyperlegible",
+      "desc": "Letters drawn to be hard to mix up. Good for low vision."
+    },
+    "dyslexic": {
+      "label": "OpenDyslexic",
+      "desc": "Weighted letters that some readers with dyslexia find easier."
+    }
+  },
+  "subtitles": {
+    "title": "Subtitles",
+    "desc": "Whether subtitles are on when a video starts. You can always switch them in the player.",
+    "language": "Subtitle language",
+    "mine": "My language",
+    "hint": "A video without subtitles in that language starts without them. Before an anime episode plays in another language with no subtitles showing, Plinthio asks how you want to watch it.",
+    "modes": {
+      "server": {
+        "label": "Server setting",
+        "descOn": "Now: on ({language}).",
+        "descOff": "Now: off."
+      },
+      "off": {
+        "label": "Off",
+        "desc": "Videos start without subtitles."
+      },
+      "on": {
+        "label": "On",
+        "desc": "Videos start with subtitles when they have them."
+      }
+    }
   }
 }

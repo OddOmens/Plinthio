@@ -130,8 +130,9 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 | Route | Who | |
 | --- | --- | --- |
 | `/collections…` | V | Custom folders and Lists: create, add library or outside titles, reorder, remove |
-| `GET /requests` · `POST /requests` · `DELETE /requests/:id` | V | Your requests |
-| `GET /requests/pending-count` · `PATCH /requests/:id` | E | Review queue |
+| `GET /requests` · `POST /requests` · `DELETE /requests/:id` | V | Your requests. A new one comes back `accepted_pending` (with `auto_accepted: 1`) when the server accepts yours automatically, or `accepted_added` when the title is already in the library. `auto_added_at` is set on a request a library scan marked as added |
+| `GET /requests/pending-count` · `PATCH /requests/:id` | E | Review queue. With `?scope=all`, `GET /requests` also gives `forwarding` (`seerr` or `null`) and, on each request, `forward_state` (`sent`, `exists`, `failed`), `forward_reason`, `forward_detail`, `forward_ref`, `can_forward` and `will_forward` (approving it would send it on) |
+| `POST /requests/:id/forward` | E | Send an accepted request to Seerr again (after a failure, or one accepted before Seerr was set up). P507 when no Seerr server is set up |
 | `GET /live/status` · `GET /live/channels?lineup=<id>\|favourites&group=&q=` · `GET /live/channels/:id` · `GET /live/guide?from=&hours=&offset=&limit=&lineup=` | V | Live TV (when enabled): channels with now/next and the line-ups you can see, one channel's programmes, the guide grid |
 | `POST/DELETE /live/favourites/:channelId` · `GET /live/now?limit=` · `POST /live/channels/:id/watched` · `GET /live/recent` · `GET /live/search?q=` · `GET /live/me/hidden` | V | Favourites, the Home "Live now" row, recently watched, channel and programme search, your personally hidden channels (hide them with `PATCH /users/preferences { liveTv: { hiddenChannels, hiddenGroups, showOnHome } }`) |
 | `GET /live/admin/presets` · `GET/POST /live/admin/sources` · `PATCH/DELETE /live/admin/sources/:id` · `POST /live/admin/sources/:id/refresh` · `POST /live/admin/acknowledge` | A | Live TV lists (a public list needs the one-time acknowledgement first) |
@@ -154,10 +155,12 @@ response respects hidden titles, missing files, content limits and Kids Mode for
 
 | Route | Who | |
 | --- | --- | --- |
-| `GET /customization` · `PATCH` | public / A | Branding, theme, layout, ratings display, collections, parties, pause screen, opening sequence switches |
+| `GET /customization` · `PATCH` | public / A | Branding, theme, layout, ratings display, collections, parties, pause screen, opening sequence switches, and `subtitles: { on, language }` (whether subtitles start on, and in which language: `auto` for each person's own, or an ISO 639-1 code). A person's own choice is `preferences.subtitles = { mode: "on" \| "off", language }` |
 | `POST /customization/intro` · `DELETE` | A | Upload (multipart field `intro`) or remove the opening sequence clip |
 | `GET /media/intro` | V | The opening sequence clip (range requests; `?v=` is the upload version) |
 | `GET /settings/filters` · `PATCH` | V / A | Which shelf views are offered |
+| `GET /settings/requests` · `PUT` `{ autoAccept }` | A | Whose requests are accepted as they're made: `off`, `staff` (admins and editors) or `all`. Accounts with Kids Mode or an age rating limit always wait for review |
+| `GET /settings/seerr` · `PUT` `{ url, apiKey?, enabled? }` · `POST /settings/seerr/test` | A | Where accepted requests are sent: `{ url, hasKey, enabled }`. The key is never returned. `PUT` checks the address and key before saving (P507 with a `reason` of `invalid_url`, `key_required`, `unreachable`, `not_seerr` or `unauthorized`); leave `apiKey` out to keep the saved one, which is only allowed while the server stays the same; an empty `url` removes the connection |
 | `GET /settings/compat` · `PUT` `{ maxGb, quality: smaller\|balanced\|high, maxHeight: 0\|1080\|720, allowUsers, autoConvert, replaceOriginal }` · `POST /settings/compat/queue` `{ libraryId }` or `{ itemIds }` · `POST /settings/compat/retry` · `DELETE /settings/compat/copies` | A | Converted copies: the settings, the space used, the queue and every copy (`status`, `progress`, `paused`, `sourceCodec`, `size`, `error`, `errorCode`, `replaceError`); queue every video that needs a copy in one library, in all of them, or among the listed titles (202; `discovery` in the overview reports progress); put the failed ones back in the queue; delete every copy and empty the queue |
 | `/settings/transcoding` · `/transcoding/test` · `/metadata-providers` · `/metadata-providers/enabled` · `/metadata-providers/tmdb-key` · `/metadata-providers/google-books-key` · `/metadata-providers/comicvine-key` · `/auto-scan` · `/backup/*` | A | Server settings and backups |
 | `GET /admin/health` · `POST /admin/health/remove-missing` | A | Library Health (with missing and offloaded titles grouped by film, series or season), removing missing titles |

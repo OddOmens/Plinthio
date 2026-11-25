@@ -8,6 +8,7 @@ import { getOrCreateThumbnail } from './thumbnails.js';
 import { listArchiveEntries, readArchiveEntry } from './archive.js';
 import { IMAGE_EXTENSIONS, findCoverInFolder } from '../utils/imageFile.js';
 import { parseMediaTitle } from './titleCleaner.js';
+import { stripProviderIdTags } from './providerIds.js';
 import { readBookMetadata, libraryFileBeside } from './bookMetadata.js';
 import { getLibraryRoots } from '../utils/libraryPath.js';
 import { oneLine } from './logger.js';
@@ -268,11 +269,12 @@ function showFolderInfo(filePath) {
   const dir = path.dirname(filePath);
   const folder = path.basename(dir);
   const match = folder.match(SEASON_FOLDER);
-  if (!match) return { show: folder, season: null };
+  // Id tags such as {tvdb-81189} are read by the scanner and aren't part of the name.
+  if (!match) return { show: stripProviderIdTags(folder) || folder, season: null };
   const grandparent = path.basename(path.dirname(dir));
   // A season folder straight under the library root has no show folder to fall back on.
   const show = grandparent && grandparent !== '.' && grandparent !== path.sep ? grandparent : folder;
-  return { show, season: match[3] ? 0 : parseInt(match[1] || match[2], 10) };
+  return { show: stripProviderIdTags(show) || show, season: match[3] ? 0 : parseInt(match[1] || match[2], 10) };
 }
 
 export async function extractVideoMetadata(filePath, itemId, mediaType = 'movie') {

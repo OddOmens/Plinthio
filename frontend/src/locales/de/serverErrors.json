@@ -324,6 +324,12 @@
       "meaning": "Die Anfrage wurde gelöscht oder hat nie existiert.",
       "fix": "Lade die Seite Anfragen neu."
     },
+    "P507": {
+      "title": "Keine Verbindung zu Seerr",
+      "message": "Keine Verbindung zu Seerr",
+      "meaning": "Angenommene Anfragen sollen an einen Seerr-Server gesendet werden, und Plinthio konnte ihn nicht nutzen: Die Adresse hat nicht geantwortet, die Antwort kam nicht von Seerr, oder Seerr hat den API-Schlüssel abgelehnt.",
+      "fix": "Prüfe Adresse und API-Schlüssel unter Verwaltung → Funktionen → Anfragen. Die Adresse muss der Plinthio-Server selbst erreichen können: In Docker ist `localhost` der Plinthio-Container, nicht der Rechner, auf dem er läuft."
+    },
     "P600": {
       "title": "Watch-Partys sind aus",
       "message": "Watch-Partys sind auf diesem Server ausgeschaltet",

@@ -24,6 +24,27 @@
     "pauseScreen": {
       "title": "Schermata di pausa",
       "desc": "Cosa appare dopo un paio di secondi di pausa su un film o un episodio."
+    },
+    "textSize": {
+      "title": "Dimensione del testo",
+      "desc": "Ingrandisce o rimpicciolisce testo e controlli su questo dispositivo. Ogni dispositivo mantiene la propria dimensione."
+    },
+    "themeMode": {
+      "title": "Chiaro o scuro",
+      "desc": "«Come il dispositivo» segue l'impostazione chiaro o scuro del tuo dispositivo quando cambia."
+    },
+    "font": {
+      "title": "Carattere",
+      "desc": "Il carattere di tutto Plinthio su questo dispositivo. I libri mantengono il proprio, scelto nel lettore."
+    },
+    "posterSize": {
+      "title": "Dimensione delle locandine",
+      "desc": "Quanto sono grandi locandine e copertine sui tuoi scaffali. Compatta ne mostra di più per riga."
+    },
+    "motion": {
+      "title": "Movimento",
+      "label": "Riduci il movimento",
+      "desc": "Gli elementi compaiono senza scorrere, sfumare o zoomare. Plinthio lo fa già quando il dispositivo chiede meno movimento."
     }
   },
   "accents": {
@@ -85,5 +106,65 @@
   "defaultLanguage": {
     "title": "Lingua predefinita",
     "desc": "Per chi non ne ha scelta una. Automatica segue il browser di ciascuno; chiunque può sceglierne un'altra nelle Impostazioni."
+  },
+  "textSizes": {
+    "small": "Piccola",
+    "default": "Predefinita",
+    "large": "Grande",
+    "xlarge": "Molto grande"
+  },
+  "device": {
+    "title": "Questo dispositivo",
+    "desc": "Queste impostazioni restano su questo dispositivo, così telefono, computer e TV possono avere ciascuno l'aspetto più adatto."
+  },
+  "themeModes": {
+    "system": "Come il dispositivo",
+    "light": "Chiaro",
+    "dark": "Scuro"
+  },
+  "posterSizes": {
+    "compact": "Compatta",
+    "default": "Predefinita",
+    "large": "Grande"
+  },
+  "fonts": {
+    "default": {
+      "label": "Predefinito",
+      "desc": "Il carattere del tuo dispositivo."
+    },
+    "serif": {
+      "label": "Con grazie",
+      "desc": "Un carattere in stile libro."
+    },
+    "legible": {
+      "label": "Atkinson Hyperlegible",
+      "desc": "Lettere difficili da confondere. Adatto a chi ha la vista ridotta."
+    },
+    "dyslexic": {
+      "label": "OpenDyslexic",
+      "desc": "Lettere più pesanti in basso, che alcune persone con dislessia leggono più facilmente."
+    }
+  },
+  "subtitles": {
+    "title": "Sottotitoli",
+    "desc": "Se i sottotitoli sono attivi quando parte un video. Puoi sempre cambiarli nel player.",
+    "language": "Lingua dei sottotitoli",
+    "mine": "La mia lingua",
+    "hint": "Un video senza sottotitoli in quella lingua parte senza. Prima che un episodio di anime venga riprodotto in un'altra lingua senza sottotitoli, Plinthio ti chiede come vuoi guardarlo.",
+    "modes": {
+      "server": {
+        "label": "Impostazione del server",
+        "descOn": "Ora: attivi ({language}).",
+        "descOff": "Ora: disattivati."
+      },
+      "off": {
+        "label": "Disattivati",
+        "desc": "I video partono senza sottotitoli."
+      },
+      "on": {
+        "label": "Attivi",
+        "desc": "I video partono con i sottotitoli quando li hanno."
+      }
+    }
   }
 }

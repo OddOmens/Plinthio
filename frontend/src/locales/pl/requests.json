@@ -18,13 +18,14 @@
   "withdraw": "Wycofaj",
   "status": {
     "pending": "Oczekuje",
-    "accepted_pending": "Przyjęta · Czeka na dodanie",
-    "accepted_added": "Przyjęta · Dodano",
+    "accepted_pending": "Przyjęta",
+    "accepted_added": "Dodano",
     "rejected": "Odrzucona"
   },
   "actions": {
-    "acceptPending": "Przyjmij · Czeka na dodanie",
-    "acceptAdded": "Przyjmij · Dodano",
+    "acceptPending": "Przyjmij",
+    "approveSend": "Przyjmij · Wyślij do Seerr",
+    "acceptAdded": "Oznacz jako dodaną",
     "reject": "Odrzuć",
     "backToPending": "Przywróć do oczekujących"
   },
@@ -52,5 +53,21 @@
     },
     "noResults": "Brak wyników dla „{query}”.",
     "failed": "Wyszukiwanie nie powiodło się. Spróbuj ponownie za chwilę."
+  },
+  "forward": {
+    "sent": "Wysłano do Seerr",
+    "exists": "Już jest w Seerr",
+    "send": "Wyślij do Seerr",
+    "again": "Wyślij ponownie",
+    "reasons": {
+      "unreachable": "Nie udało się połączyć z Seerr",
+      "unauthorized": "Seerr odrzucił klucz API",
+      "refused": "Seerr nie przyjął prośby",
+      "failed": "Seerr nie mógł przyjąć prośby"
+    }
+  },
+  "auto": {
+    "accepted": "Przyjęta automatycznie",
+    "added": "Oznaczona jako dodana, gdy tytuł trafił do biblioteki"
   }
 }

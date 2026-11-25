@@ -7,6 +7,16 @@
     "minutesShort": "{count} min"
   },
   "video": {
+    "language": {
+      "title": "Diese Folge ist auf {language}",
+      "subsOff": "Untertitel sind aus.",
+      "noSubs": "Es gibt keine Untertitel auf {language}.",
+      "remember": "Deine Antwort gilt auf diesem Gerät für den Rest dieser Serie.",
+      "withSubtitlesIn": "Mit Untertiteln abspielen ({language})",
+      "withSubtitles": "Mit Untertiteln abspielen",
+      "inLanguage": "Auf {language} abspielen",
+      "anyway": "Trotzdem abspielen"
+    },
     "backToShelf": "Zurück zur Bibliothek",
     "castToTv": "Auf TV streamen",
     "playbackSettings": "Wiedergabe-Einstellungen",

@@ -18,13 +18,14 @@
   "withdraw": "Retirar",
   "status": {
     "pending": "Pendiente",
-    "accepted_pending": "Aceptada · Pendiente de añadir",
-    "accepted_added": "Aceptada · Añadida",
+    "accepted_pending": "Aceptada",
+    "accepted_added": "Añadida",
     "rejected": "Rechazada"
   },
   "actions": {
-    "acceptPending": "Aceptar · Pendiente de añadir",
-    "acceptAdded": "Aceptar · Añadida",
+    "acceptPending": "Aceptar",
+    "approveSend": "Aceptar · Enviar a Seerr",
+    "acceptAdded": "Marcar como añadida",
     "reject": "Rechazar",
     "backToPending": "Volver a pendiente"
   },
@@ -52,5 +53,21 @@
     },
     "noResults": "No hay resultados para «{query}».",
     "failed": "La búsqueda falló. Vuelve a intentarlo en un momento."
+  },
+  "forward": {
+    "sent": "Enviada a Seerr",
+    "exists": "Ya está en Seerr",
+    "send": "Enviar a Seerr",
+    "again": "Enviar de nuevo",
+    "reasons": {
+      "unreachable": "No se pudo llegar a Seerr",
+      "unauthorized": "Seerr rechazó la clave de API",
+      "refused": "Seerr no aceptó la solicitud",
+      "failed": "Seerr no pudo aceptar la solicitud"
+    }
+  },
+  "auto": {
+    "accepted": "Aceptada automáticamente",
+    "added": "Marcada como añadida al llegar a la biblioteca"
   }
 }

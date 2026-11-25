@@ -18,13 +18,14 @@
   "withdraw": "철회",
   "status": {
     "pending": "대기 중",
-    "accepted_pending": "수락됨 · 추가 대기",
-    "accepted_added": "수락됨 · 추가됨",
+    "accepted_pending": "수락됨",
+    "accepted_added": "추가됨",
     "rejected": "거절됨"
   },
   "actions": {
-    "acceptPending": "수락 · 추가 대기",
-    "acceptAdded": "수락 · 추가됨",
+    "acceptPending": "수락",
+    "approveSend": "수락 · Seerr로 보내기",
+    "acceptAdded": "추가됨으로 표시",
     "reject": "거절",
     "backToPending": "대기 중으로 되돌리기"
   },
@@ -52,5 +53,21 @@
     },
     "noResults": "'{query}'에 대한 결과가 없어요.",
     "failed": "검색에 실패했어요. 잠시 후 다시 시도하세요."
+  },
+  "forward": {
+    "sent": "Seerr로 보냄",
+    "exists": "이미 Seerr에 있음",
+    "send": "Seerr로 보내기",
+    "again": "다시 보내기",
+    "reasons": {
+      "unreachable": "Seerr에 연결할 수 없었어요",
+      "unauthorized": "Seerr가 API 키를 거부했어요",
+      "refused": "Seerr가 요청을 받지 않았어요",
+      "failed": "Seerr가 요청을 받지 못했어요"
+    }
+  },
+  "auto": {
+    "accepted": "자동으로 수락됨",
+    "added": "라이브러리에 들어와서 추가됨으로 표시했어요"
   }
 }

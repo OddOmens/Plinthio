@@ -113,6 +113,17 @@
       "desc": "The shelf Plinthio opens to.",
       "all": "All media"
     },
+    "homeRows": {
+      "title": "Home rows",
+      "desc": "The rows above your shelf on Home. Switch off the ones you don't want and put the rest in your order.",
+      "moveUp": "Move {row} up",
+      "moveDown": "Move {row} down",
+      "rows": {
+        "live": { "label": "Live TV favourites", "desc": "Your favourite channels and what's on now." },
+        "watching": { "label": "Continue watching", "desc": "Movies and episodes you've started." },
+        "reading": { "label": "Continue reading and listening", "desc": "Books, manga and audiobooks you've started." }
+      }
+    },
     "views": {
       "title": "Shelf views",
       "desc": "The views above your shelf. Each shows one card per series; Alphabetical is always there.",
