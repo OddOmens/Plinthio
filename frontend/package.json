@@ -13,19 +13,19 @@
   "dependencies": {
     "@fontsource-variable/atkinson-hyperlegible-next": "5.3.0",
     "@fontsource/opendyslexic": "5.3.0",
-    "@lucide/vue": "^1.73.0",
+    "@lucide/vue": "^1.77.0",
     "axios": "^1.21.1",
     "epubjs": "^0.3.93",
     "hls.js": "^1.7.4",
     "pinia": "^4.1.0",
     "qrcode": "^1.5.4",
-    "vue": "^3.5.45",
+    "vue": "^3.5.46",
     "vue-router": "^4.6.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
     "@vitejs/plugin-vue": "^6.0.11",
-    "autoprefixer": "^10.4.20",
+    "autoprefixer": "^10.7.0",
     "postcss": "^8.5.33",
     "tailwindcss": "^3.4.12",
     "vite": "^8.3.8"
